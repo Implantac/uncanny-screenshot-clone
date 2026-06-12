@@ -210,6 +210,10 @@ function ProductDialog({
   const [collectionId, setCollectionId] = useState<string>("none");
   const [sizesStr, setSizesStr] = useState("");
   const [colorsStr, setColorsStr] = useState("");
+  const [imagePath, setImagePath] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open && editing) {
@@ -223,6 +227,8 @@ function ProductDialog({
       setCollectionId(editing.collection_id || "none");
       setSizesStr(editing.sizes.join(", "));
       setColorsStr(editing.colors.join(", "));
+      setImagePath(editing.image_url);
+      resolveImageUrl(editing.image_url).then(setPreviewUrl);
     } else if (open) {
       reset();
     }
@@ -233,6 +239,26 @@ function ProductDialog({
     setSku(""); setName(""); setCategory(""); setDescription("");
     setCostPrice(0); setSellPrice(0); setStatus("rascunho");
     setCollectionId("none"); setSizesStr(""); setColorsStr("");
+    setImagePath(null); setPreviewUrl(null);
+  }
+
+  async function handleUpload(file: File) {
+    if (!userId) { toast.error("Sessão expirada"); return; }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+      if (error) throw error;
+      setImagePath(path);
+      const url = await resolveImageUrl(path);
+      setPreviewUrl(url);
+      toast.success("Imagem enviada");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setUploading(false);
+    }
   }
 
   const saveMut = useMutation({
@@ -246,6 +272,7 @@ function ProductDialog({
         sell_price: sellPrice,
         status,
         collection_id: collectionId === "none" ? null : collectionId,
+        image_url: imagePath,
         sizes: sizesStr.split(",").map((s) => s.trim()).filter(Boolean),
         colors: colorsStr.split(",").map((s) => s.trim()).filter(Boolean),
       };
