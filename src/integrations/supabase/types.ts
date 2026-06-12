@@ -62,6 +62,68 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: string | null
+          collection_id: string | null
+          colors: string[] | null
+          cost_price: number | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          owner_id: string
+          sell_price: number | null
+          sizes: string[] | null
+          sku: string
+          status: Database["public"]["Enums"]["product_status"]
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          collection_id?: string | null
+          colors?: string[] | null
+          cost_price?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          owner_id: string
+          sell_price?: number | null
+          sizes?: string[] | null
+          sku: string
+          status?: Database["public"]["Enums"]["product_status"]
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          collection_id?: string | null
+          colors?: string[] | null
+          cost_price?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          owner_id?: string
+          sell_price?: number | null
+          sizes?: string[] | null
+          sku?: string
+          status?: Database["public"]["Enums"]["product_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -85,6 +147,57 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          active: boolean
+          category: string | null
+          city: string | null
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          owner_id: string
+          phone: string | null
+          rating: number | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          owner_id: string
+          phone?: string | null
+          rating?: number | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          phone?: string | null
+          rating?: number | null
+          state?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -131,6 +244,12 @@ export type Database = {
         | "desenvolvimento"
         | "producao"
         | "entregue"
+      product_status:
+        | "rascunho"
+        | "desenvolvimento"
+        | "aprovado"
+        | "producao"
+        | "descontinuado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -265,6 +384,13 @@ export const Constants = {
         "desenvolvimento",
         "producao",
         "entregue",
+      ],
+      product_status: [
+        "rascunho",
+        "desenvolvimento",
+        "aprovado",
+        "producao",
+        "descontinuado",
       ],
     },
   },
