@@ -3,13 +3,19 @@ import { Search, Bell, Sparkles, LogOut } from "lucide-react";
 import { MODULES, MODULE_GROUPS } from "@/lib/modules";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useRoles } from "@/hooks/use-role";
 import { supabase } from "@/integrations/supabase/client";
 import type { ReactNode } from "react";
+
+const ROLE_LABEL: Record<string, string> = {
+  admin: "Admin", gerente: "Gerente", designer: "Designer", comprador: "Comprador", vendedor: "Vendedor",
+};
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   const active = location.pathname;
   const { user } = useAuth();
+  const { primary } = useRoles();
   const navigate = useNavigate();
 
   async function handleSignOut() {
@@ -96,7 +102,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">{initials || "U"}</div>
             <div className="text-xs leading-tight hidden sm:block">
               <div className="font-medium truncate max-w-[120px]">{user?.user_metadata?.full_name || user?.email}</div>
-              <div className="text-muted-foreground">Designer</div>
+              <div className="text-muted-foreground">{ROLE_LABEL[primary] ?? "Designer"}</div>
             </div>
             <button
               onClick={handleSignOut}
