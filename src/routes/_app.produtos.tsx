@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Package, Plus, Trash2, Pencil, Sparkles, Tag } from "lucide-react";
+import { Package, Plus, Trash2, Pencil, Sparkles, Tag, Upload, ImageIcon, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,22 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+
+async function resolveImageUrl(path: string | null): Promise<string | null> {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  const { data } = await supabase.storage.from("product-images").createSignedUrl(path, 60 * 60);
+  return data?.signedUrl ?? null;
+}
+
+function ProductImage({ path }: { path: string | null }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => { resolveImageUrl(path).then(setUrl); }, [path]);
+  if (!path) {
+    return <div className="aspect-[4/3] rounded-lg bg-muted/40 grid place-items-center"><ImageIcon className="size-8 text-muted-foreground/40" /></div>;
+  }
+  return <div className="aspect-[4/3] rounded-lg overflow-hidden bg-muted/40">{url && <img src={url} alt="" className="size-full object-cover" />}</div>;
+}
 
 export const Route = createFileRoute("/_app/produtos")({
   head: () => ({
