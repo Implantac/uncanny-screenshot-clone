@@ -9,50 +9,435 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppUseAiRouteImport } from './routes/_app.use-ai'
+import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
+import { Route as AppPrototiposRouteImport } from './routes/_app.prototipos'
+import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
+import { Route as AppPcpRouteImport } from './routes/_app.pcp'
+import { Route as AppMobileRouteImport } from './routes/_app.mobile'
+import { Route as AppMarketingRouteImport } from './routes/_app.marketing'
+import { Route as AppFornecedoresRouteImport } from './routes/_app.fornecedores'
+import { Route as AppFinanceiroRouteImport } from './routes/_app.financeiro'
+import { Route as AppFichaTecnicaRouteImport } from './routes/_app.ficha-tecnica'
+import { Route as AppFashionGptRouteImport } from './routes/_app.fashion-gpt'
+import { Route as AppDppRouteImport } from './routes/_app.dpp'
+import { Route as AppComercialRouteImport } from './routes/_app.comercial'
+import { Route as AppColecoesRouteImport } from './routes/_app.colecoes'
+import { Route as AppCadRouteImport } from './routes/_app.cad'
+import { Route as AppBiRouteImport } from './routes/_app.bi'
+import { Route as AppAlmoxarifadoRouteImport } from './routes/_app.almoxarifado'
 
-const IndexRoute = IndexRouteImport.update({
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUseAiRoute = AppUseAiRouteImport.update({
+  id: '/use-ai',
+  path: '/use-ai',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppShowroomRoute = AppShowroomRouteImport.update({
+  id: '/showroom',
+  path: '/showroom',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPrototiposRoute = AppPrototiposRouteImport.update({
+  id: '/prototipos',
+  path: '/prototipos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProdutosRoute = AppProdutosRouteImport.update({
+  id: '/produtos',
+  path: '/produtos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPcpRoute = AppPcpRouteImport.update({
+  id: '/pcp',
+  path: '/pcp',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMobileRoute = AppMobileRouteImport.update({
+  id: '/mobile',
+  path: '/mobile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMarketingRoute = AppMarketingRouteImport.update({
+  id: '/marketing',
+  path: '/marketing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFornecedoresRoute = AppFornecedoresRouteImport.update({
+  id: '/fornecedores',
+  path: '/fornecedores',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFinanceiroRoute = AppFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFichaTecnicaRoute = AppFichaTecnicaRouteImport.update({
+  id: '/ficha-tecnica',
+  path: '/ficha-tecnica',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFashionGptRoute = AppFashionGptRouteImport.update({
+  id: '/fashion-gpt',
+  path: '/fashion-gpt',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDppRoute = AppDppRouteImport.update({
+  id: '/dpp',
+  path: '/dpp',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppComercialRoute = AppComercialRouteImport.update({
+  id: '/comercial',
+  path: '/comercial',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppColecoesRoute = AppColecoesRouteImport.update({
+  id: '/colecoes',
+  path: '/colecoes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCadRoute = AppCadRouteImport.update({
+  id: '/cad',
+  path: '/cad',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBiRoute = AppBiRouteImport.update({
+  id: '/bi',
+  path: '/bi',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAlmoxarifadoRoute = AppAlmoxarifadoRouteImport.update({
+  id: '/almoxarifado',
+  path: '/almoxarifado',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
+  '/almoxarifado': typeof AppAlmoxarifadoRoute
+  '/bi': typeof AppBiRoute
+  '/cad': typeof AppCadRoute
+  '/colecoes': typeof AppColecoesRoute
+  '/comercial': typeof AppComercialRoute
+  '/dpp': typeof AppDppRoute
+  '/fashion-gpt': typeof AppFashionGptRoute
+  '/ficha-tecnica': typeof AppFichaTecnicaRoute
+  '/financeiro': typeof AppFinanceiroRoute
+  '/fornecedores': typeof AppFornecedoresRoute
+  '/marketing': typeof AppMarketingRoute
+  '/mobile': typeof AppMobileRoute
+  '/pcp': typeof AppPcpRoute
+  '/produtos': typeof AppProdutosRoute
+  '/prototipos': typeof AppPrototiposRoute
+  '/showroom': typeof AppShowroomRoute
+  '/use-ai': typeof AppUseAiRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/almoxarifado': typeof AppAlmoxarifadoRoute
+  '/bi': typeof AppBiRoute
+  '/cad': typeof AppCadRoute
+  '/colecoes': typeof AppColecoesRoute
+  '/comercial': typeof AppComercialRoute
+  '/dpp': typeof AppDppRoute
+  '/fashion-gpt': typeof AppFashionGptRoute
+  '/ficha-tecnica': typeof AppFichaTecnicaRoute
+  '/financeiro': typeof AppFinanceiroRoute
+  '/fornecedores': typeof AppFornecedoresRoute
+  '/marketing': typeof AppMarketingRoute
+  '/mobile': typeof AppMobileRoute
+  '/pcp': typeof AppPcpRoute
+  '/produtos': typeof AppProdutosRoute
+  '/prototipos': typeof AppPrototiposRoute
+  '/showroom': typeof AppShowroomRoute
+  '/use-ai': typeof AppUseAiRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/almoxarifado': typeof AppAlmoxarifadoRoute
+  '/_app/bi': typeof AppBiRoute
+  '/_app/cad': typeof AppCadRoute
+  '/_app/colecoes': typeof AppColecoesRoute
+  '/_app/comercial': typeof AppComercialRoute
+  '/_app/dpp': typeof AppDppRoute
+  '/_app/fashion-gpt': typeof AppFashionGptRoute
+  '/_app/ficha-tecnica': typeof AppFichaTecnicaRoute
+  '/_app/financeiro': typeof AppFinanceiroRoute
+  '/_app/fornecedores': typeof AppFornecedoresRoute
+  '/_app/marketing': typeof AppMarketingRoute
+  '/_app/mobile': typeof AppMobileRoute
+  '/_app/pcp': typeof AppPcpRoute
+  '/_app/produtos': typeof AppProdutosRoute
+  '/_app/prototipos': typeof AppPrototiposRoute
+  '/_app/showroom': typeof AppShowroomRoute
+  '/_app/use-ai': typeof AppUseAiRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/almoxarifado'
+    | '/bi'
+    | '/cad'
+    | '/colecoes'
+    | '/comercial'
+    | '/dpp'
+    | '/fashion-gpt'
+    | '/ficha-tecnica'
+    | '/financeiro'
+    | '/fornecedores'
+    | '/marketing'
+    | '/mobile'
+    | '/pcp'
+    | '/produtos'
+    | '/prototipos'
+    | '/showroom'
+    | '/use-ai'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/almoxarifado'
+    | '/bi'
+    | '/cad'
+    | '/colecoes'
+    | '/comercial'
+    | '/dpp'
+    | '/fashion-gpt'
+    | '/ficha-tecnica'
+    | '/financeiro'
+    | '/fornecedores'
+    | '/marketing'
+    | '/mobile'
+    | '/pcp'
+    | '/produtos'
+    | '/prototipos'
+    | '/showroom'
+    | '/use-ai'
+    | '/'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/_app/almoxarifado'
+    | '/_app/bi'
+    | '/_app/cad'
+    | '/_app/colecoes'
+    | '/_app/comercial'
+    | '/_app/dpp'
+    | '/_app/fashion-gpt'
+    | '/_app/ficha-tecnica'
+    | '/_app/financeiro'
+    | '/_app/fornecedores'
+    | '/_app/marketing'
+    | '/_app/mobile'
+    | '/_app/pcp'
+    | '/_app/produtos'
+    | '/_app/prototipos'
+    | '/_app/showroom'
+    | '/_app/use-ai'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/use-ai': {
+      id: '/_app/use-ai'
+      path: '/use-ai'
+      fullPath: '/use-ai'
+      preLoaderRoute: typeof AppUseAiRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/showroom': {
+      id: '/_app/showroom'
+      path: '/showroom'
+      fullPath: '/showroom'
+      preLoaderRoute: typeof AppShowroomRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/prototipos': {
+      id: '/_app/prototipos'
+      path: '/prototipos'
+      fullPath: '/prototipos'
+      preLoaderRoute: typeof AppPrototiposRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/produtos': {
+      id: '/_app/produtos'
+      path: '/produtos'
+      fullPath: '/produtos'
+      preLoaderRoute: typeof AppProdutosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/pcp': {
+      id: '/_app/pcp'
+      path: '/pcp'
+      fullPath: '/pcp'
+      preLoaderRoute: typeof AppPcpRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/mobile': {
+      id: '/_app/mobile'
+      path: '/mobile'
+      fullPath: '/mobile'
+      preLoaderRoute: typeof AppMobileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/marketing': {
+      id: '/_app/marketing'
+      path: '/marketing'
+      fullPath: '/marketing'
+      preLoaderRoute: typeof AppMarketingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/fornecedores': {
+      id: '/_app/fornecedores'
+      path: '/fornecedores'
+      fullPath: '/fornecedores'
+      preLoaderRoute: typeof AppFornecedoresRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/financeiro': {
+      id: '/_app/financeiro'
+      path: '/financeiro'
+      fullPath: '/financeiro'
+      preLoaderRoute: typeof AppFinanceiroRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ficha-tecnica': {
+      id: '/_app/ficha-tecnica'
+      path: '/ficha-tecnica'
+      fullPath: '/ficha-tecnica'
+      preLoaderRoute: typeof AppFichaTecnicaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/fashion-gpt': {
+      id: '/_app/fashion-gpt'
+      path: '/fashion-gpt'
+      fullPath: '/fashion-gpt'
+      preLoaderRoute: typeof AppFashionGptRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dpp': {
+      id: '/_app/dpp'
+      path: '/dpp'
+      fullPath: '/dpp'
+      preLoaderRoute: typeof AppDppRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/comercial': {
+      id: '/_app/comercial'
+      path: '/comercial'
+      fullPath: '/comercial'
+      preLoaderRoute: typeof AppComercialRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/colecoes': {
+      id: '/_app/colecoes'
+      path: '/colecoes'
+      fullPath: '/colecoes'
+      preLoaderRoute: typeof AppColecoesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/cad': {
+      id: '/_app/cad'
+      path: '/cad'
+      fullPath: '/cad'
+      preLoaderRoute: typeof AppCadRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/bi': {
+      id: '/_app/bi'
+      path: '/bi'
+      fullPath: '/bi'
+      preLoaderRoute: typeof AppBiRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/almoxarifado': {
+      id: '/_app/almoxarifado'
+      path: '/almoxarifado'
+      fullPath: '/almoxarifado'
+      preLoaderRoute: typeof AppAlmoxarifadoRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
+interface AppRouteChildren {
+  AppAlmoxarifadoRoute: typeof AppAlmoxarifadoRoute
+  AppBiRoute: typeof AppBiRoute
+  AppCadRoute: typeof AppCadRoute
+  AppColecoesRoute: typeof AppColecoesRoute
+  AppComercialRoute: typeof AppComercialRoute
+  AppDppRoute: typeof AppDppRoute
+  AppFashionGptRoute: typeof AppFashionGptRoute
+  AppFichaTecnicaRoute: typeof AppFichaTecnicaRoute
+  AppFinanceiroRoute: typeof AppFinanceiroRoute
+  AppFornecedoresRoute: typeof AppFornecedoresRoute
+  AppMarketingRoute: typeof AppMarketingRoute
+  AppMobileRoute: typeof AppMobileRoute
+  AppPcpRoute: typeof AppPcpRoute
+  AppProdutosRoute: typeof AppProdutosRoute
+  AppPrototiposRoute: typeof AppPrototiposRoute
+  AppShowroomRoute: typeof AppShowroomRoute
+  AppUseAiRoute: typeof AppUseAiRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAlmoxarifadoRoute: AppAlmoxarifadoRoute,
+  AppBiRoute: AppBiRoute,
+  AppCadRoute: AppCadRoute,
+  AppColecoesRoute: AppColecoesRoute,
+  AppComercialRoute: AppComercialRoute,
+  AppDppRoute: AppDppRoute,
+  AppFashionGptRoute: AppFashionGptRoute,
+  AppFichaTecnicaRoute: AppFichaTecnicaRoute,
+  AppFinanceiroRoute: AppFinanceiroRoute,
+  AppFornecedoresRoute: AppFornecedoresRoute,
+  AppMarketingRoute: AppMarketingRoute,
+  AppMobileRoute: AppMobileRoute,
+  AppPcpRoute: AppPcpRoute,
+  AppProdutosRoute: AppProdutosRoute,
+  AppPrototiposRoute: AppPrototiposRoute,
+  AppShowroomRoute: AppShowroomRoute,
+  AppUseAiRoute: AppUseAiRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
