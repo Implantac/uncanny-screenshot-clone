@@ -41,10 +41,14 @@ function AuthPage() {
     });
     setLoading(false);
     if (error) {
-      if (error.message.toLowerCase().includes("invalid")) {
+      const msg = error.message.toLowerCase();
+      const code = (error as { code?: string }).code?.toLowerCase() ?? "";
+      if (code === "email_not_confirmed" || msg.includes("not confirmed") || msg.includes("email not confirmed")) {
+        toast.error("Email não confirmado. Verifique sua caixa de entrada para ativar a conta.");
+      } else if (code === "invalid_credentials" || msg.includes("invalid login") || msg.includes("invalid")) {
         toast.error("Email ou senha incorretos");
-      } else if (error.message.toLowerCase().includes("not confirmed")) {
-        toast.error("Confirme seu email antes de entrar");
+      } else if (msg.includes("rate") || msg.includes("too many")) {
+        toast.error("Muitas tentativas. Aguarde alguns instantes e tente novamente.");
       } else {
         toast.error(error.message);
       }
