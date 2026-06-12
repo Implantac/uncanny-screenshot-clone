@@ -1,165 +1,190 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FileText, Sparkles, Download, History, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { FileText, Plus, Trash2, Pencil } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/ficha-tecnica")({
-  head: () => ({
-    meta: [
-      { title: "Ficha Técnica · USE MODA OS" },
-      { name: "description", content: "Tech packs inteligentes gerados com IA." },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "Ficha Técnica · USE MODA OS" }, { name: "description", content: "Tech packs versionados." }] }),
   component: FichaPage,
 });
 
-const fichas = [
-  { id: "FT-2041", produto: "Vestido Midi Linho",  versao: "v3.2", status: "Aprovada", autor: "Marina S.", data: "12/06" },
-  { id: "FT-2042", produto: "Blazer Oversized",    versao: "v1.4", status: "Em revisão", autor: "Carlos R.", data: "11/06" },
-  { id: "FT-2043", produto: "Calça Wide Alfaiataria", versao: "v2.0", status: "Aprovada", autor: "Marina S.", data: "10/06" },
-  { id: "FT-2044", produto: "Top Cropped Tricot",  versao: "v1.1", status: "Rascunho", autor: "Júlia M.", data: "09/06" },
-  { id: "FT-2045", produto: "Camisa Linho MC",     versao: "v2.3", status: "Aprovada", autor: "Marina S.", data: "08/06" },
-];
+type Status = "rascunho" | "em_revisao" | "aprovada";
+type Sheet = {
+  id: string; owner_id: string; product_id: string | null;
+  code: string; version: string; status: Status; content: string | null; created_at: string;
+};
+type Ref = { id: string; name: string };
 
-const materiais = [
-  { item: "Linho 100% natural",          consumo: "1.45 m", custo: 38.50, fornecedor: "Tecidos Paulista" },
-  { item: "Forro viscose",               consumo: "0.80 m", custo: 9.20,  fornecedor: "Forros & Cia" },
-  { item: "Zíper invisível 50cm",        consumo: "1 un",   custo: 4.80,  fornecedor: "Aviamentos Brasil" },
-  { item: "Botão polyester 12mm",        consumo: "4 un",   custo: 2.40,  fornecedor: "Aviamentos Brasil" },
-  { item: "Etiqueta composição",         consumo: "1 un",   custo: 0.60,  fornecedor: "Etiquetas SP" },
-];
-
-const medidas = [
-  { ponto: "Busto",         pp: 84, p: 88, m: 92, g: 96, gg: 100 },
-  { ponto: "Cintura",       pp: 66, p: 70, m: 74, g: 78, gg: 82 },
-  { ponto: "Quadril",       pp: 90, p: 94, m: 98, g: 102, gg: 106 },
-  { ponto: "Comprimento",   pp: 110, p: 112, m: 114, g: 116, gg: 118 },
-  { ponto: "Cava",          pp: 22, p: 23, m: 24, g: 25, gg: 26 },
-];
+const LABEL: Record<Status, string> = { rascunho: "Rascunho", em_revisao: "Em revisão", aprovada: "Aprovada" };
+const COLOR: Record<Status, string> = {
+  rascunho: "bg-muted text-muted-foreground",
+  em_revisao: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  aprovada: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+};
 
 function FichaPage() {
-  const [selected, setSelected] = useState(fichas[0]);
-  const custoTotal = materiais.reduce((s, m) => s + m.custo, 0);
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Sheet | null>(null);
+  const [form, setForm] = useState({ code: "", product_id: "", version: "v1.0", status: "rascunho" as Status, content: "" });
+
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["tech_sheets"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("tech_sheets").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Sheet[];
+    },
+  });
+
+  const { data: products = [] } = useQuery({
+    queryKey: ["products-ref"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("products").select("id,name").order("name");
+      if (error) throw error;
+      return data as Ref[];
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("Não autenticado");
+      if (!form.code.trim()) throw new Error("Código obrigatório");
+      const payload = {
+        owner_id: user.id,
+        code: form.code.trim(),
+        product_id: form.product_id || null,
+        version: form.version.trim() || "v1.0",
+        status: form.status,
+        content: form.content.trim() || null,
+      };
+      if (editing) {
+        const { error } = await supabase.from("tech_sheets").update(payload).eq("id", editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("tech_sheets").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tech_sheets"] });
+      toast.success(editing ? "Ficha atualizada" : "Ficha criada");
+      reset();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("tech_sheets").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tech_sheets"] }); toast.success("Removida"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  function reset() {
+    setOpen(false); setEditing(null);
+    setForm({ code: "", product_id: "", version: "v1.0", status: "rascunho", content: "" });
+  }
+
+  function openEdit(s: Sheet) {
+    setEditing(s);
+    setForm({ code: s.code, product_id: s.product_id ?? "", version: s.version, status: s.status, content: s.content ?? "" });
+    setOpen(true);
+  }
+
+  const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
 
   return (
-    <div className="p-6 lg:p-8 space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="size-11 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
-          <FileText className="size-5 text-primary-foreground" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-xl bg-primary/10 grid place-items-center"><FileText className="size-5 text-primary" /></div>
+          <div>
+            <h1 className="text-2xl font-semibold">Ficha Técnica</h1>
+            <p className="text-sm text-muted-foreground">Tech packs versionados</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Ficha Técnica Inteligente</h1>
-          <p className="text-sm text-muted-foreground">Tech packs versionados e gerados com IA</p>
-        </div>
+        <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Nova ficha</Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
-        <div className="glass rounded-xl p-3 h-fit">
-          <div className="px-2 py-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground">Fichas recentes</div>
-          <div className="space-y-1">
-            {fichas.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setSelected(f)}
-                className={`w-full text-left p-3 rounded-lg transition-colors ${selected.id===f.id?"bg-primary/10 border border-primary/30":"hover:bg-muted/60 border border-transparent"}`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-medium tabular-nums text-muted-foreground">{f.id}</div>
-                  <div className="text-[10px] text-muted-foreground">{f.versao}</div>
-                </div>
-                <div className="text-sm font-medium mt-0.5">{f.produto}</div>
-                <div className="flex items-center justify-between mt-1.5 text-[11px] text-muted-foreground">
-                  <span>{f.autor}</span>
-                  <span className={`px-1.5 py-0.5 rounded ${f.status==="Aprovada"?"bg-success/15 text-success":f.status==="Em revisão"?"bg-warning/15 text-warning":"bg-muted text-muted-foreground"}`}>{f.status}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="glass rounded-xl p-5">
-            <div className="flex items-start justify-between gap-3 flex-wrap">
-              <div>
-                <div className="text-xs text-muted-foreground tabular-nums">{selected.id} · {selected.versao}</div>
-                <h2 className="text-xl font-semibold mt-0.5">{selected.produto}</h2>
-                <div className="text-sm text-muted-foreground mt-1">Atualizada por {selected.autor} em {selected.data} · <span className="text-success inline-flex items-center gap-1"><CheckCircle2 className="size-3.5"/>{selected.status}</span></div>
-              </div>
-              <div className="flex gap-2">
-                <button className="h-9 px-3 rounded-md text-sm bg-muted hover:bg-muted/70 inline-flex items-center gap-1.5"><History className="size-4" /> Versões</button>
-                <button className="h-9 px-3 rounded-md text-sm bg-muted hover:bg-muted/70 inline-flex items-center gap-1.5"><Download className="size-4" /> PDF</button>
-                <button className="h-9 px-3 rounded-md text-sm bg-[image:var(--gradient-primary)] text-primary-foreground inline-flex items-center gap-1.5"><Sparkles className="size-4" /> Gerar com IA</button>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="glass rounded-xl p-4">
-              <div className="text-xs text-muted-foreground">Custo de materiais</div>
-              <div className="text-2xl font-semibold mt-1 tabular-nums">R$ {custoTotal.toFixed(2)}</div>
-            </div>
-            <div className="glass rounded-xl p-4">
-              <div className="text-xs text-muted-foreground">Tempo de confecção</div>
-              <div className="text-2xl font-semibold mt-1 tabular-nums">48 min</div>
-            </div>
-            <div className="glass rounded-xl p-4">
-              <div className="text-xs text-muted-foreground">Preço sugerido</div>
-              <div className="text-2xl font-semibold mt-1 tabular-nums text-gradient">R$ 289,90</div>
-            </div>
-          </div>
-
-          <div className="glass rounded-xl overflow-hidden">
-            <div className="px-5 py-3 border-b border-border text-sm font-semibold">Lista de materiais (BOM)</div>
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="text-left font-medium px-5 py-2">Item</th>
-                  <th className="text-left font-medium px-5 py-2">Consumo</th>
-                  <th className="text-left font-medium px-5 py-2">Fornecedor</th>
-                  <th className="text-right font-medium px-5 py-2">Custo</th>
+      {isLoading ? <p className="text-muted-foreground">Carregando…</p> : (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="text-left px-4 py-3">Código</th>
+                <th className="text-left px-4 py-3">Produto</th>
+                <th className="text-left px-4 py-3">Versão</th>
+                <th className="text-left px-4 py-3">Status</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map(s => (
+                <tr key={s.id} className="border-t border-border hover:bg-muted/20">
+                  <td className="px-4 py-3 font-mono text-xs">{s.code}</td>
+                  <td className="px-4 py-3">{productName(s.product_id)}</td>
+                  <td className="px-4 py-3">{s.version}</td>
+                  <td className="px-4 py-3"><Badge variant="outline" className={COLOR[s.status]}>{LABEL[s.status]}</Badge></td>
+                  <td className="px-4 py-3 text-right">
+                    {user?.id === s.owner_id && (
+                      <div className="flex gap-1 justify-end">
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(s)}><Pencil className="size-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => del.mutate(s.id)}><Trash2 className="size-4" /></Button>
+                      </div>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {materiais.map((m) => (
-                  <tr key={m.item} className="border-t border-border">
-                    <td className="px-5 py-3 font-medium">{m.item}</td>
-                    <td className="px-5 py-3 text-muted-foreground tabular-nums">{m.consumo}</td>
-                    <td className="px-5 py-3 text-muted-foreground">{m.fornecedor}</td>
-                    <td className="px-5 py-3 text-right tabular-nums">R$ {m.custo.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="glass rounded-xl overflow-hidden">
-            <div className="px-5 py-3 border-b border-border text-sm font-semibold">Tabela de medidas (cm)</div>
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="text-left font-medium px-5 py-2">Ponto</th>
-                  <th className="text-right font-medium px-5 py-2">PP</th>
-                  <th className="text-right font-medium px-5 py-2">P</th>
-                  <th className="text-right font-medium px-5 py-2">M</th>
-                  <th className="text-right font-medium px-5 py-2">G</th>
-                  <th className="text-right font-medium px-5 py-2">GG</th>
-                </tr>
-              </thead>
-              <tbody>
-                {medidas.map((m) => (
-                  <tr key={m.ponto} className="border-t border-border">
-                    <td className="px-5 py-3 font-medium">{m.ponto}</td>
-                    <td className="px-5 py-3 text-right tabular-nums">{m.pp}</td>
-                    <td className="px-5 py-3 text-right tabular-nums">{m.p}</td>
-                    <td className="px-5 py-3 text-right tabular-nums">{m.m}</td>
-                    <td className="px-5 py-3 text-right tabular-nums">{m.g}</td>
-                    <td className="px-5 py-3 text-right tabular-nums">{m.gg}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+              {items.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Nenhuma ficha ainda</td></tr>}
+            </tbody>
+          </table>
         </div>
-      </div>
+      )}
+
+      <Dialog open={open} onOpenChange={(o) => !o && reset()}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editing ? "Editar ficha" : "Nova ficha"}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Código *</Label><Input value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="FT-001" /></div>
+              <div><Label>Versão</Label><Input value={form.version} onChange={e => setForm({ ...form, version: e.target.value })} placeholder="v1.0" /></div>
+            </div>
+            <div>
+              <Label>Produto</Label>
+              <Select value={form.product_id} onValueChange={(v) => setForm({ ...form, product_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Status</Label>
+              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Status })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{Object.entries(LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Conteúdo</Label><Textarea rows={5} value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} placeholder="Materiais, medidas, acabamentos…" /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={reset}>Cancelar</Button>
+            <Button onClick={() => save.mutate()} disabled={save.isPending}>{save.isPending ? "Salvando…" : "Salvar"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
