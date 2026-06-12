@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Store, Plus, Trash2, Pencil, Download } from "lucide-react";
+import { Store, Plus, Trash2, Pencil, Download, FileText } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
+import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
