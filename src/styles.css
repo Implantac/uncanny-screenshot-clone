@@ -154,9 +154,9 @@
 }
 
 @utility glass {
-  background: oklch(0.22 0.018 270 / 0.5);
+  background: color-mix(in oklab, var(--card) 70%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid oklch(1 0 0 / 0.06);
+  border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
 }
 
 @utility text-gradient {
