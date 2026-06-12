@@ -72,10 +72,15 @@ function FashionGPT() {
         <div className="size-11 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
           <Bot className="size-5 text-primary-foreground" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-xl font-semibold tracking-tight">Fashion GPT</h1>
           <p className="text-xs text-muted-foreground">Copiloto IA · Gemini 3 Flash</p>
         </div>
+        {context && (
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-emerald-400 glass px-3 py-1.5 rounded-full">
+            <Database className="size-3" /> Conectado aos seus dados
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-6">
