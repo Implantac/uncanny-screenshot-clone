@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
+import { mapSignInError, mapSignUpError } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -41,17 +42,7 @@ function AuthPage() {
     });
     setLoading(false);
     if (error) {
-      const msg = error.message.toLowerCase();
-      const code = (error as { code?: string }).code?.toLowerCase() ?? "";
-      if (code === "email_not_confirmed" || msg.includes("not confirmed") || msg.includes("email not confirmed")) {
-        toast.error("Email não confirmado. Verifique sua caixa de entrada para ativar a conta.");
-      } else if (code === "invalid_credentials" || msg.includes("invalid login") || msg.includes("invalid")) {
-        toast.error("Email ou senha incorretos");
-      } else if (msg.includes("rate") || msg.includes("too many")) {
-        toast.error("Muitas tentativas. Aguarde alguns instantes e tente novamente.");
-      } else {
-        toast.error(error.message);
-      }
+      toast.error(mapSignInError(error as { message?: string; code?: string; status?: number }));
       return;
     }
     navigate({ to: "/" });
@@ -78,21 +69,7 @@ function AuthPage() {
     });
     setLoading(false);
     if (error) {
-      const msg = error.message.toLowerCase();
-      const code = (error as { code?: string }).code?.toLowerCase() ?? "";
-      if (code.includes("already") || msg.includes("already registered") || msg.includes("already exists") || msg.includes("user already")) {
-        toast.error("Este email já está cadastrado. Faça login.");
-      } else if (code === "weak_password" || msg.includes("weak") || msg.includes("password should") || msg.includes("password is too")) {
-        toast.error("Senha muito fraca. Use pelo menos 6 caracteres, combinando letras e números.");
-      } else if (code === "validation_failed" || msg.includes("invalid email") || msg.includes("email address")) {
-        toast.error("Email inválido. Verifique o endereço informado.");
-      } else if (msg.includes("signup") && msg.includes("disabled")) {
-        toast.error("Cadastro desabilitado no momento. Contate o administrador.");
-      } else if (msg.includes("rate") || msg.includes("too many")) {
-        toast.error("Muitas tentativas. Aguarde alguns instantes e tente novamente.");
-      } else {
-        toast.error(error.message);
-      }
+      toast.error(mapSignUpError(error as { message?: string; code?: string; status?: number }));
       return;
     }
     if (data.session) {
