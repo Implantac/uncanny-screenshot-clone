@@ -301,6 +301,22 @@ function ProductDialog({
           <DialogDescription>Informações de catálogo, preço e variações.</DialogDescription>
         </DialogHeader>
         <form onSubmit={(e) => { e.preventDefault(); saveMut.mutate(); }} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Imagem</Label>
+            <div className="flex items-center gap-3">
+              <div className="size-20 rounded-lg overflow-hidden bg-muted/40 grid place-items-center shrink-0">
+                {previewUrl ? <img src={previewUrl} alt="" className="size-full object-cover" /> : <ImageIcon className="size-6 text-muted-foreground/40" />}
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
+              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading} className="gap-2">
+                {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                {imagePath ? "Trocar imagem" : "Enviar imagem"}
+              </Button>
+              {imagePath && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => { setImagePath(null); setPreviewUrl(null); }}>Remover</Button>
+              )}
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>SKU</Label>
