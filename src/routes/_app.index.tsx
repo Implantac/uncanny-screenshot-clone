@@ -96,7 +96,7 @@ function CommandCenter() {
             Boa tarde, <span className="text-gradient">USE Moda</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Pulso da operação em tempo real · {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+            Pulso da operação em tempo real{today && ` · ${today}`}
           </p>
         </div>
       </div>
