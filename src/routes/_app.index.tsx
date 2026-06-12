@@ -76,6 +76,8 @@ function useDashboard() {
 
 function CommandCenter() {
   const { data, isLoading } = useDashboard();
+  const [today, setToday] = useState("");
+  useEffect(() => { setToday(new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })); }, []);
   const k = data?.kpis;
 
   const kpis = [
