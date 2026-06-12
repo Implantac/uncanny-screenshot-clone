@@ -1,127 +1,198 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Store, Search, MoreHorizontal } from "lucide-react";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Store, Plus, Trash2, Pencil } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/comercial")({
-  head: () => ({
-    meta: [
-      { title: "Comercial / B2B · USE MODA OS" },
-      { name: "description", content: "Portal B2B, pedidos e carteira de clientes." },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "Comercial · USE MODA OS" }, { name: "description", content: "Pedidos B2B e carteira." }] }),
   component: Comercial,
 });
 
-const pedidos = [
-  { id: "#5821", cliente: "Boutique Iguatemi", rep: "Ana P.",   valor: 92480, status: "Faturado", data: "12/06" },
-  { id: "#5820", cliente: "Loja Oscar Freire", rep: "Carlos M.", valor: 48200, status: "Em produção", data: "12/06" },
-  { id: "#5819", cliente: "Multimarcas RJ",    rep: "Ana P.",   valor: 31200, status: "Aprovado", data: "11/06" },
-  { id: "#5818", cliente: "Concept Store BH",  rep: "Luiz T.",  valor: 28900, status: "Aprovado", data: "11/06" },
-  { id: "#5817", cliente: "Boutique Recife",   rep: "Carlos M.", valor: 18700, status: "Pendente", data: "10/06" },
-  { id: "#5816", cliente: "Loja Curitiba",     rep: "Luiz T.",  valor: 64500, status: "Faturado", data: "10/06" },
-  { id: "#5815", cliente: "Showroom POA",      rep: "Ana P.",   valor: 12400, status: "Cancelado", data: "09/06" },
-  { id: "#5814", cliente: "Multimarcas Floripa", rep: "Carlos M.", valor: 39800, status: "Em produção", data: "09/06" },
-];
-
-const statusStyle: Record<string, string> = {
-  "Faturado":    "bg-success/15 text-success",
-  "Em produção": "bg-info/15 text-info",
-  "Aprovado":    "bg-primary/15 text-primary",
-  "Pendente":    "bg-warning/15 text-warning",
-  "Cancelado":   "bg-destructive/15 text-destructive",
+type Status = "rascunho" | "aprovado" | "em_producao" | "faturado" | "cancelado";
+type Order = {
+  id: string; owner_id: string; code: string; customer_name: string; representative: string | null;
+  total_value: number; status: Status; order_date: string; notes: string | null; created_at: string;
 };
 
-const trend = Array.from({ length: 14 }, (_, i) => ({
-  d: `${i+1}`, v: Math.round(40 + Math.random() * 80 + i * 3),
-}));
+const LABEL: Record<Status, string> = {
+  rascunho: "Rascunho", aprovado: "Aprovado", em_producao: "Em produção", faturado: "Faturado", cancelado: "Cancelado",
+};
+const COLOR: Record<Status, string> = {
+  rascunho: "bg-muted text-muted-foreground",
+  aprovado: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  em_producao: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  faturado: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  cancelado: "bg-destructive/20 text-destructive border-destructive/30",
+};
+
+const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 function Comercial() {
-  const [q, setQ] = useState("");
-  const filtered = pedidos.filter((p) => p.cliente.toLowerCase().includes(q.toLowerCase()) || p.id.includes(q));
-  const total = pedidos.reduce((s, p) => s + p.valor, 0);
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Order | null>(null);
+  const today = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    code: "", customer_name: "", representative: "", total_value: 0,
+    status: "rascunho" as Status, order_date: today, notes: "",
+  });
+
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["b2b_orders"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("b2b_orders").select("*").order("order_date", { ascending: false });
+      if (error) throw error;
+      return data as Order[];
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("Não autenticado");
+      if (!form.code.trim()) throw new Error("Código obrigatório");
+      if (!form.customer_name.trim()) throw new Error("Cliente obrigatório");
+      const payload = {
+        owner_id: user.id,
+        code: form.code.trim(),
+        customer_name: form.customer_name.trim(),
+        representative: form.representative.trim() || null,
+        total_value: Number(form.total_value) || 0,
+        status: form.status,
+        order_date: form.order_date || today,
+        notes: form.notes.trim() || null,
+      };
+      if (editing) {
+        const { error } = await supabase.from("b2b_orders").update(payload).eq("id", editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("b2b_orders").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["b2b_orders"] });
+      toast.success(editing ? "Pedido atualizado" : "Pedido criado");
+      reset();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("b2b_orders").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["b2b_orders"] }); toast.success("Removido"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  function reset() {
+    setOpen(false); setEditing(null);
+    setForm({ code: "", customer_name: "", representative: "", total_value: 0, status: "rascunho", order_date: today, notes: "" });
+  }
+
+  function openEdit(o: Order) {
+    setEditing(o);
+    setForm({
+      code: o.code, customer_name: o.customer_name, representative: o.representative ?? "",
+      total_value: o.total_value, status: o.status, order_date: o.order_date, notes: o.notes ?? "",
+    });
+    setOpen(true);
+  }
+
+  const total = items.reduce((acc, o) => acc + Number(o.total_value || 0), 0);
 
   return (
-    <div className="p-6 lg:p-8 space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="size-11 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
-          <Store className="size-5 text-primary-foreground" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Comercial / B2B</h1>
-          <p className="text-sm text-muted-foreground">Portal B2B, pedidos e carteira de clientes</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { l: "Receita 30d",   v: `R$ ${(total/1000).toFixed(0)}k`, d: "+18.2%" },
-          { l: "Pedidos abertos", v: "47", d: "+6" },
-          { l: "Ticket médio",  v: "R$ 5.964", d: "+4.1%" },
-          { l: "Clientes ativos", v: "382", d: "-2.1%" },
-        ].map((k) => (
-          <div key={k.l} className="glass rounded-xl p-5">
-            <div className="text-xs text-muted-foreground">{k.l}</div>
-            <div className="text-2xl font-semibold mt-1 tabular-nums">{k.v}</div>
-            <div className="text-xs text-success mt-0.5">{k.d}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="glass rounded-xl p-5">
-        <div className="flex items-center justify-between mb-3">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-xl bg-primary/10 grid place-items-center"><Store className="size-5 text-primary" /></div>
           <div>
-            <div className="text-sm font-semibold">Vendas — últimos 14 dias</div>
-            <div className="text-xs text-muted-foreground">Receita diária (R$ mil)</div>
+            <h1 className="text-2xl font-semibold">Comercial / B2B</h1>
+            <p className="text-sm text-muted-foreground">Pedidos · carteira total {brl(total)}</p>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={trend}>
-            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.28 0.018 270)" vertical={false} />
-            <XAxis dataKey="d" stroke="oklch(0.68 0.02 270)" fontSize={11} tickLine={false} axisLine={false} />
-            <YAxis stroke="oklch(0.68 0.02 270)" fontSize={11} tickLine={false} axisLine={false} />
-            <Tooltip contentStyle={{ background: "oklch(0.20 0.015 270)", border: "1px solid oklch(0.28 0.018 270)", borderRadius: 8, fontSize: 12 }} />
-            <Line type="monotone" dataKey="v" stroke="oklch(0.72 0.18 295)" strokeWidth={2.5} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
+        <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Novo pedido</Button>
       </div>
 
-      <div className="glass rounded-xl overflow-hidden">
-        <div className="p-5 border-b border-border flex items-center justify-between gap-3 flex-wrap">
-          <div className="text-sm font-semibold">Pedidos recentes</div>
-          <div className="relative max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input value={q} onChange={(e)=>setQ(e.target.value)} placeholder="Buscar cliente ou #pedido…"
-              className="w-72 h-9 pl-8 pr-3 rounded-md bg-muted/60 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-ring/50" />
-          </div>
-        </div>
-        <table className="w-full text-sm">
-          <thead className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/30">
-            <tr>
-              <th className="text-left font-medium px-5 py-2.5">Pedido</th>
-              <th className="text-left font-medium px-5 py-2.5">Cliente</th>
-              <th className="text-left font-medium px-5 py-2.5">Representante</th>
-              <th className="text-left font-medium px-5 py-2.5">Status</th>
-              <th className="text-left font-medium px-5 py-2.5">Data</th>
-              <th className="text-right font-medium px-5 py-2.5">Valor</th>
-              <th className="px-3 py-2.5"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((p) => (
-              <tr key={p.id} className="border-t border-border hover:bg-muted/30 transition-colors">
-                <td className="px-5 py-3 font-medium tabular-nums">{p.id}</td>
-                <td className="px-5 py-3">{p.cliente}</td>
-                <td className="px-5 py-3 text-muted-foreground">{p.rep}</td>
-                <td className="px-5 py-3"><span className={`px-2 py-0.5 rounded text-xs ${statusStyle[p.status]}`}>{p.status}</span></td>
-                <td className="px-5 py-3 text-muted-foreground">{p.data}</td>
-                <td className="px-5 py-3 text-right tabular-nums font-medium">R$ {p.valor.toLocaleString("pt-BR")}</td>
-                <td className="px-3 py-3"><button className="size-7 rounded hover:bg-muted grid place-items-center text-muted-foreground"><MoreHorizontal className="size-4" /></button></td>
+      {isLoading ? <p className="text-muted-foreground">Carregando…</p> : (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="text-left px-4 py-3">Pedido</th>
+                <th className="text-left px-4 py-3">Cliente</th>
+                <th className="text-left px-4 py-3">Rep.</th>
+                <th className="text-right px-4 py-3">Valor</th>
+                <th className="text-left px-4 py-3">Data</th>
+                <th className="text-left px-4 py-3">Status</th>
+                <th className="px-4 py-3"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {items.map(o => (
+                <tr key={o.id} className="border-t border-border hover:bg-muted/20">
+                  <td className="px-4 py-3 font-mono text-xs">{o.code}</td>
+                  <td className="px-4 py-3">{o.customer_name}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{o.representative ?? "—"}</td>
+                  <td className="px-4 py-3 text-right font-medium">{brl(Number(o.total_value))}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{o.order_date}</td>
+                  <td className="px-4 py-3"><Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge></td>
+                  <td className="px-4 py-3 text-right">
+                    {user?.id === o.owner_id && (
+                      <div className="flex gap-1 justify-end">
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(o)}><Pencil className="size-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => del.mutate(o.id)}><Trash2 className="size-4" /></Button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {items.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum pedido ainda</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <Dialog open={open} onOpenChange={(o) => !o && reset()}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editing ? "Editar pedido" : "Novo pedido"}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Código *</Label><Input value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="#5821" /></div>
+              <div><Label>Data</Label><Input type="date" value={form.order_date} onChange={e => setForm({ ...form, order_date: e.target.value })} /></div>
+            </div>
+            <div><Label>Cliente *</Label><Input value={form.customer_name} onChange={e => setForm({ ...form, customer_name: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Representante</Label><Input value={form.representative} onChange={e => setForm({ ...form, representative: e.target.value })} /></div>
+              <div><Label>Valor total</Label><Input type="number" step="0.01" value={form.total_value} onChange={e => setForm({ ...form, total_value: Number(e.target.value) })} /></div>
+            </div>
+            <div>
+              <Label>Status</Label>
+              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Status })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{Object.entries(LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Notas</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={reset}>Cancelar</Button>
+            <Button onClick={() => save.mutate()} disabled={save.isPending}>{save.isPending ? "Salvando…" : "Salvar"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
