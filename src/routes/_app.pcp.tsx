@@ -149,7 +149,12 @@ function PCP() {
             { key: "code", label: "Código" }, { key: "quantity", label: "Quantidade" },
             { key: "progress", label: "Progresso %" }, { key: "due_date", label: "Prazo" },
             { key: "status", label: "Status" }, { key: "notes", label: "Observações" },
-          ])} disabled={!items.length}><Download className="size-4 mr-2" />Exportar CSV</Button>
+          ])} disabled={!items.length}><Download className="size-4 mr-2" />CSV</Button>
+          <Button variant="outline" onClick={() => exportToPdf("ordens-producao", "Ordens de Produção", items.map((o) => ({ ...o, status: LABEL[o.status] })), [
+            { key: "code", label: "Código" }, { key: "quantity", label: "Qtd" },
+            { key: "progress", label: "%" }, { key: "due_date", label: "Prazo" },
+            { key: "status", label: "Status" },
+          ])} disabled={!items.length}><FileText className="size-4 mr-2" />PDF</Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Nova OP</Button>
         </div>
       </div>
