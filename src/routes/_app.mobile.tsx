@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Smartphone, Apple, Download, Star, Bell, ScanLine, MapPin, Wifi } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useRealtime } from "@/hooks/use-realtime";
 
 export const Route = createFileRoute("/_app/mobile")({
   head: () => ({
@@ -19,6 +22,18 @@ const features = [
 ];
 
 function Mobile() {
+  useRealtime("mobile_devices", ["mobile-devices"]);
+  const { data } = useQuery({
+    queryKey: ["mobile-devices"],
+    queryFn: async () => {
+      const { data } = await supabase.from("mobile_devices").select("id, app_version, active");
+      return data ?? [];
+    },
+  });
+  const total = data?.length ?? 0;
+  const ativos = data?.filter((d) => d.active).length ?? 0;
+  const versao = data?.[0]?.app_version ?? "2.4.1";
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex items-center gap-3">
@@ -35,10 +50,10 @@ function Mobile() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-3">
             {[
-              { l: "Downloads", v: "2.4k" },
+              { l: "Downloads", v: total.toLocaleString("pt-BR") },
               { l: "Avaliação", v: "4.8★" },
-              { l: "Usuários ativos", v: "842" },
-              { l: "Versão atual", v: "2.4.1" },
+              { l: "Usuários ativos", v: ativos.toLocaleString("pt-BR") },
+              { l: "Versão atual", v: versao },
             ].map((k) => (
               <div key={k.l} className="glass rounded-xl p-4">
                 <div className="text-xs text-muted-foreground">{k.l}</div>

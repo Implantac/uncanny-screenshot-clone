@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Cpu, Play, Pause, Plus, Activity } from "lucide-react";
+import { Cpu, Play, Pause, Plus, Activity, Loader2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useRealtime } from "@/hooks/use-realtime";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/use-ai")({
   head: () => ({
@@ -11,16 +16,55 @@ export const Route = createFileRoute("/_app/use-ai")({
   component: UseAI,
 });
 
-const agentes = [
-  { nome: "Agente Comprador", desc: "Cota fornecedores e gera pedidos de compra automaticamente",   exec: 1842, status: "Ativo", taxa: "98%", ultima: "há 2 min" },
-  { nome: "Agente PCP",        desc: "Sequencia ordens e balanceia capacidade entre facções",        exec: 624,  status: "Ativo", taxa: "95%", ultima: "há 8 min" },
-  { nome: "Agente Cobrança",   desc: "Aciona clientes inadimplentes via WhatsApp e email",          exec: 312,  status: "Ativo", taxa: "87%", ultima: "há 14 min" },
-  { nome: "Agente Comercial",  desc: "Sugere mix de produtos para cada cliente B2B",                exec: 218,  status: "Ativo", taxa: "92%", ultima: "há 22 min" },
-  { nome: "Agente Estoque",    desc: "Alerta e sugere reposições de itens críticos",                exec: 1204, status: "Ativo", taxa: "99%", ultima: "há 4 min" },
-  { nome: "Agente Tendências", desc: "Monitora redes e reporta tendências para o time de estilo",   exec: 84,   status: "Pausado", taxa: "—", ultima: "há 2 dias" },
-];
+function relTime(iso: string | null) {
+  if (!iso) return "—";
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 60) return `há ${Math.floor(diff)}s`;
+  if (diff < 3600) return `há ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `há ${Math.floor(diff / 3600)} h`;
+  return `há ${Math.floor(diff / 86400)} dias`;
+}
 
 function UseAI() {
+  useRealtime("ai_agents", ["ai-agents"]);
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  const { data, isLoading } = useQuery({
+    queryKey: ["ai-agents"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("ai_agents").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const toggle = useMutation({
+    mutationFn: async (a: { id: string; status: string }) => {
+      const next = a.status === "ativo" ? "pausado" : "ativo";
+      const { error } = await supabase.from("ai_agents").update({ status: next, last_run_at: next === "ativo" ? new Date().toISOString() : undefined }).eq("id", a.id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["ai-agents"] }),
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const create = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("Sessão expirada");
+      const name = window.prompt("Nome do agente:");
+      if (!name) return;
+      const description = window.prompt("Descrição:") ?? "";
+      const { error } = await supabase.from("ai_agents").insert({ owner_id: user.id, name, description, status: "ativo", executions: 0, success_rate: 0 });
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai-agents"] }); toast.success("Agente criado"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const agentes = data ?? [];
+  const ativos = agentes.filter((a) => a.status === "ativo").length;
+  const totalExec = agentes.reduce((s, a) => s + (a.executions ?? 0), 0);
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -30,48 +74,54 @@ function UseAI() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">USE AI</h1>
-            <p className="text-sm text-muted-foreground">{agentes.filter(a=>a.status==="Ativo").length} agentes ativos · {agentes.reduce((s,a)=>s+a.exec,0).toLocaleString("pt-BR")} execuções no mês</p>
+            <p className="text-sm text-muted-foreground">{ativos} agentes ativos · {totalExec.toLocaleString("pt-BR")} execuções</p>
           </div>
         </div>
-        <button className="h-9 px-4 rounded-md text-sm font-medium bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)] inline-flex items-center gap-2">
+        <button onClick={() => create.mutate()} disabled={create.isPending} className="h-9 px-4 rounded-md text-sm font-medium bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)] inline-flex items-center gap-2 disabled:opacity-60">
           <Plus className="size-4" /> Novo agente
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {agentes.map((a) => (
-          <div key={a.nome} className="glass rounded-xl p-5 hover:border-primary/40 transition-colors">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className={`size-10 rounded-lg grid place-items-center shrink-0 ${a.status==="Ativo"?"bg-success/15 text-success":"bg-muted text-muted-foreground"}`}>
-                  {a.status === "Ativo" ? <Activity className="size-5" /> : <Pause className="size-5" />}
+      {isLoading ? (
+        <div className="glass rounded-xl p-12 grid place-items-center text-muted-foreground"><Loader2 className="size-5 animate-spin" /></div>
+      ) : agentes.length === 0 ? (
+        <div className="glass rounded-xl p-12 text-center text-sm text-muted-foreground">Nenhum agente cadastrado. Crie o primeiro.</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {agentes.map((a) => (
+            <div key={a.id} className="glass rounded-xl p-5 hover:border-primary/40 transition-colors">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className={`size-10 rounded-lg grid place-items-center shrink-0 ${a.status === "ativo" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>
+                    {a.status === "ativo" ? <Activity className="size-5" /> : <Pause className="size-5" />}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{a.name}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{a.description}</div>
+                  </div>
+                </div>
+                <button onClick={() => toggle.mutate({ id: a.id, status: a.status })} className="size-8 rounded-md bg-muted hover:bg-muted/70 grid place-items-center text-muted-foreground shrink-0">
+                  {a.status === "ativo" ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-border text-xs">
+                <div>
+                  <div className="text-muted-foreground">Execuções</div>
+                  <div className="font-medium tabular-nums mt-0.5">{(a.executions ?? 0).toLocaleString("pt-BR")}</div>
                 </div>
                 <div>
-                  <div className="font-medium">{a.nome}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{a.desc}</div>
+                  <div className="text-muted-foreground">Sucesso</div>
+                  <div className="font-medium tabular-nums mt-0.5">{a.status === "ativo" ? `${Number(a.success_rate ?? 0).toFixed(0)}%` : "—"}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Última</div>
+                  <div className="font-medium mt-0.5">{relTime(a.last_run_at)}</div>
                 </div>
               </div>
-              <button className="size-8 rounded-md bg-muted hover:bg-muted/70 grid place-items-center text-muted-foreground">
-                {a.status === "Ativo" ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
-              </button>
             </div>
-            <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-border text-xs">
-              <div>
-                <div className="text-muted-foreground">Execuções</div>
-                <div className="font-medium tabular-nums mt-0.5">{a.exec.toLocaleString("pt-BR")}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Sucesso</div>
-                <div className="font-medium tabular-nums mt-0.5">{a.taxa}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Última</div>
-                <div className="font-medium mt-0.5">{a.ultima}</div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_agents: {
+        Row: {
+          created_at: string
+          description: string | null
+          executions: number
+          id: string
+          last_run_at: string | null
+          name: string
+          owner_id: string
+          status: Database["public"]["Enums"]["ai_agent_status"]
+          success_rate: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          executions?: number
+          id?: string
+          last_run_at?: string | null
+          name: string
+          owner_id: string
+          status?: Database["public"]["Enums"]["ai_agent_status"]
+          success_rate?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          executions?: number
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          owner_id?: string
+          status?: Database["public"]["Enums"]["ai_agent_status"]
+          success_rate?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       b2b_orders: {
         Row: {
           code: string
@@ -233,6 +272,42 @@ export type Database = {
           start_date?: string | null
           status?: Database["public"]["Enums"]["campaign_status"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      mobile_devices: {
+        Row: {
+          active: boolean
+          app_version: string
+          created_at: string
+          id: string
+          last_seen_at: string
+          owner_id: string
+          platform: string
+          updated_at: string
+          user_name: string
+        }
+        Insert: {
+          active?: boolean
+          app_version: string
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          owner_id: string
+          platform: string
+          updated_at?: string
+          user_name: string
+        }
+        Update: {
+          active?: boolean
+          app_version?: string
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          owner_id?: string
+          platform?: string
+          updated_at?: string
+          user_name?: string
         }
         Relationships: []
       }
@@ -571,6 +646,7 @@ export type Database = {
     Enums: {
       account_status: "pendente" | "pago" | "atrasado" | "cancelado"
       account_type: "pagar" | "receber"
+      ai_agent_status: "ativo" | "pausado" | "erro"
       app_role: "admin" | "gerente" | "designer" | "comprador" | "vendedor"
       b2b_order_status:
         | "rascunho"
@@ -734,6 +810,7 @@ export const Constants = {
     Enums: {
       account_status: ["pendente", "pago", "atrasado", "cancelado"],
       account_type: ["pagar", "receber"],
+      ai_agent_status: ["ativo", "pausado", "erro"],
       app_role: ["admin", "gerente", "designer", "comprador", "vendedor"],
       b2b_order_status: [
         "rascunho",
