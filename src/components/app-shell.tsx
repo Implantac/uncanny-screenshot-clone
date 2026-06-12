@@ -18,6 +18,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { primary } = useRoles();
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  useEffect(() => { setMobileOpen(false); }, [active]);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
