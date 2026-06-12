@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      b2b_orders: {
+        Row: {
+          code: string
+          created_at: string
+          customer_name: string
+          id: string
+          notes: string | null
+          order_date: string
+          owner_id: string
+          representative: string | null
+          status: Database["public"]["Enums"]["b2b_order_status"]
+          total_value: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          customer_name: string
+          id?: string
+          notes?: string | null
+          order_date?: string
+          owner_id: string
+          representative?: string | null
+          status?: Database["public"]["Enums"]["b2b_order_status"]
+          total_value?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          customer_name?: string
+          id?: string
+          notes?: string | null
+          order_date?: string
+          owner_id?: string
+          representative?: string | null
+          status?: Database["public"]["Enums"]["b2b_order_status"]
+          total_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       collections: {
         Row: {
           cover_path: string | null
@@ -64,6 +106,66 @@ export type Database = {
           year?: number
         }
         Relationships: []
+      }
+      production_orders: {
+        Row: {
+          code: string
+          created_at: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          owner_id: string
+          product_id: string | null
+          progress: number
+          quantity: number
+          status: Database["public"]["Enums"]["production_status"]
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          owner_id: string
+          product_id?: string | null
+          progress?: number
+          quantity?: number
+          status?: Database["public"]["Enums"]["production_status"]
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          product_id?: string | null
+          progress?: number
+          quantity?: number
+          status?: Database["public"]["Enums"]["production_status"]
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -154,6 +256,60 @@ export type Database = {
         }
         Relationships: []
       }
+      prototypes: {
+        Row: {
+          code: string
+          created_at: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          owner_id: string
+          product_id: string | null
+          stage: Database["public"]["Enums"]["prototype_stage"]
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          owner_id: string
+          product_id?: string | null
+          stage?: Database["public"]["Enums"]["prototype_stage"]
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          product_id?: string | null
+          stage?: Database["public"]["Enums"]["prototype_stage"]
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prototypes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prototypes_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           active: boolean
@@ -205,6 +361,50 @@ export type Database = {
         }
         Relationships: []
       }
+      tech_sheets: {
+        Row: {
+          code: string
+          content: string | null
+          created_at: string
+          id: string
+          owner_id: string
+          product_id: string | null
+          status: Database["public"]["Enums"]["tech_sheet_status"]
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          code: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          owner_id: string
+          product_id?: string | null
+          status?: Database["public"]["Enums"]["tech_sheet_status"]
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          code?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string
+          product_id?: string | null
+          status?: Database["public"]["Enums"]["tech_sheet_status"]
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tech_sheets_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -241,6 +441,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "gerente" | "designer" | "comprador" | "vendedor"
+      b2b_order_status:
+        | "rascunho"
+        | "aprovado"
+        | "em_producao"
+        | "faturado"
+        | "cancelado"
       collection_status:
         | "briefing"
         | "design"
@@ -253,6 +459,19 @@ export type Database = {
         | "aprovado"
         | "producao"
         | "descontinuado"
+      production_status:
+        | "aguardando"
+        | "em_producao"
+        | "concluida"
+        | "atrasada"
+        | "cancelada"
+      prototype_stage:
+        | "solicitado"
+        | "em_confeccao"
+        | "em_prova"
+        | "aprovado"
+        | "reprovado"
+      tech_sheet_status: "rascunho" | "em_revisao" | "aprovada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -381,6 +600,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "gerente", "designer", "comprador", "vendedor"],
+      b2b_order_status: [
+        "rascunho",
+        "aprovado",
+        "em_producao",
+        "faturado",
+        "cancelado",
+      ],
       collection_status: [
         "briefing",
         "design",
@@ -395,6 +621,21 @@ export const Constants = {
         "producao",
         "descontinuado",
       ],
+      production_status: [
+        "aguardando",
+        "em_producao",
+        "concluida",
+        "atrasada",
+        "cancelada",
+      ],
+      prototype_stage: [
+        "solicitado",
+        "em_confeccao",
+        "em_prova",
+        "aprovado",
+        "reprovado",
+      ],
+      tech_sheet_status: ["rascunho", "em_revisao", "aprovada"],
     },
   },
 } as const
