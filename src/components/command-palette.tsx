@@ -31,7 +31,7 @@ export function CommandPalette() {
       const [products, collections, suppliers] = await Promise.all([
         supabase.from("products").select("id, sku, name").or(`name.ilike.${like},sku.ilike.${like}`).limit(6),
         supabase.from("collections").select("id, name, season, year").ilike("name", like).limit(6),
-        supabase.from("suppliers").select("id, name, type").ilike("name", like).limit(6),
+        supabase.from("suppliers").select("id, name, category").ilike("name", like).limit(6),
       ]);
       return {
         products: products.data ?? [],
@@ -103,7 +103,7 @@ export function CommandPalette() {
               {data.suppliers.map((s) => (
                 <CommandItem key={s.id} onSelect={() => go("/fornecedores")}>
                   {s.name}
-                  <span className="ml-2 text-xs text-muted-foreground">{s.type}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">{s.category}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
