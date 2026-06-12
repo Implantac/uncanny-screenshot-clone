@@ -30,29 +30,62 @@ function AuthPage() {
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
+    if (!email || !password) {
+      toast.error("Preencha email e senha");
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
     setLoading(false);
-    if (error) toast.error(error.message);
-    else navigate({ to: "/" });
+    if (error) {
+      if (error.message.toLowerCase().includes("invalid")) {
+        toast.error("Email ou senha incorretos");
+      } else if (error.message.toLowerCase().includes("not confirmed")) {
+        toast.error("Confirme seu email antes de entrar");
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
+    navigate({ to: "/" });
   }
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
+    if (!fullName.trim()) {
+      toast.error("Informe seu nome completo");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
-        data: { full_name: fullName },
+        data: { full_name: fullName.trim() },
       },
     });
     setLoading(false);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Conta criada! Verifique seu email.");
+    if (error) {
+      if (error.message.toLowerCase().includes("already")) {
+        toast.error("Este email já está cadastrado. Faça login.");
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
+    if (data.session) {
+      toast.success("Conta criada com sucesso!");
       navigate({ to: "/" });
+    } else {
+      toast.success("Conta criada! Verifique seu email para confirmar.");
     }
   }
 
