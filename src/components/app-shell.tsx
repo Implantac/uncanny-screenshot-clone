@@ -1,0 +1,92 @@
+import { Link, useRouterState } from "@tanstack/react-router";
+import { Search, Bell, Sparkles } from "lucide-react";
+import { MODULES, MODULE_GROUPS } from "@/lib/modules";
+import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
+
+export function AppShell({ children }: { children: ReactNode }) {
+  const { location } = useRouterState();
+  const active = location.pathname;
+
+  return (
+    <div className="flex min-h-screen bg-background text-foreground">
+      <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
+        <div className="flex items-center gap-2 px-5 h-16 border-b border-sidebar-border">
+          <div className="size-8 rounded-lg bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
+            <Sparkles className="size-4 text-primary-foreground" />
+          </div>
+          <div className="leading-tight">
+            <div className="text-sm font-semibold tracking-tight">USE MODA</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Fashion OS</div>
+          </div>
+        </div>
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5 text-sm">
+          {MODULE_GROUPS.map((group) => (
+            <div key={group}>
+              <div className="px-2 mb-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                {group}
+              </div>
+              <ul className="space-y-0.5">
+                {MODULES.filter((m) => m.group === group).map((m) => {
+                  const isActive = active === m.path;
+                  const Icon = m.icon;
+                  return (
+                    <li key={m.slug}>
+                      <Link
+                        to={m.path}
+                        className={cn(
+                          "flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors",
+                          isActive
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                        )}
+                      >
+                        <Icon className={cn("size-4", isActive && "text-primary")} />
+                        <span className="truncate">{m.title}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+        <div className="m-3 p-3 rounded-lg glass">
+          <div className="flex items-center gap-2 text-xs font-medium">
+            <div className="size-2 rounded-full bg-success animate-pulse" />
+            Sistema operacional
+          </div>
+          <div className="mt-1 text-[11px] text-muted-foreground">
+            18 módulos · 99.98% uptime
+          </div>
+        </div>
+      </aside>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-16 border-b border-border flex items-center gap-3 px-5 sticky top-0 z-10 bg-background/80 backdrop-blur">
+          <div className="flex items-center gap-2 flex-1 max-w-md">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <input
+                placeholder="Buscar produtos, coleções, fornecedores…"
+                className="w-full h-9 pl-8 pr-3 rounded-md bg-muted/60 border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+              />
+              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground border border-border rounded px-1.5 py-0.5">⌘K</kbd>
+            </div>
+          </div>
+          <button className="size-9 grid place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+            <Bell className="size-4" />
+          </button>
+          <div className="flex items-center gap-2 pl-3 ml-1 border-l border-border">
+            <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">UM</div>
+            <div className="text-xs leading-tight hidden sm:block">
+              <div className="font-medium">USE Moda</div>
+              <div className="text-muted-foreground">Admin</div>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </div>
+    </div>
+  );
+}
