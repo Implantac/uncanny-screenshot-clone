@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Bot, Send, Sparkles, User } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
+import { Bot, Send, Sparkles, User, Database } from "lucide-react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Markdown } from "@/components/markdown";
+import { buildFashionContext } from "@/lib/fashion-context";
 
 export const Route = createFileRoute("/_app/fashion-gpt")({
   head: () => ({
@@ -17,18 +19,33 @@ export const Route = createFileRoute("/_app/fashion-gpt")({
 });
 
 const suggestions = [
-  "Quais peças têm maior margem na coleção Verão 26?",
-  "Crie um briefing para uma cápsula praia de 12 peças",
-  "Sugira uma paleta de cores para Resort 2026",
-  "Como otimizar o PCP para reduzir o lead time?",
+  "Quais peças têm maior margem hoje?",
+  "Como está minha carteira de pedidos B2B?",
+  "Qual meu saldo financeiro projetado?",
+  "Quais itens do almoxarifado estão em nível crítico?",
 ];
 
 function FashionGPT() {
   const endRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
 
+  const { data: context } = useQuery({
+    queryKey: ["fashion-context"],
+    queryFn: buildFashionContext,
+    staleTime: 60_000,
+  });
+  const contextRef = useRef(context);
+  useEffect(() => { contextRef.current = context; }, [context]);
+
+  const transport = useMemo(() => new DefaultChatTransport({
+    api: "/api/chat",
+    prepareSendMessagesRequest: ({ messages }) => ({
+      body: { messages, context: contextRef.current },
+    }),
+  }), []);
+
   const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    transport,
     onError: (err) => {
       const msg = err.message || "";
       if (msg.includes("429")) toast.error("Muitas requisições. Tente novamente em instantes.");
@@ -55,10 +72,15 @@ function FashionGPT() {
         <div className="size-11 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
           <Bot className="size-5 text-primary-foreground" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-xl font-semibold tracking-tight">Fashion GPT</h1>
           <p className="text-xs text-muted-foreground">Copiloto IA · Gemini 3 Flash</p>
         </div>
+        {context && (
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-emerald-400 glass px-3 py-1.5 rounded-full">
+            <Database className="size-3" /> Conectado aos seus dados
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-6">
