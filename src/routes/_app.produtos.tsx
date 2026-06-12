@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRealtime } from "@/hooks/use-realtime";
 import { Package, Plus, Trash2, Pencil, Sparkles, Tag, Upload, ImageIcon, Loader2, Download } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,6 +83,7 @@ function fmtBRL(n: number) {
 function ProdutosPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  useRealtime("products", ["products"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
 

@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Store, Plus, Trash2, Pencil, Download } from "lucide-react";
+import { useRealtime } from "@/hooks/use-realtime";
+import { Store, Plus, Trash2, Pencil, Download, FileText } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
+import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -41,6 +43,7 @@ const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", curren
 function Comercial() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  useRealtime("b2b_orders", ["b2b_orders"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Order | null>(null);
   const today = new Date().toISOString().slice(0, 10);
@@ -129,7 +132,12 @@ function Comercial() {
             { key: "code", label: "Código" }, { key: "customer_name", label: "Cliente" },
             { key: "representative", label: "Representante" }, { key: "order_date", label: "Data" },
             { key: "status", label: "Status" }, { key: "total_value", label: "Valor" }, { key: "notes", label: "Observações" },
-          ])} disabled={!items.length}><Download className="size-4 mr-2" />Exportar CSV</Button>
+          ])} disabled={!items.length}><Download className="size-4 mr-2" />CSV</Button>
+          <Button variant="outline" onClick={() => exportToPdf("pedidos-b2b", "Pedidos B2B", items.map((o) => ({ ...o, status: LABEL[o.status] })), [
+            { key: "code", label: "Código" }, { key: "customer_name", label: "Cliente" },
+            { key: "representative", label: "Representante" }, { key: "order_date", label: "Data" },
+            { key: "status", label: "Status" }, { key: "total_value", label: "Valor" },
+          ])} disabled={!items.length}><FileText className="size-4 mr-2" />PDF</Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Novo pedido</Button>
         </div>
       </div>

@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Wallet, Plus, Trash2, Pencil, Sparkles, Download } from "lucide-react";
+import { useRealtime } from "@/hooks/use-realtime";
+import { Wallet, Plus, Trash2, Pencil, Sparkles, Download, FileText } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
+import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,7 @@ const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", curren
 function Financeiro() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  useRealtime("financial_accounts", ["financial_accounts"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Account | null>(null);
 
@@ -89,7 +92,12 @@ function Financeiro() {
             { key: "type", label: "Tipo" }, { key: "description", label: "Descrição" },
             { key: "due_date", label: "Vencimento" }, { key: "status", label: "Status" },
             { key: "value", label: "Valor" }, { key: "notes", label: "Observações" },
-          ])} disabled={!rows.length} className="gap-2"><Download className="size-4" />Exportar CSV</Button>
+          ])} disabled={!rows.length} className="gap-2"><Download className="size-4" />CSV</Button>
+          <Button variant="outline" onClick={() => exportToPdf("financeiro", "Financeiro", rows.map((r) => ({ ...r, type: r.type === "receber" ? "Receber" : "Pagar", status: STATUS_LABEL[r.status] })), [
+            { key: "type", label: "Tipo" }, { key: "description", label: "Descrição" },
+            { key: "due_date", label: "Vencimento" }, { key: "status", label: "Status" },
+            { key: "value", label: "Valor" },
+          ])} disabled={!rows.length} className="gap-2"><FileText className="size-4" />PDF</Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
             <Plus className="size-4" /> Novo lançamento
           </Button>

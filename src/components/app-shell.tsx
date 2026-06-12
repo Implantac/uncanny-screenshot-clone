@@ -1,5 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Search, Bell, Sparkles, LogOut, Menu } from "lucide-react";
+import { Sparkles, LogOut, Menu } from "lucide-react";
+import { CommandPalette } from "./command-palette";
+import { NotificationsBell } from "./notifications-bell";
 import { MODULES, MODULE_GROUPS } from "@/lib/modules";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -106,19 +108,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </SheetContent>
           </Sheet>
 
-          <div className="flex items-center gap-2 flex-1 max-w-md min-w-0">
-            <div className="relative flex-1 min-w-0">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <input
-                placeholder="Buscar…"
-                className="w-full h-9 pl-8 pr-3 rounded-md bg-muted/60 border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
-              />
-              <kbd className="hidden sm:block absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground border border-border rounded px-1.5 py-0.5">⌘K</kbd>
-            </div>
-          </div>
-          <button className="hidden sm:grid size-9 place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-            <Bell className="size-4" />
-          </button>
+          <CommandPalette />
+          <NotificationsBell />
           <div className="flex items-center gap-2 pl-2 sm:pl-3 sm:ml-1 sm:border-l border-border">
             <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">{initials || "U"}</div>
             <div className="text-xs leading-tight hidden md:block">
