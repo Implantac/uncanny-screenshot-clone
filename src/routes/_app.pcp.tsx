@@ -144,11 +144,11 @@ function PCP() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => exportToCsv("ordens-producao", orders.map((o) => ({ ...o, status: LABEL[o.status] })), [
+          <Button variant="outline" onClick={() => exportToCsv("ordens-producao", items.map((o) => ({ ...o, status: LABEL[o.status] })), [
             { key: "code", label: "Código" }, { key: "quantity", label: "Quantidade" },
             { key: "progress", label: "Progresso %" }, { key: "due_date", label: "Prazo" },
             { key: "status", label: "Status" }, { key: "notes", label: "Observações" },
-          ])} disabled={!orders.length}><Download className="size-4 mr-2" />Exportar CSV</Button>
+          ])} disabled={!items.length}><Download className="size-4 mr-2" />Exportar CSV</Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Nova OP</Button>
         </div>
       </div>
