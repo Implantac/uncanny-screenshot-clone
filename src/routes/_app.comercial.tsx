@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Store, Plus, Trash2, Pencil } from "lucide-react";
+import { Store, Plus, Trash2, Pencil, Download } from "lucide-react";
+import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -123,7 +124,14 @@ function Comercial() {
             <p className="text-sm text-muted-foreground">Pedidos · carteira total {brl(total)}</p>
           </div>
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Novo pedido</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => exportToCsv("pedidos-b2b", items.map((o) => ({ ...o, status: LABEL[o.status] })), [
+            { key: "code", label: "Código" }, { key: "customer_name", label: "Cliente" },
+            { key: "representative", label: "Representante" }, { key: "order_date", label: "Data" },
+            { key: "status", label: "Status" }, { key: "total_value", label: "Valor" }, { key: "notes", label: "Observações" },
+          ])} disabled={!items.length}><Download className="size-4 mr-2" />Exportar CSV</Button>
+          <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Novo pedido</Button>
+        </div>
       </div>
 
       {isLoading ? <p className="text-muted-foreground">Carregando…</p> : (
