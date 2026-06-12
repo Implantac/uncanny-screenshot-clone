@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Boxes, AlertTriangle, Search, Plus, Trash2, Pencil, Sparkles } from "lucide-react";
+import { Boxes, AlertTriangle, Search, Plus, Trash2, Pencil, Sparkles, Download } from "lucide-react";
+import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -75,9 +76,16 @@ function Almoxarifado() {
             <p className="text-sm text-muted-foreground">{items.length} SKUs · {criticos} em nível crítico</p>
           </div>
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
-          <Plus className="size-4" /> Novo item
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => exportToCsv("almoxarifado", items, [
+            { key: "sku", label: "SKU" }, { key: "name", label: "Nome" }, { key: "category", label: "Categoria" },
+            { key: "deposit", label: "Depósito" }, { key: "unit", label: "Unidade" },
+            { key: "balance", label: "Saldo" }, { key: "minimum", label: "Mínimo" }, { key: "notes", label: "Observações" },
+          ])} disabled={!items.length} className="gap-2"><Download className="size-4" />Exportar CSV</Button>
+          <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
+            <Plus className="size-4" /> Novo item
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
