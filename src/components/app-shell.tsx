@@ -1,5 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Search, Bell, Sparkles, LogOut, Menu } from "lucide-react";
+import { Sparkles, LogOut, Menu } from "lucide-react";
+import { CommandPalette } from "./command-palette";
+import { NotificationsBell } from "./notifications-bell";
 import { MODULES, MODULE_GROUPS } from "@/lib/modules";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
