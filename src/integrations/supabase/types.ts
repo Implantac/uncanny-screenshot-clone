@@ -107,6 +107,135 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_accounts: {
+        Row: {
+          created_at: string
+          description: string
+          due_date: string
+          id: string
+          notes: string | null
+          owner_id: string
+          status: Database["public"]["Enums"]["account_status"]
+          type: Database["public"]["Enums"]["account_type"]
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          due_date: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          status?: Database["public"]["Enums"]["account_status"]
+          type: Database["public"]["Enums"]["account_type"]
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          due_date?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          status?: Database["public"]["Enums"]["account_status"]
+          type?: Database["public"]["Enums"]["account_type"]
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      inventory_items: {
+        Row: {
+          balance: number
+          category: Database["public"]["Enums"]["inventory_category"]
+          created_at: string
+          deposit: string | null
+          id: string
+          minimum: number
+          name: string
+          notes: string | null
+          owner_id: string
+          sku: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          category?: Database["public"]["Enums"]["inventory_category"]
+          created_at?: string
+          deposit?: string | null
+          id?: string
+          minimum?: number
+          name: string
+          notes?: string | null
+          owner_id: string
+          sku: string
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          category?: Database["public"]["Enums"]["inventory_category"]
+          created_at?: string
+          deposit?: string | null
+          id?: string
+          minimum?: number
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          sku?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      marketing_campaigns: {
+        Row: {
+          channel: string | null
+          created_at: string
+          end_date: string | null
+          id: string
+          investment: number
+          name: string
+          notes: string | null
+          owner_id: string
+          roas: number
+          start_date: string | null
+          status: Database["public"]["Enums"]["campaign_status"]
+          updated_at: string
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          investment?: number
+          name: string
+          notes?: string | null
+          owner_id: string
+          roas?: number
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"]
+          updated_at?: string
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          investment?: number
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          roas?: number
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       production_orders: {
         Row: {
           code: string
@@ -440,6 +569,8 @@ export type Database = {
       }
     }
     Enums: {
+      account_status: "pendente" | "pago" | "atrasado" | "cancelado"
+      account_type: "pagar" | "receber"
       app_role: "admin" | "gerente" | "designer" | "comprador" | "vendedor"
       b2b_order_status:
         | "rascunho"
@@ -447,12 +578,14 @@ export type Database = {
         | "em_producao"
         | "faturado"
         | "cancelado"
+      campaign_status: "programada" | "ativa" | "pausada" | "concluida"
       collection_status:
         | "briefing"
         | "design"
         | "desenvolvimento"
         | "producao"
         | "entregue"
+      inventory_category: "tecido" | "aviamento" | "acabado" | "outros"
       product_status:
         | "rascunho"
         | "desenvolvimento"
@@ -599,6 +732,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_status: ["pendente", "pago", "atrasado", "cancelado"],
+      account_type: ["pagar", "receber"],
       app_role: ["admin", "gerente", "designer", "comprador", "vendedor"],
       b2b_order_status: [
         "rascunho",
@@ -607,6 +742,7 @@ export const Constants = {
         "faturado",
         "cancelado",
       ],
+      campaign_status: ["programada", "ativa", "pausada", "concluida"],
       collection_status: [
         "briefing",
         "design",
@@ -614,6 +750,7 @@ export const Constants = {
         "producao",
         "entregue",
       ],
+      inventory_category: ["tecido", "aviamento", "acabado", "outros"],
       product_status: [
         "rascunho",
         "desenvolvimento",
