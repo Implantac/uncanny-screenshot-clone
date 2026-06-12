@@ -24,6 +24,7 @@ import { Route as AppFornecedoresRouteImport } from './routes/_app.fornecedores'
 import { Route as AppFinanceiroRouteImport } from './routes/_app.financeiro'
 import { Route as AppFichaTecnicaRouteImport } from './routes/_app.ficha-tecnica'
 import { Route as AppFashionGptRouteImport } from './routes/_app.fashion-gpt'
+import { Route as AppEquipeRouteImport } from './routes/_app.equipe'
 import { Route as AppDppRouteImport } from './routes/_app.dpp'
 import { Route as AppComercialRouteImport } from './routes/_app.comercial'
 import { Route as AppColecoesRouteImport } from './routes/_app.colecoes'
@@ -105,6 +106,11 @@ const AppFashionGptRoute = AppFashionGptRouteImport.update({
   path: '/fashion-gpt',
   getParentRoute: () => AppRoute,
 } as any)
+const AppEquipeRoute = AppEquipeRouteImport.update({
+  id: '/equipe',
+  path: '/equipe',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDppRoute = AppDppRouteImport.update({
   id: '/dpp',
   path: '/dpp',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
   '/dpp': typeof AppDppRoute
+  '/equipe': typeof AppEquipeRoute
   '/fashion-gpt': typeof AppFashionGptRoute
   '/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/financeiro': typeof AppFinanceiroRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
   '/dpp': typeof AppDppRoute
+  '/equipe': typeof AppEquipeRoute
   '/fashion-gpt': typeof AppFashionGptRoute
   '/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/financeiro': typeof AppFinanceiroRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/_app/colecoes': typeof AppColecoesRoute
   '/_app/comercial': typeof AppComercialRoute
   '/_app/dpp': typeof AppDppRoute
+  '/_app/equipe': typeof AppEquipeRoute
   '/_app/fashion-gpt': typeof AppFashionGptRoute
   '/_app/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/_app/financeiro': typeof AppFinanceiroRoute
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
     | '/colecoes'
     | '/comercial'
     | '/dpp'
+    | '/equipe'
     | '/fashion-gpt'
     | '/ficha-tecnica'
     | '/financeiro'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/colecoes'
     | '/comercial'
     | '/dpp'
+    | '/equipe'
     | '/fashion-gpt'
     | '/ficha-tecnica'
     | '/financeiro'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/_app/colecoes'
     | '/_app/comercial'
     | '/_app/dpp'
+    | '/_app/equipe'
     | '/_app/fashion-gpt'
     | '/_app/ficha-tecnica'
     | '/_app/financeiro'
@@ -387,6 +399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFashionGptRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/equipe': {
+      id: '/_app/equipe'
+      path: '/equipe'
+      fullPath: '/equipe'
+      preLoaderRoute: typeof AppEquipeRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dpp': {
       id: '/_app/dpp'
       path: '/dpp'
@@ -439,6 +458,7 @@ interface AppRouteChildren {
   AppColecoesRoute: typeof AppColecoesRoute
   AppComercialRoute: typeof AppComercialRoute
   AppDppRoute: typeof AppDppRoute
+  AppEquipeRoute: typeof AppEquipeRoute
   AppFashionGptRoute: typeof AppFashionGptRoute
   AppFichaTecnicaRoute: typeof AppFichaTecnicaRoute
   AppFinanceiroRoute: typeof AppFinanceiroRoute
@@ -460,6 +480,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppColecoesRoute: AppColecoesRoute,
   AppComercialRoute: AppComercialRoute,
   AppDppRoute: AppDppRoute,
+  AppEquipeRoute: AppEquipeRoute,
   AppFashionGptRoute: AppFashionGptRoute,
   AppFichaTecnicaRoute: AppFichaTecnicaRoute,
   AppFinanceiroRoute: AppFinanceiroRoute,

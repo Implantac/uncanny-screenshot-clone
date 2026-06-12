@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Layers, Sparkles, FileText, PenTool, Scissors,
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
-  Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, type LucideIcon,
+  Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleDef = {
@@ -33,6 +33,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "dpp", path: "/dpp", title: "Digital Product Passport", short: "Rastreabilidade", description: "Passaporte digital e compliance ESG.", icon: ShieldCheck, group: "Plataforma" },
   { slug: "showroom", path: "/showroom", title: "Showroom Digital", short: "Vitrine 3D", description: "Showroom virtual com lookbooks interativos.", icon: MonitorPlay, group: "Plataforma" },
   { slug: "mobile", path: "/mobile", title: "Aplicativo Mobile", short: "App para times", description: "App nativo para campo, fábrica e vendedores.", icon: Smartphone, group: "Plataforma" },
+  { slug: "equipe", path: "/equipe", title: "Equipe & Permissões", short: "Usuários e papéis", description: "Gerencie usuários e atribua papéis (admin).", icon: Users, group: "Plataforma" },
 ];
 
 export const MODULE_GROUPS: ModuleDef["group"][] = [
