@@ -130,7 +130,12 @@ function Comercial() {
             { key: "code", label: "Código" }, { key: "customer_name", label: "Cliente" },
             { key: "representative", label: "Representante" }, { key: "order_date", label: "Data" },
             { key: "status", label: "Status" }, { key: "total_value", label: "Valor" }, { key: "notes", label: "Observações" },
-          ])} disabled={!items.length}><Download className="size-4 mr-2" />Exportar CSV</Button>
+          ])} disabled={!items.length}><Download className="size-4 mr-2" />CSV</Button>
+          <Button variant="outline" onClick={() => exportToPdf("pedidos-b2b", "Pedidos B2B", items.map((o) => ({ ...o, status: LABEL[o.status] })), [
+            { key: "code", label: "Código" }, { key: "customer_name", label: "Cliente" },
+            { key: "representative", label: "Representante" }, { key: "order_date", label: "Data" },
+            { key: "status", label: "Status" }, { key: "total_value", label: "Valor" },
+          ])} disabled={!items.length}><FileText className="size-4 mr-2" />PDF</Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Novo pedido</Button>
         </div>
       </div>
