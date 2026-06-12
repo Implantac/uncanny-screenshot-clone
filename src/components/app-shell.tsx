@@ -1,11 +1,12 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Sparkles, LogOut, Menu } from "lucide-react";
+import { Sparkles, LogOut, Menu, Sun, Moon } from "lucide-react";
 import { CommandPalette } from "./command-palette";
 import { NotificationsBell } from "./notifications-bell";
 import { MODULES, MODULE_GROUPS } from "@/lib/modules";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useRoles } from "@/hooks/use-role";
+import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useState, useEffect, type ReactNode } from "react";
@@ -20,6 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { primary } = useRoles();
   const navigate = useNavigate();
+  const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => { setMobileOpen(false); }, [active]);
 
@@ -109,6 +111,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Sheet>
 
           <CommandPalette />
+          <button
+            onClick={toggle}
+            title={theme === "dark" ? "Modo claro" : "Modo escuro"}
+            className="size-9 grid place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </button>
           <NotificationsBell />
           <div className="flex items-center gap-2 pl-2 sm:pl-3 sm:ml-1 sm:border-l border-border">
             <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">{initials || "U"}</div>
