@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      collections: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          launch_date: string | null
+          name: string
+          owner_id: string
+          palette: string[] | null
+          progress: number
+          season: string
+          status: Database["public"]["Enums"]["collection_status"]
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          launch_date?: string | null
+          name: string
+          owner_id: string
+          palette?: string[] | null
+          progress?: number
+          season: string
+          status?: Database["public"]["Enums"]["collection_status"]
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          launch_date?: string | null
+          name?: string
+          owner_id?: string
+          palette?: string[] | null
+          progress?: number
+          season?: string
+          status?: Database["public"]["Enums"]["collection_status"]
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -77,6 +125,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "gerente" | "designer" | "comprador" | "vendedor"
+      collection_status:
+        | "briefing"
+        | "design"
+        | "desenvolvimento"
+        | "producao"
+        | "entregue"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -205,6 +259,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "gerente", "designer", "comprador", "vendedor"],
+      collection_status: [
+        "briefing",
+        "design",
+        "desenvolvimento",
+        "producao",
+        "entregue",
+      ],
     },
   },
 } as const
