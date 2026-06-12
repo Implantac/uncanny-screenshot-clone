@@ -141,6 +141,7 @@ function ProdutosPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {products.map((p) => (
             <div key={p.id} className="glass rounded-xl p-5 flex flex-col gap-3 hover:border-primary/40 transition-colors">
+              <ProductImage path={p.image_url} />
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <h3 className="font-semibold truncate">{p.name}</h3>
