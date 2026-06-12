@@ -81,9 +81,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais." },
       { name: "author", content: "USE MODA" },
       { property: "og:title", content: "USE MODA OS · Fashion Operating System" },
-      { property: "og:description", content: "Fashion OS unificando PLM, ERP, PCP, Supply Chain, BI e IA em uma única plataforma." },
+      { property: "og:description", content: "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "USE MODA OS · Fashion Operating System" },
+      { name: "twitter:description", content: "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/028610a0-21d7-4f09-bc66-0a93cd1c264f/id-preview-00d18732--3318cfc8-a95b-4ad3-b0e3-ef230cc84289.lovable.app-1781237838276.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/028610a0-21d7-4f09-bc66-0a93cd1c264f/id-preview-00d18732--3318cfc8-a95b-4ad3-b0e3-ef230cc84289.lovable.app-1781237838276.png" },
     ],
     links: [
       {
