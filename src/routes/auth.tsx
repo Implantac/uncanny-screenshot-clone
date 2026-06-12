@@ -41,10 +41,14 @@ function AuthPage() {
     });
     setLoading(false);
     if (error) {
-      if (error.message.toLowerCase().includes("invalid")) {
+      const msg = error.message.toLowerCase();
+      const code = (error as { code?: string }).code?.toLowerCase() ?? "";
+      if (code === "email_not_confirmed" || msg.includes("not confirmed") || msg.includes("email not confirmed")) {
+        toast.error("Email não confirmado. Verifique sua caixa de entrada para ativar a conta.");
+      } else if (code === "invalid_credentials" || msg.includes("invalid login") || msg.includes("invalid")) {
         toast.error("Email ou senha incorretos");
-      } else if (error.message.toLowerCase().includes("not confirmed")) {
-        toast.error("Confirme seu email antes de entrar");
+      } else if (msg.includes("rate") || msg.includes("too many")) {
+        toast.error("Muitas tentativas. Aguarde alguns instantes e tente novamente.");
       } else {
         toast.error(error.message);
       }
@@ -74,8 +78,18 @@ function AuthPage() {
     });
     setLoading(false);
     if (error) {
-      if (error.message.toLowerCase().includes("already")) {
+      const msg = error.message.toLowerCase();
+      const code = (error as { code?: string }).code?.toLowerCase() ?? "";
+      if (code.includes("already") || msg.includes("already registered") || msg.includes("already exists") || msg.includes("user already")) {
         toast.error("Este email já está cadastrado. Faça login.");
+      } else if (code === "weak_password" || msg.includes("weak") || msg.includes("password should") || msg.includes("password is too")) {
+        toast.error("Senha muito fraca. Use pelo menos 6 caracteres, combinando letras e números.");
+      } else if (code === "validation_failed" || msg.includes("invalid email") || msg.includes("email address")) {
+        toast.error("Email inválido. Verifique o endereço informado.");
+      } else if (msg.includes("signup") && msg.includes("disabled")) {
+        toast.error("Cadastro desabilitado no momento. Contate o administrador.");
+      } else if (msg.includes("rate") || msg.includes("too many")) {
+        toast.error("Muitas tentativas. Aguarde alguns instantes e tente novamente.");
       } else {
         toast.error(error.message);
       }
