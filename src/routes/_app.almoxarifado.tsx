@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRealtime } from "@/hooks/use-realtime";
 import { Boxes, AlertTriangle, Search, Plus, Trash2, Pencil, Sparkles, Download } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +38,7 @@ const CAT_LABEL: Record<Category, string> = {
 function Almoxarifado() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  useRealtime("inventory_items", ["inventory_items"]);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Item | null>(null);

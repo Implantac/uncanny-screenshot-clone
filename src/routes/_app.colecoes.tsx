@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRealtime } from "@/hooks/use-realtime";
 import { Layers, Plus, Calendar, Sparkles, Trash2, Pencil, ImagePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -74,6 +75,7 @@ const STATUS_COLORS: Record<Collection["status"], string> = {
 function ColecoesPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  useRealtime("collections", ["collections"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
 

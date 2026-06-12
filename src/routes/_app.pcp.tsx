@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRealtime } from "@/hooks/use-realtime";
 import { Factory, Plus, Trash2, Pencil, Download, FileText } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { exportToPdf } from "@/lib/pdf";
@@ -42,6 +43,7 @@ const COLOR: Record<Status, string> = {
 function PCP() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  useRealtime("production_orders", ["production_orders"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Order | null>(null);
   const [form, setForm] = useState({

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRealtime } from "@/hooks/use-realtime";
 import { Store, Plus, Trash2, Pencil, Download, FileText } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { exportToPdf } from "@/lib/pdf";
@@ -42,6 +43,7 @@ const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", curren
 function Comercial() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  useRealtime("b2b_orders", ["b2b_orders"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Order | null>(null);
   const today = new Date().toISOString().slice(0, 10);
