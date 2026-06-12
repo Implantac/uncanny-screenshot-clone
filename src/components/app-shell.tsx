@@ -21,6 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { primary } = useRoles();
   const navigate = useNavigate();
+  const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => { setMobileOpen(false); }, [active]);
 
