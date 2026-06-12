@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Bot, Send, Sparkles, User } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
+import { Bot, Send, Sparkles, User, Database } from "lucide-react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Markdown } from "@/components/markdown";
+import { buildFashionContext } from "@/lib/fashion-context";
 
 export const Route = createFileRoute("/_app/fashion-gpt")({
   head: () => ({
@@ -17,18 +19,33 @@ export const Route = createFileRoute("/_app/fashion-gpt")({
 });
 
 const suggestions = [
-  "Quais peças têm maior margem na coleção Verão 26?",
-  "Crie um briefing para uma cápsula praia de 12 peças",
-  "Sugira uma paleta de cores para Resort 2026",
-  "Como otimizar o PCP para reduzir o lead time?",
+  "Quais peças têm maior margem hoje?",
+  "Como está minha carteira de pedidos B2B?",
+  "Qual meu saldo financeiro projetado?",
+  "Quais itens do almoxarifado estão em nível crítico?",
 ];
 
 function FashionGPT() {
   const endRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
 
+  const { data: context } = useQuery({
+    queryKey: ["fashion-context"],
+    queryFn: buildFashionContext,
+    staleTime: 60_000,
+  });
+  const contextRef = useRef(context);
+  useEffect(() => { contextRef.current = context; }, [context]);
+
+  const transport = useMemo(() => new DefaultChatTransport({
+    api: "/api/chat",
+    prepareSendMessagesRequest: ({ messages }) => ({
+      body: { messages, context: contextRef.current },
+    }),
+  }), []);
+
   const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    transport,
     onError: (err) => {
       const msg = err.message || "";
       if (msg.includes("429")) toast.error("Muitas requisições. Tente novamente em instantes.");

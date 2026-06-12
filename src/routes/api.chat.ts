@@ -17,7 +17,8 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { messages } = (await request.json()) as { messages?: UIMessage[] };
+        const body = (await request.json()) as { messages?: UIMessage[]; context?: unknown };
+        const { messages, context } = body;
         if (!Array.isArray(messages)) {
           return new Response("Messages are required", { status: 400 });
         }
@@ -27,9 +28,13 @@ export const Route = createFileRoute("/api/chat")({
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-3-flash-preview");
 
+        const contextBlock = context
+          ? `\n\n## Contexto atual da operação (dados reais do usuário, formato JSON)\n\`\`\`json\n${JSON.stringify(context, null, 2)}\n\`\`\`\nUse esses dados sempre que a pergunta envolver produtos, pedidos, financeiro, estoque ou coleções. Cite números reais quando relevante.`
+          : "";
+
         const result = streamText({
           model,
-          system: SYSTEM_PROMPT,
+          system: SYSTEM_PROMPT + contextBlock,
           messages: await convertToModelMessages(messages),
         });
 
