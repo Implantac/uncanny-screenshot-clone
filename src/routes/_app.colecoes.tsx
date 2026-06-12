@@ -242,6 +242,19 @@ function CollectionDialog({
   const saveMut = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error("Sessão expirada");
+
+      let coverPath: string | null | undefined = undefined;
+      if (coverFile) {
+        if (coverFile.size > 5 * 1024 * 1024) throw new Error("Imagem deve ter no máximo 5MB");
+        const ext = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("collection-covers")
+          .upload(path, coverFile, { contentType: coverFile.type });
+        if (upErr) throw upErr;
+        coverPath = path;
+      }
+
       const payload = {
         name,
         season,
@@ -251,10 +264,14 @@ function CollectionDialog({
         palette: paletteStr.split(",").map((s) => s.trim()).filter(Boolean),
         launch_date: launchDate || null,
         progress,
+        ...(coverPath !== undefined ? { cover_path: coverPath } : {}),
       };
       if (editing) {
         const { error } = await supabase.from("collections").update(payload).eq("id", editing.id);
         if (error) throw error;
+        if (coverPath && editing.cover_path) {
+          await supabase.storage.from("collection-covers").remove([editing.cover_path]);
+        }
       } else {
         const { error } = await supabase.from("collections").insert({ ...payload, owner_id: userId });
         if (error) throw error;
@@ -312,6 +329,12 @@ function CollectionDialog({
           <div className="space-y-2">
             <Label>Descrição</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Conceito, inspirações…" />
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5"><ImagePlus className="size-4" /> Imagem de capa</Label>
+            <Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} />
+            {coverFile && <p className="text-xs text-muted-foreground truncate">{coverFile.name}</p>}
+            {!coverFile && editing?.cover_path && <p className="text-xs text-muted-foreground">Já possui capa — envie outra para substituir.</p>}
           </div>
           <div className="space-y-2">
             <Label>Paleta (cores separadas por vírgula)</Label>
