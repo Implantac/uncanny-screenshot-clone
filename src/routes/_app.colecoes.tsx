@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Layers, Plus, Calendar, Sparkles, Trash2, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -191,18 +191,21 @@ function CollectionDialog({
   const [launchDate, setLaunchDate] = useState("");
   const [progress, setProgress] = useState(0);
 
-  // reset on open
-  useState(() => {});
-  if (open && editing && name === "" && editing.name !== "") {
-    setName(editing.name);
-    setSeason(editing.season);
-    setYear(editing.year);
-    setStatus(editing.status);
-    setDescription(editing.description || "");
-    setPaletteStr(editing.palette.join(", "));
-    setLaunchDate(editing.launch_date || "");
-    setProgress(editing.progress);
-  }
+  useEffect(() => {
+    if (open && editing) {
+      setName(editing.name);
+      setSeason(editing.season);
+      setYear(editing.year);
+      setStatus(editing.status);
+      setDescription(editing.description || "");
+      setPaletteStr(editing.palette.join(", "));
+      setLaunchDate(editing.launch_date || "");
+      setProgress(editing.progress);
+    } else if (open && !editing) {
+      resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editing]);
 
   function resetForm() {
     setName("");
