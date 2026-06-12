@@ -3,6 +3,7 @@ import { Bell, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "@tanstack/react-router";
+import { useRealtime } from "@/hooks/use-realtime";
 
 export function NotificationsBell() {
   const { data } = useQuery({
@@ -18,6 +19,8 @@ export function NotificationsBell() {
       return { critical, overdue: ops ?? [] };
     },
   });
+  useRealtime("inventory_items", ["notifications"]);
+  useRealtime("production_orders", ["notifications"]);
 
   const total = (data?.critical.length ?? 0) + (data?.overdue.length ?? 0);
 
