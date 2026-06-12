@@ -111,6 +111,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Sheet>
 
           <CommandPalette />
+          <button
+            onClick={toggle}
+            title={theme === "dark" ? "Modo claro" : "Modo escuro"}
+            className="size-9 grid place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </button>
           <NotificationsBell />
           <div className="flex items-center gap-2 pl-2 sm:pl-3 sm:ml-1 sm:border-l border-border">
             <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">{initials || "U"}</div>
