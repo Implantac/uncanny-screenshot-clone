@@ -68,6 +68,8 @@ function AuthPage() {
     }
     if (result.redirected) return;
     navigate({ to: "/" });
+  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/10 px-4">
