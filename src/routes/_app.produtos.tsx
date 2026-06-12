@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Package, Plus, Trash2, Pencil, Sparkles, Tag, Upload, ImageIcon, Loader2 } from "lucide-react";
+import { Package, Plus, Trash2, Pencil, Sparkles, Tag, Upload, ImageIcon, Loader2, Download } from "lucide-react";
+import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -123,9 +124,16 @@ function ProdutosPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Catálogo completo — do rascunho à produção.</p>
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
-          <Plus className="size-4" /> Novo Produto
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => exportToCsv("produtos", products.map((p) => ({ ...p, status: STATUS_LABELS[p.status] })), [
+            { key: "sku", label: "SKU" }, { key: "name", label: "Nome" }, { key: "category", label: "Categoria" },
+            { key: "status", label: "Status" }, { key: "cost_price", label: "Custo" }, { key: "sell_price", label: "Venda" },
+            { key: "sizes", label: "Tamanhos" }, { key: "colors", label: "Cores" }, { key: "description", label: "Descrição" },
+          ])} disabled={!products.length} className="gap-2"><Download className="size-4" />Exportar CSV</Button>
+          <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
+            <Plus className="size-4" /> Novo Produto
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
