@@ -139,6 +139,7 @@ function ColecoesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {collections.map((c) => (
             <div key={c.id} className="glass rounded-xl p-5 flex flex-col gap-3 hover:border-primary/40 transition-colors">
+              {c.cover_path && <CoverImage path={c.cover_path} alt={`Capa da coleção ${c.name}`} />}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <h3 className="font-semibold truncate">{c.name}</h3>
@@ -207,6 +208,7 @@ function CollectionDialog({
   const [paletteStr, setPaletteStr] = useState("");
   const [launchDate, setLaunchDate] = useState("");
   const [progress, setProgress] = useState(0);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (open && editing) {
@@ -218,6 +220,7 @@ function CollectionDialog({
       setPaletteStr(editing.palette.join(", "));
       setLaunchDate(editing.launch_date || "");
       setProgress(editing.progress);
+      setCoverFile(null);
     } else if (open && !editing) {
       resetForm();
     }
@@ -233,6 +236,7 @@ function CollectionDialog({
     setPaletteStr("");
     setLaunchDate("");
     setProgress(0);
+    setCoverFile(null);
   }
 
   const saveMut = useMutation({
