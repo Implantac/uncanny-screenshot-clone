@@ -21,7 +21,7 @@ const passaportes = [
 
 function DPP() {
   return (
-    <div className="p-6 lg:p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex items-center gap-3">
         <div className="size-11 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
           <ShieldCheck className="size-5 text-primary-foreground" />
