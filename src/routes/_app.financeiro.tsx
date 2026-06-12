@@ -90,7 +90,12 @@ function Financeiro() {
             { key: "type", label: "Tipo" }, { key: "description", label: "Descrição" },
             { key: "due_date", label: "Vencimento" }, { key: "status", label: "Status" },
             { key: "value", label: "Valor" }, { key: "notes", label: "Observações" },
-          ])} disabled={!rows.length} className="gap-2"><Download className="size-4" />Exportar CSV</Button>
+          ])} disabled={!rows.length} className="gap-2"><Download className="size-4" />CSV</Button>
+          <Button variant="outline" onClick={() => exportToPdf("financeiro", "Financeiro", rows.map((r) => ({ ...r, type: r.type === "receber" ? "Receber" : "Pagar", status: STATUS_LABEL[r.status] })), [
+            { key: "type", label: "Tipo" }, { key: "description", label: "Descrição" },
+            { key: "due_date", label: "Vencimento" }, { key: "status", label: "Status" },
+            { key: "value", label: "Valor" },
+          ])} disabled={!rows.length} className="gap-2"><FileText className="size-4" />PDF</Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
             <Plus className="size-4" /> Novo lançamento
           </Button>
