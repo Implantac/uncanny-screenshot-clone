@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { ArrowUpRight, Package, Factory, Users, CircleDollarSign, AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
 import { MODULES } from "@/lib/modules";
