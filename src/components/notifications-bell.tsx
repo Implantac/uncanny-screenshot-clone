@@ -19,6 +19,8 @@ export function NotificationsBell() {
       return { critical, overdue: ops ?? [] };
     },
   });
+  useRealtime("inventory_items", ["notifications"]);
+  useRealtime("production_orders", ["notifications"]);
 
   const total = (data?.critical.length ?? 0) + (data?.overdue.length ?? 0);
 
