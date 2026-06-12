@@ -77,14 +77,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "USE MODA OS · Fashion Operating System" },
+      { name: "description", content: "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais." },
+      { name: "author", content: "USE MODA" },
+      { property: "og:title", content: "USE MODA OS · Fashion Operating System" },
+      { property: "og:description", content: "Fashion OS unificando PLM, ERP, PCP, Supply Chain, BI e IA em uma única plataforma." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       {
