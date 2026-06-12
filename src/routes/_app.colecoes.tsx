@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Layers, Plus, Calendar, Sparkles, Trash2, Pencil } from "lucide-react";
+import { Layers, Plus, Calendar, Sparkles, Trash2, Pencil, ImagePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -35,8 +35,25 @@ type Collection = {
   palette: string[];
   launch_date: string | null;
   progress: number;
+  cover_path: string | null;
   created_at: string;
 };
+
+function CoverImage({ path, alt }: { path: string; alt: string }) {
+  const { data: url } = useQuery({
+    queryKey: ["cover-url", path],
+    queryFn: async () => {
+      const { data, error } = await supabase.storage
+        .from("collection-covers")
+        .createSignedUrl(path, 60 * 60);
+      if (error) throw error;
+      return data.signedUrl;
+    },
+    staleTime: 50 * 60 * 1000,
+  });
+  if (!url) return <div className="h-36 rounded-lg bg-muted animate-pulse" />;
+  return <img src={url} alt={alt} className="h-36 w-full object-cover rounded-lg" loading="lazy" />;
+}
 
 const STATUS_LABELS: Record<Collection["status"], string> = {
   briefing: "Briefing",
