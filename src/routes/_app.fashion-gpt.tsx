@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { toast } from "sonner";
+import { Markdown } from "@/components/markdown";
 
 export const Route = createFileRoute("/_app/fashion-gpt")({
   head: () => ({
@@ -80,7 +81,11 @@ function FashionGPT() {
                   {m.role === "user" ? <User className="size-4" /> : <Sparkles className="size-4 text-primary-foreground" />}
                 </div>
                 <div className={`rounded-2xl px-4 py-2.5 max-w-[80%] text-sm leading-relaxed ${m.role === "user" ? "bg-primary text-primary-foreground" : "glass"}`}>
-                  <div className="whitespace-pre-wrap">{text}</div>
+                  {m.role === "user" ? (
+                    <div className="whitespace-pre-wrap">{text}</div>
+                  ) : (
+                    <Markdown content={text} />
+                  )}
                 </div>
               </div>
             );
