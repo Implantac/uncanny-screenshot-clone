@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       collections: {
         Row: {
+          cover_path: string | null
           cover_url: string | null
           created_at: string
           description: string | null
@@ -31,6 +32,7 @@ export type Database = {
           year: number
         }
         Insert: {
+          cover_path?: string | null
           cover_url?: string | null
           created_at?: string
           description?: string | null
@@ -46,6 +48,7 @@ export type Database = {
           year: number
         }
         Update: {
+          cover_path?: string | null
           cover_url?: string | null
           created_at?: string
           description?: string | null
