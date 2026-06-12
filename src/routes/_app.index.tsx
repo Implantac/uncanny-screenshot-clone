@@ -88,11 +88,11 @@ function CommandCenter() {
   ];
 
   return (
-    <div className="p-6 lg:p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Command Center</div>
-          <h1 className="text-3xl font-semibold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
             Boa tarde, <span className="text-gradient">USE Moda</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
