@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Layers, Plus, Calendar, Sparkles, Trash2, Pencil } from "lucide-react";
+import { Layers, Plus, Calendar, Sparkles, Trash2, Pencil, ImagePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -35,8 +35,25 @@ type Collection = {
   palette: string[];
   launch_date: string | null;
   progress: number;
+  cover_path: string | null;
   created_at: string;
 };
+
+function CoverImage({ path, alt }: { path: string; alt: string }) {
+  const { data: url } = useQuery({
+    queryKey: ["cover-url", path],
+    queryFn: async () => {
+      const { data, error } = await supabase.storage
+        .from("collection-covers")
+        .createSignedUrl(path, 60 * 60);
+      if (error) throw error;
+      return data.signedUrl;
+    },
+    staleTime: 50 * 60 * 1000,
+  });
+  if (!url) return <div className="h-36 rounded-lg bg-muted animate-pulse" />;
+  return <img src={url} alt={alt} className="h-36 w-full object-cover rounded-lg" loading="lazy" />;
+}
 
 const STATUS_LABELS: Record<Collection["status"], string> = {
   briefing: "Briefing",
@@ -122,6 +139,7 @@ function ColecoesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {collections.map((c) => (
             <div key={c.id} className="glass rounded-xl p-5 flex flex-col gap-3 hover:border-primary/40 transition-colors">
+              {c.cover_path && <CoverImage path={c.cover_path} alt={`Capa da coleção ${c.name}`} />}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <h3 className="font-semibold truncate">{c.name}</h3>
@@ -190,6 +208,7 @@ function CollectionDialog({
   const [paletteStr, setPaletteStr] = useState("");
   const [launchDate, setLaunchDate] = useState("");
   const [progress, setProgress] = useState(0);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (open && editing) {
@@ -201,6 +220,7 @@ function CollectionDialog({
       setPaletteStr(editing.palette.join(", "));
       setLaunchDate(editing.launch_date || "");
       setProgress(editing.progress);
+      setCoverFile(null);
     } else if (open && !editing) {
       resetForm();
     }
@@ -216,11 +236,25 @@ function CollectionDialog({
     setPaletteStr("");
     setLaunchDate("");
     setProgress(0);
+    setCoverFile(null);
   }
 
   const saveMut = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error("Sessão expirada");
+
+      let coverPath: string | null | undefined = undefined;
+      if (coverFile) {
+        if (coverFile.size > 5 * 1024 * 1024) throw new Error("Imagem deve ter no máximo 5MB");
+        const ext = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("collection-covers")
+          .upload(path, coverFile, { contentType: coverFile.type });
+        if (upErr) throw upErr;
+        coverPath = path;
+      }
+
       const payload = {
         name,
         season,
@@ -230,10 +264,14 @@ function CollectionDialog({
         palette: paletteStr.split(",").map((s) => s.trim()).filter(Boolean),
         launch_date: launchDate || null,
         progress,
+        ...(coverPath !== undefined ? { cover_path: coverPath } : {}),
       };
       if (editing) {
         const { error } = await supabase.from("collections").update(payload).eq("id", editing.id);
         if (error) throw error;
+        if (coverPath && editing.cover_path) {
+          await supabase.storage.from("collection-covers").remove([editing.cover_path]);
+        }
       } else {
         const { error } = await supabase.from("collections").insert({ ...payload, owner_id: userId });
         if (error) throw error;
@@ -291,6 +329,12 @@ function CollectionDialog({
           <div className="space-y-2">
             <Label>Descrição</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Conceito, inspirações…" />
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5"><ImagePlus className="size-4" /> Imagem de capa</Label>
+            <Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} />
+            {coverFile && <p className="text-xs text-muted-foreground truncate">{coverFile.name}</p>}
+            {!coverFile && editing?.cover_path && <p className="text-xs text-muted-foreground">Já possui capa — envie outra para substituir.</p>}
           </div>
           <div className="space-y-2">
             <Label>Paleta (cores separadas por vírgula)</Label>
