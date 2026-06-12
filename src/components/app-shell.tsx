@@ -1,12 +1,27 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Search, Bell, Sparkles } from "lucide-react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Search, Bell, Sparkles, LogOut } from "lucide-react";
 import { MODULES, MODULE_GROUPS } from "@/lib/modules";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 import type { ReactNode } from "react";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   const active = location.pathname;
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  }
+
+  const initials = (user?.user_metadata?.full_name || user?.email || "U")
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((s: string) => s[0]?.toUpperCase())
+    .join("");
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -78,11 +93,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Bell className="size-4" />
           </button>
           <div className="flex items-center gap-2 pl-3 ml-1 border-l border-border">
-            <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">UM</div>
+            <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">{initials || "U"}</div>
             <div className="text-xs leading-tight hidden sm:block">
-              <div className="font-medium">USE Moda</div>
-              <div className="text-muted-foreground">Admin</div>
+              <div className="font-medium truncate max-w-[120px]">{user?.user_metadata?.full_name || user?.email}</div>
+              <div className="text-muted-foreground">Designer</div>
             </div>
+            <button
+              onClick={handleSignOut}
+              title="Sair"
+              className="size-9 grid place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <LogOut className="size-4" />
+            </button>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto">{children}</main>
