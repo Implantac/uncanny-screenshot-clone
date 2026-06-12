@@ -5,13 +5,15 @@ function escape(v: unknown): string {
   return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
+export type CsvColumn<T> = { key: keyof T; label?: string };
+
 export function exportToCsv<T extends Record<string, unknown>>(
   filename: string,
   rows: T[],
-  columns?: { key: keyof T; label?: string }[],
+  columns?: CsvColumn<T>[],
 ) {
   if (!rows.length) return;
-  const cols = columns ?? (Object.keys(rows[0]) as (keyof T)[]).map((k) => ({ key: k }));
+  const cols: CsvColumn<T>[] = columns ?? (Object.keys(rows[0]) as (keyof T)[]).map((k) => ({ key: k }));
   const header = cols.map((c) => escape(c.label ?? String(c.key))).join(",");
   const body = rows.map((r) => cols.map((c) => escape(r[c.key])).join(",")).join("\n");
   const csv = "\uFEFF" + header + "\n" + body;
