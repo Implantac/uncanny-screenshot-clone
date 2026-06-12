@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Package, Plus, Trash2, Pencil, Sparkles, Tag } from "lucide-react";
+import { Package, Plus, Trash2, Pencil, Sparkles, Tag, Upload, ImageIcon, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,22 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+
+async function resolveImageUrl(path: string | null): Promise<string | null> {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  const { data } = await supabase.storage.from("product-images").createSignedUrl(path, 60 * 60);
+  return data?.signedUrl ?? null;
+}
+
+function ProductImage({ path }: { path: string | null }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => { resolveImageUrl(path).then(setUrl); }, [path]);
+  if (!path) {
+    return <div className="aspect-[4/3] rounded-lg bg-muted/40 grid place-items-center"><ImageIcon className="size-8 text-muted-foreground/40" /></div>;
+  }
+  return <div className="aspect-[4/3] rounded-lg overflow-hidden bg-muted/40">{url && <img src={url} alt="" className="size-full object-cover" />}</div>;
+}
 
 export const Route = createFileRoute("/_app/produtos")({
   head: () => ({
@@ -125,6 +141,7 @@ function ProdutosPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {products.map((p) => (
             <div key={p.id} className="glass rounded-xl p-5 flex flex-col gap-3 hover:border-primary/40 transition-colors">
+              <ProductImage path={p.image_url} />
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <h3 className="font-semibold truncate">{p.name}</h3>
@@ -193,6 +210,10 @@ function ProductDialog({
   const [collectionId, setCollectionId] = useState<string>("none");
   const [sizesStr, setSizesStr] = useState("");
   const [colorsStr, setColorsStr] = useState("");
+  const [imagePath, setImagePath] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open && editing) {
@@ -206,6 +227,8 @@ function ProductDialog({
       setCollectionId(editing.collection_id || "none");
       setSizesStr(editing.sizes.join(", "));
       setColorsStr(editing.colors.join(", "));
+      setImagePath(editing.image_url);
+      resolveImageUrl(editing.image_url).then(setPreviewUrl);
     } else if (open) {
       reset();
     }
@@ -216,6 +239,26 @@ function ProductDialog({
     setSku(""); setName(""); setCategory(""); setDescription("");
     setCostPrice(0); setSellPrice(0); setStatus("rascunho");
     setCollectionId("none"); setSizesStr(""); setColorsStr("");
+    setImagePath(null); setPreviewUrl(null);
+  }
+
+  async function handleUpload(file: File) {
+    if (!userId) { toast.error("Sessão expirada"); return; }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+      if (error) throw error;
+      setImagePath(path);
+      const url = await resolveImageUrl(path);
+      setPreviewUrl(url);
+      toast.success("Imagem enviada");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setUploading(false);
+    }
   }
 
   const saveMut = useMutation({
@@ -229,6 +272,7 @@ function ProductDialog({
         sell_price: sellPrice,
         status,
         collection_id: collectionId === "none" ? null : collectionId,
+        image_url: imagePath,
         sizes: sizesStr.split(",").map((s) => s.trim()).filter(Boolean),
         colors: colorsStr.split(",").map((s) => s.trim()).filter(Boolean),
       };
@@ -257,6 +301,22 @@ function ProductDialog({
           <DialogDescription>Informações de catálogo, preço e variações.</DialogDescription>
         </DialogHeader>
         <form onSubmit={(e) => { e.preventDefault(); saveMut.mutate(); }} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Imagem</Label>
+            <div className="flex items-center gap-3">
+              <div className="size-20 rounded-lg overflow-hidden bg-muted/40 grid place-items-center shrink-0">
+                {previewUrl ? <img src={previewUrl} alt="" className="size-full object-cover" /> : <ImageIcon className="size-6 text-muted-foreground/40" />}
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
+              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading} className="gap-2">
+                {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                {imagePath ? "Trocar imagem" : "Enviar imagem"}
+              </Button>
+              {imagePath && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => { setImagePath(null); setPreviewUrl(null); }}>Remover</Button>
+              )}
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>SKU</Label>
