@@ -1,120 +1,239 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Factory, Play, Pause, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Factory, Plus, Trash2, Pencil } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/pcp")({
-  head: () => ({
-    meta: [
-      { title: "PCP e Produção · USE MODA OS" },
-      { name: "description", content: "Planejamento, ordens de produção e capacidade." },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "PCP · USE MODA OS" }, { name: "description", content: "Ordens de produção." }] }),
   component: PCP,
 });
 
-const ordens = [
-  { id: "OP-4821", produto: "Vestido Midi Linho", qtd: 320, faccao: "Santos & Cia", prog: 64, prazo: "18/06", status: "Em produção" as const },
-  { id: "OP-4822", produto: "Blazer Oversized",   qtd: 180, faccao: "Confecção Lopes", prog: 100, prazo: "10/06", status: "Concluída" as const },
-  { id: "OP-4823", produto: "Calça Wide",         qtd: 240, faccao: "Costura RS",      prog: 32, prazo: "25/06", status: "Em produção" as const },
-  { id: "OP-4824", produto: "Top Cropped",        qtd: 500, faccao: "Santos & Cia",    prog: 12, prazo: "30/06", status: "Atrasada" as const },
-  { id: "OP-4825", produto: "Saia Plissada",      qtd: 150, faccao: "Confecção Lopes", prog: 0,  prazo: "05/07", status: "Aguardando" as const },
-];
+type Status = "aguardando" | "em_producao" | "concluida" | "atrasada" | "cancelada";
+type Order = {
+  id: string; owner_id: string; product_id: string | null; supplier_id: string | null;
+  code: string; quantity: number; progress: number; due_date: string | null;
+  status: Status; notes: string | null; created_at: string;
+};
+type Ref = { id: string; name: string };
 
-const capacidade = [
-  { f: "Santos & Cia",    capacidade: 100, usado: 92 },
-  { f: "Confecção Lopes", capacidade: 100, usado: 68 },
-  { f: "Costura RS",      capacidade: 100, usado: 45 },
-  { f: "Atelier Norte",   capacidade: 100, usado: 78 },
-];
-
-const statusStyle = {
-  "Em produção": "bg-info/15 text-info",
-  "Concluída":   "bg-success/15 text-success",
-  "Atrasada":    "bg-destructive/15 text-destructive",
-  "Aguardando":  "bg-muted text-muted-foreground",
-} as const;
+const LABEL: Record<Status, string> = {
+  aguardando: "Aguardando", em_producao: "Em produção", concluida: "Concluída", atrasada: "Atrasada", cancelada: "Cancelada",
+};
+const COLOR: Record<Status, string> = {
+  aguardando: "bg-muted text-muted-foreground",
+  em_producao: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  concluida: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  atrasada: "bg-destructive/20 text-destructive border-destructive/30",
+  cancelada: "bg-muted text-muted-foreground",
+};
 
 function PCP() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Order | null>(null);
+  const [form, setForm] = useState({
+    code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0,
+    due_date: "", status: "aguardando" as Status, notes: "",
+  });
+
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["production_orders"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("production_orders").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Order[];
+    },
+  });
+
+  const { data: products = [] } = useQuery({
+    queryKey: ["products-ref"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("products").select("id,name").order("name");
+      if (error) throw error;
+      return data as Ref[];
+    },
+  });
+
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ["suppliers-ref"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("suppliers").select("id,name").order("name");
+      if (error) throw error;
+      return data as Ref[];
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("Não autenticado");
+      if (!form.code.trim()) throw new Error("Código obrigatório");
+      const payload = {
+        owner_id: user.id,
+        code: form.code.trim(),
+        product_id: form.product_id || null,
+        supplier_id: form.supplier_id || null,
+        quantity: Number(form.quantity) || 0,
+        progress: Math.min(100, Math.max(0, Number(form.progress) || 0)),
+        due_date: form.due_date || null,
+        status: form.status,
+        notes: form.notes.trim() || null,
+      };
+      if (editing) {
+        const { error } = await supabase.from("production_orders").update(payload).eq("id", editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("production_orders").insert(payload);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["production_orders"] });
+      toast.success(editing ? "Ordem atualizada" : "Ordem criada");
+      reset();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("production_orders").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["production_orders"] }); toast.success("Removida"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  function reset() {
+    setOpen(false); setEditing(null);
+    setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", notes: "" });
+  }
+
+  function openEdit(o: Order) {
+    setEditing(o);
+    setForm({
+      code: o.code, product_id: o.product_id ?? "", supplier_id: o.supplier_id ?? "",
+      quantity: o.quantity, progress: o.progress, due_date: o.due_date ?? "",
+      status: o.status, notes: o.notes ?? "",
+    });
+    setOpen(true);
+  }
+
+  const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
+  const supplierName = (id: string | null) => suppliers.find(s => s.id === id)?.name ?? "—";
+
   return (
-    <div className="p-6 lg:p-8 space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="size-11 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
-          <Factory className="size-5 text-primary-foreground" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-xl bg-primary/10 grid place-items-center"><Factory className="size-5 text-primary" /></div>
+          <div>
+            <h1 className="text-2xl font-semibold">PCP & Produção</h1>
+            <p className="text-sm text-muted-foreground">Ordens, progresso e prazos</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">PCP e Produção</h1>
-          <p className="text-sm text-muted-foreground">Ordens ativas e capacidade das facções</p>
-        </div>
+        <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Nova OP</Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { l: "OPs ativas", v: "47", i: Play, c: "text-info" },
-          { l: "Concluídas (mês)", v: "128", i: CheckCircle2, c: "text-success" },
-          { l: "Em atraso", v: "6", i: AlertTriangle, c: "text-destructive" },
-          { l: "Aguardando", v: "12", i: Pause, c: "text-warning" },
-        ].map((k) => {
-          const Icon = k.i;
-          return (
-            <div key={k.l} className="glass rounded-xl p-5">
-              <Icon className={`size-5 ${k.c}`} />
-              <div className="text-2xl font-semibold mt-3 tabular-nums">{k.v}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{k.l}</div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="glass rounded-xl p-5">
-        <div className="text-sm font-semibold mb-1">Capacidade por facção</div>
-        <div className="text-xs text-muted-foreground mb-4">% de utilização da semana</div>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={capacidade} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.28 0.018 270)" horizontal={false} />
-            <XAxis type="number" stroke="oklch(0.68 0.02 270)" fontSize={11} tickLine={false} axisLine={false} />
-            <YAxis type="category" dataKey="f" stroke="oklch(0.68 0.02 270)" fontSize={11} tickLine={false} axisLine={false} width={130} />
-            <Tooltip contentStyle={{ background: "oklch(0.20 0.015 270)", border: "1px solid oklch(0.28 0.018 270)", borderRadius: 8, fontSize: 12 }} />
-            <Bar dataKey="usado" fill="oklch(0.72 0.18 295)" radius={[0,4,4,0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="glass rounded-xl overflow-hidden">
-        <div className="p-5 border-b border-border text-sm font-semibold">Ordens de produção</div>
-        <table className="w-full text-sm">
-          <thead className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/30">
-            <tr>
-              <th className="text-left font-medium px-5 py-2.5">OP</th>
-              <th className="text-left font-medium px-5 py-2.5">Produto</th>
-              <th className="text-right font-medium px-5 py-2.5">Qtd</th>
-              <th className="text-left font-medium px-5 py-2.5">Facção</th>
-              <th className="text-left font-medium px-5 py-2.5">Progresso</th>
-              <th className="text-left font-medium px-5 py-2.5">Prazo</th>
-              <th className="text-left font-medium px-5 py-2.5">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ordens.map((o) => (
-              <tr key={o.id} className="border-t border-border hover:bg-muted/30">
-                <td className="px-5 py-3 font-medium tabular-nums">{o.id}</td>
-                <td className="px-5 py-3">{o.produto}</td>
-                <td className="px-5 py-3 text-right tabular-nums">{o.qtd}</td>
-                <td className="px-5 py-3 text-muted-foreground">{o.faccao}</td>
-                <td className="px-5 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-24 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${o.prog}%` }} />
-                    </div>
-                    <span className="text-xs tabular-nums text-muted-foreground">{o.prog}%</span>
-                  </div>
-                </td>
-                <td className="px-5 py-3 text-muted-foreground">{o.prazo}</td>
-                <td className="px-5 py-3"><span className={`px-2 py-0.5 rounded text-xs ${statusStyle[o.status]}`}>{o.status}</span></td>
+      {isLoading ? <p className="text-muted-foreground">Carregando…</p> : (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/30 text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="text-left px-4 py-3">OP</th>
+                <th className="text-left px-4 py-3">Produto</th>
+                <th className="text-left px-4 py-3">Facção</th>
+                <th className="text-right px-4 py-3">Qtd</th>
+                <th className="text-left px-4 py-3">Progresso</th>
+                <th className="text-left px-4 py-3">Prazo</th>
+                <th className="text-left px-4 py-3">Status</th>
+                <th className="px-4 py-3"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {items.map(o => (
+                <tr key={o.id} className="border-t border-border hover:bg-muted/20">
+                  <td className="px-4 py-3 font-mono text-xs">{o.code}</td>
+                  <td className="px-4 py-3">{productName(o.product_id)}</td>
+                  <td className="px-4 py-3">{supplierName(o.supplier_id)}</td>
+                  <td className="px-4 py-3 text-right">{o.quantity}</td>
+                  <td className="px-4 py-3 w-40">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
+                      </div>
+                      <span className="text-xs text-muted-foreground">{o.progress}%</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">{o.due_date ?? "—"}</td>
+                  <td className="px-4 py-3"><Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge></td>
+                  <td className="px-4 py-3 text-right">
+                    {user?.id === o.owner_id && (
+                      <div className="flex gap-1 justify-end">
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(o)}><Pencil className="size-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => del.mutate(o.id)}><Trash2 className="size-4" /></Button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {items.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Nenhuma ordem ainda</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <Dialog open={open} onOpenChange={(o) => !o && reset()}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editing ? "Editar OP" : "Nova OP"}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div><Label>Código *</Label><Input value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} placeholder="OP-001" /></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Produto</Label>
+                <Select value={form.product_id} onValueChange={(v) => setForm({ ...form, product_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Facção</Label>
+                <Select value={form.supplier_id} onValueChange={(v) => setForm({ ...form, supplier_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>{suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div><Label>Quantidade</Label><Input type="number" value={form.quantity} onChange={e => setForm({ ...form, quantity: Number(e.target.value) })} /></div>
+              <div><Label>Progresso (%)</Label><Input type="number" min={0} max={100} value={form.progress} onChange={e => setForm({ ...form, progress: Number(e.target.value) })} /></div>
+              <div><Label>Prazo</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} /></div>
+            </div>
+            <div>
+              <Label>Status</Label>
+              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Status })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{Object.entries(LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Notas</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={reset}>Cancelar</Button>
+            <Button onClick={() => save.mutate()} disabled={save.isPending}>{save.isPending ? "Salvando…" : "Salvar"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
