@@ -158,7 +158,7 @@ function IntelligencePage() {
         {/* ----------------- GEO + ATRIBUIÇÃO (M38 + M41) ----------------- */}
         <TabsContent value="geo" className="space-y-6">
           <GeoSales products={productsQ.data ?? []} b2b={b2bQ.data ?? []} sales={salesQ.data ?? []} />
-          <Attribution campaigns={mktQ.data ?? []} b2b={b2bQ.data ?? []} />
+          <Attribution campaigns={mktQ.data ?? []} b2b={b2bQ.data ?? []} sales={salesQ.data ?? []} />
         </TabsContent>
 
         {/* ----------------- INFLUENCERS (M39 + M40) ----------------- */}
