@@ -83,10 +83,11 @@ function useDashboard() {
         return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([label, n]) => ({ label, n }));
       };
       const trends = {
-        colors: count(pr.map((r: any) => r.color)),
+        colors: count(pr.flatMap((r: any) => Array.isArray(r.colors) ? r.colors : [])),
         categories: count(pr.map((r: any) => r.category)),
-        fabrics: count(pr.map((r: any) => r.fabric)),
+        collections: count(c.map((r: any) => r.name)),
       };
+
 
       return {
         kpis: { revenue, pieces, ordersCount, customers },
