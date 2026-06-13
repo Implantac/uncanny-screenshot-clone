@@ -583,6 +583,65 @@ export type Database = {
           },
         ]
       }
+      sales: {
+        Row: {
+          channel: string
+          city: string | null
+          created_at: string
+          id: string
+          product_id: string | null
+          quantity: number
+          size: string | null
+          sku: string | null
+          sold_at: string
+          total: number
+          uf: string | null
+          unit_price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          city?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          size?: string | null
+          sku?: string | null
+          sold_at?: string
+          total?: number
+          uf?: string | null
+          unit_price?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          city?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          size?: string | null
+          sku?: string | null
+          sold_at?: string
+          total?: number
+          uf?: string | null
+          unit_price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           active: boolean

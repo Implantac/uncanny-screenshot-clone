@@ -16,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   Brain, Activity, Map as MapIcon, Megaphone, Sparkles, Factory, Boxes,
   TrendingUp, AlertTriangle, CheckCircle2, Users, Database, Target, Trophy,
-  Scissors, Cpu, Search, Plus, Pencil, Trash2,
+  Scissors, Cpu, Search, Plus, Pencil, Trash2, ShoppingCart,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -87,6 +87,10 @@ function IntelligencePage() {
     queryKey: ["intel", "prototypes"],
     queryFn: async () => (await supabase.from("prototypes").select("*")).data ?? [],
   });
+  const salesQ = useQuery({
+    queryKey: ["intel", "sales"],
+    queryFn: async () => (await (supabase as any).from("sales").select("*").order("sold_at", { ascending: false })).data ?? [],
+  });
 
   return (
     <div className="space-y-6">
@@ -107,6 +111,7 @@ function IntelligencePage() {
           <TabsTrigger value="kanban"><Activity className="mr-1 h-4 w-4" />PCP Kanban</TabsTrigger>
           <TabsTrigger value="dev"><Sparkles className="mr-1 h-4 w-4" />Desenvolvimento</TabsTrigger>
           <TabsTrigger value="score"><Trophy className="mr-1 h-4 w-4" />Product Score</TabsTrigger>
+          <TabsTrigger value="sales"><ShoppingCart className="mr-1 h-4 w-4" />Vendas</TabsTrigger>
           <TabsTrigger value="geo"><MapIcon className="mr-1 h-4 w-4" />Geo & Atribuição</TabsTrigger>
           <TabsTrigger value="influencers"><Users className="mr-1 h-4 w-4" />Influencers</TabsTrigger>
           <TabsTrigger value="lake"><Database className="mr-1 h-4 w-4" />Data Lake</TabsTrigger>
@@ -137,9 +142,14 @@ function IntelligencePage() {
           <ProductScore products={productsQ.data ?? []} orders={ordersQ.data ?? []} />
         </TabsContent>
 
+        {/* ----------------- VENDAS (M37/M38 — fonte real) ----------------- */}
+        <TabsContent value="sales">
+          <SalesSuite products={productsQ.data ?? []} />
+        </TabsContent>
+
         {/* ----------------- GEO + ATRIBUIÇÃO (M38 + M41) ----------------- */}
         <TabsContent value="geo" className="space-y-6">
-          <GeoSales products={productsQ.data ?? []} b2b={b2bQ.data ?? []} />
+          <GeoSales products={productsQ.data ?? []} b2b={b2bQ.data ?? []} sales={salesQ.data ?? []} />
           <Attribution campaigns={mktQ.data ?? []} b2b={b2bQ.data ?? []} />
         </TabsContent>
 
@@ -158,6 +168,7 @@ function IntelligencePage() {
               b2b: b2bQ.data?.length ?? 0,
               campaigns: mktQ.data?.length ?? 0,
               prototypes: protoQ.data?.length ?? 0,
+              sales: salesQ.data?.length ?? 0,
             }}
           />
         </TabsContent>
@@ -552,11 +563,15 @@ function ProductScore({ products, orders }: any) {
 }
 
 /* ===================== GEO SALES (M38) ===================== */
-function GeoSales({ products, b2b }: any) {
+function GeoSales({ products, b2b, sales = [] }: any) {
   const states = ["SP", "MG", "RJ", "PR", "RS", "SC", "BA", "GO", "DF", "CE", "PE", "ES", "MT", "AM", "AC", "RR"];
+  const real = (sales as any[]).length > 0;
   const data = states.map((uf, i) => {
-    const sales = Math.round(seed(uf)(20, 100) * (1 - i * 0.04));
-    return { uf, sales };
+    const realVal = (sales as any[])
+      .filter((s) => s.uf === uf)
+      .reduce((acc, s) => acc + Number(s.quantity || 0), 0);
+    const sales_ = real ? realVal : Math.round(seed(uf)(20, 100) * (1 - i * 0.04));
+    return { uf, sales: sales_ };
   });
   const top = [...data].sort((a, b) => b.sales - a.sales).slice(0, 5);
   const bottom = [...data].sort((a, b) => a.sales - b.sales).slice(0, 3);
@@ -844,6 +859,7 @@ function DataLake({ counts }: { counts: Record<string, number> }) {
     { k: "products", label: "Produtos", icon: Sparkles },
     { k: "orders", label: "Ordens de Produção", icon: Factory },
     { k: "inventory", label: "Estoque (SKUs)", icon: Boxes },
+    { k: "sales", label: "Vendas", icon: ShoppingCart },
     { k: "b2b", label: "Pedidos B2B", icon: Activity },
     { k: "campaigns", label: "Campanhas", icon: Megaphone },
     { k: "prototypes", label: "Protótipos", icon: Scissors },
@@ -868,5 +884,201 @@ function DataLake({ counts }: { counts: Record<string, number> }) {
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+/* ===================== SALES SUITE (CRUD real) ===================== */
+type Sale = {
+  id: string; product_id: string | null; sku: string | null; size: string | null;
+  channel: string; uf: string | null; city: string | null;
+  quantity: number; unit_price: number; total: number; sold_at: string;
+};
+const EMPTY_SALE: Partial<Sale> = {
+  product_id: null, sku: "", size: "", channel: "ecommerce", uf: "", city: "",
+  quantity: 1, unit_price: 0, total: 0, sold_at: new Date().toISOString().slice(0, 10),
+};
+const CHANNELS = ["ecommerce", "marketplace", "b2b", "loja_fisica", "influenciador", "instagram", "tiktok"];
+
+function SalesSuite({ products }: { products: any[] }) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<Partial<Sale>>(EMPTY_SALE);
+
+  const list = useQuery({
+    queryKey: ["sales"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("sales").select("*").order("sold_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Sale[];
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async (v: Partial<Sale>) => {
+      if (!user) throw new Error("Sem usuário");
+      const qty = Number(v.quantity || 0), price = Number(v.unit_price || 0);
+      const payload: any = {
+        ...v, user_id: user.id, quantity: qty, unit_price: price, total: qty * price,
+        product_id: v.product_id || null,
+      };
+      const { error } = v.id
+        ? await (supabase as any).from("sales").update(payload).eq("id", v.id)
+        : await (supabase as any).from("sales").insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sales"] });
+      qc.invalidateQueries({ queryKey: ["intel", "sales"] });
+      setOpen(false); setDraft(EMPTY_SALE); toast.success("Venda salva");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from("sales").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sales"] });
+      qc.invalidateQueries({ queryKey: ["intel", "sales"] });
+      toast.success("Removido");
+    },
+  });
+
+  const items = list.data ?? [];
+  const totals = useMemo(() => {
+    const revenue = items.reduce((s, x) => s + Number(x.total || 0), 0);
+    const units = items.reduce((s, x) => s + Number(x.quantity || 0), 0);
+    const byChannel = CHANNELS.map((c) => ({
+      channel: c,
+      revenue: items.filter((x) => x.channel === c).reduce((s, x) => s + Number(x.total || 0), 0),
+    })).filter((c) => c.revenue > 0);
+    return { revenue, units, ticket: units ? revenue / units : 0, byChannel };
+  }, [items]);
+
+  function edit(s: Sale) {
+    setDraft({ ...s, sold_at: (s.sold_at || "").slice(0, 10) });
+    setOpen(true);
+  }
+  function nu() { setDraft(EMPTY_SALE); setOpen(true); }
+  function field<K extends keyof Sale>(k: K, v: any) { setDraft((d) => ({ ...d, [k]: v })); }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <KPI label="Receita" value={BRL(totals.revenue)} icon={TrendingUp} />
+        <KPI label="Unidades vendidas" value={String(totals.units)} icon={Boxes} />
+        <KPI label="Ticket médio" value={BRL(totals.ticket)} icon={Target} />
+        <KPI label="Registros" value={String(items.length)} icon={ShoppingCart} />
+      </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <div>
+            <CardTitle>Vendas — fonte única (M37/M38)</CardTitle>
+            <CardDescription>Alimenta Production Intelligence, Geo Sales e Product Score com dados reais.</CardDescription>
+          </div>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" onClick={nu}><Plus className="mr-1 h-4 w-4" />Nova venda</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>{draft.id ? "Editar venda" : "Nova venda"}</DialogTitle></DialogHeader>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <Label>Produto</Label>
+                  <select className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                    value={draft.product_id ?? ""} onChange={(e) => field("product_id", e.target.value || null)}>
+                    <option value="">— sem vínculo —</option>
+                    {products.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name ?? p.sku ?? p.id}</option>
+                    ))}
+                  </select>
+                </div>
+                <div><Label>SKU</Label><Input value={draft.sku ?? ""} onChange={(e) => field("sku", e.target.value)} /></div>
+                <div><Label>Tamanho</Label><Input value={draft.size ?? ""} onChange={(e) => field("size", e.target.value)} placeholder="P/M/G" /></div>
+                <div>
+                  <Label>Canal</Label>
+                  <select className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                    value={draft.channel ?? "ecommerce"} onChange={(e) => field("channel", e.target.value)}>
+                    {CHANNELS.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div><Label>UF</Label><Input maxLength={2} value={draft.uf ?? ""} onChange={(e) => field("uf", e.target.value.toUpperCase())} /></div>
+                <div><Label>Cidade</Label><Input value={draft.city ?? ""} onChange={(e) => field("city", e.target.value)} /></div>
+                <div><Label>Data</Label><Input type="date" value={draft.sold_at ?? ""} onChange={(e) => field("sold_at", e.target.value)} /></div>
+                <div><Label>Quantidade</Label><Input type="number" value={draft.quantity ?? 1} onChange={(e) => field("quantity", Number(e.target.value))} /></div>
+                <div><Label>Preço unitário (R$)</Label><Input type="number" step="0.01" value={draft.unit_price ?? 0} onChange={(e) => field("unit_price", Number(e.target.value))} /></div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+                <Button onClick={() => save.mutate(draft)} disabled={!draft.quantity || save.isPending}>
+                  {save.isPending ? "Salvando..." : "Salvar"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {totals.byChannel.length > 0 && (
+            <div className="h-56">
+              <ResponsiveContainer>
+                <BarChart data={totals.byChannel}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="channel" />
+                  <YAxis />
+                  <Tooltip formatter={(v: any) => BRL(Number(v))} />
+                  <Bar dataKey="revenue" fill={palette[0]} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Data</TableHead>
+                  <TableHead>SKU</TableHead>
+                  <TableHead>Tam</TableHead>
+                  <TableHead>Canal</TableHead>
+                  <TableHead>UF</TableHead>
+                  <TableHead className="text-right">Qtd</TableHead>
+                  <TableHead className="text-right">Preço</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="text-sm">{(s.sold_at || "").slice(0, 10)}</TableCell>
+                    <TableCell className="text-sm font-medium">{s.sku || "—"}</TableCell>
+                    <TableCell className="text-sm">{s.size || "—"}</TableCell>
+                    <TableCell><Badge variant="secondary">{s.channel}</Badge></TableCell>
+                    <TableCell className="text-sm">{s.uf || "—"}</TableCell>
+                    <TableCell className="text-right tabular-nums">{s.quantity}</TableCell>
+                    <TableCell className="text-right tabular-nums">{BRL(Number(s.unit_price))}</TableCell>
+                    <TableCell className="text-right tabular-nums font-semibold">{BRL(Number(s.total))}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <Button size="icon" variant="ghost" onClick={() => edit(s)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button size="icon" variant="ghost" onClick={() => del.mutate(s.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {items.length === 0 && (
+                  <TableRow><TableCell colSpan={9} className="text-center text-sm text-muted-foreground py-8">
+                    Nenhuma venda cadastrada. Clique em "Nova venda" para começar a alimentar a inteligência.
+                  </TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
