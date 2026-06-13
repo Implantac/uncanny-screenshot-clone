@@ -448,16 +448,17 @@ function ColecoesPage() {
                 <TabsContent value="mix" className="mt-0 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4">
                   <div className="glass rounded-xl p-5 space-y-3">
                     <div className="text-sm font-semibold">Distribuição do mix</div>
-                    {(derived.categories.length ? derived.categories : [["Sem categoria", 0]]).map(([label, count]) => {
+                    {(derived.categories.length ? derived.categories : [["Sem categoria", 0] as [string, number]]).map(([label, count]) => {
                       const max = Math.max(1, ...(derived.categories.length ? derived.categories.map((item) => item[1]) : [1]));
+                      const numericCount = Number(count);
                       return (
                         <div key={label} className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs text-muted-foreground">
                             <span>{label}</span>
-                            <span>{count}</span>
+                            <span>{numericCount}</span>
                           </div>
                           <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                            <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(count / max) * 100}%` }} />
+                            <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(numericCount / max) * 100}%` }} />
                           </div>
                         </div>
                       );
