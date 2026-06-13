@@ -361,46 +361,95 @@ function ProductionTab({ products, orders, inventory, b2b }: any) {
   );
 }
 
-/* ===================== PCP KANBAN (M42) ===================== */
+/* ===================== PCP KANBAN (M42) — drag & drop persistido ===================== */
+const PCP_STAGES = ["Programado", "Corte", "Costura", "Acabamento", "Expedição", "Concluído"] as const;
+type Stage = typeof PCP_STAGES[number];
+type PoStatus = "aguardando" | "em_producao" | "concluida" | "atrasada" | "cancelada";
+const STAGE_TO_STATUS: Record<Stage, PoStatus> = {
+  "Programado": "aguardando",
+  "Corte": "em_producao",
+  "Costura": "em_producao",
+  "Acabamento": "em_producao",
+  "Expedição": "em_producao",
+  "Concluído": "concluida",
+};
+const STAGE_PROGRESS: Record<Stage, number> = {
+  "Programado": 0, "Corte": 15, "Costura": 45, "Acabamento": 70, "Expedição": 90, "Concluído": 100,
+};
+function inferStage(o: any): Stage {
+  const s = (o.status || "").toString().toLowerCase();
+  if (s === "concluida" || s.includes("conclu")) return "Concluído";
+  const p = Number(o.progress || 0);
+  if (p >= 100) return "Concluído";
+  if (p > 80) return "Expedição";
+  if (p > 60) return "Acabamento";
+  if (p > 30) return "Costura";
+  if (p > 5) return "Corte";
+  return "Programado";
+}
+
 function PcpKanban({ orders, products }: any) {
-  const stages = ["Programado", "Corte", "Costura", "Acabamento", "Expedição", "Concluído"];
-  const map = new Map(stages.map((s) => [s, [] as any[]]));
+  const qc = useQueryClient();
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overStage, setOverStage] = useState<string | null>(null);
   const productMap = new Map((products as any[]).map((p) => [p.id, p]));
 
-  (orders as any[]).forEach((o) => {
-    const r = seed(o.id);
-    let stage = "Programado";
-    const s = (o.status || "").toString();
-    if (s.includes("conclu")) stage = "Concluído";
-    else if ((o.progress || 0) > 80) stage = "Expedição";
-    else if ((o.progress || 0) > 60) stage = "Acabamento";
-    else if ((o.progress || 0) > 30) stage = "Costura";
-    else if ((o.progress || 0) > 5) stage = "Corte";
-    else stage = ["Programado", "Corte", "Costura", "Acabamento", "Expedição"][Math.floor(r(0, 5))];
-    map.get(stage)?.push(o);
+  const move = useMutation({
+    mutationFn: async ({ id, stage }: { id: string; stage: Stage }) => {
+      const { error } = await supabase.from("production_orders")
+        .update({ status: STAGE_TO_STATUS[stage], progress: STAGE_PROGRESS[stage] })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["intel", "production_orders"] });
+      toast.success("Etapa atualizada");
+    },
+    onError: (e: any) => toast.error(e.message),
   });
+
+  const map = new Map(PCP_STAGES.map((s) => [s, [] as any[]]));
+  (orders as any[]).forEach((o) => map.get(inferStage(o))?.push(o));
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>PCP Kanban</CardTitle>
-        <CardDescription>Visualização Monday-style por etapa produtiva</CardDescription>
+        <CardDescription>Arraste os cards entre as colunas — status persistido em tempo real.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
-          {stages.map((stage) => {
+          {PCP_STAGES.map((stage) => {
             const items = map.get(stage) ?? [];
+            const isOver = overStage === stage;
             return (
-              <div key={stage} className="rounded-lg border bg-muted/20 p-2">
+              <div
+                key={stage}
+                onDragOver={(e) => { e.preventDefault(); setOverStage(stage); }}
+                onDragLeave={() => setOverStage((s) => (s === stage ? null : s))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const id = e.dataTransfer.getData("text/plain") || dragId;
+                  setOverStage(null); setDragId(null);
+                  if (id) move.mutate({ id, stage });
+                }}
+                className={`rounded-lg border p-2 transition-colors ${isOver ? "bg-primary/10 border-primary" : "bg-muted/20"}`}
+              >
                 <div className="mb-2 flex items-center justify-between px-1">
                   <div className="text-xs font-semibold uppercase tracking-wide">{stage}</div>
                   <Badge variant="secondary" className="text-[10px]">{items.length}</Badge>
                 </div>
-                <div className="space-y-2">
-                  {items.slice(0, 6).map((o) => {
+                <div className="space-y-2 min-h-[40px]">
+                  {items.map((o) => {
                     const p = productMap.get(o.product_id);
                     return (
-                      <div key={o.id} className="rounded-md border bg-card p-2">
+                      <div
+                        key={o.id}
+                        draggable
+                        onDragStart={(e) => { setDragId(o.id); e.dataTransfer.setData("text/plain", o.id); }}
+                        onDragEnd={() => setDragId(null)}
+                        className={`rounded-md border bg-card p-2 cursor-grab active:cursor-grabbing ${dragId === o.id ? "opacity-50" : ""}`}
+                      >
                         <div className="text-xs font-medium truncate">{p?.name ?? o.code}</div>
                         <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
                           <span>{o.quantity} un</span>
