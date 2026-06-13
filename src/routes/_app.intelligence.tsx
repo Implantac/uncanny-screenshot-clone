@@ -563,11 +563,15 @@ function ProductScore({ products, orders }: any) {
 }
 
 /* ===================== GEO SALES (M38) ===================== */
-function GeoSales({ products, b2b }: any) {
+function GeoSales({ products, b2b, sales = [] }: any) {
   const states = ["SP", "MG", "RJ", "PR", "RS", "SC", "BA", "GO", "DF", "CE", "PE", "ES", "MT", "AM", "AC", "RR"];
+  const real = (sales as any[]).length > 0;
   const data = states.map((uf, i) => {
-    const sales = Math.round(seed(uf)(20, 100) * (1 - i * 0.04));
-    return { uf, sales };
+    const realVal = (sales as any[])
+      .filter((s) => s.uf === uf)
+      .reduce((acc, s) => acc + Number(s.quantity || 0), 0);
+    const sales_ = real ? realVal : Math.round(seed(uf)(20, 100) * (1 - i * 0.04));
+    return { uf, sales: sales_ };
   });
   const top = [...data].sort((a, b) => b.sales - a.sales).slice(0, 5);
   const bottom = [...data].sort((a, b) => a.sales - b.sales).slice(0, 3);
