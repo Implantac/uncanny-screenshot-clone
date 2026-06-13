@@ -118,6 +118,32 @@ const FEED_ICON: Record<string, typeof Activity> = {
   protótipo: Scissors,
 };
 
+function TrendBlock({ icon: Icon, title, items }: { icon: typeof Activity; title: string; items: { label: string; n: number }[] }) {
+  const max = Math.max(1, ...items.map((i) => i.n));
+  return (
+    <div>
+      <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 mb-2"><Icon className="size-3.5" /> {title}</div>
+      {items.length ? (
+        <ul className="space-y-1.5">
+          {items.map((it) => (
+            <li key={it.label} className="flex items-center gap-2 text-xs">
+              <span className="w-20 truncate">{it.label}</span>
+              <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(it.n / max) * 100}%` }} />
+              </div>
+              <span className="tabular-nums text-muted-foreground w-6 text-right">{it.n}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="text-xs text-muted-foreground">Sem dados ainda</div>
+      )}
+    </div>
+  );
+}
+
+
+
 
 function CommandCenter() {
   const { data, isLoading } = useDashboard();
