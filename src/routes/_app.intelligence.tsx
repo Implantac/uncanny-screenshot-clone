@@ -395,8 +395,10 @@ function PcpKanban({ orders, products }: any) {
   const productMap = new Map((products as any[]).map((p) => [p.id, p]));
 
   const move = useMutation({
-    mutationFn: async ({ id, stage }: { id: string; stage: string }) => {
-      const { error } = await supabase.from("production_orders").update({ status: stage }).eq("id", id);
+    mutationFn: async ({ id, stage }: { id: string; stage: Stage }) => {
+      const { error } = await supabase.from("production_orders")
+        .update({ status: STAGE_TO_STATUS[stage], progress: STAGE_PROGRESS[stage] })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
