@@ -362,13 +362,25 @@ function ProductionTab({ products, orders, inventory, b2b }: any) {
 }
 
 /* ===================== PCP KANBAN (M42) — drag & drop persistido ===================== */
-const PCP_STAGES = ["Programado", "Corte", "Costura", "Acabamento", "Expedição", "Concluído"];
-function inferStage(o: any): string {
-  const s = (o.status || "").toString();
-  const match = PCP_STAGES.find((st) => s.toLowerCase() === st.toLowerCase());
-  if (match) return match;
-  if (s.includes("conclu")) return "Concluído";
+const PCP_STAGES = ["Programado", "Corte", "Costura", "Acabamento", "Expedição", "Concluído"] as const;
+type Stage = typeof PCP_STAGES[number];
+type PoStatus = "aguardando" | "em_producao" | "concluida" | "atrasada" | "cancelada";
+const STAGE_TO_STATUS: Record<Stage, PoStatus> = {
+  "Programado": "aguardando",
+  "Corte": "em_producao",
+  "Costura": "em_producao",
+  "Acabamento": "em_producao",
+  "Expedição": "em_producao",
+  "Concluído": "concluida",
+};
+const STAGE_PROGRESS: Record<Stage, number> = {
+  "Programado": 0, "Corte": 15, "Costura": 45, "Acabamento": 70, "Expedição": 90, "Concluído": 100,
+};
+function inferStage(o: any): Stage {
+  const s = (o.status || "").toString().toLowerCase();
+  if (s === "concluida" || s.includes("conclu")) return "Concluído";
   const p = Number(o.progress || 0);
+  if (p >= 100) return "Concluído";
   if (p > 80) return "Expedição";
   if (p > 60) return "Acabamento";
   if (p > 30) return "Costura";
