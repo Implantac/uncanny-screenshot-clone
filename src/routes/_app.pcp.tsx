@@ -137,6 +137,64 @@ function PCP() {
   const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
   const supplierName = (id: string | null) => suppliers.find(s => s.id === id)?.name ?? "—";
 
+  const kpis = useMemo(() => {
+    const total = items.length;
+    const inProd = items.filter(i => i.status === "em_producao").length;
+    const late = items.filter(i => i.status === "atrasada").length;
+    const done = items.filter(i => i.status === "concluida").length;
+    const avg = total ? Math.round(items.reduce((s, i) => s + i.progress, 0) / total) : 0;
+    const totalQty = items.reduce((s, i) => s + (i.quantity || 0), 0);
+    return { total, inProd, late, done, avg, totalQty };
+  }, [items]);
+
+  const byStatus = useMemo(() => {
+    const groups: Record<Status, Order[]> = { aguardando: [], em_producao: [], atrasada: [], concluida: [], cancelada: [] };
+    for (const o of items) groups[o.status].push(o);
+    return groups;
+  }, [items]);
+
+  const timeline = useMemo(() => {
+    const dated = items.filter(i => i.due_date).sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1));
+    if (!dated.length) return { rows: [] as Order[], min: null as Date | null, max: null as Date | null, days: 0 };
+    const min = new Date(dated[0].due_date!);
+    const max = new Date(dated[dated.length - 1].due_date!);
+    const start = new Date(Math.min(min.getTime(), Date.now()));
+    const end = new Date(Math.max(max.getTime(), Date.now() + 7 * 86400000));
+    const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000));
+    return { rows: dated, min: start, max: end, days };
+  }, [items]);
+
+  const KpiCard = ({ icon: Icon, label, value, accent }: { icon: typeof Factory; label: string; value: string | number; accent?: string }) => (
+    <div className="rounded-xl border border-border bg-card/50 backdrop-blur p-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+        <Icon className={`size-4 ${accent ?? "text-muted-foreground"}`} />
+      </div>
+      <div className="text-2xl font-semibold">{value}</div>
+    </div>
+  );
+
+  const Card = ({ o }: { o: Order }) => (
+    <button
+      onClick={() => user?.id === o.owner_id && openEdit(o)}
+      className="w-full text-left rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-2"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-mono text-xs text-muted-foreground">{o.code}</span>
+        <Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge>
+      </div>
+      <div className="text-sm font-medium truncate">{productName(o.product_id)}</div>
+      <div className="text-xs text-muted-foreground truncate">{supplierName(o.supplier_id)} · {o.quantity} pç</div>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+          <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
+        </div>
+        <span className="text-[10px] text-muted-foreground">{o.progress}%</span>
+      </div>
+      {o.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {o.due_date}</div>}
+    </button>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -144,7 +202,7 @@ function PCP() {
           <div className="size-10 rounded-xl bg-primary/10 grid place-items-center"><Factory className="size-5 text-primary" /></div>
           <div>
             <h1 className="text-2xl font-semibold">PCP & Produção</h1>
-            <p className="text-sm text-muted-foreground">Ordens, progresso e prazos</p>
+            <p className="text-sm text-muted-foreground">Quadro, cronograma e ordens em tempo real</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -162,52 +220,130 @@ function PCP() {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <KpiCard icon={Factory} label="Ordens" value={kpis.total} />
+        <KpiCard icon={Clock} label="Em produção" value={kpis.inProd} accent="text-blue-400" />
+        <KpiCard icon={AlertTriangle} label="Atrasadas" value={kpis.late} accent="text-destructive" />
+        <KpiCard icon={CheckCircle2} label="Concluídas" value={kpis.done} accent="text-emerald-400" />
+        <KpiCard icon={TrendingUp} label="Progresso médio" value={`${kpis.avg}%`} accent="text-primary" />
+      </div>
+
       {isLoading ? <p className="text-muted-foreground">Carregando…</p> : (
-        <div className="rounded-xl border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/30 text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="text-left px-4 py-3">OP</th>
-                <th className="text-left px-4 py-3">Produto</th>
-                <th className="text-left px-4 py-3">Facção</th>
-                <th className="text-right px-4 py-3">Qtd</th>
-                <th className="text-left px-4 py-3">Progresso</th>
-                <th className="text-left px-4 py-3">Prazo</th>
-                <th className="text-left px-4 py-3">Status</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(o => (
-                <tr key={o.id} className="border-t border-border hover:bg-muted/20">
-                  <td className="px-4 py-3 font-mono text-xs">{o.code}</td>
-                  <td className="px-4 py-3">{productName(o.product_id)}</td>
-                  <td className="px-4 py-3">{supplierName(o.supplier_id)}</td>
-                  <td className="px-4 py-3 text-right">{o.quantity}</td>
-                  <td className="px-4 py-3 w-40">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
-                      </div>
-                      <span className="text-xs text-muted-foreground">{o.progress}%</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{o.due_date ?? "—"}</td>
-                  <td className="px-4 py-3"><Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge></td>
-                  <td className="px-4 py-3 text-right">
-                    {user?.id === o.owner_id && (
-                      <div className="flex gap-1 justify-end">
-                        <Button size="icon" variant="ghost" onClick={() => openEdit(o)}><Pencil className="size-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => del.mutate(o.id)}><Trash2 className="size-4" /></Button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
+        <Tabs defaultValue="kanban" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="kanban"><LayoutGrid className="size-4 mr-2" />Quadro</TabsTrigger>
+            <TabsTrigger value="gantt"><GanttChart className="size-4 mr-2" />Cronograma</TabsTrigger>
+            <TabsTrigger value="table"><TableIcon className="size-4 mr-2" />Tabela</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="kanban">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {(Object.keys(LABEL) as Status[]).map(st => (
+                <div key={st} className="rounded-xl border border-border bg-muted/10 p-3 space-y-2 min-h-[200px]">
+                  <div className="flex items-center justify-between mb-1">
+                    <Badge variant="outline" className={COLOR[st]}>{LABEL[st]}</Badge>
+                    <span className="text-xs text-muted-foreground">{byStatus[st].length}</span>
+                  </div>
+                  {byStatus[st].map(o => <Card key={o.id} o={o} />)}
+                  {!byStatus[st].length && <p className="text-xs text-muted-foreground/60 text-center py-6">vazio</p>}
+                </div>
               ))}
-              {items.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Nenhuma ordem ainda</td></tr>}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="gantt">
+            <div className="rounded-xl border border-border overflow-hidden">
+              {timeline.rows.length === 0 ? (
+                <p className="p-8 text-center text-muted-foreground">Defina prazos nas ordens para visualizar o cronograma.</p>
+              ) : (
+                <div className="divide-y divide-border">
+                  <div className="px-4 py-2 bg-muted/30 text-xs text-muted-foreground flex justify-between">
+                    <span>{timeline.min?.toLocaleDateString("pt-BR")}</span>
+                    <span>{timeline.days} dias</span>
+                    <span>{timeline.max?.toLocaleDateString("pt-BR")}</span>
+                  </div>
+                  {timeline.rows.map(o => {
+                    const due = new Date(o.due_date!).getTime();
+                    const start = timeline.min!.getTime();
+                    const end = timeline.max!.getTime();
+                    const pos = ((due - start) / (end - start)) * 100;
+                    const created = new Date(o.created_at).getTime();
+                    const left = Math.max(0, Math.min(100, ((Math.max(created, start) - start) / (end - start)) * 100));
+                    const width = Math.max(2, Math.min(100 - left, pos - left));
+                    return (
+                      <div key={o.id} className="px-4 py-3 grid grid-cols-[180px_1fr_80px] gap-3 items-center hover:bg-muted/20">
+                        <div className="truncate">
+                          <div className="font-mono text-xs text-muted-foreground">{o.code}</div>
+                          <div className="text-sm truncate">{productName(o.product_id)}</div>
+                        </div>
+                        <div className="relative h-6 bg-muted/30 rounded">
+                          <div
+                            className={`absolute top-0 bottom-0 rounded ${o.status === "atrasada" ? "bg-destructive/60" : o.status === "concluida" ? "bg-emerald-500/60" : "bg-primary/60"}`}
+                            style={{ left: `${left}%`, width: `${width}%` }}
+                          />
+                          <div
+                            className="absolute top-0 bottom-0 w-0.5 bg-foreground/40"
+                            style={{ left: `${pos}%` }}
+                            title={o.due_date ?? ""}
+                          />
+                        </div>
+                        <div className="text-xs text-muted-foreground text-right">{o.due_date}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="table">
+            <div className="rounded-xl border border-border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/30 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="text-left px-4 py-3">OP</th>
+                    <th className="text-left px-4 py-3">Produto</th>
+                    <th className="text-left px-4 py-3">Facção</th>
+                    <th className="text-right px-4 py-3">Qtd</th>
+                    <th className="text-left px-4 py-3">Progresso</th>
+                    <th className="text-left px-4 py-3">Prazo</th>
+                    <th className="text-left px-4 py-3">Status</th>
+                    <th className="px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map(o => (
+                    <tr key={o.id} className="border-t border-border hover:bg-muted/20">
+                      <td className="px-4 py-3 font-mono text-xs">{o.code}</td>
+                      <td className="px-4 py-3">{productName(o.product_id)}</td>
+                      <td className="px-4 py-3">{supplierName(o.supplier_id)}</td>
+                      <td className="px-4 py-3 text-right">{o.quantity}</td>
+                      <td className="px-4 py-3 w-40">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
+                          </div>
+                          <span className="text-xs text-muted-foreground">{o.progress}%</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{o.due_date ?? "—"}</td>
+                      <td className="px-4 py-3"><Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge></td>
+                      <td className="px-4 py-3 text-right">
+                        {user?.id === o.owner_id && (
+                          <div className="flex gap-1 justify-end">
+                            <Button size="icon" variant="ghost" onClick={() => openEdit(o)}><Pencil className="size-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => del.mutate(o.id)}><Trash2 className="size-4" /></Button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {items.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Nenhuma ordem ainda</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </TabsContent>
+        </Tabs>
       )}
 
       <Dialog open={open} onOpenChange={(o) => !o && reset()}>
