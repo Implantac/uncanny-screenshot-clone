@@ -435,9 +435,10 @@ function PcpKanban({ orders, products }: any) {
             return (
               <div
                 key={stage}
-                onDragOver={(e) => { e.preventDefault(); setOverStage(stage); }}
+                onDragOver={(e) => { if (!canMove) return; e.preventDefault(); setOverStage(stage); }}
                 onDragLeave={() => setOverStage((s) => (s === stage ? null : s))}
                 onDrop={(e) => {
+                  if (!canMove) { toast.error("Sem permissão para mover cards"); return; }
                   e.preventDefault();
                   const id = e.dataTransfer.getData("text/plain") || dragId;
                   setOverStage(null); setDragId(null);
@@ -455,11 +456,12 @@ function PcpKanban({ orders, products }: any) {
                     return (
                       <div
                         key={o.id}
-                        draggable
-                        onDragStart={(e) => { setDragId(o.id); e.dataTransfer.setData("text/plain", o.id); }}
+                        draggable={canMove}
+                        onDragStart={(e) => { if (!canMove) { e.preventDefault(); return; } setDragId(o.id); e.dataTransfer.setData("text/plain", o.id); }}
                         onDragEnd={() => setDragId(null)}
-                        className={`rounded-md border bg-card p-2 cursor-grab active:cursor-grabbing ${dragId === o.id ? "opacity-50" : ""}`}
+                        className={`rounded-md border bg-card p-2 ${canMove ? "cursor-grab active:cursor-grabbing" : "cursor-not-allowed opacity-90"} ${dragId === o.id ? "opacity-50" : ""}`}
                       >
+
                         <div className="text-xs font-medium truncate">{p?.name ?? o.code}</div>
                         <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
                           <span>{o.quantity} un</span>
