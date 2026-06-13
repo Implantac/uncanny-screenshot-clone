@@ -1,18 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Brain, Activity, Map as MapIcon, Megaphone, Sparkles, Factory, Boxes,
   TrendingUp, AlertTriangle, CheckCircle2, Users, Database, Target, Trophy,
-  Scissors, Cpu, Search,
+  Scissors, Cpu, Search, Plus, Pencil, Trash2,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -646,31 +650,131 @@ function Attribution({ campaigns, b2b }: any) {
   );
 }
 
-/* ===================== INFLUENCERS (M39 + M40) ===================== */
+/* ===================== INFLUENCERS (M39 + M40) — CRUD real ===================== */
+type Influencer = {
+  id: string; owner_id: string;
+  nome: string; instagram?: string | null; tiktok?: string | null; youtube?: string | null;
+  cidade?: string | null; estado?: string | null; segmento?: string | null;
+  seguidores: number; engajamento: number; valor: number;
+  vendas_antes: number; vendas_depois: number; ticket_medio: number;
+  data_postagem?: string | null; foto_url?: string | null; notes?: string | null;
+};
+
+const EMPTY_INF: Partial<Influencer> = {
+  nome: "", instagram: "", tiktok: "", youtube: "",
+  cidade: "", estado: "", segmento: "",
+  seguidores: 0, engajamento: 0, valor: 0,
+  vendas_antes: 0, vendas_depois: 0, ticket_medio: 180,
+};
+
 function InfluencerSuite() {
-  const seedInfluencers = [
-    { name: "Marina Costa", ig: "@marinacosta", cidade: "São Paulo", uf: "SP", segmento: "Streetwear", followers: 480000, eng: 6.2, valor: 12000, antes: 18, depois: 54 },
-    { name: "Júlia Mendes", ig: "@ju.mendes", cidade: "Belo Horizonte", uf: "MG", segmento: "Casual chic", followers: 220000, eng: 7.8, valor: 6500, antes: 12, depois: 33 },
-    { name: "Beatriz Lima", ig: "@bialima", cidade: "Rio de Janeiro", uf: "RJ", segmento: "Beach", followers: 980000, eng: 4.1, valor: 22000, antes: 25, depois: 71 },
-    { name: "Camila Rocha", ig: "@camirocha", cidade: "Curitiba", uf: "PR", segmento: "Minimal", followers: 145000, eng: 9.4, valor: 4800, antes: 9, depois: 27 },
-    { name: "Renata Alves", ig: "@reealves", cidade: "Porto Alegre", uf: "RS", segmento: "Plus size", followers: 360000, eng: 5.7, valor: 9000, antes: 14, depois: 39 },
-  ];
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<Partial<Influencer>>(EMPTY_INF);
+
+  const list = useQuery({
+    queryKey: ["influencers"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("influencers").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Influencer[];
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async (v: Partial<Influencer>) => {
+      if (!user) throw new Error("Sem usuário");
+      const payload: any = { ...v, owner_id: user.id };
+      const { error } = v.id
+        ? await (supabase as any).from("influencers").update(payload).eq("id", v.id)
+        : await (supabase as any).from("influencers").insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["influencers"] });
+      setOpen(false); setDraft(EMPTY_INF);
+      toast.success("Influencer salvo");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from("influencers").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["influencers"] });
+      toast.success("Removido");
+    },
+  });
+
+  const items = list.data ?? [];
+  const totals = useMemo(() => {
+    const lifts = items.filter((i) => Number(i.vendas_antes) > 0)
+      .map((i) => (Number(i.vendas_depois) - Number(i.vendas_antes)) / Number(i.vendas_antes));
+    return {
+      count: items.length,
+      reach: items.reduce((s, i) => s + Number(i.seguidores || 0), 0),
+      invest: items.reduce((s, i) => s + Number(i.valor || 0), 0),
+      avgLift: lifts.length ? lifts.reduce((s, n) => s + n, 0) / lifts.length : 0,
+    };
+  }, [items]);
+
+  function edit(i: Influencer) { setDraft(i); setOpen(true); }
+  function nu() { setDraft(EMPTY_INF); setOpen(true); }
+  function field<K extends keyof Influencer>(k: K, v: any) { setDraft((d) => ({ ...d, [k]: v })); }
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <KPI label="Influencers ativos" value={String(seedInfluencers.length)} icon={Users} />
-        <KPI label="Alcance total" value={`${(seedInfluencers.reduce((s, i) => s + i.followers, 0) / 1_000_000).toFixed(1)}M`} icon={TrendingUp} />
-        <KPI label="Investimento" value={BRL(seedInfluencers.reduce((s, i) => s + i.valor, 0))} icon={Megaphone} />
-        <KPI label="Lift médio" value={`+${Math.round(seedInfluencers.reduce((s, i) => s + (i.depois - i.antes) / i.antes, 0) / seedInfluencers.length * 100)}%`} icon={Target} tone="text-emerald-500" />
+        <KPI label="Influencers ativos" value={String(totals.count)} icon={Users} />
+        <KPI label="Alcance total" value={totals.reach >= 1_000_000 ? `${(totals.reach / 1_000_000).toFixed(1)}M` : `${(totals.reach / 1000).toFixed(0)}k`} icon={TrendingUp} />
+        <KPI label="Investimento" value={BRL(totals.invest)} icon={Megaphone} />
+        <KPI label="Lift médio" value={totals.count ? `${totals.avgLift >= 0 ? "+" : ""}${Math.round(totals.avgLift * 100)}%` : "—"} icon={Target} tone="text-emerald-500" />
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Influencer ROI Engine</CardTitle>
-          <CardDescription>Vendas antes × depois da campanha · ROI calculado</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <div>
+            <CardTitle>Influencer ROI Engine</CardTitle>
+            <CardDescription>Cadastro completo, campanha e ROI antes × depois (dados persistidos)</CardDescription>
+          </div>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" onClick={nu}><Plus className="mr-1 h-4 w-4" />Novo</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>{draft.id ? "Editar influencer" : "Novo influencer"}</DialogTitle></DialogHeader>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2"><Label>Nome</Label><Input value={draft.nome ?? ""} onChange={(e) => field("nome", e.target.value)} /></div>
+                <div><Label>Instagram</Label><Input value={draft.instagram ?? ""} onChange={(e) => field("instagram", e.target.value)} placeholder="@usuario" /></div>
+                <div><Label>TikTok</Label><Input value={draft.tiktok ?? ""} onChange={(e) => field("tiktok", e.target.value)} placeholder="@usuario" /></div>
+                <div><Label>Youtube</Label><Input value={draft.youtube ?? ""} onChange={(e) => field("youtube", e.target.value)} /></div>
+                <div><Label>Segmento</Label><Input value={draft.segmento ?? ""} onChange={(e) => field("segmento", e.target.value)} /></div>
+                <div><Label>Cidade</Label><Input value={draft.cidade ?? ""} onChange={(e) => field("cidade", e.target.value)} /></div>
+                <div><Label>Estado (UF)</Label><Input maxLength={2} value={draft.estado ?? ""} onChange={(e) => field("estado", e.target.value.toUpperCase())} /></div>
+                <div><Label>Seguidores</Label><Input type="number" value={draft.seguidores ?? 0} onChange={(e) => field("seguidores", Number(e.target.value))} /></div>
+                <div><Label>Engajamento %</Label><Input type="number" step="0.1" value={draft.engajamento ?? 0} onChange={(e) => field("engajamento", Number(e.target.value))} /></div>
+                <div><Label>Valor (R$)</Label><Input type="number" value={draft.valor ?? 0} onChange={(e) => field("valor", Number(e.target.value))} /></div>
+                <div><Label>Vendas/dia ANTES</Label><Input type="number" value={draft.vendas_antes ?? 0} onChange={(e) => field("vendas_antes", Number(e.target.value))} /></div>
+                <div><Label>Vendas/dia DEPOIS</Label><Input type="number" value={draft.vendas_depois ?? 0} onChange={(e) => field("vendas_depois", Number(e.target.value))} /></div>
+                <div><Label>Ticket médio (R$)</Label><Input type="number" value={draft.ticket_medio ?? 180} onChange={(e) => field("ticket_medio", Number(e.target.value))} /></div>
+                <div><Label>Data postagem</Label><Input type="date" value={draft.data_postagem ?? ""} onChange={(e) => field("data_postagem", e.target.value)} /></div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+                <Button onClick={() => save.mutate(draft)} disabled={!draft.nome || save.isPending}>
+                  {save.isPending ? "Salvando..." : "Salvar"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -683,34 +787,48 @@ function InfluencerSuite() {
                 <TableHead className="text-right">Antes/Depois</TableHead>
                 <TableHead className="text-right">Lift</TableHead>
                 <TableHead className="text-right">ROI</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {seedInfluencers.map((i) => {
-                const lift = ((i.depois - i.antes) / i.antes) * 100;
-                const receita = (i.depois - i.antes) * 30 * 180; // 30 dias * ticket
-                const roi = ((receita - i.valor) / i.valor) * 100;
+              {items.map((i) => {
+                const va = Number(i.vendas_antes), vd = Number(i.vendas_depois);
+                const lift = va > 0 ? ((vd - va) / va) * 100 : 0;
+                const receita = Math.max(0, vd - va) * 30 * Number(i.ticket_medio || 0);
+                const roi = Number(i.valor) > 0 ? ((receita - Number(i.valor)) / Number(i.valor)) * 100 : 0;
                 return (
-                  <TableRow key={i.name}>
+                  <TableRow key={i.id}>
                     <TableCell>
-                      <div className="font-medium">{i.name}</div>
-                      <div className="text-xs text-muted-foreground">{i.ig}</div>
+                      <div className="font-medium">{i.nome}</div>
+                      <div className="text-xs text-muted-foreground">{i.instagram}</div>
                     </TableCell>
-                    <TableCell className="text-sm">{i.cidade}/{i.uf}</TableCell>
+                    <TableCell className="text-sm">{[i.cidade, i.estado].filter(Boolean).join("/")}</TableCell>
                     <TableCell className="text-sm">{i.segmento}</TableCell>
-                    <TableCell className="text-right tabular-nums">{(i.followers / 1000).toFixed(0)}k</TableCell>
-                    <TableCell className="text-right tabular-nums">{i.eng}%</TableCell>
-                    <TableCell className="text-right tabular-nums">{BRL(i.valor)}</TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground">{i.antes} → {i.depois}/d</TableCell>
+                    <TableCell className="text-right tabular-nums">{i.seguidores >= 1000 ? `${(i.seguidores / 1000).toFixed(0)}k` : i.seguidores}</TableCell>
+                    <TableCell className="text-right tabular-nums">{Number(i.engajamento).toFixed(1)}%</TableCell>
+                    <TableCell className="text-right tabular-nums">{BRL(Number(i.valor))}</TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">{va} → {vd}/d</TableCell>
                     <TableCell className="text-right">
-                      <Badge className="bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/15">+{Math.round(lift)}%</Badge>
+                      <Badge className={lift >= 0 ? "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/15" : "bg-red-500/15 text-red-600 hover:bg-red-500/15"}>
+                        {lift >= 0 ? "+" : ""}{Math.round(lift)}%
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right font-semibold tabular-nums">{Math.round(roi)}%</TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <Button size="icon" variant="ghost" onClick={() => edit(i)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button size="icon" variant="ghost" onClick={() => del.mutate(i.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}
+              {items.length === 0 && (
+                <TableRow><TableCell colSpan={10} className="text-center text-sm text-muted-foreground py-8">
+                  Nenhum influencer cadastrado. Clique em "Novo" para começar.
+                </TableCell></TableRow>
+              )}
             </TableBody>
           </Table>
+          </div>
           <p className="mt-3 text-xs text-muted-foreground">
             ROI = (receita incremental − investimento) / investimento · Receita = (Δ vendas/dia) × 30 × ticket médio.
           </p>

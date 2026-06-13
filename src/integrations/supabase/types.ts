@@ -185,6 +185,75 @@ export type Database = {
         }
         Relationships: []
       }
+      influencers: {
+        Row: {
+          cidade: string | null
+          created_at: string
+          data_postagem: string | null
+          engajamento: number
+          estado: string | null
+          foto_url: string | null
+          id: string
+          instagram: string | null
+          nome: string
+          notes: string | null
+          owner_id: string
+          segmento: string | null
+          seguidores: number
+          ticket_medio: number
+          tiktok: string | null
+          updated_at: string
+          valor: number
+          vendas_antes: number
+          vendas_depois: number
+          youtube: string | null
+        }
+        Insert: {
+          cidade?: string | null
+          created_at?: string
+          data_postagem?: string | null
+          engajamento?: number
+          estado?: string | null
+          foto_url?: string | null
+          id?: string
+          instagram?: string | null
+          nome: string
+          notes?: string | null
+          owner_id: string
+          segmento?: string | null
+          seguidores?: number
+          ticket_medio?: number
+          tiktok?: string | null
+          updated_at?: string
+          valor?: number
+          vendas_antes?: number
+          vendas_depois?: number
+          youtube?: string | null
+        }
+        Update: {
+          cidade?: string | null
+          created_at?: string
+          data_postagem?: string | null
+          engajamento?: number
+          estado?: string | null
+          foto_url?: string | null
+          id?: string
+          instagram?: string | null
+          nome?: string
+          notes?: string | null
+          owner_id?: string
+          segmento?: string | null
+          seguidores?: number
+          ticket_medio?: number
+          tiktok?: string | null
+          updated_at?: string
+          valor?: number
+          vendas_antes?: number
+          vendas_depois?: number
+          youtube?: string | null
+        }
+        Relationships: []
+      }
       inventory_items: {
         Row: {
           balance: number
