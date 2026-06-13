@@ -1219,8 +1219,8 @@ function RestockEngine({ sales, inventory, products }: { sales: any[]; inventory
       else if (daysCover < COVER_TARGET) level = "warning";
       const product = productBySku.get(i.sku);
       return { ...i, velocity, daysCover, suggested, level, productName: product?.name };
-    }).sort((a, b) => {
-      const order = { critical: 0, warning: 1, ok: 2 } as const;
+    }).sort((a: any, b: any) => {
+      const order: Record<string, number> = { critical: 0, warning: 1, ok: 2 };
       if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
       return b.suggested - a.suggested;
     });
