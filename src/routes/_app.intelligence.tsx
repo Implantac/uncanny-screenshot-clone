@@ -87,6 +87,10 @@ function IntelligencePage() {
     queryKey: ["intel", "prototypes"],
     queryFn: async () => (await supabase.from("prototypes").select("*")).data ?? [],
   });
+  const salesQ = useQuery({
+    queryKey: ["intel", "sales"],
+    queryFn: async () => (await (supabase as any).from("sales").select("*").order("sold_at", { ascending: false })).data ?? [],
+  });
 
   return (
     <div className="space-y-6">
