@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
-import { ArrowUpRight, Package, Factory, Users, CircleDollarSign, AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowUpRight, Package, Factory, Users, CircleDollarSign, AlertTriangle, CheckCircle2, Sparkles, Activity, TrendingUp, Palette, Shirt, Scissors } from "lucide-react";
 import { MODULES } from "@/lib/modules";
 import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({
@@ -22,16 +23,20 @@ function useDashboard() {
   return useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const [orders, prod, cols, inv] = await Promise.all([
+      const [orders, prod, cols, inv, prods, protos] = await Promise.all([
         supabase.from("b2b_orders").select("total_value, customer_name, order_date, status, created_at"),
-        supabase.from("production_orders").select("quantity, progress, status, created_at, due_date"),
-        supabase.from("collections").select("name, status, progress, year").order("created_at", { ascending: false }).limit(6),
+        supabase.from("production_orders").select("code, quantity, progress, status, created_at, due_date"),
+        supabase.from("collections").select("name, status, progress, year, created_at").order("created_at", { ascending: false }).limit(6),
         supabase.from("inventory_items").select("name, balance, minimum, unit"),
+        supabase.from("products").select("name, category, colors, created_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("prototypes").select("code, stage, created_at").order("created_at", { ascending: false }).limit(20),
       ]);
       const o = orders.data ?? [];
       const p = prod.data ?? [];
       const c = cols.data ?? [];
       const i = inv.data ?? [];
+      const pr = prods.data ?? [];
+      const pt = protos.data ?? [];
 
       const now = new Date();
       const thisMonth = (d: string) => { const x = new Date(d); return x.getMonth() === now.getMonth() && x.getFullYear() === now.getFullYear(); };
@@ -41,7 +46,6 @@ function useDashboard() {
       const customers = new Set(o.map((r) => r.customer_name).filter(Boolean)).size;
       const critical = i.filter((r) => Number(r.balance ?? 0) <= Number(r.minimum ?? 0));
 
-      // 12-month revenue series
       const months: { m: string; v: number }[] = [];
       for (let k = 11; k >= 0; k--) {
         const dt = new Date(now.getFullYear(), now.getMonth() - k, 1);
@@ -54,7 +58,6 @@ function useDashboard() {
         months.push({ m: label, v: Number(v.toFixed(1)) });
       }
 
-      // Production: planned vs delivered per status
       const planned = p.reduce((a, b) => a + (b.quantity ?? 0), 0);
       const done = p.reduce((a, b) => a + Math.round((b.quantity ?? 0) * ((b.progress ?? 0) / 100)), 0);
       const productionData = [
@@ -63,22 +66,96 @@ function useDashboard() {
         { d: "Concluído", v: p.filter((r) => r.status === "concluida").reduce((a, b) => a + (b.quantity ?? 0), 0) },
       ];
 
+      // Operational feed — unified timeline of recent events
+      type FeedItem = { ts: number; kind: "produto" | "coleção" | "produção" | "pedido" | "protótipo"; title: string; meta?: string };
+      const feed: FeedItem[] = [];
+      pr.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "produto", title: `Produto ${r.name} criado`, meta: r.category ?? undefined }));
+      c.forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "coleção", title: `Coleção ${r.name}`, meta: r.status }));
+      p.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "produção", title: `OP ${r.code ?? ""} · ${r.quantity ?? 0} pç`, meta: r.status }));
+      o.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "pedido", title: `Pedido B2B · ${r.customer_name ?? "—"}`, meta: r.status }));
+      pt.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "protótipo", title: `Protótipo ${r.code ?? ""}`, meta: r.stage }));
+      feed.sort((a, b) => b.ts - a.ts);
+
+      // Trend radar — most frequent attributes across recent products
+      const count = (arr: (string | null | undefined)[]) => {
+        const m = new Map<string, number>();
+        arr.forEach((x) => { if (x) m.set(x, (m.get(x) ?? 0) + 1); });
+        return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([label, n]) => ({ label, n }));
+      };
+      const trends = {
+        colors: count(pr.flatMap((r: any) => Array.isArray(r.colors) ? r.colors : [])),
+        categories: count(pr.map((r: any) => r.category)),
+        collections: count(c.map((r: any) => r.name)),
+      };
+
+
       return {
         kpis: { revenue, pieces, ordersCount, customers },
         critical,
         collections: c,
         months,
         productionData,
+        feed: feed.slice(0, 10),
+        trends,
       };
     },
   });
 }
+
+function relTime(ts: number) {
+  const diff = (Date.now() - ts) / 1000;
+  if (diff < 60) return "agora";
+  if (diff < 3600) return `há ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `há ${Math.floor(diff / 3600)} h`;
+  return `há ${Math.floor(diff / 86400)} d`;
+}
+
+const FEED_ICON: Record<string, typeof Activity> = {
+  produto: Package,
+  coleção: Sparkles,
+  produção: Factory,
+  pedido: CircleDollarSign,
+  protótipo: Scissors,
+};
+
+function TrendBlock({ icon: Icon, title, items }: { icon: typeof Activity; title: string; items: { label: string; n: number }[] }) {
+  const max = Math.max(1, ...items.map((i) => i.n));
+  return (
+    <div>
+      <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 mb-2"><Icon className="size-3.5" /> {title}</div>
+      {items.length ? (
+        <ul className="space-y-1.5">
+          {items.map((it) => (
+            <li key={it.label} className="flex items-center gap-2 text-xs">
+              <span className="w-20 truncate">{it.label}</span>
+              <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(it.n / max) * 100}%` }} />
+              </div>
+              <span className="tabular-nums text-muted-foreground w-6 text-right">{it.n}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="text-xs text-muted-foreground">Sem dados ainda</div>
+      )}
+    </div>
+  );
+}
+
+
+
 
 function CommandCenter() {
   const { data, isLoading } = useDashboard();
   const [today, setToday] = useState("");
   useEffect(() => { setToday(new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })); }, []);
   const k = data?.kpis;
+  const greeting = useMemo(() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Bom dia";
+    if (h < 18) return "Boa tarde";
+    return "Boa noite";
+  }, []);
 
   const kpis = [
     { label: "Receita do mês", value: k ? brl(k.revenue) : "—", icon: CircleDollarSign, color: "text-success" },
@@ -93,7 +170,7 @@ function CommandCenter() {
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Command Center</div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-            Boa tarde, <span className="text-gradient">USE Moda</span>
+            {greeting}, <span className="text-gradient">USE Moda</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             Pulso da operação em tempo real{today && ` · ${today}`}
@@ -220,6 +297,55 @@ function CommandCenter() {
           )}
         </div>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 glass rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-sm font-semibold flex items-center gap-2"><Activity className="size-4 text-primary" /> Feed operacional</div>
+              <div className="text-xs text-muted-foreground">Últimos eventos da operação</div>
+            </div>
+          </div>
+          {data?.feed?.length ? (
+            <ol className="relative space-y-3 before:absolute before:left-[15px] before:top-1 before:bottom-1 before:w-px before:bg-border">
+              {data.feed.map((f, idx) => {
+                const Icon = FEED_ICON[f.kind] ?? Activity;
+                return (
+                  <li key={idx} className="relative flex gap-3 pl-0">
+                    <div className="size-8 shrink-0 rounded-full bg-primary/10 text-primary grid place-items-center ring-4 ring-background">
+                      <Icon className="size-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1 pt-1">
+                      <div className="text-sm font-medium truncate">{f.title}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                        <span className="uppercase tracking-wide">{f.kind}</span>
+                        {f.meta && <><span>·</span><span className="truncate">{f.meta}</span></>}
+                        <span>·</span><span>{relTime(f.ts)}</span>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          ) : (
+            <div className="py-8 text-center text-sm text-muted-foreground">Sem eventos recentes</div>
+          )}
+        </div>
+
+        <div className="glass rounded-xl p-5">
+          <div className="text-sm font-semibold flex items-center gap-2"><TrendingUp className="size-4 text-primary" /> Radar de tendências</div>
+          <div className="text-xs text-muted-foreground mb-4">Sinais do seu catálogo</div>
+          {data && (
+            <div className="space-y-5">
+              <TrendBlock icon={Palette} title="Cores em alta" items={data.trends.colors} />
+              <TrendBlock icon={Shirt} title="Categorias" items={data.trends.categories} />
+              <TrendBlock icon={Sparkles} title="Coleções ativas" items={data.trends.collections} />
+            </div>
+          )}
+        </div>
+      </div>
+
+
 
       <div>
         <div className="text-sm font-semibold mb-3">Acesso rápido aos módulos</div>
