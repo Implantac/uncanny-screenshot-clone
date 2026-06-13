@@ -142,9 +142,14 @@ function IntelligencePage() {
           <ProductScore products={productsQ.data ?? []} orders={ordersQ.data ?? []} />
         </TabsContent>
 
+        {/* ----------------- VENDAS (M37/M38 — fonte real) ----------------- */}
+        <TabsContent value="sales">
+          <SalesSuite products={productsQ.data ?? []} />
+        </TabsContent>
+
         {/* ----------------- GEO + ATRIBUIÇÃO (M38 + M41) ----------------- */}
         <TabsContent value="geo" className="space-y-6">
-          <GeoSales products={productsQ.data ?? []} b2b={b2bQ.data ?? []} />
+          <GeoSales products={productsQ.data ?? []} b2b={b2bQ.data ?? []} sales={salesQ.data ?? []} />
           <Attribution campaigns={mktQ.data ?? []} b2b={b2bQ.data ?? []} />
         </TabsContent>
 
@@ -163,6 +168,7 @@ function IntelligencePage() {
               b2b: b2bQ.data?.length ?? 0,
               campaigns: mktQ.data?.length ?? 0,
               prototypes: protoQ.data?.length ?? 0,
+              sales: salesQ.data?.length ?? 0,
             }}
           />
         </TabsContent>
