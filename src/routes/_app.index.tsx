@@ -124,6 +124,12 @@ function CommandCenter() {
   const [today, setToday] = useState("");
   useEffect(() => { setToday(new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })); }, []);
   const k = data?.kpis;
+  const greeting = useMemo(() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Bom dia";
+    if (h < 18) return "Boa tarde";
+    return "Boa noite";
+  }, []);
 
   const kpis = [
     { label: "Receita do mês", value: k ? brl(k.revenue) : "—", icon: CircleDollarSign, color: "text-success" },
@@ -138,7 +144,7 @@ function CommandCenter() {
         <div>
           <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Command Center</div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-            Boa tarde, <span className="text-gradient">USE Moda</span>
+            {greeting}, <span className="text-gradient">USE Moda</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             Pulso da operação em tempo real{today && ` · ${today}`}
