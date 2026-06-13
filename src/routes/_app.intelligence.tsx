@@ -420,9 +420,14 @@ function PcpKanban({ orders, products }: any) {
     <Card>
       <CardHeader>
         <CardTitle>PCP Kanban</CardTitle>
-        <CardDescription>Arraste os cards entre as colunas — status persistido em tempo real.</CardDescription>
+        <CardDescription>
+          {canMove
+            ? "Arraste os cards entre as colunas (para frente ou para trás) — status persistido em tempo real."
+            : rolesLoading ? "Carregando permissões…" : "Somente admin, gerente ou comprador podem mover cards."}
+        </CardDescription>
       </CardHeader>
       <CardContent>
+
         <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
           {PCP_STAGES.map((stage) => {
             const items = map.get(stage) ?? [];
