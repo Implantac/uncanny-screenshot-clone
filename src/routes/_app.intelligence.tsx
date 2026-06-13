@@ -141,7 +141,7 @@ function IntelligencePage() {
 
         {/* ----------------- PRODUCT SCORE (M47 + M48) ----------------- */}
         <TabsContent value="score">
-          <ProductScore products={productsQ.data ?? []} orders={ordersQ.data ?? []} />
+          <ProductScore products={productsQ.data ?? []} sales={salesQ.data ?? []} inventory={invQ.data ?? []} />
         </TabsContent>
 
         {/* ----------------- VENDAS (M37/M38 — fonte real) ----------------- */}
