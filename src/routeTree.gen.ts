@@ -20,6 +20,7 @@ import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
 import { Route as AppPcpRouteImport } from './routes/_app.pcp'
 import { Route as AppMobileRouteImport } from './routes/_app.mobile'
 import { Route as AppMarketingRouteImport } from './routes/_app.marketing'
+import { Route as AppIntelligenceRouteImport } from './routes/_app.intelligence'
 import { Route as AppFornecedoresRouteImport } from './routes/_app.fornecedores'
 import { Route as AppFinanceiroRouteImport } from './routes/_app.financeiro'
 import { Route as AppFichaTecnicaRouteImport } from './routes/_app.ficha-tecnica'
@@ -84,6 +85,11 @@ const AppMobileRoute = AppMobileRouteImport.update({
 const AppMarketingRoute = AppMarketingRouteImport.update({
   id: '/marketing',
   path: '/marketing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIntelligenceRoute = AppIntelligenceRouteImport.update({
+  id: '/intelligence',
+  path: '/intelligence',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFornecedoresRoute = AppFornecedoresRouteImport.update({
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/financeiro': typeof AppFinanceiroRoute
   '/fornecedores': typeof AppFornecedoresRoute
+  '/intelligence': typeof AppIntelligenceRoute
   '/marketing': typeof AppMarketingRoute
   '/mobile': typeof AppMobileRoute
   '/pcp': typeof AppPcpRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/financeiro': typeof AppFinanceiroRoute
   '/fornecedores': typeof AppFornecedoresRoute
+  '/intelligence': typeof AppIntelligenceRoute
   '/marketing': typeof AppMarketingRoute
   '/mobile': typeof AppMobileRoute
   '/pcp': typeof AppPcpRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/_app/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/_app/financeiro': typeof AppFinanceiroRoute
   '/_app/fornecedores': typeof AppFornecedoresRoute
+  '/_app/intelligence': typeof AppIntelligenceRoute
   '/_app/marketing': typeof AppMarketingRoute
   '/_app/mobile': typeof AppMobileRoute
   '/_app/pcp': typeof AppPcpRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fornecedores'
+    | '/intelligence'
     | '/marketing'
     | '/mobile'
     | '/pcp'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fornecedores'
+    | '/intelligence'
     | '/marketing'
     | '/mobile'
     | '/pcp'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/_app/ficha-tecnica'
     | '/_app/financeiro'
     | '/_app/fornecedores'
+    | '/_app/intelligence'
     | '/_app/marketing'
     | '/_app/mobile'
     | '/_app/pcp'
@@ -371,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMarketingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/intelligence': {
+      id: '/_app/intelligence'
+      path: '/intelligence'
+      fullPath: '/intelligence'
+      preLoaderRoute: typeof AppIntelligenceRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/fornecedores': {
       id: '/_app/fornecedores'
       path: '/fornecedores'
@@ -463,6 +482,7 @@ interface AppRouteChildren {
   AppFichaTecnicaRoute: typeof AppFichaTecnicaRoute
   AppFinanceiroRoute: typeof AppFinanceiroRoute
   AppFornecedoresRoute: typeof AppFornecedoresRoute
+  AppIntelligenceRoute: typeof AppIntelligenceRoute
   AppMarketingRoute: typeof AppMarketingRoute
   AppMobileRoute: typeof AppMobileRoute
   AppPcpRoute: typeof AppPcpRoute
@@ -485,6 +505,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFichaTecnicaRoute: AppFichaTecnicaRoute,
   AppFinanceiroRoute: AppFinanceiroRoute,
   AppFornecedoresRoute: AppFornecedoresRoute,
+  AppIntelligenceRoute: AppIntelligenceRoute,
   AppMarketingRoute: AppMarketingRoute,
   AppMobileRoute: AppMobileRoute,
   AppPcpRoute: AppPcpRoute,
@@ -505,13 +526,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
