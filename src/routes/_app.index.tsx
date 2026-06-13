@@ -71,7 +71,7 @@ function useDashboard() {
       const feed: FeedItem[] = [];
       pr.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "produto", title: `Produto ${r.name} criado`, meta: r.category ?? undefined }));
       c.forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "coleção", title: `Coleção ${r.name}`, meta: r.status }));
-      p.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "produção", title: `OP ${r.reference ?? ""} · ${r.quantity ?? 0} pç`, meta: r.status }));
+      p.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "produção", title: `OP ${r.code ?? ""} · ${r.quantity ?? 0} pç`, meta: r.status }));
       o.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "pedido", title: `Pedido B2B · ${r.customer_name ?? "—"}`, meta: r.status }));
       pt.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "protótipo", title: `Protótipo ${r.name}`, meta: r.status }));
       feed.sort((a, b) => b.ts - a.ts);
