@@ -139,40 +139,86 @@ function Prototipos() {
       </div>
 
       {isLoading ? <p className="text-muted-foreground">Carregando…</p> : (
-        <div className="rounded-xl border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/30 text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="text-left px-4 py-3">Código</th>
-                <th className="text-left px-4 py-3">Produto</th>
-                <th className="text-left px-4 py-3">Facção</th>
-                <th className="text-left px-4 py-3">Etapa</th>
-                <th className="text-left px-4 py-3">Prazo</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(p => (
-                <tr key={p.id} className="border-t border-border hover:bg-muted/20">
-                  <td className="px-4 py-3 font-mono text-xs">{p.code}</td>
-                  <td className="px-4 py-3">{productName(p.product_id)}</td>
-                  <td className="px-4 py-3">{supplierName(p.supplier_id)}</td>
-                  <td className="px-4 py-3"><Badge variant="outline" className={STAGE_COLOR[p.stage]}>{STAGE_LABEL[p.stage]}</Badge></td>
-                  <td className="px-4 py-3 text-muted-foreground">{p.due_date ?? "—"}</td>
-                  <td className="px-4 py-3 text-right">
-                    {user?.id === p.owner_id && (
-                      <div className="flex gap-1 justify-end">
-                        <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="size-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => del.mutate(p.id)}><Trash2 className="size-4" /></Button>
-                      </div>
-                    )}
-                  </td>
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {(Object.keys(STAGE_LABEL) as Stage[]).map(st => {
+              const n = items.filter(i => i.stage === st).length;
+              const pct = items.length ? Math.round((n / items.length) * 100) : 0;
+              return (
+                <div key={st} className="rounded-xl border border-border bg-card/50 p-4 space-y-2">
+                  <Badge variant="outline" className={STAGE_COLOR[st]}>{STAGE_LABEL[st]}</Badge>
+                  <div className="text-2xl font-semibold">{n}</div>
+                  <div className="h-1 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">{pct}% do funil</div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {(Object.keys(STAGE_LABEL) as Stage[]).map(st => {
+              const col = items.filter(i => i.stage === st);
+              return (
+                <div key={st} className="rounded-xl border border-border bg-muted/10 p-3 space-y-2 min-h-[200px]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium">{STAGE_LABEL[st]}</span>
+                    <span className="text-xs text-muted-foreground">{col.length}</span>
+                  </div>
+                  {col.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => user?.id === p.owner_id && openEdit(p)}
+                      className="w-full text-left rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-1"
+                    >
+                      <div className="font-mono text-xs text-muted-foreground">{p.code}</div>
+                      <div className="text-sm font-medium truncate">{productName(p.product_id)}</div>
+                      <div className="text-xs text-muted-foreground truncate">{supplierName(p.supplier_id)}</div>
+                      {p.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {p.due_date}</div>}
+                    </button>
+                  ))}
+                  {!col.length && <p className="text-xs text-muted-foreground/60 text-center py-6">vazio</p>}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="rounded-xl border border-border overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/30 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="text-left px-4 py-3">Código</th>
+                  <th className="text-left px-4 py-3">Produto</th>
+                  <th className="text-left px-4 py-3">Facção</th>
+                  <th className="text-left px-4 py-3">Etapa</th>
+                  <th className="text-left px-4 py-3">Prazo</th>
+                  <th className="px-4 py-3"></th>
                 </tr>
-              ))}
-              {items.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Nenhum protótipo ainda</td></tr>}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {items.map(p => (
+                  <tr key={p.id} className="border-t border-border hover:bg-muted/20">
+                    <td className="px-4 py-3 font-mono text-xs">{p.code}</td>
+                    <td className="px-4 py-3">{productName(p.product_id)}</td>
+                    <td className="px-4 py-3">{supplierName(p.supplier_id)}</td>
+                    <td className="px-4 py-3"><Badge variant="outline" className={STAGE_COLOR[p.stage]}>{STAGE_LABEL[p.stage]}</Badge></td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.due_date ?? "—"}</td>
+                    <td className="px-4 py-3 text-right">
+                      {user?.id === p.owner_id && (
+                        <div className="flex gap-1 justify-end">
+                          <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="size-4" /></Button>
+                          <Button size="icon" variant="ghost" onClick={() => del.mutate(p.id)}><Trash2 className="size-4" /></Button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {items.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Nenhum protótipo ainda</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <Dialog open={open} onOpenChange={(o) => !o && reset()}>
