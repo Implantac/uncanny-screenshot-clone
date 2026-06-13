@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   Brain, Activity, Map as MapIcon, Megaphone, Sparkles, Factory, Boxes,
   TrendingUp, AlertTriangle, CheckCircle2, Users, Database, Target, Trophy,
-  Scissors, Cpu, Search, Plus, Pencil, Trash2, ShoppingCart,
+  Scissors, Cpu, Search, Plus, Pencil, Trash2, ShoppingCart, PackageSearch,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
