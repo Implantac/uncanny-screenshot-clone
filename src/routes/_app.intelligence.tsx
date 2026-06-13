@@ -717,43 +717,78 @@ function GeoSales({ products, b2b, sales = [] }: any) {
   );
 }
 
-/* ===================== ATTRIBUTION (M41) ===================== */
-function Attribution({ campaigns, b2b }: any) {
-  const sources = ["Instagram", "TikTok", "Google", "Influenciador", "Representante", "Marketplace"];
-  const totalRevenue = (b2b as any[]).reduce((s, o) => s + Number(o.total_value || 0), 0) || 250000;
-  const data = sources.map((src, i) => {
-    const share = seed(src)(0.08, 0.25);
-    return { name: src, value: Math.round(totalRevenue * share) };
-  });
+/* ===================== ATTRIBUTION (M41) — real channel mix ===================== */
+const CHANNEL_LABEL: Record<string, string> = {
+  ecommerce: "E-commerce",
+  marketplace: "Marketplace",
+  b2b: "B2B / Multimarcas",
+  loja_fisica: "Loja Física",
+  influenciador: "Influenciador",
+  instagram: "Instagram",
+  tiktok: "TikTok",
+};
+
+function Attribution({ campaigns, b2b, sales = [] }: any) {
+  const revenueByChannel = new Map<string, number>();
+  for (const s of sales as any[]) {
+    const k = String(s.channel ?? "ecommerce");
+    revenueByChannel.set(k, (revenueByChannel.get(k) ?? 0) + Number(s.total || 0));
+  }
+  const b2bRevenue = (b2b as any[]).reduce((s, o) => s + Number(o.total_value || 0), 0);
+  if (b2bRevenue > 0) revenueByChannel.set("b2b", (revenueByChannel.get("b2b") ?? 0) + b2bRevenue);
+
+  const data = Array.from(revenueByChannel.entries())
+    .map(([k, v]) => ({ name: CHANNEL_LABEL[k] ?? k, value: Math.round(v) }))
+    .filter((d) => d.value > 0)
+    .sort((a, b) => b.value - a.value);
+
+  const total = data.reduce((s, d) => s + d.value, 0);
+  const hasData = data.length > 0;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2"><Megaphone className="h-4 w-4" />Marketing Attribution Engine</CardTitle>
-        <CardDescription>Receita atribuída por canal · {(campaigns as any[]).length} campanhas ativas</CardDescription>
+        <CardDescription>
+          Receita real por canal · {(campaigns as any[]).length} campanhas · {(sales as any[]).length} vendas · {(b2b as any[]).length} pedidos B2B
+        </CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-6 lg:grid-cols-2">
-        <div className="h-72">
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie data={data} dataKey="value" nameKey="name" innerRadius={50} outerRadius={100} paddingAngle={2}>
-                {data.map((_, i) => <Cell key={i} fill={palette[i % palette.length]} />)}
-              </Pie>
-              <Tooltip formatter={(v: any) => BRL(Number(v))} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="space-y-2">
-          {data.map((d, i) => (
-            <div key={d.name} className="flex items-center justify-between rounded-lg border p-3">
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full" style={{ background: palette[i % palette.length] }} />
-                <span className="text-sm font-medium">{d.name}</span>
-              </div>
-              <span className="tabular-nums text-sm">{BRL(d.value)}</span>
+      <CardContent>
+        {!hasData ? (
+          <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
+            Sem vendas registradas ainda. Cadastre vendas na aba <strong>Vendas</strong> para ver a atribuição real por canal.
+          </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="h-72">
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie data={data} dataKey="value" nameKey="name" innerRadius={50} outerRadius={100} paddingAngle={2}>
+                    {data.map((_, i) => <Cell key={i} fill={palette[i % palette.length]} />)}
+                  </Pie>
+                  <Tooltip formatter={(v: any) => BRL(Number(v))} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-          ))}
-        </div>
+            <div className="space-y-2">
+              {data.map((d, i) => {
+                const share = total > 0 ? (d.value / total) * 100 : 0;
+                return (
+                  <div key={d.name} className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full" style={{ background: palette[i % palette.length] }} />
+                      <span className="text-sm font-medium">{d.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="tabular-nums text-sm font-semibold">{BRL(d.value)}</div>
+                      <div className="text-xs text-muted-foreground">{PCT(share)} do total</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
