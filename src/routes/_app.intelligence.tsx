@@ -111,6 +111,7 @@ function IntelligencePage() {
           <TabsTrigger value="kanban"><Activity className="mr-1 h-4 w-4" />PCP Kanban</TabsTrigger>
           <TabsTrigger value="dev"><Sparkles className="mr-1 h-4 w-4" />Desenvolvimento</TabsTrigger>
           <TabsTrigger value="score"><Trophy className="mr-1 h-4 w-4" />Product Score</TabsTrigger>
+          <TabsTrigger value="sales"><ShoppingCart className="mr-1 h-4 w-4" />Vendas</TabsTrigger>
           <TabsTrigger value="geo"><MapIcon className="mr-1 h-4 w-4" />Geo & Atribuição</TabsTrigger>
           <TabsTrigger value="influencers"><Users className="mr-1 h-4 w-4" />Influencers</TabsTrigger>
           <TabsTrigger value="lake"><Database className="mr-1 h-4 w-4" />Data Lake</TabsTrigger>
