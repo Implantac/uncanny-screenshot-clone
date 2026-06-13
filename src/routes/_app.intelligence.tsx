@@ -657,65 +657,78 @@ function ProductScore({ products, sales, inventory }: any) {
 }
 
 /* ===================== GEO SALES (M38) ===================== */
-function GeoSales({ products, b2b, sales = [] }: any) {
-  const states = ["SP", "MG", "RJ", "PR", "RS", "SC", "BA", "GO", "DF", "CE", "PE", "ES", "MT", "AM", "AC", "RR"];
-  const real = (sales as any[]).length > 0;
-  const data = states.map((uf, i) => {
-    const realVal = (sales as any[])
-      .filter((s) => s.uf === uf)
-      .reduce((acc, s) => acc + Number(s.quantity || 0), 0);
-    const sales_ = real ? realVal : Math.round(seed(uf)(20, 100) * (1 - i * 0.04));
-    return { uf, sales: sales_ };
-  });
-  const top = [...data].sort((a, b) => b.sales - a.sales).slice(0, 5);
+function GeoSales({ b2b, sales = [] }: any) {
+  const byUf = new Map<string, number>();
+  for (const s of sales as any[]) {
+    const uf = String(s.uf ?? "").toUpperCase();
+    if (!uf) continue;
+    byUf.set(uf, (byUf.get(uf) ?? 0) + Number(s.quantity || 0));
+  }
+  const data = Array.from(byUf.entries())
+    .map(([uf, sales]) => ({ uf, sales }))
+    .sort((a, b) => b.sales - a.sales);
+  const top = data.slice(0, 5);
   const bottom = [...data].sort((a, b) => a.sales - b.sales).slice(0, 3);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2"><MapIcon className="h-4 w-4" />Geo Sales Intelligence</CardTitle>
-        <CardDescription>Aceitação por estado · {(b2b as any[]).length} pedidos analisados</CardDescription>
+        <CardDescription>
+          {data.length === 0
+            ? "Sem vendas registradas com UF"
+            : `Aceitação por estado · ${(b2b as any[]).length} pedidos B2B analisados`}
+        </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 h-72">
-          <ResponsiveContainer>
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="uf" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="sales" fill={palette[1]} radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <div className="mb-2 text-xs uppercase tracking-wide text-emerald-600">Maior aceitação</div>
-            <div className="space-y-1">
-              {top.map((s) => (
-                <div key={s.uf} className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{s.uf}</span>
-                  <span className="tabular-nums text-muted-foreground">{s.sales}</span>
-                </div>
-              ))}
-            </div>
+        {data.length === 0 ? (
+          <div className="lg:col-span-3 rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+            Registre vendas com UF na aba <strong>Vendas</strong> para ver a distribuição geográfica.
           </div>
-          <div>
-            <div className="mb-2 text-xs uppercase tracking-wide text-red-500">Baixa performance</div>
-            <div className="space-y-1">
-              {bottom.map((s) => (
-                <div key={s.uf} className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{s.uf}</span>
-                  <span className="tabular-nums text-muted-foreground">{s.sales}</span>
-                </div>
-              ))}
+        ) : (
+          <>
+            <div className="lg:col-span-2 h-72">
+              <ResponsiveContainer>
+                <BarChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="uf" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="sales" fill={palette[1]} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-        </div>
+            <div className="space-y-4">
+              <div>
+                <div className="mb-2 text-xs uppercase tracking-wide text-emerald-600">Maior aceitação</div>
+                <div className="space-y-1">
+                  {top.map((s) => (
+                    <div key={s.uf} className="flex items-center justify-between text-sm">
+                      <span className="font-medium">{s.uf}</span>
+                      <span className="tabular-nums text-muted-foreground">{s.sales}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="mb-2 text-xs uppercase tracking-wide text-red-500">Baixa performance</div>
+                <div className="space-y-1">
+                  {bottom.map((s) => (
+                    <div key={s.uf} className="flex items-center justify-between text-sm">
+                      <span className="font-medium">{s.uf}</span>
+                      <span className="tabular-nums text-muted-foreground">{s.sales}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
 }
+
 
 /* ===================== ATTRIBUTION (M41) — real channel mix ===================== */
 const CHANNEL_LABEL: Record<string, string> = {
