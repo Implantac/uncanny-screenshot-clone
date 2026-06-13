@@ -141,7 +141,7 @@ function IntelligencePage() {
 
         {/* ----------------- PRODUCT SCORE (M47 + M48) ----------------- */}
         <TabsContent value="score">
-          <ProductScore products={productsQ.data ?? []} orders={ordersQ.data ?? []} />
+          <ProductScore products={productsQ.data ?? []} sales={salesQ.data ?? []} inventory={invQ.data ?? []} />
         </TabsContent>
 
         {/* ----------------- VENDAS (M37/M38 — fonte real) ----------------- */}
@@ -543,16 +543,43 @@ function DevelopmentBoard({ prototypes }: any) {
 }
 
 /* ===================== PRODUCT SCORE (M47/M48) ===================== */
-function ProductScore({ products, orders }: any) {
+function ProductScore({ products, sales, inventory }: any) {
+  // Real aggregates from sales + inventory
+  const salesByProduct = new Map<string, { units: number; revenue: number }>();
+  for (const s of (sales as any[])) {
+    if (!s.product_id) continue;
+    const cur = salesByProduct.get(s.product_id) ?? { units: 0, revenue: 0 };
+    cur.units += Number(s.quantity || 0);
+    cur.revenue += Number(s.total || 0);
+    salesByProduct.set(s.product_id, cur);
+  }
+  const stockByProduct = new Map<string, number>();
+  for (const i of (inventory as any[])) {
+    if (!i.product_id) continue;
+    stockByProduct.set(i.product_id, (stockByProduct.get(i.product_id) ?? 0) + Number(i.balance || 0));
+  }
+  const maxUnits = Math.max(1, ...Array.from(salesByProduct.values()).map((v) => v.units));
+  const maxRevenue = Math.max(1, ...Array.from(salesByProduct.values()).map((v) => v.revenue));
+
   const scored = (products as any[]).map((p) => {
-    const r = seed(p.id);
-    const margin = p.sell_price && p.cost_price ? ((p.sell_price - p.cost_price) / p.sell_price) * 100 : r(20, 55);
-    const sales = r(20, 100);
-    const roi = r(40, 95);
-    const turnover = r(30, 95);
-    const returns = r(0, 12);
-    const score = Math.round(sales * 0.3 + roi * 0.25 + turnover * 0.25 + margin * 0.15 - returns * 0.5);
-    return { ...p, score, margin: Math.round(margin), sales: Math.round(sales), roi: Math.round(roi), turnover: Math.round(turnover) };
+    const sAgg = salesByProduct.get(p.id) ?? { units: 0, revenue: 0 };
+    const stock = stockByProduct.get(p.id) ?? 0;
+    const sellPrice = Number(p.sell_price || 0);
+    const costPrice = Number(p.cost_price || 0);
+    const margin = sellPrice > 0 ? ((sellPrice - costPrice) / sellPrice) * 100 : 0;
+    const salesIdx = (sAgg.units / maxUnits) * 100;
+    const revenueIdx = (sAgg.revenue / maxRevenue) * 100;
+    const turnover = stock + sAgg.units > 0 ? (sAgg.units / (stock + sAgg.units)) * 100 : 0;
+    const score = Math.round(salesIdx * 0.35 + revenueIdx * 0.25 + turnover * 0.2 + Math.max(0, margin) * 0.2);
+    return {
+      ...p,
+      score,
+      margin: Math.round(margin),
+      sales: sAgg.units,
+      revenue: sAgg.revenue,
+      turnover: Math.round(turnover),
+      roi: Math.round(revenueIdx),
+    };
   }).sort((a, b) => b.score - a.score);
 
   const top = scored.slice(0, 8);
