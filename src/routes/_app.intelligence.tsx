@@ -390,9 +390,12 @@ function inferStage(o: any): Stage {
 
 function PcpKanban({ orders, products }: any) {
   const qc = useQueryClient();
+  const { isAdmin, isGerente, roles, loading: rolesLoading } = useRoles();
+  const canMove = isAdmin || isGerente || roles.includes("comprador");
   const [dragId, setDragId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<string | null>(null);
   const productMap = new Map((products as any[]).map((p) => [p.id, p]));
+
 
   const move = useMutation({
     mutationFn: async ({ id, stage }: { id: string; stage: Stage }) => {
