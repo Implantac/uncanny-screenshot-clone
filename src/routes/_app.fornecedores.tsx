@@ -66,6 +66,17 @@ function FornecedoresPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const total = suppliers.length;
+  const ativos = suppliers.filter(s => s.active).length;
+  const avgRating = total ? (suppliers.reduce((a, s) => a + (s.rating || 0), 0) / total).toFixed(1) : "—";
+  const topCats = Object.entries(
+    suppliers.reduce<Record<string, number>>((m, s) => {
+      const k = s.category || "Sem categoria";
+      m[k] = (m[k] || 0) + 1;
+      return m;
+    }, {})
+  ).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -79,6 +90,32 @@ function FornecedoresPage() {
           <Plus className="size-4" /> Novo Fornecedor
         </Button>
       </div>
+
+      {total > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="rounded-xl border border-border bg-card/50 p-4">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Total</div>
+            <div className="text-2xl font-semibold">{total}</div>
+          </div>
+          <div className="rounded-xl border border-border bg-card/50 p-4">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Ativos</div>
+            <div className="text-2xl font-semibold text-emerald-400">{ativos}</div>
+          </div>
+          <div className="rounded-xl border border-border bg-card/50 p-4">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Avaliação média</div>
+            <div className="text-2xl font-semibold flex items-center gap-2">{avgRating}<Star className="size-4 fill-amber-400 text-amber-400" /></div>
+          </div>
+          <div className="rounded-xl border border-border bg-card/50 p-4">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Top categorias</div>
+            <div className="flex flex-wrap gap-1">
+              {topCats.map(([c, n]) => (
+                <Badge key={c} variant="outline" className="text-[10px]">{c} · {n}</Badge>
+              ))}
+              {!topCats.length && <span className="text-xs text-muted-foreground">—</span>}
+            </div>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>

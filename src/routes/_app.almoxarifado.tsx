@@ -65,6 +65,13 @@ function Almoxarifado() {
     i.name.toLowerCase().includes(q.toLowerCase()) || i.sku.toLowerCase().includes(q.toLowerCase())
   );
   const criticos = items.filter((i) => Number(i.balance) < Number(i.minimum)).length;
+  const totalSaldo = items.reduce((s, i) => s + Number(i.balance || 0), 0);
+  const byCat = (Object.keys(CAT_LABEL) as Category[]).map((c) => ({
+    cat: c,
+    qty: items.filter((i) => i.category === c).length,
+    saldo: items.filter((i) => i.category === c).reduce((s, i) => s + Number(i.balance || 0), 0),
+  }));
+  const criticosList = items.filter((i) => Number(i.balance) < Number(i.minimum)).slice(0, 5);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
@@ -89,6 +96,38 @@ function Almoxarifado() {
           </Button>
         </div>
       </div>
+
+      {items.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+          <div className="rounded-xl border border-border bg-card/50 p-4 col-span-2">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Saldo total</div>
+            <div className="text-2xl font-semibold tabular-nums">{totalSaldo.toLocaleString("pt-BR")}</div>
+            <div className="text-xs text-muted-foreground">{items.length} SKUs ativos</div>
+          </div>
+          {byCat.map((b) => (
+            <div key={b.cat} className="rounded-xl border border-border bg-card/50 p-4">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{CAT_LABEL[b.cat]}</div>
+              <div className="text-xl font-semibold tabular-nums">{b.qty}</div>
+              <div className="text-xs text-muted-foreground">saldo {b.saldo.toLocaleString("pt-BR")}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {criticosList.length > 0 && (
+        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+          <div className="flex items-center gap-2 text-destructive font-medium mb-2">
+            <AlertTriangle className="size-4" /> {criticos} item(s) abaixo do mínimo
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {criticosList.map((i) => (
+              <span key={i.id} className="text-xs px-2 py-1 rounded bg-destructive/10 text-destructive">
+                {i.sku} · {i.name} ({i.balance}/{i.minimum} {i.unit})
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
