@@ -1176,3 +1176,121 @@ function SalesSuite({ products }: { products: any[] }) {
     </div>
   );
 }
+
+/* ===================== RESTOCK ENGINE (M37) ===================== */
+function RestockEngine({ sales, inventory, products }: { sales: any[]; inventory: any[]; products: any[] }) {
+  const WINDOW_DAYS = 30;
+  const COVER_TARGET = 30; // dias de cobertura desejados
+  const LEAD_TIME = 15;    // dias de lead time fabril
+
+  const now = Date.now();
+  const cutoff = now - WINDOW_DAYS * 86400_000;
+  const productBySku = useMemo(() => {
+    const m = new Map<string, any>();
+    for (const p of products) if (p.sku) m.set(p.sku, p);
+    return m;
+  }, [products]);
+
+  // Velocidade por SKU (un/dia) na janela
+  const velocityBySku = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const s of sales) {
+      const sku = s.sku;
+      if (!sku) continue;
+      const t = new Date(s.sold_at).getTime();
+      if (isNaN(t) || t < cutoff) continue;
+      m.set(sku, (m.get(sku) ?? 0) + Number(s.quantity || 0));
+    }
+    for (const [k, v] of m) m.set(k, v / WINDOW_DAYS);
+    return m;
+  }, [sales, cutoff]);
+
+  const rows = useMemo(() => {
+    return inventory.map((i) => {
+      const velocity = velocityBySku.get(i.sku) ?? 0;
+      const balance = Number(i.balance || 0);
+      const minimum = Number(i.minimum || 0);
+      const daysCover = velocity > 0 ? balance / velocity : balance > 0 ? 999 : 0;
+      const needTarget = Math.max(0, Math.ceil(velocity * (COVER_TARGET + LEAD_TIME) - balance));
+      const needMin = Math.max(0, Math.ceil(minimum - balance));
+      const suggested = Math.max(needTarget, needMin);
+      let level: "critical" | "warning" | "ok" = "ok";
+      if (balance <= minimum || daysCover < LEAD_TIME) level = "critical";
+      else if (daysCover < COVER_TARGET) level = "warning";
+      const product = productBySku.get(i.sku);
+      return { ...i, velocity, daysCover, suggested, level, productName: product?.name };
+    }).sort((a, b) => {
+      const order = { critical: 0, warning: 1, ok: 2 } as const;
+      if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
+      return b.suggested - a.suggested;
+    });
+  }, [inventory, velocityBySku, productBySku]);
+
+  const totals = useMemo(() => ({
+    critical: rows.filter((r) => r.level === "critical").length,
+    warning: rows.filter((r) => r.level === "warning").length,
+    suggested: rows.reduce((s, r) => s + r.suggested, 0),
+    skus: rows.length,
+  }), [rows]);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <KPI label="SKUs críticos" value={String(totals.critical)} hint={`< ${LEAD_TIME}d de cobertura`} icon={AlertTriangle} tone="text-red-500" />
+        <KPI label="Atenção" value={String(totals.warning)} hint={`< ${COVER_TARGET}d`} icon={Activity} tone="text-amber-500" />
+        <KPI label="Unidades sugeridas" value={`${totals.suggested} un`} icon={Factory} />
+        <KPI label="SKUs analisados" value={String(totals.skus)} icon={Boxes} />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><PackageSearch className="h-4 w-4" />Reposição Inteligente</CardTitle>
+          <CardDescription>
+            Velocidade calculada com vendas dos últimos {WINDOW_DAYS} dias · Cobertura-alvo {COVER_TARGET}d + lead time {LEAD_TIME}d.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>SKU</TableHead>
+                  <TableHead>Produto</TableHead>
+                  <TableHead className="text-right">Estoque</TableHead>
+                  <TableHead className="text-right">Mínimo</TableHead>
+                  <TableHead className="text-right">Velocidade</TableHead>
+                  <TableHead className="text-right">Cobertura</TableHead>
+                  <TableHead className="text-right">Sugestão</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="text-sm font-medium">{r.sku}</TableCell>
+                    <TableCell className="text-sm">{r.productName ?? r.name}</TableCell>
+                    <TableCell className="text-right tabular-nums">{Number(r.balance).toFixed(0)}</TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">{Number(r.minimum).toFixed(0)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.velocity.toFixed(2)}/d</TableCell>
+                    <TableCell className="text-right tabular-nums">{r.daysCover >= 999 ? "∞" : `${Math.round(r.daysCover)}d`}</TableCell>
+                    <TableCell className="text-right tabular-nums font-semibold">{r.suggested > 0 ? `${r.suggested} un` : "—"}</TableCell>
+                    <TableCell>
+                      {r.level === "critical" && <Badge className="bg-red-500/15 text-red-600 hover:bg-red-500/15">Crítico</Badge>}
+                      {r.level === "warning" && <Badge className="bg-amber-500/15 text-amber-600 hover:bg-amber-500/15">Atenção</Badge>}
+                      {r.level === "ok" && <Badge variant="secondary">OK</Badge>}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {rows.length === 0 && (
+                  <TableRow><TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-8">
+                    Sem itens em estoque. Cadastre no Almoxarifado para iniciar a análise de reposição.
+                  </TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
