@@ -23,16 +23,20 @@ function useDashboard() {
   return useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const [orders, prod, cols, inv] = await Promise.all([
+      const [orders, prod, cols, inv, prods, protos] = await Promise.all([
         supabase.from("b2b_orders").select("total_value, customer_name, order_date, status, created_at"),
-        supabase.from("production_orders").select("quantity, progress, status, created_at, due_date"),
-        supabase.from("collections").select("name, status, progress, year").order("created_at", { ascending: false }).limit(6),
+        supabase.from("production_orders").select("reference, quantity, progress, status, created_at, due_date"),
+        supabase.from("collections").select("name, status, progress, year, created_at").order("created_at", { ascending: false }).limit(6),
         supabase.from("inventory_items").select("name, balance, minimum, unit"),
+        supabase.from("products").select("name, category, fabric, color, created_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("prototypes").select("name, status, created_at").order("created_at", { ascending: false }).limit(20),
       ]);
       const o = orders.data ?? [];
       const p = prod.data ?? [];
       const c = cols.data ?? [];
       const i = inv.data ?? [];
+      const pr = prods.data ?? [];
+      const pt = protos.data ?? [];
 
       const now = new Date();
       const thisMonth = (d: string) => { const x = new Date(d); return x.getMonth() === now.getMonth() && x.getFullYear() === now.getFullYear(); };
@@ -42,7 +46,6 @@ function useDashboard() {
       const customers = new Set(o.map((r) => r.customer_name).filter(Boolean)).size;
       const critical = i.filter((r) => Number(r.balance ?? 0) <= Number(r.minimum ?? 0));
 
-      // 12-month revenue series
       const months: { m: string; v: number }[] = [];
       for (let k = 11; k >= 0; k--) {
         const dt = new Date(now.getFullYear(), now.getMonth() - k, 1);
@@ -55,7 +58,6 @@ function useDashboard() {
         months.push({ m: label, v: Number(v.toFixed(1)) });
       }
 
-      // Production: planned vs delivered per status
       const planned = p.reduce((a, b) => a + (b.quantity ?? 0), 0);
       const done = p.reduce((a, b) => a + Math.round((b.quantity ?? 0) * ((b.progress ?? 0) / 100)), 0);
       const productionData = [
@@ -64,16 +66,57 @@ function useDashboard() {
         { d: "Concluído", v: p.filter((r) => r.status === "concluida").reduce((a, b) => a + (b.quantity ?? 0), 0) },
       ];
 
+      // Operational feed — unified timeline of recent events
+      type FeedItem = { ts: number; kind: "produto" | "coleção" | "produção" | "pedido" | "protótipo"; title: string; meta?: string };
+      const feed: FeedItem[] = [];
+      pr.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "produto", title: `Produto ${r.name} criado`, meta: r.category ?? undefined }));
+      c.forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "coleção", title: `Coleção ${r.name}`, meta: r.status }));
+      p.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "produção", title: `OP ${r.reference ?? ""} · ${r.quantity ?? 0} pç`, meta: r.status }));
+      o.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "pedido", title: `Pedido B2B · ${r.customer_name ?? "—"}`, meta: r.status }));
+      pt.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "protótipo", title: `Protótipo ${r.name}`, meta: r.status }));
+      feed.sort((a, b) => b.ts - a.ts);
+
+      // Trend radar — most frequent attributes across recent products
+      const count = (arr: (string | null | undefined)[]) => {
+        const m = new Map<string, number>();
+        arr.forEach((x) => { if (x) m.set(x, (m.get(x) ?? 0) + 1); });
+        return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([label, n]) => ({ label, n }));
+      };
+      const trends = {
+        colors: count(pr.map((r: any) => r.color)),
+        categories: count(pr.map((r: any) => r.category)),
+        fabrics: count(pr.map((r: any) => r.fabric)),
+      };
+
       return {
         kpis: { revenue, pieces, ordersCount, customers },
         critical,
         collections: c,
         months,
         productionData,
+        feed: feed.slice(0, 10),
+        trends,
       };
     },
   });
 }
+
+function relTime(ts: number) {
+  const diff = (Date.now() - ts) / 1000;
+  if (diff < 60) return "agora";
+  if (diff < 3600) return `há ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `há ${Math.floor(diff / 3600)} h`;
+  return `há ${Math.floor(diff / 86400)} d`;
+}
+
+const FEED_ICON: Record<string, typeof Activity> = {
+  produto: Package,
+  coleção: Sparkles,
+  produção: Factory,
+  pedido: CircleDollarSign,
+  protótipo: Scissors,
+};
+
 
 function CommandCenter() {
   const { data, isLoading } = useDashboard();
