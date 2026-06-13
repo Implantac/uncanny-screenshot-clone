@@ -859,6 +859,7 @@ function DataLake({ counts }: { counts: Record<string, number> }) {
     { k: "products", label: "Produtos", icon: Sparkles },
     { k: "orders", label: "Ordens de Produção", icon: Factory },
     { k: "inventory", label: "Estoque (SKUs)", icon: Boxes },
+    { k: "sales", label: "Vendas", icon: ShoppingCart },
     { k: "b2b", label: "Pedidos B2B", icon: Activity },
     { k: "campaigns", label: "Campanhas", icon: Megaphone },
     { k: "prototypes", label: "Protótipos", icon: Scissors },
