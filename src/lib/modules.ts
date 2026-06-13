@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Layers, Sparkles, FileText, PenTool, Scissors,
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
-  Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, type LucideIcon,
+  Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleDef = {
@@ -27,6 +27,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "marketing", path: "/marketing", title: "Marketing", short: "Campanhas e mídia", description: "Calendário de campanhas e performance de mídia.", icon: Megaphone, group: "Comercial" },
   { slug: "comercial", path: "/comercial", title: "Comercial / B2B", short: "Pedidos e clientes", description: "Portal B2B, pedidos, representantes e clientes.", icon: Store, group: "Comercial" },
   { slug: "financeiro", path: "/financeiro", title: "Financeiro", short: "Caixa e DRE", description: "Contas a pagar, receber, fluxo de caixa e DRE.", icon: Wallet, group: "Comercial" },
+  { slug: "intelligence", path: "/intelligence", title: "Intelligence Engine", short: "Inteligência operacional", description: "Necessidade de produção, reposição, ROI de influencers, atribuição e Product Score.", icon: Brain, group: "Inteligência" },
   { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis e exploração de dados.", icon: BarChart3, group: "Inteligência" },
   { slug: "fashion-gpt", path: "/fashion-gpt", title: "Fashion GPT", short: "Copiloto de moda", description: "Assistente especialista no seu negócio de moda.", icon: Bot, group: "Inteligência" },
   { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação de processos.", icon: Cpu, group: "Inteligência" },
