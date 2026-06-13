@@ -25,7 +25,7 @@ function useDashboard() {
     queryFn: async () => {
       const [orders, prod, cols, inv, prods, protos] = await Promise.all([
         supabase.from("b2b_orders").select("total_value, customer_name, order_date, status, created_at"),
-        supabase.from("production_orders").select("reference, quantity, progress, status, created_at, due_date"),
+        supabase.from("production_orders").select("code, quantity, progress, status, created_at, due_date"),
         supabase.from("collections").select("name, status, progress, year, created_at").order("created_at", { ascending: false }).limit(6),
         supabase.from("inventory_items").select("name, balance, minimum, unit"),
         supabase.from("products").select("name, category, fabric, color, created_at").order("created_at", { ascending: false }).limit(200),
