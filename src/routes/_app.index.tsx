@@ -28,7 +28,7 @@ function useDashboard() {
         supabase.from("production_orders").select("code, quantity, progress, status, created_at, due_date"),
         supabase.from("collections").select("name, status, progress, year, created_at").order("created_at", { ascending: false }).limit(6),
         supabase.from("inventory_items").select("name, balance, minimum, unit"),
-        supabase.from("products").select("name, category, fabric, color, created_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("products").select("name, category, colors, created_at").order("created_at", { ascending: false }).limit(200),
         supabase.from("prototypes").select("name, status, created_at").order("created_at", { ascending: false }).limit(20),
       ]);
       const o = orders.data ?? [];
