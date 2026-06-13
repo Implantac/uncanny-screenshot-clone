@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useRoles } from "@/hooks/use-role";
+
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -390,9 +392,12 @@ function inferStage(o: any): Stage {
 
 function PcpKanban({ orders, products }: any) {
   const qc = useQueryClient();
+  const { isAdmin, isGerente, roles, loading: rolesLoading } = useRoles();
+  const canMove = isAdmin || isGerente || roles.includes("comprador");
   const [dragId, setDragId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<string | null>(null);
   const productMap = new Map((products as any[]).map((p) => [p.id, p]));
+
 
   const move = useMutation({
     mutationFn: async ({ id, stage }: { id: string; stage: Stage }) => {
@@ -415,9 +420,14 @@ function PcpKanban({ orders, products }: any) {
     <Card>
       <CardHeader>
         <CardTitle>PCP Kanban</CardTitle>
-        <CardDescription>Arraste os cards entre as colunas — status persistido em tempo real.</CardDescription>
+        <CardDescription>
+          {canMove
+            ? "Arraste os cards entre as colunas (para frente ou para trás) — status persistido em tempo real."
+            : rolesLoading ? "Carregando permissões…" : "Somente admin, gerente ou comprador podem mover cards."}
+        </CardDescription>
       </CardHeader>
       <CardContent>
+
         <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
           {PCP_STAGES.map((stage) => {
             const items = map.get(stage) ?? [];
@@ -425,9 +435,10 @@ function PcpKanban({ orders, products }: any) {
             return (
               <div
                 key={stage}
-                onDragOver={(e) => { e.preventDefault(); setOverStage(stage); }}
+                onDragOver={(e) => { if (!canMove) return; e.preventDefault(); setOverStage(stage); }}
                 onDragLeave={() => setOverStage((s) => (s === stage ? null : s))}
                 onDrop={(e) => {
+                  if (!canMove) { toast.error("Sem permissão para mover cards"); return; }
                   e.preventDefault();
                   const id = e.dataTransfer.getData("text/plain") || dragId;
                   setOverStage(null); setDragId(null);
@@ -445,11 +456,12 @@ function PcpKanban({ orders, products }: any) {
                     return (
                       <div
                         key={o.id}
-                        draggable
-                        onDragStart={(e) => { setDragId(o.id); e.dataTransfer.setData("text/plain", o.id); }}
+                        draggable={canMove}
+                        onDragStart={(e) => { if (!canMove) { e.preventDefault(); return; } setDragId(o.id); e.dataTransfer.setData("text/plain", o.id); }}
                         onDragEnd={() => setDragId(null)}
-                        className={`rounded-md border bg-card p-2 cursor-grab active:cursor-grabbing ${dragId === o.id ? "opacity-50" : ""}`}
+                        className={`rounded-md border bg-card p-2 ${canMove ? "cursor-grab active:cursor-grabbing" : "cursor-not-allowed opacity-90"} ${dragId === o.id ? "opacity-50" : ""}`}
                       >
+
                         <div className="text-xs font-medium truncate">{p?.name ?? o.code}</div>
                         <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
                           <span>{o.quantity} un</span>
