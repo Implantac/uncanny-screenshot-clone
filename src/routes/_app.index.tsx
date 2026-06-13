@@ -272,6 +272,55 @@ function CommandCenter() {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 glass rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-sm font-semibold flex items-center gap-2"><Activity className="size-4 text-primary" /> Feed operacional</div>
+              <div className="text-xs text-muted-foreground">Últimos eventos da operação</div>
+            </div>
+          </div>
+          {data?.feed?.length ? (
+            <ol className="relative space-y-3 before:absolute before:left-[15px] before:top-1 before:bottom-1 before:w-px before:bg-border">
+              {data.feed.map((f, idx) => {
+                const Icon = FEED_ICON[f.kind] ?? Activity;
+                return (
+                  <li key={idx} className="relative flex gap-3 pl-0">
+                    <div className="size-8 shrink-0 rounded-full bg-primary/10 text-primary grid place-items-center ring-4 ring-background">
+                      <Icon className="size-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1 pt-1">
+                      <div className="text-sm font-medium truncate">{f.title}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                        <span className="uppercase tracking-wide">{f.kind}</span>
+                        {f.meta && <><span>·</span><span className="truncate">{f.meta}</span></>}
+                        <span>·</span><span>{relTime(f.ts)}</span>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          ) : (
+            <div className="py-8 text-center text-sm text-muted-foreground">Sem eventos recentes</div>
+          )}
+        </div>
+
+        <div className="glass rounded-xl p-5">
+          <div className="text-sm font-semibold flex items-center gap-2"><TrendingUp className="size-4 text-primary" /> Radar de tendências</div>
+          <div className="text-xs text-muted-foreground mb-4">Sinais do seu catálogo</div>
+          {data && (
+            <div className="space-y-5">
+              <TrendBlock icon={Palette} title="Cores em alta" items={data.trends.colors} />
+              <TrendBlock icon={Shirt} title="Categorias" items={data.trends.categories} />
+              <TrendBlock icon={Sparkles} title="Coleções ativas" items={data.trends.collections} />
+            </div>
+          )}
+        </div>
+      </div>
+
+
+
       <div>
         <div className="text-sm font-semibold mb-3">Acesso rápido aos módulos</div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
