@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
-  RadialBarChart, RadialBar, PieChart, Pie, Cell, LineChart, Line,
+  PieChart, Pie, Cell,
 } from "recharts";
 
 export const Route = createFileRoute("/_app/intelligence")({
