@@ -145,6 +145,11 @@ function IntelligencePage() {
           <ProductScore products={productsQ.data ?? []} sales={salesQ.data ?? []} inventory={invQ.data ?? []} />
         </TabsContent>
 
+        {/* ----------------- REPOSIÇÃO INTELIGENTE (M37) ----------------- */}
+        <TabsContent value="restock">
+          <RestockEngine sales={salesQ.data ?? []} inventory={invQ.data ?? []} products={productsQ.data ?? []} />
+        </TabsContent>
+
         {/* ----------------- VENDAS (M37/M38 — fonte real) ----------------- */}
         <TabsContent value="sales">
           <SalesSuite products={productsQ.data ?? []} />
