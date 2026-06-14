@@ -69,9 +69,12 @@ function Marketing() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const ativas = rows.filter((c) => c.status === "ativa").length;
-  const invTotal = rows.reduce((a, b) => a + Number(b.investment), 0);
-  const roasAvg = rows.length ? rows.reduce((a, b) => a + Number(b.roas), 0) / rows.length : 0;
+  const channels = useMemo(() => Array.from(new Set(rows.map((c) => c.channel).filter(Boolean) as string[])), [rows]);
+  const filtered = useMemo(() => channelFilter === "todos" ? rows : rows.filter((c) => c.channel === channelFilter), [rows, channelFilter]);
+  const ativas = filtered.filter((c) => c.status === "ativa").length;
+  const invTotal = filtered.reduce((a, b) => a + Number(b.investment), 0);
+  const receitaEst = filtered.reduce((a, b) => a + Number(b.investment) * Number(b.roas), 0);
+  const roasAvg = filtered.length ? filtered.reduce((a, b) => a + Number(b.roas), 0) / filtered.length : 0;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
