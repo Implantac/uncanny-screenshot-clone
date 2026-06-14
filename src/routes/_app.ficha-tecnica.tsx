@@ -115,7 +115,7 @@ function splitLines(value: string) {
 
 async function resolveProductImage(path: string | null) {
   if (!path) return null;
-  if (path.startsWith("http")) return path;
+  if (path.startsWith("http") || path.startsWith("/")) return path;
   const { data, error } = await supabase.storage.from("product-images").createSignedUrl(path, 60 * 60);
   if (error) throw error;
   return data.signedUrl;
