@@ -8,9 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Sparkles } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
 import { mapSignInError, mapSignUpError } from "@/lib/auth-errors";
+import logoAsset from "@/assets/logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -98,8 +98,8 @@ function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/10 px-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <Sparkles className="h-8 w-8 text-primary" />
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <img src={logoAsset.url} alt="USE MODA" className="h-12 w-12 object-contain" />
           <h1 className="text-3xl font-bold">USE MODA OS</h1>
         </div>
         <Card>
