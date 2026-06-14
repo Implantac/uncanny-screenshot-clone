@@ -33,6 +33,7 @@ import { Route as AppMarketingRouteImport } from './routes/_app.marketing'
 import { Route as AppMargemRouteImport } from './routes/_app.margem'
 import { Route as AppIntelligenceRouteImport } from './routes/_app.intelligence'
 import { Route as AppInfluencerRoiRouteImport } from './routes/_app.influencer-roi'
+import { Route as AppGradeNeedsRouteImport } from './routes/_app.grade-needs'
 import { Route as AppGeoSalesRouteImport } from './routes/_app.geo-sales'
 import { Route as AppFornecedoresRouteImport } from './routes/_app.fornecedores'
 import { Route as AppFinanceiroRouteImport } from './routes/_app.financeiro'
@@ -173,6 +174,11 @@ const AppInfluencerRoiRoute = AppInfluencerRoiRouteImport.update({
   path: '/influencer-roi',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGradeNeedsRoute = AppGradeNeedsRouteImport.update({
+  id: '/grade-needs',
+  path: '/grade-needs',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGeoSalesRoute = AppGeoSalesRouteImport.update({
   id: '/geo-sales',
   path: '/geo-sales',
@@ -297,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/financeiro': typeof AppFinanceiroRoute
   '/fornecedores': typeof AppFornecedoresRoute
   '/geo-sales': typeof AppGeoSalesRoute
+  '/grade-needs': typeof AppGradeNeedsRoute
   '/influencer-roi': typeof AppInfluencerRoiRoute
   '/intelligence': typeof AppIntelligenceRoute
   '/margem': typeof AppMargemRoute
@@ -341,6 +348,7 @@ export interface FileRoutesByTo {
   '/financeiro': typeof AppFinanceiroRoute
   '/fornecedores': typeof AppFornecedoresRoute
   '/geo-sales': typeof AppGeoSalesRoute
+  '/grade-needs': typeof AppGradeNeedsRoute
   '/influencer-roi': typeof AppInfluencerRoiRoute
   '/intelligence': typeof AppIntelligenceRoute
   '/margem': typeof AppMargemRoute
@@ -388,6 +396,7 @@ export interface FileRoutesById {
   '/_app/financeiro': typeof AppFinanceiroRoute
   '/_app/fornecedores': typeof AppFornecedoresRoute
   '/_app/geo-sales': typeof AppGeoSalesRoute
+  '/_app/grade-needs': typeof AppGradeNeedsRoute
   '/_app/influencer-roi': typeof AppInfluencerRoiRoute
   '/_app/intelligence': typeof AppIntelligenceRoute
   '/_app/margem': typeof AppMargemRoute
@@ -436,6 +445,7 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/fornecedores'
     | '/geo-sales'
+    | '/grade-needs'
     | '/influencer-roi'
     | '/intelligence'
     | '/margem'
@@ -480,6 +490,7 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/fornecedores'
     | '/geo-sales'
+    | '/grade-needs'
     | '/influencer-roi'
     | '/intelligence'
     | '/margem'
@@ -526,6 +537,7 @@ export interface FileRouteTypes {
     | '/_app/financeiro'
     | '/_app/fornecedores'
     | '/_app/geo-sales'
+    | '/_app/grade-needs'
     | '/_app/influencer-roi'
     | '/_app/intelligence'
     | '/_app/margem'
@@ -726,6 +738,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInfluencerRoiRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/grade-needs': {
+      id: '/_app/grade-needs'
+      path: '/grade-needs'
+      fullPath: '/grade-needs'
+      preLoaderRoute: typeof AppGradeNeedsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/geo-sales': {
       id: '/_app/geo-sales'
       path: '/geo-sales'
@@ -890,6 +909,7 @@ interface AppRouteChildren {
   AppFinanceiroRoute: typeof AppFinanceiroRoute
   AppFornecedoresRoute: typeof AppFornecedoresRoute
   AppGeoSalesRoute: typeof AppGeoSalesRoute
+  AppGradeNeedsRoute: typeof AppGradeNeedsRoute
   AppInfluencerRoiRoute: typeof AppInfluencerRoiRoute
   AppIntelligenceRoute: typeof AppIntelligenceRoute
   AppMargemRoute: typeof AppMargemRoute
@@ -934,6 +954,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFinanceiroRoute: AppFinanceiroRoute,
   AppFornecedoresRoute: AppFornecedoresRoute,
   AppGeoSalesRoute: AppGeoSalesRoute,
+  AppGradeNeedsRoute: AppGradeNeedsRoute,
   AppInfluencerRoiRoute: AppInfluencerRoiRoute,
   AppIntelligenceRoute: AppIntelligenceRoute,
   AppMargemRoute: AppMargemRoute,
