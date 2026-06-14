@@ -22,6 +22,7 @@ import { Route as AppSalesPerformanceRouteImport } from './routes/_app.sales-per
 import { Route as AppReplenishmentRouteImport } from './routes/_app.replenishment'
 import { Route as AppPrototiposRouteImport } from './routes/_app.prototipos'
 import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
+import { Route as AppPilotsRouteImport } from './routes/_app.pilots'
 import { Route as AppPcpKanbanRouteImport } from './routes/_app.pcp-kanban'
 import { Route as AppPcpRouteImport } from './routes/_app.pcp'
 import { Route as AppMobileRouteImport } from './routes/_app.mobile'
@@ -111,6 +112,11 @@ const AppPrototiposRoute = AppPrototiposRouteImport.update({
 const AppProdutosRoute = AppProdutosRouteImport.update({
   id: '/produtos',
   path: '/produtos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPilotsRoute = AppPilotsRouteImport.update({
+  id: '/pilots',
+  path: '/pilots',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPcpKanbanRoute = AppPcpKanbanRouteImport.update({
@@ -273,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/mobile': typeof AppMobileRoute
   '/pcp': typeof AppPcpRoute
   '/pcp-kanban': typeof AppPcpKanbanRoute
+  '/pilots': typeof AppPilotsRoute
   '/produtos': typeof AppProdutosRoute
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
@@ -312,6 +319,7 @@ export interface FileRoutesByTo {
   '/mobile': typeof AppMobileRoute
   '/pcp': typeof AppPcpRoute
   '/pcp-kanban': typeof AppPcpKanbanRoute
+  '/pilots': typeof AppPilotsRoute
   '/produtos': typeof AppProdutosRoute
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
@@ -354,6 +362,7 @@ export interface FileRoutesById {
   '/_app/mobile': typeof AppMobileRoute
   '/_app/pcp': typeof AppPcpRoute
   '/_app/pcp-kanban': typeof AppPcpKanbanRoute
+  '/_app/pilots': typeof AppPilotsRoute
   '/_app/produtos': typeof AppProdutosRoute
   '/_app/prototipos': typeof AppPrototiposRoute
   '/_app/replenishment': typeof AppReplenishmentRoute
@@ -397,6 +406,7 @@ export interface FileRouteTypes {
     | '/mobile'
     | '/pcp'
     | '/pcp-kanban'
+    | '/pilots'
     | '/produtos'
     | '/prototipos'
     | '/replenishment'
@@ -436,6 +446,7 @@ export interface FileRouteTypes {
     | '/mobile'
     | '/pcp'
     | '/pcp-kanban'
+    | '/pilots'
     | '/produtos'
     | '/prototipos'
     | '/replenishment'
@@ -477,6 +488,7 @@ export interface FileRouteTypes {
     | '/_app/mobile'
     | '/_app/pcp'
     | '/_app/pcp-kanban'
+    | '/_app/pilots'
     | '/_app/produtos'
     | '/_app/prototipos'
     | '/_app/replenishment'
@@ -587,6 +599,13 @@ declare module '@tanstack/react-router' {
       path: '/produtos'
       fullPath: '/produtos'
       preLoaderRoute: typeof AppProdutosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/pilots': {
+      id: '/_app/pilots'
+      path: '/pilots'
+      fullPath: '/pilots'
+      preLoaderRoute: typeof AppPilotsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/pcp-kanban': {
@@ -801,6 +820,7 @@ interface AppRouteChildren {
   AppMobileRoute: typeof AppMobileRoute
   AppPcpRoute: typeof AppPcpRoute
   AppPcpKanbanRoute: typeof AppPcpKanbanRoute
+  AppPilotsRoute: typeof AppPilotsRoute
   AppProdutosRoute: typeof AppProdutosRoute
   AppPrototiposRoute: typeof AppPrototiposRoute
   AppReplenishmentRoute: typeof AppReplenishmentRoute
@@ -840,6 +860,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMobileRoute: AppMobileRoute,
   AppPcpRoute: AppPcpRoute,
   AppPcpKanbanRoute: AppPcpKanbanRoute,
+  AppPilotsRoute: AppPilotsRoute,
   AppProdutosRoute: AppProdutosRoute,
   AppPrototiposRoute: AppPrototiposRoute,
   AppReplenishmentRoute: AppReplenishmentRoute,
