@@ -798,9 +798,11 @@ const CHANNEL_LABEL: Record<string, string> = {
   marketplace: "Marketplace",
   b2b: "B2B / Multimarcas",
   loja_fisica: "Loja Física",
-  influenciador: "Influenciador",
   instagram: "Instagram",
   tiktok: "TikTok",
+  google: "Google",
+  influenciador: "Influenciador",
+  representante: "Representante",
 };
 
 function Attribution({ campaigns, b2b, sales = [] }: any) {
