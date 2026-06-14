@@ -16,6 +16,7 @@ import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AppUseAiRouteImport } from './routes/_app.use-ai'
 import { Route as AppTwinFactoryRouteImport } from './routes/_app.twin-factory'
 import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
+import { Route as AppSalesPerformanceRouteImport } from './routes/_app.sales-performance'
 import { Route as AppReplenishmentRouteImport } from './routes/_app.replenishment'
 import { Route as AppPrototiposRouteImport } from './routes/_app.prototipos'
 import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
@@ -73,6 +74,11 @@ const AppTwinFactoryRoute = AppTwinFactoryRouteImport.update({
 const AppShowroomRoute = AppShowroomRouteImport.update({
   id: '/showroom',
   path: '/showroom',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSalesPerformanceRoute = AppSalesPerformanceRouteImport.update({
+  id: '/sales-performance',
+  path: '/sales-performance',
   getParentRoute: () => AppRoute,
 } as any)
 const AppReplenishmentRoute = AppReplenishmentRouteImport.update({
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/produtos': typeof AppProdutosRoute
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
+  '/sales-performance': typeof AppSalesPerformanceRoute
   '/showroom': typeof AppShowroomRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/produtos': typeof AppProdutosRoute
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
+  '/sales-performance': typeof AppSalesPerformanceRoute
   '/showroom': typeof AppShowroomRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/_app/produtos': typeof AppProdutosRoute
   '/_app/prototipos': typeof AppPrototiposRoute
   '/_app/replenishment': typeof AppReplenishmentRoute
+  '/_app/sales-performance': typeof AppSalesPerformanceRoute
   '/_app/showroom': typeof AppShowroomRoute
   '/_app/twin-factory': typeof AppTwinFactoryRoute
   '/_app/use-ai': typeof AppUseAiRoute
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/prototipos'
     | '/replenishment'
+    | '/sales-performance'
     | '/showroom'
     | '/twin-factory'
     | '/use-ai'
@@ -354,6 +364,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/prototipos'
     | '/replenishment'
+    | '/sales-performance'
     | '/showroom'
     | '/twin-factory'
     | '/use-ai'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/_app/produtos'
     | '/_app/prototipos'
     | '/_app/replenishment'
+    | '/_app/sales-performance'
     | '/_app/showroom'
     | '/_app/twin-factory'
     | '/_app/use-ai'
@@ -449,6 +461,13 @@ declare module '@tanstack/react-router' {
       path: '/showroom'
       fullPath: '/showroom'
       preLoaderRoute: typeof AppShowroomRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/sales-performance': {
+      id: '/_app/sales-performance'
+      path: '/sales-performance'
+      fullPath: '/sales-performance'
+      preLoaderRoute: typeof AppSalesPerformanceRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/replenishment': {
@@ -647,6 +666,7 @@ interface AppRouteChildren {
   AppProdutosRoute: typeof AppProdutosRoute
   AppPrototiposRoute: typeof AppPrototiposRoute
   AppReplenishmentRoute: typeof AppReplenishmentRoute
+  AppSalesPerformanceRoute: typeof AppSalesPerformanceRoute
   AppShowroomRoute: typeof AppShowroomRoute
   AppTwinFactoryRoute: typeof AppTwinFactoryRoute
   AppUseAiRoute: typeof AppUseAiRoute
@@ -678,6 +698,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppProdutosRoute: AppProdutosRoute,
   AppPrototiposRoute: AppPrototiposRoute,
   AppReplenishmentRoute: AppReplenishmentRoute,
+  AppSalesPerformanceRoute: AppSalesPerformanceRoute,
   AppShowroomRoute: AppShowroomRoute,
   AppTwinFactoryRoute: AppTwinFactoryRoute,
   AppUseAiRoute: AppUseAiRoute,
