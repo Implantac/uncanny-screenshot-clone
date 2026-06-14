@@ -32,6 +32,10 @@ type Product = {
   sku: string;
   name: string;
   category: string | null;
+  product_group: string | null;
+  subgroup: string | null;
+  product_class: string | null;
+  grade: string | null;
   description: string | null;
   cost_price: number;
   sell_price: number;
@@ -41,6 +45,11 @@ type Product = {
   colors: string[];
   created_at: string;
 };
+
+const GROUPS = ["Feminino", "Masculino", "Infantil", "Unissex", "Acessórios"];
+const SUBGROUPS = ["Superior", "Inferior", "Vestido", "Conjunto", "Sobreposição", "Íntimo", "Praia", "Acessório"];
+const CLASSES = ["Camiseta", "Camisa", "Blusa", "Vestido", "Saia", "Calça", "Short", "Bermuda", "Jaqueta", "Casaco", "Macacão", "Body"];
+const GRADES = ["PP-GG", "P-GG", "PP-XGG", "36-46", "38-48", "40-50", "1-4", "4-10", "10-16", "Único"];
 
 type CollectionRef = { id: string; name: string; season: string; year: number };
 
