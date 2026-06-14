@@ -888,4 +888,134 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
   );
 }
 
+function BatchesByStage({ orders, products, onOpenBatch }: { orders: Order[]; products: ProductRef[]; onOpenBatch: (code: string, stage: Stage | null) => void }) {
+  const grouped = useMemo(() => {
+    const m = new Map<Stage | "sem_setor", Map<string, Order[]>>();
+    for (const o of orders) {
+      if (!o.batch_code) continue;
+      const stageKey: Stage | "sem_setor" = (o.stage ?? "sem_setor");
+      if (!m.has(stageKey)) m.set(stageKey, new Map());
+      const stageMap = m.get(stageKey)!;
+      if (!stageMap.has(o.batch_code)) stageMap.set(o.batch_code, []);
+      stageMap.get(o.batch_code)!.push(o);
+    }
+    return m;
+  }, [orders]);
+
+  const stages: (Stage | "sem_setor")[] = [...(Object.keys(STAGE_LABEL) as Stage[]), "sem_setor"];
+
+  if (grouped.size === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+        Nenhum lote cadastrado. Defina o campo <b>Lote</b> ao criar/editar uma OP para agrupar referências do mesmo lote de produção.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <p className="text-xs text-muted-foreground">Lotes agrupados por setor. Clique em um lote para ver as referências que compõem o lote.</p>
+      {stages.map((st) => {
+        const stageMap = grouped.get(st);
+        if (!stageMap || stageMap.size === 0) return null;
+        const stageLabel = st === "sem_setor" ? "Sem setor" : STAGE_LABEL[st];
+        return (
+          <div key={st} className="rounded-xl border border-border bg-card/40">
+            <div className="px-4 py-2 border-b border-border flex items-center justify-between">
+              <h3 className="text-sm font-semibold">{stageLabel}</h3>
+              <span className="text-xs text-muted-foreground">{stageMap.size} lote(s)</span>
+            </div>
+            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {Array.from(stageMap.entries()).map(([batch, ops]) => {
+                const totalQty = ops.reduce((s, o) => s + (o.quantity || 0), 0);
+                const refs = ops.map(o => products.find(p => p.id === o.product_id)).filter(Boolean) as ProductRef[];
+                const thumbs = refs.slice(0, 4);
+                const refCount = new Set(ops.map(o => o.product_id).filter(Boolean)).size;
+                return (
+                  <button
+                    key={batch}
+                    onClick={() => onOpenBatch(batch, st === "sem_setor" ? null : st)}
+                    className="text-left rounded-lg border border-border bg-background p-3 hover:border-primary/50 hover:bg-muted/30 transition space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="inline-flex items-center gap-1.5 font-semibold text-sm">
+                        <Boxes className="size-4 text-primary" />Lote {batch}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground tabular-nums">{ops.length} OP · {totalQty} pç</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {thumbs.map((p, i) => (
+                        <div key={i} className="size-10 rounded border border-border bg-muted/40 overflow-hidden grid place-items-center">
+                          {p.image_url ? <img src={p.image_url} alt={p.name} className="size-full object-cover" loading="lazy" /> : <Package className="size-4 text-muted-foreground/60" />}
+                        </div>
+                      ))}
+                      {refs.length > thumbs.length && (
+                        <div className="size-10 rounded border border-border bg-muted/40 grid place-items-center text-[10px] text-muted-foreground">+{refs.length - thumbs.length}</div>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">{refCount} referência(s)</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function BatchDialog({ batch, orders, products, suppliers, onClose }: { batch: { code: string; stage: Stage | null } | null; orders: Order[]; products: ProductRef[]; suppliers: Ref[]; onClose: () => void }) {
+  const rows = useMemo(() => {
+    if (!batch) return [];
+    return orders.filter(o => o.batch_code === batch.code);
+  }, [batch, orders]);
+
+  const totalQty = rows.reduce((s, o) => s + (o.quantity || 0), 0);
+  const refCount = new Set(rows.map(o => o.product_id).filter(Boolean)).size;
+
+  return (
+    <Dialog open={!!batch} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><Boxes className="size-5 text-primary" />Lote {batch?.code}</DialogTitle>
+        </DialogHeader>
+        <div className="text-xs text-muted-foreground flex items-center gap-3 flex-wrap">
+          {batch?.stage && <Badge variant="outline">{STAGE_LABEL[batch.stage]}</Badge>}
+          <span>{rows.length} OP · {refCount} referência(s) · {totalQty} pç totais</span>
+        </div>
+        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+          {rows.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma referência neste lote.</p>}
+          {rows.map((o) => {
+            const p = products.find(x => x.id === o.product_id);
+            const s = suppliers.find(x => x.id === o.supplier_id);
+            return (
+              <div key={o.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                <div className="size-14 rounded border border-border bg-muted/40 overflow-hidden grid place-items-center shrink-0">
+                  {p?.image_url ? <img src={p.image_url} alt={p.name} className="size-full object-cover" loading="lazy" /> : <Package className="size-5 text-muted-foreground/60" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-mono text-muted-foreground">{o.code}</span>
+                    {o.stage && <Badge variant="outline" className="text-[10px]">{STAGE_LABEL[o.stage]}</Badge>}
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${PRIORITY_TONE[o.priority ?? 3]}`}>P{o.priority ?? 3}</span>
+                  </div>
+                  <div className="text-sm font-medium truncate">{p?.name ?? "Sem produto"}</div>
+                  <div className="text-[11px] text-muted-foreground truncate">{p?.sku ?? "—"} · {s?.name ?? "—"} · {o.quantity} pç · {o.progress}%</div>
+                </div>
+                {o.product_id && (
+                  <Link to="/ficha-tecnica" onClick={onClose} className="text-xs inline-flex items-center gap-1 text-primary hover:underline shrink-0">
+                    <FileText className="size-3" /> Ficha
+                  </Link>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 
