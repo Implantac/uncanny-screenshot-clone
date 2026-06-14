@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp } from "lucide-react";
+import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp, Search, Flag, Workflow } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,12 +23,14 @@ export const Route = createFileRoute("/_authenticated/_app/pcp")({
 });
 
 type Status = "aguardando" | "em_producao" | "concluida" | "atrasada" | "cancelada";
+type Stage = "cad" | "corte" | "costura" | "acabamento" | "qualidade" | "expedicao" | "entregue";
 type Order = {
   id: string; owner_id: string; product_id: string | null; supplier_id: string | null;
   code: string; quantity: number; progress: number; due_date: string | null;
-  status: Status; notes: string | null; created_at: string;
+  status: Status; stage: Stage | null; priority: number; notes: string | null; created_at: string;
 };
 type Ref = { id: string; name: string };
+
 
 const LABEL: Record<Status, string> = {
   aguardando: "Aguardando", em_producao: "Em produção", concluida: "Concluída", atrasada: "Atrasada", cancelada: "Cancelada",
@@ -40,6 +42,18 @@ const COLOR: Record<Status, string> = {
   atrasada: "bg-destructive/20 text-destructive border-destructive/30",
   cancelada: "bg-muted text-muted-foreground",
 };
+const STAGE_LABEL: Record<Stage, string> = {
+  cad: "CAD", corte: "Corte", costura: "Costura", acabamento: "Acabamento", qualidade: "Qualidade", expedicao: "Expedição", entregue: "Entregue",
+};
+const PRIORITY_TONE: Record<number, string> = {
+  1: "bg-destructive/15 text-destructive border-destructive/30",
+  2: "bg-orange-500/15 text-orange-500 border-orange-500/30",
+  3: "bg-muted text-muted-foreground border-border",
+  4: "bg-muted text-muted-foreground border-border",
+  5: "bg-muted text-muted-foreground border-border",
+};
+const PRIORITY_LABEL: Record<number, string> = { 1: "P1 Urgente", 2: "P2 Alta", 3: "P3 Normal", 4: "P4 Baixa", 5: "P5 Backlog" };
+
 
 function PCP() {
   const { user } = useAuth();
@@ -47,10 +61,15 @@ function PCP() {
   useRealtime("production_orders", ["production_orders"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Order | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | Status>("all");
+  const [filterPriority, setFilterPriority] = useState<"all" | "1" | "2" | "3" | "4" | "5">("all");
+  const [filterSupplier, setFilterSupplier] = useState<string>("all");
   const [form, setForm] = useState({
     code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0,
     due_date: "", status: "aguardando" as Status, notes: "",
   });
+
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["production_orders"],
@@ -152,24 +171,38 @@ function PCP() {
   const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
   const supplierName = (id: string | null) => suppliers.find(s => s.id === id)?.name ?? "—";
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return items.filter((o) => {
+      if (filterStatus !== "all" && o.status !== filterStatus) return false;
+      if (filterPriority !== "all" && String(o.priority ?? 3) !== filterPriority) return false;
+      if (filterSupplier !== "all" && o.supplier_id !== filterSupplier) return false;
+      if (q) {
+        const hay = `${o.code} ${productName(o.product_id)} ${supplierName(o.supplier_id)} ${o.notes ?? ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [items, search, filterStatus, filterPriority, filterSupplier, products, suppliers]);
+
   const kpis = useMemo(() => {
-    const total = items.length;
-    const inProd = items.filter(i => i.status === "em_producao").length;
-    const late = items.filter(i => i.status === "atrasada").length;
-    const done = items.filter(i => i.status === "concluida").length;
-    const avg = total ? Math.round(items.reduce((s, i) => s + i.progress, 0) / total) : 0;
-    const totalQty = items.reduce((s, i) => s + (i.quantity || 0), 0);
+    const total = filtered.length;
+    const inProd = filtered.filter(i => i.status === "em_producao").length;
+    const late = filtered.filter(i => i.status === "atrasada").length;
+    const done = filtered.filter(i => i.status === "concluida").length;
+    const avg = total ? Math.round(filtered.reduce((s, i) => s + i.progress, 0) / total) : 0;
+    const totalQty = filtered.reduce((s, i) => s + (i.quantity || 0), 0);
     return { total, inProd, late, done, avg, totalQty };
-  }, [items]);
+  }, [filtered]);
 
   const byStatus = useMemo(() => {
     const groups: Record<Status, Order[]> = { aguardando: [], em_producao: [], atrasada: [], concluida: [], cancelada: [] };
-    for (const o of items) groups[o.status].push(o);
+    for (const o of filtered) groups[o.status].push(o);
     return groups;
-  }, [items]);
+  }, [filtered]);
 
   const timeline = useMemo(() => {
-    const dated = items.filter(i => i.due_date).sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1));
+    const dated = filtered.filter(i => i.due_date).sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1));
     if (!dated.length) return { rows: [] as Order[], min: null as Date | null, max: null as Date | null, days: 0 };
     const min = new Date(dated[0].due_date!);
     const max = new Date(dated[dated.length - 1].due_date!);
@@ -177,7 +210,8 @@ function PCP() {
     const end = new Date(Math.max(max.getTime(), Date.now() + 7 * 86400000));
     const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000));
     return { rows: dated, min: start, max: end, days };
-  }, [items]);
+  }, [filtered]);
+
 
   const KpiCard = ({ icon: Icon, label, value, accent }: { icon: typeof Factory; label: string; value: string | number; accent?: string }) => (
     <div className="rounded-xl border border-border bg-card/50 backdrop-blur p-4">
@@ -191,17 +225,19 @@ function PCP() {
 
   const Card = ({ o }: { o: Order }) => {
     const canDrag = user?.id === o.owner_id;
+    const d = o.due_date ? Math.ceil((new Date(o.due_date).getTime() - Date.now()) / 86400000) : null;
+    const overdue = d !== null && d < 0 && o.status !== "concluida";
     return (
       <div
         draggable={canDrag}
         onDragStart={(e) => { if (!canDrag) { e.preventDefault(); return; } setDragId(o.id); e.dataTransfer.setData("text/plain", o.id); e.dataTransfer.effectAllowed = "move"; }}
         onDragEnd={() => setDragId(null)}
         onClick={() => canDrag && openEdit(o)}
-        className={`w-full text-left rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-2 ${canDrag ? "cursor-grab active:cursor-grabbing" : ""} ${dragId === o.id ? "opacity-50" : ""}`}
+        className={`w-full text-left rounded-lg border bg-card hover:bg-muted/30 transition p-3 space-y-2 ${canDrag ? "cursor-grab active:cursor-grabbing" : ""} ${dragId === o.id ? "opacity-50" : ""} ${overdue ? "border-destructive/60" : "border-border"}`}
       >
         <div className="flex items-center justify-between gap-2">
           <span className="font-mono text-xs text-muted-foreground">{o.code}</span>
-          <Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge>
+          <span className={`text-[9px] px-1.5 py-0.5 rounded border ${PRIORITY_TONE[o.priority ?? 3]}`}>{PRIORITY_LABEL[o.priority ?? 3]}</span>
         </div>
         <div className="text-sm font-medium truncate">{productName(o.product_id)}</div>
         <div className="text-xs text-muted-foreground truncate">{supplierName(o.supplier_id)} · {o.quantity} pç</div>
@@ -211,14 +247,17 @@ function PCP() {
           </div>
           <span className="text-[10px] text-muted-foreground">{o.progress}%</span>
         </div>
-        {o.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {o.due_date}</div>}
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+          {o.stage ? <Badge variant="outline" className="text-[9px] px-1 py-0">{STAGE_LABEL[o.stage]}</Badge> : <span />}
+          {o.due_date && <span className={overdue ? "text-destructive font-medium" : ""}>{overdue ? `${Math.abs(d!)}d atrasada` : d === 0 ? "hoje" : `${d}d`}</span>}
+        </div>
       </div>
     );
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-6 space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="size-10 rounded-xl bg-primary/10 grid place-items-center"><Factory className="size-5 text-primary" /></div>
           <div>
@@ -226,18 +265,19 @@ function PCP() {
             <p className="text-sm text-muted-foreground">Quadro, cronograma e ordens em tempo real</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => exportToCsv("ordens-producao", items.map((o) => ({ ...o, status: LABEL[o.status] })), [
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm"><Link to="/pcp-kanban"><Workflow className="size-4 mr-2" />Setores</Link></Button>
+          <Button variant="outline" size="sm" onClick={() => exportToCsv("ordens-producao", filtered.map((o) => ({ ...o, status: LABEL[o.status], stage: o.stage ? STAGE_LABEL[o.stage] : "" })), [
             { key: "code", label: "Código" }, { key: "quantity", label: "Quantidade" },
             { key: "progress", label: "Progresso %" }, { key: "due_date", label: "Prazo" },
-            { key: "status", label: "Status" }, { key: "notes", label: "Observações" },
-          ])} disabled={!items.length}><Download className="size-4 mr-2" />CSV</Button>
-          <Button variant="outline" onClick={() => exportToPdf("ordens-producao", "Ordens de Produção", items.map((o) => ({ ...o, status: LABEL[o.status] })), [
+            { key: "status", label: "Status" }, { key: "stage", label: "Setor" }, { key: "priority", label: "Prioridade" }, { key: "notes", label: "Observações" },
+          ])} disabled={!filtered.length}><Download className="size-4 mr-2" />CSV</Button>
+          <Button variant="outline" size="sm" onClick={() => exportToPdf("ordens-producao", "Ordens de Produção", filtered.map((o) => ({ ...o, status: LABEL[o.status] })), [
             { key: "code", label: "Código" }, { key: "quantity", label: "Qtd" },
             { key: "progress", label: "%" }, { key: "due_date", label: "Prazo" },
             { key: "status", label: "Status" },
-          ])} disabled={!items.length}><FileText className="size-4 mr-2" />PDF</Button>
-          <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Nova OP</Button>
+          ])} disabled={!filtered.length}><FileText className="size-4 mr-2" />PDF</Button>
+          <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}><Plus className="size-4 mr-2" />Nova OP</Button>
         </div>
       </div>
 
@@ -248,6 +288,38 @@ function PCP() {
         <KpiCard icon={CheckCircle2} label="Concluídas" value={kpis.done} accent="text-emerald-400" />
         <KpiCard icon={TrendingUp} label="Progresso médio" value={`${kpis.avg}%`} accent="text-primary" />
       </div>
+
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card/50 p-3">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar código, produto, facção, notas…" className="pl-8" />
+        </div>
+        <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as any)}>
+          <SelectTrigger className="w-[150px]"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos status</SelectItem>
+            {(Object.keys(LABEL) as Status[]).map((s) => <SelectItem key={s} value={s}>{LABEL[s]}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filterPriority} onValueChange={(v) => setFilterPriority(v as any)}>
+          <SelectTrigger className="w-[140px]"><Flag className="size-4 mr-1" /><SelectValue placeholder="Prioridade" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas prioridades</SelectItem>
+            {[1, 2, 3, 4, 5].map((p) => <SelectItem key={p} value={String(p)}>{PRIORITY_LABEL[p]}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filterSupplier} onValueChange={setFilterSupplier}>
+          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Facção" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas facções</SelectItem>
+            {suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        {(search || filterStatus !== "all" || filterPriority !== "all" || filterSupplier !== "all") && (
+          <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setFilterStatus("all"); setFilterPriority("all"); setFilterSupplier("all"); }}>Limpar</Button>
+        )}
+      </div>
+
 
       {isLoading ? <p className="text-muted-foreground">Carregando…</p> : (
         <Tabs defaultValue="kanban" className="space-y-4">
@@ -308,7 +380,7 @@ function PCP() {
                     const pos = ((due - start) / (end - start)) * 100;
                     const created = new Date(o.created_at).getTime();
                     const left = Math.max(0, Math.min(100, ((Math.max(created, start) - start) / (end - start)) * 100));
-                    const width = Math.max(2, Math.min(100 - left, pos - left));
+                    const width = Math.max(2, Math.min(100 - left, Math.max(0, pos - left)));
                     return (
                       <div key={o.id} className="px-4 py-3 grid grid-cols-[180px_1fr_80px] gap-3 items-center hover:bg-muted/20">
                         <div className="truncate">
@@ -345,27 +417,31 @@ function PCP() {
                     <th className="text-left px-4 py-3">Facção</th>
                     <th className="text-right px-4 py-3">Qtd</th>
                     <th className="text-left px-4 py-3">Progresso</th>
+                    <th className="text-left px-4 py-3">Setor</th>
+                    <th className="text-left px-4 py-3">Prio</th>
                     <th className="text-left px-4 py-3">Prazo</th>
                     <th className="text-left px-4 py-3">Status</th>
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map(o => (
+                  {filtered.map(o => (
                     <tr key={o.id} className="border-t border-border hover:bg-muted/20">
                       <td className="px-4 py-3 font-mono text-xs">{o.code}</td>
                       <td className="px-4 py-3">{productName(o.product_id)}</td>
                       <td className="px-4 py-3">{supplierName(o.supplier_id)}</td>
-                      <td className="px-4 py-3 text-right">{o.quantity}</td>
+                      <td className="px-4 py-3 text-right tabular-nums">{o.quantity}</td>
                       <td className="px-4 py-3 w-40">
                         <div className="flex items-center gap-2">
                           <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                             <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
                           </div>
-                          <span className="text-xs text-muted-foreground">{o.progress}%</span>
+                          <span className="text-xs text-muted-foreground tabular-nums">{o.progress}%</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{o.due_date ?? "—"}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{o.stage ? STAGE_LABEL[o.stage] : "—"}</td>
+                      <td className="px-4 py-3"><span className={`text-[10px] px-1.5 py-0.5 rounded border ${PRIORITY_TONE[o.priority ?? 3]}`}>P{o.priority ?? 3}</span></td>
+                      <td className="px-4 py-3 text-muted-foreground tabular-nums">{o.due_date ?? "—"}</td>
                       <td className="px-4 py-3"><Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge></td>
                       <td className="px-4 py-3 text-right">
                         {user?.id === o.owner_id && (
@@ -377,8 +453,9 @@ function PCP() {
                       </td>
                     </tr>
                   ))}
-                  {items.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Nenhuma ordem ainda</td></tr>}
+                  {filtered.length === 0 && <tr><td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">Nenhuma ordem encontrada</td></tr>}
                 </tbody>
+
               </table>
             </div>
           </TabsContent>
