@@ -55,6 +55,7 @@ import { Route as AppCapacityRouteImport } from './routes/_app.capacity'
 import { Route as AppCampaignsRouteImport } from './routes/_app.campaigns'
 import { Route as AppCadRouteImport } from './routes/_app.cad'
 import { Route as AppBiRouteImport } from './routes/_app.bi'
+import { Route as AppAuditRouteImport } from './routes/_app.audit'
 import { Route as AppAttributionRouteImport } from './routes/_app.attribution'
 import { Route as AppAlmoxarifadoRouteImport } from './routes/_app.almoxarifado'
 
@@ -287,6 +288,11 @@ const AppBiRoute = AppBiRouteImport.update({
   path: '/bi',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAuditRoute = AppAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAttributionRoute = AppAttributionRouteImport.update({
   id: '/attribution',
   path: '/attribution',
@@ -303,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/almoxarifado': typeof AppAlmoxarifadoRoute
   '/attribution': typeof AppAttributionRoute
+  '/audit': typeof AppAuditRoute
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
   '/campaigns': typeof AppCampaignsRoute
@@ -351,6 +358,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/almoxarifado': typeof AppAlmoxarifadoRoute
   '/attribution': typeof AppAttributionRoute
+  '/audit': typeof AppAuditRoute
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
   '/campaigns': typeof AppCampaignsRoute
@@ -402,6 +410,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_app/almoxarifado': typeof AppAlmoxarifadoRoute
   '/_app/attribution': typeof AppAttributionRoute
+  '/_app/audit': typeof AppAuditRoute
   '/_app/bi': typeof AppBiRoute
   '/_app/cad': typeof AppCadRoute
   '/_app/campaigns': typeof AppCampaignsRoute
@@ -454,6 +463,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/almoxarifado'
     | '/attribution'
+    | '/audit'
     | '/bi'
     | '/cad'
     | '/campaigns'
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/almoxarifado'
     | '/attribution'
+    | '/audit'
     | '/bi'
     | '/cad'
     | '/campaigns'
@@ -552,6 +563,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_app/almoxarifado'
     | '/_app/attribution'
+    | '/_app/audit'
     | '/_app/bi'
     | '/_app/cad'
     | '/_app/campaigns'
@@ -928,6 +940,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBiRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/audit': {
+      id: '/_app/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AppAuditRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/attribution': {
       id: '/_app/attribution'
       path: '/attribution'
@@ -948,6 +967,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAlmoxarifadoRoute: typeof AppAlmoxarifadoRoute
   AppAttributionRoute: typeof AppAttributionRoute
+  AppAuditRoute: typeof AppAuditRoute
   AppBiRoute: typeof AppBiRoute
   AppCadRoute: typeof AppCadRoute
   AppCampaignsRoute: typeof AppCampaignsRoute
@@ -996,6 +1016,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAlmoxarifadoRoute: AppAlmoxarifadoRoute,
   AppAttributionRoute: AppAttributionRoute,
+  AppAuditRoute: AppAuditRoute,
   AppBiRoute: AppBiRoute,
   AppCadRoute: AppCadRoute,
   AppCampaignsRoute: AppCampaignsRoute,
