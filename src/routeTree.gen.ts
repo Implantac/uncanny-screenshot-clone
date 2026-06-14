@@ -37,6 +37,7 @@ import { Route as AppFashionGptRouteImport } from './routes/_app.fashion-gpt'
 import { Route as AppFashionCalendarRouteImport } from './routes/_app.fashion-calendar'
 import { Route as AppEquipeRouteImport } from './routes/_app.equipe'
 import { Route as AppDppRouteImport } from './routes/_app.dpp'
+import { Route as AppDevKanbanRouteImport } from './routes/_app.dev-kanban'
 import { Route as AppControlTowerRouteImport } from './routes/_app.control-tower'
 import { Route as AppComercialRouteImport } from './routes/_app.comercial'
 import { Route as AppColecoesRouteImport } from './routes/_app.colecoes'
@@ -187,6 +188,11 @@ const AppDppRoute = AppDppRouteImport.update({
   path: '/dpp',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDevKanbanRoute = AppDevKanbanRouteImport.update({
+  id: '/dev-kanban',
+  path: '/dev-kanban',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppControlTowerRoute = AppControlTowerRouteImport.update({
   id: '/control-tower',
   path: '/control-tower',
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
   '/control-tower': typeof AppControlTowerRoute
+  '/dev-kanban': typeof AppDevKanbanRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
   '/fashion-calendar': typeof AppFashionCalendarRoute
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
   '/control-tower': typeof AppControlTowerRoute
+  '/dev-kanban': typeof AppDevKanbanRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
   '/fashion-calendar': typeof AppFashionCalendarRoute
@@ -330,6 +338,7 @@ export interface FileRoutesById {
   '/_app/colecoes': typeof AppColecoesRoute
   '/_app/comercial': typeof AppComercialRoute
   '/_app/control-tower': typeof AppControlTowerRoute
+  '/_app/dev-kanban': typeof AppDevKanbanRoute
   '/_app/dpp': typeof AppDppRoute
   '/_app/equipe': typeof AppEquipeRoute
   '/_app/fashion-calendar': typeof AppFashionCalendarRoute
@@ -372,6 +381,7 @@ export interface FileRouteTypes {
     | '/colecoes'
     | '/comercial'
     | '/control-tower'
+    | '/dev-kanban'
     | '/dpp'
     | '/equipe'
     | '/fashion-calendar'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/colecoes'
     | '/comercial'
     | '/control-tower'
+    | '/dev-kanban'
     | '/dpp'
     | '/equipe'
     | '/fashion-calendar'
@@ -450,6 +461,7 @@ export interface FileRouteTypes {
     | '/_app/colecoes'
     | '/_app/comercial'
     | '/_app/control-tower'
+    | '/_app/dev-kanban'
     | '/_app/dpp'
     | '/_app/equipe'
     | '/_app/fashion-calendar'
@@ -682,6 +694,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDppRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dev-kanban': {
+      id: '/_app/dev-kanban'
+      path: '/dev-kanban'
+      fullPath: '/dev-kanban'
+      preLoaderRoute: typeof AppDevKanbanRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/control-tower': {
       id: '/_app/control-tower'
       path: '/control-tower'
@@ -766,6 +785,7 @@ interface AppRouteChildren {
   AppColecoesRoute: typeof AppColecoesRoute
   AppComercialRoute: typeof AppComercialRoute
   AppControlTowerRoute: typeof AppControlTowerRoute
+  AppDevKanbanRoute: typeof AppDevKanbanRoute
   AppDppRoute: typeof AppDppRoute
   AppEquipeRoute: typeof AppEquipeRoute
   AppFashionCalendarRoute: typeof AppFashionCalendarRoute
@@ -804,6 +824,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppColecoesRoute: AppColecoesRoute,
   AppComercialRoute: AppComercialRoute,
   AppControlTowerRoute: AppControlTowerRoute,
+  AppDevKanbanRoute: AppDevKanbanRoute,
   AppDppRoute: AppDppRoute,
   AppEquipeRoute: AppEquipeRoute,
   AppFashionCalendarRoute: AppFashionCalendarRoute,
