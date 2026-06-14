@@ -189,26 +189,32 @@ function PCP() {
     </div>
   );
 
-  const Card = ({ o }: { o: Order }) => (
-    <button
-      onClick={() => user?.id === o.owner_id && openEdit(o)}
-      className="w-full text-left rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-2"
-    >
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-xs text-muted-foreground">{o.code}</span>
-        <Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge>
-      </div>
-      <div className="text-sm font-medium truncate">{productName(o.product_id)}</div>
-      <div className="text-xs text-muted-foreground truncate">{supplierName(o.supplier_id)} · {o.quantity} pç</div>
-      <div className="flex items-center gap-2">
-        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-          <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
+  const Card = ({ o }: { o: Order }) => {
+    const canDrag = user?.id === o.owner_id;
+    return (
+      <div
+        draggable={canDrag}
+        onDragStart={(e) => { if (!canDrag) { e.preventDefault(); return; } setDragId(o.id); e.dataTransfer.setData("text/plain", o.id); e.dataTransfer.effectAllowed = "move"; }}
+        onDragEnd={() => setDragId(null)}
+        onClick={() => canDrag && openEdit(o)}
+        className={`w-full text-left rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-2 ${canDrag ? "cursor-grab active:cursor-grabbing" : ""} ${dragId === o.id ? "opacity-50" : ""}`}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-mono text-xs text-muted-foreground">{o.code}</span>
+          <Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge>
         </div>
-        <span className="text-[10px] text-muted-foreground">{o.progress}%</span>
+        <div className="text-sm font-medium truncate">{productName(o.product_id)}</div>
+        <div className="text-xs text-muted-foreground truncate">{supplierName(o.supplier_id)} · {o.quantity} pç</div>
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
+          </div>
+          <span className="text-[10px] text-muted-foreground">{o.progress}%</span>
+        </div>
+        {o.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {o.due_date}</div>}
       </div>
-      {o.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {o.due_date}</div>}
-    </button>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
