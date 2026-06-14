@@ -127,6 +127,7 @@ function IntelligencePage() {
             orders={ordersQ.data ?? []}
             inventory={invQ.data ?? []}
             b2b={b2bQ.data ?? []}
+            sales={salesQ.data ?? []}
           />
         </TabsContent>
 
@@ -186,22 +187,43 @@ function IntelligencePage() {
 }
 
 /* ===================== PRODUÇÃO ===================== */
-function ProductionTab({ products, orders, inventory, b2b }: any) {
+function ProductionTab({ products, orders, inventory, b2b, sales = [] }: any) {
   const [q, setQ] = useState("");
   const SIZES = ["PP", "P", "M", "G", "GG"];
   const SIZE_DIST = [0.1, 0.2, 0.35, 0.25, 0.1];
 
   const rows = useMemo(() => {
+    const now = Date.now();
+    const DAY = 24 * 60 * 60 * 1000;
+    // Sales aggregated by product_id
+    const salesByPid = new Map<string, { d7: number; d30: number }>();
+    for (const s of sales as any[]) {
+      if (!s.product_id) continue;
+      const ageDays = (now - new Date(s.sold_at).getTime()) / DAY;
+      const qty = Number(s.quantity || 0);
+      const cur = salesByPid.get(s.product_id) ?? { d7: 0, d30: 0 };
+      if (ageDays <= 7) cur.d7 += qty;
+      if (ageDays <= 30) cur.d30 += qty;
+      salesByPid.set(s.product_id, cur);
+    }
+    // Inventory by sku
+    const stockBySku = new Map<string, number>();
+    const minBySku = new Map<string, number>();
+    for (const i of inventory as any[]) {
+      stockBySku.set(i.sku, (stockBySku.get(i.sku) ?? 0) + Number(i.balance || 0));
+      minBySku.set(i.sku, Math.max(minBySku.get(i.sku) ?? 0, Number(i.minimum || 0)));
+    }
+
     return (products as any[]).map((p) => {
-      const r = seed(p.id);
-      const sold30 = Math.round(r(20, 180));
-      const sold7 = Math.round(sold30 * (0.18 + r(0, 0.08)));
+      const sAgg = salesByPid.get(p.id) ?? { d7: 0, d30: 0 };
+      const sold30 = sAgg.d30;
+      const sold7 = sAgg.d7;
       const inProd = (orders as any[])
-        .filter((o) => o.product_id === p.id && o.status !== "concluida")
+        .filter((o) => o.product_id === p.id && o.status !== "concluida" && o.status !== "cancelada")
         .reduce((s, o) => s + (o.quantity || 0), 0);
-      const stock = Math.round(r(0, 220));
-      const minStock = Math.round(r(40, 100));
-      const maxStock = minStock + Math.round(r(120, 240));
+      const stock = stockBySku.get(p.sku) ?? 0;
+      const minStock = minBySku.get(p.sku) ?? Math.round(sold30 * 0.5);
+      const maxStock = Math.max(minStock + 1, Math.round(sold30 * 1.5) || minStock + 10);
       const reorder = Math.round(minStock * 1.4);
       const daily = sold30 / 30;
       const coverage = daily > 0 ? Math.round((stock + inProd) / daily) : 999;
@@ -211,7 +233,7 @@ function ProductionTab({ products, orders, inventory, b2b }: any) {
         ...p, sold7, sold30, inProd, stock, minStock, maxStock, reorder, coverage, need, status,
       };
     });
-  }, [products, orders]);
+  }, [products, orders, inventory, sales]);
 
   const filtered = rows.filter((r) =>
     !q || r.name?.toLowerCase().includes(q.toLowerCase()) || r.sku?.toLowerCase().includes(q.toLowerCase())
