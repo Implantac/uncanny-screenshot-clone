@@ -127,6 +127,7 @@ function FichaTecnicaPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Sheet | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [diffOpen, setDiffOpen] = useState(false);
 
   const { data: sheets = [], isLoading } = useQuery({
     queryKey: ["tech_sheets"],
