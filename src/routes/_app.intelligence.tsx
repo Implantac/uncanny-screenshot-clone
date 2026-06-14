@@ -85,6 +85,18 @@ function IntelligencePage() {
     queryKey: ["intel", "sales"],
     queryFn: async () => (await (supabase as any).from("sales").select("*").order("sold_at", { ascending: false })).data ?? [],
   });
+  const influQ = useQuery({
+    queryKey: ["intel", "influencers"],
+    queryFn: async () => (await (supabase as any).from("influencers").select("id")).data ?? [],
+  });
+  const supQ = useQuery({
+    queryKey: ["intel", "suppliers"],
+    queryFn: async () => (await supabase.from("suppliers").select("id")).data ?? [],
+  });
+  const colQ = useQuery({
+    queryKey: ["intel", "collections"],
+    queryFn: async () => (await supabase.from("collections").select("id")).data ?? [],
+  });
 
   return (
     <div className="space-y-6">
