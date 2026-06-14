@@ -23,7 +23,9 @@ export type Database = {
           last_output: string | null
           last_run_at: string | null
           name: string
+          next_run_at: string | null
           owner_id: string
+          schedule_cron: string | null
           status: Database["public"]["Enums"]["ai_agent_status"]
           success_rate: number
           updated_at: string
@@ -36,7 +38,9 @@ export type Database = {
           last_output?: string | null
           last_run_at?: string | null
           name: string
+          next_run_at?: string | null
           owner_id: string
+          schedule_cron?: string | null
           status?: Database["public"]["Enums"]["ai_agent_status"]
           success_rate?: number
           updated_at?: string
@@ -49,7 +53,9 @@ export type Database = {
           last_output?: string | null
           last_run_at?: string | null
           name?: string
+          next_run_at?: string | null
           owner_id?: string
+          schedule_cron?: string | null
           status?: Database["public"]["Enums"]["ai_agent_status"]
           success_rate?: number
           updated_at?: string

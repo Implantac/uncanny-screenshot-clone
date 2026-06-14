@@ -60,6 +60,7 @@ import { Route as AppBiRouteImport } from './routes/_app.bi'
 import { Route as AppAuditRouteImport } from './routes/_app.audit'
 import { Route as AppAttributionRouteImport } from './routes/_app.attribution'
 import { Route as AppAlmoxarifadoRouteImport } from './routes/_app.almoxarifado'
+import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -315,6 +316,11 @@ const AppAlmoxarifadoRoute = AppAlmoxarifadoRouteImport.update({
   path: '/almoxarifado',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicAgentsRunDueRoute = ApiPublicAgentsRunDueRouteImport.update({
+  id: '/api/public/agents/run-due',
+  path: '/api/public/agents/run-due',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -367,6 +373,7 @@ export interface FileRoutesByFullPath {
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -419,6 +426,7 @@ export interface FileRoutesByTo {
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
   '/': typeof AppIndexRoute
+  '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -473,6 +481,7 @@ export interface FileRoutesById {
   '/_app/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
   '/_app/': typeof AppIndexRoute
+  '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -527,6 +536,7 @@ export interface FileRouteTypes {
     | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
+    | '/api/public/agents/run-due'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -579,6 +589,7 @@ export interface FileRouteTypes {
     | '/use-ai'
     | '/api/chat'
     | '/'
+    | '/api/public/agents/run-due'
   id:
     | '__root__'
     | '/_app'
@@ -632,12 +643,14 @@ export interface FileRouteTypes {
     | '/_app/use-ai'
     | '/api/chat'
     | '/_app/'
+    | '/api/public/agents/run-due'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -999,6 +1012,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAlmoxarifadoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/agents/run-due': {
+      id: '/api/public/agents/run-due'
+      path: '/api/public/agents/run-due'
+      fullPath: '/api/public/agents/run-due'
+      preLoaderRoute: typeof ApiPublicAgentsRunDueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1110,6 +1130,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -131,7 +131,22 @@ function UseAI() {
                   <div className="font-medium mt-0.5">{relTime(a.last_run_at)}</div>
                 </div>
               </div>
-              <div className="mt-3 flex justify-end">
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <button
+                  onClick={async () => {
+                    const cur = a.schedule_cron ?? "";
+                    const v = window.prompt("Expressão cron (ex: */30 * * * *) — vazio para desativar:", cur);
+                    if (v === null) return;
+                    const cron = v.trim() || null;
+                    const next = cron ? new Date(Date.now() + 60_000).toISOString() : null;
+                    const { error } = await supabase.from("ai_agents").update({ schedule_cron: cron, next_run_at: next }).eq("id", a.id);
+                    if (error) toast.error(error.message);
+                    else { toast.success(cron ? "Agendado" : "Agendamento removido"); qc.invalidateQueries({ queryKey: ["ai-agents"] }); }
+                  }}
+                  className="h-8 px-3 rounded-md text-xs border border-border hover:bg-accent inline-flex items-center gap-1.5"
+                >
+                  {a.schedule_cron ? `⏱ ${a.schedule_cron}` : "Agendar"}
+                </button>
                 <button
                   onClick={() => run.mutate(a.id)}
                   disabled={run.isPending && run.variables === a.id}
