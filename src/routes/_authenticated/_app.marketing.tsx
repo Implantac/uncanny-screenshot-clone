@@ -86,39 +86,32 @@ function Marketing() {
   const roasAvg = filtered.length ? filtered.reduce((a, b) => a + Number(b.roas), 0) / filtered.length : 0;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          <div className="size-11 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:justify-between sm:items-center">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="size-11 shrink-0 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
             <Megaphone className="size-5 text-primary-foreground" />
           </div>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Marketing</h1>
-            <p className="text-sm text-muted-foreground">Campanhas e calendário editorial</p>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight truncate">Marketing</h1>
+            <p className="text-sm text-muted-foreground truncate">Performance de mídia, campanhas e atribuição</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" disabled={!filtered.length} onClick={() => exportToCsv("marketing", filtered.map((c) => ({ ...c, status: STATUS_LABEL[c.status], receita_est: Number(c.investment) * Number(c.roas) })), [
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" size="sm" disabled={!filtered.length} onClick={() => exportToCsv("marketing", filtered.map((c) => ({ ...c, status: STATUS_LABEL[c.status], receita_est: Number(c.investment) * Number(c.roas) })), [
             { key: "name", label: "Campanha" }, { key: "channel", label: "Canal" },
             { key: "start_date", label: "Início" }, { key: "end_date", label: "Fim" },
             { key: "investment", label: "Investimento" }, { key: "roas", label: "ROAS" },
             { key: "receita_est", label: "Receita estimada" }, { key: "status", label: "Status" },
-          ])} className="gap-2"><Download className="size-4" />CSV</Button>
-          <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
+          ])} className="gap-2"><Download className="size-4" />Exportar</Button>
+          <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
             <Plus className="size-4" /> Nova campanha
           </Button>
         </div>
-      </div>
+      </header>
 
-      <KpiGrid ativas={ativas} total={filtered.length} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
-
-      <InsightsBar rows={filtered} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
-
-      <ChartsSection rows={filtered} />
-
-
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[11px] uppercase tracking-wider text-muted-foreground mr-1">Período</span>
+      <div className="glass rounded-xl p-3 flex items-center gap-2 flex-wrap">
+        <span className="text-[11px] uppercase tracking-wider text-muted-foreground mr-1 font-medium">Período</span>
         {([
           { k: "30", label: "30 dias" },
           { k: "90", label: "90 dias" },
@@ -127,7 +120,7 @@ function Marketing() {
         ] as const).map((p) => (
           <button key={p.k} onClick={() => setPeriodFilter(p.k)} className={`px-3 py-1 rounded-full text-xs border transition-colors ${periodFilter === p.k ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>{p.label}</button>
         ))}
-        {channels.length > 0 && <span className="text-[11px] uppercase tracking-wider text-muted-foreground ml-3 mr-1">Canal</span>}
+        {channels.length > 0 && <span className="text-[11px] uppercase tracking-wider text-muted-foreground ml-3 mr-1 font-medium">Canal</span>}
         {channels.length > 0 && (
           <>
             <button onClick={() => setChannelFilter("todos")} className={`px-3 py-1 rounded-full text-xs border transition-colors ${channelFilter === "todos" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>Todos</button>
@@ -136,67 +129,86 @@ function Marketing() {
             ))}
           </>
         )}
+        <span className="ml-auto text-[11px] text-muted-foreground tabular-nums">{filtered.length} de {rows.length} campanhas</span>
       </div>
 
-      <AdvancedSection rows={filtered} />
+      <KpiGrid ativas={ativas} total={filtered.length} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
 
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Visão geral</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="campaigns">Campanhas</TabsTrigger>
+        </TabsList>
 
-      {isLoading ? (
-        <div className="text-muted-foreground">Carregando…</div>
-      ) : filtered.length === 0 ? (
-        <div className="glass rounded-xl p-12 text-center">
-          <Sparkles className="size-10 text-primary mx-auto mb-3" />
-          <h3 className="font-semibold mb-1">Sem campanhas</h3>
-          <p className="text-sm text-muted-foreground mb-4">{rows.length === 0 ? "Crie a primeira campanha." : "Nenhuma campanha no canal selecionado."}</p>
-          {rows.length === 0 && <Button onClick={() => { setEditing(null); setOpen(true); }}>Nova campanha</Button>}
-        </div>
-      ) : (
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="p-5 border-b border-border text-sm font-semibold inline-flex items-center gap-2"><Calendar className="size-4" /> Campanhas</div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/30">
-                <tr>
-                  <th className="text-left font-medium px-5 py-2.5">Campanha</th>
-                  <th className="text-left font-medium px-5 py-2.5">Canal</th>
-                  <th className="text-left font-medium px-5 py-2.5">Período</th>
-                  <th className="text-right font-medium px-5 py-2.5">Investimento</th>
-                  <th className="text-right font-medium px-5 py-2.5">ROAS</th>
-                  <th className="text-left font-medium px-5 py-2.5">Status</th>
-                  <th className="px-5 py-2.5"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((c) => {
-                  const mine = c.owner_id === user?.id;
-                  return (
-                    <tr key={c.id} className="border-t border-border hover:bg-muted/30">
-                      <td className="px-5 py-3 font-medium">{c.name}</td>
-                      <td className="px-5 py-3 text-muted-foreground">{c.channel || "—"}</td>
-                      <td className="px-5 py-3 text-muted-foreground tabular-nums">{fmt(c.start_date)} → {fmt(c.end_date)}</td>
-                      <td className="px-5 py-3 text-right tabular-nums">{brl(Number(c.investment))}</td>
-                      <td className="px-5 py-3 text-right tabular-nums font-medium">{Number(c.roas) > 0 ? `${Number(c.roas).toFixed(1)}x` : "—"}</td>
-                      <td className="px-5 py-3"><span className={`px-2 py-0.5 rounded text-xs ${STATUS_STYLE[c.status]}`}>{STATUS_LABEL[c.status]}</span></td>
-                      <td className="px-5 py-3 text-right">
-                        {mine && (
-                          <div className="flex justify-end gap-1">
-                            <button onClick={() => { setEditing(c); setOpen(true); }} className="size-7 grid place-items-center rounded hover:bg-muted">
-                              <Pencil className="size-3.5" />
-                            </button>
-                            <button onClick={() => confirm("Remover esta campanha?") && deleteMut.mutate(c.id)} className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive">
-                              <Trash2 className="size-3.5" />
-                            </button>
-                          </div>
-                        )}
-                      </td>
+        <TabsContent value="overview" className="space-y-4">
+          <InsightsBar rows={filtered} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
+          <ChartsSection rows={filtered} />
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-4">
+          <AdvancedSection rows={filtered} />
+        </TabsContent>
+
+        <TabsContent value="campaigns">
+          {isLoading ? (
+            <div className="text-muted-foreground">Carregando…</div>
+          ) : filtered.length === 0 ? (
+            <div className="glass rounded-xl p-12 text-center">
+              <Sparkles className="size-10 text-primary mx-auto mb-3" />
+              <h3 className="font-semibold mb-1">Sem campanhas</h3>
+              <p className="text-sm text-muted-foreground mb-4">{rows.length === 0 ? "Crie a primeira campanha." : "Nenhuma campanha no filtro selecionado."}</p>
+              {rows.length === 0 && <Button onClick={() => { setEditing(null); setOpen(true); }}>Nova campanha</Button>}
+            </div>
+          ) : (
+            <div className="glass rounded-xl overflow-hidden">
+              <div className="p-5 border-b border-border text-sm font-semibold inline-flex items-center gap-2"><Calendar className="size-4" /> Campanhas</div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/30">
+                    <tr>
+                      <th className="text-left font-medium px-5 py-2.5">Campanha</th>
+                      <th className="text-left font-medium px-5 py-2.5">Canal</th>
+                      <th className="text-left font-medium px-5 py-2.5">Período</th>
+                      <th className="text-right font-medium px-5 py-2.5">Investimento</th>
+                      <th className="text-right font-medium px-5 py-2.5">ROAS</th>
+                      <th className="text-left font-medium px-5 py-2.5">Status</th>
+                      <th className="px-5 py-2.5"></th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+                  </thead>
+                  <tbody>
+                    {filtered.map((c) => {
+                      const mine = c.owner_id === user?.id;
+                      return (
+                        <tr key={c.id} className="border-t border-border hover:bg-muted/30">
+                          <td className="px-5 py-3 font-medium">{c.name}</td>
+                          <td className="px-5 py-3 text-muted-foreground">{c.channel || "—"}</td>
+                          <td className="px-5 py-3 text-muted-foreground tabular-nums">{fmt(c.start_date)} → {fmt(c.end_date)}</td>
+                          <td className="px-5 py-3 text-right tabular-nums">{brl(Number(c.investment))}</td>
+                          <td className="px-5 py-3 text-right tabular-nums font-medium">{Number(c.roas) > 0 ? `${Number(c.roas).toFixed(1)}x` : "—"}</td>
+                          <td className="px-5 py-3"><span className={`px-2 py-0.5 rounded text-xs ${STATUS_STYLE[c.status]}`}>{STATUS_LABEL[c.status]}</span></td>
+                          <td className="px-5 py-3 text-right">
+                            {mine && (
+                              <div className="flex justify-end gap-1">
+                                <button onClick={() => { setEditing(c); setOpen(true); }} className="size-7 grid place-items-center rounded hover:bg-muted">
+                                  <Pencil className="size-3.5" />
+                                </button>
+                                <button onClick={() => confirm("Remover esta campanha?") && deleteMut.mutate(c.id)} className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive">
+                                  <Trash2 className="size-3.5" />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <CampaignDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} />
     </div>
