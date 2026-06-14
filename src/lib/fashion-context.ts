@@ -16,12 +16,23 @@ export type FashionContext = {
   };
   production: {
     total: number;
-    byStage: Record<string, number>;
-    inProgress: Array<{ product: string; stage: string; quantity: number; due?: string }>;
+    byStatus: Record<string, number>;
+    inProgress: Array<{ code: string; status: string; quantity: number; due?: string }>;
   };
-  sales: { last7d: number; last30d: number; last90d: number; topProducts: Array<{ product: string; qty: number }> };
-  influencers: { total: number; top: Array<{ name: string; followers: number; engagement: number }> };
-  marketing: { active: number; byChannel: Record<string, number> };
+  sales: {
+    last7d: number;
+    last30d: number;
+    last90d: number;
+    revenue30d: number;
+    topProducts: Array<{ sku: string; qty: number }>;
+    byChannel: Record<string, number>;
+    byUF: Record<string, number>;
+  };
+  influencers: {
+    total: number;
+    top: Array<{ nome: string; seguidores: number; engajamento: number; impacto: number }>;
+  };
+  marketing: { active: number; byChannel: Record<string, number>; totalInvestment: number };
   collections: { total: number; latest: Array<{ name: string; season: string; year: number }> };
 };
 
@@ -34,10 +45,10 @@ export async function buildFashionContext(): Promise<FashionContext> {
     supabase.from("financial_accounts").select("type, status, value"),
     supabase.from("inventory_items").select("name, sku, balance, minimum"),
     supabase.from("collections").select("name, season, year").order("created_at", { ascending: false }).limit(5),
-    supabase.from("production_orders").select("product_name, stage, quantity, due_date").limit(200),
-    supabase.from("sales").select("product_name, quantity, total_value, sold_at").gte("sold_at", daysAgo(90)),
-    supabase.from("influencers").select("name, followers, engagement_rate").order("followers", { ascending: false }).limit(5),
-    supabase.from("marketing_campaigns").select("status, channel"),
+    supabase.from("production_orders").select("code, status, quantity, due_date").limit(200),
+    supabase.from("sales").select("sku, channel, uf, quantity, total, sold_at").gte("sold_at", daysAgo(90)),
+    supabase.from("influencers").select("nome, seguidores, engajamento, vendas_antes, vendas_depois").order("seguidores", { ascending: false }).limit(5),
+    supabase.from("marketing_campaigns").select("status, channel, investment"),
   ]);
 
   const products = prodRes.data ?? [];
@@ -69,36 +80,55 @@ export async function buildFashionContext(): Promise<FashionContext> {
   const criticalList = inv.filter((i) => Number(i.balance) <= Number(i.minimum));
   const criticalItems = criticalList.slice(0, 8).map((i) => ({ name: i.name, sku: i.sku, balance: Number(i.balance), minimum: Number(i.minimum) }));
 
-  const po = prodOrdRes.data ?? [];
-  const byStage: Record<string, number> = {};
-  for (const p of po) byStage[(p as any).stage ?? "—"] = (byStage[(p as any).stage ?? "—"] ?? 0) + Number((p as any).quantity ?? 0);
+  const po = (prodOrdRes.data ?? []) as any[];
+  const byStatusPO: Record<string, number> = {};
+  for (const p of po) byStatusPO[p.status ?? "—"] = (byStatusPO[p.status ?? "—"] ?? 0) + Number(p.quantity ?? 0);
   const inProgress = po
-    .filter((p: any) => !["concluido", "concluído", "cancelado"].includes((p.stage ?? "").toLowerCase()))
+    .filter((p) => !["concluido", "concluído", "cancelado"].includes((p.status ?? "").toLowerCase()))
     .slice(0, 8)
-    .map((p: any) => ({ product: p.product_name, stage: p.stage, quantity: Number(p.quantity ?? 0), due: p.due_date ?? undefined }));
+    .map((p) => ({ code: p.code, status: p.status, quantity: Number(p.quantity ?? 0), due: p.due_date ?? undefined }));
 
-  const sales = salesRes.data ?? [];
+  const sales = (salesRes.data ?? []) as any[];
   const now = Date.now();
-  const sum = (days: number) => sales.filter((s: any) => now - new Date(s.sold_at).getTime() <= days * 86400_000)
-    .reduce((acc: number, s: any) => acc + Number(s.quantity ?? 0), 0);
+  const within = (days: number) => sales.filter((s) => now - new Date(s.sold_at).getTime() <= days * 86400_000);
+  const sumQty = (days: number) => within(days).reduce((acc, s) => acc + Number(s.quantity ?? 0), 0);
+  const revenue30d = within(30).reduce((acc, s) => acc + Number(s.total ?? 0), 0);
   const topMap: Record<string, number> = {};
-  for (const s of sales as any[]) topMap[s.product_name] = (topMap[s.product_name] ?? 0) + Number(s.quantity ?? 0);
-  const topProducts = Object.entries(topMap).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([product, qty]) => ({ product, qty }));
+  const chanMap: Record<string, number> = {};
+  const ufMap: Record<string, number> = {};
+  for (const s of sales) {
+    topMap[s.sku] = (topMap[s.sku] ?? 0) + Number(s.quantity ?? 0);
+    if (s.channel) chanMap[s.channel] = (chanMap[s.channel] ?? 0) + Number(s.quantity ?? 0);
+    if (s.uf) ufMap[s.uf] = (ufMap[s.uf] ?? 0) + Number(s.quantity ?? 0);
+  }
+  const topProducts = Object.entries(topMap).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([sku, qty]) => ({ sku, qty }));
 
-  const inf = infRes.data ?? [];
-  const mkt = mktRes.data ?? [];
-  const byChannel: Record<string, number> = {};
-  for (const c of mkt as any[]) byChannel[c.channel ?? "—"] = (byChannel[c.channel ?? "—"] ?? 0) + 1;
+  const inf = (infRes.data ?? []) as any[];
+  const mkt = (mktRes.data ?? []) as any[];
+  const byChannelM: Record<string, number> = {};
+  let totalInvestment = 0;
+  for (const c of mkt) {
+    byChannelM[c.channel ?? "—"] = (byChannelM[c.channel ?? "—"] ?? 0) + 1;
+    totalInvestment += Number(c.investment ?? 0);
+  }
 
   return {
     products: { total: products.length, byStatus: byStatusP, byGroup: byGroupP, topMargin },
     orders: { total: orders.length, revenue, byStatus: byStatusO },
     finance: { receivablePending: receivable, payablePending: payable, balance: receivable - payable },
     inventory: { total: inv.length, critical: criticalList.length, criticalItems },
-    production: { total: po.length, byStage, inProgress },
-    sales: { last7d: sum(7), last30d: sum(30), last90d: sum(90), topProducts },
-    influencers: { total: inf.length, top: (inf as any[]).map((i) => ({ name: i.name, followers: Number(i.followers ?? 0), engagement: Number(i.engagement_rate ?? 0) })) },
-    marketing: { active: (mkt as any[]).filter((c) => c.status === "ativa").length, byChannel },
+    production: { total: po.length, byStatus: byStatusPO, inProgress },
+    sales: { last7d: sumQty(7), last30d: sumQty(30), last90d: sumQty(90), revenue30d, topProducts, byChannel: chanMap, byUF: ufMap },
+    influencers: {
+      total: inf.length,
+      top: inf.map((i) => {
+        const antes = Number(i.vendas_antes ?? 0);
+        const depois = Number(i.vendas_depois ?? 0);
+        const impacto = antes > 0 ? ((depois - antes) / antes) * 100 : depois > 0 ? 100 : 0;
+        return { nome: i.nome, seguidores: Number(i.seguidores ?? 0), engajamento: Number(i.engajamento ?? 0), impacto };
+      }),
+    },
+    marketing: { active: mkt.filter((c) => c.status === "ativa").length, byChannel: byChannelM, totalInvestment },
     collections: { total: (colRes.data ?? []).length, latest: (colRes.data ?? []).map((c) => ({ name: c.name, season: c.season, year: c.year })) },
   };
 }
