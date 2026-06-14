@@ -72,7 +72,13 @@ function Marketing() {
   });
 
   const channels = useMemo(() => Array.from(new Set(rows.map((c) => c.channel).filter(Boolean) as string[])), [rows]);
-  const filtered = useMemo(() => channelFilter === "todos" ? rows : rows.filter((c) => c.channel === channelFilter), [rows, channelFilter]);
+  const periodFiltered = useMemo(() => {
+    if (periodFilter === "todos") return rows;
+    const days = Number(periodFilter);
+    const cutoff = Date.now() - days * 86400_000;
+    return rows.filter((c) => c.start_date && new Date(c.start_date).getTime() >= cutoff);
+  }, [rows, periodFilter]);
+  const filtered = useMemo(() => channelFilter === "todos" ? periodFiltered : periodFiltered.filter((c) => c.channel === channelFilter), [periodFiltered, channelFilter]);
   const ativas = filtered.filter((c) => c.status === "ativa").length;
   const invTotal = filtered.reduce((a, b) => a + Number(b.investment), 0);
   const receitaEst = filtered.reduce((a, b) => a + Number(b.investment) * Number(b.roas), 0);
