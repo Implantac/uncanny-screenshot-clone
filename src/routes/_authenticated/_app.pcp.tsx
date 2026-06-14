@@ -67,8 +67,10 @@ function PCP() {
   const [filterSupplier, setFilterSupplier] = useState<string>("all");
   const [form, setForm] = useState({
     code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0,
-    due_date: "", status: "aguardando" as Status, notes: "",
+    due_date: "", status: "aguardando" as Status, stage: "cad" as Stage, priority: 3, notes: "",
   });
+  const [historyOrder, setHistoryOrder] = useState<Order | null>(null);
+
 
 
   const { data: items = [], isLoading } = useQuery({
