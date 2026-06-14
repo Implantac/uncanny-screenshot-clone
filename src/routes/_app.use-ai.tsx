@@ -64,6 +64,16 @@ function UseAI() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const runFn = useServerFn(runAgent);
+  const run = useMutation({
+    mutationFn: async (id: string) => runFn({ data: { agentId: id } }),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["ai-agents"] });
+      toast.success(r.ok ? "Agente executado" : "Execução com falha");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao executar"),
+  });
+
   const agentes = data ?? [];
   const ativos = agentes.filter((a) => a.status === "ativo").length;
   const totalExec = agentes.reduce((s, a) => s + (a.executions ?? 0), 0);
