@@ -270,7 +270,7 @@ export function MarketingIntelligence() {
 
         {aiOutput ? (
           <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm prose prose-sm dark:prose-invert max-w-none">
-            <Markdown>{aiOutput}</Markdown>
+            <Markdown content={aiOutput} />
           </div>
         ) : (
           <div className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
