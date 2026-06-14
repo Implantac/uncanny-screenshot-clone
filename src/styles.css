@@ -164,11 +164,23 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
   }
-  /* Mobile: minimum touch target for interactive elements inside content */
+  /* Tablet & mobile: any data table scrolls horizontally instead of breaking layout */
+  @media (max-width: 1024px) {
+    table {
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+  /* Mobile: minimum touch target + scale down very large headings */
   @media (max-width: 640px) {
     button, [role="button"], a.btn, input[type="button"], input[type="submit"] {
       min-height: 36px;
     }
+    .text-3xl { font-size: 1.5rem; line-height: 2rem; }
+    .text-2xl { font-size: 1.25rem; line-height: 1.75rem; }
   }
   ::selection {
     background-color: oklch(0.70 0.18 50 / 0.35);
