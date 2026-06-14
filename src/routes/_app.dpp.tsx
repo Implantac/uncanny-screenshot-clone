@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ShieldCheck, QrCode, Leaf, Globe, Loader2 } from "lucide-react";
+import { ShieldCheck, QrCode, Leaf, Globe, Loader2, Printer, ExternalLink } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_app/dpp")({
   head: () => ({
@@ -15,11 +18,21 @@ export const Route = createFileRoute("/_app/dpp")({
 });
 
 const CERTS = ["GOTS · OEKO-TEX", "OEKO-TEX", "BCI · OEKO-TEX", "GOTS", "European Flax"];
+const ORIGINS = ["Brasil · SP", "Brasil · MG", "Brasil · SC", "Portugal", "Itália"];
+const STAGES = ["Fiação", "Tecelagem", "Tinturaria", "Confecção", "Acabamento", "Distribuição"];
 
 function hash(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
 
+type Passport = {
+  id: string; sku: string; name: string; category: string | null;
+  lote: string; emitidos: number; co2: string; cert: string;
+  origem: string; col: { name: string; season: string; year: number } | null;
+};
+
 function DPP() {
   useRealtime("products", ["dpp"]);
+  const [selected, setSelected] = useState<Passport | null>(null);
+
   const { data, isLoading } = useQuery({
     queryKey: ["dpp"],
     queryFn: async () => {
@@ -32,14 +45,16 @@ function DPP() {
     },
   });
 
-  const items = (data ?? []).map((p) => {
+  const items: Passport[] = (data ?? []).map((p) => {
     const h = hash(p.id);
     return {
-      ...p,
+      id: p.id, sku: p.sku, name: p.name, category: p.category,
       lote: `L-${String(h % 9999).padStart(4, "0")}`,
       emitidos: 100 + (h % 500),
       co2: (2 + ((h % 70) / 10)).toFixed(1),
       cert: CERTS[h % CERTS.length],
+      origem: ORIGINS[h % ORIGINS.length],
+      col: (p as any).collections ?? null,
     };
   });
 
@@ -81,30 +96,101 @@ function DPP() {
         <div className="glass rounded-xl p-12 text-center text-sm text-muted-foreground">Nenhum produto para emitir DPP. Cadastre produtos primeiro.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((p) => {
-            const col = (p as any).collections;
-            return (
-              <div key={p.id} className="glass rounded-xl p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-xs text-muted-foreground tabular-nums truncate">{p.sku} · {p.lote}</div>
-                    <div className="font-medium mt-0.5 truncate">{p.name}</div>
-                  </div>
-                  <div className="size-12 rounded-md bg-foreground/10 grid place-items-center shrink-0">
-                    <QrCode className="size-7" />
-                  </div>
+          {items.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setSelected(p)}
+              className="glass rounded-xl p-5 text-left hover:bg-muted/30 transition-colors group"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs text-muted-foreground tabular-nums truncate">{p.sku} · {p.lote}</div>
+                  <div className="font-medium mt-0.5 truncate">{p.name}</div>
                 </div>
-                <div className="mt-4 space-y-1.5 text-xs">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Peças emitidas</span><span className="tabular-nums font-medium">{p.emitidos}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">CO₂ por peça</span><span className="tabular-nums font-medium">{p.co2} kg</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Coleção</span><span className="font-medium truncate ml-2">{col ? `${col.name} ${col.season}/${col.year}` : "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Certificações</span><span className="font-medium text-success">{p.cert}</span></div>
+                <div className="size-12 rounded-md bg-foreground/10 grid place-items-center shrink-0 group-hover:bg-primary/15 transition-colors">
+                  <QrCode className="size-7" />
                 </div>
               </div>
-            );
-          })}
+              <div className="mt-4 space-y-1.5 text-xs">
+                <div className="flex justify-between"><span className="text-muted-foreground">Peças emitidas</span><span className="tabular-nums font-medium">{p.emitidos}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">CO₂ por peça</span><span className="tabular-nums font-medium">{p.co2} kg</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Coleção</span><span className="font-medium truncate ml-2">{p.col ? `${p.col.name} ${p.col.season}/${p.col.year}` : "—"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Certificações</span><span className="font-medium text-emerald-400">{p.cert}</span></div>
+              </div>
+              <div className="mt-3 text-[10px] uppercase tracking-widest text-primary inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                Ver passaporte <ExternalLink className="size-3" />
+              </div>
+            </button>
+          ))}
         </div>
       )}
+
+      <PassportDialog passport={selected} onClose={() => setSelected(null)} />
+    </div>
+  );
+}
+
+function FakeQR({ seed }: { seed: string }) {
+  // pseudo-QR a partir do hash do id (visual, não escaneável)
+  const h = hash(seed);
+  const cells = Array.from({ length: 21 * 21 }, (_, i) => ((h >> (i % 30)) ^ (i * 1103515245 + 12345)) & 1);
+  return (
+    <div className="grid grid-cols-[repeat(21,1fr)] gap-px bg-foreground/10 p-2 rounded-md w-44 h-44 mx-auto">
+      {cells.map((c, i) => (
+        <div key={i} className={c ? "bg-foreground" : "bg-background"} />
+      ))}
+    </div>
+  );
+}
+
+function PassportDialog({ passport, onClose }: { passport: Passport | null; onClose: () => void }) {
+  return (
+    <Dialog open={!!passport} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Passaporte digital</DialogTitle>
+          <DialogDescription>Rastreabilidade completa da peça.</DialogDescription>
+        </DialogHeader>
+        {passport && (
+          <div className="space-y-4">
+            <div className="text-center">
+              <FakeQR seed={passport.id} />
+              <div className="text-xs text-muted-foreground mt-2 tabular-nums">{passport.sku} · {passport.lote}</div>
+              <div className="font-semibold mt-1">{passport.name}</div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <Field label="Coleção" value={passport.col ? `${passport.col.name} ${passport.col.season}/${passport.col.year}` : "—"} />
+              <Field label="Origem" value={passport.origem} />
+              <Field label="Categoria" value={passport.category || "—"} />
+              <Field label="Certificações" value={passport.cert} accent />
+              <Field label="Peças emitidas" value={String(passport.emitidos)} />
+              <Field label="CO₂ por peça" value={`${passport.co2} kg`} />
+            </div>
+            <div className="glass rounded-lg p-3">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Cadeia produtiva</div>
+              <div className="flex flex-wrap gap-1.5">
+                {STAGES.map((s, i) => (
+                  <span key={s} className={`px-2 py-0.5 rounded-full text-[11px] ${i < STAGES.length - 1 ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-400"}`}>
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <Button variant="outline" className="w-full gap-2" onClick={() => window.print()}>
+              <Printer className="size-4" /> Imprimir / salvar PDF
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Field({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+      <div className={`mt-0.5 truncate ${accent ? "text-emerald-400 font-medium" : "font-medium"}`}>{value}</div>
     </div>
   );
 }
