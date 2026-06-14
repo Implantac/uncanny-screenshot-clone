@@ -15,6 +15,7 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AppUseAiRouteImport } from './routes/_app.use-ai'
 import { Route as AppTwinFactoryRouteImport } from './routes/_app.twin-factory'
+import { Route as AppSupplierScoreRouteImport } from './routes/_app.supplier-score'
 import { Route as AppStockHealthRouteImport } from './routes/_app.stock-health'
 import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
 import { Route as AppSalesPerformanceRouteImport } from './routes/_app.sales-performance'
@@ -72,6 +73,11 @@ const AppUseAiRoute = AppUseAiRouteImport.update({
 const AppTwinFactoryRoute = AppTwinFactoryRouteImport.update({
   id: '/twin-factory',
   path: '/twin-factory',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSupplierScoreRoute = AppSupplierScoreRouteImport.update({
+  id: '/supplier-score',
+  path: '/supplier-score',
   getParentRoute: () => AppRoute,
 } as any)
 const AppStockHealthRoute = AppStockHealthRouteImport.update({
@@ -252,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/sales-performance': typeof AppSalesPerformanceRoute
   '/showroom': typeof AppShowroomRoute
   '/stock-health': typeof AppStockHealthRoute
+  '/supplier-score': typeof AppSupplierScoreRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -287,6 +294,7 @@ export interface FileRoutesByTo {
   '/sales-performance': typeof AppSalesPerformanceRoute
   '/showroom': typeof AppShowroomRoute
   '/stock-health': typeof AppStockHealthRoute
+  '/supplier-score': typeof AppSupplierScoreRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -325,6 +333,7 @@ export interface FileRoutesById {
   '/_app/sales-performance': typeof AppSalesPerformanceRoute
   '/_app/showroom': typeof AppShowroomRoute
   '/_app/stock-health': typeof AppStockHealthRoute
+  '/_app/supplier-score': typeof AppSupplierScoreRoute
   '/_app/twin-factory': typeof AppTwinFactoryRoute
   '/_app/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -364,6 +373,7 @@ export interface FileRouteTypes {
     | '/sales-performance'
     | '/showroom'
     | '/stock-health'
+    | '/supplier-score'
     | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
@@ -399,6 +409,7 @@ export interface FileRouteTypes {
     | '/sales-performance'
     | '/showroom'
     | '/stock-health'
+    | '/supplier-score'
     | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
@@ -436,6 +447,7 @@ export interface FileRouteTypes {
     | '/_app/sales-performance'
     | '/_app/showroom'
     | '/_app/stock-health'
+    | '/_app/supplier-score'
     | '/_app/twin-factory'
     | '/_app/use-ai'
     | '/api/chat'
@@ -490,6 +502,13 @@ declare module '@tanstack/react-router' {
       path: '/twin-factory'
       fullPath: '/twin-factory'
       preLoaderRoute: typeof AppTwinFactoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/supplier-score': {
+      id: '/_app/supplier-score'
+      path: '/supplier-score'
+      fullPath: '/supplier-score'
+      preLoaderRoute: typeof AppSupplierScoreRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/stock-health': {
@@ -728,6 +747,7 @@ interface AppRouteChildren {
   AppSalesPerformanceRoute: typeof AppSalesPerformanceRoute
   AppShowroomRoute: typeof AppShowroomRoute
   AppStockHealthRoute: typeof AppStockHealthRoute
+  AppSupplierScoreRoute: typeof AppSupplierScoreRoute
   AppTwinFactoryRoute: typeof AppTwinFactoryRoute
   AppUseAiRoute: typeof AppUseAiRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -763,6 +783,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSalesPerformanceRoute: AppSalesPerformanceRoute,
   AppShowroomRoute: AppShowroomRoute,
   AppStockHealthRoute: AppStockHealthRoute,
+  AppSupplierScoreRoute: AppSupplierScoreRoute,
   AppTwinFactoryRoute: AppTwinFactoryRoute,
   AppUseAiRoute: AppUseAiRoute,
   AppIndexRoute: AppIndexRoute,
