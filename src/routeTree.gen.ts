@@ -21,6 +21,7 @@ import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
 import { Route as AppSalesPerformanceRouteImport } from './routes/_app.sales-performance'
 import { Route as AppReplenishmentRouteImport } from './routes/_app.replenishment'
 import { Route as AppPrototiposRouteImport } from './routes/_app.prototipos'
+import { Route as AppProfitabilityRouteImport } from './routes/_app.profitability'
 import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
 import { Route as AppProductSuccessRouteImport } from './routes/_app.product-success'
 import { Route as AppProductScoreRouteImport } from './routes/_app.product-score'
@@ -110,6 +111,11 @@ const AppReplenishmentRoute = AppReplenishmentRouteImport.update({
 const AppPrototiposRoute = AppPrototiposRouteImport.update({
   id: '/prototipos',
   path: '/prototipos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfitabilityRoute = AppProfitabilityRouteImport.update({
+  id: '/profitability',
+  path: '/profitability',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProdutosRoute = AppProdutosRouteImport.update({
@@ -302,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/product-score': typeof AppProductScoreRoute
   '/product-success': typeof AppProductSuccessRoute
   '/produtos': typeof AppProdutosRoute
+  '/profitability': typeof AppProfitabilityRoute
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
   '/sales-performance': typeof AppSalesPerformanceRoute
@@ -345,6 +352,7 @@ export interface FileRoutesByTo {
   '/product-score': typeof AppProductScoreRoute
   '/product-success': typeof AppProductSuccessRoute
   '/produtos': typeof AppProdutosRoute
+  '/profitability': typeof AppProfitabilityRoute
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
   '/sales-performance': typeof AppSalesPerformanceRoute
@@ -391,6 +399,7 @@ export interface FileRoutesById {
   '/_app/product-score': typeof AppProductScoreRoute
   '/_app/product-success': typeof AppProductSuccessRoute
   '/_app/produtos': typeof AppProdutosRoute
+  '/_app/profitability': typeof AppProfitabilityRoute
   '/_app/prototipos': typeof AppPrototiposRoute
   '/_app/replenishment': typeof AppReplenishmentRoute
   '/_app/sales-performance': typeof AppSalesPerformanceRoute
@@ -438,6 +447,7 @@ export interface FileRouteTypes {
     | '/product-score'
     | '/product-success'
     | '/produtos'
+    | '/profitability'
     | '/prototipos'
     | '/replenishment'
     | '/sales-performance'
@@ -481,6 +491,7 @@ export interface FileRouteTypes {
     | '/product-score'
     | '/product-success'
     | '/produtos'
+    | '/profitability'
     | '/prototipos'
     | '/replenishment'
     | '/sales-performance'
@@ -526,6 +537,7 @@ export interface FileRouteTypes {
     | '/_app/product-score'
     | '/_app/product-success'
     | '/_app/produtos'
+    | '/_app/profitability'
     | '/_app/prototipos'
     | '/_app/replenishment'
     | '/_app/sales-performance'
@@ -628,6 +640,13 @@ declare module '@tanstack/react-router' {
       path: '/prototipos'
       fullPath: '/prototipos'
       preLoaderRoute: typeof AppPrototiposRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profitability': {
+      id: '/_app/profitability'
+      path: '/profitability'
+      fullPath: '/profitability'
+      preLoaderRoute: typeof AppProfitabilityRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/produtos': {
@@ -882,6 +901,7 @@ interface AppRouteChildren {
   AppProductScoreRoute: typeof AppProductScoreRoute
   AppProductSuccessRoute: typeof AppProductSuccessRoute
   AppProdutosRoute: typeof AppProdutosRoute
+  AppProfitabilityRoute: typeof AppProfitabilityRoute
   AppPrototiposRoute: typeof AppPrototiposRoute
   AppReplenishmentRoute: typeof AppReplenishmentRoute
   AppSalesPerformanceRoute: typeof AppSalesPerformanceRoute
@@ -925,6 +945,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppProductScoreRoute: AppProductScoreRoute,
   AppProductSuccessRoute: AppProductSuccessRoute,
   AppProdutosRoute: AppProdutosRoute,
+  AppProfitabilityRoute: AppProfitabilityRoute,
   AppPrototiposRoute: AppPrototiposRoute,
   AppReplenishmentRoute: AppReplenishmentRoute,
   AppSalesPerformanceRoute: AppSalesPerformanceRoute,
