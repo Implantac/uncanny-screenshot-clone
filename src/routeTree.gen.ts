@@ -10,9 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
 import { Route as AppUseAiRouteImport } from './routes/_app.use-ai'
 import { Route as AppTwinFactoryRouteImport } from './routes/_app.twin-factory'
 import { Route as AppTrendsRouteImport } from './routes/_app.trends'
@@ -58,17 +58,13 @@ import { Route as AppCampaignsRouteImport } from './routes/_app.campaigns'
 import { Route as AppCadRouteImport } from './routes/_app.cad'
 import { Route as AppBiRouteImport } from './routes/_app.bi'
 import { Route as AppAuditRouteImport } from './routes/_app.audit'
-import { Route as AppAttributionRouteImport } from './routes/_app.attribution'
-import { Route as AppAlmoxarifadoRouteImport } from './routes/_app.almoxarifado'
+import { Route as AuthenticatedAppAttributionRouteImport } from './routes/_authenticated/_app.attribution'
+import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -79,6 +75,10 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/_authenticated/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppUseAiRoute = AppUseAiRouteImport.update({
@@ -306,16 +306,18 @@ const AppAuditRoute = AppAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAttributionRoute = AppAttributionRouteImport.update({
-  id: '/attribution',
-  path: '/attribution',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAlmoxarifadoRoute = AppAlmoxarifadoRouteImport.update({
-  id: '/almoxarifado',
-  path: '/almoxarifado',
-  getParentRoute: () => AppRoute,
-} as any)
+const AuthenticatedAppAttributionRoute =
+  AuthenticatedAppAttributionRouteImport.update({
+    id: '/attribution',
+    path: '/attribution',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAlmoxarifadoRoute =
+  AuthenticatedAppAlmoxarifadoRouteImport.update({
+    id: '/almoxarifado',
+    path: '/almoxarifado',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const ApiPublicAgentsRunDueRoute = ApiPublicAgentsRunDueRouteImport.update({
   id: '/api/public/agents/run-due',
   path: '/api/public/agents/run-due',
@@ -323,10 +325,7 @@ const ApiPublicAgentsRunDueRoute = ApiPublicAgentsRunDueRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
   '/auth': typeof AuthRoute
-  '/almoxarifado': typeof AppAlmoxarifadoRoute
-  '/attribution': typeof AppAttributionRoute
   '/audit': typeof AppAuditRoute
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
@@ -372,13 +371,14 @@ export interface FileRoutesByFullPath {
   '/trends': typeof AppTrendsRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
+  '/': typeof AppIndexRoute
   '/api/chat': typeof ApiChatRoute
+  '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
+  '/attribution': typeof AuthenticatedAppAttributionRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
-  '/almoxarifado': typeof AppAlmoxarifadoRoute
-  '/attribution': typeof AppAttributionRoute
   '/audit': typeof AppAuditRoute
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
@@ -424,16 +424,15 @@ export interface FileRoutesByTo {
   '/trends': typeof AppTrendsRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
-  '/api/chat': typeof ApiChatRoute
   '/': typeof AppIndexRoute
+  '/api/chat': typeof ApiChatRoute
+  '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
+  '/attribution': typeof AuthenticatedAppAttributionRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_app/almoxarifado': typeof AppAlmoxarifadoRoute
-  '/_app/attribution': typeof AppAttributionRoute
   '/_app/audit': typeof AppAuditRoute
   '/_app/bi': typeof AppBiRoute
   '/_app/cad': typeof AppCadRoute
@@ -479,17 +478,17 @@ export interface FileRoutesById {
   '/_app/trends': typeof AppTrendsRoute
   '/_app/twin-factory': typeof AppTwinFactoryRoute
   '/_app/use-ai': typeof AppUseAiRoute
+  '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/_app/': typeof AppIndexRoute
+  '/_authenticated/_app/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
+  '/_authenticated/_app/attribution': typeof AuthenticatedAppAttributionRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/auth'
-    | '/almoxarifado'
-    | '/attribution'
     | '/audit'
     | '/bi'
     | '/cad'
@@ -535,13 +534,14 @@ export interface FileRouteTypes {
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
+    | '/'
     | '/api/chat'
+    | '/almoxarifado'
+    | '/attribution'
     | '/api/public/agents/run-due'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
-    | '/almoxarifado'
-    | '/attribution'
     | '/audit'
     | '/bi'
     | '/cad'
@@ -587,15 +587,14 @@ export interface FileRouteTypes {
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
-    | '/api/chat'
     | '/'
+    | '/api/chat'
+    | '/almoxarifado'
+    | '/attribution'
     | '/api/public/agents/run-due'
   id:
     | '__root__'
-    | '/_app'
     | '/auth'
-    | '/_app/almoxarifado'
-    | '/_app/attribution'
     | '/_app/audit'
     | '/_app/bi'
     | '/_app/cad'
@@ -641,14 +640,17 @@ export interface FileRouteTypes {
     | '/_app/trends'
     | '/_app/twin-factory'
     | '/_app/use-ai'
+    | '/_authenticated/_app'
     | '/api/chat'
     | '/_app/'
+    | '/_authenticated/_app/almoxarifado'
+    | '/_authenticated/_app/attribution'
     | '/api/public/agents/run-due'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
   ApiChatRoute: typeof ApiChatRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
 }
@@ -660,13 +662,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -681,6 +676,13 @@ declare module '@tanstack/react-router' {
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_app': {
+      id: '/_authenticated/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/use-ai': {
@@ -998,19 +1000,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAuditRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/attribution': {
-      id: '/_app/attribution'
+    '/_authenticated/_app/attribution': {
+      id: '/_authenticated/_app/attribution'
       path: '/attribution'
       fullPath: '/attribution'
-      preLoaderRoute: typeof AppAttributionRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppAttributionRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/almoxarifado': {
-      id: '/_app/almoxarifado'
+    '/_authenticated/_app/almoxarifado': {
+      id: '/_authenticated/_app/almoxarifado'
       path: '/almoxarifado'
       fullPath: '/almoxarifado'
-      preLoaderRoute: typeof AppAlmoxarifadoRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppAlmoxarifadoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/api/public/agents/run-due': {
       id: '/api/public/agents/run-due'
@@ -1022,116 +1024,35 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AppRouteChildren {
-  AppAlmoxarifadoRoute: typeof AppAlmoxarifadoRoute
-  AppAttributionRoute: typeof AppAttributionRoute
-  AppAuditRoute: typeof AppAuditRoute
-  AppBiRoute: typeof AppBiRoute
-  AppCadRoute: typeof AppCadRoute
-  AppCampaignsRoute: typeof AppCampaignsRoute
-  AppCapacityRoute: typeof AppCapacityRoute
-  AppCashflowRoute: typeof AppCashflowRoute
-  AppCentroDeCorteRoute: typeof AppCentroDeCorteRoute
-  AppColecoesRoute: typeof AppColecoesRoute
-  AppComercialRoute: typeof AppComercialRoute
-  AppComprasRoute: typeof AppComprasRoute
-  AppControlTowerRoute: typeof AppControlTowerRoute
-  AppDataLakeRoute: typeof AppDataLakeRoute
-  AppDevKanbanRoute: typeof AppDevKanbanRoute
-  AppDppRoute: typeof AppDppRoute
-  AppEquipeRoute: typeof AppEquipeRoute
-  AppFashionCalendarRoute: typeof AppFashionCalendarRoute
-  AppFashionGptRoute: typeof AppFashionGptRoute
-  AppFichaTecnicaRoute: typeof AppFichaTecnicaRoute
-  AppFinanceiroRoute: typeof AppFinanceiroRoute
-  AppFornecedoresRoute: typeof AppFornecedoresRoute
-  AppGeoSalesRoute: typeof AppGeoSalesRoute
-  AppGradeNeedsRoute: typeof AppGradeNeedsRoute
-  AppInfluencerRoiRoute: typeof AppInfluencerRoiRoute
-  AppInfluencersRoute: typeof AppInfluencersRoute
-  AppIntelligenceRoute: typeof AppIntelligenceRoute
-  AppMargemRoute: typeof AppMargemRoute
-  AppMarketingRoute: typeof AppMarketingRoute
-  AppMobileRoute: typeof AppMobileRoute
-  AppPcpRoute: typeof AppPcpRoute
-  AppPcpKanbanRoute: typeof AppPcpKanbanRoute
-  AppPilotsRoute: typeof AppPilotsRoute
-  AppProductScoreRoute: typeof AppProductScoreRoute
-  AppProductSuccessRoute: typeof AppProductSuccessRoute
-  AppProdutosRoute: typeof AppProdutosRoute
-  AppProfitabilityRoute: typeof AppProfitabilityRoute
-  AppPrototiposRoute: typeof AppPrototiposRoute
-  AppReplenishmentRoute: typeof AppReplenishmentRoute
-  AppSalesPerformanceRoute: typeof AppSalesPerformanceRoute
-  AppSecurityCenterRoute: typeof AppSecurityCenterRoute
-  AppShowroomRoute: typeof AppShowroomRoute
-  AppStockHealthRoute: typeof AppStockHealthRoute
-  AppSupplierScoreRoute: typeof AppSupplierScoreRoute
-  AppTrendsRoute: typeof AppTrendsRoute
-  AppTwinFactoryRoute: typeof AppTwinFactoryRoute
-  AppUseAiRoute: typeof AppUseAiRoute
-  AppIndexRoute: typeof AppIndexRoute
+interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppAlmoxarifadoRoute: typeof AuthenticatedAppAlmoxarifadoRoute
+  AuthenticatedAppAttributionRoute: typeof AuthenticatedAppAttributionRoute
 }
 
-const AppRouteChildren: AppRouteChildren = {
-  AppAlmoxarifadoRoute: AppAlmoxarifadoRoute,
-  AppAttributionRoute: AppAttributionRoute,
-  AppAuditRoute: AppAuditRoute,
-  AppBiRoute: AppBiRoute,
-  AppCadRoute: AppCadRoute,
-  AppCampaignsRoute: AppCampaignsRoute,
-  AppCapacityRoute: AppCapacityRoute,
-  AppCashflowRoute: AppCashflowRoute,
-  AppCentroDeCorteRoute: AppCentroDeCorteRoute,
-  AppColecoesRoute: AppColecoesRoute,
-  AppComercialRoute: AppComercialRoute,
-  AppComprasRoute: AppComprasRoute,
-  AppControlTowerRoute: AppControlTowerRoute,
-  AppDataLakeRoute: AppDataLakeRoute,
-  AppDevKanbanRoute: AppDevKanbanRoute,
-  AppDppRoute: AppDppRoute,
-  AppEquipeRoute: AppEquipeRoute,
-  AppFashionCalendarRoute: AppFashionCalendarRoute,
-  AppFashionGptRoute: AppFashionGptRoute,
-  AppFichaTecnicaRoute: AppFichaTecnicaRoute,
-  AppFinanceiroRoute: AppFinanceiroRoute,
-  AppFornecedoresRoute: AppFornecedoresRoute,
-  AppGeoSalesRoute: AppGeoSalesRoute,
-  AppGradeNeedsRoute: AppGradeNeedsRoute,
-  AppInfluencerRoiRoute: AppInfluencerRoiRoute,
-  AppInfluencersRoute: AppInfluencersRoute,
-  AppIntelligenceRoute: AppIntelligenceRoute,
-  AppMargemRoute: AppMargemRoute,
-  AppMarketingRoute: AppMarketingRoute,
-  AppMobileRoute: AppMobileRoute,
-  AppPcpRoute: AppPcpRoute,
-  AppPcpKanbanRoute: AppPcpKanbanRoute,
-  AppPilotsRoute: AppPilotsRoute,
-  AppProductScoreRoute: AppProductScoreRoute,
-  AppProductSuccessRoute: AppProductSuccessRoute,
-  AppProdutosRoute: AppProdutosRoute,
-  AppProfitabilityRoute: AppProfitabilityRoute,
-  AppPrototiposRoute: AppPrototiposRoute,
-  AppReplenishmentRoute: AppReplenishmentRoute,
-  AppSalesPerformanceRoute: AppSalesPerformanceRoute,
-  AppSecurityCenterRoute: AppSecurityCenterRoute,
-  AppShowroomRoute: AppShowroomRoute,
-  AppStockHealthRoute: AppStockHealthRoute,
-  AppSupplierScoreRoute: AppSupplierScoreRoute,
-  AppTrendsRoute: AppTrendsRoute,
-  AppTwinFactoryRoute: AppTwinFactoryRoute,
-  AppUseAiRoute: AppUseAiRoute,
-  AppIndexRoute: AppIndexRoute,
+const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppAlmoxarifadoRoute: AuthenticatedAppAlmoxarifadoRoute,
+  AuthenticatedAppAttributionRoute: AuthenticatedAppAttributionRoute,
 }
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const AuthenticatedAppRouteWithChildren =
+  AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
   ApiChatRoute: ApiChatRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
