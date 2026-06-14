@@ -69,6 +69,17 @@ function Financeiro() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const markPaidMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("financial_accounts").update({ status: "pago" }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["financial_accounts"] }); toast.success("Marcado como pago"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const filtered = useMemo(() => filter === "todos" ? rows : rows.filter((r) => r.status === filter), [rows, filter]);
+
   const totals = useMemo(() => {
     const receber = rows.filter((r) => r.type === "receber" && r.status === "pendente").reduce((a, b) => a + Number(b.value), 0);
     const pagar = rows.filter((r) => r.type === "pagar" && r.status === "pendente").reduce((a, b) => a + Number(b.value), 0);
