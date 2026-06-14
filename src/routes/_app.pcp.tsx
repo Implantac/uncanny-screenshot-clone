@@ -258,17 +258,35 @@ function PCP() {
           </TabsList>
 
           <TabsContent value="kanban">
+            <p className="text-xs text-muted-foreground mb-3">Arraste as ordens entre as colunas para mudar o status.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {(Object.keys(LABEL) as Status[]).map(st => (
-                <div key={st} className="rounded-xl border border-border bg-muted/10 p-3 space-y-2 min-h-[200px]">
-                  <div className="flex items-center justify-between mb-1">
-                    <Badge variant="outline" className={COLOR[st]}>{LABEL[st]}</Badge>
-                    <span className="text-xs text-muted-foreground">{byStatus[st].length}</span>
+              {(Object.keys(LABEL) as Status[]).map(st => {
+                const isOver = overSt === st;
+                return (
+                  <div
+                    key={st}
+                    onDragOver={(e) => { e.preventDefault(); setOverSt(st); }}
+                    onDragLeave={() => setOverSt((s) => (s === st ? null : s))}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const id = e.dataTransfer.getData("text/plain") || dragId;
+                      setOverSt(null); setDragId(null);
+                      if (id) {
+                        const target = items.find(i => i.id === id);
+                        if (target && target.status !== st) moveStatus.mutate({ id, status: st });
+                      }
+                    }}
+                    className={`rounded-xl border p-3 space-y-2 min-h-[200px] transition-colors ${isOver ? "border-primary bg-primary/10" : "border-border bg-muted/10"}`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <Badge variant="outline" className={COLOR[st]}>{LABEL[st]}</Badge>
+                      <span className="text-xs text-muted-foreground">{byStatus[st].length}</span>
+                    </div>
+                    {byStatus[st].map(o => <Card key={o.id} o={o} />)}
+                    {!byStatus[st].length && <p className="text-xs text-muted-foreground/60 text-center py-6">vazio</p>}
                   </div>
-                  {byStatus[st].map(o => <Card key={o.id} o={o} />)}
-                  {!byStatus[st].length && <p className="text-xs text-muted-foreground/60 text-center py-6">vazio</p>}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </TabsContent>
 
