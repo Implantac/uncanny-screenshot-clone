@@ -119,6 +119,21 @@ function PCP() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const moveStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: Status }) => {
+      const progress = status === "concluida" ? 100 : status === "aguardando" ? 0 : undefined;
+      const payload: any = { status };
+      if (progress !== undefined) payload.progress = progress;
+      const { error } = await supabase.from("production_orders").update(payload).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["production_orders"] }); toast.success("Status atualizado"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overSt, setOverSt] = useState<Status | null>(null);
+
   function reset() {
     setOpen(false); setEditing(null);
     setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", notes: "" });
@@ -174,26 +189,32 @@ function PCP() {
     </div>
   );
 
-  const Card = ({ o }: { o: Order }) => (
-    <button
-      onClick={() => user?.id === o.owner_id && openEdit(o)}
-      className="w-full text-left rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-2"
-    >
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-xs text-muted-foreground">{o.code}</span>
-        <Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge>
-      </div>
-      <div className="text-sm font-medium truncate">{productName(o.product_id)}</div>
-      <div className="text-xs text-muted-foreground truncate">{supplierName(o.supplier_id)} · {o.quantity} pç</div>
-      <div className="flex items-center gap-2">
-        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-          <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
+  const Card = ({ o }: { o: Order }) => {
+    const canDrag = user?.id === o.owner_id;
+    return (
+      <div
+        draggable={canDrag}
+        onDragStart={(e) => { if (!canDrag) { e.preventDefault(); return; } setDragId(o.id); e.dataTransfer.setData("text/plain", o.id); e.dataTransfer.effectAllowed = "move"; }}
+        onDragEnd={() => setDragId(null)}
+        onClick={() => canDrag && openEdit(o)}
+        className={`w-full text-left rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-2 ${canDrag ? "cursor-grab active:cursor-grabbing" : ""} ${dragId === o.id ? "opacity-50" : ""}`}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-mono text-xs text-muted-foreground">{o.code}</span>
+          <Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge>
         </div>
-        <span className="text-[10px] text-muted-foreground">{o.progress}%</span>
+        <div className="text-sm font-medium truncate">{productName(o.product_id)}</div>
+        <div className="text-xs text-muted-foreground truncate">{supplierName(o.supplier_id)} · {o.quantity} pç</div>
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
+          </div>
+          <span className="text-[10px] text-muted-foreground">{o.progress}%</span>
+        </div>
+        {o.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {o.due_date}</div>}
       </div>
-      {o.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {o.due_date}</div>}
-    </button>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -237,17 +258,35 @@ function PCP() {
           </TabsList>
 
           <TabsContent value="kanban">
+            <p className="text-xs text-muted-foreground mb-3">Arraste as ordens entre as colunas para mudar o status.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {(Object.keys(LABEL) as Status[]).map(st => (
-                <div key={st} className="rounded-xl border border-border bg-muted/10 p-3 space-y-2 min-h-[200px]">
-                  <div className="flex items-center justify-between mb-1">
-                    <Badge variant="outline" className={COLOR[st]}>{LABEL[st]}</Badge>
-                    <span className="text-xs text-muted-foreground">{byStatus[st].length}</span>
+              {(Object.keys(LABEL) as Status[]).map(st => {
+                const isOver = overSt === st;
+                return (
+                  <div
+                    key={st}
+                    onDragOver={(e) => { e.preventDefault(); setOverSt(st); }}
+                    onDragLeave={() => setOverSt((s) => (s === st ? null : s))}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const id = e.dataTransfer.getData("text/plain") || dragId;
+                      setOverSt(null); setDragId(null);
+                      if (id) {
+                        const target = items.find(i => i.id === id);
+                        if (target && target.status !== st) moveStatus.mutate({ id, status: st });
+                      }
+                    }}
+                    className={`rounded-xl border p-3 space-y-2 min-h-[200px] transition-colors ${isOver ? "border-primary bg-primary/10" : "border-border bg-muted/10"}`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <Badge variant="outline" className={COLOR[st]}>{LABEL[st]}</Badge>
+                      <span className="text-xs text-muted-foreground">{byStatus[st].length}</span>
+                    </div>
+                    {byStatus[st].map(o => <Card key={o.id} o={o} />)}
+                    {!byStatus[st].length && <p className="text-xs text-muted-foreground/60 text-center py-6">vazio</p>}
                   </div>
-                  {byStatus[st].map(o => <Card key={o.id} o={o} />)}
-                  {!byStatus[st].length && <p className="text-xs text-muted-foreground/60 text-center py-6">vazio</p>}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </TabsContent>
 
