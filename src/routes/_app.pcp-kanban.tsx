@@ -72,8 +72,19 @@ function PcpKanban() {
       const { error } = await supabase.from("production_orders").update(changes).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["pcp-kanban"] }),
-    onError: (e: Error) => toast.error(e.message),
+    onMutate: async (patch) => {
+      await qc.cancelQueries({ queryKey: ["pcp-kanban"] });
+      const prev = qc.getQueryData<Order[]>(["pcp-kanban"]);
+      qc.setQueryData<Order[]>(["pcp-kanban"], (old = []) =>
+        old.map((o) => (o.id === patch.id ? { ...o, ...patch, stage_updated_at: patch.stage ? new Date().toISOString() : o.stage_updated_at } : o)),
+      );
+      return { prev };
+    },
+    onError: (e: Error, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(["pcp-kanban"], ctx.prev);
+      toast.error(e.message);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["pcp-kanban"] }),
   });
 
   const grouped = useMemo(() => {
