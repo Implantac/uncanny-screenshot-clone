@@ -369,6 +369,7 @@ function PCP() {
             <TabsTrigger value="kanban"><LayoutGrid className="size-4 mr-2" />Quadro</TabsTrigger>
             <TabsTrigger value="gantt"><GanttChart className="size-4 mr-2" />Cronograma</TabsTrigger>
             <TabsTrigger value="table"><TableIcon className="size-4 mr-2" />Tabela</TabsTrigger>
+            <TabsTrigger value="lotes"><Boxes className="size-4 mr-2" />Lotes</TabsTrigger>
             <TabsTrigger value="os"><Workflow className="size-4 mr-2" />O.S. Terceirizados</TabsTrigger>
           </TabsList>
 
@@ -506,6 +507,10 @@ function PCP() {
 
               </table>
             </div>
+          </TabsContent>
+
+          <TabsContent value="lotes">
+            <BatchesByStage orders={filtered} products={products} onOpenBatch={(code, stage) => setBatchView({ code, stage })} />
           </TabsContent>
 
           <TabsContent value="os">
