@@ -570,6 +570,9 @@ function PCP() {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Lote</Label><Input value={form.batch_code} onChange={e => setForm({ ...form, batch_code: e.target.value })} placeholder="LOTE-2026-01" /></div>
+            </div>
             <div><Label>Notas</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
           <DialogFooter>
@@ -580,6 +583,13 @@ function PCP() {
       </Dialog>
 
       <StageHistoryDialog order={historyOrder} onClose={() => setHistoryOrder(null)} />
+      <BatchDialog
+        batch={batchView}
+        orders={items}
+        products={products}
+        suppliers={suppliers}
+        onClose={() => setBatchView(null)}
+      />
     </div>
   );
 }
