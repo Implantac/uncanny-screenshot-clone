@@ -22,6 +22,8 @@ import { Route as AppSalesPerformanceRouteImport } from './routes/_app.sales-per
 import { Route as AppReplenishmentRouteImport } from './routes/_app.replenishment'
 import { Route as AppPrototiposRouteImport } from './routes/_app.prototipos'
 import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
+import { Route as AppPilotsRouteImport } from './routes/_app.pilots'
+import { Route as AppPcpKanbanRouteImport } from './routes/_app.pcp-kanban'
 import { Route as AppPcpRouteImport } from './routes/_app.pcp'
 import { Route as AppMobileRouteImport } from './routes/_app.mobile'
 import { Route as AppMarketingRouteImport } from './routes/_app.marketing'
@@ -36,7 +38,9 @@ import { Route as AppFashionGptRouteImport } from './routes/_app.fashion-gpt'
 import { Route as AppFashionCalendarRouteImport } from './routes/_app.fashion-calendar'
 import { Route as AppEquipeRouteImport } from './routes/_app.equipe'
 import { Route as AppDppRouteImport } from './routes/_app.dpp'
+import { Route as AppDevKanbanRouteImport } from './routes/_app.dev-kanban'
 import { Route as AppControlTowerRouteImport } from './routes/_app.control-tower'
+import { Route as AppComprasRouteImport } from './routes/_app.compras'
 import { Route as AppComercialRouteImport } from './routes/_app.comercial'
 import { Route as AppColecoesRouteImport } from './routes/_app.colecoes'
 import { Route as AppCentroDeCorteRouteImport } from './routes/_app.centro-de-corte'
@@ -111,6 +115,16 @@ const AppProdutosRoute = AppProdutosRouteImport.update({
   path: '/produtos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPilotsRoute = AppPilotsRouteImport.update({
+  id: '/pilots',
+  path: '/pilots',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPcpKanbanRoute = AppPcpKanbanRouteImport.update({
+  id: '/pcp-kanban',
+  path: '/pcp-kanban',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPcpRoute = AppPcpRouteImport.update({
   id: '/pcp',
   path: '/pcp',
@@ -181,9 +195,19 @@ const AppDppRoute = AppDppRouteImport.update({
   path: '/dpp',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDevKanbanRoute = AppDevKanbanRouteImport.update({
+  id: '/dev-kanban',
+  path: '/dev-kanban',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppControlTowerRoute = AppControlTowerRouteImport.update({
   id: '/control-tower',
   path: '/control-tower',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppComprasRoute = AppComprasRouteImport.update({
+  id: '/compras',
+  path: '/compras',
   getParentRoute: () => AppRoute,
 } as any)
 const AppComercialRoute = AppComercialRouteImport.update({
@@ -244,7 +268,9 @@ export interface FileRoutesByFullPath {
   '/centro-de-corte': typeof AppCentroDeCorteRoute
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
+  '/compras': typeof AppComprasRoute
   '/control-tower': typeof AppControlTowerRoute
+  '/dev-kanban': typeof AppDevKanbanRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
   '/fashion-calendar': typeof AppFashionCalendarRoute
@@ -259,6 +285,8 @@ export interface FileRoutesByFullPath {
   '/marketing': typeof AppMarketingRoute
   '/mobile': typeof AppMobileRoute
   '/pcp': typeof AppPcpRoute
+  '/pcp-kanban': typeof AppPcpKanbanRoute
+  '/pilots': typeof AppPilotsRoute
   '/produtos': typeof AppProdutosRoute
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
@@ -281,7 +309,9 @@ export interface FileRoutesByTo {
   '/centro-de-corte': typeof AppCentroDeCorteRoute
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
+  '/compras': typeof AppComprasRoute
   '/control-tower': typeof AppControlTowerRoute
+  '/dev-kanban': typeof AppDevKanbanRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
   '/fashion-calendar': typeof AppFashionCalendarRoute
@@ -296,6 +326,8 @@ export interface FileRoutesByTo {
   '/marketing': typeof AppMarketingRoute
   '/mobile': typeof AppMobileRoute
   '/pcp': typeof AppPcpRoute
+  '/pcp-kanban': typeof AppPcpKanbanRoute
+  '/pilots': typeof AppPilotsRoute
   '/produtos': typeof AppProdutosRoute
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
@@ -321,7 +353,9 @@ export interface FileRoutesById {
   '/_app/centro-de-corte': typeof AppCentroDeCorteRoute
   '/_app/colecoes': typeof AppColecoesRoute
   '/_app/comercial': typeof AppComercialRoute
+  '/_app/compras': typeof AppComprasRoute
   '/_app/control-tower': typeof AppControlTowerRoute
+  '/_app/dev-kanban': typeof AppDevKanbanRoute
   '/_app/dpp': typeof AppDppRoute
   '/_app/equipe': typeof AppEquipeRoute
   '/_app/fashion-calendar': typeof AppFashionCalendarRoute
@@ -336,6 +370,8 @@ export interface FileRoutesById {
   '/_app/marketing': typeof AppMarketingRoute
   '/_app/mobile': typeof AppMobileRoute
   '/_app/pcp': typeof AppPcpRoute
+  '/_app/pcp-kanban': typeof AppPcpKanbanRoute
+  '/_app/pilots': typeof AppPilotsRoute
   '/_app/produtos': typeof AppProdutosRoute
   '/_app/prototipos': typeof AppPrototiposRoute
   '/_app/replenishment': typeof AppReplenishmentRoute
@@ -362,7 +398,9 @@ export interface FileRouteTypes {
     | '/centro-de-corte'
     | '/colecoes'
     | '/comercial'
+    | '/compras'
     | '/control-tower'
+    | '/dev-kanban'
     | '/dpp'
     | '/equipe'
     | '/fashion-calendar'
@@ -377,6 +415,8 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/mobile'
     | '/pcp'
+    | '/pcp-kanban'
+    | '/pilots'
     | '/produtos'
     | '/prototipos'
     | '/replenishment'
@@ -399,7 +439,9 @@ export interface FileRouteTypes {
     | '/centro-de-corte'
     | '/colecoes'
     | '/comercial'
+    | '/compras'
     | '/control-tower'
+    | '/dev-kanban'
     | '/dpp'
     | '/equipe'
     | '/fashion-calendar'
@@ -414,6 +456,8 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/mobile'
     | '/pcp'
+    | '/pcp-kanban'
+    | '/pilots'
     | '/produtos'
     | '/prototipos'
     | '/replenishment'
@@ -438,7 +482,9 @@ export interface FileRouteTypes {
     | '/_app/centro-de-corte'
     | '/_app/colecoes'
     | '/_app/comercial'
+    | '/_app/compras'
     | '/_app/control-tower'
+    | '/_app/dev-kanban'
     | '/_app/dpp'
     | '/_app/equipe'
     | '/_app/fashion-calendar'
@@ -453,6 +499,8 @@ export interface FileRouteTypes {
     | '/_app/marketing'
     | '/_app/mobile'
     | '/_app/pcp'
+    | '/_app/pcp-kanban'
+    | '/_app/pilots'
     | '/_app/produtos'
     | '/_app/prototipos'
     | '/_app/replenishment'
@@ -565,6 +613,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProdutosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/pilots': {
+      id: '/_app/pilots'
+      path: '/pilots'
+      fullPath: '/pilots'
+      preLoaderRoute: typeof AppPilotsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/pcp-kanban': {
+      id: '/_app/pcp-kanban'
+      path: '/pcp-kanban'
+      fullPath: '/pcp-kanban'
+      preLoaderRoute: typeof AppPcpKanbanRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/pcp': {
       id: '/_app/pcp'
       path: '/pcp'
@@ -663,11 +725,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDppRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/dev-kanban': {
+      id: '/_app/dev-kanban'
+      path: '/dev-kanban'
+      fullPath: '/dev-kanban'
+      preLoaderRoute: typeof AppDevKanbanRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/control-tower': {
       id: '/_app/control-tower'
       path: '/control-tower'
       fullPath: '/control-tower'
       preLoaderRoute: typeof AppControlTowerRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/compras': {
+      id: '/_app/compras'
+      path: '/compras'
+      fullPath: '/compras'
+      preLoaderRoute: typeof AppComprasRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/comercial': {
@@ -746,7 +822,9 @@ interface AppRouteChildren {
   AppCentroDeCorteRoute: typeof AppCentroDeCorteRoute
   AppColecoesRoute: typeof AppColecoesRoute
   AppComercialRoute: typeof AppComercialRoute
+  AppComprasRoute: typeof AppComprasRoute
   AppControlTowerRoute: typeof AppControlTowerRoute
+  AppDevKanbanRoute: typeof AppDevKanbanRoute
   AppDppRoute: typeof AppDppRoute
   AppEquipeRoute: typeof AppEquipeRoute
   AppFashionCalendarRoute: typeof AppFashionCalendarRoute
@@ -761,6 +839,8 @@ interface AppRouteChildren {
   AppMarketingRoute: typeof AppMarketingRoute
   AppMobileRoute: typeof AppMobileRoute
   AppPcpRoute: typeof AppPcpRoute
+  AppPcpKanbanRoute: typeof AppPcpKanbanRoute
+  AppPilotsRoute: typeof AppPilotsRoute
   AppProdutosRoute: typeof AppProdutosRoute
   AppPrototiposRoute: typeof AppPrototiposRoute
   AppReplenishmentRoute: typeof AppReplenishmentRoute
@@ -783,7 +863,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppCentroDeCorteRoute: AppCentroDeCorteRoute,
   AppColecoesRoute: AppColecoesRoute,
   AppComercialRoute: AppComercialRoute,
+  AppComprasRoute: AppComprasRoute,
   AppControlTowerRoute: AppControlTowerRoute,
+  AppDevKanbanRoute: AppDevKanbanRoute,
   AppDppRoute: AppDppRoute,
   AppEquipeRoute: AppEquipeRoute,
   AppFashionCalendarRoute: AppFashionCalendarRoute,
@@ -798,6 +880,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppMarketingRoute: AppMarketingRoute,
   AppMobileRoute: AppMobileRoute,
   AppPcpRoute: AppPcpRoute,
+  AppPcpKanbanRoute: AppPcpKanbanRoute,
+  AppPilotsRoute: AppPilotsRoute,
   AppProdutosRoute: AppProdutosRoute,
   AppPrototiposRoute: AppPrototiposRoute,
   AppReplenishmentRoute: AppReplenishmentRoute,
