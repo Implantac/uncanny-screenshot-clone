@@ -655,14 +655,26 @@ function ProductDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Tamanhos</Label>
-            <Input value={sizesStr} onChange={(event) => setSizesStr(event.target.value)} placeholder="P, M, G, GG" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Grade</Label>
+              <Select value={grade} onValueChange={setGrade}>
+                <SelectTrigger><SelectValue placeholder="Selecione a grade" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Não definida</SelectItem>
+                  {GRADES.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Tamanhos da grade</Label>
+              <Input value={sizesStr} onChange={(event) => setSizesStr(event.target.value)} placeholder="P, M, G, GG" />
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label>Cores</Label>
-            <Input value={colorsStr} onChange={(event) => setColorsStr(event.target.value)} placeholder="#111111, #f4ede2" />
+            <Input value={colorsStr} onChange={(event) => setColorsStr(event.target.value)} placeholder="#111111, #f4ede2 ou Preto, Off-white" />
           </div>
 
           <DialogFooter>
