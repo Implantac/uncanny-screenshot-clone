@@ -75,7 +75,7 @@ function brl(value: number) {
 
 async function resolveImageUrl(path: string | null): Promise<string | null> {
   if (!path) return null;
-  if (path.startsWith("http")) return path;
+  if (path.startsWith("http") || path.startsWith("/")) return path;
   const { data } = await supabase.storage.from("product-images").createSignedUrl(path, 60 * 60);
   return data?.signedUrl ?? null;
 }
