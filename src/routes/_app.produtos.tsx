@@ -416,6 +416,10 @@ function ProductDialog({
   const [sku, setSku] = useState("");
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
+  const [productGroup, setProductGroup] = useState<string>("none");
+  const [subgroup, setSubgroup] = useState<string>("none");
+  const [productClass, setProductClass] = useState<string>("none");
+  const [grade, setGrade] = useState<string>("none");
   const [description, setDescription] = useState("");
   const [costPrice, setCostPrice] = useState(0);
   const [sellPrice, setSellPrice] = useState(0);
