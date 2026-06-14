@@ -9,14 +9,14 @@ export const Route = createFileRoute("/_app/profitability")({ component: Profita
 type Product = { id: string; sku: string; name: string; collection_id: string | null; cost_price: number | null; sell_price: number | null };
 type Collection = { id: string; name: string };
 type Sale = { product_id: string | null; quantity: number; total: number };
-type Campaign = { collection_id: string | null; investment: number | null };
+type Campaign = { investment: number | null };
 
 async function load() {
   const [{ data: products }, { data: collections }, { data: sales }, { data: campaigns }] = await Promise.all([
     supabase.from("products").select("id, sku, name, collection_id, cost_price, sell_price"),
     supabase.from("collections").select("id, name"),
     supabase.from("sales").select("product_id, quantity, total"),
-    supabase.from("marketing_campaigns").select("collection_id, investment"),
+    supabase.from("marketing_campaigns").select("investment"),
   ]);
   return {
     products: (products ?? []) as Product[],
@@ -34,6 +34,8 @@ function Profitability() {
   const campaigns = data?.campaigns ?? [];
 
   const byCollection = useMemo(() => {
+    const totalMkt = campaigns.reduce((s, k) => s + Number(k.investment ?? 0), 0);
+    const mktPerCol = collections.length > 0 ? totalMkt / collections.length : 0;
     return collections.map((c) => {
       const cps = products.filter((p) => p.collection_id === c.id);
       const skuIds = new Set(cps.map((p) => p.id));
@@ -43,7 +45,7 @@ function Profitability() {
         const p = cps.find((pp) => pp.id === x.product_id);
         return s + (Number(p?.cost_price ?? 0) * x.quantity);
       }, 0);
-      const mkt = campaigns.filter((k) => k.collection_id === c.id).reduce((s, k) => s + Number(k.investment ?? 0), 0);
+      const mkt = mktPerCol;
       const grossProfit = revenue - cogs;
       const netProfit = grossProfit - mkt;
       const roi = (cogs + mkt) > 0 ? (netProfit / (cogs + mkt)) * 100 : 0;
