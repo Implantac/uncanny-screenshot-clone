@@ -19,11 +19,14 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const provided = request.headers.get("x-cron-secret") ?? "";
-        const expected = process.env.CRON_SECRET ?? "";
-        if (!expected || provided !== expected) {
-          return new Response("Unauthorized", { status: 401 });
-        }
+        const apikey = request.headers.get("apikey") ?? "";
+        const cronSecret = request.headers.get("x-cron-secret") ?? "";
+        const expectedKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
+        const expectedSecret = process.env.CRON_SECRET ?? "";
+        const ok =
+          (expectedKey && apikey === expectedKey) ||
+          (expectedSecret && cronSecret === expectedSecret);
+        if (!ok) return new Response("Unauthorized", { status: 401 });
 
         const apiKey = process.env.LOVABLE_API_KEY;
         if (!apiKey) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
