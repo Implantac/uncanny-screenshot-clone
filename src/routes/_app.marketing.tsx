@@ -88,12 +88,20 @@ function Marketing() {
             <p className="text-sm text-muted-foreground">Campanhas e calendário editorial</p>
           </div>
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
-          <Plus className="size-4" /> Nova campanha
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" disabled={!filtered.length} onClick={() => exportToCsv("marketing", filtered.map((c) => ({ ...c, status: STATUS_LABEL[c.status], receita_est: Number(c.investment) * Number(c.roas) })), [
+            { key: "name", label: "Campanha" }, { key: "channel", label: "Canal" },
+            { key: "start_date", label: "Início" }, { key: "end_date", label: "Fim" },
+            { key: "investment", label: "Investimento" }, { key: "roas", label: "ROAS" },
+            { key: "receita_est", label: "Receita estimada" }, { key: "status", label: "Status" },
+          ])} className="gap-2"><Download className="size-4" />CSV</Button>
+          <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
+            <Plus className="size-4" /> Nova campanha
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass rounded-xl p-5">
           <div className="text-xs text-muted-foreground">Campanhas ativas</div>
           <div className="text-2xl font-semibold mt-1 tabular-nums">{ativas}</div>
@@ -103,19 +111,32 @@ function Marketing() {
           <div className="text-2xl font-semibold mt-1 tabular-nums">{brl(invTotal)}</div>
         </div>
         <div className="glass rounded-xl p-5">
+          <div className="text-xs text-muted-foreground inline-flex items-center gap-1.5"><TrendingUp className="size-3.5" />Receita estimada</div>
+          <div className="text-2xl font-semibold mt-1 tabular-nums text-emerald-400">{brl(receitaEst)}</div>
+        </div>
+        <div className="glass rounded-xl p-5">
           <div className="text-xs text-muted-foreground">ROAS médio</div>
           <div className="text-2xl font-semibold mt-1 tabular-nums">{roasAvg.toFixed(1)}x</div>
         </div>
       </div>
 
+      {channels.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={() => setChannelFilter("todos")} className={`px-3 py-1 rounded-full text-xs border transition-colors ${channelFilter === "todos" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>Todos os canais</button>
+          {channels.map((ch) => (
+            <button key={ch} onClick={() => setChannelFilter(ch)} className={`px-3 py-1 rounded-full text-xs border transition-colors ${channelFilter === ch ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>{ch}</button>
+          ))}
+        </div>
+      )}
+
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
-      ) : rows.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center">
           <Sparkles className="size-10 text-primary mx-auto mb-3" />
           <h3 className="font-semibold mb-1">Sem campanhas</h3>
-          <p className="text-sm text-muted-foreground mb-4">Crie a primeira campanha.</p>
-          <Button onClick={() => { setEditing(null); setOpen(true); }}>Nova campanha</Button>
+          <p className="text-sm text-muted-foreground mb-4">{rows.length === 0 ? "Crie a primeira campanha." : "Nenhuma campanha no canal selecionado."}</p>
+          {rows.length === 0 && <Button onClick={() => { setEditing(null); setOpen(true); }}>Nova campanha</Button>}
         </div>
       ) : (
         <div className="glass rounded-xl overflow-hidden">
@@ -134,7 +155,7 @@ function Marketing() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((c) => {
+                {filtered.map((c) => {
                   const mine = c.owner_id === user?.id;
                   return (
                     <tr key={c.id} className="border-t border-border hover:bg-muted/30">
