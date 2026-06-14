@@ -1,7 +1,8 @@
 import {
   LayoutDashboard, Layers, Sparkles, FileText, PenTool, Scissors,
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
-  Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain, type LucideIcon,
+  Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
+  Radar, Zap, MapPin, Activity, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleDef = {
