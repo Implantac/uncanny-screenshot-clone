@@ -51,6 +51,7 @@ function Marketing() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Campaign | null>(null);
   const [channelFilter, setChannelFilter] = useState<string>("todos");
+  const [periodFilter, setPeriodFilter] = useState<"30" | "90" | "365" | "todos">("todos");
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["marketing_campaigns"],
