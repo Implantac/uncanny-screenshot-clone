@@ -14,19 +14,23 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AppUseAiRouteImport } from './routes/_app.use-ai'
+import { Route as AppTwinFactoryRouteImport } from './routes/_app.twin-factory'
 import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
+import { Route as AppReplenishmentRouteImport } from './routes/_app.replenishment'
 import { Route as AppPrototiposRouteImport } from './routes/_app.prototipos'
 import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
 import { Route as AppPcpRouteImport } from './routes/_app.pcp'
 import { Route as AppMobileRouteImport } from './routes/_app.mobile'
 import { Route as AppMarketingRouteImport } from './routes/_app.marketing'
 import { Route as AppIntelligenceRouteImport } from './routes/_app.intelligence'
+import { Route as AppGeoSalesRouteImport } from './routes/_app.geo-sales'
 import { Route as AppFornecedoresRouteImport } from './routes/_app.fornecedores'
 import { Route as AppFinanceiroRouteImport } from './routes/_app.financeiro'
 import { Route as AppFichaTecnicaRouteImport } from './routes/_app.ficha-tecnica'
 import { Route as AppFashionGptRouteImport } from './routes/_app.fashion-gpt'
 import { Route as AppEquipeRouteImport } from './routes/_app.equipe'
 import { Route as AppDppRouteImport } from './routes/_app.dpp'
+import { Route as AppControlTowerRouteImport } from './routes/_app.control-tower'
 import { Route as AppComercialRouteImport } from './routes/_app.comercial'
 import { Route as AppColecoesRouteImport } from './routes/_app.colecoes'
 import { Route as AppCentroDeCorteRouteImport } from './routes/_app.centro-de-corte'
@@ -58,9 +62,19 @@ const AppUseAiRoute = AppUseAiRouteImport.update({
   path: '/use-ai',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTwinFactoryRoute = AppTwinFactoryRouteImport.update({
+  id: '/twin-factory',
+  path: '/twin-factory',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppShowroomRoute = AppShowroomRouteImport.update({
   id: '/showroom',
   path: '/showroom',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReplenishmentRoute = AppReplenishmentRouteImport.update({
+  id: '/replenishment',
+  path: '/replenishment',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPrototiposRoute = AppPrototiposRouteImport.update({
@@ -93,6 +107,11 @@ const AppIntelligenceRoute = AppIntelligenceRouteImport.update({
   path: '/intelligence',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGeoSalesRoute = AppGeoSalesRouteImport.update({
+  id: '/geo-sales',
+  path: '/geo-sales',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFornecedoresRoute = AppFornecedoresRouteImport.update({
   id: '/fornecedores',
   path: '/fornecedores',
@@ -121,6 +140,11 @@ const AppEquipeRoute = AppEquipeRouteImport.update({
 const AppDppRoute = AppDppRouteImport.update({
   id: '/dpp',
   path: '/dpp',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppControlTowerRoute = AppControlTowerRouteImport.update({
+  id: '/control-tower',
+  path: '/control-tower',
   getParentRoute: () => AppRoute,
 } as any)
 const AppComercialRoute = AppComercialRouteImport.update({
@@ -163,19 +187,23 @@ export interface FileRoutesByFullPath {
   '/centro-de-corte': typeof AppCentroDeCorteRoute
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
+  '/control-tower': typeof AppControlTowerRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
   '/fashion-gpt': typeof AppFashionGptRoute
   '/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/financeiro': typeof AppFinanceiroRoute
   '/fornecedores': typeof AppFornecedoresRoute
+  '/geo-sales': typeof AppGeoSalesRoute
   '/intelligence': typeof AppIntelligenceRoute
   '/marketing': typeof AppMarketingRoute
   '/mobile': typeof AppMobileRoute
   '/pcp': typeof AppPcpRoute
   '/produtos': typeof AppProdutosRoute
   '/prototipos': typeof AppPrototiposRoute
+  '/replenishment': typeof AppReplenishmentRoute
   '/showroom': typeof AppShowroomRoute
+  '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
 }
@@ -187,19 +215,23 @@ export interface FileRoutesByTo {
   '/centro-de-corte': typeof AppCentroDeCorteRoute
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
+  '/control-tower': typeof AppControlTowerRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
   '/fashion-gpt': typeof AppFashionGptRoute
   '/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/financeiro': typeof AppFinanceiroRoute
   '/fornecedores': typeof AppFornecedoresRoute
+  '/geo-sales': typeof AppGeoSalesRoute
   '/intelligence': typeof AppIntelligenceRoute
   '/marketing': typeof AppMarketingRoute
   '/mobile': typeof AppMobileRoute
   '/pcp': typeof AppPcpRoute
   '/produtos': typeof AppProdutosRoute
   '/prototipos': typeof AppPrototiposRoute
+  '/replenishment': typeof AppReplenishmentRoute
   '/showroom': typeof AppShowroomRoute
+  '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
   '/': typeof AppIndexRoute
@@ -214,19 +246,23 @@ export interface FileRoutesById {
   '/_app/centro-de-corte': typeof AppCentroDeCorteRoute
   '/_app/colecoes': typeof AppColecoesRoute
   '/_app/comercial': typeof AppComercialRoute
+  '/_app/control-tower': typeof AppControlTowerRoute
   '/_app/dpp': typeof AppDppRoute
   '/_app/equipe': typeof AppEquipeRoute
   '/_app/fashion-gpt': typeof AppFashionGptRoute
   '/_app/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/_app/financeiro': typeof AppFinanceiroRoute
   '/_app/fornecedores': typeof AppFornecedoresRoute
+  '/_app/geo-sales': typeof AppGeoSalesRoute
   '/_app/intelligence': typeof AppIntelligenceRoute
   '/_app/marketing': typeof AppMarketingRoute
   '/_app/mobile': typeof AppMobileRoute
   '/_app/pcp': typeof AppPcpRoute
   '/_app/produtos': typeof AppProdutosRoute
   '/_app/prototipos': typeof AppPrototiposRoute
+  '/_app/replenishment': typeof AppReplenishmentRoute
   '/_app/showroom': typeof AppShowroomRoute
+  '/_app/twin-factory': typeof AppTwinFactoryRoute
   '/_app/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
   '/_app/': typeof AppIndexRoute
@@ -242,19 +278,23 @@ export interface FileRouteTypes {
     | '/centro-de-corte'
     | '/colecoes'
     | '/comercial'
+    | '/control-tower'
     | '/dpp'
     | '/equipe'
     | '/fashion-gpt'
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fornecedores'
+    | '/geo-sales'
     | '/intelligence'
     | '/marketing'
     | '/mobile'
     | '/pcp'
     | '/produtos'
     | '/prototipos'
+    | '/replenishment'
     | '/showroom'
+    | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
@@ -266,19 +306,23 @@ export interface FileRouteTypes {
     | '/centro-de-corte'
     | '/colecoes'
     | '/comercial'
+    | '/control-tower'
     | '/dpp'
     | '/equipe'
     | '/fashion-gpt'
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fornecedores'
+    | '/geo-sales'
     | '/intelligence'
     | '/marketing'
     | '/mobile'
     | '/pcp'
     | '/produtos'
     | '/prototipos'
+    | '/replenishment'
     | '/showroom'
+    | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
     | '/'
@@ -292,19 +336,23 @@ export interface FileRouteTypes {
     | '/_app/centro-de-corte'
     | '/_app/colecoes'
     | '/_app/comercial'
+    | '/_app/control-tower'
     | '/_app/dpp'
     | '/_app/equipe'
     | '/_app/fashion-gpt'
     | '/_app/ficha-tecnica'
     | '/_app/financeiro'
     | '/_app/fornecedores'
+    | '/_app/geo-sales'
     | '/_app/intelligence'
     | '/_app/marketing'
     | '/_app/mobile'
     | '/_app/pcp'
     | '/_app/produtos'
     | '/_app/prototipos'
+    | '/_app/replenishment'
     | '/_app/showroom'
+    | '/_app/twin-factory'
     | '/_app/use-ai'
     | '/api/chat'
     | '/_app/'
@@ -353,11 +401,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUseAiRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/twin-factory': {
+      id: '/_app/twin-factory'
+      path: '/twin-factory'
+      fullPath: '/twin-factory'
+      preLoaderRoute: typeof AppTwinFactoryRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/showroom': {
       id: '/_app/showroom'
       path: '/showroom'
       fullPath: '/showroom'
       preLoaderRoute: typeof AppShowroomRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/replenishment': {
+      id: '/_app/replenishment'
+      path: '/replenishment'
+      fullPath: '/replenishment'
+      preLoaderRoute: typeof AppReplenishmentRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/prototipos': {
@@ -402,6 +464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIntelligenceRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/geo-sales': {
+      id: '/_app/geo-sales'
+      path: '/geo-sales'
+      fullPath: '/geo-sales'
+      preLoaderRoute: typeof AppGeoSalesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/fornecedores': {
       id: '/_app/fornecedores'
       path: '/fornecedores'
@@ -442,6 +511,13 @@ declare module '@tanstack/react-router' {
       path: '/dpp'
       fullPath: '/dpp'
       preLoaderRoute: typeof AppDppRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/control-tower': {
+      id: '/_app/control-tower'
+      path: '/control-tower'
+      fullPath: '/control-tower'
+      preLoaderRoute: typeof AppControlTowerRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/comercial': {
@@ -496,19 +572,23 @@ interface AppRouteChildren {
   AppCentroDeCorteRoute: typeof AppCentroDeCorteRoute
   AppColecoesRoute: typeof AppColecoesRoute
   AppComercialRoute: typeof AppComercialRoute
+  AppControlTowerRoute: typeof AppControlTowerRoute
   AppDppRoute: typeof AppDppRoute
   AppEquipeRoute: typeof AppEquipeRoute
   AppFashionGptRoute: typeof AppFashionGptRoute
   AppFichaTecnicaRoute: typeof AppFichaTecnicaRoute
   AppFinanceiroRoute: typeof AppFinanceiroRoute
   AppFornecedoresRoute: typeof AppFornecedoresRoute
+  AppGeoSalesRoute: typeof AppGeoSalesRoute
   AppIntelligenceRoute: typeof AppIntelligenceRoute
   AppMarketingRoute: typeof AppMarketingRoute
   AppMobileRoute: typeof AppMobileRoute
   AppPcpRoute: typeof AppPcpRoute
   AppProdutosRoute: typeof AppProdutosRoute
   AppPrototiposRoute: typeof AppPrototiposRoute
+  AppReplenishmentRoute: typeof AppReplenishmentRoute
   AppShowroomRoute: typeof AppShowroomRoute
+  AppTwinFactoryRoute: typeof AppTwinFactoryRoute
   AppUseAiRoute: typeof AppUseAiRoute
   AppIndexRoute: typeof AppIndexRoute
 }
@@ -520,19 +600,23 @@ const AppRouteChildren: AppRouteChildren = {
   AppCentroDeCorteRoute: AppCentroDeCorteRoute,
   AppColecoesRoute: AppColecoesRoute,
   AppComercialRoute: AppComercialRoute,
+  AppControlTowerRoute: AppControlTowerRoute,
   AppDppRoute: AppDppRoute,
   AppEquipeRoute: AppEquipeRoute,
   AppFashionGptRoute: AppFashionGptRoute,
   AppFichaTecnicaRoute: AppFichaTecnicaRoute,
   AppFinanceiroRoute: AppFinanceiroRoute,
   AppFornecedoresRoute: AppFornecedoresRoute,
+  AppGeoSalesRoute: AppGeoSalesRoute,
   AppIntelligenceRoute: AppIntelligenceRoute,
   AppMarketingRoute: AppMarketingRoute,
   AppMobileRoute: AppMobileRoute,
   AppPcpRoute: AppPcpRoute,
   AppProdutosRoute: AppProdutosRoute,
   AppPrototiposRoute: AppPrototiposRoute,
+  AppReplenishmentRoute: AppReplenishmentRoute,
   AppShowroomRoute: AppShowroomRoute,
+  AppTwinFactoryRoute: AppTwinFactoryRoute,
   AppUseAiRoute: AppUseAiRoute,
   AppIndexRoute: AppIndexRoute,
 }
