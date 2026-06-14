@@ -621,17 +621,17 @@ function ProductScore({ products, sales, inventory }: any) {
     cur.revenue += Number(s.total || 0);
     salesByProduct.set(s.product_id, cur);
   }
-  const stockByProduct = new Map<string, number>();
+  const stockBySku = new Map<string, number>();
   for (const i of (inventory as any[])) {
-    if (!i.product_id) continue;
-    stockByProduct.set(i.product_id, (stockByProduct.get(i.product_id) ?? 0) + Number(i.balance || 0));
+    if (!i.sku) continue;
+    stockBySku.set(i.sku, (stockBySku.get(i.sku) ?? 0) + Number(i.balance || 0));
   }
   const maxUnits = Math.max(1, ...Array.from(salesByProduct.values()).map((v) => v.units));
   const maxRevenue = Math.max(1, ...Array.from(salesByProduct.values()).map((v) => v.revenue));
 
   const scored = (products as any[]).map((p) => {
     const sAgg = salesByProduct.get(p.id) ?? { units: 0, revenue: 0 };
-    const stock = stockByProduct.get(p.id) ?? 0;
+    const stock = stockBySku.get(p.sku) ?? 0;
     const sellPrice = Number(p.sell_price || 0);
     const costPrice = Number(p.cost_price || 0);
     const margin = sellPrice > 0 ? ((sellPrice - costPrice) / sellPrice) * 100 : 0;
