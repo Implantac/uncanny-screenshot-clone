@@ -90,9 +90,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/028610a0-21d7-4f09-bc66-0a93cd1c264f/id-preview-00d18732--3318cfc8-a95b-4ad3-b0e3-ef230cc84289.lovable.app-1781237838276.png" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
       {
-        rel: "stylesheet",
-        href: appCss,
+        rel: "icon",
+        type: "image/svg+xml",
+        href: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='66' font-family='system-ui,sans-serif' font-size='52' font-weight='800' text-anchor='middle' fill='%23fff'%3EU%3C/text%3E%3C/svg%3E",
       },
     ],
   }),
