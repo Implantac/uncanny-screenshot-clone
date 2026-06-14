@@ -297,9 +297,16 @@ function FichaTecnicaPage() {
                 </div>
 
                 <div className="glass rounded-xl p-5 space-y-4">
-                  <div>
-                    <div className="text-sm font-semibold">Histórico de versões</div>
-                    <div className="text-xs text-muted-foreground mt-1">Auditoria rápida por código técnico.</div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-semibold">Histórico de versões</div>
+                      <div className="text-xs text-muted-foreground mt-1">Auditoria rápida por código técnico.</div>
+                    </div>
+                    {versionHistory.length >= 2 && (
+                      <Button size="sm" variant="outline" onClick={() => setDiffOpen(true)} className="gap-1 text-xs">
+                        <Layers3 className="size-3.5" /> Comparar
+                      </Button>
+                    )}
                   </div>
                   <div className="space-y-3">
                     {versionHistory.map((sheet) => (
@@ -335,6 +342,7 @@ function FichaTecnicaPage() {
       )}
 
       <SheetDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} products={products} />
+      <VersionDiffDialog open={diffOpen} onOpenChange={setDiffOpen} versions={versionHistory} />
     </div>
   );
 }
