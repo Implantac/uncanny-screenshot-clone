@@ -23,6 +23,7 @@ import { Route as AppReplenishmentRouteImport } from './routes/_app.replenishmen
 import { Route as AppPrototiposRouteImport } from './routes/_app.prototipos'
 import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
 import { Route as AppProductSuccessRouteImport } from './routes/_app.product-success'
+import { Route as AppProductScoreRouteImport } from './routes/_app.product-score'
 import { Route as AppPilotsRouteImport } from './routes/_app.pilots'
 import { Route as AppPcpKanbanRouteImport } from './routes/_app.pcp-kanban'
 import { Route as AppPcpRouteImport } from './routes/_app.pcp'
@@ -119,6 +120,11 @@ const AppProdutosRoute = AppProdutosRouteImport.update({
 const AppProductSuccessRoute = AppProductSuccessRouteImport.update({
   id: '/product-success',
   path: '/product-success',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProductScoreRoute = AppProductScoreRouteImport.update({
+  id: '/product-score',
+  path: '/product-score',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPilotsRoute = AppPilotsRouteImport.update({
@@ -293,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/pcp': typeof AppPcpRoute
   '/pcp-kanban': typeof AppPcpKanbanRoute
   '/pilots': typeof AppPilotsRoute
+  '/product-score': typeof AppProductScoreRoute
   '/product-success': typeof AppProductSuccessRoute
   '/produtos': typeof AppProdutosRoute
   '/prototipos': typeof AppPrototiposRoute
@@ -335,6 +342,7 @@ export interface FileRoutesByTo {
   '/pcp': typeof AppPcpRoute
   '/pcp-kanban': typeof AppPcpKanbanRoute
   '/pilots': typeof AppPilotsRoute
+  '/product-score': typeof AppProductScoreRoute
   '/product-success': typeof AppProductSuccessRoute
   '/produtos': typeof AppProdutosRoute
   '/prototipos': typeof AppPrototiposRoute
@@ -380,6 +388,7 @@ export interface FileRoutesById {
   '/_app/pcp': typeof AppPcpRoute
   '/_app/pcp-kanban': typeof AppPcpKanbanRoute
   '/_app/pilots': typeof AppPilotsRoute
+  '/_app/product-score': typeof AppProductScoreRoute
   '/_app/product-success': typeof AppProductSuccessRoute
   '/_app/produtos': typeof AppProdutosRoute
   '/_app/prototipos': typeof AppPrototiposRoute
@@ -426,6 +435,7 @@ export interface FileRouteTypes {
     | '/pcp'
     | '/pcp-kanban'
     | '/pilots'
+    | '/product-score'
     | '/product-success'
     | '/produtos'
     | '/prototipos'
@@ -468,6 +478,7 @@ export interface FileRouteTypes {
     | '/pcp'
     | '/pcp-kanban'
     | '/pilots'
+    | '/product-score'
     | '/product-success'
     | '/produtos'
     | '/prototipos'
@@ -512,6 +523,7 @@ export interface FileRouteTypes {
     | '/_app/pcp'
     | '/_app/pcp-kanban'
     | '/_app/pilots'
+    | '/_app/product-score'
     | '/_app/product-success'
     | '/_app/produtos'
     | '/_app/prototipos'
@@ -630,6 +642,13 @@ declare module '@tanstack/react-router' {
       path: '/product-success'
       fullPath: '/product-success'
       preLoaderRoute: typeof AppProductSuccessRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/product-score': {
+      id: '/_app/product-score'
+      path: '/product-score'
+      fullPath: '/product-score'
+      preLoaderRoute: typeof AppProductScoreRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/pilots': {
@@ -860,6 +879,7 @@ interface AppRouteChildren {
   AppPcpRoute: typeof AppPcpRoute
   AppPcpKanbanRoute: typeof AppPcpKanbanRoute
   AppPilotsRoute: typeof AppPilotsRoute
+  AppProductScoreRoute: typeof AppProductScoreRoute
   AppProductSuccessRoute: typeof AppProductSuccessRoute
   AppProdutosRoute: typeof AppProdutosRoute
   AppPrototiposRoute: typeof AppPrototiposRoute
@@ -902,6 +922,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPcpRoute: AppPcpRoute,
   AppPcpKanbanRoute: AppPcpKanbanRoute,
   AppPilotsRoute: AppPilotsRoute,
+  AppProductScoreRoute: AppProductScoreRoute,
   AppProductSuccessRoute: AppProductSuccessRoute,
   AppProdutosRoute: AppProdutosRoute,
   AppPrototiposRoute: AppPrototiposRoute,
