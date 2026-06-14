@@ -433,16 +433,19 @@ function InsightsBar({ rows, invTotal, receitaEst, roasAvg }: {
 
 function ChartsSection({ rows }: { rows: Campaign[] }) {
   const byChannel = useMemo(() => {
-    const m = new Map<string, { channel: string; investimento: number; receita: number }>();
+    const m = new Map<string, { channel: string; investimento: number; receita: number; n: number }>();
     rows.forEach((c) => {
       const k = c.channel || "Sem canal";
-      const cur = m.get(k) ?? { channel: k, investimento: 0, receita: 0 };
+      const cur = m.get(k) ?? { channel: k, investimento: 0, receita: 0, n: 0 };
       const inv = Number(c.investment);
       cur.investimento += inv;
       cur.receita += inv * Number(c.roas);
+      cur.n += 1;
       m.set(k, cur);
     });
-    return Array.from(m.values()).sort((a, b) => b.investimento - a.investimento);
+    return Array.from(m.values())
+      .map((c) => ({ ...c, lucro: c.receita - c.investimento, roas: c.investimento > 0 ? c.receita / c.investimento : 0 }))
+      .sort((a, b) => b.investimento - a.investimento);
   }, [rows]);
 
   const byStatus = useMemo(() => {
@@ -463,109 +466,168 @@ function ChartsSection({ rows }: { rows: Campaign[] }) {
       cur.receita += inv * Number(c.roas);
       m.set(key, cur);
     });
-    return Array.from(m.values()).sort((a, b) => a.mes.localeCompare(b.mes));
+    return Array.from(m.values())
+      .sort((a, b) => a.mes.localeCompare(b.mes))
+      .map((d) => ({
+        ...d,
+        lucro: d.receita - d.investimento,
+        roas: d.investimento > 0 ? d.receita / d.investimento : 0,
+        mesLabel: new Date(d.mes + "-01").toLocaleDateString("pt-BR", { month: "short", year: "2-digit" }),
+      }));
   }, [rows]);
 
   const topCampaigns = useMemo(() =>
     [...rows]
       .filter((c) => Number(c.roas) > 0)
-      .sort((a, b) => (Number(b.investment) * Number(b.roas)) - (Number(a.investment) * Number(a.roas)))
-      .slice(0, 5)
       .map((c) => ({
-        name: c.name.length > 22 ? c.name.slice(0, 22) + "…" : c.name,
+        name: c.name.length > 24 ? c.name.slice(0, 24) + "…" : c.name,
         roas: Number(c.roas),
         receita: Number(c.investment) * Number(c.roas),
         investimento: Number(c.investment),
-      })),
+        lucro: Number(c.investment) * Number(c.roas) - Number(c.investment),
+      }))
+      .sort((a, b) => b.lucro - a.lucro)
+      .slice(0, 5),
   [rows]);
 
   if (rows.length === 0) return null;
 
-  const tooltipStyle = { backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 };
+  const totalAtivas = byStatus.find((s) => s.status === "ativa")?.value ?? 0;
+  const totalCamp = byStatus.reduce((a, b) => a + b.value, 0);
+
+  const tooltipStyle = { backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--card-foreground)" };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <div className="glass rounded-xl p-5 lg:col-span-2">
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-sm font-semibold">Evolução mensal</div>
-          <div className="text-[11px] text-muted-foreground">Investimento vs. receita estimada</div>
+        <div className="flex items-start justify-between mb-4 gap-4 flex-wrap">
+          <div>
+            <div className="text-sm font-semibold">Evolução mensal · ROAS vs. Investimento</div>
+            <div className="text-[11px] text-muted-foreground mt-0.5">Barras: investimento e receita · Linha: ROAS · Meta: {ROAS_GOAL}x</div>
+          </div>
+          <div className="flex items-center gap-3 text-[11px]">
+            <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#3b82f6]" />Invest.</span>
+            <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#10b981]" />Receita</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-3 bg-[var(--primary)]" />ROAS</span>
+          </div>
         </div>
         {byMonth.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-16">Sem datas de início informadas.</div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={byMonth}>
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={byMonth} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="gInv" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.4} />
                 </linearGradient>
                 <linearGradient id="gRec" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.4} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="investimento" stroke="#3b82f6" strokeWidth={2} fill="url(#gInv)" name="Investimento" />
-              <Area type="monotone" dataKey="receita" stroke="#10b981" strokeWidth={2} fill="url(#gRec)" name="Receita est." />
-            </AreaChart>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="mesLabel" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis yAxisId="money" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <YAxis yAxisId="roas" orientation="right" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${v.toFixed(1)}x`} />
+              <Tooltip
+                contentStyle={tooltipStyle}
+                cursor={{ fill: "var(--muted)", opacity: 0.4 }}
+                formatter={(v: number, name: string) => name === "ROAS" ? [`${v.toFixed(2)}x`, name] : [brl(v), name]}
+              />
+              <ReferenceLine yAxisId="roas" y={ROAS_GOAL} stroke="var(--primary)" strokeDasharray="4 4" label={{ value: `Meta ${ROAS_GOAL}x`, fontSize: 10, fill: "var(--primary)", position: "insideTopRight" }} />
+              <Bar yAxisId="money" dataKey="investimento" fill="url(#gInv)" name="Investimento" radius={[4, 4, 0, 0]} barSize={18} />
+              <Bar yAxisId="money" dataKey="receita" fill="url(#gRec)" name="Receita" radius={[4, 4, 0, 0]} barSize={18} />
+              <Line yAxisId="roas" type="monotone" dataKey="roas" stroke="var(--primary)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--primary)" }} activeDot={{ r: 5 }} name="ROAS" />
+            </ComposedChart>
           </ResponsiveContainer>
         )}
       </div>
 
-      <div className="glass rounded-xl p-5">
-        <div className="text-sm font-semibold mb-4">Status das campanhas</div>
-        <ResponsiveContainer width="100%" height={280}>
-          <PieChart>
-            <Pie data={byStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3}>
-              {byStatus.map((entry, i) => (
-                <Cell key={i} fill={STATUS_COLORS[entry.status] ?? CHART_COLORS[i % CHART_COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip contentStyle={tooltipStyle} />
-            <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
-          </PieChart>
-        </ResponsiveContainer>
+      <div className="glass rounded-xl p-5 flex flex-col">
+        <div className="text-sm font-semibold mb-1">Mix de status</div>
+        <div className="text-[11px] text-muted-foreground mb-3">Distribuição das campanhas</div>
+        <div className="relative flex-1 min-h-[220px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={byStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={92} paddingAngle={3} stroke="none">
+                {byStatus.map((entry, i) => (
+                  <Cell key={i} fill={STATUS_COLORS[entry.status] ?? CHART_COLORS[i % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} campanha${v === 1 ? "" : "s"}`, ""]} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute inset-0 grid place-items-center pointer-events-none">
+            <div className="text-center">
+              <div className="text-2xl font-bold tabular-nums">{totalAtivas}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">de {totalCamp} ativas</div>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5 mt-2">
+          {byStatus.map((s) => (
+            <div key={s.status} className="flex items-center justify-between text-[11px] px-2 py-1 rounded bg-muted/40">
+              <span className="inline-flex items-center gap-1.5"><span className="size-1.5 rounded-full" style={{ background: STATUS_COLORS[s.status] }} />{s.name}</span>
+              <span className="tabular-nums font-semibold">{s.value}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="glass rounded-xl p-5 lg:col-span-2">
-        <div className="text-sm font-semibold mb-4">Investimento × Receita por canal</div>
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={byChannel}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="channel" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-            <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="investimento" fill="#3b82f6" name="Investimento" radius={[6, 6, 0, 0]} />
-            <Bar dataKey="receita" fill="#10b981" name="Receita est." radius={[6, 6, 0, 0]} />
-          </BarChart>
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-semibold">Performance por canal</div>
+          <div className="text-[11px] text-muted-foreground">Investimento, receita e ROAS</div>
+        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart data={byChannel} margin={{ top: 20, right: 10, bottom: 0, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="channel" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+            <YAxis yAxisId="money" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+            <YAxis yAxisId="roas" orientation="right" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${v.toFixed(1)}x`} />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              cursor={{ fill: "var(--muted)", opacity: 0.4 }}
+              formatter={(v: number, name: string) => name === "ROAS" ? [`${v.toFixed(2)}x`, name] : [brl(v), name]}
+            />
+            <Bar yAxisId="money" dataKey="investimento" fill="#3b82f6" name="Investimento" radius={[4, 4, 0, 0]} barSize={22} />
+            <Bar yAxisId="money" dataKey="receita" fill="#10b981" name="Receita" radius={[4, 4, 0, 0]} barSize={22} />
+            <Line yAxisId="roas" type="monotone" dataKey="roas" stroke="var(--primary)" strokeWidth={2.5} dot={{ r: 4, fill: "var(--primary)" }} name="ROAS">
+              <LabelList dataKey="roas" position="top" fontSize={10} fill="var(--primary)" formatter={(v: number) => `${v.toFixed(1)}x`} />
+            </Line>
+            <ReferenceLine yAxisId="roas" y={ROAS_GOAL} stroke="var(--primary)" strokeDasharray="4 4" />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
 
       <div className="glass rounded-xl p-5">
-        <div className="text-sm font-semibold mb-4 inline-flex items-center gap-1.5"><Award className="size-4 text-primary" />Top 5 campanhas</div>
+        <div className="text-sm font-semibold mb-1 inline-flex items-center gap-1.5"><Award className="size-4 text-primary" />Top 5 por lucro</div>
+        <div className="text-[11px] text-muted-foreground mb-4">Receita − investimento</div>
         {topCampaigns.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-12">Sem ROAS informado.</div>
         ) : (
           <div className="space-y-3">
             {topCampaigns.map((c, i) => {
-              const max = topCampaigns[0].receita;
-              const pct = max > 0 ? (c.receita / max) * 100 : 0;
+              const max = Math.max(...topCampaigns.map((t) => Math.abs(t.lucro)), 1);
+              const pct = Math.min(100, (Math.abs(c.lucro) / max) * 100);
+              const positive = c.lucro >= 0;
               return (
                 <div key={i} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium truncate">{i + 1}. {c.name}</span>
-                    <span className="tabular-nums text-emerald-400 font-semibold">{c.roas.toFixed(1)}x</span>
+                    <span className="font-medium truncate flex items-center gap-1.5">
+                      <span className="text-[10px] text-muted-foreground tabular-nums">{i + 1}</span>
+                      {c.name}
+                    </span>
+                    <span className={`tabular-nums font-semibold ${positive ? "text-emerald-400" : "text-rose-400"}`}>{positive ? "+" : ""}{brl(c.lucro)}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-primary to-emerald-500 transition-all" style={{ width: `${pct}%` }} />
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div className={`h-full rounded-full ${positive ? "bg-gradient-to-r from-emerald-500 to-emerald-300" : "bg-gradient-to-r from-rose-500 to-rose-300"}`} style={{ width: `${pct}%` }} />
                   </div>
-                  <div className="text-[10px] text-muted-foreground tabular-nums">{brl(c.receita)} receita · {brl(c.investimento)} invest.</div>
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground tabular-nums">
+                    <span>{brl(c.investimento)} → {brl(c.receita)}</span>
+                    <span className="font-semibold text-foreground/80">{c.roas.toFixed(2)}x</span>
+                  </div>
                 </div>
               );
             })}
@@ -577,7 +639,7 @@ function ChartsSection({ rows }: { rows: Campaign[] }) {
 }
 
 function AdvancedSection({ rows }: { rows: Campaign[] }) {
-  const tooltipStyle = { backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 };
+  const tooltipStyle = { backgroundColor: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--card-foreground)" };
 
   const matrix = useMemo(() => rows
     .filter((c) => Number(c.investment) > 0)
@@ -607,50 +669,65 @@ function AdvancedSection({ rows }: { rows: Campaign[] }) {
       m.set(k, cur);
     });
     return Array.from(m.values())
-      .map((c) => ({ ...c, roas: c.investimento > 0 ? c.receita / c.investimento : 0 }))
+      .map((c) => ({ ...c, roas: c.investimento > 0 ? c.receita / c.investimento : 0, lucro: c.receita - c.investimento }))
       .sort((a, b) => b.roas - a.roas)
       .slice(0, 6);
   }, [rows]);
 
-  const funnel = useMemo(() => {
-    const counts: Record<CStatus, number> = { programada: 0, ativa: 0, pausada: 0, concluida: 0 };
-    rows.forEach((c) => { counts[c.status] += 1; });
+  const pipeline = useMemo(() => {
+    const counts: Record<CStatus, { count: number; invest: number }> = {
+      programada: { count: 0, invest: 0 }, ativa: { count: 0, invest: 0 },
+      pausada: { count: 0, invest: 0 }, concluida: { count: 0, invest: 0 },
+    };
+    rows.forEach((c) => { counts[c.status].count += 1; counts[c.status].invest += Number(c.investment); });
     const order: CStatus[] = ["programada", "ativa", "pausada", "concluida"];
-    return order.map((s) => ({ name: STATUS_LABEL[s], value: counts[s], fill: STATUS_COLORS[s] }));
+    const total = rows.length || 1;
+    return order.map((s) => ({
+      key: s,
+      name: STATUS_LABEL[s],
+      count: counts[s].count,
+      invest: counts[s].invest,
+      pct: (counts[s].count / total) * 100,
+      fill: STATUS_COLORS[s],
+    }));
   }, [rows]);
 
   if (rows.length === 0) return null;
 
   const maxEff = channelEff[0]?.roas ?? 0;
+  const maxPipeline = Math.max(...pipeline.map((p) => p.count), 1);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <div className="glass rounded-xl p-5 lg:col-span-2">
         <div className="flex items-center justify-between mb-1">
-          <div className="text-sm font-semibold inline-flex items-center gap-1.5"><Target className="size-4 text-primary" />Matriz de campanhas</div>
-          <div className="text-[11px] text-muted-foreground">ROAS × Investimento · bolha = receita</div>
+          <div className="text-sm font-semibold inline-flex items-center gap-1.5"><Target className="size-4 text-primary" />Matriz BCG · ROAS × Investimento</div>
+          <div className="text-[11px] text-muted-foreground">Bolha = receita estimada</div>
         </div>
-        <div className="text-[11px] text-muted-foreground mb-2">Superior direito = estrelas. Inferior direito = drenando caixa.</div>
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="text-[11px] text-muted-foreground mb-2">Superior direito: <span className="text-emerald-400">estrelas</span> · Inferior direito: <span className="text-rose-400">drenando caixa</span></div>
+        <ResponsiveContainer width="100%" height={320}>
           <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis type="number" dataKey="x" name="Investimento" stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-            <YAxis type="number" dataKey="y" name="ROAS" stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${v}x`} />
-            <ZAxis type="number" dataKey="z" range={[60, 600]} />
-            <ReferenceLine y={2} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "ROAS 2x", fontSize: 10, fill: "#f59e0b", position: "right" }} />
-            {medInv > 0 && <ReferenceLine x={medInv} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />}
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis type="number" dataKey="x" name="Investimento" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+            <YAxis type="number" dataKey="y" name="ROAS" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}x`} />
+            <ZAxis type="number" dataKey="z" range={[80, 700]} />
+            <ReferenceLine y={ROAS_GOAL} stroke="#10b981" strokeDasharray="4 4" label={{ value: `Meta ${ROAS_GOAL}x`, fontSize: 10, fill: "#10b981", position: "right" }} />
+            <ReferenceLine y={1} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "Breakeven", fontSize: 10, fill: "#ef4444", position: "right" }} />
+            {medInv > 0 && <ReferenceLine x={medInv} stroke="var(--muted-foreground)" strokeDasharray="4 4" />}
             <Tooltip
               contentStyle={tooltipStyle}
               cursor={{ strokeDasharray: "3 3" }}
               content={({ active, payload }) => {
                 if (!active || !payload?.length) return null;
                 const d = payload[0].payload as { name: string; x: number; y: number; z: number };
+                const lucro = d.z - d.x;
                 return (
                   <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-xl">
                     <div className="font-semibold mb-1">{d.name}</div>
                     <div className="text-muted-foreground">Investimento: <span className="text-foreground tabular-nums">{brl(d.x)}</span></div>
-                    <div className="text-muted-foreground">ROAS: <span className="text-foreground tabular-nums">{d.y.toFixed(1)}x</span></div>
+                    <div className="text-muted-foreground">ROAS: <span className="text-foreground tabular-nums">{d.y.toFixed(2)}x</span></div>
                     <div className="text-muted-foreground">Receita: <span className="text-emerald-400 tabular-nums">{brl(d.z)}</span></div>
+                    <div className="text-muted-foreground">Lucro: <span className={`tabular-nums ${lucro >= 0 ? "text-emerald-400" : "text-rose-400"}`}>{brl(lucro)}</span></div>
                   </div>
                 );
               }}
@@ -665,16 +742,25 @@ function AdvancedSection({ rows }: { rows: Campaign[] }) {
       </div>
 
       <div className="glass rounded-xl p-5">
-        <div className="text-sm font-semibold mb-1 inline-flex items-center gap-1.5"><Activity className="size-4 text-primary" />Funil por status</div>
-        <div className="text-[11px] text-muted-foreground mb-2">Distribuição radial das campanhas</div>
-        <ResponsiveContainer width="100%" height={260}>
-          <RadialBarChart innerRadius="30%" outerRadius="100%" data={funnel} startAngle={90} endAngle={-270}>
-            <PolarAngleAxis type="number" domain={[0, Math.max(...funnel.map((f) => f.value), 1)]} tick={false} />
-            <RadialBar background dataKey="value" cornerRadius={6} />
-            <Tooltip contentStyle={tooltipStyle} />
-            <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} layout="vertical" verticalAlign="middle" align="right" />
-          </RadialBarChart>
-        </ResponsiveContainer>
+        <div className="text-sm font-semibold mb-1 inline-flex items-center gap-1.5"><Activity className="size-4 text-primary" />Pipeline por status</div>
+        <div className="text-[11px] text-muted-foreground mb-4">Volume e investimento alocado</div>
+        <div className="space-y-3">
+          {pipeline.map((p) => (
+            <div key={p.key} className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="inline-flex items-center gap-1.5 font-medium">
+                  <span className="size-2 rounded-full" style={{ background: p.fill }} />
+                  {p.name}
+                </span>
+                <span className="tabular-nums text-muted-foreground">{p.count} · {p.pct.toFixed(0)}%</span>
+              </div>
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div className="h-full rounded-full transition-all" style={{ width: `${(p.count / maxPipeline) * 100}%`, background: p.fill }} />
+              </div>
+              <div className="text-[10px] text-muted-foreground tabular-nums">{brl(p.invest)} alocado</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="glass rounded-xl p-5 lg:col-span-3">
@@ -695,7 +781,7 @@ function AdvancedSection({ rows }: { rows: Campaign[] }) {
                 <div key={c.channel} className="rounded-lg border border-border p-3 space-y-2 hover:border-primary/40 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-medium truncate">{c.channel}</div>
-                    <div className={`text-xs font-semibold ${labelTone}`}>{c.roas.toFixed(2)}x</div>
+                    <div className={`text-xs font-semibold tabular-nums ${labelTone}`}>{c.roas.toFixed(2)}x</div>
                   </div>
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <div className={`h-full rounded-full bg-gradient-to-r ${tone}`} style={{ width: `${pct}%` }} />
@@ -703,6 +789,10 @@ function AdvancedSection({ rows }: { rows: Campaign[] }) {
                   <div className="flex items-center justify-between text-[10px] text-muted-foreground tabular-nums">
                     <span>{c.n} camp. · {brl(c.investimento)}</span>
                     <span className={labelTone}>{label}</span>
+                  </div>
+                  <div className="text-[10px] tabular-nums pt-1 border-t border-border/50 flex justify-between">
+                    <span className="text-muted-foreground">Lucro projetado</span>
+                    <span className={c.lucro >= 0 ? "text-emerald-400" : "text-rose-400"}>{c.lucro >= 0 ? "+" : ""}{brl(c.lucro)}</span>
                   </div>
                 </div>
               );
