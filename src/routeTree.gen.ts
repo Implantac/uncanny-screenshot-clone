@@ -45,6 +45,7 @@ import { Route as AppFashionCalendarRouteImport } from './routes/_app.fashion-ca
 import { Route as AppEquipeRouteImport } from './routes/_app.equipe'
 import { Route as AppDppRouteImport } from './routes/_app.dpp'
 import { Route as AppDevKanbanRouteImport } from './routes/_app.dev-kanban'
+import { Route as AppDataLakeRouteImport } from './routes/_app.data-lake'
 import { Route as AppControlTowerRouteImport } from './routes/_app.control-tower'
 import { Route as AppComprasRouteImport } from './routes/_app.compras'
 import { Route as AppComercialRouteImport } from './routes/_app.comercial'
@@ -238,6 +239,11 @@ const AppDevKanbanRoute = AppDevKanbanRouteImport.update({
   path: '/dev-kanban',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDataLakeRoute = AppDataLakeRouteImport.update({
+  id: '/data-lake',
+  path: '/data-lake',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppControlTowerRoute = AppControlTowerRouteImport.update({
   id: '/control-tower',
   path: '/control-tower',
@@ -320,6 +326,7 @@ export interface FileRoutesByFullPath {
   '/comercial': typeof AppComercialRoute
   '/compras': typeof AppComprasRoute
   '/control-tower': typeof AppControlTowerRoute
+  '/data-lake': typeof AppDataLakeRoute
   '/dev-kanban': typeof AppDevKanbanRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
@@ -369,6 +376,7 @@ export interface FileRoutesByTo {
   '/comercial': typeof AppComercialRoute
   '/compras': typeof AppComprasRoute
   '/control-tower': typeof AppControlTowerRoute
+  '/data-lake': typeof AppDataLakeRoute
   '/dev-kanban': typeof AppDevKanbanRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
@@ -421,6 +429,7 @@ export interface FileRoutesById {
   '/_app/comercial': typeof AppComercialRoute
   '/_app/compras': typeof AppComprasRoute
   '/_app/control-tower': typeof AppControlTowerRoute
+  '/_app/data-lake': typeof AppDataLakeRoute
   '/_app/dev-kanban': typeof AppDevKanbanRoute
   '/_app/dpp': typeof AppDppRoute
   '/_app/equipe': typeof AppEquipeRoute
@@ -474,6 +483,7 @@ export interface FileRouteTypes {
     | '/comercial'
     | '/compras'
     | '/control-tower'
+    | '/data-lake'
     | '/dev-kanban'
     | '/dpp'
     | '/equipe'
@@ -523,6 +533,7 @@ export interface FileRouteTypes {
     | '/comercial'
     | '/compras'
     | '/control-tower'
+    | '/data-lake'
     | '/dev-kanban'
     | '/dpp'
     | '/equipe'
@@ -574,6 +585,7 @@ export interface FileRouteTypes {
     | '/_app/comercial'
     | '/_app/compras'
     | '/_app/control-tower'
+    | '/_app/data-lake'
     | '/_app/dev-kanban'
     | '/_app/dpp'
     | '/_app/equipe'
@@ -870,6 +882,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDevKanbanRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/data-lake': {
+      id: '/_app/data-lake'
+      path: '/data-lake'
+      fullPath: '/data-lake'
+      preLoaderRoute: typeof AppDataLakeRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/control-tower': {
       id: '/_app/control-tower'
       path: '/control-tower'
@@ -978,6 +997,7 @@ interface AppRouteChildren {
   AppComercialRoute: typeof AppComercialRoute
   AppComprasRoute: typeof AppComprasRoute
   AppControlTowerRoute: typeof AppControlTowerRoute
+  AppDataLakeRoute: typeof AppDataLakeRoute
   AppDevKanbanRoute: typeof AppDevKanbanRoute
   AppDppRoute: typeof AppDppRoute
   AppEquipeRoute: typeof AppEquipeRoute
@@ -1027,6 +1047,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppComercialRoute: AppComercialRoute,
   AppComprasRoute: AppComprasRoute,
   AppControlTowerRoute: AppControlTowerRoute,
+  AppDataLakeRoute: AppDataLakeRoute,
   AppDevKanbanRoute: AppDevKanbanRoute,
   AppDppRoute: AppDppRoute,
   AppEquipeRoute: AppEquipeRoute,
