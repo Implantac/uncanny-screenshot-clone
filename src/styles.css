@@ -147,6 +147,28 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-feature-settings: "cv11", "ss01";
+    /* Prevent any rogue horizontal overflow across the app */
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    min-width: 0;
+  }
+  /* All media fluid by default */
+  img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+  }
+  /* Smooth horizontal scroll on wrapped tables / scroll containers */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  /* Mobile: minimum touch target for interactive elements inside content */
+  @media (max-width: 640px) {
+    button, [role="button"], a.btn, input[type="button"], input[type="submit"] {
+      min-height: 36px;
+    }
   }
   ::selection {
     background-color: oklch(0.70 0.18 50 / 0.35);
@@ -165,3 +187,4 @@
   background-clip: text;
   color: transparent;
 }
+
