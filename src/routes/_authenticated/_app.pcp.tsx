@@ -471,7 +471,12 @@ function PCP() {
               </table>
             </div>
           </TabsContent>
+
+          <TabsContent value="os">
+            <ServiceOrdersPanel orders={items} suppliers={suppliers} products={products} ownerId={user?.id ?? null} />
+          </TabsContent>
         </Tabs>
+
       )}
 
       <Dialog open={open} onOpenChange={(o) => !o && reset()}>
