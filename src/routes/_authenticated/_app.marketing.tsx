@@ -340,10 +340,11 @@ function CampaignDialog({ open, onOpenChange, editing, userId }: {
   );
 }
 
-const CHART_COLORS = ["hsl(var(--primary))", "#10b981", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6", "#ec4899"];
+const CHART_COLORS = ["var(--primary)", "#10b981", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6", "#ec4899"];
 const STATUS_COLORS: Record<CStatus, string> = {
   programada: "#0ea5e9", ativa: "#10b981", pausada: "#f59e0b", concluida: "#64748b",
 };
+const ROAS_GOAL = 3;
 
 function StatCard({ icon: Icon, label, value, color, hint, trend, badge, sparkData, dataKey }: {
   icon: React.ComponentType<{ className?: string }>;
