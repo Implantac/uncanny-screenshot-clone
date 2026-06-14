@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Wallet, Plus, Trash2, Pencil, Sparkles, Download, FileText } from "lucide-react";
+import { Wallet, Plus, Trash2, Pencil, Sparkles, Download, FileText, Check } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
