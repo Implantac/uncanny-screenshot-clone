@@ -119,6 +119,21 @@ function PCP() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const moveStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: Status }) => {
+      const progress = status === "concluida" ? 100 : status === "aguardando" ? 0 : undefined;
+      const payload: any = { status };
+      if (progress !== undefined) payload.progress = progress;
+      const { error } = await supabase.from("production_orders").update(payload).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["production_orders"] }); toast.success("Status atualizado"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overSt, setOverSt] = useState<Status | null>(null);
+
   function reset() {
     setOpen(false); setEditing(null);
     setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", notes: "" });
