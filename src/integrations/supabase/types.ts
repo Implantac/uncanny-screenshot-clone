@@ -53,6 +53,45 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          created_at: string
+          entity: string
+          entity_id: string | null
+          id: string
+          ip_address: string | null
+          payload: Json | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          id?: string
+          ip_address?: string | null
+          payload?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: string
+          ip_address?: string | null
+          payload?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       b2b_orders: {
         Row: {
           code: string
