@@ -113,8 +113,11 @@ function PCP() {
         progress: Math.min(100, Math.max(0, Number(form.progress) || 0)),
         due_date: form.due_date || null,
         status: form.status,
+        stage: form.stage,
+        priority: Number(form.priority) || 3,
         notes: form.notes.trim() || null,
       };
+
       if (editing) {
         const { error } = await supabase.from("production_orders").update(payload).eq("id", editing.id);
         if (error) throw error;
