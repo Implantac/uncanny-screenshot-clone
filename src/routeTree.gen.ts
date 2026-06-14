@@ -39,6 +39,7 @@ import { Route as AppControlTowerRouteImport } from './routes/_app.control-tower
 import { Route as AppComercialRouteImport } from './routes/_app.comercial'
 import { Route as AppColecoesRouteImport } from './routes/_app.colecoes'
 import { Route as AppCentroDeCorteRouteImport } from './routes/_app.centro-de-corte'
+import { Route as AppCashflowRouteImport } from './routes/_app.cashflow'
 import { Route as AppCapacityRouteImport } from './routes/_app.capacity'
 import { Route as AppCadRouteImport } from './routes/_app.cad'
 import { Route as AppBiRouteImport } from './routes/_app.bi'
@@ -193,6 +194,11 @@ const AppCentroDeCorteRoute = AppCentroDeCorteRouteImport.update({
   path: '/centro-de-corte',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCashflowRoute = AppCashflowRouteImport.update({
+  id: '/cashflow',
+  path: '/cashflow',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCapacityRoute = AppCapacityRouteImport.update({
   id: '/capacity',
   path: '/capacity',
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
   '/capacity': typeof AppCapacityRoute
+  '/cashflow': typeof AppCashflowRoute
   '/centro-de-corte': typeof AppCentroDeCorteRoute
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
   '/capacity': typeof AppCapacityRoute
+  '/cashflow': typeof AppCashflowRoute
   '/centro-de-corte': typeof AppCentroDeCorteRoute
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/_app/bi': typeof AppBiRoute
   '/_app/cad': typeof AppCadRoute
   '/_app/capacity': typeof AppCapacityRoute
+  '/_app/cashflow': typeof AppCashflowRoute
   '/_app/centro-de-corte': typeof AppCentroDeCorteRoute
   '/_app/colecoes': typeof AppColecoesRoute
   '/_app/comercial': typeof AppComercialRoute
@@ -330,6 +339,7 @@ export interface FileRouteTypes {
     | '/bi'
     | '/cad'
     | '/capacity'
+    | '/cashflow'
     | '/centro-de-corte'
     | '/colecoes'
     | '/comercial'
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/bi'
     | '/cad'
     | '/capacity'
+    | '/cashflow'
     | '/centro-de-corte'
     | '/colecoes'
     | '/comercial'
@@ -400,6 +411,7 @@ export interface FileRouteTypes {
     | '/_app/bi'
     | '/_app/cad'
     | '/_app/capacity'
+    | '/_app/cashflow'
     | '/_app/centro-de-corte'
     | '/_app/colecoes'
     | '/_app/comercial'
@@ -648,6 +660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCentroDeCorteRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/cashflow': {
+      id: '/_app/cashflow'
+      path: '/cashflow'
+      fullPath: '/cashflow'
+      preLoaderRoute: typeof AppCashflowRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/capacity': {
       id: '/_app/capacity'
       path: '/capacity'
@@ -684,6 +703,7 @@ interface AppRouteChildren {
   AppBiRoute: typeof AppBiRoute
   AppCadRoute: typeof AppCadRoute
   AppCapacityRoute: typeof AppCapacityRoute
+  AppCashflowRoute: typeof AppCashflowRoute
   AppCentroDeCorteRoute: typeof AppCentroDeCorteRoute
   AppColecoesRoute: typeof AppColecoesRoute
   AppComercialRoute: typeof AppComercialRoute
@@ -718,6 +738,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBiRoute: AppBiRoute,
   AppCadRoute: AppCadRoute,
   AppCapacityRoute: AppCapacityRoute,
+  AppCashflowRoute: AppCashflowRoute,
   AppCentroDeCorteRoute: AppCentroDeCorteRoute,
   AppColecoesRoute: AppColecoesRoute,
   AppComercialRoute: AppComercialRoute,

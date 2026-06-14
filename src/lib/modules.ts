@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Layers, Sparkles, FileText, PenTool, Scissors,
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
   Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
-  Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, type LucideIcon,
+  Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleDef = {
@@ -40,6 +40,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "sales-performance", path: "/sales-performance", title: "Sales Performance", short: "Receita e canais", description: "Receita diária, canais, ticket médio e top SKUs.", icon: LineChart, group: "Comercial" },
   { slug: "stock-health", path: "/stock-health", title: "Stock Health", short: "Saúde do estoque", description: "Ruptura, baixo, morto, excesso e cobertura por SKU.", icon: PackageSearch, group: "Cadeia" },
   { slug: "capacity", path: "/capacity", title: "Production Capacity", short: "OEE e carga", description: "OEE, WIP, atrasos e carga por fornecedor / facção.", icon: Gauge, group: "Cadeia" },
+  { slug: "cashflow", path: "/cashflow", title: "Cashflow Health", short: "Saldo projetado", description: "A pagar, a receber, atrasos e projeção de 30 dias.", icon: Banknote, group: "Comercial" },
   { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis e exploração de dados.", icon: BarChart3, group: "Inteligência" },
   { slug: "fashion-gpt", path: "/fashion-gpt", title: "Fashion GPT", short: "Copiloto de moda", description: "Assistente especialista no seu negócio de moda.", icon: Bot, group: "Inteligência" },
   { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação de processos.", icon: Cpu, group: "Inteligência" },
