@@ -570,14 +570,49 @@ function ProductDialog({
               <Input value={sku} onChange={(event) => setSku(event.target.value)} placeholder="VST-001" required />
             </div>
             <div className="space-y-2">
-              <Label>Categoria</Label>
-              <Input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Vestido" />
+              <Label>Nome</Label>
+              <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Vestido Florença" required />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Nome</Label>
-            <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Vestido Florença" required />
+          <div className="rounded-xl border border-border/60 bg-background/30 p-3 space-y-3">
+            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Classificação</div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Grupo</Label>
+                <Select value={productGroup} onValueChange={setProductGroup}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Não definido</SelectItem>
+                    {GROUPS.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Subgrupo</Label>
+                <Select value={subgroup} onValueChange={setSubgroup}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Não definido</SelectItem>
+                    {SUBGROUPS.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Classe</Label>
+                <Select value={productClass} onValueChange={setProductClass}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Não definido</SelectItem>
+                    {CLASSES.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Categoria livre</Label>
+                <Input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Ex: Festa" />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
