@@ -40,9 +40,14 @@ function FashionGPT() {
 
   const transport = useMemo(() => new DefaultChatTransport({
     api: "/api/chat",
-    prepareSendMessagesRequest: ({ messages }) => ({
-      body: { messages, context: contextRef.current },
-    }),
+    prepareSendMessagesRequest: async ({ messages }) => {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      return {
+        body: { messages, context: contextRef.current },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      };
+    },
   }), []);
 
   const { messages, sendMessage, status } = useChat({
