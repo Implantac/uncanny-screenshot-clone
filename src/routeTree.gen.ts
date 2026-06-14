@@ -45,6 +45,7 @@ import { Route as AppFashionCalendarRouteImport } from './routes/_app.fashion-ca
 import { Route as AppEquipeRouteImport } from './routes/_app.equipe'
 import { Route as AppDppRouteImport } from './routes/_app.dpp'
 import { Route as AppDevKanbanRouteImport } from './routes/_app.dev-kanban'
+import { Route as AppDataLakeRouteImport } from './routes/_app.data-lake'
 import { Route as AppControlTowerRouteImport } from './routes/_app.control-tower'
 import { Route as AppComprasRouteImport } from './routes/_app.compras'
 import { Route as AppComercialRouteImport } from './routes/_app.comercial'
@@ -55,6 +56,7 @@ import { Route as AppCapacityRouteImport } from './routes/_app.capacity'
 import { Route as AppCampaignsRouteImport } from './routes/_app.campaigns'
 import { Route as AppCadRouteImport } from './routes/_app.cad'
 import { Route as AppBiRouteImport } from './routes/_app.bi'
+import { Route as AppAuditRouteImport } from './routes/_app.audit'
 import { Route as AppAttributionRouteImport } from './routes/_app.attribution'
 import { Route as AppAlmoxarifadoRouteImport } from './routes/_app.almoxarifado'
 
@@ -237,6 +239,11 @@ const AppDevKanbanRoute = AppDevKanbanRouteImport.update({
   path: '/dev-kanban',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDataLakeRoute = AppDataLakeRouteImport.update({
+  id: '/data-lake',
+  path: '/data-lake',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppControlTowerRoute = AppControlTowerRouteImport.update({
   id: '/control-tower',
   path: '/control-tower',
@@ -287,6 +294,11 @@ const AppBiRoute = AppBiRouteImport.update({
   path: '/bi',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAuditRoute = AppAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAttributionRoute = AppAttributionRouteImport.update({
   id: '/attribution',
   path: '/attribution',
@@ -303,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/almoxarifado': typeof AppAlmoxarifadoRoute
   '/attribution': typeof AppAttributionRoute
+  '/audit': typeof AppAuditRoute
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
   '/campaigns': typeof AppCampaignsRoute
@@ -313,6 +326,7 @@ export interface FileRoutesByFullPath {
   '/comercial': typeof AppComercialRoute
   '/compras': typeof AppComprasRoute
   '/control-tower': typeof AppControlTowerRoute
+  '/data-lake': typeof AppDataLakeRoute
   '/dev-kanban': typeof AppDevKanbanRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
@@ -351,6 +365,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/almoxarifado': typeof AppAlmoxarifadoRoute
   '/attribution': typeof AppAttributionRoute
+  '/audit': typeof AppAuditRoute
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
   '/campaigns': typeof AppCampaignsRoute
@@ -361,6 +376,7 @@ export interface FileRoutesByTo {
   '/comercial': typeof AppComercialRoute
   '/compras': typeof AppComprasRoute
   '/control-tower': typeof AppControlTowerRoute
+  '/data-lake': typeof AppDataLakeRoute
   '/dev-kanban': typeof AppDevKanbanRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
@@ -402,6 +418,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_app/almoxarifado': typeof AppAlmoxarifadoRoute
   '/_app/attribution': typeof AppAttributionRoute
+  '/_app/audit': typeof AppAuditRoute
   '/_app/bi': typeof AppBiRoute
   '/_app/cad': typeof AppCadRoute
   '/_app/campaigns': typeof AppCampaignsRoute
@@ -412,6 +429,7 @@ export interface FileRoutesById {
   '/_app/comercial': typeof AppComercialRoute
   '/_app/compras': typeof AppComprasRoute
   '/_app/control-tower': typeof AppControlTowerRoute
+  '/_app/data-lake': typeof AppDataLakeRoute
   '/_app/dev-kanban': typeof AppDevKanbanRoute
   '/_app/dpp': typeof AppDppRoute
   '/_app/equipe': typeof AppEquipeRoute
@@ -454,6 +472,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/almoxarifado'
     | '/attribution'
+    | '/audit'
     | '/bi'
     | '/cad'
     | '/campaigns'
@@ -464,6 +483,7 @@ export interface FileRouteTypes {
     | '/comercial'
     | '/compras'
     | '/control-tower'
+    | '/data-lake'
     | '/dev-kanban'
     | '/dpp'
     | '/equipe'
@@ -502,6 +522,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/almoxarifado'
     | '/attribution'
+    | '/audit'
     | '/bi'
     | '/cad'
     | '/campaigns'
@@ -512,6 +533,7 @@ export interface FileRouteTypes {
     | '/comercial'
     | '/compras'
     | '/control-tower'
+    | '/data-lake'
     | '/dev-kanban'
     | '/dpp'
     | '/equipe'
@@ -552,6 +574,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_app/almoxarifado'
     | '/_app/attribution'
+    | '/_app/audit'
     | '/_app/bi'
     | '/_app/cad'
     | '/_app/campaigns'
@@ -562,6 +585,7 @@ export interface FileRouteTypes {
     | '/_app/comercial'
     | '/_app/compras'
     | '/_app/control-tower'
+    | '/_app/data-lake'
     | '/_app/dev-kanban'
     | '/_app/dpp'
     | '/_app/equipe'
@@ -858,6 +882,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDevKanbanRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/data-lake': {
+      id: '/_app/data-lake'
+      path: '/data-lake'
+      fullPath: '/data-lake'
+      preLoaderRoute: typeof AppDataLakeRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/control-tower': {
       id: '/_app/control-tower'
       path: '/control-tower'
@@ -928,6 +959,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBiRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/audit': {
+      id: '/_app/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AppAuditRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/attribution': {
       id: '/_app/attribution'
       path: '/attribution'
@@ -948,6 +986,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAlmoxarifadoRoute: typeof AppAlmoxarifadoRoute
   AppAttributionRoute: typeof AppAttributionRoute
+  AppAuditRoute: typeof AppAuditRoute
   AppBiRoute: typeof AppBiRoute
   AppCadRoute: typeof AppCadRoute
   AppCampaignsRoute: typeof AppCampaignsRoute
@@ -958,6 +997,7 @@ interface AppRouteChildren {
   AppComercialRoute: typeof AppComercialRoute
   AppComprasRoute: typeof AppComprasRoute
   AppControlTowerRoute: typeof AppControlTowerRoute
+  AppDataLakeRoute: typeof AppDataLakeRoute
   AppDevKanbanRoute: typeof AppDevKanbanRoute
   AppDppRoute: typeof AppDppRoute
   AppEquipeRoute: typeof AppEquipeRoute
@@ -996,6 +1036,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAlmoxarifadoRoute: AppAlmoxarifadoRoute,
   AppAttributionRoute: AppAttributionRoute,
+  AppAuditRoute: AppAuditRoute,
   AppBiRoute: AppBiRoute,
   AppCadRoute: AppCadRoute,
   AppCampaignsRoute: AppCampaignsRoute,
@@ -1006,6 +1047,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppComercialRoute: AppComercialRoute,
   AppComprasRoute: AppComprasRoute,
   AppControlTowerRoute: AppControlTowerRoute,
+  AppDataLakeRoute: AppDataLakeRoute,
   AppDevKanbanRoute: AppDevKanbanRoute,
   AppDppRoute: AppDppRoute,
   AppEquipeRoute: AppEquipeRoute,
