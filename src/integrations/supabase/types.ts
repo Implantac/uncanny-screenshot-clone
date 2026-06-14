@@ -448,14 +448,18 @@ export type Database = {
           cost_price: number | null
           created_at: string
           description: string | null
+          grade: string | null
           id: string
           image_url: string | null
           name: string
           owner_id: string
+          product_class: string | null
+          product_group: string | null
           sell_price: number | null
           sizes: string[] | null
           sku: string
           status: Database["public"]["Enums"]["product_status"]
+          subgroup: string | null
           updated_at: string
         }
         Insert: {
@@ -465,14 +469,18 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           description?: string | null
+          grade?: string | null
           id?: string
           image_url?: string | null
           name: string
           owner_id: string
+          product_class?: string | null
+          product_group?: string | null
           sell_price?: number | null
           sizes?: string[] | null
           sku: string
           status?: Database["public"]["Enums"]["product_status"]
+          subgroup?: string | null
           updated_at?: string
         }
         Update: {
@@ -482,14 +490,18 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           description?: string | null
+          grade?: string | null
           id?: string
           image_url?: string | null
           name?: string
           owner_id?: string
+          product_class?: string | null
+          product_group?: string | null
           sell_price?: number | null
           sizes?: string[] | null
           sku?: string
           status?: Database["public"]["Enums"]["product_status"]
+          subgroup?: string | null
           updated_at?: string
         }
         Relationships: [

@@ -32,6 +32,10 @@ type Product = {
   sku: string;
   name: string;
   category: string | null;
+  product_group: string | null;
+  subgroup: string | null;
+  product_class: string | null;
+  grade: string | null;
   description: string | null;
   cost_price: number;
   sell_price: number;
@@ -41,6 +45,11 @@ type Product = {
   colors: string[];
   created_at: string;
 };
+
+const GROUPS = ["Feminino", "Masculino", "Infantil", "Unissex", "Acessórios"];
+const SUBGROUPS = ["Superior", "Inferior", "Vestido", "Conjunto", "Sobreposição", "Íntimo", "Praia", "Acessório"];
+const CLASSES = ["Camiseta", "Camisa", "Blusa", "Vestido", "Saia", "Calça", "Short", "Bermuda", "Jaqueta", "Casaco", "Macacão", "Body"];
+const GRADES = ["PP-GG", "P-GG", "PP-XGG", "36-46", "38-48", "40-50", "1-4", "4-10", "10-16", "Único"];
 
 type CollectionRef = { id: string; name: string; season: string; year: number };
 
@@ -300,7 +309,10 @@ function ProductDetail({
           <div className="p-5 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className={STATUS_COLORS[product.status]}>{STATUS_LABELS[product.status]}</Badge>
-              <Badge variant="outline">{product.category || "Sem categoria"}</Badge>
+              {product.product_group && <Badge variant="outline">{product.product_group}</Badge>}
+              {product.subgroup && <Badge variant="outline">{product.subgroup}</Badge>}
+              {product.product_class && <Badge variant="outline">{product.product_class}</Badge>}
+              {product.grade && <Badge variant="outline">Grade {product.grade}</Badge>}
               {collection && <Badge variant="outline">{collection.name}</Badge>}
             </div>
 
@@ -404,6 +416,10 @@ function ProductDialog({
   const [sku, setSku] = useState("");
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
+  const [productGroup, setProductGroup] = useState<string>("none");
+  const [subgroup, setSubgroup] = useState<string>("none");
+  const [productClass, setProductClass] = useState<string>("none");
+  const [grade, setGrade] = useState<string>("none");
   const [description, setDescription] = useState("");
   const [costPrice, setCostPrice] = useState(0);
   const [sellPrice, setSellPrice] = useState(0);
@@ -422,6 +438,10 @@ function ProductDialog({
       setSku(editing.sku);
       setName(editing.name);
       setCategory(editing.category || "");
+      setProductGroup(editing.product_group || "none");
+      setSubgroup(editing.subgroup || "none");
+      setProductClass(editing.product_class || "none");
+      setGrade(editing.grade || "none");
       setDescription(editing.description || "");
       setCostPrice(Number(editing.cost_price));
       setSellPrice(Number(editing.sell_price));
@@ -440,6 +460,10 @@ function ProductDialog({
     setSku("");
     setName("");
     setCategory("");
+    setProductGroup("none");
+    setSubgroup("none");
+    setProductClass("none");
+    setGrade("none");
     setDescription("");
     setCostPrice(0);
     setSellPrice(0);
@@ -479,6 +503,10 @@ function ProductDialog({
         sku,
         name,
         category: category || null,
+        product_group: productGroup === "none" ? null : productGroup,
+        subgroup: subgroup === "none" ? null : subgroup,
+        product_class: productClass === "none" ? null : productClass,
+        grade: grade === "none" ? null : grade,
         description: description || null,
         cost_price: costPrice,
         sell_price: sellPrice,
@@ -542,14 +570,49 @@ function ProductDialog({
               <Input value={sku} onChange={(event) => setSku(event.target.value)} placeholder="VST-001" required />
             </div>
             <div className="space-y-2">
-              <Label>Categoria</Label>
-              <Input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Vestido" />
+              <Label>Nome</Label>
+              <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Vestido Florença" required />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Nome</Label>
-            <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Vestido Florença" required />
+          <div className="rounded-xl border border-border/60 bg-background/30 p-3 space-y-3">
+            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Classificação</div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Grupo</Label>
+                <Select value={productGroup} onValueChange={setProductGroup}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Não definido</SelectItem>
+                    {GROUPS.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Subgrupo</Label>
+                <Select value={subgroup} onValueChange={setSubgroup}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Não definido</SelectItem>
+                    {SUBGROUPS.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Classe</Label>
+                <Select value={productClass} onValueChange={setProductClass}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Não definido</SelectItem>
+                    {CLASSES.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Categoria livre</Label>
+                <Input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Ex: Festa" />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -592,14 +655,26 @@ function ProductDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Tamanhos</Label>
-            <Input value={sizesStr} onChange={(event) => setSizesStr(event.target.value)} placeholder="P, M, G, GG" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Grade</Label>
+              <Select value={grade} onValueChange={setGrade}>
+                <SelectTrigger><SelectValue placeholder="Selecione a grade" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Não definida</SelectItem>
+                  {GRADES.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Tamanhos da grade</Label>
+              <Input value={sizesStr} onChange={(event) => setSizesStr(event.target.value)} placeholder="P, M, G, GG" />
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label>Cores</Label>
-            <Input value={colorsStr} onChange={(event) => setColorsStr(event.target.value)} placeholder="#111111, #f4ede2" />
+            <Input value={colorsStr} onChange={(event) => setColorsStr(event.target.value)} placeholder="#111111, #f4ede2 ou Preto, Off-white" />
           </div>
 
           <DialogFooter>
