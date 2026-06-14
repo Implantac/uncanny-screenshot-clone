@@ -182,6 +182,9 @@ function IntelligencePage() {
               campaigns: mktQ.data?.length ?? 0,
               prototypes: protoQ.data?.length ?? 0,
               sales: salesQ.data?.length ?? 0,
+              influencers: influQ.data?.length ?? 0,
+              suppliers: supQ.data?.length ?? 0,
+              collections: colQ.data?.length ?? 0,
             }}
           />
         </TabsContent>
