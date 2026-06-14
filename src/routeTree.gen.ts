@@ -21,7 +21,10 @@ import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
 import { Route as AppSalesPerformanceRouteImport } from './routes/_app.sales-performance'
 import { Route as AppReplenishmentRouteImport } from './routes/_app.replenishment'
 import { Route as AppPrototiposRouteImport } from './routes/_app.prototipos'
+import { Route as AppProfitabilityRouteImport } from './routes/_app.profitability'
 import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
+import { Route as AppProductSuccessRouteImport } from './routes/_app.product-success'
+import { Route as AppProductScoreRouteImport } from './routes/_app.product-score'
 import { Route as AppPilotsRouteImport } from './routes/_app.pilots'
 import { Route as AppPcpKanbanRouteImport } from './routes/_app.pcp-kanban'
 import { Route as AppPcpRouteImport } from './routes/_app.pcp'
@@ -30,6 +33,7 @@ import { Route as AppMarketingRouteImport } from './routes/_app.marketing'
 import { Route as AppMargemRouteImport } from './routes/_app.margem'
 import { Route as AppIntelligenceRouteImport } from './routes/_app.intelligence'
 import { Route as AppInfluencerRoiRouteImport } from './routes/_app.influencer-roi'
+import { Route as AppGradeNeedsRouteImport } from './routes/_app.grade-needs'
 import { Route as AppGeoSalesRouteImport } from './routes/_app.geo-sales'
 import { Route as AppFornecedoresRouteImport } from './routes/_app.fornecedores'
 import { Route as AppFinanceiroRouteImport } from './routes/_app.financeiro'
@@ -110,9 +114,24 @@ const AppPrototiposRoute = AppPrototiposRouteImport.update({
   path: '/prototipos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppProfitabilityRoute = AppProfitabilityRouteImport.update({
+  id: '/profitability',
+  path: '/profitability',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProdutosRoute = AppProdutosRouteImport.update({
   id: '/produtos',
   path: '/produtos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProductSuccessRoute = AppProductSuccessRouteImport.update({
+  id: '/product-success',
+  path: '/product-success',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProductScoreRoute = AppProductScoreRouteImport.update({
+  id: '/product-score',
+  path: '/product-score',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPilotsRoute = AppPilotsRouteImport.update({
@@ -153,6 +172,11 @@ const AppIntelligenceRoute = AppIntelligenceRouteImport.update({
 const AppInfluencerRoiRoute = AppInfluencerRoiRouteImport.update({
   id: '/influencer-roi',
   path: '/influencer-roi',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGradeNeedsRoute = AppGradeNeedsRouteImport.update({
+  id: '/grade-needs',
+  path: '/grade-needs',
   getParentRoute: () => AppRoute,
 } as any)
 const AppGeoSalesRoute = AppGeoSalesRouteImport.update({
@@ -279,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/financeiro': typeof AppFinanceiroRoute
   '/fornecedores': typeof AppFornecedoresRoute
   '/geo-sales': typeof AppGeoSalesRoute
+  '/grade-needs': typeof AppGradeNeedsRoute
   '/influencer-roi': typeof AppInfluencerRoiRoute
   '/intelligence': typeof AppIntelligenceRoute
   '/margem': typeof AppMargemRoute
@@ -287,7 +312,10 @@ export interface FileRoutesByFullPath {
   '/pcp': typeof AppPcpRoute
   '/pcp-kanban': typeof AppPcpKanbanRoute
   '/pilots': typeof AppPilotsRoute
+  '/product-score': typeof AppProductScoreRoute
+  '/product-success': typeof AppProductSuccessRoute
   '/produtos': typeof AppProdutosRoute
+  '/profitability': typeof AppProfitabilityRoute
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
   '/sales-performance': typeof AppSalesPerformanceRoute
@@ -320,6 +348,7 @@ export interface FileRoutesByTo {
   '/financeiro': typeof AppFinanceiroRoute
   '/fornecedores': typeof AppFornecedoresRoute
   '/geo-sales': typeof AppGeoSalesRoute
+  '/grade-needs': typeof AppGradeNeedsRoute
   '/influencer-roi': typeof AppInfluencerRoiRoute
   '/intelligence': typeof AppIntelligenceRoute
   '/margem': typeof AppMargemRoute
@@ -328,7 +357,10 @@ export interface FileRoutesByTo {
   '/pcp': typeof AppPcpRoute
   '/pcp-kanban': typeof AppPcpKanbanRoute
   '/pilots': typeof AppPilotsRoute
+  '/product-score': typeof AppProductScoreRoute
+  '/product-success': typeof AppProductSuccessRoute
   '/produtos': typeof AppProdutosRoute
+  '/profitability': typeof AppProfitabilityRoute
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
   '/sales-performance': typeof AppSalesPerformanceRoute
@@ -364,6 +396,7 @@ export interface FileRoutesById {
   '/_app/financeiro': typeof AppFinanceiroRoute
   '/_app/fornecedores': typeof AppFornecedoresRoute
   '/_app/geo-sales': typeof AppGeoSalesRoute
+  '/_app/grade-needs': typeof AppGradeNeedsRoute
   '/_app/influencer-roi': typeof AppInfluencerRoiRoute
   '/_app/intelligence': typeof AppIntelligenceRoute
   '/_app/margem': typeof AppMargemRoute
@@ -372,7 +405,10 @@ export interface FileRoutesById {
   '/_app/pcp': typeof AppPcpRoute
   '/_app/pcp-kanban': typeof AppPcpKanbanRoute
   '/_app/pilots': typeof AppPilotsRoute
+  '/_app/product-score': typeof AppProductScoreRoute
+  '/_app/product-success': typeof AppProductSuccessRoute
   '/_app/produtos': typeof AppProdutosRoute
+  '/_app/profitability': typeof AppProfitabilityRoute
   '/_app/prototipos': typeof AppPrototiposRoute
   '/_app/replenishment': typeof AppReplenishmentRoute
   '/_app/sales-performance': typeof AppSalesPerformanceRoute
@@ -409,6 +445,7 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/fornecedores'
     | '/geo-sales'
+    | '/grade-needs'
     | '/influencer-roi'
     | '/intelligence'
     | '/margem'
@@ -417,7 +454,10 @@ export interface FileRouteTypes {
     | '/pcp'
     | '/pcp-kanban'
     | '/pilots'
+    | '/product-score'
+    | '/product-success'
     | '/produtos'
+    | '/profitability'
     | '/prototipos'
     | '/replenishment'
     | '/sales-performance'
@@ -450,6 +490,7 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/fornecedores'
     | '/geo-sales'
+    | '/grade-needs'
     | '/influencer-roi'
     | '/intelligence'
     | '/margem'
@@ -458,7 +499,10 @@ export interface FileRouteTypes {
     | '/pcp'
     | '/pcp-kanban'
     | '/pilots'
+    | '/product-score'
+    | '/product-success'
     | '/produtos'
+    | '/profitability'
     | '/prototipos'
     | '/replenishment'
     | '/sales-performance'
@@ -493,6 +537,7 @@ export interface FileRouteTypes {
     | '/_app/financeiro'
     | '/_app/fornecedores'
     | '/_app/geo-sales'
+    | '/_app/grade-needs'
     | '/_app/influencer-roi'
     | '/_app/intelligence'
     | '/_app/margem'
@@ -501,7 +546,10 @@ export interface FileRouteTypes {
     | '/_app/pcp'
     | '/_app/pcp-kanban'
     | '/_app/pilots'
+    | '/_app/product-score'
+    | '/_app/product-success'
     | '/_app/produtos'
+    | '/_app/profitability'
     | '/_app/prototipos'
     | '/_app/replenishment'
     | '/_app/sales-performance'
@@ -606,11 +654,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPrototiposRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/profitability': {
+      id: '/_app/profitability'
+      path: '/profitability'
+      fullPath: '/profitability'
+      preLoaderRoute: typeof AppProfitabilityRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/produtos': {
       id: '/_app/produtos'
       path: '/produtos'
       fullPath: '/produtos'
       preLoaderRoute: typeof AppProdutosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/product-success': {
+      id: '/_app/product-success'
+      path: '/product-success'
+      fullPath: '/product-success'
+      preLoaderRoute: typeof AppProductSuccessRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/product-score': {
+      id: '/_app/product-score'
+      path: '/product-score'
+      fullPath: '/product-score'
+      preLoaderRoute: typeof AppProductScoreRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/pilots': {
@@ -667,6 +736,13 @@ declare module '@tanstack/react-router' {
       path: '/influencer-roi'
       fullPath: '/influencer-roi'
       preLoaderRoute: typeof AppInfluencerRoiRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/grade-needs': {
+      id: '/_app/grade-needs'
+      path: '/grade-needs'
+      fullPath: '/grade-needs'
+      preLoaderRoute: typeof AppGradeNeedsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/geo-sales': {
@@ -833,6 +909,7 @@ interface AppRouteChildren {
   AppFinanceiroRoute: typeof AppFinanceiroRoute
   AppFornecedoresRoute: typeof AppFornecedoresRoute
   AppGeoSalesRoute: typeof AppGeoSalesRoute
+  AppGradeNeedsRoute: typeof AppGradeNeedsRoute
   AppInfluencerRoiRoute: typeof AppInfluencerRoiRoute
   AppIntelligenceRoute: typeof AppIntelligenceRoute
   AppMargemRoute: typeof AppMargemRoute
@@ -841,7 +918,10 @@ interface AppRouteChildren {
   AppPcpRoute: typeof AppPcpRoute
   AppPcpKanbanRoute: typeof AppPcpKanbanRoute
   AppPilotsRoute: typeof AppPilotsRoute
+  AppProductScoreRoute: typeof AppProductScoreRoute
+  AppProductSuccessRoute: typeof AppProductSuccessRoute
   AppProdutosRoute: typeof AppProdutosRoute
+  AppProfitabilityRoute: typeof AppProfitabilityRoute
   AppPrototiposRoute: typeof AppPrototiposRoute
   AppReplenishmentRoute: typeof AppReplenishmentRoute
   AppSalesPerformanceRoute: typeof AppSalesPerformanceRoute
@@ -874,6 +954,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFinanceiroRoute: AppFinanceiroRoute,
   AppFornecedoresRoute: AppFornecedoresRoute,
   AppGeoSalesRoute: AppGeoSalesRoute,
+  AppGradeNeedsRoute: AppGradeNeedsRoute,
   AppInfluencerRoiRoute: AppInfluencerRoiRoute,
   AppIntelligenceRoute: AppIntelligenceRoute,
   AppMargemRoute: AppMargemRoute,
@@ -882,7 +963,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppPcpRoute: AppPcpRoute,
   AppPcpKanbanRoute: AppPcpKanbanRoute,
   AppPilotsRoute: AppPilotsRoute,
+  AppProductScoreRoute: AppProductScoreRoute,
+  AppProductSuccessRoute: AppProductSuccessRoute,
   AppProdutosRoute: AppProdutosRoute,
+  AppProfitabilityRoute: AppProfitabilityRoute,
   AppPrototiposRoute: AppPrototiposRoute,
   AppReplenishmentRoute: AppReplenishmentRoute,
   AppSalesPerformanceRoute: AppSalesPerformanceRoute,
