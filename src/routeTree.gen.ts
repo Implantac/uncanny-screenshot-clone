@@ -42,6 +42,7 @@ import { Route as AppColecoesRouteImport } from './routes/_app.colecoes'
 import { Route as AppCentroDeCorteRouteImport } from './routes/_app.centro-de-corte'
 import { Route as AppCashflowRouteImport } from './routes/_app.cashflow'
 import { Route as AppCapacityRouteImport } from './routes/_app.capacity'
+import { Route as AppCampaignsRouteImport } from './routes/_app.campaigns'
 import { Route as AppCadRouteImport } from './routes/_app.cad'
 import { Route as AppBiRouteImport } from './routes/_app.bi'
 import { Route as AppAlmoxarifadoRouteImport } from './routes/_app.almoxarifado'
@@ -210,6 +211,11 @@ const AppCapacityRoute = AppCapacityRouteImport.update({
   path: '/capacity',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCampaignsRoute = AppCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCadRoute = AppCadRouteImport.update({
   id: '/cad',
   path: '/cad',
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/almoxarifado': typeof AppAlmoxarifadoRoute
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
+  '/campaigns': typeof AppCampaignsRoute
   '/capacity': typeof AppCapacityRoute
   '/cashflow': typeof AppCashflowRoute
   '/centro-de-corte': typeof AppCentroDeCorteRoute
@@ -268,6 +275,7 @@ export interface FileRoutesByTo {
   '/almoxarifado': typeof AppAlmoxarifadoRoute
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
+  '/campaigns': typeof AppCampaignsRoute
   '/capacity': typeof AppCapacityRoute
   '/cashflow': typeof AppCashflowRoute
   '/centro-de-corte': typeof AppCentroDeCorteRoute
@@ -307,6 +315,7 @@ export interface FileRoutesById {
   '/_app/almoxarifado': typeof AppAlmoxarifadoRoute
   '/_app/bi': typeof AppBiRoute
   '/_app/cad': typeof AppCadRoute
+  '/_app/campaigns': typeof AppCampaignsRoute
   '/_app/capacity': typeof AppCapacityRoute
   '/_app/cashflow': typeof AppCashflowRoute
   '/_app/centro-de-corte': typeof AppCentroDeCorteRoute
@@ -347,6 +356,7 @@ export interface FileRouteTypes {
     | '/almoxarifado'
     | '/bi'
     | '/cad'
+    | '/campaigns'
     | '/capacity'
     | '/cashflow'
     | '/centro-de-corte'
@@ -383,6 +393,7 @@ export interface FileRouteTypes {
     | '/almoxarifado'
     | '/bi'
     | '/cad'
+    | '/campaigns'
     | '/capacity'
     | '/cashflow'
     | '/centro-de-corte'
@@ -421,6 +432,7 @@ export interface FileRouteTypes {
     | '/_app/almoxarifado'
     | '/_app/bi'
     | '/_app/cad'
+    | '/_app/campaigns'
     | '/_app/capacity'
     | '/_app/cashflow'
     | '/_app/centro-de-corte'
@@ -693,6 +705,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCapacityRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/campaigns': {
+      id: '/_app/campaigns'
+      path: '/campaigns'
+      fullPath: '/campaigns'
+      preLoaderRoute: typeof AppCampaignsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/cad': {
       id: '/_app/cad'
       path: '/cad'
@@ -721,6 +740,7 @@ interface AppRouteChildren {
   AppAlmoxarifadoRoute: typeof AppAlmoxarifadoRoute
   AppBiRoute: typeof AppBiRoute
   AppCadRoute: typeof AppCadRoute
+  AppCampaignsRoute: typeof AppCampaignsRoute
   AppCapacityRoute: typeof AppCapacityRoute
   AppCashflowRoute: typeof AppCashflowRoute
   AppCentroDeCorteRoute: typeof AppCentroDeCorteRoute
@@ -757,6 +777,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAlmoxarifadoRoute: AppAlmoxarifadoRoute,
   AppBiRoute: AppBiRoute,
   AppCadRoute: AppCadRoute,
+  AppCampaignsRoute: AppCampaignsRoute,
   AppCapacityRoute: AppCapacityRoute,
   AppCashflowRoute: AppCashflowRoute,
   AppCentroDeCorteRoute: AppCentroDeCorteRoute,
