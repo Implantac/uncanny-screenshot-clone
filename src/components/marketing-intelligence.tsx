@@ -3,13 +3,15 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MapPin, Package, Brain, Loader2 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from "recharts";
+import { Sparkles, MapPin, Package, Brain, Loader2, Radio, Download } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList, PieChart, Pie, Legend } from "recharts";
 import { Markdown } from "@/components/markdown";
 import { recommendStrategy } from "@/lib/marketing-ai.functions";
+import { exportToPdf } from "@/lib/pdf";
 import { toast } from "sonner";
 
 const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const CHANNEL_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"];
 
 type SaleRow = {
   product_id: string | null;
@@ -77,6 +79,20 @@ export function MarketingIntelligence() {
     filt.forEach((s) => m.set(s.channel, (m.get(s.channel) ?? 0) + Number(s.total)));
     return Array.from(m.entries()).sort((a, b) => b[1] - a[1])[0]?.[0];
   };
+
+  const channelMix = useMemo(() => {
+    const filt = sales.filter((s) => {
+      if (selectedProduct && (s.products?.name ?? "Sem produto") !== selectedProduct) return false;
+      if (selectedRegion && (s.uf ?? "N/D") !== selectedRegion) return false;
+      return true;
+    });
+    const m = new Map<string, number>();
+    filt.forEach((s) => m.set(s.channel, (m.get(s.channel) ?? 0) + Number(s.total)));
+    const total = Array.from(m.values()).reduce((a, b) => a + b, 0) || 1;
+    return Array.from(m.entries())
+      .map(([name, value]) => ({ name, value, pct: (value / total) * 100 }))
+      .sort((a, b) => b.value - a.value);
+  }, [sales, selectedProduct, selectedRegion]);
 
   const runStrategy = useServerFn(recommendStrategy);
   const aiMut = useMutation({
@@ -245,6 +261,42 @@ export function MarketingIntelligence() {
       </div>
 
       <div className="glass rounded-xl p-5">
+        <div className="text-sm font-semibold inline-flex items-center gap-1.5 mb-1">
+          <Radio className="size-4 text-primary" />
+          Mix de canais {selectedProduct || selectedRegion ? "para a seleção" : "(geral)"}
+        </div>
+        <div className="text-[11px] text-muted-foreground mb-4">
+          Onde sua receita está vindo {selectedProduct ? `· produto: ${selectedProduct}` : ""} {selectedRegion ? `· UF: ${selectedRegion}` : ""}
+        </div>
+        {channelMix.length === 0 ? (
+          <div className="text-sm text-muted-foreground py-8 text-center">Sem dados de canal para a seleção.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 items-center">
+            <ResponsiveContainer width="100%" height={240}>
+              <PieChart>
+                <Pie data={channelMix} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={2}>
+                  {channelMix.map((_, i) => (
+                    <Cell key={i} fill={CHANNEL_COLORS[i % CHANNEL_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="space-y-2">
+              {channelMix.map((c, i) => (
+                <div key={c.name} className="flex items-center gap-3 text-sm">
+                  <span className="size-2.5 rounded-full shrink-0" style={{ background: CHANNEL_COLORS[i % CHANNEL_COLORS.length] }} />
+                  <span className="font-medium flex-1 truncate">{c.name}</span>
+                  <span className="text-muted-foreground tabular-nums">{brl(c.value)}</span>
+                  <span className="text-xs font-semibold w-12 text-right tabular-nums">{c.pct.toFixed(1)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="glass rounded-xl p-5">
         <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
           <div>
             <div className="text-sm font-semibold inline-flex items-center gap-1.5">
@@ -257,15 +309,35 @@ export function MarketingIntelligence() {
                 : "Selecione um produto e uma região nos gráficos acima"}
             </div>
           </div>
-          <Button
-            size="sm"
-            onClick={() => aiMut.mutate()}
-            disabled={!selectedProduct || !selectedRegion || aiMut.isPending}
-            className="gap-2 shadow-[var(--shadow-glow)]"
-          >
-            {aiMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-            {aiMut.isPending ? "Gerando…" : "Gerar estratégia"}
-          </Button>
+          <div className="flex gap-2">
+            {aiOutput && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                onClick={() => {
+                  exportToPdf(
+                    `estrategia-${selectedProduct}-${selectedRegion}`,
+                    `Estratégia de Marketing · ${selectedProduct} · ${selectedRegion}`,
+                    [{ secao: "Recomendação da IA", conteudo: aiOutput }],
+                    [{ key: "secao", label: "Seção" }, { key: "conteudo", label: "Conteúdo" }],
+                  );
+                  toast.success("PDF gerado");
+                }}
+              >
+                <Download className="size-4" /> PDF
+              </Button>
+            )}
+            <Button
+              size="sm"
+              onClick={() => aiMut.mutate()}
+              disabled={!selectedProduct || !selectedRegion || aiMut.isPending}
+              className="gap-2 shadow-[var(--shadow-glow)]"
+            >
+              {aiMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+              {aiMut.isPending ? "Gerando…" : "Gerar estratégia"}
+            </Button>
+          </div>
         </div>
 
         {aiOutput ? (
