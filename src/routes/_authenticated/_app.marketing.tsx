@@ -349,9 +349,6 @@ function InsightsBar({ rows, invTotal, receitaEst, roasAvg }: {
   );
 }
 
-const STATUS_COLORS: Record<CStatus, string> = {
-  programada: "#0ea5e9", ativa: "#10b981", pausada: "#f59e0b", concluida: "#64748b",
-};
 
 function ChartsSection({ rows }: { rows: Campaign[] }) {
   const byChannel = useMemo(() => {
