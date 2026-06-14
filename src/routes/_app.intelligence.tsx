@@ -347,35 +347,51 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [] }: any) {
           </CardContent>
         </Card>
 
-        {/* Digital Twin Factory */}
+        {/* Digital Twin Factory (M44) — real data from production_orders */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Scissors className="h-4 w-4" />Digital Twin · Fábrica</CardTitle>
-            <CardDescription>Torre de controle por setor</CardDescription>
+            <CardDescription>Torre de controle por setor (M44)</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { name: "Corte", load: 78, alert: 2 },
-                { name: "Costura", load: 92, alert: 5 },
-                { name: "Silk/Bordado", load: 54, alert: 0 },
-                { name: "Lavanderia", load: 41, alert: 1 },
-                { name: "Acabamento", load: 67, alert: 1 },
-                { name: "Expedição", load: 35, alert: 0 },
-              ].map((s) => (
-                <div key={s.name} className="rounded-lg border p-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{s.name}</span>
-                    {s.alert > 0 && <Badge variant="destructive" className="text-[10px]">{s.alert} atraso{s.alert > 1 ? "s" : ""}</Badge>}
-                  </div>
-                  <Progress value={s.load} className="mt-2" />
-                  <div className="mt-1 text-xs text-muted-foreground">Capacidade ocupada {s.load}%</div>
+            {(orders as any[]).length === 0 ? (
+              <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+                Sem ordens de produção. Cadastre na aba PCP.
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  {(() => {
+                    const sectors = ["Separação", "Corte", "Costura", "Silk", "Bordado", "Lavanderia", "Acabamento", "Expedição"] as const;
+                    const total = (orders as any[]).filter((o) => o.status !== "concluida" && o.status !== "cancelada").length || 1;
+                    return sectors.map((name) => {
+                      const inSector = (orders as any[]).filter((o) => inferStage(o) === name);
+                      const alert = inSector.filter((o) => o.status === "atrasada").length;
+                      const load = Math.round((inSector.length / total) * 100);
+                      return (
+                        <div key={name} className="rounded-lg border p-3">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium">{name}</span>
+                            {alert > 0 && <Badge variant="destructive" className="text-[10px]">{alert} atraso{alert > 1 ? "s" : ""}</Badge>}
+                          </div>
+                          <Progress value={Math.min(100, load)} className="mt-2" />
+                          <div className="mt-1 text-xs text-muted-foreground">{inSector.length} OPs · {load}% da carga</div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
-              ))}
-            </div>
-            <div className="mt-4 rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <strong className="text-foreground">Centro de Corte:</strong> aproveitamento médio 84% · perda 6,2% · produtividade 1.840 pç/dia
-            </div>
+                <div className="mt-4 rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+                  <strong className="text-foreground">Centro de Corte (M43):</strong>{" "}
+                  {(() => {
+                    const totalQty = (orders as any[]).reduce((s, o) => s + Number(o.quantity || 0), 0);
+                    const done = (orders as any[]).filter((o) => o.status === "concluida").reduce((s, o) => s + Number(o.quantity || 0), 0);
+                    const eff = totalQty > 0 ? Math.round((done / totalQty) * 100) : 0;
+                    return `${totalQty} peças planejadas · ${done} concluídas · eficiência ${eff}%`;
+                  })()}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
