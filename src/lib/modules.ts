@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Layers, Sparkles, FileText, PenTool, Scissors,
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
   Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
-  Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, Trophy, type LucideIcon,
+  Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, Trophy, Target, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleDef = {
@@ -42,6 +42,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "capacity", path: "/capacity", title: "Production Capacity", short: "OEE e carga", description: "OEE, WIP, atrasos e carga por fornecedor / facção.", icon: Gauge, group: "Cadeia" },
   { slug: "cashflow", path: "/cashflow", title: "Cashflow Health", short: "Saldo projetado", description: "A pagar, a receber, atrasos e projeção de 30 dias.", icon: Banknote, group: "Comercial" },
   { slug: "supplier-score", path: "/supplier-score", title: "Supplier Scorecard", short: "OTD e rating", description: "Score 0–100 por fornecedor com OTD, rating e tiers Ouro/Prata/Bronze.", icon: Trophy, group: "Cadeia" },
+  { slug: "campaigns", path: "/campaigns", title: "Campaign Performance", short: "ROAS por canal", description: "Investimento, receita atribuída, margem e ROAS por campanha e canal.", icon: Target, group: "Comercial" },
   { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis e exploração de dados.", icon: BarChart3, group: "Inteligência" },
   { slug: "fashion-gpt", path: "/fashion-gpt", title: "Fashion GPT", short: "Copiloto de moda", description: "Assistente especialista no seu negócio de moda.", icon: Bot, group: "Inteligência" },
   { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação de processos.", icon: Cpu, group: "Inteligência" },
