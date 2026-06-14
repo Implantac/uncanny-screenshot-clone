@@ -42,6 +42,18 @@ const COLOR: Record<Status, string> = {
   atrasada: "bg-destructive/20 text-destructive border-destructive/30",
   cancelada: "bg-muted text-muted-foreground",
 };
+const STAGE_LABEL: Record<Stage, string> = {
+  cad: "CAD", corte: "Corte", costura: "Costura", acabamento: "Acabamento", qualidade: "Qualidade", expedicao: "Expedição", entregue: "Entregue",
+};
+const PRIORITY_TONE: Record<number, string> = {
+  1: "bg-destructive/15 text-destructive border-destructive/30",
+  2: "bg-orange-500/15 text-orange-500 border-orange-500/30",
+  3: "bg-muted text-muted-foreground border-border",
+  4: "bg-muted text-muted-foreground border-border",
+  5: "bg-muted text-muted-foreground border-border",
+};
+const PRIORITY_LABEL: Record<number, string> = { 1: "P1 Urgente", 2: "P2 Alta", 3: "P3 Normal", 4: "P4 Baixa", 5: "P5 Backlog" };
+
 
 function PCP() {
   const { user } = useAuth();
