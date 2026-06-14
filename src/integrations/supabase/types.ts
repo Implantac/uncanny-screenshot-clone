@@ -699,6 +699,7 @@ export type Database = {
           city: string | null
           created_at: string
           id: string
+          influencer_id: string | null
           product_id: string | null
           quantity: number
           size: string | null
@@ -715,6 +716,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           id?: string
+          influencer_id?: string | null
           product_id?: string | null
           quantity?: number
           size?: string | null
@@ -731,6 +733,7 @@ export type Database = {
           city?: string | null
           created_at?: string
           id?: string
+          influencer_id?: string | null
           product_id?: string | null
           quantity?: number
           size?: string | null
@@ -743,6 +746,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sales_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "influencers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sales_product_id_fkey"
             columns: ["product_id"]

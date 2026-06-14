@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as DppIdRouteImport } from './routes/dpp.$id'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/_app.index'
@@ -70,6 +71,11 @@ const AuthRoute = AuthRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DppIdRoute = DppIdRouteImport.update({
+  id: '/dpp/$id',
+  path: '/dpp/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -366,6 +372,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedAppIndexRoute
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
+  '/dpp/$id': typeof DppIdRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/attribution': typeof AuthenticatedAppAttributionRoute
   '/audit': typeof AuthenticatedAppAuditRoute
@@ -419,6 +426,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedAppIndexRoute
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
+  '/dpp/$id': typeof DppIdRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/attribution': typeof AuthenticatedAppAttributionRoute
   '/audit': typeof AuthenticatedAppAuditRoute
@@ -474,6 +482,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/dpp/$id': typeof DppIdRoute
   '/_authenticated/_app/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/_authenticated/_app/attribution': typeof AuthenticatedAppAttributionRoute
   '/_authenticated/_app/audit': typeof AuthenticatedAppAuditRoute
@@ -530,6 +539,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/api/chat'
+    | '/dpp/$id'
     | '/almoxarifado'
     | '/attribution'
     | '/audit'
@@ -583,6 +593,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/api/chat'
+    | '/dpp/$id'
     | '/almoxarifado'
     | '/attribution'
     | '/audit'
@@ -637,6 +648,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/_app'
     | '/api/chat'
+    | '/dpp/$id'
     | '/_authenticated/_app/almoxarifado'
     | '/_authenticated/_app/attribution'
     | '/_authenticated/_app/audit'
@@ -692,6 +704,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
+  DppIdRoute: typeof DppIdRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
 }
 
@@ -709,6 +722,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dpp/$id': {
+      id: '/dpp/$id'
+      path: '/dpp/$id'
+      fullPath: '/dpp/$id'
+      preLoaderRoute: typeof DppIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -1191,6 +1211,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
+  DppIdRoute: DppIdRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
 }
 export const routeTree = rootRouteImport

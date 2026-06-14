@@ -130,15 +130,15 @@ function DPP() {
   );
 }
 
-function FakeQR({ seed }: { seed: string }) {
-  // pseudo-QR a partir do hash do id (visual, não escaneável)
-  const h = hash(seed);
-  const cells = Array.from({ length: 21 * 21 }, (_, i) => ((h >> (i % 30)) ^ (i * 1103515245 + 12345)) & 1);
+function PassportQR({ id }: { id: string }) {
+  const url = typeof window !== "undefined" ? `${window.location.origin}/dpp/${id}` : `/dpp/${id}`;
+  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=${encodeURIComponent(url)}`;
   return (
-    <div className="grid grid-cols-[repeat(21,1fr)] gap-px bg-foreground/10 p-2 rounded-md w-44 h-44 mx-auto">
-      {cells.map((c, i) => (
-        <div key={i} className={c ? "bg-foreground" : "bg-background"} />
-      ))}
+    <div className="space-y-2">
+      <img src={qr} alt="QR Code" className="w-44 h-44 mx-auto rounded-md bg-white p-2" />
+      <a href={`/dpp/${id}`} target="_blank" rel="noreferrer" className="block text-center text-xs text-primary underline truncate">
+        /dpp/{id.slice(0, 8)}
+      </a>
     </div>
   );
 }
@@ -154,7 +154,7 @@ function PassportDialog({ passport, onClose }: { passport: Passport | null; onCl
         {passport && (
           <div className="space-y-4">
             <div className="text-center">
-              <FakeQR seed={passport.id} />
+              <PassportQR id={passport.id} />
               <div className="text-xs text-muted-foreground mt-2 tabular-nums">{passport.sku} · {passport.lote}</div>
               <div className="font-semibold mt-1">{passport.name}</div>
             </div>

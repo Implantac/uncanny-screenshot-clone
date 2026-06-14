@@ -127,6 +127,7 @@ function FichaTecnicaPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Sheet | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [diffOpen, setDiffOpen] = useState(false);
 
   const { data: sheets = [], isLoading } = useQuery({
     queryKey: ["tech_sheets"],
@@ -297,9 +298,16 @@ function FichaTecnicaPage() {
                 </div>
 
                 <div className="glass rounded-xl p-5 space-y-4">
-                  <div>
-                    <div className="text-sm font-semibold">Histórico de versões</div>
-                    <div className="text-xs text-muted-foreground mt-1">Auditoria rápida por código técnico.</div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-semibold">Histórico de versões</div>
+                      <div className="text-xs text-muted-foreground mt-1">Auditoria rápida por código técnico.</div>
+                    </div>
+                    {versionHistory.length >= 2 && (
+                      <Button size="sm" variant="outline" onClick={() => setDiffOpen(true)} className="gap-1 text-xs">
+                        <Layers3 className="size-3.5" /> Comparar
+                      </Button>
+                    )}
                   </div>
                   <div className="space-y-3">
                     {versionHistory.map((sheet) => (
@@ -335,6 +343,7 @@ function FichaTecnicaPage() {
       )}
 
       <SheetDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} products={products} />
+      <VersionDiffDialog open={diffOpen} onOpenChange={setDiffOpen} versions={versionHistory} />
     </div>
   );
 }
@@ -578,6 +587,109 @@ function SheetDialog({
             <Button type="submit" disabled={save.isPending}>{save.isPending ? "Salvando…" : "Salvar ficha"}</Button>
           </DialogFooter>
         </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+function VersionDiffDialog({
+  open,
+  onOpenChange,
+  versions,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  versions: Sheet[];
+}) {
+  const [aId, setAId] = useState<string>("");
+  const [bId, setBId] = useState<string>("");
+
+  useEffect(() => {
+    if (open && versions.length >= 2) {
+      setAId(versions[1].id);
+      setBId(versions[0].id);
+    }
+  }, [open, versions]);
+
+  const a = versions.find((v) => v.id === aId);
+  const b = versions.find((v) => v.id === bId);
+  const ca = parseSheetContent(a?.content ?? null);
+  const cb = parseSheetContent(b?.content ?? null);
+
+  const sections: Array<{ key: keyof SheetContent; label: string }> = [
+    { key: "overview", label: "Observações" },
+    { key: "materials", label: "Materiais" },
+    { key: "operations", label: "Operações" },
+    { key: "measurements", label: "Medidas" },
+    { key: "consumption", label: "Consumo" },
+    { key: "costs", label: "Custos" },
+    { key: "documents", label: "Documentos" },
+  ];
+
+  const diff = (oldArr: string[] | string, newArr: string[] | string) => {
+    const oldList = Array.isArray(oldArr) ? oldArr : oldArr ? [oldArr] : [];
+    const newList = Array.isArray(newArr) ? newArr : newArr ? [newArr] : [];
+    const oldSet = new Set(oldList);
+    const newSet = new Set(newList);
+    return {
+      removed: oldList.filter((x) => !newSet.has(x)),
+      added: newList.filter((x) => !oldSet.has(x)),
+      unchanged: oldList.filter((x) => newSet.has(x)),
+    };
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Comparar versões</DialogTitle>
+        </DialogHeader>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label className="text-xs">Versão A (anterior)</Label>
+            <Select value={aId} onValueChange={setAId}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {versions.map((v) => <SelectItem key={v.id} value={v.id}>{v.version} · {new Date(v.created_at).toLocaleDateString("pt-BR")}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Versão B (nova)</Label>
+            <Select value={bId} onValueChange={setBId}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {versions.map((v) => <SelectItem key={v.id} value={v.id}>{v.version} · {new Date(v.created_at).toLocaleDateString("pt-BR")}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {a && b && (
+          <div className="space-y-3 mt-2">
+            {sections.map(({ key, label }) => {
+              const d = diff(ca[key] as string[] | string, cb[key] as string[] | string);
+              if (d.added.length === 0 && d.removed.length === 0) {
+                return (
+                  <div key={key} className="rounded-lg border border-border bg-background/30 p-3">
+                    <div className="text-xs font-semibold mb-1">{label}</div>
+                    <div className="text-xs text-muted-foreground">Sem alterações.</div>
+                  </div>
+                );
+              }
+              return (
+                <div key={key} className="rounded-lg border border-border bg-background/30 p-3 space-y-1">
+                  <div className="text-xs font-semibold">{label}</div>
+                  {d.removed.map((x, i) => (
+                    <div key={`r-${i}`} className="text-xs px-2 py-1 rounded bg-destructive/10 text-destructive line-through">− {x}</div>
+                  ))}
+                  {d.added.map((x, i) => (
+                    <div key={`a-${i}`} className="text-xs px-2 py-1 rounded bg-success/10 text-success">+ {x}</div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
