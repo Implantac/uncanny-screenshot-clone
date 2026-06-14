@@ -187,20 +187,30 @@ function PcpKanban() {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center justify-between gap-1 pt-1 opacity-0 group-hover:opacity-100 transition">
+                      <div className="flex items-center justify-between gap-1 pt-1 md:opacity-0 md:group-hover:opacity-100 transition">
                         <select
-                          className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5 flex-1"
+                          className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5"
                           value={o.priority}
                           onChange={(e) => update.mutate({ id: o.id, priority: Number(e.target.value) })}
+                          aria-label="Prioridade"
                         >
-                          {[1, 2, 3, 4, 5].map((p) => <option key={p} value={p}>P{p} · {PRIORITY[p].label}</option>)}
+                          {[1, 2, 3, 4, 5].map((p) => <option key={p} value={p}>P{p}</option>)}
                         </select>
                         <input
                           type="date"
-                          className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5"
+                          className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5 flex-1 min-w-0"
                           value={o.due_date ?? ""}
-                          onChange={(e) => update.mutate({ id: o.id, due_date: e.target.value || null as any })}
+                          onChange={(e) => update.mutate({ id: o.id, due_date: e.target.value || (null as any) })}
+                          aria-label="Prazo"
                         />
+                        <select
+                          className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5"
+                          value={col.key}
+                          onChange={(e) => move(o.id, e.target.value as Stage)}
+                          aria-label="Mover para setor"
+                        >
+                          {STAGES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+                        </select>
                         {nextStage && (
                           <button
                             onClick={() => move(o.id, nextStage.key)}
