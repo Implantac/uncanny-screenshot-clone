@@ -61,10 +61,15 @@ function PCP() {
   useRealtime("production_orders", ["production_orders"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Order | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | Status>("all");
+  const [filterPriority, setFilterPriority] = useState<"all" | "1" | "2" | "3" | "4" | "5">("all");
+  const [filterSupplier, setFilterSupplier] = useState<string>("all");
   const [form, setForm] = useState({
     code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0,
     due_date: "", status: "aguardando" as Status, notes: "",
   });
+
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["production_orders"],
