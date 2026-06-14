@@ -1,0 +1,1 @@
+CREATE POLICY "Deny self role grants" ON public.user_roles AS RESTRICTIVE FOR INSERT TO authenticated WITH CHECK (auth.uid() <> user_id OR public.has_role(auth.uid(), 'admin'));
