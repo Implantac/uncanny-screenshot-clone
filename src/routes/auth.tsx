@@ -98,8 +98,8 @@ function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/10 px-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <Sparkles className="h-8 w-8 text-primary" />
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <img src={logoAsset.url} alt="USE MODA" className="h-12 w-12 object-contain" />
           <h1 className="text-3xl font-bold">USE MODA OS</h1>
         </div>
         <Card>
