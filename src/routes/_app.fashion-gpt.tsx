@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Markdown } from "@/components/markdown";
 import { buildFashionContext } from "@/lib/fashion-context";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_app/fashion-gpt")({
   head: () => ({
