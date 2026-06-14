@@ -8,9 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Sparkles } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
 import { mapSignInError, mapSignUpError } from "@/lib/auth-errors";
+import logoAsset from "@/assets/logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
