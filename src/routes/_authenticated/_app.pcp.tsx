@@ -530,6 +530,50 @@ function PCP() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <StageHistoryDialog order={historyOrder} onClose={() => setHistoryOrder(null)} />
     </div>
   );
 }
+
+function StageHistoryDialog({ order, onClose }: { order: Order | null; onClose: () => void }) {
+  const { data: log = [], isLoading } = useQuery({
+    queryKey: ["stage-log", order?.id],
+    queryFn: async () => {
+      if (!order) return [];
+      const { data, error } = await supabase
+        .from("production_stage_log")
+        .select("from_stage, to_stage, created_at")
+        .eq("order_id", order.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!order,
+  });
+
+  return (
+    <Dialog open={!!order} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Histórico — {order?.code}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+          {isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
+          {!isLoading && log.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma passagem de setor registrada.</p>}
+          {log.map((l, i) => (
+            <div key={i} className="flex items-center justify-between rounded-lg border border-border p-2.5 text-sm">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs">{l.from_stage ? STAGE_LABEL[l.from_stage as Stage] : "início"}</Badge>
+                <span className="text-muted-foreground">→</span>
+                <Badge variant="outline" className="text-xs">{STAGE_LABEL[l.to_stage as Stage]}</Badge>
+              </div>
+              <span className="text-xs text-muted-foreground tabular-nums">{new Date(l.created_at).toLocaleString("pt-BR")}</span>
+            </div>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
