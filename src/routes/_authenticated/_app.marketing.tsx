@@ -118,7 +118,9 @@ function Marketing() {
         <div className="glass rounded-xl p-5">
           <div className="text-xs text-muted-foreground">ROAS médio</div>
           <div className="text-2xl font-semibold mt-1 tabular-nums">{roasAvg.toFixed(1)}x</div>
-        </div>
+      </div>
+
+      <ChartsSection rows={filtered} />
       </div>
 
       {channels.length > 0 && (
