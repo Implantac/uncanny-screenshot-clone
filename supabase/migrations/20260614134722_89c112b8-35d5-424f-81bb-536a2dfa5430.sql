@@ -1,0 +1,2 @@
+ALTER TABLE public.sales ADD COLUMN IF NOT EXISTS influencer_id uuid REFERENCES public.influencers(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS sales_influencer_id_idx ON public.sales(influencer_id);
