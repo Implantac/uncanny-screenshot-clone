@@ -435,6 +435,7 @@ export type Database = {
           due_date: string | null
           id: string
           notes: string | null
+          outsourced: boolean
           owner_id: string
           priority: number
           product_id: string | null
@@ -453,6 +454,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           notes?: string | null
+          outsourced?: boolean
           owner_id: string
           priority?: number
           product_id?: string | null
@@ -471,6 +473,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           notes?: string | null
+          outsourced?: boolean
           owner_id?: string
           priority?: number
           product_id?: string | null
@@ -505,27 +508,33 @@ export type Database = {
           created_at: string
           from_stage: Database["public"]["Enums"]["production_stage"] | null
           id: string
+          is_partial: boolean
           note: string | null
           order_id: string
           owner_id: string
+          quantity: number
           to_stage: Database["public"]["Enums"]["production_stage"]
         }
         Insert: {
           created_at?: string
           from_stage?: Database["public"]["Enums"]["production_stage"] | null
           id?: string
+          is_partial?: boolean
           note?: string | null
           order_id: string
           owner_id: string
+          quantity?: number
           to_stage: Database["public"]["Enums"]["production_stage"]
         }
         Update: {
           created_at?: string
           from_stage?: Database["public"]["Enums"]["production_stage"] | null
           id?: string
+          is_partial?: boolean
           note?: string | null
           order_id?: string
           owner_id?: string
+          quantity?: number
           to_stage?: Database["public"]["Enums"]["production_stage"]
         }
         Relationships: [
@@ -762,6 +771,81 @@ export type Database = {
           },
         ]
       }
+      service_orders: {
+        Row: {
+          code: string
+          created_at: string
+          due_at: string | null
+          from_stage: string | null
+          id: string
+          kind: Database["public"]["Enums"]["service_order_kind"]
+          notes: string | null
+          owner_id: string
+          production_order_id: string
+          qty_received: number
+          quantity: number
+          received_at: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["service_order_status"]
+          supplier_id: string | null
+          to_stage: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          due_at?: string | null
+          from_stage?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["service_order_kind"]
+          notes?: string | null
+          owner_id: string
+          production_order_id: string
+          qty_received?: number
+          quantity?: number
+          received_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["service_order_status"]
+          supplier_id?: string | null
+          to_stage: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          due_at?: string | null
+          from_stage?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["service_order_kind"]
+          notes?: string | null
+          owner_id?: string
+          production_order_id?: string
+          qty_received?: number
+          quantity?: number
+          received_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["service_order_status"]
+          supplier_id?: string | null
+          to_stage?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_orders_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           active: boolean
@@ -936,6 +1020,13 @@ export type Database = {
         | "em_prova"
         | "aprovado"
         | "reprovado"
+      service_order_kind: "parcial" | "integral"
+      service_order_status:
+        | "aberta"
+        | "enviada"
+        | "em_andamento"
+        | "recebida"
+        | "cancelada"
       tech_sheet_status: "rascunho" | "em_revisao" | "aprovada"
     }
     CompositeTypes: {
@@ -1113,6 +1204,14 @@ export const Constants = {
         "em_prova",
         "aprovado",
         "reprovado",
+      ],
+      service_order_kind: ["parcial", "integral"],
+      service_order_status: [
+        "aberta",
+        "enviada",
+        "em_andamento",
+        "recebida",
+        "cancelada",
       ],
       tech_sheet_status: ["rascunho", "em_revisao", "aprovada"],
     },
