@@ -345,43 +345,56 @@ const STATUS_COLORS: Record<CStatus, string> = {
   programada: "#0ea5e9", ativa: "#10b981", pausada: "#f59e0b", concluida: "#64748b",
 };
 
-function KpiCard({ icon: Icon, label, value, accent, hint, trend }: {
-  icon: React.ComponentType<{ className?: string }>; label: string; value: string;
-  accent?: string; hint?: string; trend?: { dir: "up" | "down"; pct: number };
+function StatCard({ icon: Icon, label, value, color, hint, trend, badge, sparkData, dataKey }: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string; value: string; color?: string; hint?: string;
+  trend?: { dir: "up" | "down"; pct: number }; badge?: string;
+  sparkData?: Array<Record<string, string | number>>; dataKey?: string;
 }) {
+  const c = color ?? "hsl(var(--primary))";
+  const gid = `spark-${label.replace(/\s/g, "")}`;
   return (
-    <div className="glass rounded-xl p-5 relative overflow-hidden group hover:border-primary/40 transition-colors">
-      <div className="absolute -right-6 -top-6 size-24 rounded-full opacity-10 blur-2xl group-hover:opacity-20 transition-opacity" style={{ background: accent ?? "hsl(var(--primary))" }} />
-      <div className="flex items-start justify-between gap-2">
-        <div className="text-xs text-muted-foreground inline-flex items-center gap-1.5"><Icon className="size-3.5" />{label}</div>
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 group hover:border-primary/50 hover:shadow-[var(--shadow-glow)] transition-all">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      <div className="absolute -right-8 -top-8 size-28 rounded-full opacity-[0.08] blur-2xl group-hover:opacity-20 transition-opacity" style={{ background: c }} />
+      <div className="relative flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="size-8 rounded-lg grid place-items-center" style={{ background: `${c}1a`, color: c }}>
+            <Icon className="size-4" />
+          </div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</div>
+        </div>
         {trend && (
-          <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${trend.dir === "up" ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
+          <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${trend.dir === "up" ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
             {trend.dir === "up" ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
             {trend.pct.toFixed(0)}%
           </span>
         )}
+        {badge && !trend && (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/15 text-primary">{badge}</span>
+        )}
       </div>
-      <div className="text-2xl font-semibold mt-2 tabular-nums" style={accent ? { color: accent } : undefined}>{value}</div>
-      {hint && <div className="text-[11px] text-muted-foreground mt-1">{hint}</div>}
+      <div className="relative text-3xl font-bold mt-3 tabular-nums tracking-tight" style={{ color: c }}>{value}</div>
+      {hint && <div className="relative text-[11px] text-muted-foreground mt-1">{hint}</div>}
+      {sparkData && sparkData.length > 1 && dataKey && (
+        <div className="relative -mx-5 -mb-5 mt-3 h-12">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={sparkData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={c} stopOpacity={0.5} />
+                  <stop offset="100%" stopColor={c} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <Area type="monotone" dataKey={dataKey} stroke={c} strokeWidth={1.5} fill={`url(#${gid})`} isAnimationActive={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }
 
-function KpiGrid({ ativas, total, invTotal, receitaEst, roasAvg }: {
-  ativas: number; total: number; invTotal: number; receitaEst: number; roasAvg: number;
-}) {
-  const lucro = receitaEst - invTotal;
-  const margemPct = invTotal > 0 ? (lucro / invTotal) * 100 : 0;
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-      <KpiCard icon={Activity} label="Campanhas ativas" value={String(ativas)} hint={`${total} no total`} />
-      <KpiCard icon={DollarSign} label="Investimento" value={brl(invTotal)} />
-      <KpiCard icon={TrendingUp} label="Receita estimada" value={brl(receitaEst)} accent="#10b981" />
-      <KpiCard icon={Award} label="Lucro projetado" value={brl(lucro)} accent={lucro >= 0 ? "#10b981" : "#ef4444"} trend={{ dir: lucro >= 0 ? "up" : "down", pct: Math.abs(margemPct) }} />
-      <KpiCard icon={Target} label="ROAS médio" value={`${roasAvg.toFixed(2)}x`} hint={roasAvg >= 3 ? "Excelente" : roasAvg >= 2 ? "Saudável" : "Atenção"} accent={roasAvg >= 3 ? "#10b981" : roasAvg >= 2 ? "#f59e0b" : "#ef4444"} />
-    </div>
-  );
-}
 
 function InsightsBar({ rows, invTotal, receitaEst, roasAvg }: {
   rows: Campaign[]; invTotal: number; receitaEst: number; roasAvg: number;
