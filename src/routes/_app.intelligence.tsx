@@ -456,7 +456,7 @@ function PcpKanban({ orders, products }: any) {
       </CardHeader>
       <CardContent>
 
-        <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10">
           {PCP_STAGES.map((stage) => {
             const items = map.get(stage) ?? [];
             const isOver = overStage === stage;
