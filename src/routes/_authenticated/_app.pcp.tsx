@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp, Search, Flag, Workflow, History } from "lucide-react";
+import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp, Search, Flag, Workflow, History, Package, Boxes, ImageIcon } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,8 +28,10 @@ type Order = {
   id: string; owner_id: string; product_id: string | null; supplier_id: string | null;
   code: string; quantity: number; progress: number; due_date: string | null;
   status: Status; stage: Stage | null; priority: number; notes: string | null; created_at: string;
+  batch_code: string | null;
 };
 type Ref = { id: string; name: string };
+type ProductRef = { id: string; name: string; image_url: string | null; sku: string | null };
 
 
 const LABEL: Record<Status, string> = {
@@ -67,9 +69,10 @@ function PCP() {
   const [filterSupplier, setFilterSupplier] = useState<string>("all");
   const [form, setForm] = useState({
     code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0,
-    due_date: "", status: "aguardando" as Status, stage: "cad" as Stage, priority: 3, notes: "",
+    due_date: "", status: "aguardando" as Status, stage: "cad" as Stage, priority: 3, notes: "", batch_code: "",
   });
   const [historyOrder, setHistoryOrder] = useState<Order | null>(null);
+  const [batchView, setBatchView] = useState<{ code: string; stage: Stage | null } | null>(null);
 
 
 
@@ -85,9 +88,9 @@ function PCP() {
   const { data: products = [] } = useQuery({
     queryKey: ["products-ref"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("products").select("id,name").order("name");
+      const { data, error } = await supabase.from("products").select("id,name,image_url,sku").order("name");
       if (error) throw error;
-      return data as Ref[];
+      return data as ProductRef[];
     },
   });
 
@@ -116,6 +119,7 @@ function PCP() {
         stage: form.stage,
         priority: Number(form.priority) || 3,
         notes: form.notes.trim() || null,
+        batch_code: form.batch_code.trim() || null,
       };
 
       if (editing) {
@@ -160,7 +164,7 @@ function PCP() {
 
   function reset() {
     setOpen(false); setEditing(null);
-    setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", stage: "cad", priority: 3, notes: "" });
+    setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", stage: "cad", priority: 3, notes: "", batch_code: "" });
   }
 
   function openEdit(o: Order) {
@@ -169,12 +173,14 @@ function PCP() {
       code: o.code, product_id: o.product_id ?? "", supplier_id: o.supplier_id ?? "",
       quantity: o.quantity, progress: o.progress, due_date: o.due_date ?? "",
       status: o.status, stage: (o.stage ?? "cad") as Stage, priority: o.priority ?? 3, notes: o.notes ?? "",
+      batch_code: o.batch_code ?? "",
     });
     setOpen(true);
 
   }
 
   const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
+  const productInfo = (id: string | null) => products.find(p => p.id === id) ?? null;
   const supplierName = (id: string | null) => suppliers.find(s => s.id === id)?.name ?? "—";
 
   const filtered = useMemo(() => {
@@ -184,7 +190,8 @@ function PCP() {
       if (filterPriority !== "all" && String(o.priority ?? 3) !== filterPriority) return false;
       if (filterSupplier !== "all" && o.supplier_id !== filterSupplier) return false;
       if (q) {
-        const hay = `${o.code} ${productName(o.product_id)} ${supplierName(o.supplier_id)} ${o.notes ?? ""}`.toLowerCase();
+        const p = productInfo(o.product_id);
+        const hay = `${o.code} ${p?.name ?? ""} ${p?.sku ?? ""} ${supplierName(o.supplier_id)} ${o.notes ?? ""} ${o.batch_code ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -233,6 +240,7 @@ function PCP() {
     const canDrag = user?.id === o.owner_id;
     const d = o.due_date ? Math.ceil((new Date(o.due_date).getTime() - Date.now()) / 86400000) : null;
     const overdue = d !== null && d < 0 && o.status !== "concluida";
+    const p = productInfo(o.product_id);
     return (
       <div
         draggable={canDrag}
@@ -245,18 +253,46 @@ function PCP() {
           <span className="font-mono text-xs text-muted-foreground">{o.code}</span>
           <span className={`text-[9px] px-1.5 py-0.5 rounded border ${PRIORITY_TONE[o.priority ?? 3]}`}>{PRIORITY_LABEL[o.priority ?? 3]}</span>
         </div>
-        <div className="text-sm font-medium truncate">{productName(o.product_id)}</div>
-        <div className="text-xs text-muted-foreground truncate">{supplierName(o.supplier_id)} · {o.quantity} pç</div>
+        <div className="flex gap-2">
+          <div className="size-12 rounded-md border border-border bg-muted/40 overflow-hidden shrink-0 grid place-items-center">
+            {p?.image_url ? <img src={p.image_url} alt={p.name} className="size-full object-cover" loading="lazy" /> : <ImageIcon className="size-4 text-muted-foreground/60" />}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium truncate">{p?.name ?? "—"}</div>
+            <div className="text-[10px] text-muted-foreground truncate font-mono">{p?.sku ?? "sem SKU"}</div>
+            <div className="text-xs text-muted-foreground truncate">{supplierName(o.supplier_id)} · {o.quantity} pç</div>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
             <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
           </div>
           <span className="text-[10px] text-muted-foreground">{o.progress}%</span>
         </div>
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-          {o.stage ? <Badge variant="outline" className="text-[9px] px-1 py-0">{STAGE_LABEL[o.stage]}</Badge> : <span />}
+        <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1 flex-wrap">
+            {o.stage && <Badge variant="outline" className="text-[9px] px-1 py-0">{STAGE_LABEL[o.stage]}</Badge>}
+            {o.batch_code && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setBatchView({ code: o.batch_code!, stage: o.stage }); }}
+                className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
+                title="Ver referências deste lote"
+              >
+                <Boxes className="size-2.5" />Lote {o.batch_code}
+              </button>
+            )}
+          </div>
           {o.due_date && <span className={overdue ? "text-destructive font-medium" : ""}>{overdue ? `${Math.abs(d!)}d atrasada` : d === 0 ? "hoje" : `${d}d`}</span>}
         </div>
+        {o.product_id && (
+          <Link
+            to="/ficha-tecnica"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+          >
+            <FileText className="size-3" /> Ficha técnica
+          </Link>
+        )}
       </div>
     );
   };
@@ -333,6 +369,7 @@ function PCP() {
             <TabsTrigger value="kanban"><LayoutGrid className="size-4 mr-2" />Quadro</TabsTrigger>
             <TabsTrigger value="gantt"><GanttChart className="size-4 mr-2" />Cronograma</TabsTrigger>
             <TabsTrigger value="table"><TableIcon className="size-4 mr-2" />Tabela</TabsTrigger>
+            <TabsTrigger value="lotes"><Boxes className="size-4 mr-2" />Lotes</TabsTrigger>
             <TabsTrigger value="os"><Workflow className="size-4 mr-2" />O.S. Terceirizados</TabsTrigger>
           </TabsList>
 
@@ -472,6 +509,10 @@ function PCP() {
             </div>
           </TabsContent>
 
+          <TabsContent value="lotes">
+            <BatchesByStage orders={filtered} products={products} onOpenBatch={(code, stage) => setBatchView({ code, stage })} />
+          </TabsContent>
+
           <TabsContent value="os">
             <ServiceOrdersPanel orders={items} suppliers={suppliers} products={products} ownerId={user?.id ?? null} />
           </TabsContent>
@@ -529,6 +570,9 @@ function PCP() {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Lote</Label><Input value={form.batch_code} onChange={e => setForm({ ...form, batch_code: e.target.value })} placeholder="LOTE-2026-01" /></div>
+            </div>
             <div><Label>Notas</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
           <DialogFooter>
@@ -539,6 +583,13 @@ function PCP() {
       </Dialog>
 
       <StageHistoryDialog order={historyOrder} onClose={() => setHistoryOrder(null)} />
+      <BatchDialog
+        batch={batchView}
+        orders={items}
+        products={products}
+        suppliers={suppliers}
+        onClose={() => setBatchView(null)}
+      />
     </div>
   );
 }
@@ -836,5 +887,135 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
     </div>
   );
 }
+
+function BatchesByStage({ orders, products, onOpenBatch }: { orders: Order[]; products: ProductRef[]; onOpenBatch: (code: string, stage: Stage | null) => void }) {
+  const grouped = useMemo(() => {
+    const m = new Map<Stage | "sem_setor", Map<string, Order[]>>();
+    for (const o of orders) {
+      if (!o.batch_code) continue;
+      const stageKey: Stage | "sem_setor" = (o.stage ?? "sem_setor");
+      if (!m.has(stageKey)) m.set(stageKey, new Map());
+      const stageMap = m.get(stageKey)!;
+      if (!stageMap.has(o.batch_code)) stageMap.set(o.batch_code, []);
+      stageMap.get(o.batch_code)!.push(o);
+    }
+    return m;
+  }, [orders]);
+
+  const stages: (Stage | "sem_setor")[] = [...(Object.keys(STAGE_LABEL) as Stage[]), "sem_setor"];
+
+  if (grouped.size === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+        Nenhum lote cadastrado. Defina o campo <b>Lote</b> ao criar/editar uma OP para agrupar referências do mesmo lote de produção.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <p className="text-xs text-muted-foreground">Lotes agrupados por setor. Clique em um lote para ver as referências que compõem o lote.</p>
+      {stages.map((st) => {
+        const stageMap = grouped.get(st);
+        if (!stageMap || stageMap.size === 0) return null;
+        const stageLabel = st === "sem_setor" ? "Sem setor" : STAGE_LABEL[st];
+        return (
+          <div key={st} className="rounded-xl border border-border bg-card/40">
+            <div className="px-4 py-2 border-b border-border flex items-center justify-between">
+              <h3 className="text-sm font-semibold">{stageLabel}</h3>
+              <span className="text-xs text-muted-foreground">{stageMap.size} lote(s)</span>
+            </div>
+            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {Array.from(stageMap.entries()).map(([batch, ops]) => {
+                const totalQty = ops.reduce((s, o) => s + (o.quantity || 0), 0);
+                const refs = ops.map(o => products.find(p => p.id === o.product_id)).filter(Boolean) as ProductRef[];
+                const thumbs = refs.slice(0, 4);
+                const refCount = new Set(ops.map(o => o.product_id).filter(Boolean)).size;
+                return (
+                  <button
+                    key={batch}
+                    onClick={() => onOpenBatch(batch, st === "sem_setor" ? null : st)}
+                    className="text-left rounded-lg border border-border bg-background p-3 hover:border-primary/50 hover:bg-muted/30 transition space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="inline-flex items-center gap-1.5 font-semibold text-sm">
+                        <Boxes className="size-4 text-primary" />Lote {batch}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground tabular-nums">{ops.length} OP · {totalQty} pç</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {thumbs.map((p, i) => (
+                        <div key={i} className="size-10 rounded border border-border bg-muted/40 overflow-hidden grid place-items-center">
+                          {p.image_url ? <img src={p.image_url} alt={p.name} className="size-full object-cover" loading="lazy" /> : <Package className="size-4 text-muted-foreground/60" />}
+                        </div>
+                      ))}
+                      {refs.length > thumbs.length && (
+                        <div className="size-10 rounded border border-border bg-muted/40 grid place-items-center text-[10px] text-muted-foreground">+{refs.length - thumbs.length}</div>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">{refCount} referência(s)</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function BatchDialog({ batch, orders, products, suppliers, onClose }: { batch: { code: string; stage: Stage | null } | null; orders: Order[]; products: ProductRef[]; suppliers: Ref[]; onClose: () => void }) {
+  const rows = useMemo(() => {
+    if (!batch) return [];
+    return orders.filter(o => o.batch_code === batch.code);
+  }, [batch, orders]);
+
+  const totalQty = rows.reduce((s, o) => s + (o.quantity || 0), 0);
+  const refCount = new Set(rows.map(o => o.product_id).filter(Boolean)).size;
+
+  return (
+    <Dialog open={!!batch} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><Boxes className="size-5 text-primary" />Lote {batch?.code}</DialogTitle>
+        </DialogHeader>
+        <div className="text-xs text-muted-foreground flex items-center gap-3 flex-wrap">
+          {batch?.stage && <Badge variant="outline">{STAGE_LABEL[batch.stage]}</Badge>}
+          <span>{rows.length} OP · {refCount} referência(s) · {totalQty} pç totais</span>
+        </div>
+        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+          {rows.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma referência neste lote.</p>}
+          {rows.map((o) => {
+            const p = products.find(x => x.id === o.product_id);
+            const s = suppliers.find(x => x.id === o.supplier_id);
+            return (
+              <div key={o.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                <div className="size-14 rounded border border-border bg-muted/40 overflow-hidden grid place-items-center shrink-0">
+                  {p?.image_url ? <img src={p.image_url} alt={p.name} className="size-full object-cover" loading="lazy" /> : <Package className="size-5 text-muted-foreground/60" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-mono text-muted-foreground">{o.code}</span>
+                    {o.stage && <Badge variant="outline" className="text-[10px]">{STAGE_LABEL[o.stage]}</Badge>}
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${PRIORITY_TONE[o.priority ?? 3]}`}>P{o.priority ?? 3}</span>
+                  </div>
+                  <div className="text-sm font-medium truncate">{p?.name ?? "Sem produto"}</div>
+                  <div className="text-[11px] text-muted-foreground truncate">{p?.sku ?? "—"} · {s?.name ?? "—"} · {o.quantity} pç · {o.progress}%</div>
+                </div>
+                {o.product_id && (
+                  <Link to="/ficha-tecnica" onClick={onClose} className="text-xs inline-flex items-center gap-1 text-primary hover:underline shrink-0">
+                    <FileText className="size-3" /> Ficha
+                  </Link>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 

@@ -430,6 +430,7 @@ export type Database = {
       }
       production_orders: {
         Row: {
+          batch_code: string | null
           code: string
           created_at: string
           due_date: string | null
@@ -449,6 +450,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          batch_code?: string | null
           code: string
           created_at?: string
           due_date?: string | null
@@ -468,6 +470,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          batch_code?: string | null
           code?: string
           created_at?: string
           due_date?: string | null

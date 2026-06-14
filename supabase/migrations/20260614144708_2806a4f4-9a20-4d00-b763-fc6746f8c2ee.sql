@@ -1,0 +1,2 @@
+ALTER TABLE public.production_orders ADD COLUMN IF NOT EXISTS batch_code text;
+CREATE INDEX IF NOT EXISTS idx_production_orders_batch_code ON public.production_orders(batch_code) WHERE batch_code IS NOT NULL;
