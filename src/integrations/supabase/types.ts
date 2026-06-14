@@ -436,9 +436,13 @@ export type Database = {
           id: string
           notes: string | null
           owner_id: string
+          priority: number
           product_id: string | null
           progress: number
           quantity: number
+          stage: Database["public"]["Enums"]["production_stage"]
+          stage_updated_at: string
+          started_at: string | null
           status: Database["public"]["Enums"]["production_status"]
           supplier_id: string | null
           updated_at: string
@@ -450,9 +454,13 @@ export type Database = {
           id?: string
           notes?: string | null
           owner_id: string
+          priority?: number
           product_id?: string | null
           progress?: number
           quantity?: number
+          stage?: Database["public"]["Enums"]["production_stage"]
+          stage_updated_at?: string
+          started_at?: string | null
           status?: Database["public"]["Enums"]["production_status"]
           supplier_id?: string | null
           updated_at?: string
@@ -464,9 +472,13 @@ export type Database = {
           id?: string
           notes?: string | null
           owner_id?: string
+          priority?: number
           product_id?: string | null
           progress?: number
           quantity?: number
+          stage?: Database["public"]["Enums"]["production_stage"]
+          stage_updated_at?: string
+          started_at?: string | null
           status?: Database["public"]["Enums"]["production_status"]
           supplier_id?: string | null
           updated_at?: string
@@ -484,6 +496,44 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      production_stage_log: {
+        Row: {
+          created_at: string
+          from_stage: Database["public"]["Enums"]["production_stage"] | null
+          id: string
+          note: string | null
+          order_id: string
+          owner_id: string
+          to_stage: Database["public"]["Enums"]["production_stage"]
+        }
+        Insert: {
+          created_at?: string
+          from_stage?: Database["public"]["Enums"]["production_stage"] | null
+          id?: string
+          note?: string | null
+          order_id: string
+          owner_id: string
+          to_stage: Database["public"]["Enums"]["production_stage"]
+        }
+        Update: {
+          created_at?: string
+          from_stage?: Database["public"]["Enums"]["production_stage"] | null
+          id?: string
+          note?: string | null
+          order_id?: string
+          owner_id?: string
+          to_stage?: Database["public"]["Enums"]["production_stage"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_stage_log_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
             referencedColumns: ["id"]
           },
         ]
@@ -856,6 +906,14 @@ export type Database = {
         | "aprovado"
         | "producao"
         | "descontinuado"
+      production_stage:
+        | "cad"
+        | "corte"
+        | "costura"
+        | "acabamento"
+        | "qualidade"
+        | "expedicao"
+        | "entregue"
       production_status:
         | "aguardando"
         | "em_producao"
@@ -1022,6 +1080,15 @@ export const Constants = {
         "aprovado",
         "producao",
         "descontinuado",
+      ],
+      production_stage: [
+        "cad",
+        "corte",
+        "costura",
+        "acabamento",
+        "qualidade",
+        "expedicao",
+        "entregue",
       ],
       production_status: [
         "aguardando",
