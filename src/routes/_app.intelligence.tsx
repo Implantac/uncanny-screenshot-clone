@@ -384,29 +384,37 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [] }: any) {
 }
 
 /* ===================== PCP KANBAN (M42) — drag & drop persistido ===================== */
-const PCP_STAGES = ["Programado", "Corte", "Costura", "Acabamento", "Expedição", "Concluído"] as const;
+const PCP_STAGES = ["Programado", "Separação", "Corte", "Costura", "Silk", "Bordado", "Lavanderia", "Acabamento", "Expedição", "Concluído"] as const;
 type Stage = typeof PCP_STAGES[number];
 type PoStatus = "aguardando" | "em_producao" | "concluida" | "atrasada" | "cancelada";
 const STAGE_TO_STATUS: Record<Stage, PoStatus> = {
   "Programado": "aguardando",
+  "Separação": "em_producao",
   "Corte": "em_producao",
   "Costura": "em_producao",
+  "Silk": "em_producao",
+  "Bordado": "em_producao",
+  "Lavanderia": "em_producao",
   "Acabamento": "em_producao",
   "Expedição": "em_producao",
   "Concluído": "concluida",
 };
 const STAGE_PROGRESS: Record<Stage, number> = {
-  "Programado": 0, "Corte": 15, "Costura": 45, "Acabamento": 70, "Expedição": 90, "Concluído": 100,
+  "Programado": 0, "Separação": 8, "Corte": 18, "Costura": 40, "Silk": 55, "Bordado": 62, "Lavanderia": 72, "Acabamento": 82, "Expedição": 92, "Concluído": 100,
 };
 function inferStage(o: any): Stage {
   const s = (o.status || "").toString().toLowerCase();
   if (s === "concluida" || s.includes("conclu")) return "Concluído";
   const p = Number(o.progress || 0);
   if (p >= 100) return "Concluído";
-  if (p > 80) return "Expedição";
-  if (p > 60) return "Acabamento";
+  if (p > 90) return "Expedição";
+  if (p > 78) return "Acabamento";
+  if (p > 68) return "Lavanderia";
+  if (p > 58) return "Bordado";
+  if (p > 48) return "Silk";
   if (p > 30) return "Costura";
-  if (p > 5) return "Corte";
+  if (p > 12) return "Corte";
+  if (p > 3) return "Separação";
   return "Programado";
 }
 
@@ -448,7 +456,7 @@ function PcpKanban({ orders, products }: any) {
       </CardHeader>
       <CardContent>
 
-        <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10">
           {PCP_STAGES.map((stage) => {
             const items = map.get(stage) ?? [];
             const isOver = overStage === stage;
