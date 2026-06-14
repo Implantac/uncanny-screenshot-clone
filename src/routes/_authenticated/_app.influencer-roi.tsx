@@ -27,9 +27,17 @@ type Inf = {
 };
 
 async function load(): Promise<Inf[]> {
-  const { data } = await supabase.from("influencers").select("*").order("created_at", { ascending: false });
-  return (data ?? []).map((i) => {
-    const uplift = Number(i.vendas_depois) - Number(i.vendas_antes);
+  const { data: infs } = await supabase.from("influencers").select("*").order("created_at", { ascending: false });
+  // Pull real attributed sales (sales.influencer_id) — fallback to stored vendas_antes/depois when none.
+  const { data: salesRows } = await supabase.from("sales").select("influencer_id, total, sold_at").not("influencer_id", "is", null);
+  const realByInf = new Map<string, number>();
+  (salesRows ?? []).forEach((s) => {
+    if (!s.influencer_id) return;
+    realByInf.set(s.influencer_id, (realByInf.get(s.influencer_id) ?? 0) + Number(s.total ?? 0));
+  });
+  return (infs ?? []).map((i) => {
+    const realUplift = realByInf.get(i.id);
+    const uplift = realUplift !== undefined ? realUplift : Number(i.vendas_depois) - Number(i.vendas_antes);
     const upliftPct = Number(i.vendas_antes) > 0 ? (uplift / Number(i.vendas_antes)) * 100 : 0;
     const roas = Number(i.valor) > 0 ? uplift / Number(i.valor) : 0;
     const cpm = i.seguidores > 0 ? (Number(i.valor) / i.seguidores) * 1000 : 0;
