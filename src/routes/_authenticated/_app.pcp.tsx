@@ -417,27 +417,31 @@ function PCP() {
                     <th className="text-left px-4 py-3">Facção</th>
                     <th className="text-right px-4 py-3">Qtd</th>
                     <th className="text-left px-4 py-3">Progresso</th>
+                    <th className="text-left px-4 py-3">Setor</th>
+                    <th className="text-left px-4 py-3">Prio</th>
                     <th className="text-left px-4 py-3">Prazo</th>
                     <th className="text-left px-4 py-3">Status</th>
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map(o => (
+                  {filtered.map(o => (
                     <tr key={o.id} className="border-t border-border hover:bg-muted/20">
                       <td className="px-4 py-3 font-mono text-xs">{o.code}</td>
                       <td className="px-4 py-3">{productName(o.product_id)}</td>
                       <td className="px-4 py-3">{supplierName(o.supplier_id)}</td>
-                      <td className="px-4 py-3 text-right">{o.quantity}</td>
+                      <td className="px-4 py-3 text-right tabular-nums">{o.quantity}</td>
                       <td className="px-4 py-3 w-40">
                         <div className="flex items-center gap-2">
                           <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                             <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
                           </div>
-                          <span className="text-xs text-muted-foreground">{o.progress}%</span>
+                          <span className="text-xs text-muted-foreground tabular-nums">{o.progress}%</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{o.due_date ?? "—"}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{o.stage ? STAGE_LABEL[o.stage] : "—"}</td>
+                      <td className="px-4 py-3"><span className={`text-[10px] px-1.5 py-0.5 rounded border ${PRIORITY_TONE[o.priority ?? 3]}`}>P{o.priority ?? 3}</span></td>
+                      <td className="px-4 py-3 text-muted-foreground tabular-nums">{o.due_date ?? "—"}</td>
                       <td className="px-4 py-3"><Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge></td>
                       <td className="px-4 py-3 text-right">
                         {user?.id === o.owner_id && (
@@ -449,8 +453,9 @@ function PCP() {
                       </td>
                     </tr>
                   ))}
-                  {items.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Nenhuma ordem ainda</td></tr>}
+                  {filtered.length === 0 && <tr><td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">Nenhuma ordem encontrada</td></tr>}
                 </tbody>
+
               </table>
             </div>
           </TabsContent>
