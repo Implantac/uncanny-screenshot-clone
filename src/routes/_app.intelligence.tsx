@@ -40,14 +40,6 @@ const PCT = (n: number) => `${Math.round(n)}%`;
 const palette = ["oklch(0.72 0.18 295)", "oklch(0.70 0.16 200)", "oklch(0.74 0.17 155)", "oklch(0.78 0.16 75)", "oklch(0.70 0.18 25)"];
 
 // Deterministic pseudo-random for stable demo metrics derived from id
-function seed(id: string) {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
-  return (min: number, max: number) => {
-    h = (h * 1103515245 + 12345) & 0x7fffffff;
-    return min + (h % 1000) / 1000 * (max - min);
-  };
-}
 
 function KPI({ label, value, hint, icon: Icon, tone }: { label: string; value: string; hint?: string; icon: any; tone?: string }) {
   return (
