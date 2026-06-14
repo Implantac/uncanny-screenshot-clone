@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Layers, Sparkles, FileText, PenTool, Scissors,
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
   Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
-  Radar, Zap, MapPin, Activity, Percent, Calendar, Award, type LucideIcon,
+  Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleDef = {
@@ -37,6 +37,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "margem", path: "/margem", title: "Margem & Rentabilidade", short: "CMV, margem, ABC", description: "Margem real por SKU, markup e curva ABC dos últimos 90 dias.", icon: Percent, group: "Inteligência" },
   { slug: "fashion-calendar", path: "/fashion-calendar", title: "Fashion Calendar", short: "Linha do tempo", description: "Cronograma de coleções: desenvolvimento, produção e lançamento.", icon: Calendar, group: "Operação" },
   { slug: "influencer-roi", path: "/influencer-roi", title: "Influencer ROI", short: "Atribuição e uplift", description: "ROAS, uplift e tiers por influenciador.", icon: Award, group: "Comercial" },
+  { slug: "sales-performance", path: "/sales-performance", title: "Sales Performance", short: "Receita e canais", description: "Receita diária, canais, ticket médio e top SKUs.", icon: LineChart, group: "Comercial" },
   { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis e exploração de dados.", icon: BarChart3, group: "Inteligência" },
   { slug: "fashion-gpt", path: "/fashion-gpt", title: "Fashion GPT", short: "Copiloto de moda", description: "Assistente especialista no seu negócio de moda.", icon: Bot, group: "Inteligência" },
   { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação de processos.", icon: Cpu, group: "Inteligência" },
