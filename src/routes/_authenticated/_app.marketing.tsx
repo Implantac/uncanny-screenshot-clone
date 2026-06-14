@@ -517,3 +517,142 @@ function ChartsSection({ rows }: { rows: Campaign[] }) {
   );
 }
 
+function AdvancedSection({ rows }: { rows: Campaign[] }) {
+  const tooltipStyle = { backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 };
+
+  const matrix = useMemo(() => rows
+    .filter((c) => Number(c.investment) > 0)
+    .map((c) => ({
+      name: c.name,
+      x: Number(c.investment),
+      y: Number(c.roas),
+      z: Number(c.investment) * Math.max(Number(c.roas), 0.1),
+      status: c.status,
+    })), [rows]);
+
+  const medInv = useMemo(() => {
+    if (matrix.length === 0) return 0;
+    const s = [...matrix].sort((a, b) => a.x - b.x);
+    return s[Math.floor(s.length / 2)].x;
+  }, [matrix]);
+
+  const channelEff = useMemo(() => {
+    const m = new Map<string, { channel: string; investimento: number; receita: number; n: number }>();
+    rows.forEach((c) => {
+      const k = c.channel || "Sem canal";
+      const cur = m.get(k) ?? { channel: k, investimento: 0, receita: 0, n: 0 };
+      const inv = Number(c.investment);
+      cur.investimento += inv;
+      cur.receita += inv * Number(c.roas);
+      cur.n += 1;
+      m.set(k, cur);
+    });
+    return Array.from(m.values())
+      .map((c) => ({ ...c, roas: c.investimento > 0 ? c.receita / c.investimento : 0 }))
+      .sort((a, b) => b.roas - a.roas)
+      .slice(0, 6);
+  }, [rows]);
+
+  const funnel = useMemo(() => {
+    const counts: Record<CStatus, number> = { programada: 0, ativa: 0, pausada: 0, concluida: 0 };
+    rows.forEach((c) => { counts[c.status] += 1; });
+    const order: CStatus[] = ["programada", "ativa", "pausada", "concluida"];
+    return order.map((s) => ({ name: STATUS_LABEL[s], value: counts[s], fill: STATUS_COLORS[s] }));
+  }, [rows]);
+
+  if (rows.length === 0) return null;
+
+  const maxEff = channelEff[0]?.roas ?? 0;
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="glass rounded-xl p-5 lg:col-span-2">
+        <div className="flex items-center justify-between mb-1">
+          <div className="text-sm font-semibold inline-flex items-center gap-1.5"><Target className="size-4 text-primary" />Matriz de campanhas</div>
+          <div className="text-[11px] text-muted-foreground">ROAS × Investimento · bolha = receita</div>
+        </div>
+        <div className="text-[11px] text-muted-foreground mb-2">Superior direito = estrelas. Inferior direito = drenando caixa.</div>
+        <ResponsiveContainer width="100%" height={300}>
+          <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis type="number" dataKey="x" name="Investimento" stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+            <YAxis type="number" dataKey="y" name="ROAS" stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${v}x`} />
+            <ZAxis type="number" dataKey="z" range={[60, 600]} />
+            <ReferenceLine y={2} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "ROAS 2x", fontSize: 10, fill: "#f59e0b", position: "right" }} />
+            {medInv > 0 && <ReferenceLine x={medInv} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />}
+            <Tooltip
+              contentStyle={tooltipStyle}
+              cursor={{ strokeDasharray: "3 3" }}
+              content={({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const d = payload[0].payload as { name: string; x: number; y: number; z: number };
+                return (
+                  <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-xl">
+                    <div className="font-semibold mb-1">{d.name}</div>
+                    <div className="text-muted-foreground">Investimento: <span className="text-foreground tabular-nums">{brl(d.x)}</span></div>
+                    <div className="text-muted-foreground">ROAS: <span className="text-foreground tabular-nums">{d.y.toFixed(1)}x</span></div>
+                    <div className="text-muted-foreground">Receita: <span className="text-emerald-400 tabular-nums">{brl(d.z)}</span></div>
+                  </div>
+                );
+              }}
+            />
+            <Scatter data={matrix}>
+              {matrix.map((d, i) => (
+                <Cell key={i} fill={STATUS_COLORS[d.status as CStatus] ?? "#3b82f6"} fillOpacity={0.75} />
+              ))}
+            </Scatter>
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="glass rounded-xl p-5">
+        <div className="text-sm font-semibold mb-1 inline-flex items-center gap-1.5"><Activity className="size-4 text-primary" />Funil por status</div>
+        <div className="text-[11px] text-muted-foreground mb-2">Distribuição radial das campanhas</div>
+        <ResponsiveContainer width="100%" height={260}>
+          <RadialBarChart innerRadius="30%" outerRadius="100%" data={funnel} startAngle={90} endAngle={-270}>
+            <PolarAngleAxis type="number" domain={[0, Math.max(...funnel.map((f) => f.value), 1)]} tick={false} />
+            <RadialBar background dataKey="value" cornerRadius={6} />
+            <Tooltip contentStyle={tooltipStyle} />
+            <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} layout="vertical" verticalAlign="middle" align="right" />
+          </RadialBarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="glass rounded-xl p-5 lg:col-span-3">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-sm font-semibold inline-flex items-center gap-1.5"><Award className="size-4 text-primary" />Eficiência por canal</div>
+          <div className="text-[11px] text-muted-foreground">Receita / Investimento</div>
+        </div>
+        {channelEff.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-8">Sem dados de canal.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {channelEff.map((c) => {
+              const pct = maxEff > 0 ? (c.roas / maxEff) * 100 : 0;
+              const tone = c.roas >= 3 ? "from-emerald-500 to-emerald-300" : c.roas >= 2 ? "from-amber-500 to-amber-300" : "from-rose-500 to-rose-300";
+              const label = c.roas >= 3 ? "Excelente" : c.roas >= 2 ? "Saudável" : "Atenção";
+              const labelTone = c.roas >= 3 ? "text-emerald-400" : c.roas >= 2 ? "text-amber-400" : "text-rose-400";
+              return (
+                <div key={c.channel} className="rounded-lg border border-border p-3 space-y-2 hover:border-primary/40 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium truncate">{c.channel}</div>
+                    <div className={`text-xs font-semibold ${labelTone}`}>{c.roas.toFixed(2)}x</div>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div className={`h-full rounded-full bg-gradient-to-r ${tone}`} style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground tabular-nums">
+                    <span>{c.n} camp. · {brl(c.investimento)}</span>
+                    <span className={labelTone}>{label}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
