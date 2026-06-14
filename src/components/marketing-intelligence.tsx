@@ -80,6 +80,20 @@ export function MarketingIntelligence() {
     return Array.from(m.entries()).sort((a, b) => b[1] - a[1])[0]?.[0];
   };
 
+  const channelMix = useMemo(() => {
+    const filt = sales.filter((s) => {
+      if (selectedProduct && (s.products?.name ?? "Sem produto") !== selectedProduct) return false;
+      if (selectedRegion && (s.uf ?? "N/D") !== selectedRegion) return false;
+      return true;
+    });
+    const m = new Map<string, number>();
+    filt.forEach((s) => m.set(s.channel, (m.get(s.channel) ?? 0) + Number(s.total)));
+    const total = Array.from(m.values()).reduce((a, b) => a + b, 0) || 1;
+    return Array.from(m.entries())
+      .map(([name, value]) => ({ name, value, pct: (value / total) * 100 }))
+      .sort((a, b) => b.value - a.value);
+  }, [sales, selectedProduct, selectedRegion]);
+
   const runStrategy = useServerFn(recommendStrategy);
   const aiMut = useMutation({
     mutationFn: async () => {
