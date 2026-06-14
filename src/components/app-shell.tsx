@@ -40,8 +40,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const sidebarContent = (
     <>
       <div className="flex items-center gap-2 px-5 h-16 border-b border-sidebar-border">
-        <div className="size-8 rounded-lg bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
-          <Sparkles className="size-4 text-primary-foreground" />
+        <div className="size-9 rounded-lg grid place-items-center shadow-[var(--shadow-glow)] overflow-hidden">
+          <img src={logoAsset.url} alt="USE MODA" className="size-9 object-contain" />
         </div>
         <div className="leading-tight">
           <div className="text-sm font-semibold tracking-tight">USE MODA</div>
