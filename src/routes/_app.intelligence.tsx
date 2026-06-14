@@ -798,9 +798,11 @@ const CHANNEL_LABEL: Record<string, string> = {
   marketplace: "Marketplace",
   b2b: "B2B / Multimarcas",
   loja_fisica: "Loja Física",
-  influenciador: "Influenciador",
   instagram: "Instagram",
   tiktok: "TikTok",
+  google: "Google",
+  influenciador: "Influenciador",
+  representante: "Representante",
 };
 
 function Attribution({ campaigns, b2b, sales = [] }: any) {
@@ -1101,7 +1103,7 @@ const EMPTY_SALE: Partial<Sale> = {
   product_id: null, sku: "", size: "", channel: "ecommerce", uf: "", city: "",
   quantity: 1, unit_price: 0, total: 0, sold_at: new Date().toISOString().slice(0, 10),
 };
-const CHANNELS = ["ecommerce", "marketplace", "b2b", "loja_fisica", "influenciador", "instagram", "tiktok"];
+const CHANNELS = ["ecommerce", "marketplace", "b2b", "loja_fisica", "instagram", "tiktok", "google", "influenciador", "representante"];
 
 function SalesSuite({ products }: { products: any[] }) {
   const { user } = useAuth();
