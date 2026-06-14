@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp } from "lucide-react";
+import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp, Search, Flag, Workflow } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,12 +23,14 @@ export const Route = createFileRoute("/_authenticated/_app/pcp")({
 });
 
 type Status = "aguardando" | "em_producao" | "concluida" | "atrasada" | "cancelada";
+type Stage = "cad" | "corte" | "costura" | "acabamento" | "qualidade" | "expedicao" | "entregue";
 type Order = {
   id: string; owner_id: string; product_id: string | null; supplier_id: string | null;
   code: string; quantity: number; progress: number; due_date: string | null;
-  status: Status; notes: string | null; created_at: string;
+  status: Status; stage: Stage | null; priority: number; notes: string | null; created_at: string;
 };
 type Ref = { id: string; name: string };
+
 
 const LABEL: Record<Status, string> = {
   aguardando: "Aguardando", em_producao: "Em produção", concluida: "Concluída", atrasada: "Atrasada", cancelada: "Cancelada",
