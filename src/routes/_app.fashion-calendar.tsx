@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { Calendar, Package, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_app/fashion-calendar")({
-  component: FashionCalendar;
+  component: FashionCalendar,
 });
 
 type Col = {
