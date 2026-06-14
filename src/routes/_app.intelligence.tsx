@@ -1078,12 +1078,15 @@ function InfluencerSuite() {
 function DataLake({ counts }: { counts: Record<string, number> }) {
   const entries = [
     { k: "products", label: "Produtos", icon: Sparkles },
+    { k: "collections", label: "Coleções", icon: Sparkles },
     { k: "orders", label: "Ordens de Produção", icon: Factory },
     { k: "inventory", label: "Estoque (SKUs)", icon: Boxes },
     { k: "sales", label: "Vendas", icon: ShoppingCart },
     { k: "b2b", label: "Pedidos B2B", icon: Activity },
     { k: "campaigns", label: "Campanhas", icon: Megaphone },
     { k: "prototypes", label: "Protótipos", icon: Scissors },
+    { k: "influencers", label: "Influencers", icon: Users },
+    { k: "suppliers", label: "Fornecedores", icon: PackageSearch },
   ];
   const total = entries.reduce((s, e) => s + (counts[e.k] || 0), 0);
 
