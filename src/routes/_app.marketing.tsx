@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Megaphone, Calendar, Plus, Trash2, Pencil, Sparkles } from "lucide-react";
+import { Megaphone, Calendar, Plus, Trash2, Pencil, Sparkles, Download, TrendingUp } from "lucide-react";
+import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
