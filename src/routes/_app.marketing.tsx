@@ -49,6 +49,7 @@ function Marketing() {
   useRealtime("marketing_campaigns", ["marketing_campaigns"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Campaign | null>(null);
+  const [channelFilter, setChannelFilter] = useState<string>("todos");
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["marketing_campaigns"],
