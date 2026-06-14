@@ -584,3 +584,257 @@ function StageHistoryDialog({ order, onClose }: { order: Order | null; onClose: 
   );
 }
 
+type SOKind = "parcial" | "integral";
+type SOStatus = "aberta" | "enviada" | "em_andamento" | "recebida" | "cancelada";
+type ServiceOrder = {
+  id: string;
+  owner_id: string;
+  production_order_id: string;
+  supplier_id: string | null;
+  code: string;
+  from_stage: string | null;
+  to_stage: Stage;
+  kind: SOKind;
+  quantity: number;
+  qty_received: number;
+  status: SOStatus;
+  sent_at: string | null;
+  due_at: string | null;
+  received_at: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+const SO_STATUS_LABEL: Record<SOStatus, string> = {
+  aberta: "Aberta", enviada: "Enviada", em_andamento: "Em andamento", recebida: "Recebida", cancelada: "Cancelada",
+};
+const SO_STATUS_TONE: Record<SOStatus, string> = {
+  aberta: "bg-muted text-muted-foreground border-border",
+  enviada: "bg-blue-500/15 text-blue-500 border-blue-500/30",
+  em_andamento: "bg-orange-500/15 text-orange-500 border-orange-500/30",
+  recebida: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30",
+  cancelada: "bg-destructive/15 text-destructive border-destructive/30",
+};
+
+function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: Order[]; suppliers: Ref[]; products: Ref[]; ownerId: string | null }) {
+  const qc = useQueryClient();
+  useRealtime("service_orders", ["service_orders"]);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    code: "", production_order_id: "", supplier_id: "", from_stage: "" as "" | Stage,
+    to_stage: "costura" as Stage, kind: "integral" as SOKind, quantity: 0, due_at: "", notes: "",
+  });
+
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["service_orders"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("service_orders").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as ServiceOrder[];
+    },
+  });
+
+  const create = useMutation({
+    mutationFn: async () => {
+      if (!ownerId) throw new Error("Não autenticado");
+      if (!form.code.trim()) throw new Error("Código obrigatório");
+      if (!form.production_order_id) throw new Error("Selecione a OP");
+      const { error } = await supabase.from("service_orders").insert({
+        owner_id: ownerId,
+        code: form.code.trim(),
+        production_order_id: form.production_order_id,
+        supplier_id: form.supplier_id || null,
+        from_stage: form.from_stage || null,
+        to_stage: form.to_stage,
+        kind: form.kind,
+        quantity: Number(form.quantity) || 0,
+        due_at: form.due_at || null,
+        notes: form.notes.trim() || null,
+        status: "aberta",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["service_orders"] });
+      toast.success("O.S. criada");
+      setOpen(false);
+      setForm({ code: "", production_order_id: "", supplier_id: "", from_stage: "", to_stage: "costura", kind: "integral", quantity: 0, due_at: "", notes: "" });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const patch = useMutation({
+    mutationFn: async ({ id, changes }: { id: string; changes: Partial<ServiceOrder> }) => {
+      const { error } = await supabase.from("service_orders").update(changes).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["service_orders"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("service_orders").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["service_orders"] }); toast.success("Removida"); },
+  });
+
+  const opName = (id: string) => orders.find((o) => o.id === id)?.code ?? "—";
+  const opProduct = (id: string) => {
+    const op = orders.find((o) => o.id === id);
+    return op ? products.find((p) => p.id === op.product_id)?.name ?? "—" : "—";
+  };
+  const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "—";
+
+  const kpis = useMemo(() => ({
+    total: items.length,
+    abertas: items.filter((i) => i.status === "aberta" || i.status === "enviada").length,
+    andamento: items.filter((i) => i.status === "em_andamento").length,
+    recebidas: items.filter((i) => i.status === "recebida").length,
+    parciais: items.filter((i) => i.kind === "parcial").length,
+    qtyEnviada: items.filter((i) => i.status !== "cancelada").reduce((s, i) => s + Number(i.quantity || 0), 0),
+    qtyRecebida: items.reduce((s, i) => s + Number(i.qty_received || 0), 0),
+  }), [items]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">Ordens de Serviço — Terceirizados</h2>
+          <p className="text-xs text-muted-foreground">Controle de passagens parciais e integrais para facções. Receber uma O.S. integral avança o setor automaticamente.</p>
+        </div>
+        <Button size="sm" onClick={() => setOpen(true)}><Plus className="size-4 mr-2" />Nova O.S.</Button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Total O.S.</div><div className="text-xl font-semibold">{kpis.total}</div></div>
+        <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Abertas/Enviadas</div><div className="text-xl font-semibold text-blue-500">{kpis.abertas}</div></div>
+        <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Em andamento</div><div className="text-xl font-semibold text-orange-500">{kpis.andamento}</div></div>
+        <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Parciais</div><div className="text-xl font-semibold">{kpis.parciais}</div></div>
+        <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Pç enviadas / recebidas</div><div className="text-xl font-semibold tabular-nums">{kpis.qtyEnviada} / <span className="text-emerald-500">{kpis.qtyRecebida}</span></div></div>
+      </div>
+
+      <div className="rounded-xl border border-border overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/30 text-xs uppercase text-muted-foreground">
+            <tr>
+              <th className="text-left px-3 py-2">O.S.</th>
+              <th className="text-left px-3 py-2">OP / Produto</th>
+              <th className="text-left px-3 py-2">Terceirizado</th>
+              <th className="text-left px-3 py-2">Setor</th>
+              <th className="text-left px-3 py-2">Tipo</th>
+              <th className="text-right px-3 py-2">Qtd</th>
+              <th className="text-right px-3 py-2">Recebida</th>
+              <th className="text-left px-3 py-2">Prazo</th>
+              <th className="text-left px-3 py-2">Status</th>
+              <th className="px-3 py-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading && <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">Carregando…</td></tr>}
+            {!isLoading && items.length === 0 && <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">Nenhuma O.S. ainda. Crie a primeira para enviar à facção.</td></tr>}
+            {items.map((s) => {
+              const progress = s.quantity > 0 ? Math.round((Number(s.qty_received) / Number(s.quantity)) * 100) : 0;
+              const overdue = s.due_at && s.status !== "recebida" && s.status !== "cancelada" && new Date(s.due_at).getTime() < Date.now();
+              return (
+                <tr key={s.id} className="border-t border-border hover:bg-muted/20">
+                  <td className="px-3 py-2 font-mono text-xs">{s.code}</td>
+                  <td className="px-3 py-2"><div className="text-xs font-medium">{opName(s.production_order_id)}</div><div className="text-[10px] text-muted-foreground truncate max-w-[180px]">{opProduct(s.production_order_id)}</div></td>
+                  <td className="px-3 py-2 text-xs">{supplierName(s.supplier_id)}</td>
+                  <td className="px-3 py-2 text-xs">
+                    {s.from_stage ? <span className="text-muted-foreground">{STAGE_LABEL[s.from_stage as Stage]} → </span> : null}
+                    <span className="font-medium">{STAGE_LABEL[s.to_stage]}</span>
+                  </td>
+                  <td className="px-3 py-2"><Badge variant="outline" className={s.kind === "parcial" ? "border-orange-500/40 text-orange-500" : "border-emerald-500/40 text-emerald-500"}>{s.kind}</Badge></td>
+                  <td className="px-3 py-2 text-right tabular-nums">{s.quantity}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">
+                    <input
+                      type="number" min={0} max={s.quantity}
+                      value={s.qty_received}
+                      onChange={(e) => patch.mutate({ id: s.id, changes: { qty_received: Number(e.target.value) } })}
+                      className="w-20 bg-muted/50 border border-border rounded px-2 py-0.5 text-right"
+                    />
+                    <div className="text-[10px] text-muted-foreground">{progress}%</div>
+                  </td>
+                  <td className={`px-3 py-2 text-xs tabular-nums ${overdue ? "text-destructive font-medium" : "text-muted-foreground"}`}>{s.due_at ?? "—"}</td>
+                  <td className="px-3 py-2">
+                    <Select value={s.status} onValueChange={(v) => patch.mutate({ id: s.id, changes: { status: v as SOStatus } })}>
+                      <SelectTrigger className={`h-7 text-[11px] border ${SO_STATUS_TONE[s.status]}`}><SelectValue /></SelectTrigger>
+                      <SelectContent>{(Object.keys(SO_STATUS_LABEL) as SOStatus[]).map((k) => <SelectItem key={k} value={k}>{SO_STATUS_LABEL[k]}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <Button size="icon" variant="ghost" onClick={() => del.mutate(s.id)} disabled={s.owner_id !== ownerId}><Trash2 className="size-4" /></Button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Nova Ordem de Serviço</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Código *</Label><Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="OS-001" /></div>
+              <div>
+                <Label>OP *</Label>
+                <Select value={form.production_order_id} onValueChange={(v) => setForm({ ...form, production_order_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>{orders.map((o) => <SelectItem key={o.id} value={o.id}>{o.code}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label>Terceirizado / Facção</Label>
+              <Select value={form.supplier_id} onValueChange={(v) => setForm({ ...form, supplier_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>{suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label>De (setor)</Label>
+                <Select value={form.from_stage} onValueChange={(v) => setForm({ ...form, from_stage: v as Stage })}>
+                  <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                  <SelectContent>{(Object.keys(STAGE_LABEL) as Stage[]).map((k) => <SelectItem key={k} value={k}>{STAGE_LABEL[k]}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Para (setor) *</Label>
+                <Select value={form.to_stage} onValueChange={(v) => setForm({ ...form, to_stage: v as Stage })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{(Object.keys(STAGE_LABEL) as Stage[]).map((k) => <SelectItem key={k} value={k}>{STAGE_LABEL[k]}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Tipo</Label>
+                <Select value={form.kind} onValueChange={(v) => setForm({ ...form, kind: v as SOKind })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="integral">Integral</SelectItem>
+                    <SelectItem value="parcial">Parcial</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Quantidade</Label><Input type="number" min={0} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} /></div>
+              <div><Label>Prazo</Label><Input type="date" value={form.due_at} onChange={(e) => setForm({ ...form, due_at: e.target.value })} /></div>
+            </div>
+            <div><Label>Notas</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button onClick={() => create.mutate()} disabled={create.isPending}>{create.isPending ? "Criando…" : "Criar O.S."}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+
