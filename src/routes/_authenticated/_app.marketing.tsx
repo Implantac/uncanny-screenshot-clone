@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Megaphone, Calendar, Plus, Trash2, Pencil, Sparkles, Download, TrendingUp } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from "recharts";
+import { Megaphone, Calendar, Plus, Trash2, Pencil, Sparkles, Download, TrendingUp, TrendingDown, Target, DollarSign, Activity, Award, AlertTriangle, Zap } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area } from "recharts";
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -102,26 +102,12 @@ function Marketing() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass rounded-xl p-5">
-          <div className="text-xs text-muted-foreground">Campanhas ativas</div>
-          <div className="text-2xl font-semibold mt-1 tabular-nums">{ativas}</div>
-        </div>
-        <div className="glass rounded-xl p-5">
-          <div className="text-xs text-muted-foreground">Investimento total</div>
-          <div className="text-2xl font-semibold mt-1 tabular-nums">{brl(invTotal)}</div>
-        </div>
-        <div className="glass rounded-xl p-5">
-          <div className="text-xs text-muted-foreground inline-flex items-center gap-1.5"><TrendingUp className="size-3.5" />Receita estimada</div>
-          <div className="text-2xl font-semibold mt-1 tabular-nums text-emerald-400">{brl(receitaEst)}</div>
-        </div>
-        <div className="glass rounded-xl p-5">
-          <div className="text-xs text-muted-foreground">ROAS médio</div>
-          <div className="text-2xl font-semibold mt-1 tabular-nums">{roasAvg.toFixed(1)}x</div>
-      </div>
+      <KpiGrid ativas={ativas} total={filtered.length} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
+
+      <InsightsBar rows={filtered} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
 
       <ChartsSection rows={filtered} />
-      </div>
+
 
       {channels.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
@@ -292,6 +278,78 @@ const STATUS_COLORS: Record<CStatus, string> = {
   programada: "#0ea5e9", ativa: "#10b981", pausada: "#f59e0b", concluida: "#64748b",
 };
 
+function KpiCard({ icon: Icon, label, value, accent, hint, trend }: {
+  icon: React.ComponentType<{ className?: string }>; label: string; value: string;
+  accent?: string; hint?: string; trend?: { dir: "up" | "down"; pct: number };
+}) {
+  return (
+    <div className="glass rounded-xl p-5 relative overflow-hidden group hover:border-primary/40 transition-colors">
+      <div className="absolute -right-6 -top-6 size-24 rounded-full opacity-10 blur-2xl group-hover:opacity-20 transition-opacity" style={{ background: accent ?? "hsl(var(--primary))" }} />
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-xs text-muted-foreground inline-flex items-center gap-1.5"><Icon className="size-3.5" />{label}</div>
+        {trend && (
+          <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${trend.dir === "up" ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
+            {trend.dir === "up" ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+            {trend.pct.toFixed(0)}%
+          </span>
+        )}
+      </div>
+      <div className="text-2xl font-semibold mt-2 tabular-nums" style={accent ? { color: accent } : undefined}>{value}</div>
+      {hint && <div className="text-[11px] text-muted-foreground mt-1">{hint}</div>}
+    </div>
+  );
+}
+
+function KpiGrid({ ativas, total, invTotal, receitaEst, roasAvg }: {
+  ativas: number; total: number; invTotal: number; receitaEst: number; roasAvg: number;
+}) {
+  const lucro = receitaEst - invTotal;
+  const margemPct = invTotal > 0 ? (lucro / invTotal) * 100 : 0;
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <KpiCard icon={Activity} label="Campanhas ativas" value={String(ativas)} hint={`${total} no total`} />
+      <KpiCard icon={DollarSign} label="Investimento" value={brl(invTotal)} />
+      <KpiCard icon={TrendingUp} label="Receita estimada" value={brl(receitaEst)} accent="#10b981" />
+      <KpiCard icon={Award} label="Lucro projetado" value={brl(lucro)} accent={lucro >= 0 ? "#10b981" : "#ef4444"} trend={{ dir: lucro >= 0 ? "up" : "down", pct: Math.abs(margemPct) }} />
+      <KpiCard icon={Target} label="ROAS médio" value={`${roasAvg.toFixed(2)}x`} hint={roasAvg >= 3 ? "Excelente" : roasAvg >= 2 ? "Saudável" : "Atenção"} accent={roasAvg >= 3 ? "#10b981" : roasAvg >= 2 ? "#f59e0b" : "#ef4444"} />
+    </div>
+  );
+}
+
+function InsightsBar({ rows, invTotal, receitaEst, roasAvg }: {
+  rows: Campaign[]; invTotal: number; receitaEst: number; roasAvg: number;
+}) {
+  const insights = useMemo(() => {
+    const list: Array<{ icon: React.ComponentType<{ className?: string }>; tone: string; text: string }> = [];
+    if (rows.length === 0) return list;
+    const best = [...rows].filter((c) => Number(c.roas) > 0).sort((a, b) => Number(b.roas) - Number(a.roas))[0];
+    const worst = [...rows].filter((c) => Number(c.roas) > 0).sort((a, b) => Number(a.roas) - Number(b.roas))[0];
+    if (best) list.push({ icon: Zap, tone: "text-emerald-400 bg-emerald-500/10", text: `Melhor ROAS: ${best.name} (${Number(best.roas).toFixed(1)}x)` });
+    if (worst && worst.id !== best?.id && Number(worst.roas) < 2) list.push({ icon: AlertTriangle, tone: "text-amber-400 bg-amber-500/10", text: `Revisar: ${worst.name} (${Number(worst.roas).toFixed(1)}x)` });
+    if (roasAvg >= 3) list.push({ icon: Award, tone: "text-emerald-400 bg-emerald-500/10", text: `Carteira performando acima do mercado (${roasAvg.toFixed(1)}x)` });
+    else if (roasAvg < 2 && invTotal > 0) list.push({ icon: AlertTriangle, tone: "text-rose-400 bg-rose-500/10", text: `ROAS médio abaixo de 2x — otimizar criativos` });
+    const lucro = receitaEst - invTotal;
+    if (lucro > 0 && invTotal > 0) list.push({ icon: TrendingUp, tone: "text-sky-400 bg-sky-500/10", text: `Margem projetada de ${((lucro / invTotal) * 100).toFixed(0)}% sobre investimento` });
+    return list.slice(0, 4);
+  }, [rows, invTotal, receitaEst, roasAvg]);
+
+  if (insights.length === 0) return null;
+  return (
+    <div className="glass rounded-xl p-4">
+      <div className="text-xs font-semibold inline-flex items-center gap-1.5 mb-3 text-muted-foreground"><Sparkles className="size-3.5 text-primary" />Insights inteligentes</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+        {insights.map((i, idx) => (
+          <div key={idx} className={`flex items-start gap-2 rounded-lg p-2.5 text-xs ${i.tone}`}>
+            <i.icon className="size-4 mt-0.5 shrink-0" />
+            <span className="leading-snug">{i.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
 function ChartsSection({ rows }: { rows: Campaign[] }) {
   const byChannel = useMemo(() => {
     const m = new Map<string, { channel: string; investimento: number; receita: number }>();
@@ -327,59 +385,113 @@ function ChartsSection({ rows }: { rows: Campaign[] }) {
     return Array.from(m.values()).sort((a, b) => a.mes.localeCompare(b.mes));
   }, [rows]);
 
+  const topCampaigns = useMemo(() =>
+    [...rows]
+      .filter((c) => Number(c.roas) > 0)
+      .sort((a, b) => (Number(b.investment) * Number(b.roas)) - (Number(a.investment) * Number(a.roas)))
+      .slice(0, 5)
+      .map((c) => ({
+        name: c.name.length > 22 ? c.name.slice(0, 22) + "…" : c.name,
+        roas: Number(c.roas),
+        receita: Number(c.investment) * Number(c.roas),
+        investimento: Number(c.investment),
+      })),
+  [rows]);
+
   if (rows.length === 0) return null;
 
   const tooltipStyle = { backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="glass rounded-xl p-5 lg:col-span-2">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-semibold">Evolução mensal</div>
+          <div className="text-[11px] text-muted-foreground">Investimento vs. receita estimada</div>
+        </div>
+        {byMonth.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-16">Sem datas de início informadas.</div>
+        ) : (
+          <ResponsiveContainer width="100%" height={280}>
+            <AreaChart data={byMonth}>
+              <defs>
+                <linearGradient id="gInv" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gRec" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Area type="monotone" dataKey="investimento" stroke="#3b82f6" strokeWidth={2} fill="url(#gInv)" name="Investimento" />
+              <Area type="monotone" dataKey="receita" stroke="#10b981" strokeWidth={2} fill="url(#gRec)" name="Receita est." />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
       <div className="glass rounded-xl p-5">
+        <div className="text-sm font-semibold mb-4">Status das campanhas</div>
+        <ResponsiveContainer width="100%" height={280}>
+          <PieChart>
+            <Pie data={byStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3}>
+              {byStatus.map((entry, i) => (
+                <Cell key={i} fill={STATUS_COLORS[entry.status] ?? CHART_COLORS[i % CHART_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip contentStyle={tooltipStyle} />
+            <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="glass rounded-xl p-5 lg:col-span-2">
         <div className="text-sm font-semibold mb-4">Investimento × Receita por canal</div>
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height={280}>
           <BarChart data={byChannel}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="channel" stroke="hsl(var(--muted-foreground))" fontSize={11} />
             <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
             <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="investimento" fill="#3b82f6" name="Investimento" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="receita" fill="#10b981" name="Receita est." radius={[4, 4, 0, 0]} />
+            <Bar dataKey="investimento" fill="#3b82f6" name="Investimento" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="receita" fill="#10b981" name="Receita est." radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       <div className="glass rounded-xl p-5">
-        <div className="text-sm font-semibold mb-4">Distribuição por status</div>
-        <ResponsiveContainer width="100%" height={260}>
-          <PieChart>
-            <Pie data={byStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={(e: { name: string; value: number }) => `${e.name}: ${e.value}`}>
-              {byStatus.map((entry, i) => (
-                <Cell key={i} fill={STATUS_COLORS[entry.status] ?? CHART_COLORS[i % CHART_COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip contentStyle={tooltipStyle} />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="glass rounded-xl p-5 lg:col-span-2">
-        <div className="text-sm font-semibold mb-4">Evolução mensal</div>
-        {byMonth.length === 0 ? (
-          <div className="text-sm text-muted-foreground text-center py-12">Sem datas de início informadas.</div>
+        <div className="text-sm font-semibold mb-4 inline-flex items-center gap-1.5"><Award className="size-4 text-primary" />Top 5 campanhas</div>
+        {topCampaigns.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-12">Sem ROAS informado.</div>
         ) : (
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={byMonth}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="investimento" stroke="#3b82f6" strokeWidth={2} name="Investimento" />
-              <Line type="monotone" dataKey="receita" stroke="#10b981" strokeWidth={2} name="Receita est." />
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="space-y-3">
+            {topCampaigns.map((c, i) => {
+              const max = topCampaigns[0].receita;
+              const pct = max > 0 ? (c.receita / max) * 100 : 0;
+              return (
+                <div key={i} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium truncate">{i + 1}. {c.name}</span>
+                    <span className="tabular-nums text-emerald-400 font-semibold">{c.roas.toFixed(1)}x</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-primary to-emerald-500 transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="text-[10px] text-muted-foreground tabular-nums">{brl(c.receita)} receita · {brl(c.investimento)} invest.</div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
   );
 }
+
