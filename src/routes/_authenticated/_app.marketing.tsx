@@ -286,3 +286,100 @@ function CampaignDialog({ open, onOpenChange, editing, userId }: {
     </Dialog>
   );
 }
+
+const CHART_COLORS = ["hsl(var(--primary))", "#10b981", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6", "#ec4899"];
+const STATUS_COLORS: Record<CStatus, string> = {
+  programada: "#0ea5e9", ativa: "#10b981", pausada: "#f59e0b", concluida: "#64748b",
+};
+
+function ChartsSection({ rows }: { rows: Campaign[] }) {
+  const byChannel = useMemo(() => {
+    const m = new Map<string, { channel: string; investimento: number; receita: number }>();
+    rows.forEach((c) => {
+      const k = c.channel || "Sem canal";
+      const cur = m.get(k) ?? { channel: k, investimento: 0, receita: 0 };
+      const inv = Number(c.investment);
+      cur.investimento += inv;
+      cur.receita += inv * Number(c.roas);
+      m.set(k, cur);
+    });
+    return Array.from(m.values()).sort((a, b) => b.investimento - a.investimento);
+  }, [rows]);
+
+  const byStatus = useMemo(() => {
+    const m = new Map<CStatus, number>();
+    rows.forEach((c) => m.set(c.status, (m.get(c.status) ?? 0) + 1));
+    return Array.from(m.entries()).map(([status, value]) => ({ name: STATUS_LABEL[status], value, status }));
+  }, [rows]);
+
+  const byMonth = useMemo(() => {
+    const m = new Map<string, { mes: string; investimento: number; receita: number }>();
+    rows.forEach((c) => {
+      if (!c.start_date) return;
+      const d = new Date(c.start_date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const cur = m.get(key) ?? { mes: key, investimento: 0, receita: 0 };
+      const inv = Number(c.investment);
+      cur.investimento += inv;
+      cur.receita += inv * Number(c.roas);
+      m.set(key, cur);
+    });
+    return Array.from(m.values()).sort((a, b) => a.mes.localeCompare(b.mes));
+  }, [rows]);
+
+  if (rows.length === 0) return null;
+
+  const tooltipStyle = { backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="glass rounded-xl p-5">
+        <div className="text-sm font-semibold mb-4">Investimento × Receita por canal</div>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={byChannel}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="channel" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Bar dataKey="investimento" fill="#3b82f6" name="Investimento" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="receita" fill="#10b981" name="Receita est." radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="glass rounded-xl p-5">
+        <div className="text-sm font-semibold mb-4">Distribuição por status</div>
+        <ResponsiveContainer width="100%" height={260}>
+          <PieChart>
+            <Pie data={byStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={(e: { name: string; value: number }) => `${e.name}: ${e.value}`}>
+              {byStatus.map((entry, i) => (
+                <Cell key={i} fill={STATUS_COLORS[entry.status] ?? CHART_COLORS[i % CHART_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip contentStyle={tooltipStyle} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="glass rounded-xl p-5 lg:col-span-2">
+        <div className="text-sm font-semibold mb-4">Evolução mensal</div>
+        {byMonth.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-12">Sem datas de início informadas.</div>
+        ) : (
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={byMonth}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Line type="monotone" dataKey="investimento" stroke="#3b82f6" strokeWidth={2} name="Investimento" />
+              <Line type="monotone" dataKey="receita" stroke="#10b981" strokeWidth={2} name="Receita est." />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+    </div>
+  );
+}
