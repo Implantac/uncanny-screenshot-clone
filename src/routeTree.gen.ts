@@ -24,11 +24,13 @@ import { Route as AppMobileRouteImport } from './routes/_app.mobile'
 import { Route as AppMarketingRouteImport } from './routes/_app.marketing'
 import { Route as AppMargemRouteImport } from './routes/_app.margem'
 import { Route as AppIntelligenceRouteImport } from './routes/_app.intelligence'
+import { Route as AppInfluencerRoiRouteImport } from './routes/_app.influencer-roi'
 import { Route as AppGeoSalesRouteImport } from './routes/_app.geo-sales'
 import { Route as AppFornecedoresRouteImport } from './routes/_app.fornecedores'
 import { Route as AppFinanceiroRouteImport } from './routes/_app.financeiro'
 import { Route as AppFichaTecnicaRouteImport } from './routes/_app.ficha-tecnica'
 import { Route as AppFashionGptRouteImport } from './routes/_app.fashion-gpt'
+import { Route as AppFashionCalendarRouteImport } from './routes/_app.fashion-calendar'
 import { Route as AppEquipeRouteImport } from './routes/_app.equipe'
 import { Route as AppDppRouteImport } from './routes/_app.dpp'
 import { Route as AppControlTowerRouteImport } from './routes/_app.control-tower'
@@ -113,6 +115,11 @@ const AppIntelligenceRoute = AppIntelligenceRouteImport.update({
   path: '/intelligence',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInfluencerRoiRoute = AppInfluencerRoiRouteImport.update({
+  id: '/influencer-roi',
+  path: '/influencer-roi',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGeoSalesRoute = AppGeoSalesRouteImport.update({
   id: '/geo-sales',
   path: '/geo-sales',
@@ -136,6 +143,11 @@ const AppFichaTecnicaRoute = AppFichaTecnicaRouteImport.update({
 const AppFashionGptRoute = AppFashionGptRouteImport.update({
   id: '/fashion-gpt',
   path: '/fashion-gpt',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFashionCalendarRoute = AppFashionCalendarRouteImport.update({
+  id: '/fashion-calendar',
+  path: '/fashion-calendar',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEquipeRoute = AppEquipeRouteImport.update({
@@ -196,11 +208,13 @@ export interface FileRoutesByFullPath {
   '/control-tower': typeof AppControlTowerRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
+  '/fashion-calendar': typeof AppFashionCalendarRoute
   '/fashion-gpt': typeof AppFashionGptRoute
   '/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/financeiro': typeof AppFinanceiroRoute
   '/fornecedores': typeof AppFornecedoresRoute
   '/geo-sales': typeof AppGeoSalesRoute
+  '/influencer-roi': typeof AppInfluencerRoiRoute
   '/intelligence': typeof AppIntelligenceRoute
   '/margem': typeof AppMargemRoute
   '/marketing': typeof AppMarketingRoute
@@ -225,11 +239,13 @@ export interface FileRoutesByTo {
   '/control-tower': typeof AppControlTowerRoute
   '/dpp': typeof AppDppRoute
   '/equipe': typeof AppEquipeRoute
+  '/fashion-calendar': typeof AppFashionCalendarRoute
   '/fashion-gpt': typeof AppFashionGptRoute
   '/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/financeiro': typeof AppFinanceiroRoute
   '/fornecedores': typeof AppFornecedoresRoute
   '/geo-sales': typeof AppGeoSalesRoute
+  '/influencer-roi': typeof AppInfluencerRoiRoute
   '/intelligence': typeof AppIntelligenceRoute
   '/margem': typeof AppMargemRoute
   '/marketing': typeof AppMarketingRoute
@@ -257,11 +273,13 @@ export interface FileRoutesById {
   '/_app/control-tower': typeof AppControlTowerRoute
   '/_app/dpp': typeof AppDppRoute
   '/_app/equipe': typeof AppEquipeRoute
+  '/_app/fashion-calendar': typeof AppFashionCalendarRoute
   '/_app/fashion-gpt': typeof AppFashionGptRoute
   '/_app/ficha-tecnica': typeof AppFichaTecnicaRoute
   '/_app/financeiro': typeof AppFinanceiroRoute
   '/_app/fornecedores': typeof AppFornecedoresRoute
   '/_app/geo-sales': typeof AppGeoSalesRoute
+  '/_app/influencer-roi': typeof AppInfluencerRoiRoute
   '/_app/intelligence': typeof AppIntelligenceRoute
   '/_app/margem': typeof AppMargemRoute
   '/_app/marketing': typeof AppMarketingRoute
@@ -290,11 +308,13 @@ export interface FileRouteTypes {
     | '/control-tower'
     | '/dpp'
     | '/equipe'
+    | '/fashion-calendar'
     | '/fashion-gpt'
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fornecedores'
     | '/geo-sales'
+    | '/influencer-roi'
     | '/intelligence'
     | '/margem'
     | '/marketing'
@@ -319,11 +339,13 @@ export interface FileRouteTypes {
     | '/control-tower'
     | '/dpp'
     | '/equipe'
+    | '/fashion-calendar'
     | '/fashion-gpt'
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fornecedores'
     | '/geo-sales'
+    | '/influencer-roi'
     | '/intelligence'
     | '/margem'
     | '/marketing'
@@ -350,11 +372,13 @@ export interface FileRouteTypes {
     | '/_app/control-tower'
     | '/_app/dpp'
     | '/_app/equipe'
+    | '/_app/fashion-calendar'
     | '/_app/fashion-gpt'
     | '/_app/ficha-tecnica'
     | '/_app/financeiro'
     | '/_app/fornecedores'
     | '/_app/geo-sales'
+    | '/_app/influencer-roi'
     | '/_app/intelligence'
     | '/_app/margem'
     | '/_app/marketing'
@@ -483,6 +507,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIntelligenceRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/influencer-roi': {
+      id: '/_app/influencer-roi'
+      path: '/influencer-roi'
+      fullPath: '/influencer-roi'
+      preLoaderRoute: typeof AppInfluencerRoiRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/geo-sales': {
       id: '/_app/geo-sales'
       path: '/geo-sales'
@@ -516,6 +547,13 @@ declare module '@tanstack/react-router' {
       path: '/fashion-gpt'
       fullPath: '/fashion-gpt'
       preLoaderRoute: typeof AppFashionGptRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/fashion-calendar': {
+      id: '/_app/fashion-calendar'
+      path: '/fashion-calendar'
+      fullPath: '/fashion-calendar'
+      preLoaderRoute: typeof AppFashionCalendarRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/equipe': {
@@ -594,11 +632,13 @@ interface AppRouteChildren {
   AppControlTowerRoute: typeof AppControlTowerRoute
   AppDppRoute: typeof AppDppRoute
   AppEquipeRoute: typeof AppEquipeRoute
+  AppFashionCalendarRoute: typeof AppFashionCalendarRoute
   AppFashionGptRoute: typeof AppFashionGptRoute
   AppFichaTecnicaRoute: typeof AppFichaTecnicaRoute
   AppFinanceiroRoute: typeof AppFinanceiroRoute
   AppFornecedoresRoute: typeof AppFornecedoresRoute
   AppGeoSalesRoute: typeof AppGeoSalesRoute
+  AppInfluencerRoiRoute: typeof AppInfluencerRoiRoute
   AppIntelligenceRoute: typeof AppIntelligenceRoute
   AppMargemRoute: typeof AppMargemRoute
   AppMarketingRoute: typeof AppMarketingRoute
@@ -623,11 +663,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppControlTowerRoute: AppControlTowerRoute,
   AppDppRoute: AppDppRoute,
   AppEquipeRoute: AppEquipeRoute,
+  AppFashionCalendarRoute: AppFashionCalendarRoute,
   AppFashionGptRoute: AppFashionGptRoute,
   AppFichaTecnicaRoute: AppFichaTecnicaRoute,
   AppFinanceiroRoute: AppFinanceiroRoute,
   AppFornecedoresRoute: AppFornecedoresRoute,
   AppGeoSalesRoute: AppGeoSalesRoute,
+  AppInfluencerRoiRoute: AppInfluencerRoiRoute,
   AppIntelligenceRoute: AppIntelligenceRoute,
   AppMargemRoute: AppMargemRoute,
   AppMarketingRoute: AppMarketingRoute,
