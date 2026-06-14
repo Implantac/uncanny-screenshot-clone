@@ -1,13 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Cpu, Play, Pause, Plus, Activity, Loader2 } from "lucide-react";
+import { Cpu, Play, Pause, Plus, Activity, Loader2, Sparkles } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { runAgent } from "@/lib/agents.functions";
+import { Markdown } from "@/components/markdown";
 
 export const Route = createFileRoute("/_app/use-ai")({
   head: () => ({
+    meta: [
+      { title: "USE AI · USE MODA OS" },
+      { name: "description", content: "Agentes de IA para automação de processos de moda." },
+    ],
+  }),
+  component: UseAI,
+});
     meta: [
       { title: "USE AI · USE MODA OS" },
       { name: "description", content: "Agentes de IA para automação de processos de moda." },
