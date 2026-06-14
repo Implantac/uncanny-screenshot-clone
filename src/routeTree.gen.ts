@@ -15,6 +15,7 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AppUseAiRouteImport } from './routes/_app.use-ai'
 import { Route as AppTwinFactoryRouteImport } from './routes/_app.twin-factory'
+import { Route as AppStockHealthRouteImport } from './routes/_app.stock-health'
 import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
 import { Route as AppSalesPerformanceRouteImport } from './routes/_app.sales-performance'
 import { Route as AppReplenishmentRouteImport } from './routes/_app.replenishment'
@@ -69,6 +70,11 @@ const AppUseAiRoute = AppUseAiRouteImport.update({
 const AppTwinFactoryRoute = AppTwinFactoryRouteImport.update({
   id: '/twin-factory',
   path: '/twin-factory',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStockHealthRoute = AppStockHealthRouteImport.update({
+  id: '/stock-health',
+  path: '/stock-health',
   getParentRoute: () => AppRoute,
 } as any)
 const AppShowroomRoute = AppShowroomRouteImport.update({
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/replenishment': typeof AppReplenishmentRoute
   '/sales-performance': typeof AppSalesPerformanceRoute
   '/showroom': typeof AppShowroomRoute
+  '/stock-health': typeof AppStockHealthRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -263,6 +270,7 @@ export interface FileRoutesByTo {
   '/replenishment': typeof AppReplenishmentRoute
   '/sales-performance': typeof AppSalesPerformanceRoute
   '/showroom': typeof AppShowroomRoute
+  '/stock-health': typeof AppStockHealthRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/_app/replenishment': typeof AppReplenishmentRoute
   '/_app/sales-performance': typeof AppSalesPerformanceRoute
   '/_app/showroom': typeof AppShowroomRoute
+  '/_app/stock-health': typeof AppStockHealthRoute
   '/_app/twin-factory': typeof AppTwinFactoryRoute
   '/_app/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -334,6 +343,7 @@ export interface FileRouteTypes {
     | '/replenishment'
     | '/sales-performance'
     | '/showroom'
+    | '/stock-health'
     | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
     | '/replenishment'
     | '/sales-performance'
     | '/showroom'
+    | '/stock-health'
     | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
@@ -400,6 +411,7 @@ export interface FileRouteTypes {
     | '/_app/replenishment'
     | '/_app/sales-performance'
     | '/_app/showroom'
+    | '/_app/stock-health'
     | '/_app/twin-factory'
     | '/_app/use-ai'
     | '/api/chat'
@@ -454,6 +466,13 @@ declare module '@tanstack/react-router' {
       path: '/twin-factory'
       fullPath: '/twin-factory'
       preLoaderRoute: typeof AppTwinFactoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/stock-health': {
+      id: '/_app/stock-health'
+      path: '/stock-health'
+      fullPath: '/stock-health'
+      preLoaderRoute: typeof AppStockHealthRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/showroom': {
@@ -668,6 +687,7 @@ interface AppRouteChildren {
   AppReplenishmentRoute: typeof AppReplenishmentRoute
   AppSalesPerformanceRoute: typeof AppSalesPerformanceRoute
   AppShowroomRoute: typeof AppShowroomRoute
+  AppStockHealthRoute: typeof AppStockHealthRoute
   AppTwinFactoryRoute: typeof AppTwinFactoryRoute
   AppUseAiRoute: typeof AppUseAiRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -700,6 +720,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppReplenishmentRoute: AppReplenishmentRoute,
   AppSalesPerformanceRoute: AppSalesPerformanceRoute,
   AppShowroomRoute: AppShowroomRoute,
+  AppStockHealthRoute: AppStockHealthRoute,
   AppTwinFactoryRoute: AppTwinFactoryRoute,
   AppUseAiRoute: AppUseAiRoute,
   AppIndexRoute: AppIndexRoute,
