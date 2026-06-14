@@ -2,7 +2,8 @@ import {
   LayoutDashboard, Layers, Sparkles, FileText, PenTool, Scissors,
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
   Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
-  Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, Trophy, Target, type LucideIcon,
+  Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, Trophy, Target,
+  KanbanSquare, Workflow, Ruler, ShoppingCart, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleDef = {
