@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/_app.index'
@@ -67,14 +68,18 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
-  id: '/_authenticated/_app',
-  getParentRoute: () => rootRouteImport,
+  id: '/_app',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
@@ -358,8 +363,8 @@ const ApiPublicAgentsRunDueRoute = ApiPublicAgentsRunDueRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/auth': typeof AuthRoute
   '/': typeof AuthenticatedAppIndexRoute
+  '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/attribution': typeof AuthenticatedAppAttributionRoute
@@ -411,6 +416,7 @@ export interface FileRoutesByFullPath {
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof AuthenticatedAppIndexRoute
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
@@ -460,11 +466,11 @@ export interface FileRoutesByTo {
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
-  '/': typeof AuthenticatedAppIndexRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
@@ -521,8 +527,8 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/auth'
     | '/'
+    | '/auth'
     | '/api/chat'
     | '/almoxarifado'
     | '/attribution'
@@ -574,6 +580,7 @@ export interface FileRouteTypes {
     | '/api/public/agents/run-due'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/auth'
     | '/api/chat'
     | '/almoxarifado'
@@ -623,10 +630,10 @@ export interface FileRouteTypes {
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
-    | '/'
     | '/api/public/agents/run-due'
   id:
     | '__root__'
+    | '/_authenticated'
     | '/auth'
     | '/_authenticated/_app'
     | '/api/chat'
@@ -682,8 +689,8 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
   ApiChatRoute: typeof ApiChatRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
 }
@@ -695,6 +702,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -709,7 +723,7 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/_app/': {
       id: '/_authenticated/_app/'
@@ -1162,9 +1176,20 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
 const AuthenticatedAppRouteWithChildren =
   AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
 
-const rootRouteChildren: RootRouteChildren = {
-  AuthRoute: AuthRoute,
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
 }
