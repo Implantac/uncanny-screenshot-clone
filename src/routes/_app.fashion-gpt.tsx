@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Markdown } from "@/components/markdown";
 import { buildFashionContext } from "@/lib/fashion-context";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_app/fashion-gpt")({
   head: () => ({
@@ -39,9 +40,16 @@ function FashionGPT() {
 
   const transport = useMemo(() => new DefaultChatTransport({
     api: "/api/chat",
-    prepareSendMessagesRequest: ({ messages }) => ({
-      body: { messages, context: contextRef.current },
-    }),
+    prepareSendMessagesRequest: async ({ messages }) => {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      const headers: Record<string, string> = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+      return {
+        body: { messages, context: contextRef.current },
+        headers,
+      };
+    },
   }), []);
 
   const { messages, sendMessage, status } = useChat({

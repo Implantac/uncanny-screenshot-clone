@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { createClient } from "@supabase/supabase-js";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 
 const SYSTEM_PROMPT = `Você é o **Fashion GPT**, copiloto de IA do USE MODA OS — Fashion Operating System (PLM + ERP Fashion + PCP + Supply Chain + BI + IA) para a indústria da moda brasileira.
@@ -24,24 +25,66 @@ Apoiar gestores, designers, compradores, PCP e comercial em decisões operaciona
 5. Quando faltar dado no contexto, diga claramente "não há dado suficiente" em vez de inventar.
 6. Responda **sempre em português brasileiro**.`;
 
+const MAX_MESSAGES = 50;
+const MAX_MESSAGE_CHARS = 8000;
+const MAX_CONTEXT_CHARS = 50000;
+
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Auth check — protect AI credits from unauthenticated abuse
+        const authHeader = request.headers.get("authorization") ?? "";
+        if (!authHeader.startsWith("Bearer ")) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+        const token = authHeader.slice("Bearer ".length).trim();
+        if (!token) return new Response("Unauthorized", { status: 401 });
+
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const supabasePublishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+        if (!supabaseUrl || !supabasePublishableKey) {
+          return new Response("Server misconfigured", { status: 500 });
+        }
+        const supabase = createClient(supabaseUrl, supabasePublishableKey, {
+          auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+        });
+        const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+        if (claimsError || !claimsData?.claims?.sub) {
+          return new Response("Unauthorized", { status: 401 });
+        }
+
         const body = (await request.json()) as { messages?: UIMessage[]; context?: unknown };
         const { messages, context } = body;
         if (!Array.isArray(messages)) {
           return new Response("Messages are required", { status: 400 });
         }
+        if (messages.length === 0 || messages.length > MAX_MESSAGES) {
+          return new Response("Invalid message count", { status: 400 });
+        }
+        // Size limits per message
+        for (const m of messages) {
+          const text = Array.isArray((m as UIMessage).parts)
+            ? (m as UIMessage).parts.map((p: any) => (p?.type === "text" ? p.text ?? "" : "")).join("")
+            : "";
+          if (text.length > MAX_MESSAGE_CHARS) {
+            return new Response("Message too large", { status: 413 });
+          }
+        }
+        let contextBlock = "";
+        if (context !== undefined && context !== null) {
+          const serialized = JSON.stringify(context);
+          if (serialized.length > MAX_CONTEXT_CHARS) {
+            return new Response("Context too large", { status: 413 });
+          }
+          contextBlock = `\n\n## Contexto atual da operação (dados reais do usuário, formato JSON)\n\`\`\`json\n${JSON.stringify(context, null, 2)}\n\`\`\`\nUse esses dados sempre que a pergunta envolver produtos, pedidos, financeiro, estoque ou coleções. Cite números reais quando relevante.`;
+        }
+
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
 
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-3-flash-preview");
-
-        const contextBlock = context
-          ? `\n\n## Contexto atual da operação (dados reais do usuário, formato JSON)\n\`\`\`json\n${JSON.stringify(context, null, 2)}\n\`\`\`\nUse esses dados sempre que a pergunta envolver produtos, pedidos, financeiro, estoque ou coleções. Cite números reais quando relevante.`
-          : "";
 
         const result = streamText({
           model,
