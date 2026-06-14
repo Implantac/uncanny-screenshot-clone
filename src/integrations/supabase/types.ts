@@ -20,6 +20,7 @@ export type Database = {
           description: string | null
           executions: number
           id: string
+          last_output: string | null
           last_run_at: string | null
           name: string
           owner_id: string
@@ -32,6 +33,7 @@ export type Database = {
           description?: string | null
           executions?: number
           id?: string
+          last_output?: string | null
           last_run_at?: string | null
           name: string
           owner_id: string
@@ -44,6 +46,7 @@ export type Database = {
           description?: string | null
           executions?: number
           id?: string
+          last_output?: string | null
           last_run_at?: string | null
           name?: string
           owner_id?: string
