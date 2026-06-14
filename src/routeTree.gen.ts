@@ -19,6 +19,7 @@ import { Route as AppTrendsRouteImport } from './routes/_app.trends'
 import { Route as AppSupplierScoreRouteImport } from './routes/_app.supplier-score'
 import { Route as AppStockHealthRouteImport } from './routes/_app.stock-health'
 import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
+import { Route as AppSecurityCenterRouteImport } from './routes/_app.security-center'
 import { Route as AppSalesPerformanceRouteImport } from './routes/_app.sales-performance'
 import { Route as AppReplenishmentRouteImport } from './routes/_app.replenishment'
 import { Route as AppPrototiposRouteImport } from './routes/_app.prototipos'
@@ -107,6 +108,11 @@ const AppStockHealthRoute = AppStockHealthRouteImport.update({
 const AppShowroomRoute = AppShowroomRouteImport.update({
   id: '/showroom',
   path: '/showroom',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSecurityCenterRoute = AppSecurityCenterRouteImport.update({
+  id: '/security-center',
+  path: '/security-center',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSalesPerformanceRoute = AppSalesPerformanceRouteImport.update({
@@ -353,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
   '/sales-performance': typeof AppSalesPerformanceRoute
+  '/security-center': typeof AppSecurityCenterRoute
   '/showroom': typeof AppShowroomRoute
   '/stock-health': typeof AppStockHealthRoute
   '/supplier-score': typeof AppSupplierScoreRoute
@@ -403,6 +410,7 @@ export interface FileRoutesByTo {
   '/prototipos': typeof AppPrototiposRoute
   '/replenishment': typeof AppReplenishmentRoute
   '/sales-performance': typeof AppSalesPerformanceRoute
+  '/security-center': typeof AppSecurityCenterRoute
   '/showroom': typeof AppShowroomRoute
   '/stock-health': typeof AppStockHealthRoute
   '/supplier-score': typeof AppSupplierScoreRoute
@@ -456,6 +464,7 @@ export interface FileRoutesById {
   '/_app/prototipos': typeof AppPrototiposRoute
   '/_app/replenishment': typeof AppReplenishmentRoute
   '/_app/sales-performance': typeof AppSalesPerformanceRoute
+  '/_app/security-center': typeof AppSecurityCenterRoute
   '/_app/showroom': typeof AppShowroomRoute
   '/_app/stock-health': typeof AppStockHealthRoute
   '/_app/supplier-score': typeof AppSupplierScoreRoute
@@ -510,6 +519,7 @@ export interface FileRouteTypes {
     | '/prototipos'
     | '/replenishment'
     | '/sales-performance'
+    | '/security-center'
     | '/showroom'
     | '/stock-health'
     | '/supplier-score'
@@ -560,6 +570,7 @@ export interface FileRouteTypes {
     | '/prototipos'
     | '/replenishment'
     | '/sales-performance'
+    | '/security-center'
     | '/showroom'
     | '/stock-health'
     | '/supplier-score'
@@ -612,6 +623,7 @@ export interface FileRouteTypes {
     | '/_app/prototipos'
     | '/_app/replenishment'
     | '/_app/sales-performance'
+    | '/_app/security-center'
     | '/_app/showroom'
     | '/_app/stock-health'
     | '/_app/supplier-score'
@@ -698,6 +710,13 @@ declare module '@tanstack/react-router' {
       path: '/showroom'
       fullPath: '/showroom'
       preLoaderRoute: typeof AppShowroomRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/security-center': {
+      id: '/_app/security-center'
+      path: '/security-center'
+      fullPath: '/security-center'
+      preLoaderRoute: typeof AppSecurityCenterRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/sales-performance': {
@@ -1024,6 +1043,7 @@ interface AppRouteChildren {
   AppPrototiposRoute: typeof AppPrototiposRoute
   AppReplenishmentRoute: typeof AppReplenishmentRoute
   AppSalesPerformanceRoute: typeof AppSalesPerformanceRoute
+  AppSecurityCenterRoute: typeof AppSecurityCenterRoute
   AppShowroomRoute: typeof AppShowroomRoute
   AppStockHealthRoute: typeof AppStockHealthRoute
   AppSupplierScoreRoute: typeof AppSupplierScoreRoute
@@ -1074,6 +1094,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPrototiposRoute: AppPrototiposRoute,
   AppReplenishmentRoute: AppReplenishmentRoute,
   AppSalesPerformanceRoute: AppSalesPerformanceRoute,
+  AppSecurityCenterRoute: AppSecurityCenterRoute,
   AppShowroomRoute: AppShowroomRoute,
   AppStockHealthRoute: AppStockHealthRoute,
   AppSupplierScoreRoute: AppSupplierScoreRoute,
