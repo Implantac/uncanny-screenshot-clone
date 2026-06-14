@@ -85,6 +85,18 @@ function IntelligencePage() {
     queryKey: ["intel", "sales"],
     queryFn: async () => (await (supabase as any).from("sales").select("*").order("sold_at", { ascending: false })).data ?? [],
   });
+  const influQ = useQuery({
+    queryKey: ["intel", "influencers"],
+    queryFn: async () => (await (supabase as any).from("influencers").select("id")).data ?? [],
+  });
+  const supQ = useQuery({
+    queryKey: ["intel", "suppliers"],
+    queryFn: async () => (await supabase.from("suppliers").select("id")).data ?? [],
+  });
+  const colQ = useQuery({
+    queryKey: ["intel", "collections"],
+    queryFn: async () => (await supabase.from("collections").select("id")).data ?? [],
+  });
 
   return (
     <div className="space-y-6">
@@ -170,6 +182,9 @@ function IntelligencePage() {
               campaigns: mktQ.data?.length ?? 0,
               prototypes: protoQ.data?.length ?? 0,
               sales: salesQ.data?.length ?? 0,
+              influencers: influQ.data?.length ?? 0,
+              suppliers: supQ.data?.length ?? 0,
+              collections: colQ.data?.length ?? 0,
             }}
           />
         </TabsContent>
@@ -1063,12 +1078,15 @@ function InfluencerSuite() {
 function DataLake({ counts }: { counts: Record<string, number> }) {
   const entries = [
     { k: "products", label: "Produtos", icon: Sparkles },
+    { k: "collections", label: "Coleções", icon: Sparkles },
     { k: "orders", label: "Ordens de Produção", icon: Factory },
     { k: "inventory", label: "Estoque (SKUs)", icon: Boxes },
     { k: "sales", label: "Vendas", icon: ShoppingCart },
     { k: "b2b", label: "Pedidos B2B", icon: Activity },
     { k: "campaigns", label: "Campanhas", icon: Megaphone },
     { k: "prototypes", label: "Protótipos", icon: Scissors },
+    { k: "influencers", label: "Influencers", icon: Users },
+    { k: "suppliers", label: "Fornecedores", icon: PackageSearch },
   ];
   const total = entries.reduce((s, e) => s + (counts[e.k] || 0), 0);
 
