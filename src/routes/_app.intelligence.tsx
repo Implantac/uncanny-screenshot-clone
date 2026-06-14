@@ -513,50 +513,74 @@ function PcpKanban({ orders, products }: any) {
 /* ===================== DEVELOPMENT (M45/M46) ===================== */
 function DevelopmentBoard({ prototypes }: any) {
   const stages = ["Pesquisa", "Moodboard", "Croqui", "Modelagem", "Piloto", "Ajuste", "Aprovação", "Liberado PCP"];
+  // Map real prototype_stage → kanban stage
+  const STAGE_MAP: Record<string, string> = {
+    solicitado: "Pesquisa",
+    em_confeccao: "Modelagem",
+    em_prova: "Piloto",
+    aprovado: "Liberado PCP",
+    reprovado: "Ajuste",
+  };
   const cols = new Map(stages.map((s) => [s, [] as any[]]));
   (prototypes as any[]).forEach((p) => {
-    const r = seed(p.id);
-    const idx = Math.min(stages.length - 1, Math.floor(r(0, stages.length)));
-    cols.get(stages[idx])?.push(p);
+    const target = STAGE_MAP[String(p.stage)] ?? "Pesquisa";
+    cols.get(target)?.push(p);
   });
+
+  const pilotMap: Record<string, string> = {
+    em_confeccao: "Em desenvolvimento",
+    em_prova: "Aguardando aprovação",
+    solicitado: "Em ajuste",
+    aprovado: "Aprovado",
+    reprovado: "Reprovado",
+  };
+  const pilotStatuses = ["Em desenvolvimento", "Em ajuste", "Aguardando aprovação", "Aprovado", "Reprovado"];
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Development Kanban</CardTitle>
-          <CardDescription>Pipeline criativo separado da produção</CardDescription>
+          <CardDescription>Pipeline criativo separado da produção · {(prototypes as any[]).length} protótipos</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-8">
-            {stages.map((s) => (
-              <div key={s} className="rounded-lg border bg-muted/20 p-2">
-                <div className="mb-2 flex items-center justify-between px-1">
-                  <div className="text-[11px] font-semibold uppercase tracking-wide">{s}</div>
-                  <Badge variant="secondary" className="text-[10px]">{cols.get(s)?.length ?? 0}</Badge>
+          {(prototypes as any[]).length === 0 ? (
+            <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+              Nenhum protótipo cadastrado. Crie protótipos na aba Protótipos.
+            </div>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-8">
+              {stages.map((s) => (
+                <div key={s} className="rounded-lg border bg-muted/20 p-2">
+                  <div className="mb-2 flex items-center justify-between px-1">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide">{s}</div>
+                    <Badge variant="secondary" className="text-[10px]">{cols.get(s)?.length ?? 0}</Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {(cols.get(s) ?? []).slice(0, 4).map((p) => (
+                      <div key={p.id} className="rounded-md border bg-card p-2">
+                        <div className="text-xs font-medium truncate">{p.code}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {p.due_date ? new Date(p.due_date).toLocaleDateString("pt-BR") : "Sem prazo"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  {(cols.get(s) ?? []).slice(0, 4).map((p) => (
-                    <div key={p.id} className="rounded-md border bg-card p-2">
-                      <div className="text-xs font-medium truncate">{p.code}</div>
-                      <div className="text-[10px] text-muted-foreground">{p.stage}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
           <CardTitle>Pilot Management</CardTitle>
-          <CardDescription>Controle exclusivo de pilotos</CardDescription>
+          <CardDescription>Status real dos pilotos</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-5">
-          {["Em desenvolvimento", "Em ajuste", "Aguardando aprovação", "Aprovado", "Reprovado"].map((st, i) => {
-            const count = (prototypes as any[]).filter((_, idx) => idx % 5 === i).length;
+          {pilotStatuses.map((st) => {
+            const count = (prototypes as any[]).filter((p) => (pilotMap[String(p.stage)] ?? "Em ajuste") === st).length;
             return (
               <div key={st} className="rounded-lg border p-3 text-center">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">{st}</div>
