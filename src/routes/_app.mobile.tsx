@@ -89,8 +89,9 @@ function Mobile() {
           </div>
         </div>
 
-        <div className="mx-auto">
-          <div className="w-[280px] h-[560px] rounded-[40px] bg-gradient-to-b from-zinc-800 to-zinc-950 p-2.5 shadow-[var(--shadow-elevated)] border border-white/10">
+        <div className="mx-auto w-full max-w-[280px]">
+          <div className="w-full aspect-[280/560] rounded-[40px] bg-gradient-to-b from-zinc-800 to-zinc-950 p-2.5 shadow-[var(--shadow-elevated)] border border-white/10">
+
             <div className="w-full h-full rounded-[32px] bg-gradient-to-br from-background to-card overflow-hidden relative">
               <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-5 bg-black rounded-full" />
               <div className="pt-12 px-5">
