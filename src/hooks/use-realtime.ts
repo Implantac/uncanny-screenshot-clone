@@ -9,7 +9,7 @@ export function useRealtime(table: string, queryKey: unknown[]) {
   const qc = useQueryClient();
   useEffect(() => {
     const channel = supabase
-      .channel(`rt-${table}`)
+      .channel(`rt-${table}-${Math.random().toString(36).slice(2, 10)}`)
       .on("postgres_changes", { event: "*", schema: "public", table }, () => {
         qc.invalidateQueries({ queryKey });
       })
