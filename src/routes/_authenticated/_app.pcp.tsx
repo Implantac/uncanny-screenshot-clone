@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp, Search, Flag, Workflow } from "lucide-react";
+import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp, Search, Flag, Workflow, History } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
