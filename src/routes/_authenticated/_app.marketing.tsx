@@ -385,59 +385,113 @@ function ChartsSection({ rows }: { rows: Campaign[] }) {
     return Array.from(m.values()).sort((a, b) => a.mes.localeCompare(b.mes));
   }, [rows]);
 
+  const topCampaigns = useMemo(() =>
+    [...rows]
+      .filter((c) => Number(c.roas) > 0)
+      .sort((a, b) => (Number(b.investment) * Number(b.roas)) - (Number(a.investment) * Number(a.roas)))
+      .slice(0, 5)
+      .map((c) => ({
+        name: c.name.length > 22 ? c.name.slice(0, 22) + "…" : c.name,
+        roas: Number(c.roas),
+        receita: Number(c.investment) * Number(c.roas),
+        investimento: Number(c.investment),
+      })),
+  [rows]);
+
   if (rows.length === 0) return null;
 
   const tooltipStyle = { backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="glass rounded-xl p-5 lg:col-span-2">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-semibold">Evolução mensal</div>
+          <div className="text-[11px] text-muted-foreground">Investimento vs. receita estimada</div>
+        </div>
+        {byMonth.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-16">Sem datas de início informadas.</div>
+        ) : (
+          <ResponsiveContainer width="100%" height={280}>
+            <AreaChart data={byMonth}>
+              <defs>
+                <linearGradient id="gInv" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gRec" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Area type="monotone" dataKey="investimento" stroke="#3b82f6" strokeWidth={2} fill="url(#gInv)" name="Investimento" />
+              <Area type="monotone" dataKey="receita" stroke="#10b981" strokeWidth={2} fill="url(#gRec)" name="Receita est." />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
       <div className="glass rounded-xl p-5">
+        <div className="text-sm font-semibold mb-4">Status das campanhas</div>
+        <ResponsiveContainer width="100%" height={280}>
+          <PieChart>
+            <Pie data={byStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3}>
+              {byStatus.map((entry, i) => (
+                <Cell key={i} fill={STATUS_COLORS[entry.status] ?? CHART_COLORS[i % CHART_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip contentStyle={tooltipStyle} />
+            <Legend wrapperStyle={{ fontSize: 11 }} iconType="circle" />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="glass rounded-xl p-5 lg:col-span-2">
         <div className="text-sm font-semibold mb-4">Investimento × Receita por canal</div>
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height={280}>
           <BarChart data={byChannel}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="channel" stroke="hsl(var(--muted-foreground))" fontSize={11} />
             <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
             <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="investimento" fill="#3b82f6" name="Investimento" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="receita" fill="#10b981" name="Receita est." radius={[4, 4, 0, 0]} />
+            <Bar dataKey="investimento" fill="#3b82f6" name="Investimento" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="receita" fill="#10b981" name="Receita est." radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       <div className="glass rounded-xl p-5">
-        <div className="text-sm font-semibold mb-4">Distribuição por status</div>
-        <ResponsiveContainer width="100%" height={260}>
-          <PieChart>
-            <Pie data={byStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={(e: { name: string; value: number }) => `${e.name}: ${e.value}`}>
-              {byStatus.map((entry, i) => (
-                <Cell key={i} fill={STATUS_COLORS[entry.status] ?? CHART_COLORS[i % CHART_COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip contentStyle={tooltipStyle} />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="glass rounded-xl p-5 lg:col-span-2">
-        <div className="text-sm font-semibold mb-4">Evolução mensal</div>
-        {byMonth.length === 0 ? (
-          <div className="text-sm text-muted-foreground text-center py-12">Sem datas de início informadas.</div>
+        <div className="text-sm font-semibold mb-4 inline-flex items-center gap-1.5"><Award className="size-4 text-primary" />Top 5 campanhas</div>
+        {topCampaigns.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-12">Sem ROAS informado.</div>
         ) : (
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={byMonth}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => brl(v)} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="investimento" stroke="#3b82f6" strokeWidth={2} name="Investimento" />
-              <Line type="monotone" dataKey="receita" stroke="#10b981" strokeWidth={2} name="Receita est." />
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="space-y-3">
+            {topCampaigns.map((c, i) => {
+              const max = topCampaigns[0].receita;
+              const pct = max > 0 ? (c.receita / max) * 100 : 0;
+              return (
+                <div key={i} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium truncate">{i + 1}. {c.name}</span>
+                    <span className="tabular-nums text-emerald-400 font-semibold">{c.roas.toFixed(1)}x</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-primary to-emerald-500 transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="text-[10px] text-muted-foreground tabular-nums">{brl(c.receita)} receita · {brl(c.investimento)} invest.</div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
   );
 }
+
