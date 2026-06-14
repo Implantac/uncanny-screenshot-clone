@@ -131,6 +131,21 @@ function UseAI() {
                   <div className="font-medium mt-0.5">{relTime(a.last_run_at)}</div>
                 </div>
               </div>
+              <div className="mt-3 flex justify-end">
+                <button
+                  onClick={() => run.mutate(a.id)}
+                  disabled={run.isPending && run.variables === a.id}
+                  className="h-8 px-3 rounded-md text-xs font-medium bg-[image:var(--gradient-primary)] text-primary-foreground inline-flex items-center gap-1.5 disabled:opacity-60"
+                >
+                  {run.isPending && run.variables === a.id ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+                  Executar agora
+                </button>
+              </div>
+              {a.last_output && (
+                <div className="mt-3 pt-3 border-t border-border text-xs glass rounded-lg p-3 max-h-48 overflow-y-auto">
+                  <Markdown content={a.last_output} />
+                </div>
+              )}
             </div>
           ))}
         </div>
