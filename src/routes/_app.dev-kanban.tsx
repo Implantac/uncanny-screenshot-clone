@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
-import { Sparkles, CheckCircle2, Clock } from "lucide-react";
+import { Sparkles, CheckCircle2, Clock, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import { useRealtime } from "@/hooks/use-realtime";
 
 export const Route = createFileRoute("/_app/dev-kanban")({ component: DevKanban });
 
@@ -27,25 +28,40 @@ const COLUMNS: { key: Status; label: string; tone: string }[] = [
 ];
 
 async function load(): Promise<Product[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("products")
     .select("id, sku, name, category, status, image_url, sell_price")
     .order("updated_at", { ascending: false });
+  if (error) throw error;
   return (data ?? []) as Product[];
 }
 
 function DevKanban() {
   const qc = useQueryClient();
+  useRealtime("products", ["dev-kanban"]);
   const { data: products = [], isLoading } = useQuery({ queryKey: ["dev-kanban"], queryFn: load });
   const [dragging, setDragging] = useState<string | null>(null);
+  const [over, setOver] = useState<Status | null>(null);
 
   const mutate = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: Status }) => {
       const { error } = await supabase.from("products").update({ status }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Status atualizado"); qc.invalidateQueries({ queryKey: ["dev-kanban"] }); },
-    onError: (e) => toast.error(e.message),
+    onMutate: async ({ id, status }) => {
+      await qc.cancelQueries({ queryKey: ["dev-kanban"] });
+      const prev = qc.getQueryData<Product[]>(["dev-kanban"]);
+      qc.setQueryData<Product[]>(["dev-kanban"], (old = []) =>
+        old.map((p) => (p.id === id ? { ...p, status } : p)),
+      );
+      return { prev };
+    },
+    onError: (e: Error, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(["dev-kanban"], ctx.prev);
+      toast.error(e.message);
+    },
+    onSuccess: () => toast.success("Status atualizado"),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["dev-kanban"] }),
   });
 
   const grouped = useMemo(() => {
@@ -61,11 +77,17 @@ function DevKanban() {
     approved: products.filter((p) => p.status === "aprovado").length,
   }), [products]);
 
+  const moveTo = (id: string, status: Status) => {
+    const p = products.find((x) => x.id === id);
+    if (!p || p.status === status) return;
+    mutate.mutate({ id, status });
+  };
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-4">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Kanban de Desenvolvimento</h1>
-        <p className="text-sm text-muted-foreground">Pipeline do produto: pesquisa → modelagem → liberação para PCP.</p>
+        <p className="text-sm text-muted-foreground">Pipeline do produto: pesquisa → modelagem → liberação para PCP. Arraste cards ou use o seletor de status (mobile).</p>
       </header>
 
       <div className="grid grid-cols-3 gap-3">
@@ -77,44 +99,57 @@ function DevKanban() {
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {COLUMNS.map((col) => {
           const items = grouped.get(col.key) ?? [];
+          const isOver = over === col.key;
           return (
             <div
               key={col.key}
-              className="rounded-xl border border-border bg-card flex flex-col min-h-[400px]"
-              onDragOver={(e) => e.preventDefault()}
+              className={`rounded-xl border bg-card flex flex-col min-h-[400px] transition ${isOver ? "border-primary ring-2 ring-primary/30" : "border-border"}`}
+              onDragOver={(e) => { e.preventDefault(); setOver(col.key); }}
+              onDragLeave={() => setOver((v) => (v === col.key ? null : v))}
               onDrop={() => {
-                if (dragging) {
-                  const p = products.find((x) => x.id === dragging);
-                  if (p && p.status !== col.key) mutate.mutate({ id: dragging, status: col.key });
-                  setDragging(null);
-                }
+                if (dragging) { moveTo(dragging, col.key); setDragging(null); setOver(null); }
               }}
             >
               <div className="px-3 py-2 border-b border-border flex items-center justify-between">
                 <span className={`text-xs font-medium px-2 py-1 rounded ${col.tone}`}>{col.label}</span>
-                <span className="text-xs text-muted-foreground">{items.length}</span>
+                <span className="text-xs tabular-nums text-muted-foreground">{items.length}</span>
               </div>
               <div className="p-2 space-y-2 flex-1">
-                {isLoading ? <div className="text-xs text-muted-foreground p-2">Carregando…</div> :
-                  items.length === 0 ? <div className="text-xs text-muted-foreground p-2">—</div> :
-                  items.map((p) => (
-                    <div
-                      key={p.id}
-                      draggable
-                      onDragStart={() => setDragging(p.id)}
-                      onDragEnd={() => setDragging(null)}
-                      className="rounded-lg border border-border bg-background p-3 text-xs space-y-1 cursor-grab active:cursor-grabbing hover:border-primary/50 transition"
-                    >
-                      {p.image_url && <img src={p.image_url} alt="" className="w-full h-20 object-cover rounded mb-2" />}
-                      <div className="font-medium text-sm truncate">{p.name}</div>
-                      <div className="text-muted-foreground">{p.sku}</div>
-                      <div className="flex items-center justify-between text-muted-foreground pt-1">
-                        <span className="truncate">{p.category ?? "—"}</span>
-                        {p.sell_price ? <span>R$ {Number(p.sell_price).toFixed(0)}</span> : null}
+                {isLoading ? (
+                  <div className="text-xs text-muted-foreground p-2">Carregando…</div>
+                ) : items.length === 0 ? (
+                  <div className="text-[11px] text-muted-foreground p-3 border border-dashed border-border rounded-lg text-center">Solte aqui</div>
+                ) : items.map((p) => (
+                  <div
+                    key={p.id}
+                    draggable
+                    onDragStart={() => setDragging(p.id)}
+                    onDragEnd={() => { setDragging(null); setOver(null); }}
+                    className="group rounded-lg border border-border bg-background p-3 text-xs space-y-1 cursor-grab active:cursor-grabbing hover:border-primary/50 transition"
+                  >
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={p.name} loading="lazy" className="w-full h-20 object-cover rounded mb-2 bg-muted" />
+                    ) : (
+                      <div className="w-full h-20 rounded mb-2 bg-muted grid place-items-center text-muted-foreground">
+                        <ImageIcon className="size-5" />
                       </div>
+                    )}
+                    <div className="font-medium text-sm truncate" title={p.name}>{p.name}</div>
+                    <div className="text-muted-foreground tabular-nums">{p.sku}</div>
+                    <div className="flex items-center justify-between text-muted-foreground pt-1">
+                      <span className="truncate">{p.category ?? "—"}</span>
+                      {p.sell_price ? <span className="tabular-nums">R$ {Number(p.sell_price).toFixed(0)}</span> : null}
                     </div>
-                  ))
-                }
+                    <select
+                      className="md:opacity-0 md:group-hover:opacity-100 transition w-full mt-1 text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5"
+                      value={p.status}
+                      onChange={(e) => moveTo(p.id, e.target.value as Status)}
+                      aria-label="Mover para status"
+                    >
+                      {COLUMNS.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+                    </select>
+                  </div>
+                ))}
               </div>
             </div>
           );
@@ -131,7 +166,7 @@ function KPI({ label, value, icon, tone = "default" }: { label: string; value: s
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{label}</span>{icon}
       </div>
-      <div className={`text-2xl font-semibold mt-1 ${toneCls}`}>{value}</div>
+      <div className={`text-2xl font-semibold mt-1 tabular-nums ${toneCls}`}>{value}</div>
     </div>
   );
 }
