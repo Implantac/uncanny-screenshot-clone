@@ -17,12 +17,12 @@ type Item = {
   minimum: number;
 };
 
-type Supplier = { id: string; name: string; category: string | null; lead_time: number | null };
+type Supplier = { id: string; name: string; category: string | null };
 
 async function load() {
   const [{ data: items }, { data: suppliers }] = await Promise.all([
     supabase.from("inventory_items").select("id, sku, name, category, deposit, unit, balance, minimum").order("balance", { ascending: true }),
-    supabase.from("suppliers").select("id, name, category, lead_time"),
+    supabase.from("suppliers").select("id, name, category"),
   ]);
   return { items: (items ?? []) as Item[], suppliers: (suppliers ?? []) as Supplier[] };
 }

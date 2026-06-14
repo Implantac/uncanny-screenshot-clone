@@ -40,6 +40,7 @@ import { Route as AppEquipeRouteImport } from './routes/_app.equipe'
 import { Route as AppDppRouteImport } from './routes/_app.dpp'
 import { Route as AppDevKanbanRouteImport } from './routes/_app.dev-kanban'
 import { Route as AppControlTowerRouteImport } from './routes/_app.control-tower'
+import { Route as AppComprasRouteImport } from './routes/_app.compras'
 import { Route as AppComercialRouteImport } from './routes/_app.comercial'
 import { Route as AppColecoesRouteImport } from './routes/_app.colecoes'
 import { Route as AppCentroDeCorteRouteImport } from './routes/_app.centro-de-corte'
@@ -204,6 +205,11 @@ const AppControlTowerRoute = AppControlTowerRouteImport.update({
   path: '/control-tower',
   getParentRoute: () => AppRoute,
 } as any)
+const AppComprasRoute = AppComprasRouteImport.update({
+  id: '/compras',
+  path: '/compras',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppComercialRoute = AppComercialRouteImport.update({
   id: '/comercial',
   path: '/comercial',
@@ -262,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/centro-de-corte': typeof AppCentroDeCorteRoute
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
+  '/compras': typeof AppComprasRoute
   '/control-tower': typeof AppControlTowerRoute
   '/dev-kanban': typeof AppDevKanbanRoute
   '/dpp': typeof AppDppRoute
@@ -302,6 +309,7 @@ export interface FileRoutesByTo {
   '/centro-de-corte': typeof AppCentroDeCorteRoute
   '/colecoes': typeof AppColecoesRoute
   '/comercial': typeof AppComercialRoute
+  '/compras': typeof AppComprasRoute
   '/control-tower': typeof AppControlTowerRoute
   '/dev-kanban': typeof AppDevKanbanRoute
   '/dpp': typeof AppDppRoute
@@ -345,6 +353,7 @@ export interface FileRoutesById {
   '/_app/centro-de-corte': typeof AppCentroDeCorteRoute
   '/_app/colecoes': typeof AppColecoesRoute
   '/_app/comercial': typeof AppComercialRoute
+  '/_app/compras': typeof AppComprasRoute
   '/_app/control-tower': typeof AppControlTowerRoute
   '/_app/dev-kanban': typeof AppDevKanbanRoute
   '/_app/dpp': typeof AppDppRoute
@@ -389,6 +398,7 @@ export interface FileRouteTypes {
     | '/centro-de-corte'
     | '/colecoes'
     | '/comercial'
+    | '/compras'
     | '/control-tower'
     | '/dev-kanban'
     | '/dpp'
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/centro-de-corte'
     | '/colecoes'
     | '/comercial'
+    | '/compras'
     | '/control-tower'
     | '/dev-kanban'
     | '/dpp'
@@ -471,6 +482,7 @@ export interface FileRouteTypes {
     | '/_app/centro-de-corte'
     | '/_app/colecoes'
     | '/_app/comercial'
+    | '/_app/compras'
     | '/_app/control-tower'
     | '/_app/dev-kanban'
     | '/_app/dpp'
@@ -727,6 +739,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppControlTowerRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/compras': {
+      id: '/_app/compras'
+      path: '/compras'
+      fullPath: '/compras'
+      preLoaderRoute: typeof AppComprasRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/comercial': {
       id: '/_app/comercial'
       path: '/comercial'
@@ -803,6 +822,7 @@ interface AppRouteChildren {
   AppCentroDeCorteRoute: typeof AppCentroDeCorteRoute
   AppColecoesRoute: typeof AppColecoesRoute
   AppComercialRoute: typeof AppComercialRoute
+  AppComprasRoute: typeof AppComprasRoute
   AppControlTowerRoute: typeof AppControlTowerRoute
   AppDevKanbanRoute: typeof AppDevKanbanRoute
   AppDppRoute: typeof AppDppRoute
@@ -843,6 +863,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCentroDeCorteRoute: AppCentroDeCorteRoute,
   AppColecoesRoute: AppColecoesRoute,
   AppComercialRoute: AppComercialRoute,
+  AppComprasRoute: AppComprasRoute,
   AppControlTowerRoute: AppControlTowerRoute,
   AppDevKanbanRoute: AppDevKanbanRoute,
   AppDppRoute: AppDppRoute,
