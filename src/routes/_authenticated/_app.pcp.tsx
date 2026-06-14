@@ -333,7 +333,9 @@ function PCP() {
             <TabsTrigger value="kanban"><LayoutGrid className="size-4 mr-2" />Quadro</TabsTrigger>
             <TabsTrigger value="gantt"><GanttChart className="size-4 mr-2" />Cronograma</TabsTrigger>
             <TabsTrigger value="table"><TableIcon className="size-4 mr-2" />Tabela</TabsTrigger>
+            <TabsTrigger value="os"><Workflow className="size-4 mr-2" />O.S. Terceirizados</TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="kanban">
             <p className="text-xs text-muted-foreground mb-3">Arraste as ordens entre as colunas para mudar o status.</p>
