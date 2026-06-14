@@ -15,6 +15,7 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AppUseAiRouteImport } from './routes/_app.use-ai'
 import { Route as AppTwinFactoryRouteImport } from './routes/_app.twin-factory'
+import { Route as AppTrendsRouteImport } from './routes/_app.trends'
 import { Route as AppSupplierScoreRouteImport } from './routes/_app.supplier-score'
 import { Route as AppStockHealthRouteImport } from './routes/_app.stock-health'
 import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
@@ -82,6 +83,11 @@ const AppUseAiRoute = AppUseAiRouteImport.update({
 const AppTwinFactoryRoute = AppTwinFactoryRouteImport.update({
   id: '/twin-factory',
   path: '/twin-factory',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTrendsRoute = AppTrendsRouteImport.update({
+  id: '/trends',
+  path: '/trends',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSupplierScoreRoute = AppSupplierScoreRouteImport.update({
@@ -322,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/showroom': typeof AppShowroomRoute
   '/stock-health': typeof AppStockHealthRoute
   '/supplier-score': typeof AppSupplierScoreRoute
+  '/trends': typeof AppTrendsRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -367,6 +374,7 @@ export interface FileRoutesByTo {
   '/showroom': typeof AppShowroomRoute
   '/stock-health': typeof AppStockHealthRoute
   '/supplier-score': typeof AppSupplierScoreRoute
+  '/trends': typeof AppTrendsRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -415,6 +423,7 @@ export interface FileRoutesById {
   '/_app/showroom': typeof AppShowroomRoute
   '/_app/stock-health': typeof AppStockHealthRoute
   '/_app/supplier-score': typeof AppSupplierScoreRoute
+  '/_app/trends': typeof AppTrendsRoute
   '/_app/twin-factory': typeof AppTwinFactoryRoute
   '/_app/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -464,6 +473,7 @@ export interface FileRouteTypes {
     | '/showroom'
     | '/stock-health'
     | '/supplier-score'
+    | '/trends'
     | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
@@ -509,6 +519,7 @@ export interface FileRouteTypes {
     | '/showroom'
     | '/stock-health'
     | '/supplier-score'
+    | '/trends'
     | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
@@ -556,6 +567,7 @@ export interface FileRouteTypes {
     | '/_app/showroom'
     | '/_app/stock-health'
     | '/_app/supplier-score'
+    | '/_app/trends'
     | '/_app/twin-factory'
     | '/_app/use-ai'
     | '/api/chat'
@@ -610,6 +622,13 @@ declare module '@tanstack/react-router' {
       path: '/twin-factory'
       fullPath: '/twin-factory'
       preLoaderRoute: typeof AppTwinFactoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/trends': {
+      id: '/_app/trends'
+      path: '/trends'
+      fullPath: '/trends'
+      preLoaderRoute: typeof AppTrendsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/supplier-score': {
@@ -928,6 +947,7 @@ interface AppRouteChildren {
   AppShowroomRoute: typeof AppShowroomRoute
   AppStockHealthRoute: typeof AppStockHealthRoute
   AppSupplierScoreRoute: typeof AppSupplierScoreRoute
+  AppTrendsRoute: typeof AppTrendsRoute
   AppTwinFactoryRoute: typeof AppTwinFactoryRoute
   AppUseAiRoute: typeof AppUseAiRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -973,6 +993,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppShowroomRoute: AppShowroomRoute,
   AppStockHealthRoute: AppStockHealthRoute,
   AppSupplierScoreRoute: AppSupplierScoreRoute,
+  AppTrendsRoute: AppTrendsRoute,
   AppTwinFactoryRoute: AppTwinFactoryRoute,
   AppUseAiRoute: AppUseAiRoute,
   AppIndexRoute: AppIndexRoute,
