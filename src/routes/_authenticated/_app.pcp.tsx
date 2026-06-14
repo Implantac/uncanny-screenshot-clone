@@ -380,7 +380,7 @@ function PCP() {
                     const pos = ((due - start) / (end - start)) * 100;
                     const created = new Date(o.created_at).getTime();
                     const left = Math.max(0, Math.min(100, ((Math.max(created, start) - start) / (end - start)) * 100));
-                    const width = Math.max(2, Math.min(100 - left, pos - left));
+                    const width = Math.max(2, Math.min(100 - left, Math.max(0, pos - left)));
                     return (
                       <div key={o.id} className="px-4 py-3 grid grid-cols-[180px_1fr_80px] gap-3 items-center hover:bg-muted/20">
                         <div className="truncate">
