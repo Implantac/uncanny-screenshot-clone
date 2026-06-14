@@ -22,6 +22,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "cad", path: "/cad", title: "CAD e Modelagem", short: "Modelagem digital", description: "Integração com CADs e biblioteca de moldes.", icon: PenTool, group: "Produto" },
   { slug: "prototipos", path: "/prototipos", title: "Protótipos", short: "Provas e ajustes", description: "Ciclo de protótipos, provas e aprovações.", icon: Scissors, group: "Produto" },
   { slug: "pcp", path: "/pcp", title: "PCP e Produção", short: "Ordens e capacidade", description: "Planejamento, ordens de produção e apontamento.", icon: Factory, group: "Cadeia" },
+  { slug: "centro-de-corte", path: "/centro-de-corte", title: "Centro de Corte", short: "Plano de corte", description: "Plano de corte, enfesto e peças cortadas.", icon: Scissors, group: "Cadeia" },
   { slug: "almoxarifado", path: "/almoxarifado", title: "Almoxarifado", short: "Estoque e insumos", description: "Controle de tecidos, aviamentos e produtos acabados.", icon: Boxes, group: "Cadeia" },
   { slug: "fornecedores", path: "/fornecedores", title: "Fornecedores", short: "Portal de parceiros", description: "Portal completo para fornecedores e facções.", icon: Truck, group: "Cadeia" },
   { slug: "marketing", path: "/marketing", title: "Marketing", short: "Campanhas e mídia", description: "Calendário de campanhas e performance de mídia.", icon: Megaphone, group: "Comercial" },

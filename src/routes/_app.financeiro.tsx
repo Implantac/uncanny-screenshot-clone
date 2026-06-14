@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Wallet, Plus, Trash2, Pencil, Sparkles, Download, FileText } from "lucide-react";
+import { Wallet, Plus, Trash2, Pencil, Sparkles, Download, FileText, Check } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,6 +49,7 @@ function Financeiro() {
   useRealtime("financial_accounts", ["financial_accounts"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Account | null>(null);
+  const [filter, setFilter] = useState<"todos" | AccStatus>("todos");
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["financial_accounts"],
@@ -67,6 +68,17 @@ function Financeiro() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["financial_accounts"] }); toast.success("Lançamento removido"); },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const markPaidMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("financial_accounts").update({ status: "pago" }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["financial_accounts"] }); toast.success("Marcado como pago"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const filtered = useMemo(() => filter === "todos" ? rows : rows.filter((r) => r.status === filter), [rows, filter]);
 
   const totals = useMemo(() => {
     const receber = rows.filter((r) => r.type === "receber" && r.status === "pendente").reduce((a, b) => a + Number(b.value), 0);
@@ -119,14 +131,29 @@ function Financeiro() {
         </div>
       </div>
 
+      <div className="flex items-center gap-2 flex-wrap">
+        {(["todos", "pendente", "pago", "atrasado", "cancelado"] as const).map((s) => (
+          <button
+            key={s}
+            onClick={() => setFilter(s)}
+            className={`px-3 py-1 rounded-full text-xs border transition-colors ${
+              filter === s ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            {s === "todos" ? "Todos" : STATUS_LABEL[s]}
+          </button>
+        ))}
+        <span className="text-xs text-muted-foreground ml-2">{filtered.length} de {rows.length}</span>
+      </div>
+
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
-      ) : rows.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center">
           <Sparkles className="size-10 text-primary mx-auto mb-3" />
           <h3 className="font-semibold mb-1">Sem lançamentos</h3>
-          <p className="text-sm text-muted-foreground mb-4">Cadastre seu primeiro título.</p>
-          <Button onClick={() => { setEditing(null); setOpen(true); }}>Novo lançamento</Button>
+          <p className="text-sm text-muted-foreground mb-4">{rows.length === 0 ? "Cadastre seu primeiro título." : "Nenhum resultado para o filtro selecionado."}</p>
+          {rows.length === 0 && <Button onClick={() => { setEditing(null); setOpen(true); }}>Novo lançamento</Button>}
         </div>
       ) : (
         <div className="glass rounded-xl overflow-hidden">
@@ -143,7 +170,7 @@ function Financeiro() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => {
+                {filtered.map((r) => {
                   const mine = r.owner_id === user?.id;
                   return (
                     <tr key={r.id} className="border-t border-border hover:bg-muted/30">
@@ -159,6 +186,11 @@ function Financeiro() {
                       <td className="px-5 py-3 text-right">
                         {mine && (
                           <div className="flex justify-end gap-1">
+                            {r.status === "pendente" && (
+                              <button title="Marcar como pago" onClick={() => markPaidMut.mutate(r.id)} className="size-7 grid place-items-center rounded hover:bg-emerald-500/20 text-emerald-400">
+                                <Check className="size-3.5" />
+                              </button>
+                            )}
                             <button onClick={() => { setEditing(r); setOpen(true); }} className="size-7 grid place-items-center rounded hover:bg-muted">
                               <Pencil className="size-3.5" />
                             </button>
