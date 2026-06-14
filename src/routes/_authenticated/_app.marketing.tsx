@@ -278,6 +278,81 @@ const STATUS_COLORS: Record<CStatus, string> = {
   programada: "#0ea5e9", ativa: "#10b981", pausada: "#f59e0b", concluida: "#64748b",
 };
 
+function KpiCard({ icon: Icon, label, value, accent, hint, trend }: {
+  icon: React.ComponentType<{ className?: string }>; label: string; value: string;
+  accent?: string; hint?: string; trend?: { dir: "up" | "down"; pct: number };
+}) {
+  return (
+    <div className="glass rounded-xl p-5 relative overflow-hidden group hover:border-primary/40 transition-colors">
+      <div className="absolute -right-6 -top-6 size-24 rounded-full opacity-10 blur-2xl group-hover:opacity-20 transition-opacity" style={{ background: accent ?? "hsl(var(--primary))" }} />
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-xs text-muted-foreground inline-flex items-center gap-1.5"><Icon className="size-3.5" />{label}</div>
+        {trend && (
+          <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${trend.dir === "up" ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
+            {trend.dir === "up" ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+            {trend.pct.toFixed(0)}%
+          </span>
+        )}
+      </div>
+      <div className="text-2xl font-semibold mt-2 tabular-nums" style={accent ? { color: accent } : undefined}>{value}</div>
+      {hint && <div className="text-[11px] text-muted-foreground mt-1">{hint}</div>}
+    </div>
+  );
+}
+
+function KpiGrid({ ativas, total, invTotal, receitaEst, roasAvg }: {
+  ativas: number; total: number; invTotal: number; receitaEst: number; roasAvg: number;
+}) {
+  const lucro = receitaEst - invTotal;
+  const margemPct = invTotal > 0 ? (lucro / invTotal) * 100 : 0;
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <KpiCard icon={Activity} label="Campanhas ativas" value={String(ativas)} hint={`${total} no total`} />
+      <KpiCard icon={DollarSign} label="Investimento" value={brl(invTotal)} />
+      <KpiCard icon={TrendingUp} label="Receita estimada" value={brl(receitaEst)} accent="#10b981" />
+      <KpiCard icon={Award} label="Lucro projetado" value={brl(lucro)} accent={lucro >= 0 ? "#10b981" : "#ef4444"} trend={{ dir: lucro >= 0 ? "up" : "down", pct: Math.abs(margemPct) }} />
+      <KpiCard icon={Target} label="ROAS médio" value={`${roasAvg.toFixed(2)}x`} hint={roasAvg >= 3 ? "Excelente" : roasAvg >= 2 ? "Saudável" : "Atenção"} accent={roasAvg >= 3 ? "#10b981" : roasAvg >= 2 ? "#f59e0b" : "#ef4444"} />
+    </div>
+  );
+}
+
+function InsightsBar({ rows, invTotal, receitaEst, roasAvg }: {
+  rows: Campaign[]; invTotal: number; receitaEst: number; roasAvg: number;
+}) {
+  const insights = useMemo(() => {
+    const list: Array<{ icon: React.ComponentType<{ className?: string }>; tone: string; text: string }> = [];
+    if (rows.length === 0) return list;
+    const best = [...rows].filter((c) => Number(c.roas) > 0).sort((a, b) => Number(b.roas) - Number(a.roas))[0];
+    const worst = [...rows].filter((c) => Number(c.roas) > 0).sort((a, b) => Number(a.roas) - Number(b.roas))[0];
+    if (best) list.push({ icon: Zap, tone: "text-emerald-400 bg-emerald-500/10", text: `Melhor ROAS: ${best.name} (${Number(best.roas).toFixed(1)}x)` });
+    if (worst && worst.id !== best?.id && Number(worst.roas) < 2) list.push({ icon: AlertTriangle, tone: "text-amber-400 bg-amber-500/10", text: `Revisar: ${worst.name} (${Number(worst.roas).toFixed(1)}x)` });
+    if (roasAvg >= 3) list.push({ icon: Award, tone: "text-emerald-400 bg-emerald-500/10", text: `Carteira performando acima do mercado (${roasAvg.toFixed(1)}x)` });
+    else if (roasAvg < 2 && invTotal > 0) list.push({ icon: AlertTriangle, tone: "text-rose-400 bg-rose-500/10", text: `ROAS médio abaixo de 2x — otimizar criativos` });
+    const lucro = receitaEst - invTotal;
+    if (lucro > 0 && invTotal > 0) list.push({ icon: TrendingUp, tone: "text-sky-400 bg-sky-500/10", text: `Margem projetada de ${((lucro / invTotal) * 100).toFixed(0)}% sobre investimento` });
+    return list.slice(0, 4);
+  }, [rows, invTotal, receitaEst, roasAvg]);
+
+  if (insights.length === 0) return null;
+  return (
+    <div className="glass rounded-xl p-4">
+      <div className="text-xs font-semibold inline-flex items-center gap-1.5 mb-3 text-muted-foreground"><Sparkles className="size-3.5 text-primary" />Insights inteligentes</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+        {insights.map((i, idx) => (
+          <div key={idx} className={`flex items-start gap-2 rounded-lg p-2.5 text-xs ${i.tone}`}>
+            <i.icon className="size-4 mt-0.5 shrink-0" />
+            <span className="leading-snug">{i.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const STATUS_COLORS: Record<CStatus, string> = {
+  programada: "#0ea5e9", ativa: "#10b981", pausada: "#f59e0b", concluida: "#64748b",
+};
+
 function ChartsSection({ rows }: { rows: Campaign[] }) {
   const byChannel = useMemo(() => {
     const m = new Map<string, { channel: string; investimento: number; receita: number }>();
