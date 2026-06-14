@@ -102,26 +102,12 @@ function Marketing() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass rounded-xl p-5">
-          <div className="text-xs text-muted-foreground">Campanhas ativas</div>
-          <div className="text-2xl font-semibold mt-1 tabular-nums">{ativas}</div>
-        </div>
-        <div className="glass rounded-xl p-5">
-          <div className="text-xs text-muted-foreground">Investimento total</div>
-          <div className="text-2xl font-semibold mt-1 tabular-nums">{brl(invTotal)}</div>
-        </div>
-        <div className="glass rounded-xl p-5">
-          <div className="text-xs text-muted-foreground inline-flex items-center gap-1.5"><TrendingUp className="size-3.5" />Receita estimada</div>
-          <div className="text-2xl font-semibold mt-1 tabular-nums text-emerald-400">{brl(receitaEst)}</div>
-        </div>
-        <div className="glass rounded-xl p-5">
-          <div className="text-xs text-muted-foreground">ROAS médio</div>
-          <div className="text-2xl font-semibold mt-1 tabular-nums">{roasAvg.toFixed(1)}x</div>
-      </div>
+      <KpiGrid ativas={ativas} total={filtered.length} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
+
+      <InsightsBar rows={filtered} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
 
       <ChartsSection rows={filtered} />
-      </div>
+
 
       {channels.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
