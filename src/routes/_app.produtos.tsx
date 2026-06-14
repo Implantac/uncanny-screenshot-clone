@@ -438,6 +438,10 @@ function ProductDialog({
       setSku(editing.sku);
       setName(editing.name);
       setCategory(editing.category || "");
+      setProductGroup(editing.product_group || "none");
+      setSubgroup(editing.subgroup || "none");
+      setProductClass(editing.product_class || "none");
+      setGrade(editing.grade || "none");
       setDescription(editing.description || "");
       setCostPrice(Number(editing.cost_price));
       setSellPrice(Number(editing.sell_price));
@@ -456,6 +460,10 @@ function ProductDialog({
     setSku("");
     setName("");
     setCategory("");
+    setProductGroup("none");
+    setSubgroup("none");
+    setProductClass("none");
+    setGrade("none");
     setDescription("");
     setCostPrice(0);
     setSellPrice(0);
