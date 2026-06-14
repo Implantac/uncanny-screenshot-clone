@@ -171,24 +171,38 @@ function PCP() {
   const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
   const supplierName = (id: string | null) => suppliers.find(s => s.id === id)?.name ?? "—";
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return items.filter((o) => {
+      if (filterStatus !== "all" && o.status !== filterStatus) return false;
+      if (filterPriority !== "all" && String(o.priority ?? 3) !== filterPriority) return false;
+      if (filterSupplier !== "all" && o.supplier_id !== filterSupplier) return false;
+      if (q) {
+        const hay = `${o.code} ${productName(o.product_id)} ${supplierName(o.supplier_id)} ${o.notes ?? ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [items, search, filterStatus, filterPriority, filterSupplier, products, suppliers]);
+
   const kpis = useMemo(() => {
-    const total = items.length;
-    const inProd = items.filter(i => i.status === "em_producao").length;
-    const late = items.filter(i => i.status === "atrasada").length;
-    const done = items.filter(i => i.status === "concluida").length;
-    const avg = total ? Math.round(items.reduce((s, i) => s + i.progress, 0) / total) : 0;
-    const totalQty = items.reduce((s, i) => s + (i.quantity || 0), 0);
+    const total = filtered.length;
+    const inProd = filtered.filter(i => i.status === "em_producao").length;
+    const late = filtered.filter(i => i.status === "atrasada").length;
+    const done = filtered.filter(i => i.status === "concluida").length;
+    const avg = total ? Math.round(filtered.reduce((s, i) => s + i.progress, 0) / total) : 0;
+    const totalQty = filtered.reduce((s, i) => s + (i.quantity || 0), 0);
     return { total, inProd, late, done, avg, totalQty };
-  }, [items]);
+  }, [filtered]);
 
   const byStatus = useMemo(() => {
     const groups: Record<Status, Order[]> = { aguardando: [], em_producao: [], atrasada: [], concluida: [], cancelada: [] };
-    for (const o of items) groups[o.status].push(o);
+    for (const o of filtered) groups[o.status].push(o);
     return groups;
-  }, [items]);
+  }, [filtered]);
 
   const timeline = useMemo(() => {
-    const dated = items.filter(i => i.due_date).sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1));
+    const dated = filtered.filter(i => i.due_date).sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1));
     if (!dated.length) return { rows: [] as Order[], min: null as Date | null, max: null as Date | null, days: 0 };
     const min = new Date(dated[0].due_date!);
     const max = new Date(dated[dated.length - 1].due_date!);
@@ -196,7 +210,8 @@ function PCP() {
     const end = new Date(Math.max(max.getTime(), Date.now() + 7 * 86400000));
     const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86400000));
     return { rows: dated, min: start, max: end, days };
-  }, [items]);
+  }, [filtered]);
+
 
   const KpiCard = ({ icon: Icon, label, value, accent }: { icon: typeof Factory; label: string; value: string | number; accent?: string }) => (
     <div className="rounded-xl border border-border bg-card/50 backdrop-blur p-4">
