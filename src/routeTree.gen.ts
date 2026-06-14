@@ -10,56 +10,57 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AppRouteImport } from './routes/_app'
-import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
-import { Route as AppUseAiRouteImport } from './routes/_app.use-ai'
-import { Route as AppTwinFactoryRouteImport } from './routes/_app.twin-factory'
-import { Route as AppTrendsRouteImport } from './routes/_app.trends'
-import { Route as AppSupplierScoreRouteImport } from './routes/_app.supplier-score'
-import { Route as AppStockHealthRouteImport } from './routes/_app.stock-health'
-import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
-import { Route as AppSecurityCenterRouteImport } from './routes/_app.security-center'
-import { Route as AppSalesPerformanceRouteImport } from './routes/_app.sales-performance'
-import { Route as AppReplenishmentRouteImport } from './routes/_app.replenishment'
-import { Route as AppPrototiposRouteImport } from './routes/_app.prototipos'
-import { Route as AppProfitabilityRouteImport } from './routes/_app.profitability'
-import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
-import { Route as AppProductSuccessRouteImport } from './routes/_app.product-success'
-import { Route as AppProductScoreRouteImport } from './routes/_app.product-score'
-import { Route as AppPilotsRouteImport } from './routes/_app.pilots'
-import { Route as AppPcpKanbanRouteImport } from './routes/_app.pcp-kanban'
-import { Route as AppPcpRouteImport } from './routes/_app.pcp'
-import { Route as AppMobileRouteImport } from './routes/_app.mobile'
-import { Route as AppMarketingRouteImport } from './routes/_app.marketing'
-import { Route as AppMargemRouteImport } from './routes/_app.margem'
-import { Route as AppIntelligenceRouteImport } from './routes/_app.intelligence'
-import { Route as AppInfluencersRouteImport } from './routes/_app.influencers'
-import { Route as AppInfluencerRoiRouteImport } from './routes/_app.influencer-roi'
-import { Route as AppGradeNeedsRouteImport } from './routes/_app.grade-needs'
-import { Route as AppGeoSalesRouteImport } from './routes/_app.geo-sales'
-import { Route as AppFornecedoresRouteImport } from './routes/_app.fornecedores'
-import { Route as AppFinanceiroRouteImport } from './routes/_app.financeiro'
-import { Route as AppFichaTecnicaRouteImport } from './routes/_app.ficha-tecnica'
-import { Route as AppFashionGptRouteImport } from './routes/_app.fashion-gpt'
-import { Route as AppFashionCalendarRouteImport } from './routes/_app.fashion-calendar'
-import { Route as AppEquipeRouteImport } from './routes/_app.equipe'
-import { Route as AppDppRouteImport } from './routes/_app.dpp'
-import { Route as AppDevKanbanRouteImport } from './routes/_app.dev-kanban'
-import { Route as AppDataLakeRouteImport } from './routes/_app.data-lake'
-import { Route as AppControlTowerRouteImport } from './routes/_app.control-tower'
-import { Route as AppComprasRouteImport } from './routes/_app.compras'
-import { Route as AppComercialRouteImport } from './routes/_app.comercial'
-import { Route as AppColecoesRouteImport } from './routes/_app.colecoes'
-import { Route as AppCentroDeCorteRouteImport } from './routes/_app.centro-de-corte'
-import { Route as AppCashflowRouteImport } from './routes/_app.cashflow'
-import { Route as AppCapacityRouteImport } from './routes/_app.capacity'
-import { Route as AppCampaignsRouteImport } from './routes/_app.campaigns'
-import { Route as AppCadRouteImport } from './routes/_app.cad'
-import { Route as AppBiRouteImport } from './routes/_app.bi'
-import { Route as AppAuditRouteImport } from './routes/_app.audit'
-import { Route as AppAttributionRouteImport } from './routes/_app.attribution'
-import { Route as AppAlmoxarifadoRouteImport } from './routes/_app.almoxarifado'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
+import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/_app.index'
+import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticated/_app.use-ai'
+import { Route as AuthenticatedAppTwinFactoryRouteImport } from './routes/_authenticated/_app.twin-factory'
+import { Route as AuthenticatedAppTrendsRouteImport } from './routes/_authenticated/_app.trends'
+import { Route as AuthenticatedAppSupplierScoreRouteImport } from './routes/_authenticated/_app.supplier-score'
+import { Route as AuthenticatedAppStockHealthRouteImport } from './routes/_authenticated/_app.stock-health'
+import { Route as AuthenticatedAppShowroomRouteImport } from './routes/_authenticated/_app.showroom'
+import { Route as AuthenticatedAppSecurityCenterRouteImport } from './routes/_authenticated/_app.security-center'
+import { Route as AuthenticatedAppSalesPerformanceRouteImport } from './routes/_authenticated/_app.sales-performance'
+import { Route as AuthenticatedAppReplenishmentRouteImport } from './routes/_authenticated/_app.replenishment'
+import { Route as AuthenticatedAppPrototiposRouteImport } from './routes/_authenticated/_app.prototipos'
+import { Route as AuthenticatedAppProfitabilityRouteImport } from './routes/_authenticated/_app.profitability'
+import { Route as AuthenticatedAppProdutosRouteImport } from './routes/_authenticated/_app.produtos'
+import { Route as AuthenticatedAppProductSuccessRouteImport } from './routes/_authenticated/_app.product-success'
+import { Route as AuthenticatedAppProductScoreRouteImport } from './routes/_authenticated/_app.product-score'
+import { Route as AuthenticatedAppPilotsRouteImport } from './routes/_authenticated/_app.pilots'
+import { Route as AuthenticatedAppPcpKanbanRouteImport } from './routes/_authenticated/_app.pcp-kanban'
+import { Route as AuthenticatedAppPcpRouteImport } from './routes/_authenticated/_app.pcp'
+import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
+import { Route as AuthenticatedAppMarketingRouteImport } from './routes/_authenticated/_app.marketing'
+import { Route as AuthenticatedAppMargemRouteImport } from './routes/_authenticated/_app.margem'
+import { Route as AuthenticatedAppIntelligenceRouteImport } from './routes/_authenticated/_app.intelligence'
+import { Route as AuthenticatedAppInfluencersRouteImport } from './routes/_authenticated/_app.influencers'
+import { Route as AuthenticatedAppInfluencerRoiRouteImport } from './routes/_authenticated/_app.influencer-roi'
+import { Route as AuthenticatedAppGradeNeedsRouteImport } from './routes/_authenticated/_app.grade-needs'
+import { Route as AuthenticatedAppGeoSalesRouteImport } from './routes/_authenticated/_app.geo-sales'
+import { Route as AuthenticatedAppFornecedoresRouteImport } from './routes/_authenticated/_app.fornecedores'
+import { Route as AuthenticatedAppFinanceiroRouteImport } from './routes/_authenticated/_app.financeiro'
+import { Route as AuthenticatedAppFichaTecnicaRouteImport } from './routes/_authenticated/_app.ficha-tecnica'
+import { Route as AuthenticatedAppFashionGptRouteImport } from './routes/_authenticated/_app.fashion-gpt'
+import { Route as AuthenticatedAppFashionCalendarRouteImport } from './routes/_authenticated/_app.fashion-calendar'
+import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/_app.equipe'
+import { Route as AuthenticatedAppDppRouteImport } from './routes/_authenticated/_app.dpp'
+import { Route as AuthenticatedAppDevKanbanRouteImport } from './routes/_authenticated/_app.dev-kanban'
+import { Route as AuthenticatedAppDataLakeRouteImport } from './routes/_authenticated/_app.data-lake'
+import { Route as AuthenticatedAppControlTowerRouteImport } from './routes/_authenticated/_app.control-tower'
+import { Route as AuthenticatedAppComprasRouteImport } from './routes/_authenticated/_app.compras'
+import { Route as AuthenticatedAppComercialRouteImport } from './routes/_authenticated/_app.comercial'
+import { Route as AuthenticatedAppColecoesRouteImport } from './routes/_authenticated/_app.colecoes'
+import { Route as AuthenticatedAppCentroDeCorteRouteImport } from './routes/_authenticated/_app.centro-de-corte'
+import { Route as AuthenticatedAppCashflowRouteImport } from './routes/_authenticated/_app.cashflow'
+import { Route as AuthenticatedAppCapacityRouteImport } from './routes/_authenticated/_app.capacity'
+import { Route as AuthenticatedAppCampaignsRouteImport } from './routes/_authenticated/_app.campaigns'
+import { Route as AuthenticatedAppCadRouteImport } from './routes/_authenticated/_app.cad'
+import { Route as AuthenticatedAppBiRouteImport } from './routes/_authenticated/_app.bi'
+import { Route as AuthenticatedAppAuditRouteImport } from './routes/_authenticated/_app.audit'
+import { Route as AuthenticatedAppAttributionRouteImport } from './routes/_authenticated/_app.attribution'
+import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
 
 const AuthRoute = AuthRouteImport.update({
@@ -67,255 +68,294 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRoute,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppUseAiRoute = AppUseAiRouteImport.update({
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppUseAiRoute = AuthenticatedAppUseAiRouteImport.update({
   id: '/use-ai',
   path: '/use-ai',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppTwinFactoryRoute = AppTwinFactoryRouteImport.update({
-  id: '/twin-factory',
-  path: '/twin-factory',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppTrendsRoute = AppTrendsRouteImport.update({
+const AuthenticatedAppTwinFactoryRoute =
+  AuthenticatedAppTwinFactoryRouteImport.update({
+    id: '/twin-factory',
+    path: '/twin-factory',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppTrendsRoute = AuthenticatedAppTrendsRouteImport.update({
   id: '/trends',
   path: '/trends',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppSupplierScoreRoute = AppSupplierScoreRouteImport.update({
-  id: '/supplier-score',
-  path: '/supplier-score',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppStockHealthRoute = AppStockHealthRouteImport.update({
-  id: '/stock-health',
-  path: '/stock-health',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppShowroomRoute = AppShowroomRouteImport.update({
-  id: '/showroom',
-  path: '/showroom',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSecurityCenterRoute = AppSecurityCenterRouteImport.update({
-  id: '/security-center',
-  path: '/security-center',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppSalesPerformanceRoute = AppSalesPerformanceRouteImport.update({
-  id: '/sales-performance',
-  path: '/sales-performance',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppReplenishmentRoute = AppReplenishmentRouteImport.update({
-  id: '/replenishment',
-  path: '/replenishment',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPrototiposRoute = AppPrototiposRouteImport.update({
-  id: '/prototipos',
-  path: '/prototipos',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProfitabilityRoute = AppProfitabilityRouteImport.update({
-  id: '/profitability',
-  path: '/profitability',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProdutosRoute = AppProdutosRouteImport.update({
-  id: '/produtos',
-  path: '/produtos',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProductSuccessRoute = AppProductSuccessRouteImport.update({
-  id: '/product-success',
-  path: '/product-success',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppProductScoreRoute = AppProductScoreRouteImport.update({
-  id: '/product-score',
-  path: '/product-score',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPilotsRoute = AppPilotsRouteImport.update({
+const AuthenticatedAppSupplierScoreRoute =
+  AuthenticatedAppSupplierScoreRouteImport.update({
+    id: '/supplier-score',
+    path: '/supplier-score',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppStockHealthRoute =
+  AuthenticatedAppStockHealthRouteImport.update({
+    id: '/stock-health',
+    path: '/stock-health',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppShowroomRoute =
+  AuthenticatedAppShowroomRouteImport.update({
+    id: '/showroom',
+    path: '/showroom',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppSecurityCenterRoute =
+  AuthenticatedAppSecurityCenterRouteImport.update({
+    id: '/security-center',
+    path: '/security-center',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppSalesPerformanceRoute =
+  AuthenticatedAppSalesPerformanceRouteImport.update({
+    id: '/sales-performance',
+    path: '/sales-performance',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppReplenishmentRoute =
+  AuthenticatedAppReplenishmentRouteImport.update({
+    id: '/replenishment',
+    path: '/replenishment',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppPrototiposRoute =
+  AuthenticatedAppPrototiposRouteImport.update({
+    id: '/prototipos',
+    path: '/prototipos',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppProfitabilityRoute =
+  AuthenticatedAppProfitabilityRouteImport.update({
+    id: '/profitability',
+    path: '/profitability',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppProdutosRoute =
+  AuthenticatedAppProdutosRouteImport.update({
+    id: '/produtos',
+    path: '/produtos',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppProductSuccessRoute =
+  AuthenticatedAppProductSuccessRouteImport.update({
+    id: '/product-success',
+    path: '/product-success',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppProductScoreRoute =
+  AuthenticatedAppProductScoreRouteImport.update({
+    id: '/product-score',
+    path: '/product-score',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppPilotsRoute = AuthenticatedAppPilotsRouteImport.update({
   id: '/pilots',
   path: '/pilots',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppPcpKanbanRoute = AppPcpKanbanRouteImport.update({
-  id: '/pcp-kanban',
-  path: '/pcp-kanban',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPcpRoute = AppPcpRouteImport.update({
+const AuthenticatedAppPcpKanbanRoute =
+  AuthenticatedAppPcpKanbanRouteImport.update({
+    id: '/pcp-kanban',
+    path: '/pcp-kanban',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppPcpRoute = AuthenticatedAppPcpRouteImport.update({
   id: '/pcp',
   path: '/pcp',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppMobileRoute = AppMobileRouteImport.update({
+const AuthenticatedAppMobileRoute = AuthenticatedAppMobileRouteImport.update({
   id: '/mobile',
   path: '/mobile',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppMarketingRoute = AppMarketingRouteImport.update({
-  id: '/marketing',
-  path: '/marketing',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppMargemRoute = AppMargemRouteImport.update({
+const AuthenticatedAppMarketingRoute =
+  AuthenticatedAppMarketingRouteImport.update({
+    id: '/marketing',
+    path: '/marketing',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppMargemRoute = AuthenticatedAppMargemRouteImport.update({
   id: '/margem',
   path: '/margem',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppIntelligenceRoute = AppIntelligenceRouteImport.update({
-  id: '/intelligence',
-  path: '/intelligence',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppInfluencersRoute = AppInfluencersRouteImport.update({
-  id: '/influencers',
-  path: '/influencers',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppInfluencerRoiRoute = AppInfluencerRoiRouteImport.update({
-  id: '/influencer-roi',
-  path: '/influencer-roi',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppGradeNeedsRoute = AppGradeNeedsRouteImport.update({
-  id: '/grade-needs',
-  path: '/grade-needs',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppGeoSalesRoute = AppGeoSalesRouteImport.update({
-  id: '/geo-sales',
-  path: '/geo-sales',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFornecedoresRoute = AppFornecedoresRouteImport.update({
-  id: '/fornecedores',
-  path: '/fornecedores',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFinanceiroRoute = AppFinanceiroRouteImport.update({
-  id: '/financeiro',
-  path: '/financeiro',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFichaTecnicaRoute = AppFichaTecnicaRouteImport.update({
-  id: '/ficha-tecnica',
-  path: '/ficha-tecnica',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFashionGptRoute = AppFashionGptRouteImport.update({
-  id: '/fashion-gpt',
-  path: '/fashion-gpt',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFashionCalendarRoute = AppFashionCalendarRouteImport.update({
-  id: '/fashion-calendar',
-  path: '/fashion-calendar',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppEquipeRoute = AppEquipeRouteImport.update({
+const AuthenticatedAppIntelligenceRoute =
+  AuthenticatedAppIntelligenceRouteImport.update({
+    id: '/intelligence',
+    path: '/intelligence',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppInfluencersRoute =
+  AuthenticatedAppInfluencersRouteImport.update({
+    id: '/influencers',
+    path: '/influencers',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppInfluencerRoiRoute =
+  AuthenticatedAppInfluencerRoiRouteImport.update({
+    id: '/influencer-roi',
+    path: '/influencer-roi',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppGradeNeedsRoute =
+  AuthenticatedAppGradeNeedsRouteImport.update({
+    id: '/grade-needs',
+    path: '/grade-needs',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppGeoSalesRoute =
+  AuthenticatedAppGeoSalesRouteImport.update({
+    id: '/geo-sales',
+    path: '/geo-sales',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppFornecedoresRoute =
+  AuthenticatedAppFornecedoresRouteImport.update({
+    id: '/fornecedores',
+    path: '/fornecedores',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppFinanceiroRoute =
+  AuthenticatedAppFinanceiroRouteImport.update({
+    id: '/financeiro',
+    path: '/financeiro',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppFichaTecnicaRoute =
+  AuthenticatedAppFichaTecnicaRouteImport.update({
+    id: '/ficha-tecnica',
+    path: '/ficha-tecnica',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppFashionGptRoute =
+  AuthenticatedAppFashionGptRouteImport.update({
+    id: '/fashion-gpt',
+    path: '/fashion-gpt',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppFashionCalendarRoute =
+  AuthenticatedAppFashionCalendarRouteImport.update({
+    id: '/fashion-calendar',
+    path: '/fashion-calendar',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppEquipeRoute = AuthenticatedAppEquipeRouteImport.update({
   id: '/equipe',
   path: '/equipe',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppDppRoute = AppDppRouteImport.update({
+const AuthenticatedAppDppRoute = AuthenticatedAppDppRouteImport.update({
   id: '/dpp',
   path: '/dpp',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppDevKanbanRoute = AppDevKanbanRouteImport.update({
-  id: '/dev-kanban',
-  path: '/dev-kanban',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDataLakeRoute = AppDataLakeRouteImport.update({
-  id: '/data-lake',
-  path: '/data-lake',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppControlTowerRoute = AppControlTowerRouteImport.update({
-  id: '/control-tower',
-  path: '/control-tower',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppComprasRoute = AppComprasRouteImport.update({
+const AuthenticatedAppDevKanbanRoute =
+  AuthenticatedAppDevKanbanRouteImport.update({
+    id: '/dev-kanban',
+    path: '/dev-kanban',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppDataLakeRoute =
+  AuthenticatedAppDataLakeRouteImport.update({
+    id: '/data-lake',
+    path: '/data-lake',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppControlTowerRoute =
+  AuthenticatedAppControlTowerRouteImport.update({
+    id: '/control-tower',
+    path: '/control-tower',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppComprasRoute = AuthenticatedAppComprasRouteImport.update({
   id: '/compras',
   path: '/compras',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppComercialRoute = AppComercialRouteImport.update({
-  id: '/comercial',
-  path: '/comercial',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppColecoesRoute = AppColecoesRouteImport.update({
-  id: '/colecoes',
-  path: '/colecoes',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCentroDeCorteRoute = AppCentroDeCorteRouteImport.update({
-  id: '/centro-de-corte',
-  path: '/centro-de-corte',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCashflowRoute = AppCashflowRouteImport.update({
-  id: '/cashflow',
-  path: '/cashflow',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCapacityRoute = AppCapacityRouteImport.update({
-  id: '/capacity',
-  path: '/capacity',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCampaignsRoute = AppCampaignsRouteImport.update({
-  id: '/campaigns',
-  path: '/campaigns',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCadRoute = AppCadRouteImport.update({
+const AuthenticatedAppComercialRoute =
+  AuthenticatedAppComercialRouteImport.update({
+    id: '/comercial',
+    path: '/comercial',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppColecoesRoute =
+  AuthenticatedAppColecoesRouteImport.update({
+    id: '/colecoes',
+    path: '/colecoes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCentroDeCorteRoute =
+  AuthenticatedAppCentroDeCorteRouteImport.update({
+    id: '/centro-de-corte',
+    path: '/centro-de-corte',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCashflowRoute =
+  AuthenticatedAppCashflowRouteImport.update({
+    id: '/cashflow',
+    path: '/cashflow',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCapacityRoute =
+  AuthenticatedAppCapacityRouteImport.update({
+    id: '/capacity',
+    path: '/capacity',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCampaignsRoute =
+  AuthenticatedAppCampaignsRouteImport.update({
+    id: '/campaigns',
+    path: '/campaigns',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCadRoute = AuthenticatedAppCadRouteImport.update({
   id: '/cad',
   path: '/cad',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppBiRoute = AppBiRouteImport.update({
+const AuthenticatedAppBiRoute = AuthenticatedAppBiRouteImport.update({
   id: '/bi',
   path: '/bi',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppAuditRoute = AppAuditRouteImport.update({
+const AuthenticatedAppAuditRoute = AuthenticatedAppAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
-  getParentRoute: () => AppRoute,
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
-const AppAttributionRoute = AppAttributionRouteImport.update({
-  id: '/attribution',
-  path: '/attribution',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAlmoxarifadoRoute = AppAlmoxarifadoRouteImport.update({
-  id: '/almoxarifado',
-  path: '/almoxarifado',
-  getParentRoute: () => AppRoute,
-} as any)
+const AuthenticatedAppAttributionRoute =
+  AuthenticatedAppAttributionRouteImport.update({
+    id: '/attribution',
+    path: '/attribution',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAlmoxarifadoRoute =
+  AuthenticatedAppAlmoxarifadoRouteImport.update({
+    id: '/almoxarifado',
+    path: '/almoxarifado',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const ApiPublicAgentsRunDueRoute = ApiPublicAgentsRunDueRouteImport.update({
   id: '/api/public/agents/run-due',
   path: '/api/public/agents/run-due',
@@ -323,164 +363,165 @@ const ApiPublicAgentsRunDueRoute = ApiPublicAgentsRunDueRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
+  '/': typeof AuthenticatedAppIndexRoute
   '/auth': typeof AuthRoute
-  '/almoxarifado': typeof AppAlmoxarifadoRoute
-  '/attribution': typeof AppAttributionRoute
-  '/audit': typeof AppAuditRoute
-  '/bi': typeof AppBiRoute
-  '/cad': typeof AppCadRoute
-  '/campaigns': typeof AppCampaignsRoute
-  '/capacity': typeof AppCapacityRoute
-  '/cashflow': typeof AppCashflowRoute
-  '/centro-de-corte': typeof AppCentroDeCorteRoute
-  '/colecoes': typeof AppColecoesRoute
-  '/comercial': typeof AppComercialRoute
-  '/compras': typeof AppComprasRoute
-  '/control-tower': typeof AppControlTowerRoute
-  '/data-lake': typeof AppDataLakeRoute
-  '/dev-kanban': typeof AppDevKanbanRoute
-  '/dpp': typeof AppDppRoute
-  '/equipe': typeof AppEquipeRoute
-  '/fashion-calendar': typeof AppFashionCalendarRoute
-  '/fashion-gpt': typeof AppFashionGptRoute
-  '/ficha-tecnica': typeof AppFichaTecnicaRoute
-  '/financeiro': typeof AppFinanceiroRoute
-  '/fornecedores': typeof AppFornecedoresRoute
-  '/geo-sales': typeof AppGeoSalesRoute
-  '/grade-needs': typeof AppGradeNeedsRoute
-  '/influencer-roi': typeof AppInfluencerRoiRoute
-  '/influencers': typeof AppInfluencersRoute
-  '/intelligence': typeof AppIntelligenceRoute
-  '/margem': typeof AppMargemRoute
-  '/marketing': typeof AppMarketingRoute
-  '/mobile': typeof AppMobileRoute
-  '/pcp': typeof AppPcpRoute
-  '/pcp-kanban': typeof AppPcpKanbanRoute
-  '/pilots': typeof AppPilotsRoute
-  '/product-score': typeof AppProductScoreRoute
-  '/product-success': typeof AppProductSuccessRoute
-  '/produtos': typeof AppProdutosRoute
-  '/profitability': typeof AppProfitabilityRoute
-  '/prototipos': typeof AppPrototiposRoute
-  '/replenishment': typeof AppReplenishmentRoute
-  '/sales-performance': typeof AppSalesPerformanceRoute
-  '/security-center': typeof AppSecurityCenterRoute
-  '/showroom': typeof AppShowroomRoute
-  '/stock-health': typeof AppStockHealthRoute
-  '/supplier-score': typeof AppSupplierScoreRoute
-  '/trends': typeof AppTrendsRoute
-  '/twin-factory': typeof AppTwinFactoryRoute
-  '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
+  '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
+  '/attribution': typeof AuthenticatedAppAttributionRoute
+  '/audit': typeof AuthenticatedAppAuditRoute
+  '/bi': typeof AuthenticatedAppBiRoute
+  '/cad': typeof AuthenticatedAppCadRoute
+  '/campaigns': typeof AuthenticatedAppCampaignsRoute
+  '/capacity': typeof AuthenticatedAppCapacityRoute
+  '/cashflow': typeof AuthenticatedAppCashflowRoute
+  '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
+  '/colecoes': typeof AuthenticatedAppColecoesRoute
+  '/comercial': typeof AuthenticatedAppComercialRoute
+  '/compras': typeof AuthenticatedAppComprasRoute
+  '/control-tower': typeof AuthenticatedAppControlTowerRoute
+  '/data-lake': typeof AuthenticatedAppDataLakeRoute
+  '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
+  '/dpp': typeof AuthenticatedAppDppRoute
+  '/equipe': typeof AuthenticatedAppEquipeRoute
+  '/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
+  '/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
+  '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
+  '/financeiro': typeof AuthenticatedAppFinanceiroRoute
+  '/fornecedores': typeof AuthenticatedAppFornecedoresRoute
+  '/geo-sales': typeof AuthenticatedAppGeoSalesRoute
+  '/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
+  '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
+  '/influencers': typeof AuthenticatedAppInfluencersRoute
+  '/intelligence': typeof AuthenticatedAppIntelligenceRoute
+  '/margem': typeof AuthenticatedAppMargemRoute
+  '/marketing': typeof AuthenticatedAppMarketingRoute
+  '/mobile': typeof AuthenticatedAppMobileRoute
+  '/pcp': typeof AuthenticatedAppPcpRoute
+  '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
+  '/pilots': typeof AuthenticatedAppPilotsRoute
+  '/product-score': typeof AuthenticatedAppProductScoreRoute
+  '/product-success': typeof AuthenticatedAppProductSuccessRoute
+  '/produtos': typeof AuthenticatedAppProdutosRoute
+  '/profitability': typeof AuthenticatedAppProfitabilityRoute
+  '/prototipos': typeof AuthenticatedAppPrototiposRoute
+  '/replenishment': typeof AuthenticatedAppReplenishmentRoute
+  '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
+  '/security-center': typeof AuthenticatedAppSecurityCenterRoute
+  '/showroom': typeof AuthenticatedAppShowroomRoute
+  '/stock-health': typeof AuthenticatedAppStockHealthRoute
+  '/supplier-score': typeof AuthenticatedAppSupplierScoreRoute
+  '/trends': typeof AuthenticatedAppTrendsRoute
+  '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
+  '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof AuthenticatedAppIndexRoute
   '/auth': typeof AuthRoute
-  '/almoxarifado': typeof AppAlmoxarifadoRoute
-  '/attribution': typeof AppAttributionRoute
-  '/audit': typeof AppAuditRoute
-  '/bi': typeof AppBiRoute
-  '/cad': typeof AppCadRoute
-  '/campaigns': typeof AppCampaignsRoute
-  '/capacity': typeof AppCapacityRoute
-  '/cashflow': typeof AppCashflowRoute
-  '/centro-de-corte': typeof AppCentroDeCorteRoute
-  '/colecoes': typeof AppColecoesRoute
-  '/comercial': typeof AppComercialRoute
-  '/compras': typeof AppComprasRoute
-  '/control-tower': typeof AppControlTowerRoute
-  '/data-lake': typeof AppDataLakeRoute
-  '/dev-kanban': typeof AppDevKanbanRoute
-  '/dpp': typeof AppDppRoute
-  '/equipe': typeof AppEquipeRoute
-  '/fashion-calendar': typeof AppFashionCalendarRoute
-  '/fashion-gpt': typeof AppFashionGptRoute
-  '/ficha-tecnica': typeof AppFichaTecnicaRoute
-  '/financeiro': typeof AppFinanceiroRoute
-  '/fornecedores': typeof AppFornecedoresRoute
-  '/geo-sales': typeof AppGeoSalesRoute
-  '/grade-needs': typeof AppGradeNeedsRoute
-  '/influencer-roi': typeof AppInfluencerRoiRoute
-  '/influencers': typeof AppInfluencersRoute
-  '/intelligence': typeof AppIntelligenceRoute
-  '/margem': typeof AppMargemRoute
-  '/marketing': typeof AppMarketingRoute
-  '/mobile': typeof AppMobileRoute
-  '/pcp': typeof AppPcpRoute
-  '/pcp-kanban': typeof AppPcpKanbanRoute
-  '/pilots': typeof AppPilotsRoute
-  '/product-score': typeof AppProductScoreRoute
-  '/product-success': typeof AppProductSuccessRoute
-  '/produtos': typeof AppProdutosRoute
-  '/profitability': typeof AppProfitabilityRoute
-  '/prototipos': typeof AppPrototiposRoute
-  '/replenishment': typeof AppReplenishmentRoute
-  '/sales-performance': typeof AppSalesPerformanceRoute
-  '/security-center': typeof AppSecurityCenterRoute
-  '/showroom': typeof AppShowroomRoute
-  '/stock-health': typeof AppStockHealthRoute
-  '/supplier-score': typeof AppSupplierScoreRoute
-  '/trends': typeof AppTrendsRoute
-  '/twin-factory': typeof AppTwinFactoryRoute
-  '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
-  '/': typeof AppIndexRoute
+  '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
+  '/attribution': typeof AuthenticatedAppAttributionRoute
+  '/audit': typeof AuthenticatedAppAuditRoute
+  '/bi': typeof AuthenticatedAppBiRoute
+  '/cad': typeof AuthenticatedAppCadRoute
+  '/campaigns': typeof AuthenticatedAppCampaignsRoute
+  '/capacity': typeof AuthenticatedAppCapacityRoute
+  '/cashflow': typeof AuthenticatedAppCashflowRoute
+  '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
+  '/colecoes': typeof AuthenticatedAppColecoesRoute
+  '/comercial': typeof AuthenticatedAppComercialRoute
+  '/compras': typeof AuthenticatedAppComprasRoute
+  '/control-tower': typeof AuthenticatedAppControlTowerRoute
+  '/data-lake': typeof AuthenticatedAppDataLakeRoute
+  '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
+  '/dpp': typeof AuthenticatedAppDppRoute
+  '/equipe': typeof AuthenticatedAppEquipeRoute
+  '/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
+  '/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
+  '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
+  '/financeiro': typeof AuthenticatedAppFinanceiroRoute
+  '/fornecedores': typeof AuthenticatedAppFornecedoresRoute
+  '/geo-sales': typeof AuthenticatedAppGeoSalesRoute
+  '/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
+  '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
+  '/influencers': typeof AuthenticatedAppInfluencersRoute
+  '/intelligence': typeof AuthenticatedAppIntelligenceRoute
+  '/margem': typeof AuthenticatedAppMargemRoute
+  '/marketing': typeof AuthenticatedAppMarketingRoute
+  '/mobile': typeof AuthenticatedAppMobileRoute
+  '/pcp': typeof AuthenticatedAppPcpRoute
+  '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
+  '/pilots': typeof AuthenticatedAppPilotsRoute
+  '/product-score': typeof AuthenticatedAppProductScoreRoute
+  '/product-success': typeof AuthenticatedAppProductSuccessRoute
+  '/produtos': typeof AuthenticatedAppProdutosRoute
+  '/profitability': typeof AuthenticatedAppProfitabilityRoute
+  '/prototipos': typeof AuthenticatedAppPrototiposRoute
+  '/replenishment': typeof AuthenticatedAppReplenishmentRoute
+  '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
+  '/security-center': typeof AuthenticatedAppSecurityCenterRoute
+  '/showroom': typeof AuthenticatedAppShowroomRoute
+  '/stock-health': typeof AuthenticatedAppStockHealthRoute
+  '/supplier-score': typeof AuthenticatedAppSupplierScoreRoute
+  '/trends': typeof AuthenticatedAppTrendsRoute
+  '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
+  '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_app': typeof AppRouteWithChildren
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_app/almoxarifado': typeof AppAlmoxarifadoRoute
-  '/_app/attribution': typeof AppAttributionRoute
-  '/_app/audit': typeof AppAuditRoute
-  '/_app/bi': typeof AppBiRoute
-  '/_app/cad': typeof AppCadRoute
-  '/_app/campaigns': typeof AppCampaignsRoute
-  '/_app/capacity': typeof AppCapacityRoute
-  '/_app/cashflow': typeof AppCashflowRoute
-  '/_app/centro-de-corte': typeof AppCentroDeCorteRoute
-  '/_app/colecoes': typeof AppColecoesRoute
-  '/_app/comercial': typeof AppComercialRoute
-  '/_app/compras': typeof AppComprasRoute
-  '/_app/control-tower': typeof AppControlTowerRoute
-  '/_app/data-lake': typeof AppDataLakeRoute
-  '/_app/dev-kanban': typeof AppDevKanbanRoute
-  '/_app/dpp': typeof AppDppRoute
-  '/_app/equipe': typeof AppEquipeRoute
-  '/_app/fashion-calendar': typeof AppFashionCalendarRoute
-  '/_app/fashion-gpt': typeof AppFashionGptRoute
-  '/_app/ficha-tecnica': typeof AppFichaTecnicaRoute
-  '/_app/financeiro': typeof AppFinanceiroRoute
-  '/_app/fornecedores': typeof AppFornecedoresRoute
-  '/_app/geo-sales': typeof AppGeoSalesRoute
-  '/_app/grade-needs': typeof AppGradeNeedsRoute
-  '/_app/influencer-roi': typeof AppInfluencerRoiRoute
-  '/_app/influencers': typeof AppInfluencersRoute
-  '/_app/intelligence': typeof AppIntelligenceRoute
-  '/_app/margem': typeof AppMargemRoute
-  '/_app/marketing': typeof AppMarketingRoute
-  '/_app/mobile': typeof AppMobileRoute
-  '/_app/pcp': typeof AppPcpRoute
-  '/_app/pcp-kanban': typeof AppPcpKanbanRoute
-  '/_app/pilots': typeof AppPilotsRoute
-  '/_app/product-score': typeof AppProductScoreRoute
-  '/_app/product-success': typeof AppProductSuccessRoute
-  '/_app/produtos': typeof AppProdutosRoute
-  '/_app/profitability': typeof AppProfitabilityRoute
-  '/_app/prototipos': typeof AppPrototiposRoute
-  '/_app/replenishment': typeof AppReplenishmentRoute
-  '/_app/sales-performance': typeof AppSalesPerformanceRoute
-  '/_app/security-center': typeof AppSecurityCenterRoute
-  '/_app/showroom': typeof AppShowroomRoute
-  '/_app/stock-health': typeof AppStockHealthRoute
-  '/_app/supplier-score': typeof AppSupplierScoreRoute
-  '/_app/trends': typeof AppTrendsRoute
-  '/_app/twin-factory': typeof AppTwinFactoryRoute
-  '/_app/use-ai': typeof AppUseAiRoute
+  '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
-  '/_app/': typeof AppIndexRoute
+  '/_authenticated/_app/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
+  '/_authenticated/_app/attribution': typeof AuthenticatedAppAttributionRoute
+  '/_authenticated/_app/audit': typeof AuthenticatedAppAuditRoute
+  '/_authenticated/_app/bi': typeof AuthenticatedAppBiRoute
+  '/_authenticated/_app/cad': typeof AuthenticatedAppCadRoute
+  '/_authenticated/_app/campaigns': typeof AuthenticatedAppCampaignsRoute
+  '/_authenticated/_app/capacity': typeof AuthenticatedAppCapacityRoute
+  '/_authenticated/_app/cashflow': typeof AuthenticatedAppCashflowRoute
+  '/_authenticated/_app/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
+  '/_authenticated/_app/colecoes': typeof AuthenticatedAppColecoesRoute
+  '/_authenticated/_app/comercial': typeof AuthenticatedAppComercialRoute
+  '/_authenticated/_app/compras': typeof AuthenticatedAppComprasRoute
+  '/_authenticated/_app/control-tower': typeof AuthenticatedAppControlTowerRoute
+  '/_authenticated/_app/data-lake': typeof AuthenticatedAppDataLakeRoute
+  '/_authenticated/_app/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
+  '/_authenticated/_app/dpp': typeof AuthenticatedAppDppRoute
+  '/_authenticated/_app/equipe': typeof AuthenticatedAppEquipeRoute
+  '/_authenticated/_app/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
+  '/_authenticated/_app/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
+  '/_authenticated/_app/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
+  '/_authenticated/_app/financeiro': typeof AuthenticatedAppFinanceiroRoute
+  '/_authenticated/_app/fornecedores': typeof AuthenticatedAppFornecedoresRoute
+  '/_authenticated/_app/geo-sales': typeof AuthenticatedAppGeoSalesRoute
+  '/_authenticated/_app/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
+  '/_authenticated/_app/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
+  '/_authenticated/_app/influencers': typeof AuthenticatedAppInfluencersRoute
+  '/_authenticated/_app/intelligence': typeof AuthenticatedAppIntelligenceRoute
+  '/_authenticated/_app/margem': typeof AuthenticatedAppMargemRoute
+  '/_authenticated/_app/marketing': typeof AuthenticatedAppMarketingRoute
+  '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
+  '/_authenticated/_app/pcp': typeof AuthenticatedAppPcpRoute
+  '/_authenticated/_app/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
+  '/_authenticated/_app/pilots': typeof AuthenticatedAppPilotsRoute
+  '/_authenticated/_app/product-score': typeof AuthenticatedAppProductScoreRoute
+  '/_authenticated/_app/product-success': typeof AuthenticatedAppProductSuccessRoute
+  '/_authenticated/_app/produtos': typeof AuthenticatedAppProdutosRoute
+  '/_authenticated/_app/profitability': typeof AuthenticatedAppProfitabilityRoute
+  '/_authenticated/_app/prototipos': typeof AuthenticatedAppPrototiposRoute
+  '/_authenticated/_app/replenishment': typeof AuthenticatedAppReplenishmentRoute
+  '/_authenticated/_app/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
+  '/_authenticated/_app/security-center': typeof AuthenticatedAppSecurityCenterRoute
+  '/_authenticated/_app/showroom': typeof AuthenticatedAppShowroomRoute
+  '/_authenticated/_app/stock-health': typeof AuthenticatedAppStockHealthRoute
+  '/_authenticated/_app/supplier-score': typeof AuthenticatedAppSupplierScoreRoute
+  '/_authenticated/_app/trends': typeof AuthenticatedAppTrendsRoute
+  '/_authenticated/_app/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
+  '/_authenticated/_app/use-ai': typeof AuthenticatedAppUseAiRoute
+  '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRouteTypes {
@@ -488,6 +529,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/api/chat'
     | '/almoxarifado'
     | '/attribution'
     | '/audit'
@@ -535,11 +577,12 @@ export interface FileRouteTypes {
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
-    | '/api/chat'
     | '/api/public/agents/run-due'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/auth'
+    | '/api/chat'
     | '/almoxarifado'
     | '/attribution'
     | '/audit'
@@ -587,67 +630,66 @@ export interface FileRouteTypes {
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
-    | '/api/chat'
-    | '/'
     | '/api/public/agents/run-due'
   id:
     | '__root__'
-    | '/_app'
+    | '/_authenticated'
     | '/auth'
-    | '/_app/almoxarifado'
-    | '/_app/attribution'
-    | '/_app/audit'
-    | '/_app/bi'
-    | '/_app/cad'
-    | '/_app/campaigns'
-    | '/_app/capacity'
-    | '/_app/cashflow'
-    | '/_app/centro-de-corte'
-    | '/_app/colecoes'
-    | '/_app/comercial'
-    | '/_app/compras'
-    | '/_app/control-tower'
-    | '/_app/data-lake'
-    | '/_app/dev-kanban'
-    | '/_app/dpp'
-    | '/_app/equipe'
-    | '/_app/fashion-calendar'
-    | '/_app/fashion-gpt'
-    | '/_app/ficha-tecnica'
-    | '/_app/financeiro'
-    | '/_app/fornecedores'
-    | '/_app/geo-sales'
-    | '/_app/grade-needs'
-    | '/_app/influencer-roi'
-    | '/_app/influencers'
-    | '/_app/intelligence'
-    | '/_app/margem'
-    | '/_app/marketing'
-    | '/_app/mobile'
-    | '/_app/pcp'
-    | '/_app/pcp-kanban'
-    | '/_app/pilots'
-    | '/_app/product-score'
-    | '/_app/product-success'
-    | '/_app/produtos'
-    | '/_app/profitability'
-    | '/_app/prototipos'
-    | '/_app/replenishment'
-    | '/_app/sales-performance'
-    | '/_app/security-center'
-    | '/_app/showroom'
-    | '/_app/stock-health'
-    | '/_app/supplier-score'
-    | '/_app/trends'
-    | '/_app/twin-factory'
-    | '/_app/use-ai'
+    | '/_authenticated/_app'
     | '/api/chat'
-    | '/_app/'
+    | '/_authenticated/_app/almoxarifado'
+    | '/_authenticated/_app/attribution'
+    | '/_authenticated/_app/audit'
+    | '/_authenticated/_app/bi'
+    | '/_authenticated/_app/cad'
+    | '/_authenticated/_app/campaigns'
+    | '/_authenticated/_app/capacity'
+    | '/_authenticated/_app/cashflow'
+    | '/_authenticated/_app/centro-de-corte'
+    | '/_authenticated/_app/colecoes'
+    | '/_authenticated/_app/comercial'
+    | '/_authenticated/_app/compras'
+    | '/_authenticated/_app/control-tower'
+    | '/_authenticated/_app/data-lake'
+    | '/_authenticated/_app/dev-kanban'
+    | '/_authenticated/_app/dpp'
+    | '/_authenticated/_app/equipe'
+    | '/_authenticated/_app/fashion-calendar'
+    | '/_authenticated/_app/fashion-gpt'
+    | '/_authenticated/_app/ficha-tecnica'
+    | '/_authenticated/_app/financeiro'
+    | '/_authenticated/_app/fornecedores'
+    | '/_authenticated/_app/geo-sales'
+    | '/_authenticated/_app/grade-needs'
+    | '/_authenticated/_app/influencer-roi'
+    | '/_authenticated/_app/influencers'
+    | '/_authenticated/_app/intelligence'
+    | '/_authenticated/_app/margem'
+    | '/_authenticated/_app/marketing'
+    | '/_authenticated/_app/mobile'
+    | '/_authenticated/_app/pcp'
+    | '/_authenticated/_app/pcp-kanban'
+    | '/_authenticated/_app/pilots'
+    | '/_authenticated/_app/product-score'
+    | '/_authenticated/_app/product-success'
+    | '/_authenticated/_app/produtos'
+    | '/_authenticated/_app/profitability'
+    | '/_authenticated/_app/prototipos'
+    | '/_authenticated/_app/replenishment'
+    | '/_authenticated/_app/sales-performance'
+    | '/_authenticated/_app/security-center'
+    | '/_authenticated/_app/showroom'
+    | '/_authenticated/_app/stock-health'
+    | '/_authenticated/_app/supplier-score'
+    | '/_authenticated/_app/trends'
+    | '/_authenticated/_app/twin-factory'
+    | '/_authenticated/_app/use-ai'
+    | '/_authenticated/_app/'
     | '/api/public/agents/run-due'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppRoute: typeof AppRouteWithChildren
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
@@ -662,19 +704,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app': {
-      id: '/_app'
+    '/_authenticated': {
+      id: '/_authenticated'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_app/': {
-      id: '/_app/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
     }
     '/api/chat': {
       id: '/api/chat'
@@ -683,334 +718,348 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/use-ai': {
-      id: '/_app/use-ai'
+    '/_authenticated/_app': {
+      id: '/_authenticated/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_app/': {
+      id: '/_authenticated/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/use-ai': {
+      id: '/_authenticated/_app/use-ai'
       path: '/use-ai'
       fullPath: '/use-ai'
-      preLoaderRoute: typeof AppUseAiRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppUseAiRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/twin-factory': {
-      id: '/_app/twin-factory'
+    '/_authenticated/_app/twin-factory': {
+      id: '/_authenticated/_app/twin-factory'
       path: '/twin-factory'
       fullPath: '/twin-factory'
-      preLoaderRoute: typeof AppTwinFactoryRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppTwinFactoryRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/trends': {
-      id: '/_app/trends'
+    '/_authenticated/_app/trends': {
+      id: '/_authenticated/_app/trends'
       path: '/trends'
       fullPath: '/trends'
-      preLoaderRoute: typeof AppTrendsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppTrendsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/supplier-score': {
-      id: '/_app/supplier-score'
+    '/_authenticated/_app/supplier-score': {
+      id: '/_authenticated/_app/supplier-score'
       path: '/supplier-score'
       fullPath: '/supplier-score'
-      preLoaderRoute: typeof AppSupplierScoreRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppSupplierScoreRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/stock-health': {
-      id: '/_app/stock-health'
+    '/_authenticated/_app/stock-health': {
+      id: '/_authenticated/_app/stock-health'
       path: '/stock-health'
       fullPath: '/stock-health'
-      preLoaderRoute: typeof AppStockHealthRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppStockHealthRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/showroom': {
-      id: '/_app/showroom'
+    '/_authenticated/_app/showroom': {
+      id: '/_authenticated/_app/showroom'
       path: '/showroom'
       fullPath: '/showroom'
-      preLoaderRoute: typeof AppShowroomRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppShowroomRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/security-center': {
-      id: '/_app/security-center'
+    '/_authenticated/_app/security-center': {
+      id: '/_authenticated/_app/security-center'
       path: '/security-center'
       fullPath: '/security-center'
-      preLoaderRoute: typeof AppSecurityCenterRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppSecurityCenterRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/sales-performance': {
-      id: '/_app/sales-performance'
+    '/_authenticated/_app/sales-performance': {
+      id: '/_authenticated/_app/sales-performance'
       path: '/sales-performance'
       fullPath: '/sales-performance'
-      preLoaderRoute: typeof AppSalesPerformanceRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppSalesPerformanceRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/replenishment': {
-      id: '/_app/replenishment'
+    '/_authenticated/_app/replenishment': {
+      id: '/_authenticated/_app/replenishment'
       path: '/replenishment'
       fullPath: '/replenishment'
-      preLoaderRoute: typeof AppReplenishmentRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppReplenishmentRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/prototipos': {
-      id: '/_app/prototipos'
+    '/_authenticated/_app/prototipos': {
+      id: '/_authenticated/_app/prototipos'
       path: '/prototipos'
       fullPath: '/prototipos'
-      preLoaderRoute: typeof AppPrototiposRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppPrototiposRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/profitability': {
-      id: '/_app/profitability'
+    '/_authenticated/_app/profitability': {
+      id: '/_authenticated/_app/profitability'
       path: '/profitability'
       fullPath: '/profitability'
-      preLoaderRoute: typeof AppProfitabilityRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppProfitabilityRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/produtos': {
-      id: '/_app/produtos'
+    '/_authenticated/_app/produtos': {
+      id: '/_authenticated/_app/produtos'
       path: '/produtos'
       fullPath: '/produtos'
-      preLoaderRoute: typeof AppProdutosRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppProdutosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/product-success': {
-      id: '/_app/product-success'
+    '/_authenticated/_app/product-success': {
+      id: '/_authenticated/_app/product-success'
       path: '/product-success'
       fullPath: '/product-success'
-      preLoaderRoute: typeof AppProductSuccessRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppProductSuccessRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/product-score': {
-      id: '/_app/product-score'
+    '/_authenticated/_app/product-score': {
+      id: '/_authenticated/_app/product-score'
       path: '/product-score'
       fullPath: '/product-score'
-      preLoaderRoute: typeof AppProductScoreRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppProductScoreRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/pilots': {
-      id: '/_app/pilots'
+    '/_authenticated/_app/pilots': {
+      id: '/_authenticated/_app/pilots'
       path: '/pilots'
       fullPath: '/pilots'
-      preLoaderRoute: typeof AppPilotsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppPilotsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/pcp-kanban': {
-      id: '/_app/pcp-kanban'
+    '/_authenticated/_app/pcp-kanban': {
+      id: '/_authenticated/_app/pcp-kanban'
       path: '/pcp-kanban'
       fullPath: '/pcp-kanban'
-      preLoaderRoute: typeof AppPcpKanbanRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppPcpKanbanRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/pcp': {
-      id: '/_app/pcp'
+    '/_authenticated/_app/pcp': {
+      id: '/_authenticated/_app/pcp'
       path: '/pcp'
       fullPath: '/pcp'
-      preLoaderRoute: typeof AppPcpRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppPcpRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/mobile': {
-      id: '/_app/mobile'
+    '/_authenticated/_app/mobile': {
+      id: '/_authenticated/_app/mobile'
       path: '/mobile'
       fullPath: '/mobile'
-      preLoaderRoute: typeof AppMobileRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppMobileRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/marketing': {
-      id: '/_app/marketing'
+    '/_authenticated/_app/marketing': {
+      id: '/_authenticated/_app/marketing'
       path: '/marketing'
       fullPath: '/marketing'
-      preLoaderRoute: typeof AppMarketingRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppMarketingRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/margem': {
-      id: '/_app/margem'
+    '/_authenticated/_app/margem': {
+      id: '/_authenticated/_app/margem'
       path: '/margem'
       fullPath: '/margem'
-      preLoaderRoute: typeof AppMargemRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppMargemRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/intelligence': {
-      id: '/_app/intelligence'
+    '/_authenticated/_app/intelligence': {
+      id: '/_authenticated/_app/intelligence'
       path: '/intelligence'
       fullPath: '/intelligence'
-      preLoaderRoute: typeof AppIntelligenceRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppIntelligenceRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/influencers': {
-      id: '/_app/influencers'
+    '/_authenticated/_app/influencers': {
+      id: '/_authenticated/_app/influencers'
       path: '/influencers'
       fullPath: '/influencers'
-      preLoaderRoute: typeof AppInfluencersRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppInfluencersRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/influencer-roi': {
-      id: '/_app/influencer-roi'
+    '/_authenticated/_app/influencer-roi': {
+      id: '/_authenticated/_app/influencer-roi'
       path: '/influencer-roi'
       fullPath: '/influencer-roi'
-      preLoaderRoute: typeof AppInfluencerRoiRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppInfluencerRoiRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/grade-needs': {
-      id: '/_app/grade-needs'
+    '/_authenticated/_app/grade-needs': {
+      id: '/_authenticated/_app/grade-needs'
       path: '/grade-needs'
       fullPath: '/grade-needs'
-      preLoaderRoute: typeof AppGradeNeedsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppGradeNeedsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/geo-sales': {
-      id: '/_app/geo-sales'
+    '/_authenticated/_app/geo-sales': {
+      id: '/_authenticated/_app/geo-sales'
       path: '/geo-sales'
       fullPath: '/geo-sales'
-      preLoaderRoute: typeof AppGeoSalesRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppGeoSalesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/fornecedores': {
-      id: '/_app/fornecedores'
+    '/_authenticated/_app/fornecedores': {
+      id: '/_authenticated/_app/fornecedores'
       path: '/fornecedores'
       fullPath: '/fornecedores'
-      preLoaderRoute: typeof AppFornecedoresRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppFornecedoresRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/financeiro': {
-      id: '/_app/financeiro'
+    '/_authenticated/_app/financeiro': {
+      id: '/_authenticated/_app/financeiro'
       path: '/financeiro'
       fullPath: '/financeiro'
-      preLoaderRoute: typeof AppFinanceiroRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/ficha-tecnica': {
-      id: '/_app/ficha-tecnica'
+    '/_authenticated/_app/ficha-tecnica': {
+      id: '/_authenticated/_app/ficha-tecnica'
       path: '/ficha-tecnica'
       fullPath: '/ficha-tecnica'
-      preLoaderRoute: typeof AppFichaTecnicaRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppFichaTecnicaRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/fashion-gpt': {
-      id: '/_app/fashion-gpt'
+    '/_authenticated/_app/fashion-gpt': {
+      id: '/_authenticated/_app/fashion-gpt'
       path: '/fashion-gpt'
       fullPath: '/fashion-gpt'
-      preLoaderRoute: typeof AppFashionGptRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppFashionGptRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/fashion-calendar': {
-      id: '/_app/fashion-calendar'
+    '/_authenticated/_app/fashion-calendar': {
+      id: '/_authenticated/_app/fashion-calendar'
       path: '/fashion-calendar'
       fullPath: '/fashion-calendar'
-      preLoaderRoute: typeof AppFashionCalendarRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppFashionCalendarRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/equipe': {
-      id: '/_app/equipe'
+    '/_authenticated/_app/equipe': {
+      id: '/_authenticated/_app/equipe'
       path: '/equipe'
       fullPath: '/equipe'
-      preLoaderRoute: typeof AppEquipeRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppEquipeRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/dpp': {
-      id: '/_app/dpp'
+    '/_authenticated/_app/dpp': {
+      id: '/_authenticated/_app/dpp'
       path: '/dpp'
       fullPath: '/dpp'
-      preLoaderRoute: typeof AppDppRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppDppRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/dev-kanban': {
-      id: '/_app/dev-kanban'
+    '/_authenticated/_app/dev-kanban': {
+      id: '/_authenticated/_app/dev-kanban'
       path: '/dev-kanban'
       fullPath: '/dev-kanban'
-      preLoaderRoute: typeof AppDevKanbanRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppDevKanbanRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/data-lake': {
-      id: '/_app/data-lake'
+    '/_authenticated/_app/data-lake': {
+      id: '/_authenticated/_app/data-lake'
       path: '/data-lake'
       fullPath: '/data-lake'
-      preLoaderRoute: typeof AppDataLakeRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppDataLakeRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/control-tower': {
-      id: '/_app/control-tower'
+    '/_authenticated/_app/control-tower': {
+      id: '/_authenticated/_app/control-tower'
       path: '/control-tower'
       fullPath: '/control-tower'
-      preLoaderRoute: typeof AppControlTowerRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppControlTowerRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/compras': {
-      id: '/_app/compras'
+    '/_authenticated/_app/compras': {
+      id: '/_authenticated/_app/compras'
       path: '/compras'
       fullPath: '/compras'
-      preLoaderRoute: typeof AppComprasRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppComprasRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/comercial': {
-      id: '/_app/comercial'
+    '/_authenticated/_app/comercial': {
+      id: '/_authenticated/_app/comercial'
       path: '/comercial'
       fullPath: '/comercial'
-      preLoaderRoute: typeof AppComercialRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppComercialRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/colecoes': {
-      id: '/_app/colecoes'
+    '/_authenticated/_app/colecoes': {
+      id: '/_authenticated/_app/colecoes'
       path: '/colecoes'
       fullPath: '/colecoes'
-      preLoaderRoute: typeof AppColecoesRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppColecoesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/centro-de-corte': {
-      id: '/_app/centro-de-corte'
+    '/_authenticated/_app/centro-de-corte': {
+      id: '/_authenticated/_app/centro-de-corte'
       path: '/centro-de-corte'
       fullPath: '/centro-de-corte'
-      preLoaderRoute: typeof AppCentroDeCorteRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppCentroDeCorteRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/cashflow': {
-      id: '/_app/cashflow'
+    '/_authenticated/_app/cashflow': {
+      id: '/_authenticated/_app/cashflow'
       path: '/cashflow'
       fullPath: '/cashflow'
-      preLoaderRoute: typeof AppCashflowRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppCashflowRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/capacity': {
-      id: '/_app/capacity'
+    '/_authenticated/_app/capacity': {
+      id: '/_authenticated/_app/capacity'
       path: '/capacity'
       fullPath: '/capacity'
-      preLoaderRoute: typeof AppCapacityRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppCapacityRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/campaigns': {
-      id: '/_app/campaigns'
+    '/_authenticated/_app/campaigns': {
+      id: '/_authenticated/_app/campaigns'
       path: '/campaigns'
       fullPath: '/campaigns'
-      preLoaderRoute: typeof AppCampaignsRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppCampaignsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/cad': {
-      id: '/_app/cad'
+    '/_authenticated/_app/cad': {
+      id: '/_authenticated/_app/cad'
       path: '/cad'
       fullPath: '/cad'
-      preLoaderRoute: typeof AppCadRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppCadRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/bi': {
-      id: '/_app/bi'
+    '/_authenticated/_app/bi': {
+      id: '/_authenticated/_app/bi'
       path: '/bi'
       fullPath: '/bi'
-      preLoaderRoute: typeof AppBiRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppBiRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/audit': {
-      id: '/_app/audit'
+    '/_authenticated/_app/audit': {
+      id: '/_authenticated/_app/audit'
       path: '/audit'
       fullPath: '/audit'
-      preLoaderRoute: typeof AppAuditRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppAuditRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/attribution': {
-      id: '/_app/attribution'
+    '/_authenticated/_app/attribution': {
+      id: '/_authenticated/_app/attribution'
       path: '/attribution'
       fullPath: '/attribution'
-      preLoaderRoute: typeof AppAttributionRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppAttributionRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/_app/almoxarifado': {
-      id: '/_app/almoxarifado'
+    '/_authenticated/_app/almoxarifado': {
+      id: '/_authenticated/_app/almoxarifado'
       path: '/almoxarifado'
       fullPath: '/almoxarifado'
-      preLoaderRoute: typeof AppAlmoxarifadoRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AuthenticatedAppAlmoxarifadoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/api/public/agents/run-due': {
       id: '/api/public/agents/run-due'
@@ -1022,112 +1071,124 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AppRouteChildren {
-  AppAlmoxarifadoRoute: typeof AppAlmoxarifadoRoute
-  AppAttributionRoute: typeof AppAttributionRoute
-  AppAuditRoute: typeof AppAuditRoute
-  AppBiRoute: typeof AppBiRoute
-  AppCadRoute: typeof AppCadRoute
-  AppCampaignsRoute: typeof AppCampaignsRoute
-  AppCapacityRoute: typeof AppCapacityRoute
-  AppCashflowRoute: typeof AppCashflowRoute
-  AppCentroDeCorteRoute: typeof AppCentroDeCorteRoute
-  AppColecoesRoute: typeof AppColecoesRoute
-  AppComercialRoute: typeof AppComercialRoute
-  AppComprasRoute: typeof AppComprasRoute
-  AppControlTowerRoute: typeof AppControlTowerRoute
-  AppDataLakeRoute: typeof AppDataLakeRoute
-  AppDevKanbanRoute: typeof AppDevKanbanRoute
-  AppDppRoute: typeof AppDppRoute
-  AppEquipeRoute: typeof AppEquipeRoute
-  AppFashionCalendarRoute: typeof AppFashionCalendarRoute
-  AppFashionGptRoute: typeof AppFashionGptRoute
-  AppFichaTecnicaRoute: typeof AppFichaTecnicaRoute
-  AppFinanceiroRoute: typeof AppFinanceiroRoute
-  AppFornecedoresRoute: typeof AppFornecedoresRoute
-  AppGeoSalesRoute: typeof AppGeoSalesRoute
-  AppGradeNeedsRoute: typeof AppGradeNeedsRoute
-  AppInfluencerRoiRoute: typeof AppInfluencerRoiRoute
-  AppInfluencersRoute: typeof AppInfluencersRoute
-  AppIntelligenceRoute: typeof AppIntelligenceRoute
-  AppMargemRoute: typeof AppMargemRoute
-  AppMarketingRoute: typeof AppMarketingRoute
-  AppMobileRoute: typeof AppMobileRoute
-  AppPcpRoute: typeof AppPcpRoute
-  AppPcpKanbanRoute: typeof AppPcpKanbanRoute
-  AppPilotsRoute: typeof AppPilotsRoute
-  AppProductScoreRoute: typeof AppProductScoreRoute
-  AppProductSuccessRoute: typeof AppProductSuccessRoute
-  AppProdutosRoute: typeof AppProdutosRoute
-  AppProfitabilityRoute: typeof AppProfitabilityRoute
-  AppPrototiposRoute: typeof AppPrototiposRoute
-  AppReplenishmentRoute: typeof AppReplenishmentRoute
-  AppSalesPerformanceRoute: typeof AppSalesPerformanceRoute
-  AppSecurityCenterRoute: typeof AppSecurityCenterRoute
-  AppShowroomRoute: typeof AppShowroomRoute
-  AppStockHealthRoute: typeof AppStockHealthRoute
-  AppSupplierScoreRoute: typeof AppSupplierScoreRoute
-  AppTrendsRoute: typeof AppTrendsRoute
-  AppTwinFactoryRoute: typeof AppTwinFactoryRoute
-  AppUseAiRoute: typeof AppUseAiRoute
-  AppIndexRoute: typeof AppIndexRoute
+interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppAlmoxarifadoRoute: typeof AuthenticatedAppAlmoxarifadoRoute
+  AuthenticatedAppAttributionRoute: typeof AuthenticatedAppAttributionRoute
+  AuthenticatedAppAuditRoute: typeof AuthenticatedAppAuditRoute
+  AuthenticatedAppBiRoute: typeof AuthenticatedAppBiRoute
+  AuthenticatedAppCadRoute: typeof AuthenticatedAppCadRoute
+  AuthenticatedAppCampaignsRoute: typeof AuthenticatedAppCampaignsRoute
+  AuthenticatedAppCapacityRoute: typeof AuthenticatedAppCapacityRoute
+  AuthenticatedAppCashflowRoute: typeof AuthenticatedAppCashflowRoute
+  AuthenticatedAppCentroDeCorteRoute: typeof AuthenticatedAppCentroDeCorteRoute
+  AuthenticatedAppColecoesRoute: typeof AuthenticatedAppColecoesRoute
+  AuthenticatedAppComercialRoute: typeof AuthenticatedAppComercialRoute
+  AuthenticatedAppComprasRoute: typeof AuthenticatedAppComprasRoute
+  AuthenticatedAppControlTowerRoute: typeof AuthenticatedAppControlTowerRoute
+  AuthenticatedAppDataLakeRoute: typeof AuthenticatedAppDataLakeRoute
+  AuthenticatedAppDevKanbanRoute: typeof AuthenticatedAppDevKanbanRoute
+  AuthenticatedAppDppRoute: typeof AuthenticatedAppDppRoute
+  AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
+  AuthenticatedAppFashionCalendarRoute: typeof AuthenticatedAppFashionCalendarRoute
+  AuthenticatedAppFashionGptRoute: typeof AuthenticatedAppFashionGptRoute
+  AuthenticatedAppFichaTecnicaRoute: typeof AuthenticatedAppFichaTecnicaRoute
+  AuthenticatedAppFinanceiroRoute: typeof AuthenticatedAppFinanceiroRoute
+  AuthenticatedAppFornecedoresRoute: typeof AuthenticatedAppFornecedoresRoute
+  AuthenticatedAppGeoSalesRoute: typeof AuthenticatedAppGeoSalesRoute
+  AuthenticatedAppGradeNeedsRoute: typeof AuthenticatedAppGradeNeedsRoute
+  AuthenticatedAppInfluencerRoiRoute: typeof AuthenticatedAppInfluencerRoiRoute
+  AuthenticatedAppInfluencersRoute: typeof AuthenticatedAppInfluencersRoute
+  AuthenticatedAppIntelligenceRoute: typeof AuthenticatedAppIntelligenceRoute
+  AuthenticatedAppMargemRoute: typeof AuthenticatedAppMargemRoute
+  AuthenticatedAppMarketingRoute: typeof AuthenticatedAppMarketingRoute
+  AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
+  AuthenticatedAppPcpRoute: typeof AuthenticatedAppPcpRoute
+  AuthenticatedAppPcpKanbanRoute: typeof AuthenticatedAppPcpKanbanRoute
+  AuthenticatedAppPilotsRoute: typeof AuthenticatedAppPilotsRoute
+  AuthenticatedAppProductScoreRoute: typeof AuthenticatedAppProductScoreRoute
+  AuthenticatedAppProductSuccessRoute: typeof AuthenticatedAppProductSuccessRoute
+  AuthenticatedAppProdutosRoute: typeof AuthenticatedAppProdutosRoute
+  AuthenticatedAppProfitabilityRoute: typeof AuthenticatedAppProfitabilityRoute
+  AuthenticatedAppPrototiposRoute: typeof AuthenticatedAppPrototiposRoute
+  AuthenticatedAppReplenishmentRoute: typeof AuthenticatedAppReplenishmentRoute
+  AuthenticatedAppSalesPerformanceRoute: typeof AuthenticatedAppSalesPerformanceRoute
+  AuthenticatedAppSecurityCenterRoute: typeof AuthenticatedAppSecurityCenterRoute
+  AuthenticatedAppShowroomRoute: typeof AuthenticatedAppShowroomRoute
+  AuthenticatedAppStockHealthRoute: typeof AuthenticatedAppStockHealthRoute
+  AuthenticatedAppSupplierScoreRoute: typeof AuthenticatedAppSupplierScoreRoute
+  AuthenticatedAppTrendsRoute: typeof AuthenticatedAppTrendsRoute
+  AuthenticatedAppTwinFactoryRoute: typeof AuthenticatedAppTwinFactoryRoute
+  AuthenticatedAppUseAiRoute: typeof AuthenticatedAppUseAiRoute
+  AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
 }
 
-const AppRouteChildren: AppRouteChildren = {
-  AppAlmoxarifadoRoute: AppAlmoxarifadoRoute,
-  AppAttributionRoute: AppAttributionRoute,
-  AppAuditRoute: AppAuditRoute,
-  AppBiRoute: AppBiRoute,
-  AppCadRoute: AppCadRoute,
-  AppCampaignsRoute: AppCampaignsRoute,
-  AppCapacityRoute: AppCapacityRoute,
-  AppCashflowRoute: AppCashflowRoute,
-  AppCentroDeCorteRoute: AppCentroDeCorteRoute,
-  AppColecoesRoute: AppColecoesRoute,
-  AppComercialRoute: AppComercialRoute,
-  AppComprasRoute: AppComprasRoute,
-  AppControlTowerRoute: AppControlTowerRoute,
-  AppDataLakeRoute: AppDataLakeRoute,
-  AppDevKanbanRoute: AppDevKanbanRoute,
-  AppDppRoute: AppDppRoute,
-  AppEquipeRoute: AppEquipeRoute,
-  AppFashionCalendarRoute: AppFashionCalendarRoute,
-  AppFashionGptRoute: AppFashionGptRoute,
-  AppFichaTecnicaRoute: AppFichaTecnicaRoute,
-  AppFinanceiroRoute: AppFinanceiroRoute,
-  AppFornecedoresRoute: AppFornecedoresRoute,
-  AppGeoSalesRoute: AppGeoSalesRoute,
-  AppGradeNeedsRoute: AppGradeNeedsRoute,
-  AppInfluencerRoiRoute: AppInfluencerRoiRoute,
-  AppInfluencersRoute: AppInfluencersRoute,
-  AppIntelligenceRoute: AppIntelligenceRoute,
-  AppMargemRoute: AppMargemRoute,
-  AppMarketingRoute: AppMarketingRoute,
-  AppMobileRoute: AppMobileRoute,
-  AppPcpRoute: AppPcpRoute,
-  AppPcpKanbanRoute: AppPcpKanbanRoute,
-  AppPilotsRoute: AppPilotsRoute,
-  AppProductScoreRoute: AppProductScoreRoute,
-  AppProductSuccessRoute: AppProductSuccessRoute,
-  AppProdutosRoute: AppProdutosRoute,
-  AppProfitabilityRoute: AppProfitabilityRoute,
-  AppPrototiposRoute: AppPrototiposRoute,
-  AppReplenishmentRoute: AppReplenishmentRoute,
-  AppSalesPerformanceRoute: AppSalesPerformanceRoute,
-  AppSecurityCenterRoute: AppSecurityCenterRoute,
-  AppShowroomRoute: AppShowroomRoute,
-  AppStockHealthRoute: AppStockHealthRoute,
-  AppSupplierScoreRoute: AppSupplierScoreRoute,
-  AppTrendsRoute: AppTrendsRoute,
-  AppTwinFactoryRoute: AppTwinFactoryRoute,
-  AppUseAiRoute: AppUseAiRoute,
-  AppIndexRoute: AppIndexRoute,
+const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppAlmoxarifadoRoute: AuthenticatedAppAlmoxarifadoRoute,
+  AuthenticatedAppAttributionRoute: AuthenticatedAppAttributionRoute,
+  AuthenticatedAppAuditRoute: AuthenticatedAppAuditRoute,
+  AuthenticatedAppBiRoute: AuthenticatedAppBiRoute,
+  AuthenticatedAppCadRoute: AuthenticatedAppCadRoute,
+  AuthenticatedAppCampaignsRoute: AuthenticatedAppCampaignsRoute,
+  AuthenticatedAppCapacityRoute: AuthenticatedAppCapacityRoute,
+  AuthenticatedAppCashflowRoute: AuthenticatedAppCashflowRoute,
+  AuthenticatedAppCentroDeCorteRoute: AuthenticatedAppCentroDeCorteRoute,
+  AuthenticatedAppColecoesRoute: AuthenticatedAppColecoesRoute,
+  AuthenticatedAppComercialRoute: AuthenticatedAppComercialRoute,
+  AuthenticatedAppComprasRoute: AuthenticatedAppComprasRoute,
+  AuthenticatedAppControlTowerRoute: AuthenticatedAppControlTowerRoute,
+  AuthenticatedAppDataLakeRoute: AuthenticatedAppDataLakeRoute,
+  AuthenticatedAppDevKanbanRoute: AuthenticatedAppDevKanbanRoute,
+  AuthenticatedAppDppRoute: AuthenticatedAppDppRoute,
+  AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
+  AuthenticatedAppFashionCalendarRoute: AuthenticatedAppFashionCalendarRoute,
+  AuthenticatedAppFashionGptRoute: AuthenticatedAppFashionGptRoute,
+  AuthenticatedAppFichaTecnicaRoute: AuthenticatedAppFichaTecnicaRoute,
+  AuthenticatedAppFinanceiroRoute: AuthenticatedAppFinanceiroRoute,
+  AuthenticatedAppFornecedoresRoute: AuthenticatedAppFornecedoresRoute,
+  AuthenticatedAppGeoSalesRoute: AuthenticatedAppGeoSalesRoute,
+  AuthenticatedAppGradeNeedsRoute: AuthenticatedAppGradeNeedsRoute,
+  AuthenticatedAppInfluencerRoiRoute: AuthenticatedAppInfluencerRoiRoute,
+  AuthenticatedAppInfluencersRoute: AuthenticatedAppInfluencersRoute,
+  AuthenticatedAppIntelligenceRoute: AuthenticatedAppIntelligenceRoute,
+  AuthenticatedAppMargemRoute: AuthenticatedAppMargemRoute,
+  AuthenticatedAppMarketingRoute: AuthenticatedAppMarketingRoute,
+  AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
+  AuthenticatedAppPcpRoute: AuthenticatedAppPcpRoute,
+  AuthenticatedAppPcpKanbanRoute: AuthenticatedAppPcpKanbanRoute,
+  AuthenticatedAppPilotsRoute: AuthenticatedAppPilotsRoute,
+  AuthenticatedAppProductScoreRoute: AuthenticatedAppProductScoreRoute,
+  AuthenticatedAppProductSuccessRoute: AuthenticatedAppProductSuccessRoute,
+  AuthenticatedAppProdutosRoute: AuthenticatedAppProdutosRoute,
+  AuthenticatedAppProfitabilityRoute: AuthenticatedAppProfitabilityRoute,
+  AuthenticatedAppPrototiposRoute: AuthenticatedAppPrototiposRoute,
+  AuthenticatedAppReplenishmentRoute: AuthenticatedAppReplenishmentRoute,
+  AuthenticatedAppSalesPerformanceRoute: AuthenticatedAppSalesPerformanceRoute,
+  AuthenticatedAppSecurityCenterRoute: AuthenticatedAppSecurityCenterRoute,
+  AuthenticatedAppShowroomRoute: AuthenticatedAppShowroomRoute,
+  AuthenticatedAppStockHealthRoute: AuthenticatedAppStockHealthRoute,
+  AuthenticatedAppSupplierScoreRoute: AuthenticatedAppSupplierScoreRoute,
+  AuthenticatedAppTrendsRoute: AuthenticatedAppTrendsRoute,
+  AuthenticatedAppTwinFactoryRoute: AuthenticatedAppTwinFactoryRoute,
+  AuthenticatedAppUseAiRoute: AuthenticatedAppUseAiRoute,
+  AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
 }
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const AuthenticatedAppRouteWithChildren =
+  AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  AppRoute: AppRouteWithChildren,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
