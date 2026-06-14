@@ -49,6 +49,7 @@ function Financeiro() {
   useRealtime("financial_accounts", ["financial_accounts"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Account | null>(null);
+  const [filter, setFilter] = useState<"todos" | AccStatus>("todos");
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["financial_accounts"],
