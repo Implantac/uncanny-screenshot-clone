@@ -450,13 +450,17 @@ function PCP() {
                       <td className="px-4 py-3 text-muted-foreground tabular-nums">{o.due_date ?? "—"}</td>
                       <td className="px-4 py-3"><Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge></td>
                       <td className="px-4 py-3 text-right">
-                        {user?.id === o.owner_id && (
-                          <div className="flex gap-1 justify-end">
-                            <Button size="icon" variant="ghost" onClick={() => openEdit(o)}><Pencil className="size-4" /></Button>
-                            <Button size="icon" variant="ghost" onClick={() => del.mutate(o.id)}><Trash2 className="size-4" /></Button>
-                          </div>
-                        )}
+                        <div className="flex gap-1 justify-end">
+                          <Button size="icon" variant="ghost" title="Histórico de setores" onClick={() => setHistoryOrder(o)}><History className="size-4" /></Button>
+                          {user?.id === o.owner_id && (
+                            <>
+                              <Button size="icon" variant="ghost" onClick={() => openEdit(o)}><Pencil className="size-4" /></Button>
+                              <Button size="icon" variant="ghost" onClick={() => del.mutate(o.id)}><Trash2 className="size-4" /></Button>
+                            </>
+                          )}
+                        </div>
                       </td>
+
                     </tr>
                   ))}
                   {filtered.length === 0 && <tr><td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">Nenhuma ordem encontrada</td></tr>}
