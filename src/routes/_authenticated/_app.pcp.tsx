@@ -160,7 +160,7 @@ function PCP() {
 
   function reset() {
     setOpen(false); setEditing(null);
-    setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", notes: "" });
+    setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", stage: "cad", priority: 3, notes: "" });
   }
 
   function openEdit(o: Order) {
@@ -168,9 +168,10 @@ function PCP() {
     setForm({
       code: o.code, product_id: o.product_id ?? "", supplier_id: o.supplier_id ?? "",
       quantity: o.quantity, progress: o.progress, due_date: o.due_date ?? "",
-      status: o.status, notes: o.notes ?? "",
+      status: o.status, stage: (o.stage ?? "cad") as Stage, priority: o.priority ?? 3, notes: o.notes ?? "",
     });
     setOpen(true);
+
   }
 
   const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
