@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Factory, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
+import { useRealtime } from "@/hooks/use-realtime";
 
 export const Route = createFileRoute("/_authenticated/_app/twin-factory")({
   component: TwinFactory,
@@ -31,8 +32,9 @@ async function loadOrders(): Promise<Order[]> {
 }
 
 function TwinFactory() {
+  useRealtime("production_orders", ["twin-factory"]);
   const { data: orders = [], isLoading } = useQuery({
-    queryKey: ["twin-factory"], queryFn: loadOrders, refetchInterval: 15000,
+    queryKey: ["twin-factory"], queryFn: loadOrders,
   });
 
   const today = new Date();
