@@ -22,6 +22,7 @@ import { Route as AppProdutosRouteImport } from './routes/_app.produtos'
 import { Route as AppPcpRouteImport } from './routes/_app.pcp'
 import { Route as AppMobileRouteImport } from './routes/_app.mobile'
 import { Route as AppMarketingRouteImport } from './routes/_app.marketing'
+import { Route as AppMargemRouteImport } from './routes/_app.margem'
 import { Route as AppIntelligenceRouteImport } from './routes/_app.intelligence'
 import { Route as AppGeoSalesRouteImport } from './routes/_app.geo-sales'
 import { Route as AppFornecedoresRouteImport } from './routes/_app.fornecedores'
@@ -100,6 +101,11 @@ const AppMobileRoute = AppMobileRouteImport.update({
 const AppMarketingRoute = AppMarketingRouteImport.update({
   id: '/marketing',
   path: '/marketing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMargemRoute = AppMargemRouteImport.update({
+  id: '/margem',
+  path: '/margem',
   getParentRoute: () => AppRoute,
 } as any)
 const AppIntelligenceRoute = AppIntelligenceRouteImport.update({
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/fornecedores': typeof AppFornecedoresRoute
   '/geo-sales': typeof AppGeoSalesRoute
   '/intelligence': typeof AppIntelligenceRoute
+  '/margem': typeof AppMargemRoute
   '/marketing': typeof AppMarketingRoute
   '/mobile': typeof AppMobileRoute
   '/pcp': typeof AppPcpRoute
@@ -224,6 +231,7 @@ export interface FileRoutesByTo {
   '/fornecedores': typeof AppFornecedoresRoute
   '/geo-sales': typeof AppGeoSalesRoute
   '/intelligence': typeof AppIntelligenceRoute
+  '/margem': typeof AppMargemRoute
   '/marketing': typeof AppMarketingRoute
   '/mobile': typeof AppMobileRoute
   '/pcp': typeof AppPcpRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/_app/fornecedores': typeof AppFornecedoresRoute
   '/_app/geo-sales': typeof AppGeoSalesRoute
   '/_app/intelligence': typeof AppIntelligenceRoute
+  '/_app/margem': typeof AppMargemRoute
   '/_app/marketing': typeof AppMarketingRoute
   '/_app/mobile': typeof AppMobileRoute
   '/_app/pcp': typeof AppPcpRoute
@@ -287,6 +296,7 @@ export interface FileRouteTypes {
     | '/fornecedores'
     | '/geo-sales'
     | '/intelligence'
+    | '/margem'
     | '/marketing'
     | '/mobile'
     | '/pcp'
@@ -315,6 +325,7 @@ export interface FileRouteTypes {
     | '/fornecedores'
     | '/geo-sales'
     | '/intelligence'
+    | '/margem'
     | '/marketing'
     | '/mobile'
     | '/pcp'
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/_app/fornecedores'
     | '/_app/geo-sales'
     | '/_app/intelligence'
+    | '/_app/margem'
     | '/_app/marketing'
     | '/_app/mobile'
     | '/_app/pcp'
@@ -455,6 +467,13 @@ declare module '@tanstack/react-router' {
       path: '/marketing'
       fullPath: '/marketing'
       preLoaderRoute: typeof AppMarketingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/margem': {
+      id: '/_app/margem'
+      path: '/margem'
+      fullPath: '/margem'
+      preLoaderRoute: typeof AppMargemRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/intelligence': {
@@ -581,6 +600,7 @@ interface AppRouteChildren {
   AppFornecedoresRoute: typeof AppFornecedoresRoute
   AppGeoSalesRoute: typeof AppGeoSalesRoute
   AppIntelligenceRoute: typeof AppIntelligenceRoute
+  AppMargemRoute: typeof AppMargemRoute
   AppMarketingRoute: typeof AppMarketingRoute
   AppMobileRoute: typeof AppMobileRoute
   AppPcpRoute: typeof AppPcpRoute
@@ -609,6 +629,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFornecedoresRoute: AppFornecedoresRoute,
   AppGeoSalesRoute: AppGeoSalesRoute,
   AppIntelligenceRoute: AppIntelligenceRoute,
+  AppMargemRoute: AppMargemRoute,
   AppMarketingRoute: AppMarketingRoute,
   AppMobileRoute: AppMobileRoute,
   AppPcpRoute: AppPcpRoute,
@@ -631,13 +652,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
