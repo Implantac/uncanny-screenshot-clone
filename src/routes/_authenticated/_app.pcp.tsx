@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp, Search, Flag, Workflow } from "lucide-react";
+import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp, Search, Flag, Workflow, History } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
@@ -67,8 +67,10 @@ function PCP() {
   const [filterSupplier, setFilterSupplier] = useState<string>("all");
   const [form, setForm] = useState({
     code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0,
-    due_date: "", status: "aguardando" as Status, notes: "",
+    due_date: "", status: "aguardando" as Status, stage: "cad" as Stage, priority: 3, notes: "",
   });
+  const [historyOrder, setHistoryOrder] = useState<Order | null>(null);
+
 
 
   const { data: items = [], isLoading } = useQuery({
@@ -111,8 +113,11 @@ function PCP() {
         progress: Math.min(100, Math.max(0, Number(form.progress) || 0)),
         due_date: form.due_date || null,
         status: form.status,
+        stage: form.stage,
+        priority: Number(form.priority) || 3,
         notes: form.notes.trim() || null,
       };
+
       if (editing) {
         const { error } = await supabase.from("production_orders").update(payload).eq("id", editing.id);
         if (error) throw error;
@@ -155,7 +160,7 @@ function PCP() {
 
   function reset() {
     setOpen(false); setEditing(null);
-    setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", notes: "" });
+    setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", stage: "cad", priority: 3, notes: "" });
   }
 
   function openEdit(o: Order) {
@@ -163,9 +168,10 @@ function PCP() {
     setForm({
       code: o.code, product_id: o.product_id ?? "", supplier_id: o.supplier_id ?? "",
       quantity: o.quantity, progress: o.progress, due_date: o.due_date ?? "",
-      status: o.status, notes: o.notes ?? "",
+      status: o.status, stage: (o.stage ?? "cad") as Stage, priority: o.priority ?? 3, notes: o.notes ?? "",
     });
     setOpen(true);
+
   }
 
   const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
@@ -444,13 +450,17 @@ function PCP() {
                       <td className="px-4 py-3 text-muted-foreground tabular-nums">{o.due_date ?? "—"}</td>
                       <td className="px-4 py-3"><Badge variant="outline" className={COLOR[o.status]}>{LABEL[o.status]}</Badge></td>
                       <td className="px-4 py-3 text-right">
-                        {user?.id === o.owner_id && (
-                          <div className="flex gap-1 justify-end">
-                            <Button size="icon" variant="ghost" onClick={() => openEdit(o)}><Pencil className="size-4" /></Button>
-                            <Button size="icon" variant="ghost" onClick={() => del.mutate(o.id)}><Trash2 className="size-4" /></Button>
-                          </div>
-                        )}
+                        <div className="flex gap-1 justify-end">
+                          <Button size="icon" variant="ghost" title="Histórico de setores" onClick={() => setHistoryOrder(o)}><History className="size-4" /></Button>
+                          {user?.id === o.owner_id && (
+                            <>
+                              <Button size="icon" variant="ghost" onClick={() => openEdit(o)}><Pencil className="size-4" /></Button>
+                              <Button size="icon" variant="ghost" onClick={() => del.mutate(o.id)}><Trash2 className="size-4" /></Button>
+                            </>
+                          )}
+                        </div>
                       </td>
+
                     </tr>
                   ))}
                   {filtered.length === 0 && <tr><td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">Nenhuma ordem encontrada</td></tr>}
@@ -488,13 +498,30 @@ function PCP() {
               <div><Label>Progresso (%)</Label><Input type="number" min={0} max={100} value={form.progress} onChange={e => setForm({ ...form, progress: Number(e.target.value) })} /></div>
               <div><Label>Prazo</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} /></div>
             </div>
-            <div>
-              <Label>Status</Label>
-              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Status })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{Object.entries(LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
-              </Select>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Status })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Setor</Label>
+                <Select value={form.stage} onValueChange={(v) => setForm({ ...form, stage: v as Stage })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{(Object.keys(STAGE_LABEL) as Stage[]).map((k) => <SelectItem key={k} value={k}>{STAGE_LABEL[k]}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Prioridade</Label>
+                <Select value={String(form.priority)} onValueChange={(v) => setForm({ ...form, priority: Number(v) })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{[1, 2, 3, 4, 5].map((p) => <SelectItem key={p} value={String(p)}>{PRIORITY_LABEL[p]}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
             </div>
+
             <div><Label>Notas</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
           <DialogFooter>
@@ -503,6 +530,50 @@ function PCP() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <StageHistoryDialog order={historyOrder} onClose={() => setHistoryOrder(null)} />
     </div>
   );
 }
+
+function StageHistoryDialog({ order, onClose }: { order: Order | null; onClose: () => void }) {
+  const { data: log = [], isLoading } = useQuery({
+    queryKey: ["stage-log", order?.id],
+    queryFn: async () => {
+      if (!order) return [];
+      const { data, error } = await supabase
+        .from("production_stage_log")
+        .select("from_stage, to_stage, created_at")
+        .eq("order_id", order.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!order,
+  });
+
+  return (
+    <Dialog open={!!order} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Histórico — {order?.code}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+          {isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
+          {!isLoading && log.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma passagem de setor registrada.</p>}
+          {log.map((l, i) => (
+            <div key={i} className="flex items-center justify-between rounded-lg border border-border p-2.5 text-sm">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs">{l.from_stage ? STAGE_LABEL[l.from_stage as Stage] : "início"}</Badge>
+                <span className="text-muted-foreground">→</span>
+                <Badge variant="outline" className="text-xs">{STAGE_LABEL[l.to_stage as Stage]}</Badge>
+              </div>
+              <span className="text-xs text-muted-foreground tabular-nums">{new Date(l.created_at).toLocaleString("pt-BR")}</span>
+            </div>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
