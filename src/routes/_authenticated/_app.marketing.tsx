@@ -116,14 +116,29 @@ function Marketing() {
       <ChartsSection rows={filtered} />
 
 
-      {channels.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => setChannelFilter("todos")} className={`px-3 py-1 rounded-full text-xs border transition-colors ${channelFilter === "todos" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>Todos os canais</button>
-          {channels.map((ch) => (
-            <button key={ch} onClick={() => setChannelFilter(ch)} className={`px-3 py-1 rounded-full text-xs border transition-colors ${channelFilter === ch ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>{ch}</button>
-          ))}
-        </div>
-      )}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[11px] uppercase tracking-wider text-muted-foreground mr-1">Período</span>
+        {([
+          { k: "30", label: "30 dias" },
+          { k: "90", label: "90 dias" },
+          { k: "365", label: "12 meses" },
+          { k: "todos", label: "Tudo" },
+        ] as const).map((p) => (
+          <button key={p.k} onClick={() => setPeriodFilter(p.k)} className={`px-3 py-1 rounded-full text-xs border transition-colors ${periodFilter === p.k ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>{p.label}</button>
+        ))}
+        {channels.length > 0 && <span className="text-[11px] uppercase tracking-wider text-muted-foreground ml-3 mr-1">Canal</span>}
+        {channels.length > 0 && (
+          <>
+            <button onClick={() => setChannelFilter("todos")} className={`px-3 py-1 rounded-full text-xs border transition-colors ${channelFilter === "todos" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>Todos</button>
+            {channels.map((ch) => (
+              <button key={ch} onClick={() => setChannelFilter(ch)} className={`px-3 py-1 rounded-full text-xs border transition-colors ${channelFilter === ch ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>{ch}</button>
+            ))}
+          </>
+        )}
+      </div>
+
+      <AdvancedSection rows={filtered} />
+
 
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
