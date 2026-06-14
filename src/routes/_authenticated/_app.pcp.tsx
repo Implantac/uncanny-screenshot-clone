@@ -180,6 +180,7 @@ function PCP() {
   }
 
   const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
+  const productInfo = (id: string | null) => products.find(p => p.id === id) ?? null;
   const supplierName = (id: string | null) => suppliers.find(s => s.id === id)?.name ?? "—";
 
   const filtered = useMemo(() => {
@@ -189,7 +190,8 @@ function PCP() {
       if (filterPriority !== "all" && String(o.priority ?? 3) !== filterPriority) return false;
       if (filterSupplier !== "all" && o.supplier_id !== filterSupplier) return false;
       if (q) {
-        const hay = `${o.code} ${productName(o.product_id)} ${supplierName(o.supplier_id)} ${o.notes ?? ""}`.toLowerCase();
+        const p = productInfo(o.product_id);
+        const hay = `${o.code} ${p?.name ?? ""} ${p?.sku ?? ""} ${supplierName(o.supplier_id)} ${o.notes ?? ""} ${o.batch_code ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -238,6 +240,7 @@ function PCP() {
     const canDrag = user?.id === o.owner_id;
     const d = o.due_date ? Math.ceil((new Date(o.due_date).getTime() - Date.now()) / 86400000) : null;
     const overdue = d !== null && d < 0 && o.status !== "concluida";
+    const p = productInfo(o.product_id);
     return (
       <div
         draggable={canDrag}
@@ -250,18 +253,46 @@ function PCP() {
           <span className="font-mono text-xs text-muted-foreground">{o.code}</span>
           <span className={`text-[9px] px-1.5 py-0.5 rounded border ${PRIORITY_TONE[o.priority ?? 3]}`}>{PRIORITY_LABEL[o.priority ?? 3]}</span>
         </div>
-        <div className="text-sm font-medium truncate">{productName(o.product_id)}</div>
-        <div className="text-xs text-muted-foreground truncate">{supplierName(o.supplier_id)} · {o.quantity} pç</div>
+        <div className="flex gap-2">
+          <div className="size-12 rounded-md border border-border bg-muted/40 overflow-hidden shrink-0 grid place-items-center">
+            {p?.image_url ? <img src={p.image_url} alt={p.name} className="size-full object-cover" loading="lazy" /> : <ImageIcon className="size-4 text-muted-foreground/60" />}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium truncate">{p?.name ?? "—"}</div>
+            <div className="text-[10px] text-muted-foreground truncate font-mono">{p?.sku ?? "sem SKU"}</div>
+            <div className="text-xs text-muted-foreground truncate">{supplierName(o.supplier_id)} · {o.quantity} pç</div>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
             <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
           </div>
           <span className="text-[10px] text-muted-foreground">{o.progress}%</span>
         </div>
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-          {o.stage ? <Badge variant="outline" className="text-[9px] px-1 py-0">{STAGE_LABEL[o.stage]}</Badge> : <span />}
+        <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1 flex-wrap">
+            {o.stage && <Badge variant="outline" className="text-[9px] px-1 py-0">{STAGE_LABEL[o.stage]}</Badge>}
+            {o.batch_code && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setBatchView({ code: o.batch_code!, stage: o.stage }); }}
+                className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
+                title="Ver referências deste lote"
+              >
+                <Boxes className="size-2.5" />Lote {o.batch_code}
+              </button>
+            )}
+          </div>
           {o.due_date && <span className={overdue ? "text-destructive font-medium" : ""}>{overdue ? `${Math.abs(d!)}d atrasada` : d === 0 ? "hoje" : `${d}d`}</span>}
         </div>
+        {o.product_id && (
+          <Link
+            to="/ficha-tecnica"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+          >
+            <FileText className="size-3" /> Ficha técnica
+          </Link>
+        )}
       </div>
     );
   };
