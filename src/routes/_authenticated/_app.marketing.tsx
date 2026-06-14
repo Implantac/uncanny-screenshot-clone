@@ -85,54 +85,86 @@ function Marketing() {
   const receitaEst = filtered.reduce((a, b) => a + Number(b.investment) * Number(b.roas), 0);
   const roasAvg = filtered.length ? filtered.reduce((a, b) => a + Number(b.roas), 0) / filtered.length : 0;
 
+  const sparkData = useMemo(() => {
+    const m = new Map<string, { mes: string; inv: number; rec: number }>();
+    filtered.forEach((c) => {
+      if (!c.start_date) return;
+      const d = new Date(c.start_date);
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const cur = m.get(k) ?? { mes: k, inv: 0, rec: 0 };
+      const inv = Number(c.investment);
+      cur.inv += inv; cur.rec += inv * Number(c.roas);
+      m.set(k, cur);
+    });
+    return Array.from(m.values()).sort((a, b) => a.mes.localeCompare(b.mes)).slice(-8);
+  }, [filtered]);
+
+  const lucro = receitaEst - invTotal;
+  const margemPct = invTotal > 0 ? (lucro / invTotal) * 100 : 0;
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:justify-between sm:items-center">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="size-11 shrink-0 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
-            <Megaphone className="size-5 text-primary-foreground" />
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in">
+      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-muted/40 p-6 sm:p-8">
+        <div className="absolute -top-20 -right-20 size-72 rounded-full bg-[image:var(--gradient-primary)] opacity-20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-10 size-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="size-14 shrink-0 rounded-2xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)] ring-1 ring-white/10">
+              <Megaphone className="size-6 text-primary-foreground" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] font-semibold text-primary">
+                  <span className="relative flex size-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" /><span className="relative inline-flex size-1.5 rounded-full bg-primary" /></span>
+                  Marketing Intelligence
+                </span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight truncate">Command Center</h1>
+              <p className="text-sm text-muted-foreground mt-1">Performance de mídia em tempo real · {filtered.length} de {rows.length} campanhas monitoradas</p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight truncate">Marketing</h1>
-            <p className="text-sm text-muted-foreground truncate">Performance de mídia, campanhas e atribuição</p>
+          <div className="flex gap-2 shrink-0">
+            <Button variant="outline" size="sm" disabled={!filtered.length} onClick={() => exportToCsv("marketing", filtered.map((c) => ({ ...c, status: STATUS_LABEL[c.status], receita_est: Number(c.investment) * Number(c.roas) })), [
+              { key: "name", label: "Campanha" }, { key: "channel", label: "Canal" },
+              { key: "start_date", label: "Início" }, { key: "end_date", label: "Fim" },
+              { key: "investment", label: "Investimento" }, { key: "roas", label: "ROAS" },
+              { key: "receita_est", label: "Receita estimada" }, { key: "status", label: "Status" },
+            ])} className="gap-2"><Download className="size-4" />Exportar</Button>
+            <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }} className="gap-2 shadow-[var(--shadow-glow)]">
+              <Plus className="size-4" /> Nova campanha
+            </Button>
           </div>
         </div>
-        <div className="flex gap-2 shrink-0">
-          <Button variant="outline" size="sm" disabled={!filtered.length} onClick={() => exportToCsv("marketing", filtered.map((c) => ({ ...c, status: STATUS_LABEL[c.status], receita_est: Number(c.investment) * Number(c.roas) })), [
-            { key: "name", label: "Campanha" }, { key: "channel", label: "Canal" },
-            { key: "start_date", label: "Início" }, { key: "end_date", label: "Fim" },
-            { key: "investment", label: "Investimento" }, { key: "roas", label: "ROAS" },
-            { key: "receita_est", label: "Receita estimada" }, { key: "status", label: "Status" },
-          ])} className="gap-2"><Download className="size-4" />Exportar</Button>
-          <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
-            <Plus className="size-4" /> Nova campanha
-          </Button>
+
+        <div className="relative mt-6 flex items-center gap-2 flex-wrap pt-5 border-t border-border/50">
+          <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground mr-1 font-semibold">Período</span>
+          {([
+            { k: "30", label: "30D" },
+            { k: "90", label: "90D" },
+            { k: "365", label: "12M" },
+            { k: "todos", label: "Tudo" },
+          ] as const).map((p) => (
+            <button key={p.k} onClick={() => setPeriodFilter(p.k)} className={`px-3 py-1 rounded-md text-xs font-medium border transition-all ${periodFilter === p.k ? "bg-primary text-primary-foreground border-primary shadow-[var(--shadow-glow)]" : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"}`}>{p.label}</button>
+          ))}
+          {channels.length > 0 && <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground ml-3 mr-1 font-semibold">Canal</span>}
+          {channels.length > 0 && (
+            <>
+              <button onClick={() => setChannelFilter("todos")} className={`px-3 py-1 rounded-md text-xs font-medium border transition-all ${channelFilter === "todos" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"}`}>Todos</button>
+              {channels.map((ch) => (
+                <button key={ch} onClick={() => setChannelFilter(ch)} className={`px-3 py-1 rounded-md text-xs font-medium border transition-all ${channelFilter === ch ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"}`}>{ch}</button>
+              ))}
+            </>
+          )}
         </div>
       </header>
 
-      <div className="glass rounded-xl p-3 flex items-center gap-2 flex-wrap">
-        <span className="text-[11px] uppercase tracking-wider text-muted-foreground mr-1 font-medium">Período</span>
-        {([
-          { k: "30", label: "30 dias" },
-          { k: "90", label: "90 dias" },
-          { k: "365", label: "12 meses" },
-          { k: "todos", label: "Tudo" },
-        ] as const).map((p) => (
-          <button key={p.k} onClick={() => setPeriodFilter(p.k)} className={`px-3 py-1 rounded-full text-xs border transition-colors ${periodFilter === p.k ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>{p.label}</button>
-        ))}
-        {channels.length > 0 && <span className="text-[11px] uppercase tracking-wider text-muted-foreground ml-3 mr-1 font-medium">Canal</span>}
-        {channels.length > 0 && (
-          <>
-            <button onClick={() => setChannelFilter("todos")} className={`px-3 py-1 rounded-full text-xs border transition-colors ${channelFilter === "todos" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>Todos</button>
-            {channels.map((ch) => (
-              <button key={ch} onClick={() => setChannelFilter(ch)} className={`px-3 py-1 rounded-full text-xs border transition-colors ${channelFilter === ch ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>{ch}</button>
-            ))}
-          </>
-        )}
-        <span className="ml-auto text-[11px] text-muted-foreground tabular-nums">{filtered.length} de {rows.length} campanhas</span>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Investimento" value={brl(invTotal)} icon={DollarSign} sparkData={sparkData} dataKey="inv" color="#3b82f6" />
+        <StatCard label="Receita estimada" value={brl(receitaEst)} icon={TrendingUp} sparkData={sparkData} dataKey="rec" color="#10b981" />
+        <StatCard label="Lucro projetado" value={brl(lucro)} icon={Award} color={lucro >= 0 ? "#10b981" : "#ef4444"} trend={{ dir: lucro >= 0 ? "up" : "down", pct: Math.abs(margemPct) }} hint={`Margem ${margemPct.toFixed(0)}%`} />
+        <StatCard label="ROAS médio" value={`${roasAvg.toFixed(2)}x`} icon={Target} color={roasAvg >= 3 ? "#10b981" : roasAvg >= 2 ? "#f59e0b" : "#ef4444"} hint={roasAvg >= 3 ? "Excelente" : roasAvg >= 2 ? "Saudável" : "Atenção"} badge={`${ativas} ativas`} />
       </div>
 
-      <KpiGrid ativas={ativas} total={filtered.length} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
@@ -313,43 +345,56 @@ const STATUS_COLORS: Record<CStatus, string> = {
   programada: "#0ea5e9", ativa: "#10b981", pausada: "#f59e0b", concluida: "#64748b",
 };
 
-function KpiCard({ icon: Icon, label, value, accent, hint, trend }: {
-  icon: React.ComponentType<{ className?: string }>; label: string; value: string;
-  accent?: string; hint?: string; trend?: { dir: "up" | "down"; pct: number };
+function StatCard({ icon: Icon, label, value, color, hint, trend, badge, sparkData, dataKey }: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string; value: string; color?: string; hint?: string;
+  trend?: { dir: "up" | "down"; pct: number }; badge?: string;
+  sparkData?: Array<Record<string, string | number>>; dataKey?: string;
 }) {
+  const c = color ?? "hsl(var(--primary))";
+  const gid = `spark-${label.replace(/\s/g, "")}`;
   return (
-    <div className="glass rounded-xl p-5 relative overflow-hidden group hover:border-primary/40 transition-colors">
-      <div className="absolute -right-6 -top-6 size-24 rounded-full opacity-10 blur-2xl group-hover:opacity-20 transition-opacity" style={{ background: accent ?? "hsl(var(--primary))" }} />
-      <div className="flex items-start justify-between gap-2">
-        <div className="text-xs text-muted-foreground inline-flex items-center gap-1.5"><Icon className="size-3.5" />{label}</div>
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 group hover:border-primary/50 hover:shadow-[var(--shadow-glow)] transition-all">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      <div className="absolute -right-8 -top-8 size-28 rounded-full opacity-[0.08] blur-2xl group-hover:opacity-20 transition-opacity" style={{ background: c }} />
+      <div className="relative flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="size-8 rounded-lg grid place-items-center" style={{ background: `${c}1a`, color: c }}>
+            <Icon className="size-4" />
+          </div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</div>
+        </div>
         {trend && (
-          <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded ${trend.dir === "up" ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
+          <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${trend.dir === "up" ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"}`}>
             {trend.dir === "up" ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
             {trend.pct.toFixed(0)}%
           </span>
         )}
+        {badge && !trend && (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/15 text-primary">{badge}</span>
+        )}
       </div>
-      <div className="text-2xl font-semibold mt-2 tabular-nums" style={accent ? { color: accent } : undefined}>{value}</div>
-      {hint && <div className="text-[11px] text-muted-foreground mt-1">{hint}</div>}
+      <div className="relative text-3xl font-bold mt-3 tabular-nums tracking-tight" style={{ color: c }}>{value}</div>
+      {hint && <div className="relative text-[11px] text-muted-foreground mt-1">{hint}</div>}
+      {sparkData && sparkData.length > 1 && dataKey && (
+        <div className="relative -mx-5 -mb-5 mt-3 h-12">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={sparkData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={c} stopOpacity={0.5} />
+                  <stop offset="100%" stopColor={c} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <Area type="monotone" dataKey={dataKey} stroke={c} strokeWidth={1.5} fill={`url(#${gid})`} isAnimationActive={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }
 
-function KpiGrid({ ativas, total, invTotal, receitaEst, roasAvg }: {
-  ativas: number; total: number; invTotal: number; receitaEst: number; roasAvg: number;
-}) {
-  const lucro = receitaEst - invTotal;
-  const margemPct = invTotal > 0 ? (lucro / invTotal) * 100 : 0;
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-      <KpiCard icon={Activity} label="Campanhas ativas" value={String(ativas)} hint={`${total} no total`} />
-      <KpiCard icon={DollarSign} label="Investimento" value={brl(invTotal)} />
-      <KpiCard icon={TrendingUp} label="Receita estimada" value={brl(receitaEst)} accent="#10b981" />
-      <KpiCard icon={Award} label="Lucro projetado" value={brl(lucro)} accent={lucro >= 0 ? "#10b981" : "#ef4444"} trend={{ dir: lucro >= 0 ? "up" : "down", pct: Math.abs(margemPct) }} />
-      <KpiCard icon={Target} label="ROAS médio" value={`${roasAvg.toFixed(2)}x`} hint={roasAvg >= 3 ? "Excelente" : roasAvg >= 2 ? "Saudável" : "Atenção"} accent={roasAvg >= 3 ? "#10b981" : roasAvg >= 2 ? "#f59e0b" : "#ef4444"} />
-    </div>
-  );
-}
 
 function InsightsBar({ rows, invTotal, receitaEst, roasAvg }: {
   rows: Campaign[]; invTotal: number; receitaEst: number; roasAvg: number;
