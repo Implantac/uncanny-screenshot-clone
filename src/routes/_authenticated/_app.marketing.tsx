@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { MarketingIntelligence } from "@/components/marketing-intelligence";
 
 export const Route = createFileRoute("/_authenticated/_app/marketing")({
   head: () => ({
@@ -169,6 +170,7 @@ function Marketing() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Visão geral</TabsTrigger>
+          <TabsTrigger value="intelligence">Inteligência</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="campaigns">Campanhas</TabsTrigger>
         </TabsList>
@@ -176,6 +178,10 @@ function Marketing() {
         <TabsContent value="overview" className="space-y-4">
           <InsightsBar rows={filtered} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
           <ChartsSection rows={filtered} />
+        </TabsContent>
+
+        <TabsContent value="intelligence" className="space-y-4">
+          <MarketingIntelligence />
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-4">
