@@ -42,7 +42,7 @@ async function loadData(): Promise<Row[]> {
   });
   const prodByProd = new Map<string, number>();
   (orders ?? []).forEach((o) => {
-    if (o.product_id && o.status !== "concluido" && o.status !== "cancelado") {
+    if (o.product_id && o.status !== "concluida" && o.status !== "cancelada") {
       prodByProd.set(o.product_id, (prodByProd.get(o.product_id) ?? 0) + (o.quantity ?? 0));
     }
   });

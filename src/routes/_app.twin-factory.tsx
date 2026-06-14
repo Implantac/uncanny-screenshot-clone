@@ -9,13 +9,11 @@ export const Route = createFileRoute("/_app/twin-factory")({
 });
 
 const STAGES = [
-  { key: "aguardando", label: "Programado" },
-  { key: "separacao", label: "Separação" },
-  { key: "corte", label: "Corte" },
-  { key: "costura", label: "Costura" },
-  { key: "acabamento", label: "Acabamento" },
-  { key: "expedicao", label: "Expedição" },
-  { key: "concluido", label: "Concluído" },
+  { key: "aguardando", label: "Aguardando" },
+  { key: "em_producao", label: "Em produção" },
+  { key: "atrasada", label: "Atrasada" },
+  { key: "concluida", label: "Concluída" },
+  { key: "cancelada", label: "Cancelada" },
 ];
 
 type Order = {
