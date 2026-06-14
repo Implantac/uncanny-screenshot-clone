@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp, Search, Flag, Workflow, History } from "lucide-react";
+import { Factory, Plus, Trash2, Pencil, Download, FileText, LayoutGrid, GanttChart, Table as TableIcon, AlertTriangle, CheckCircle2, Clock, TrendingUp, Search, Flag, Workflow, History, Package, Boxes, ImageIcon } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { exportToPdf } from "@/lib/pdf";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,8 +28,10 @@ type Order = {
   id: string; owner_id: string; product_id: string | null; supplier_id: string | null;
   code: string; quantity: number; progress: number; due_date: string | null;
   status: Status; stage: Stage | null; priority: number; notes: string | null; created_at: string;
+  batch_code: string | null;
 };
 type Ref = { id: string; name: string };
+type ProductRef = { id: string; name: string; image_url: string | null; sku: string | null };
 
 
 const LABEL: Record<Status, string> = {
@@ -67,9 +69,10 @@ function PCP() {
   const [filterSupplier, setFilterSupplier] = useState<string>("all");
   const [form, setForm] = useState({
     code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0,
-    due_date: "", status: "aguardando" as Status, stage: "cad" as Stage, priority: 3, notes: "",
+    due_date: "", status: "aguardando" as Status, stage: "cad" as Stage, priority: 3, notes: "", batch_code: "",
   });
   const [historyOrder, setHistoryOrder] = useState<Order | null>(null);
+  const [batchView, setBatchView] = useState<{ code: string; stage: Stage | null } | null>(null);
 
 
 
@@ -85,9 +88,9 @@ function PCP() {
   const { data: products = [] } = useQuery({
     queryKey: ["products-ref"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("products").select("id,name").order("name");
+      const { data, error } = await supabase.from("products").select("id,name,image_url,sku").order("name");
       if (error) throw error;
-      return data as Ref[];
+      return data as ProductRef[];
     },
   });
 
@@ -116,6 +119,7 @@ function PCP() {
         stage: form.stage,
         priority: Number(form.priority) || 3,
         notes: form.notes.trim() || null,
+        batch_code: form.batch_code.trim() || null,
       };
 
       if (editing) {
@@ -160,7 +164,7 @@ function PCP() {
 
   function reset() {
     setOpen(false); setEditing(null);
-    setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", stage: "cad", priority: 3, notes: "" });
+    setForm({ code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0, due_date: "", status: "aguardando", stage: "cad", priority: 3, notes: "", batch_code: "" });
   }
 
   function openEdit(o: Order) {
@@ -169,6 +173,7 @@ function PCP() {
       code: o.code, product_id: o.product_id ?? "", supplier_id: o.supplier_id ?? "",
       quantity: o.quantity, progress: o.progress, due_date: o.due_date ?? "",
       status: o.status, stage: (o.stage ?? "cad") as Stage, priority: o.priority ?? 3, notes: o.notes ?? "",
+      batch_code: o.batch_code ?? "",
     });
     setOpen(true);
 
