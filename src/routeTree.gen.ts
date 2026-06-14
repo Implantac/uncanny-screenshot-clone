@@ -15,6 +15,7 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AppUseAiRouteImport } from './routes/_app.use-ai'
 import { Route as AppTwinFactoryRouteImport } from './routes/_app.twin-factory'
+import { Route as AppTrendsRouteImport } from './routes/_app.trends'
 import { Route as AppSupplierScoreRouteImport } from './routes/_app.supplier-score'
 import { Route as AppStockHealthRouteImport } from './routes/_app.stock-health'
 import { Route as AppShowroomRouteImport } from './routes/_app.showroom'
@@ -32,6 +33,7 @@ import { Route as AppMobileRouteImport } from './routes/_app.mobile'
 import { Route as AppMarketingRouteImport } from './routes/_app.marketing'
 import { Route as AppMargemRouteImport } from './routes/_app.margem'
 import { Route as AppIntelligenceRouteImport } from './routes/_app.intelligence'
+import { Route as AppInfluencersRouteImport } from './routes/_app.influencers'
 import { Route as AppInfluencerRoiRouteImport } from './routes/_app.influencer-roi'
 import { Route as AppGradeNeedsRouteImport } from './routes/_app.grade-needs'
 import { Route as AppGeoSalesRouteImport } from './routes/_app.geo-sales'
@@ -53,6 +55,7 @@ import { Route as AppCapacityRouteImport } from './routes/_app.capacity'
 import { Route as AppCampaignsRouteImport } from './routes/_app.campaigns'
 import { Route as AppCadRouteImport } from './routes/_app.cad'
 import { Route as AppBiRouteImport } from './routes/_app.bi'
+import { Route as AppAttributionRouteImport } from './routes/_app.attribution'
 import { Route as AppAlmoxarifadoRouteImport } from './routes/_app.almoxarifado'
 
 const AuthRoute = AuthRouteImport.update({
@@ -82,6 +85,11 @@ const AppUseAiRoute = AppUseAiRouteImport.update({
 const AppTwinFactoryRoute = AppTwinFactoryRouteImport.update({
   id: '/twin-factory',
   path: '/twin-factory',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTrendsRoute = AppTrendsRouteImport.update({
+  id: '/trends',
+  path: '/trends',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSupplierScoreRoute = AppSupplierScoreRouteImport.update({
@@ -167,6 +175,11 @@ const AppMargemRoute = AppMargemRouteImport.update({
 const AppIntelligenceRoute = AppIntelligenceRouteImport.update({
   id: '/intelligence',
   path: '/intelligence',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInfluencersRoute = AppInfluencersRouteImport.update({
+  id: '/influencers',
+  path: '/influencers',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInfluencerRoiRoute = AppInfluencerRoiRouteImport.update({
@@ -274,6 +287,11 @@ const AppBiRoute = AppBiRouteImport.update({
   path: '/bi',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAttributionRoute = AppAttributionRouteImport.update({
+  id: '/attribution',
+  path: '/attribution',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAlmoxarifadoRoute = AppAlmoxarifadoRouteImport.update({
   id: '/almoxarifado',
   path: '/almoxarifado',
@@ -284,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/auth': typeof AuthRoute
   '/almoxarifado': typeof AppAlmoxarifadoRoute
+  '/attribution': typeof AppAttributionRoute
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
   '/campaigns': typeof AppCampaignsRoute
@@ -305,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/geo-sales': typeof AppGeoSalesRoute
   '/grade-needs': typeof AppGradeNeedsRoute
   '/influencer-roi': typeof AppInfluencerRoiRoute
+  '/influencers': typeof AppInfluencersRoute
   '/intelligence': typeof AppIntelligenceRoute
   '/margem': typeof AppMargemRoute
   '/marketing': typeof AppMarketingRoute
@@ -322,6 +342,7 @@ export interface FileRoutesByFullPath {
   '/showroom': typeof AppShowroomRoute
   '/stock-health': typeof AppStockHealthRoute
   '/supplier-score': typeof AppSupplierScoreRoute
+  '/trends': typeof AppTrendsRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -329,6 +350,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/almoxarifado': typeof AppAlmoxarifadoRoute
+  '/attribution': typeof AppAttributionRoute
   '/bi': typeof AppBiRoute
   '/cad': typeof AppCadRoute
   '/campaigns': typeof AppCampaignsRoute
@@ -350,6 +372,7 @@ export interface FileRoutesByTo {
   '/geo-sales': typeof AppGeoSalesRoute
   '/grade-needs': typeof AppGradeNeedsRoute
   '/influencer-roi': typeof AppInfluencerRoiRoute
+  '/influencers': typeof AppInfluencersRoute
   '/intelligence': typeof AppIntelligenceRoute
   '/margem': typeof AppMargemRoute
   '/marketing': typeof AppMarketingRoute
@@ -367,6 +390,7 @@ export interface FileRoutesByTo {
   '/showroom': typeof AppShowroomRoute
   '/stock-health': typeof AppStockHealthRoute
   '/supplier-score': typeof AppSupplierScoreRoute
+  '/trends': typeof AppTrendsRoute
   '/twin-factory': typeof AppTwinFactoryRoute
   '/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -377,6 +401,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/_app/almoxarifado': typeof AppAlmoxarifadoRoute
+  '/_app/attribution': typeof AppAttributionRoute
   '/_app/bi': typeof AppBiRoute
   '/_app/cad': typeof AppCadRoute
   '/_app/campaigns': typeof AppCampaignsRoute
@@ -398,6 +423,7 @@ export interface FileRoutesById {
   '/_app/geo-sales': typeof AppGeoSalesRoute
   '/_app/grade-needs': typeof AppGradeNeedsRoute
   '/_app/influencer-roi': typeof AppInfluencerRoiRoute
+  '/_app/influencers': typeof AppInfluencersRoute
   '/_app/intelligence': typeof AppIntelligenceRoute
   '/_app/margem': typeof AppMargemRoute
   '/_app/marketing': typeof AppMarketingRoute
@@ -415,6 +441,7 @@ export interface FileRoutesById {
   '/_app/showroom': typeof AppShowroomRoute
   '/_app/stock-health': typeof AppStockHealthRoute
   '/_app/supplier-score': typeof AppSupplierScoreRoute
+  '/_app/trends': typeof AppTrendsRoute
   '/_app/twin-factory': typeof AppTwinFactoryRoute
   '/_app/use-ai': typeof AppUseAiRoute
   '/api/chat': typeof ApiChatRoute
@@ -426,6 +453,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/almoxarifado'
+    | '/attribution'
     | '/bi'
     | '/cad'
     | '/campaigns'
@@ -447,6 +475,7 @@ export interface FileRouteTypes {
     | '/geo-sales'
     | '/grade-needs'
     | '/influencer-roi'
+    | '/influencers'
     | '/intelligence'
     | '/margem'
     | '/marketing'
@@ -464,6 +493,7 @@ export interface FileRouteTypes {
     | '/showroom'
     | '/stock-health'
     | '/supplier-score'
+    | '/trends'
     | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
@@ -471,6 +501,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/almoxarifado'
+    | '/attribution'
     | '/bi'
     | '/cad'
     | '/campaigns'
@@ -492,6 +523,7 @@ export interface FileRouteTypes {
     | '/geo-sales'
     | '/grade-needs'
     | '/influencer-roi'
+    | '/influencers'
     | '/intelligence'
     | '/margem'
     | '/marketing'
@@ -509,6 +541,7 @@ export interface FileRouteTypes {
     | '/showroom'
     | '/stock-health'
     | '/supplier-score'
+    | '/trends'
     | '/twin-factory'
     | '/use-ai'
     | '/api/chat'
@@ -518,6 +551,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/auth'
     | '/_app/almoxarifado'
+    | '/_app/attribution'
     | '/_app/bi'
     | '/_app/cad'
     | '/_app/campaigns'
@@ -539,6 +573,7 @@ export interface FileRouteTypes {
     | '/_app/geo-sales'
     | '/_app/grade-needs'
     | '/_app/influencer-roi'
+    | '/_app/influencers'
     | '/_app/intelligence'
     | '/_app/margem'
     | '/_app/marketing'
@@ -556,6 +591,7 @@ export interface FileRouteTypes {
     | '/_app/showroom'
     | '/_app/stock-health'
     | '/_app/supplier-score'
+    | '/_app/trends'
     | '/_app/twin-factory'
     | '/_app/use-ai'
     | '/api/chat'
@@ -610,6 +646,13 @@ declare module '@tanstack/react-router' {
       path: '/twin-factory'
       fullPath: '/twin-factory'
       preLoaderRoute: typeof AppTwinFactoryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/trends': {
+      id: '/_app/trends'
+      path: '/trends'
+      fullPath: '/trends'
+      preLoaderRoute: typeof AppTrendsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/supplier-score': {
@@ -729,6 +772,13 @@ declare module '@tanstack/react-router' {
       path: '/intelligence'
       fullPath: '/intelligence'
       preLoaderRoute: typeof AppIntelligenceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/influencers': {
+      id: '/_app/influencers'
+      path: '/influencers'
+      fullPath: '/influencers'
+      preLoaderRoute: typeof AppInfluencersRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/influencer-roi': {
@@ -878,6 +928,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBiRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/attribution': {
+      id: '/_app/attribution'
+      path: '/attribution'
+      fullPath: '/attribution'
+      preLoaderRoute: typeof AppAttributionRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/almoxarifado': {
       id: '/_app/almoxarifado'
       path: '/almoxarifado'
@@ -890,6 +947,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAlmoxarifadoRoute: typeof AppAlmoxarifadoRoute
+  AppAttributionRoute: typeof AppAttributionRoute
   AppBiRoute: typeof AppBiRoute
   AppCadRoute: typeof AppCadRoute
   AppCampaignsRoute: typeof AppCampaignsRoute
@@ -911,6 +969,7 @@ interface AppRouteChildren {
   AppGeoSalesRoute: typeof AppGeoSalesRoute
   AppGradeNeedsRoute: typeof AppGradeNeedsRoute
   AppInfluencerRoiRoute: typeof AppInfluencerRoiRoute
+  AppInfluencersRoute: typeof AppInfluencersRoute
   AppIntelligenceRoute: typeof AppIntelligenceRoute
   AppMargemRoute: typeof AppMargemRoute
   AppMarketingRoute: typeof AppMarketingRoute
@@ -928,6 +987,7 @@ interface AppRouteChildren {
   AppShowroomRoute: typeof AppShowroomRoute
   AppStockHealthRoute: typeof AppStockHealthRoute
   AppSupplierScoreRoute: typeof AppSupplierScoreRoute
+  AppTrendsRoute: typeof AppTrendsRoute
   AppTwinFactoryRoute: typeof AppTwinFactoryRoute
   AppUseAiRoute: typeof AppUseAiRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -935,6 +995,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAlmoxarifadoRoute: AppAlmoxarifadoRoute,
+  AppAttributionRoute: AppAttributionRoute,
   AppBiRoute: AppBiRoute,
   AppCadRoute: AppCadRoute,
   AppCampaignsRoute: AppCampaignsRoute,
@@ -956,6 +1017,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGeoSalesRoute: AppGeoSalesRoute,
   AppGradeNeedsRoute: AppGradeNeedsRoute,
   AppInfluencerRoiRoute: AppInfluencerRoiRoute,
+  AppInfluencersRoute: AppInfluencersRoute,
   AppIntelligenceRoute: AppIntelligenceRoute,
   AppMargemRoute: AppMargemRoute,
   AppMarketingRoute: AppMarketingRoute,
@@ -973,6 +1035,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppShowroomRoute: AppShowroomRoute,
   AppStockHealthRoute: AppStockHealthRoute,
   AppSupplierScoreRoute: AppSupplierScoreRoute,
+  AppTrendsRoute: AppTrendsRoute,
   AppTwinFactoryRoute: AppTwinFactoryRoute,
   AppUseAiRoute: AppUseAiRoute,
   AppIndexRoute: AppIndexRoute,
