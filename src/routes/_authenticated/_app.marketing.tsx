@@ -352,7 +352,7 @@ function StatCard({ icon: Icon, label, value, color, hint, trend, badge, sparkDa
   trend?: { dir: "up" | "down"; pct: number }; badge?: string;
   sparkData?: Array<Record<string, string | number>>; dataKey?: string;
 }) {
-  const c = color ?? "hsl(var(--primary))";
+  const c = color ?? "var(--primary)";
   const gid = `spark-${label.replace(/\s/g, "")}`;
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 group hover:border-primary/50 hover:shadow-[var(--shadow-glow)] transition-all">
