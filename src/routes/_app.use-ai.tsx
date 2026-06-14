@@ -18,13 +18,6 @@ export const Route = createFileRoute("/_app/use-ai")({
   }),
   component: UseAI,
 });
-    meta: [
-      { title: "USE AI · USE MODA OS" },
-      { name: "description", content: "Agentes de IA para automação de processos de moda." },
-    ],
-  }),
-  component: UseAI,
-});
 
 function relTime(iso: string | null) {
   if (!iso) return "—";
