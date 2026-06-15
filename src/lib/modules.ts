@@ -66,6 +66,7 @@ export const MODULES: ModuleDef[] = [
 
   // === Cadeia (PLM) — insumos / fornecedores ===
   { slug: "almoxarifado", path: "/almoxarifado", title: "Almoxarifado (Insumos)", short: "Tecidos e aviamentos", description: "Controle técnico de insumos da produção.", icon: Boxes, group: "Cadeia (PLM)" },
+  { slug: "cadeia-360", path: "/cadeia-360", title: "Cadeia 360º", short: "Portal + sourcing + capacidade", description: "Portal do fornecedor, sourcing inteligente e calendário de capacidade.", icon: Truck, group: "Cadeia (PLM)" },
   { slug: "fornecedores", path: "/fornecedores", title: "Fornecedores", short: "Portal de parceiros", description: "Portal de fornecedores e facções.", icon: Truck, group: "Cadeia (PLM)" },
   { slug: "supplier-score", path: "/supplier-score", title: "Supplier Scorecard", short: "OTD e rating", description: "Score 0–100 por fornecedor com OTD, rating e tiers.", icon: Trophy, group: "Cadeia (PLM)" },
   { slug: "stock-health", path: "/stock-health", title: "Saúde de Insumos", short: "Cobertura técnica", description: "Ruptura, baixo, excesso e cobertura — escopo insumos PLM.", icon: PackageSearch, group: "Cadeia (PLM)", status: "parcial" },

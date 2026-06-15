@@ -64,6 +64,7 @@ import { Route as AuthenticatedAppCentroDeCorteRouteImport } from './routes/_aut
 import { Route as AuthenticatedAppCashflowRouteImport } from './routes/_authenticated/_app.cashflow'
 import { Route as AuthenticatedAppCapacityRouteImport } from './routes/_authenticated/_app.capacity'
 import { Route as AuthenticatedAppCampaignsRouteImport } from './routes/_authenticated/_app.campaigns'
+import { Route as AuthenticatedAppCadeia360RouteImport } from './routes/_authenticated/_app.cadeia-360'
 import { Route as AuthenticatedAppCadRouteImport } from './routes/_authenticated/_app.cad'
 import { Route as AuthenticatedAppBiRouteImport } from './routes/_authenticated/_app.bi'
 import { Route as AuthenticatedAppAuditRouteImport } from './routes/_authenticated/_app.audit'
@@ -383,6 +384,12 @@ const AuthenticatedAppCampaignsRoute =
     path: '/campaigns',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppCadeia360Route =
+  AuthenticatedAppCadeia360RouteImport.update({
+    id: '/cadeia-360',
+    path: '/cadeia-360',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppCadRoute = AuthenticatedAppCadRouteImport.update({
   id: '/cad',
   path: '/cad',
@@ -426,6 +433,7 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuthenticatedAppAuditRoute
   '/bi': typeof AuthenticatedAppBiRoute
   '/cad': typeof AuthenticatedAppCadRoute
+  '/cadeia-360': typeof AuthenticatedAppCadeia360Route
   '/campaigns': typeof AuthenticatedAppCampaignsRoute
   '/capacity': typeof AuthenticatedAppCapacityRoute
   '/cashflow': typeof AuthenticatedAppCashflowRoute
@@ -487,6 +495,7 @@ export interface FileRoutesByTo {
   '/audit': typeof AuthenticatedAppAuditRoute
   '/bi': typeof AuthenticatedAppBiRoute
   '/cad': typeof AuthenticatedAppCadRoute
+  '/cadeia-360': typeof AuthenticatedAppCadeia360Route
   '/campaigns': typeof AuthenticatedAppCampaignsRoute
   '/capacity': typeof AuthenticatedAppCapacityRoute
   '/cashflow': typeof AuthenticatedAppCashflowRoute
@@ -550,6 +559,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/audit': typeof AuthenticatedAppAuditRoute
   '/_authenticated/_app/bi': typeof AuthenticatedAppBiRoute
   '/_authenticated/_app/cad': typeof AuthenticatedAppCadRoute
+  '/_authenticated/_app/cadeia-360': typeof AuthenticatedAppCadeia360Route
   '/_authenticated/_app/campaigns': typeof AuthenticatedAppCampaignsRoute
   '/_authenticated/_app/capacity': typeof AuthenticatedAppCapacityRoute
   '/_authenticated/_app/cashflow': typeof AuthenticatedAppCashflowRoute
@@ -614,6 +624,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/bi'
     | '/cad'
+    | '/cadeia-360'
     | '/campaigns'
     | '/capacity'
     | '/cashflow'
@@ -675,6 +686,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/bi'
     | '/cad'
+    | '/cadeia-360'
     | '/campaigns'
     | '/capacity'
     | '/cashflow'
@@ -737,6 +749,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/audit'
     | '/_authenticated/_app/bi'
     | '/_authenticated/_app/cad'
+    | '/_authenticated/_app/cadeia-360'
     | '/_authenticated/_app/campaigns'
     | '/_authenticated/_app/capacity'
     | '/_authenticated/_app/cashflow'
@@ -1185,6 +1198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCampaignsRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/cadeia-360': {
+      id: '/_authenticated/_app/cadeia-360'
+      path: '/cadeia-360'
+      fullPath: '/cadeia-360'
+      preLoaderRoute: typeof AuthenticatedAppCadeia360RouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/cad': {
       id: '/_authenticated/_app/cad'
       path: '/cad'
@@ -1236,6 +1256,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAuditRoute: typeof AuthenticatedAppAuditRoute
   AuthenticatedAppBiRoute: typeof AuthenticatedAppBiRoute
   AuthenticatedAppCadRoute: typeof AuthenticatedAppCadRoute
+  AuthenticatedAppCadeia360Route: typeof AuthenticatedAppCadeia360Route
   AuthenticatedAppCampaignsRoute: typeof AuthenticatedAppCampaignsRoute
   AuthenticatedAppCapacityRoute: typeof AuthenticatedAppCapacityRoute
   AuthenticatedAppCashflowRoute: typeof AuthenticatedAppCashflowRoute
@@ -1294,6 +1315,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAuditRoute: AuthenticatedAppAuditRoute,
   AuthenticatedAppBiRoute: AuthenticatedAppBiRoute,
   AuthenticatedAppCadRoute: AuthenticatedAppCadRoute,
+  AuthenticatedAppCadeia360Route: AuthenticatedAppCadeia360Route,
   AuthenticatedAppCampaignsRoute: AuthenticatedAppCampaignsRoute,
   AuthenticatedAppCapacityRoute: AuthenticatedAppCapacityRoute,
   AuthenticatedAppCashflowRoute: AuthenticatedAppCashflowRoute,
