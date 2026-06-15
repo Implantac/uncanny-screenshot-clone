@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, ImageIcon, Loader2, Package, Pencil, Plus, Search, Tag, Trash2, Upload } from "lucide-react";
@@ -16,6 +18,11 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/produtos")({
+  validateSearch: zodValidator(
+    z.object({
+      q: fallback(z.string().trim().max(80), "").default(""),
+    }),
+  ),
   head: () => ({
     meta: [
       { title: "Produtos · USE MODA OS" },
@@ -88,7 +95,10 @@ function ProdutosPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const { q: search } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setSearch = (v: string) =>
+    navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
