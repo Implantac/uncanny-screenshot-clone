@@ -27,7 +27,12 @@ import {
   PieChart, Pie, Cell,
 } from "recharts";
 
+const INTEL_TABS = ["production","kanban","dev","score","restock","sales","geo","influencers","lake"] as const;
 export const Route = createFileRoute("/_authenticated/_app/intelligence")({
+  validateSearch: zodValidator(z.object({
+    tab: fallback(z.enum(INTEL_TABS), "production").default("production"),
+    q: fallback(z.string().trim().max(80), "").default(""),
+  })),
   head: () => ({
     meta: [
       { title: "Intelligence · USE MODA OS" },
