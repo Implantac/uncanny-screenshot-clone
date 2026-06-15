@@ -55,9 +55,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               {group}
             </div>
             <ul className="space-y-0.5">
-              {MODULES.filter((m) => m.group === group).map((m) => {
+              {MODULES.filter((m) => m.group === group && !m.hidden).map((m) => {
                 const isActive = active === m.path;
                 const Icon = m.icon;
+                const isErp = m.source === "erp-mirror";
                 return (
                   <li key={m.slug}>
                     <Link
@@ -70,7 +71,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                       )}
                     >
                       <Icon className={cn("size-4", isActive && "text-primary")} />
-                      <span className="truncate">{m.title}</span>
+                      <span className="truncate flex-1">{m.title}</span>
+                      {isErp && (
+                        <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                          ERP
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );
