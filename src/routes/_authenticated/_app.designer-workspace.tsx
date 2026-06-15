@@ -33,8 +33,8 @@ function DesignerWorkspace() {
   });
 
   const openProtos = (data?.prototypes ?? []).filter((p) => p.stage !== "aprovado" && p.stage !== "reprovado");
-  const pendingApproval = (data?.prototypes ?? []).filter((p) => p.stage === "aprovacao" || p.stage === "piloto");
-  const draftProducts = (data?.products ?? []).filter((p) => p.status === "draft" || p.status === "desenvolvimento");
+  const pendingApproval = (data?.prototypes ?? []).filter((p) => p.stage === "em_prova" || p.stage === "solicitado");
+  const draftProducts = (data?.products ?? []).filter((p) => p.status === "rascunho" || p.status === "desenvolvimento");
 
   return (
     <div className="p-6 space-y-6">
