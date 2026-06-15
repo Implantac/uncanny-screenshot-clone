@@ -213,7 +213,7 @@ function PODialog({ open, onOpenChange, editing, suppliers, userId }: { open: bo
       if (items.length) {
         const rows = items.map(it => ({
           owner_id: userId, purchase_order_id: poId,
-          inventory_item_id: it.inventory_item_id, description: it.description || null,
+          inventory_item_id: it.inventory_item_id, description: it.description || "—",
           quantity: it.quantity, unit_price: it.unit_price,
         }));
         const { error } = await supabase.from("purchase_order_items").insert(rows);

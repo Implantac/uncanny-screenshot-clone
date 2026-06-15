@@ -23,6 +23,7 @@ import { Route as AuthenticatedAppStockHealthRouteImport } from './routes/_authe
 import { Route as AuthenticatedAppShowroomRouteImport } from './routes/_authenticated/_app.showroom'
 import { Route as AuthenticatedAppSecurityCenterRouteImport } from './routes/_authenticated/_app.security-center'
 import { Route as AuthenticatedAppSalesPerformanceRouteImport } from './routes/_authenticated/_app.sales-performance'
+import { Route as AuthenticatedAppRepresentantesRouteImport } from './routes/_authenticated/_app.representantes'
 import { Route as AuthenticatedAppReplenishmentRouteImport } from './routes/_authenticated/_app.replenishment'
 import { Route as AuthenticatedAppPrototiposRouteImport } from './routes/_authenticated/_app.prototipos'
 import { Route as AuthenticatedAppProfitabilityRouteImport } from './routes/_authenticated/_app.profitability'
@@ -30,8 +31,10 @@ import { Route as AuthenticatedAppProdutosRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppProductSuccessRouteImport } from './routes/_authenticated/_app.product-success'
 import { Route as AuthenticatedAppProductScoreRouteImport } from './routes/_authenticated/_app.product-score'
 import { Route as AuthenticatedAppPilotsRouteImport } from './routes/_authenticated/_app.pilots'
+import { Route as AuthenticatedAppPedidosCompraRouteImport } from './routes/_authenticated/_app.pedidos-compra'
 import { Route as AuthenticatedAppPcpKanbanRouteImport } from './routes/_authenticated/_app.pcp-kanban'
 import { Route as AuthenticatedAppPcpRouteImport } from './routes/_authenticated/_app.pcp'
+import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_authenticated/_app.movimentacoes'
 import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
 import { Route as AuthenticatedAppMarketingRouteImport } from './routes/_authenticated/_app.marketing'
 import { Route as AuthenticatedAppMargemRouteImport } from './routes/_authenticated/_app.margem'
@@ -53,6 +56,7 @@ import { Route as AuthenticatedAppControlTowerRouteImport } from './routes/_auth
 import { Route as AuthenticatedAppComprasRouteImport } from './routes/_authenticated/_app.compras'
 import { Route as AuthenticatedAppComercialRouteImport } from './routes/_authenticated/_app.comercial'
 import { Route as AuthenticatedAppColecoesRouteImport } from './routes/_authenticated/_app.colecoes'
+import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/_app.clientes'
 import { Route as AuthenticatedAppCentroDeCorteRouteImport } from './routes/_authenticated/_app.centro-de-corte'
 import { Route as AuthenticatedAppCashflowRouteImport } from './routes/_authenticated/_app.cashflow'
 import { Route as AuthenticatedAppCapacityRouteImport } from './routes/_authenticated/_app.capacity'
@@ -138,6 +142,12 @@ const AuthenticatedAppSalesPerformanceRoute =
     path: '/sales-performance',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppRepresentantesRoute =
+  AuthenticatedAppRepresentantesRouteImport.update({
+    id: '/representantes',
+    path: '/representantes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppReplenishmentRoute =
   AuthenticatedAppReplenishmentRouteImport.update({
     id: '/replenishment',
@@ -179,6 +189,12 @@ const AuthenticatedAppPilotsRoute = AuthenticatedAppPilotsRouteImport.update({
   path: '/pilots',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppPedidosCompraRoute =
+  AuthenticatedAppPedidosCompraRouteImport.update({
+    id: '/pedidos-compra',
+    path: '/pedidos-compra',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppPcpKanbanRoute =
   AuthenticatedAppPcpKanbanRouteImport.update({
     id: '/pcp-kanban',
@@ -190,6 +206,12 @@ const AuthenticatedAppPcpRoute = AuthenticatedAppPcpRouteImport.update({
   path: '/pcp',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppMovimentacoesRoute =
+  AuthenticatedAppMovimentacoesRouteImport.update({
+    id: '/movimentacoes',
+    path: '/movimentacoes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppMobileRoute = AuthenticatedAppMobileRouteImport.update({
   id: '/mobile',
   path: '/mobile',
@@ -311,6 +333,12 @@ const AuthenticatedAppColecoesRoute =
     path: '/colecoes',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppClientesRoute =
+  AuthenticatedAppClientesRouteImport.update({
+    id: '/clientes',
+    path: '/clientes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppCentroDeCorteRoute =
   AuthenticatedAppCentroDeCorteRouteImport.update({
     id: '/centro-de-corte',
@@ -382,6 +410,7 @@ export interface FileRoutesByFullPath {
   '/capacity': typeof AuthenticatedAppCapacityRoute
   '/cashflow': typeof AuthenticatedAppCashflowRoute
   '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
+  '/clientes': typeof AuthenticatedAppClientesRoute
   '/colecoes': typeof AuthenticatedAppColecoesRoute
   '/comercial': typeof AuthenticatedAppComercialRoute
   '/compras': typeof AuthenticatedAppComprasRoute
@@ -403,8 +432,10 @@ export interface FileRoutesByFullPath {
   '/margem': typeof AuthenticatedAppMargemRoute
   '/marketing': typeof AuthenticatedAppMarketingRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
+  '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
+  '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/pilots': typeof AuthenticatedAppPilotsRoute
   '/product-score': typeof AuthenticatedAppProductScoreRoute
   '/product-success': typeof AuthenticatedAppProductSuccessRoute
@@ -412,6 +443,7 @@ export interface FileRoutesByFullPath {
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/prototipos': typeof AuthenticatedAppPrototiposRoute
   '/replenishment': typeof AuthenticatedAppReplenishmentRoute
+  '/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
   '/security-center': typeof AuthenticatedAppSecurityCenterRoute
   '/showroom': typeof AuthenticatedAppShowroomRoute
@@ -436,6 +468,7 @@ export interface FileRoutesByTo {
   '/capacity': typeof AuthenticatedAppCapacityRoute
   '/cashflow': typeof AuthenticatedAppCashflowRoute
   '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
+  '/clientes': typeof AuthenticatedAppClientesRoute
   '/colecoes': typeof AuthenticatedAppColecoesRoute
   '/comercial': typeof AuthenticatedAppComercialRoute
   '/compras': typeof AuthenticatedAppComprasRoute
@@ -457,8 +490,10 @@ export interface FileRoutesByTo {
   '/margem': typeof AuthenticatedAppMargemRoute
   '/marketing': typeof AuthenticatedAppMarketingRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
+  '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
+  '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/pilots': typeof AuthenticatedAppPilotsRoute
   '/product-score': typeof AuthenticatedAppProductScoreRoute
   '/product-success': typeof AuthenticatedAppProductSuccessRoute
@@ -466,6 +501,7 @@ export interface FileRoutesByTo {
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/prototipos': typeof AuthenticatedAppPrototiposRoute
   '/replenishment': typeof AuthenticatedAppReplenishmentRoute
+  '/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
   '/security-center': typeof AuthenticatedAppSecurityCenterRoute
   '/showroom': typeof AuthenticatedAppShowroomRoute
@@ -492,6 +528,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/capacity': typeof AuthenticatedAppCapacityRoute
   '/_authenticated/_app/cashflow': typeof AuthenticatedAppCashflowRoute
   '/_authenticated/_app/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
+  '/_authenticated/_app/clientes': typeof AuthenticatedAppClientesRoute
   '/_authenticated/_app/colecoes': typeof AuthenticatedAppColecoesRoute
   '/_authenticated/_app/comercial': typeof AuthenticatedAppComercialRoute
   '/_authenticated/_app/compras': typeof AuthenticatedAppComprasRoute
@@ -513,8 +550,10 @@ export interface FileRoutesById {
   '/_authenticated/_app/margem': typeof AuthenticatedAppMargemRoute
   '/_authenticated/_app/marketing': typeof AuthenticatedAppMarketingRoute
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
+  '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/_authenticated/_app/pcp': typeof AuthenticatedAppPcpRoute
   '/_authenticated/_app/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
+  '/_authenticated/_app/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/_authenticated/_app/pilots': typeof AuthenticatedAppPilotsRoute
   '/_authenticated/_app/product-score': typeof AuthenticatedAppProductScoreRoute
   '/_authenticated/_app/product-success': typeof AuthenticatedAppProductSuccessRoute
@@ -522,6 +561,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/_authenticated/_app/prototipos': typeof AuthenticatedAppPrototiposRoute
   '/_authenticated/_app/replenishment': typeof AuthenticatedAppReplenishmentRoute
+  '/_authenticated/_app/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/_authenticated/_app/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
   '/_authenticated/_app/security-center': typeof AuthenticatedAppSecurityCenterRoute
   '/_authenticated/_app/showroom': typeof AuthenticatedAppShowroomRoute
@@ -549,6 +589,7 @@ export interface FileRouteTypes {
     | '/capacity'
     | '/cashflow'
     | '/centro-de-corte'
+    | '/clientes'
     | '/colecoes'
     | '/comercial'
     | '/compras'
@@ -570,8 +611,10 @@ export interface FileRouteTypes {
     | '/margem'
     | '/marketing'
     | '/mobile'
+    | '/movimentacoes'
     | '/pcp'
     | '/pcp-kanban'
+    | '/pedidos-compra'
     | '/pilots'
     | '/product-score'
     | '/product-success'
@@ -579,6 +622,7 @@ export interface FileRouteTypes {
     | '/profitability'
     | '/prototipos'
     | '/replenishment'
+    | '/representantes'
     | '/sales-performance'
     | '/security-center'
     | '/showroom'
@@ -603,6 +647,7 @@ export interface FileRouteTypes {
     | '/capacity'
     | '/cashflow'
     | '/centro-de-corte'
+    | '/clientes'
     | '/colecoes'
     | '/comercial'
     | '/compras'
@@ -624,8 +669,10 @@ export interface FileRouteTypes {
     | '/margem'
     | '/marketing'
     | '/mobile'
+    | '/movimentacoes'
     | '/pcp'
     | '/pcp-kanban'
+    | '/pedidos-compra'
     | '/pilots'
     | '/product-score'
     | '/product-success'
@@ -633,6 +680,7 @@ export interface FileRouteTypes {
     | '/profitability'
     | '/prototipos'
     | '/replenishment'
+    | '/representantes'
     | '/sales-performance'
     | '/security-center'
     | '/showroom'
@@ -658,6 +706,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/capacity'
     | '/_authenticated/_app/cashflow'
     | '/_authenticated/_app/centro-de-corte'
+    | '/_authenticated/_app/clientes'
     | '/_authenticated/_app/colecoes'
     | '/_authenticated/_app/comercial'
     | '/_authenticated/_app/compras'
@@ -679,8 +728,10 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/margem'
     | '/_authenticated/_app/marketing'
     | '/_authenticated/_app/mobile'
+    | '/_authenticated/_app/movimentacoes'
     | '/_authenticated/_app/pcp'
     | '/_authenticated/_app/pcp-kanban'
+    | '/_authenticated/_app/pedidos-compra'
     | '/_authenticated/_app/pilots'
     | '/_authenticated/_app/product-score'
     | '/_authenticated/_app/product-success'
@@ -688,6 +739,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/profitability'
     | '/_authenticated/_app/prototipos'
     | '/_authenticated/_app/replenishment'
+    | '/_authenticated/_app/representantes'
     | '/_authenticated/_app/sales-performance'
     | '/_authenticated/_app/security-center'
     | '/_authenticated/_app/showroom'
@@ -808,6 +860,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppSalesPerformanceRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/representantes': {
+      id: '/_authenticated/_app/representantes'
+      path: '/representantes'
+      fullPath: '/representantes'
+      preLoaderRoute: typeof AuthenticatedAppRepresentantesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/replenishment': {
       id: '/_authenticated/_app/replenishment'
       path: '/replenishment'
@@ -857,6 +916,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppPilotsRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/pedidos-compra': {
+      id: '/_authenticated/_app/pedidos-compra'
+      path: '/pedidos-compra'
+      fullPath: '/pedidos-compra'
+      preLoaderRoute: typeof AuthenticatedAppPedidosCompraRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/pcp-kanban': {
       id: '/_authenticated/_app/pcp-kanban'
       path: '/pcp-kanban'
@@ -869,6 +935,13 @@ declare module '@tanstack/react-router' {
       path: '/pcp'
       fullPath: '/pcp'
       preLoaderRoute: typeof AuthenticatedAppPcpRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/movimentacoes': {
+      id: '/_authenticated/_app/movimentacoes'
+      path: '/movimentacoes'
+      fullPath: '/movimentacoes'
+      preLoaderRoute: typeof AuthenticatedAppMovimentacoesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/mobile': {
@@ -1018,6 +1091,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppColecoesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/clientes': {
+      id: '/_authenticated/_app/clientes'
+      path: '/clientes'
+      fullPath: '/clientes'
+      preLoaderRoute: typeof AuthenticatedAppClientesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/centro-de-corte': {
       id: '/_authenticated/_app/centro-de-corte'
       path: '/centro-de-corte'
@@ -1101,6 +1181,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppCapacityRoute: typeof AuthenticatedAppCapacityRoute
   AuthenticatedAppCashflowRoute: typeof AuthenticatedAppCashflowRoute
   AuthenticatedAppCentroDeCorteRoute: typeof AuthenticatedAppCentroDeCorteRoute
+  AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
   AuthenticatedAppColecoesRoute: typeof AuthenticatedAppColecoesRoute
   AuthenticatedAppComercialRoute: typeof AuthenticatedAppComercialRoute
   AuthenticatedAppComprasRoute: typeof AuthenticatedAppComprasRoute
@@ -1122,8 +1203,10 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMargemRoute: typeof AuthenticatedAppMargemRoute
   AuthenticatedAppMarketingRoute: typeof AuthenticatedAppMarketingRoute
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
+  AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
   AuthenticatedAppPcpRoute: typeof AuthenticatedAppPcpRoute
   AuthenticatedAppPcpKanbanRoute: typeof AuthenticatedAppPcpKanbanRoute
+  AuthenticatedAppPedidosCompraRoute: typeof AuthenticatedAppPedidosCompraRoute
   AuthenticatedAppPilotsRoute: typeof AuthenticatedAppPilotsRoute
   AuthenticatedAppProductScoreRoute: typeof AuthenticatedAppProductScoreRoute
   AuthenticatedAppProductSuccessRoute: typeof AuthenticatedAppProductSuccessRoute
@@ -1131,6 +1214,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppProfitabilityRoute: typeof AuthenticatedAppProfitabilityRoute
   AuthenticatedAppPrototiposRoute: typeof AuthenticatedAppPrototiposRoute
   AuthenticatedAppReplenishmentRoute: typeof AuthenticatedAppReplenishmentRoute
+  AuthenticatedAppRepresentantesRoute: typeof AuthenticatedAppRepresentantesRoute
   AuthenticatedAppSalesPerformanceRoute: typeof AuthenticatedAppSalesPerformanceRoute
   AuthenticatedAppSecurityCenterRoute: typeof AuthenticatedAppSecurityCenterRoute
   AuthenticatedAppShowroomRoute: typeof AuthenticatedAppShowroomRoute
@@ -1152,6 +1236,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCapacityRoute: AuthenticatedAppCapacityRoute,
   AuthenticatedAppCashflowRoute: AuthenticatedAppCashflowRoute,
   AuthenticatedAppCentroDeCorteRoute: AuthenticatedAppCentroDeCorteRoute,
+  AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
   AuthenticatedAppColecoesRoute: AuthenticatedAppColecoesRoute,
   AuthenticatedAppComercialRoute: AuthenticatedAppComercialRoute,
   AuthenticatedAppComprasRoute: AuthenticatedAppComprasRoute,
@@ -1173,8 +1258,10 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMargemRoute: AuthenticatedAppMargemRoute,
   AuthenticatedAppMarketingRoute: AuthenticatedAppMarketingRoute,
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
+  AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
   AuthenticatedAppPcpRoute: AuthenticatedAppPcpRoute,
   AuthenticatedAppPcpKanbanRoute: AuthenticatedAppPcpKanbanRoute,
+  AuthenticatedAppPedidosCompraRoute: AuthenticatedAppPedidosCompraRoute,
   AuthenticatedAppPilotsRoute: AuthenticatedAppPilotsRoute,
   AuthenticatedAppProductScoreRoute: AuthenticatedAppProductScoreRoute,
   AuthenticatedAppProductSuccessRoute: AuthenticatedAppProductSuccessRoute,
@@ -1182,6 +1269,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppProfitabilityRoute: AuthenticatedAppProfitabilityRoute,
   AuthenticatedAppPrototiposRoute: AuthenticatedAppPrototiposRoute,
   AuthenticatedAppReplenishmentRoute: AuthenticatedAppReplenishmentRoute,
+  AuthenticatedAppRepresentantesRoute: AuthenticatedAppRepresentantesRoute,
   AuthenticatedAppSalesPerformanceRoute: AuthenticatedAppSalesPerformanceRoute,
   AuthenticatedAppSecurityCenterRoute: AuthenticatedAppSecurityCenterRoute,
   AuthenticatedAppShowroomRoute: AuthenticatedAppShowroomRoute,
