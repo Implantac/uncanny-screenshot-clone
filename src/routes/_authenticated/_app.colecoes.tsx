@@ -209,6 +209,32 @@ function ColecoesPage() {
     [products, selected?.id],
   );
 
+  const selectedProductIds = useMemo(() => selectedProducts.map((p) => p.id), [selectedProducts]);
+
+  const { data: productionByProduct = {} } = useQuery({
+    queryKey: ["collection-production", selected?.id, selectedProductIds.join(",")],
+    enabled: selectedProductIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("production_orders")
+        .select("product_id, quantity, progress, status, stage, due_date")
+        .in("product_id", selectedProductIds);
+      if (error) throw error;
+      const map: Record<string, { qty: number; done: number; stages: Record<string, number>; late: number; status: Record<string, number> }> = {};
+      const now = Date.now();
+      (data ?? []).forEach((o: any) => {
+        if (!o.product_id) return;
+        const m = (map[o.product_id] ??= { qty: 0, done: 0, stages: {}, late: 0, status: {} });
+        m.qty += o.quantity ?? 0;
+        m.done += Math.round((o.quantity ?? 0) * ((o.progress ?? 0) / 100));
+        if (o.stage) m.stages[o.stage] = (m.stages[o.stage] ?? 0) + (o.quantity ?? 0);
+        if (o.status) m.status[o.status] = (m.status[o.status] ?? 0) + 1;
+        if (o.due_date && new Date(o.due_date).getTime() < now && (o.progress ?? 0) < 100 && o.status !== "concluida") m.late += 1;
+      });
+      return map;
+    },
+  });
+
   const derived = useMemo(() => {
     const revenue = selectedProducts.reduce((sum, item) => sum + Number(item.sell_price || 0), 0);
     const cost = selectedProducts.reduce((sum, item) => sum + Number(item.cost_price || 0), 0);
@@ -579,8 +605,10 @@ function ColecoesPage() {
                   {[
                     ["planejamento", "Planejamento"],
                     ["moodboard", "Moodboard"],
-                    ["mix", "Mix de Produtos"],
+                    ["tendencias", "Tendências"],
+                    ["mix", "Produtos"],
                     ["cronograma", "Cronograma"],
+                    ["status", "Status"],
                     ["performance", "Performance"],
                     ["roi", "ROI"],
                   ].map(([value, label]) => (
@@ -666,6 +694,41 @@ function ColecoesPage() {
                   </div>
                 </TabsContent>
 
+                <TabsContent value="tendencias" className="mt-0 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="glass rounded-xl p-5 space-y-3">
+                    <div className="text-sm font-semibold flex items-center gap-2"><TrendingUp className="size-4 text-primary" /> Cores em alta na coleção</div>
+                    {derived.colors.length ? derived.colors.slice(0, 8).map(([color, n]) => {
+                      const max = derived.colors[0]?.[1] || 1;
+                      return (
+                        <div key={color} className="flex items-center gap-2 text-xs">
+                          <div className="size-4 rounded border border-border" style={{ background: color }} />
+                          <span className="w-24 truncate">{color}</span>
+                          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(n / max) * 100}%` }} />
+                          </div>
+                          <span className="tabular-nums text-muted-foreground w-6 text-right">{n}</span>
+                        </div>
+                      );
+                    }) : <div className="text-sm text-muted-foreground">Sem sinais de cor ainda.</div>}
+                  </div>
+                  <div className="glass rounded-xl p-5 space-y-3">
+                    <div className="text-sm font-semibold flex items-center gap-2"><BarChart3 className="size-4 text-primary" /> Categorias dominantes</div>
+                    {derived.categories.length ? derived.categories.slice(0, 8).map(([label, n]) => {
+                      const max = derived.categories[0]?.[1] || 1;
+                      return (
+                        <div key={label} className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span>{label}</span><span>{n}</span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(n / max) * 100}%` }} />
+                          </div>
+                        </div>
+                      );
+                    }) : <div className="text-sm text-muted-foreground">Sem categorias mapeadas.</div>}
+                  </div>
+                </TabsContent>
+
                 <TabsContent value="mix" className="mt-0 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4">
                   <div className="glass rounded-xl p-5 space-y-3">
                     <div className="text-sm font-semibold">Distribuição do mix</div>
@@ -725,6 +788,43 @@ function ColecoesPage() {
                       </div>
                     ))}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="status" className="mt-0 glass rounded-xl p-5 space-y-3">
+                  <div className="text-sm font-semibold">Status de produção por produto</div>
+                  <div className="text-xs text-muted-foreground mb-2">Consolidação das OPs vinculadas aos produtos desta coleção.</div>
+                  {selectedProducts.length ? (
+                    <div className="space-y-2">
+                      {selectedProducts.map((p) => {
+                        const m = (productionByProduct as any)[p.id];
+                        const pct = m && m.qty > 0 ? Math.min(100, Math.round((m.done / m.qty) * 100)) : 0;
+                        const topStage = m ? Object.entries(m.stages).sort((a: any, b: any) => b[1] - a[1])[0] : null;
+                        return (
+                          <div key={p.id} className="rounded-lg border border-border bg-background/30 p-3">
+                            <div className="flex items-center justify-between gap-3 text-sm">
+                              <div className="min-w-0">
+                                <div className="font-medium truncate">{p.name}</div>
+                                <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2">
+                                  <span>{m ? `${m.qty} pç` : "Sem OP"}</span>
+                                  {topStage && <span>· etapa {String(topStage[0])}</span>}
+                                  {m && m.late > 0 && <Badge variant="outline" className="bg-destructive/20 text-destructive border-destructive/30">{m.late} atrasada(s)</Badge>}
+                                </div>
+                              </div>
+                              <div className="w-32 shrink-0">
+                                <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+                                  <span>{pct}%</span>
+                                  <span className="tabular-nums">{m?.done ?? 0}/{m?.qty ?? 0}</span>
+                                </div>
+                                <Progress value={pct} className="h-1.5" />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground py-8 text-center">Nenhum produto vinculado.</div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="performance" className="mt-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
