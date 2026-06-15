@@ -35,6 +35,7 @@ import { Route as AuthenticatedAppPilotsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppPedidosCompraRouteImport } from './routes/_authenticated/_app.pedidos-compra'
 import { Route as AuthenticatedAppPcpKanbanRouteImport } from './routes/_authenticated/_app.pcp-kanban'
 import { Route as AuthenticatedAppPcpRouteImport } from './routes/_authenticated/_app.pcp'
+import { Route as AuthenticatedAppOmnichannelRouteImport } from './routes/_authenticated/_app.omnichannel'
 import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_authenticated/_app.movimentacoes'
 import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
 import { Route as AuthenticatedAppMarketingRouteImport } from './routes/_authenticated/_app.marketing'
@@ -220,6 +221,12 @@ const AuthenticatedAppPcpRoute = AuthenticatedAppPcpRouteImport.update({
   path: '/pcp',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppOmnichannelRoute =
+  AuthenticatedAppOmnichannelRouteImport.update({
+    id: '/omnichannel',
+    path: '/omnichannel',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppMovimentacoesRoute =
   AuthenticatedAppMovimentacoesRouteImport.update({
     id: '/movimentacoes',
@@ -495,6 +502,7 @@ export interface FileRoutesByFullPath {
   '/marketing': typeof AuthenticatedAppMarketingRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
+  '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
   '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
@@ -561,6 +569,7 @@ export interface FileRoutesByTo {
   '/marketing': typeof AuthenticatedAppMarketingRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
+  '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
   '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
@@ -629,6 +638,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/marketing': typeof AuthenticatedAppMarketingRoute
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
   '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
+  '/_authenticated/_app/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/_authenticated/_app/pcp': typeof AuthenticatedAppPcpRoute
   '/_authenticated/_app/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
   '/_authenticated/_app/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
@@ -698,6 +708,7 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/mobile'
     | '/movimentacoes'
+    | '/omnichannel'
     | '/pcp'
     | '/pcp-kanban'
     | '/pedidos-compra'
@@ -764,6 +775,7 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/mobile'
     | '/movimentacoes'
+    | '/omnichannel'
     | '/pcp'
     | '/pcp-kanban'
     | '/pedidos-compra'
@@ -831,6 +843,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/marketing'
     | '/_authenticated/_app/mobile'
     | '/_authenticated/_app/movimentacoes'
+    | '/_authenticated/_app/omnichannel'
     | '/_authenticated/_app/pcp'
     | '/_authenticated/_app/pcp-kanban'
     | '/_authenticated/_app/pedidos-compra'
@@ -1045,6 +1058,13 @@ declare module '@tanstack/react-router' {
       path: '/pcp'
       fullPath: '/pcp'
       preLoaderRoute: typeof AuthenticatedAppPcpRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/omnichannel': {
+      id: '/_authenticated/_app/omnichannel'
+      path: '/omnichannel'
+      fullPath: '/omnichannel'
+      preLoaderRoute: typeof AuthenticatedAppOmnichannelRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/movimentacoes': {
@@ -1370,6 +1390,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMarketingRoute: typeof AuthenticatedAppMarketingRoute
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
   AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
+  AuthenticatedAppOmnichannelRoute: typeof AuthenticatedAppOmnichannelRoute
   AuthenticatedAppPcpRoute: typeof AuthenticatedAppPcpRoute
   AuthenticatedAppPcpKanbanRoute: typeof AuthenticatedAppPcpKanbanRoute
   AuthenticatedAppPedidosCompraRoute: typeof AuthenticatedAppPedidosCompraRoute
@@ -1434,6 +1455,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMarketingRoute: AuthenticatedAppMarketingRoute,
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
   AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
+  AuthenticatedAppOmnichannelRoute: AuthenticatedAppOmnichannelRoute,
   AuthenticatedAppPcpRoute: AuthenticatedAppPcpRoute,
   AuthenticatedAppPcpKanbanRoute: AuthenticatedAppPcpKanbanRoute,
   AuthenticatedAppPedidosCompraRoute: AuthenticatedAppPedidosCompraRoute,
@@ -1482,13 +1504,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
