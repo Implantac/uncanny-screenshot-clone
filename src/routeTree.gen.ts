@@ -15,6 +15,7 @@ import { Route as DppIdRouteImport } from './routes/dpp.$id'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/_app.index'
+import { Route as AuthenticatedAppVariantesRouteImport } from './routes/_authenticated/_app.variantes'
 import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticated/_app.use-ai'
 import { Route as AuthenticatedAppTwinFactoryRouteImport } from './routes/_authenticated/_app.twin-factory'
 import { Route as AuthenticatedAppTrendsRouteImport } from './routes/_authenticated/_app.trends'
@@ -108,6 +109,12 @@ const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppVariantesRoute =
+  AuthenticatedAppVariantesRouteImport.update({
+    id: '/variantes',
+    path: '/variantes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppUseAiRoute = AuthenticatedAppUseAiRouteImport.update({
   id: '/use-ai',
   path: '/use-ai',
@@ -545,6 +552,7 @@ export interface FileRoutesByFullPath {
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
+  '/variantes': typeof AuthenticatedAppVariantesRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRoutesByTo {
@@ -615,6 +623,7 @@ export interface FileRoutesByTo {
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
+  '/variantes': typeof AuthenticatedAppVariantesRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
 export interface FileRoutesById {
@@ -687,6 +696,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/trends': typeof AuthenticatedAppTrendsRoute
   '/_authenticated/_app/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/_authenticated/_app/use-ai': typeof AuthenticatedAppUseAiRoute
+  '/_authenticated/_app/variantes': typeof AuthenticatedAppVariantesRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
 }
@@ -760,6 +770,7 @@ export interface FileRouteTypes {
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
+    | '/variantes'
     | '/api/public/agents/run-due'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -830,6 +841,7 @@ export interface FileRouteTypes {
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
+    | '/variantes'
     | '/api/public/agents/run-due'
   id:
     | '__root__'
@@ -901,6 +913,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/trends'
     | '/_authenticated/_app/twin-factory'
     | '/_authenticated/_app/use-ai'
+    | '/_authenticated/_app/variantes'
     | '/_authenticated/_app/'
     | '/api/public/agents/run-due'
   fileRoutesById: FileRoutesById
@@ -955,6 +968,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/variantes': {
+      id: '/_authenticated/_app/variantes'
+      path: '/variantes'
+      fullPath: '/variantes'
+      preLoaderRoute: typeof AuthenticatedAppVariantesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/use-ai': {
@@ -1472,6 +1492,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppTrendsRoute: typeof AuthenticatedAppTrendsRoute
   AuthenticatedAppTwinFactoryRoute: typeof AuthenticatedAppTwinFactoryRoute
   AuthenticatedAppUseAiRoute: typeof AuthenticatedAppUseAiRoute
+  AuthenticatedAppVariantesRoute: typeof AuthenticatedAppVariantesRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
 }
 
@@ -1541,6 +1562,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppTrendsRoute: AuthenticatedAppTrendsRoute,
   AuthenticatedAppTwinFactoryRoute: AuthenticatedAppTwinFactoryRoute,
   AuthenticatedAppUseAiRoute: AuthenticatedAppUseAiRoute,
+  AuthenticatedAppVariantesRoute: AuthenticatedAppVariantesRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
 }
 
