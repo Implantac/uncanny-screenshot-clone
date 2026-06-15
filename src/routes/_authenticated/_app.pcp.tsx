@@ -19,7 +19,16 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
+const STATUS_VALS = ["aguardando","em_producao","concluida","atrasada","cancelada"] as const;
+const pcpSearchSchema = z.object({
+  q: fallback(z.string().trim().max(80), "").default(""),
+  status: fallback(z.enum(["all", ...STATUS_VALS]), "all").default("all"),
+  priority: fallback(z.enum(["all","1","2","3","4","5"]), "all").default("all"),
+  supplier: fallback(z.string().trim().max(80), "all").default("all"),
+});
+
 export const Route = createFileRoute("/_authenticated/_app/pcp")({
+  validateSearch: zodValidator(pcpSearchSchema),
   head: () => ({ meta: [{ title: "PCP · USE MODA OS" }, { name: "description", content: "Ordens de produção." }] }),
   component: PCP,
 });
