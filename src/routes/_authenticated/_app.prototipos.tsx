@@ -129,6 +129,41 @@ function Prototipos() {
   const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
   const supplierName = (id: string | null) => suppliers.find(s => s.id === id)?.name ?? "—";
 
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return items.filter(p => {
+      if (stageFilter !== "all" && p.stage !== stageFilter) return false;
+      if (!term) return true;
+      return (
+        p.code.toLowerCase().includes(term) ||
+        productName(p.product_id).toLowerCase().includes(term) ||
+        supplierName(p.supplier_id).toLowerCase().includes(term)
+      );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, q, stageFilter, products, suppliers]);
+
+  function exportSpec(p: Prototype) {
+    const spec = {
+      format: "USE-MODA-PROTO-SPEC/1.0",
+      exported_at: new Date().toISOString(),
+      prototype: {
+        code: p.code,
+        product: productName(p.product_id),
+        supplier: supplierName(p.supplier_id),
+        stage: p.stage,
+        due_date: p.due_date,
+        notes: p.notes,
+      },
+    };
+    const blob = new Blob([JSON.stringify(spec, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `proto-${p.code}.json`; a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Spec ${p.code} exportada`);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
