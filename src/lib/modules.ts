@@ -3,7 +3,7 @@ import {
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
   Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
   Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, Trophy, Target,
-  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, type LucideIcon,
+  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleDef = {
@@ -28,6 +28,10 @@ export const MODULES: ModuleDef[] = [
   { slug: "dev-kanban", path: "/dev-kanban", title: "Kanban de Desenvolvimento", short: "Pipeline do produto", description: "Pesquisa → modelagem → liberação para PCP.", icon: Workflow, group: "Produto" },
   { slug: "pilots", path: "/pilots", title: "Gestão de Pilotos", short: "Aprovações de prova", description: "Ciclo de pilotos com status próprios e histórico.", icon: Ruler, group: "Produto" },
   { slug: "compras", path: "/compras", title: "Compras", short: "Reposição e cotações", description: "Necessidade de compra, sugestão e mapa de fornecedores.", icon: ShoppingCart, group: "Cadeia" },
+  { slug: "pedidos-compra", path: "/pedidos-compra", title: "Pedidos de Compra", short: "POs e recebimento", description: "Pedidos, aprovação (gera contas a pagar) e recebimento (entrada no estoque).", icon: ShoppingCart, group: "Cadeia" },
+  { slug: "movimentacoes", path: "/movimentacoes", title: "Movimentações de Estoque", short: "Entradas e saídas", description: "Lançamento manual de entradas, saídas e ajustes de estoque.", icon: ArrowLeftRight, group: "Cadeia" },
+  { slug: "clientes", path: "/clientes", title: "Clientes", short: "Cadastro B2B / varejo", description: "Cadastro de clientes com contato e localização.", icon: Users, group: "Comercial" },
+  { slug: "representantes", path: "/representantes", title: "Representantes", short: "Equipe comercial", description: "Cadastro de representantes e comissões.", icon: UserCircle2, group: "Comercial" },
   { slug: "centro-de-corte", path: "/centro-de-corte", title: "Centro de Corte", short: "Plano de corte", description: "Plano de corte, enfesto e peças cortadas.", icon: Scissors, group: "Cadeia" },
   { slug: "almoxarifado", path: "/almoxarifado", title: "Almoxarifado", short: "Estoque e insumos", description: "Controle de tecidos, aviamentos e produtos acabados.", icon: Boxes, group: "Cadeia" },
   { slug: "fornecedores", path: "/fornecedores", title: "Fornecedores", short: "Portal de parceiros", description: "Portal completo para fornecedores e facções.", icon: Truck, group: "Cadeia" },
