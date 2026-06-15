@@ -142,15 +142,26 @@ function ColecoesPage() {
   const queryClient = useQueryClient();
   useRealtime("collections", ["collections", "collection-products"]);
 
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { q, status: statusFilter, season: seasonFilter, sort: sortBy, page, id: selectedId } = search;
+  const pageSize = 6;
+
+  const updateSearch = (patch: Partial<typeof search>) =>
+    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+  const setQ = (v: string) => updateSearch({ q: v, page: 1 });
+  const setStatusFilter = (v: string) => updateSearch({ status: v, page: 1 });
+  const setSeasonFilter = (v: string) => updateSearch({ season: v, page: 1 });
+  const setSortBy = (v: typeof sortBy) => updateSearch({ sort: v, page: 1 });
+  const setPage = (v: number | ((p: number) => number)) =>
+    updateSearch({ page: typeof v === "function" ? v(page) : v });
+  const setSelectedId = (v: string | null | ((cur: string | undefined) => string | undefined | null)) => {
+    const next = typeof v === "function" ? v(selectedId) : v;
+    updateSearch({ id: next ?? undefined });
+  };
+
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [q, setQ] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [seasonFilter, setSeasonFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"recent" | "name" | "progress" | "launch" | "year">("recent");
-  const [page, setPage] = useState(1);
-  const pageSize = 6;
 
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["collections"],
