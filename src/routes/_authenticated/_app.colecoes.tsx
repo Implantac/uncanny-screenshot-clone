@@ -694,6 +694,41 @@ function ColecoesPage() {
                   </div>
                 </TabsContent>
 
+                <TabsContent value="tendencias" className="mt-0 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="glass rounded-xl p-5 space-y-3">
+                    <div className="text-sm font-semibold flex items-center gap-2"><TrendingUp className="size-4 text-primary" /> Cores em alta na coleção</div>
+                    {derived.colors.length ? derived.colors.slice(0, 8).map(([color, n]) => {
+                      const max = derived.colors[0]?.[1] || 1;
+                      return (
+                        <div key={color} className="flex items-center gap-2 text-xs">
+                          <div className="size-4 rounded border border-border" style={{ background: color }} />
+                          <span className="w-24 truncate">{color}</span>
+                          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(n / max) * 100}%` }} />
+                          </div>
+                          <span className="tabular-nums text-muted-foreground w-6 text-right">{n}</span>
+                        </div>
+                      );
+                    }) : <div className="text-sm text-muted-foreground">Sem sinais de cor ainda.</div>}
+                  </div>
+                  <div className="glass rounded-xl p-5 space-y-3">
+                    <div className="text-sm font-semibold flex items-center gap-2"><BarChart3 className="size-4 text-primary" /> Categorias dominantes</div>
+                    {derived.categories.length ? derived.categories.slice(0, 8).map(([label, n]) => {
+                      const max = derived.categories[0]?.[1] || 1;
+                      return (
+                        <div key={label} className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span>{label}</span><span>{n}</span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(n / max) * 100}%` }} />
+                          </div>
+                        </div>
+                      );
+                    }) : <div className="text-sm text-muted-foreground">Sem categorias mapeadas.</div>}
+                  </div>
+                </TabsContent>
+
                 <TabsContent value="mix" className="mt-0 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4">
                   <div className="glass rounded-xl p-5 space-y-3">
                     <div className="text-sm font-semibold">Distribuição do mix</div>
