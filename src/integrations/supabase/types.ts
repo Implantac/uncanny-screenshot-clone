@@ -295,6 +295,147 @@ export type Database = {
         }
         Relationships: []
       }
+      erp_inventory_mirror: {
+        Row: {
+          balance: number
+          created_at: string
+          erp_updated_at: string | null
+          id: string
+          location: string | null
+          owner_id: string
+          raw: Json | null
+          sku: string
+          synced_at: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          erp_updated_at?: string | null
+          id?: string
+          location?: string | null
+          owner_id: string
+          raw?: Json | null
+          sku: string
+          synced_at?: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          erp_updated_at?: string | null
+          id?: string
+          location?: string | null
+          owner_id?: string
+          raw?: Json | null
+          sku?: string
+          synced_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      erp_purchase_mirror: {
+        Row: {
+          created_at: string
+          erp_po_code: string
+          id: string
+          ordered_at: string | null
+          owner_id: string
+          raw: Json | null
+          status: string | null
+          supplier: string | null
+          synced_at: string
+          total_value: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          erp_po_code: string
+          id?: string
+          ordered_at?: string | null
+          owner_id: string
+          raw?: Json | null
+          status?: string | null
+          supplier?: string | null
+          synced_at?: string
+          total_value?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          erp_po_code?: string
+          id?: string
+          ordered_at?: string | null
+          owner_id?: string
+          raw?: Json | null
+          status?: string | null
+          supplier?: string | null
+          synced_at?: string
+          total_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      erp_sales_mirror: {
+        Row: {
+          campaign_code: string | null
+          channel: string | null
+          created_at: string
+          customer: string | null
+          erp_sale_id: string
+          id: string
+          influencer_code: string | null
+          owner_id: string
+          product_ref: string | null
+          quantity: number
+          raw: Json | null
+          region: string | null
+          sku: string | null
+          sold_at: string | null
+          synced_at: string
+          total_value: number
+          updated_at: string
+        }
+        Insert: {
+          campaign_code?: string | null
+          channel?: string | null
+          created_at?: string
+          customer?: string | null
+          erp_sale_id: string
+          id?: string
+          influencer_code?: string | null
+          owner_id: string
+          product_ref?: string | null
+          quantity?: number
+          raw?: Json | null
+          region?: string | null
+          sku?: string | null
+          sold_at?: string | null
+          synced_at?: string
+          total_value?: number
+          updated_at?: string
+        }
+        Update: {
+          campaign_code?: string | null
+          channel?: string | null
+          created_at?: string
+          customer?: string | null
+          erp_sale_id?: string
+          id?: string
+          influencer_code?: string | null
+          owner_id?: string
+          product_ref?: string | null
+          quantity?: number
+          raw?: Json | null
+          region?: string | null
+          sku?: string | null
+          sold_at?: string | null
+          synced_at?: string
+          total_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       financial_accounts: {
         Row: {
           created_at: string
