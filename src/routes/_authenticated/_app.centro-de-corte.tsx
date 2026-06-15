@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/centro-de-corte")({
+  validateSearch: zodValidator(z.object({ q: fallback(z.string().trim().max(80), "").default("") })),
   head: () => ({
     meta: [
       { title: "Centro de Corte · USE MODA OS" },
