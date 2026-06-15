@@ -540,6 +540,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pcp_stages: {
+        Row: {
+          active: boolean
+          color: string | null
+          created_at: string
+          id: string
+          key: string
+          label: string
+          owner_id: string
+          position: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          color?: string | null
+          created_at?: string
+          id?: string
+          key: string
+          label: string
+          owner_id: string
+          position?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          color?: string | null
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string
+          owner_id?: string
+          position?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       production_batches: {
         Row: {
           code: string
