@@ -358,13 +358,57 @@ function ColecoesPage() {
             <div className="flex items-center justify-between px-1">
               <div>
                 <div className="text-sm font-semibold">Portfólio sazonal</div>
-                <div className="text-xs text-muted-foreground">{collections.length} coleções monitoradas</div>
+                <div className="text-xs text-muted-foreground">
+                  {filteredCollections.length} de {collections.length} coleções
+                </div>
               </div>
               <Badge variant="outline">Notion-style</Badge>
             </div>
 
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar por nome, temporada, ano…"
+                className="pl-8 pr-8 h-9"
+              />
+              {q && (
+                <button
+                  type="button"
+                  onClick={() => setQ("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos status</SelectItem>
+                  {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={seasonFilter} onValueChange={setSeasonFilter}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Temporada" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas temporadas</SelectItem>
+                  {seasons.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
-              {collections.map((collection) => {
+              {filteredCollections.length === 0 ? (
+                <div className="text-xs text-muted-foreground text-center py-6">Nenhuma coleção encontrada.</div>
+              ) : filteredCollections.map((collection) => {
                 const active = collection.id === selected?.id;
                 return (
                   <button
@@ -394,6 +438,7 @@ function ColecoesPage() {
               })}
             </div>
           </section>
+
 
           {selected && (
             <section className="space-y-4">
