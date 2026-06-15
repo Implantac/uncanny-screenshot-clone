@@ -14,6 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/cad")({
+  validateSearch: zodValidator(z.object({
+    q: fallback(z.string().trim().max(80), "").default(""),
+    cat: fallback(z.string().trim().max(40), "all").default("all"),
+  })),
   head: () => ({
     meta: [
       { title: "CAD e Modelagem · USE MODA OS" },
