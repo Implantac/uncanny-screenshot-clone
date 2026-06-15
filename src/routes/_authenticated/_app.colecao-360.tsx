@@ -19,18 +19,18 @@ export const Route = createFileRoute("/_authenticated/_app/colecao-360")({
 });
 
 type Collection = { id: string; name: string; season: string | null; year: number | null; status: string };
-type Product = { id: string; collection_id: string | null; name: string; sku: string; status: string; cost_price: number | null; sale_price: number | null };
-type Prototype = { id: string; collection_id: string | null; stage: string };
+type Product = { id: string; collection_id: string | null; name: string; sku: string; status: string; cost_price: number | null; sell_price: number | null };
+type Prototype = { id: string; product_id: string | null; stage: string };
 type Order = { id: string; product_id: string | null; stage: string; status: string; quantity: number };
-type Sale = { product_id: string | null; quantity: number; total_value: number | null };
+type Sale = { product_id: string | null; quantity: number; total: number | null };
 
 async function loadAll() {
   const [collections, products, prototypes, orders, sales] = await Promise.all([
     supabase.from("collections").select("id, name, season, year, status").order("year", { ascending: false }).limit(50),
-    supabase.from("products").select("id, collection_id, name, sku, status, cost_price, sale_price").limit(1000),
-    supabase.from("prototypes").select("id, collection_id, stage").limit(1000),
+    supabase.from("products").select("id, collection_id, name, sku, status, cost_price, sell_price").limit(1000),
+    supabase.from("prototypes").select("id, product_id, stage").limit(1000),
     supabase.from("production_orders").select("id, product_id, stage, status, quantity").neq("status", "cancelada").limit(1000),
-    supabase.from("sales").select("product_id, quantity, total_value").limit(5000),
+    supabase.from("sales").select("product_id, quantity, total").limit(5000),
   ]);
   return {
     collections: (collections.data ?? []) as Collection[],
