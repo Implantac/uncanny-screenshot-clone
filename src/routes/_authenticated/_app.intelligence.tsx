@@ -46,6 +46,24 @@ const BRL = (n: number) => (n || 0).toLocaleString("pt-BR", { style: "currency",
 const PCT = (n: number) => `${Math.round(n)}%`;
 const palette = ["oklch(0.72 0.18 295)", "oklch(0.70 0.16 200)", "oklch(0.74 0.17 155)", "oklch(0.78 0.16 75)", "oklch(0.70 0.18 25)"];
 
+function intelFilter<T extends Record<string, any>>(items: T[], q: string, fields: string[], lookup?: any[]): T[] {
+  const term = q.trim().toLowerCase();
+  if (!term) return items;
+  const lookupMap = lookup ? new Map(lookup.map((x: any) => [x.id, x])) : null;
+  return items.filter((item) => {
+    for (const f of fields) {
+      const v = item?.[f];
+      if (typeof v === "string" && v.toLowerCase().includes(term)) return true;
+    }
+    if (lookupMap && "product_id" in item) {
+      const ref: any = lookupMap.get((item as any).product_id);
+      if (ref && typeof ref.name === "string" && ref.name.toLowerCase().includes(term)) return true;
+      if (ref && typeof ref.sku === "string" && ref.sku.toLowerCase().includes(term)) return true;
+    }
+    return false;
+  });
+}
+
 // Deterministic pseudo-random for stable demo metrics derived from id
 
 function KPI({ label, value, hint, icon: Icon, tone }: { label: string; value: string; hint?: string; icon: any; tone?: string }) {
@@ -124,6 +142,16 @@ function IntelligencePage() {
         </p>
       </header>
 
+      <div className="relative max-w-md">
+        <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={search.q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Buscar em todas as abas (produto, SKU, código, campanha…)"
+          className="pl-9"
+        />
+      </div>
+
       <Tabs value={search.tab} onValueChange={setTab}>
         <TabsList className="flex w-full flex-wrap justify-start h-auto">
           <TabsTrigger value="production"><Factory className="mr-1 h-4 w-4" />Produção</TabsTrigger>
@@ -137,7 +165,7 @@ function IntelligencePage() {
           <TabsTrigger value="lake"><Database className="mr-1 h-4 w-4" />Data Lake</TabsTrigger>
         </TabsList>
 
-        {/* ----------------- PRODUÇÃO (M36 + M37 + M43 + M44) ----------------- */}
+        {/* ----------------- PRODUÇÃO ----------------- */}
         <TabsContent value="production" className="space-y-6">
           <ProductionTab
             products={productsQ.data ?? []}
@@ -150,38 +178,49 @@ function IntelligencePage() {
           />
         </TabsContent>
 
-        {/* ----------------- PCP KANBAN (M42) ----------------- */}
+        {/* ----------------- PCP KANBAN ----------------- */}
         <TabsContent value="kanban">
-          <PcpKanban orders={ordersQ.data ?? []} products={productsQ.data ?? []} />
+          <PcpKanban
+            orders={intelFilter(ordersQ.data ?? [], search.q, ["code", "notes"], productsQ.data ?? [])}
+            products={productsQ.data ?? []}
+          />
         </TabsContent>
 
-        {/* ----------------- DESENVOLVIMENTO (M45 + M46) ----------------- */}
+        {/* ----------------- DESENVOLVIMENTO ----------------- */}
         <TabsContent value="dev">
-          <DevelopmentBoard prototypes={protoQ.data ?? []} />
+          <DevelopmentBoard prototypes={intelFilter(protoQ.data ?? [], search.q, ["code", "notes"])} />
         </TabsContent>
 
-        {/* ----------------- PRODUCT SCORE (M47 + M48) ----------------- */}
+        {/* ----------------- PRODUCT SCORE ----------------- */}
         <TabsContent value="score">
-          <ProductScore products={productsQ.data ?? []} sales={salesQ.data ?? []} inventory={invQ.data ?? []} />
+          <ProductScore
+            products={intelFilter(productsQ.data ?? [], search.q, ["name", "sku", "category"])}
+            sales={salesQ.data ?? []}
+            inventory={invQ.data ?? []}
+          />
         </TabsContent>
 
-        {/* ----------------- REPOSIÇÃO INTELIGENTE (M37) ----------------- */}
+        {/* ----------------- REPOSIÇÃO INTELIGENTE ----------------- */}
         <TabsContent value="restock">
-          <RestockEngine sales={salesQ.data ?? []} inventory={invQ.data ?? []} products={productsQ.data ?? []} />
+          <RestockEngine
+            sales={salesQ.data ?? []}
+            inventory={invQ.data ?? []}
+            products={intelFilter(productsQ.data ?? [], search.q, ["name", "sku", "category"])}
+          />
         </TabsContent>
 
-        {/* ----------------- VENDAS (M37/M38 — fonte real) ----------------- */}
+        {/* ----------------- VENDAS ----------------- */}
         <TabsContent value="sales">
-          <SalesSuite products={productsQ.data ?? []} />
+          <SalesSuite products={intelFilter(productsQ.data ?? [], search.q, ["name", "sku", "category"])} />
         </TabsContent>
 
-        {/* ----------------- GEO + ATRIBUIÇÃO (M38 + M41) ----------------- */}
+        {/* ----------------- GEO + ATRIBUIÇÃO ----------------- */}
         <TabsContent value="geo" className="space-y-6">
           <GeoSales products={productsQ.data ?? []} b2b={b2bQ.data ?? []} sales={salesQ.data ?? []} />
-          <Attribution campaigns={mktQ.data ?? []} b2b={b2bQ.data ?? []} sales={salesQ.data ?? []} />
+          <Attribution campaigns={intelFilter(mktQ.data ?? [], search.q, ["name", "channel"])} b2b={b2bQ.data ?? []} sales={salesQ.data ?? []} />
         </TabsContent>
 
-        {/* ----------------- INFLUENCERS (M39 + M40) ----------------- */}
+        {/* ----------------- INFLUENCERS ----------------- */}
         <TabsContent value="influencers">
           <InfluencerSuite />
         </TabsContent>
