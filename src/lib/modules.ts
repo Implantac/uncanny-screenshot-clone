@@ -105,6 +105,9 @@ export const MODULES: ModuleDef[] = [
 
   // === Plataforma ===
   { slug: "dpp", path: "/dpp", title: "Digital Product Passport", short: "Rastreabilidade", description: "Passaporte digital e compliance ESG.", icon: ShieldCheck, group: "Plataforma" },
+  { slug: "sustentabilidade-360", path: "/sustentabilidade-360", title: "Sustentabilidade 360º", short: "ESG por coleção", description: "Pegada CO₂, materiais sustentáveis, certificações e rastreabilidade DPP.", icon: Leaf, group: "Plataforma" },
+  { slug: "designer-workspace", path: "/designer-workspace", title: "Workspace do Designer", short: "Tudo no seu nome", description: "Protótipos abertos, aprovações pendentes e atalhos de criação.", icon: PenTool, group: "Desenvolvimento" },
+  { slug: "approvals", path: "/approvals", title: "Workflow de Aprovações", short: "Gates do PLM", description: "Coleção → ficha técnica → piloto → liberação para produção.", icon: Workflow, group: "Operação" },
   { slug: "showroom", path: "/showroom", title: "Showroom Digital", short: "Vitrine 3D", description: "Showroom virtual com lookbooks interativos.", icon: MonitorPlay, group: "Plataforma", status: "wip" },
   { slug: "mobile", path: "/mobile", title: "Aplicativo Mobile", short: "App para times", description: "App nativo para campo, fábrica e vendedores.", icon: Smartphone, group: "Plataforma", status: "wip" },
   { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis.", icon: BarChart3, group: "Plataforma" },

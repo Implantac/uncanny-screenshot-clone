@@ -47,7 +47,7 @@ function DesignerWorkspace() {
         <Card><CardHeader className="pb-2"><CardDescription>Protótipos abertos</CardDescription><CardTitle className="text-2xl">{openProtos.length}</CardTitle></CardHeader></Card>
         <Card><CardHeader className="pb-2"><CardDescription>Aguardando aprovação</CardDescription><CardTitle className="text-2xl text-orange-600">{pendingApproval.length}</CardTitle></CardHeader></Card>
         <Card><CardHeader className="pb-2"><CardDescription>Produtos em rascunho</CardDescription><CardTitle className="text-2xl">{draftProducts.length}</CardTitle></CardHeader></Card>
-        <Card><CardHeader className="pb-2"><CardDescription>Coleções ativas</CardDescription><CardTitle className="text-2xl">{(data?.collections ?? []).filter((c) => c.status !== "arquivada").length}</CardTitle></CardHeader></Card>
+        <Card><CardHeader className="pb-2"><CardDescription>Coleções ativas</CardDescription><CardTitle className="text-2xl">{(data?.collections ?? []).filter((c) => c.status !== "entregue").length}</CardTitle></CardHeader></Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

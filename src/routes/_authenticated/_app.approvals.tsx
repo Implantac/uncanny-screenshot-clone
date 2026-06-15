@@ -36,7 +36,7 @@ function Approvals() {
       return [
         {
           key: "colecao", title: "1. Coleção", description: "Aprovação do briefing e cronograma.",
-          items: (cols.data ?? []).filter((c) => c.status === "planejamento" || c.status === "desenvolvimento")
+          items: (cols.data ?? []).filter((c) => c.status === "briefing" || c.status === "desenvolvimento" || c.status === "design")
             .map((c) => ({ id: c.id, label: c.name, sub: `${c.season} ${c.year}`, status: c.status, href: "/colecoes" })),
         },
         {
@@ -46,7 +46,7 @@ function Approvals() {
         },
         {
           key: "piloto", title: "3. Piloto", description: "Prova aprovada antes de produzir.",
-          items: (protos.data ?? []).filter((p) => p.stage === "piloto" || p.stage === "aprovacao")
+          items: (protos.data ?? []).filter((p) => p.stage === "em_prova" || p.stage === "solicitado")
             .map((p) => ({ id: p.id, label: (p as { products?: { name: string } }).products?.name ?? p.code, sub: p.code, status: p.stage, href: "/pilots" })),
         },
         {
