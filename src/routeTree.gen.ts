@@ -26,6 +26,7 @@ import { Route as AuthenticatedAppSecurityCenterRouteImport } from './routes/_au
 import { Route as AuthenticatedAppSalesPerformanceRouteImport } from './routes/_authenticated/_app.sales-performance'
 import { Route as AuthenticatedAppRepresentantesRouteImport } from './routes/_authenticated/_app.representantes'
 import { Route as AuthenticatedAppReplenishmentRouteImport } from './routes/_authenticated/_app.replenishment'
+import { Route as AuthenticatedAppQualityRouteImport } from './routes/_authenticated/_app.quality'
 import { Route as AuthenticatedAppPrototiposRouteImport } from './routes/_authenticated/_app.prototipos'
 import { Route as AuthenticatedAppProfitabilityRouteImport } from './routes/_authenticated/_app.profitability'
 import { Route as AuthenticatedAppProdutosRouteImport } from './routes/_authenticated/_app.produtos'
@@ -170,6 +171,11 @@ const AuthenticatedAppReplenishmentRoute =
     path: '/replenishment',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppQualityRoute = AuthenticatedAppQualityRouteImport.update({
+  id: '/quality',
+  path: '/quality',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppPrototiposRoute =
   AuthenticatedAppPrototiposRouteImport.update({
     id: '/prototipos',
@@ -519,6 +525,7 @@ export interface FileRoutesByFullPath {
   '/produtos': typeof AuthenticatedAppProdutosRoute
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/prototipos': typeof AuthenticatedAppPrototiposRoute
+  '/quality': typeof AuthenticatedAppQualityRoute
   '/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
@@ -587,6 +594,7 @@ export interface FileRoutesByTo {
   '/produtos': typeof AuthenticatedAppProdutosRoute
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/prototipos': typeof AuthenticatedAppPrototiposRoute
+  '/quality': typeof AuthenticatedAppQualityRoute
   '/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
@@ -657,6 +665,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/produtos': typeof AuthenticatedAppProdutosRoute
   '/_authenticated/_app/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/_authenticated/_app/prototipos': typeof AuthenticatedAppPrototiposRoute
+  '/_authenticated/_app/quality': typeof AuthenticatedAppQualityRoute
   '/_authenticated/_app/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/_authenticated/_app/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/_authenticated/_app/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
@@ -728,6 +737,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/profitability'
     | '/prototipos'
+    | '/quality'
     | '/replenishment'
     | '/representantes'
     | '/sales-performance'
@@ -796,6 +806,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/profitability'
     | '/prototipos'
+    | '/quality'
     | '/replenishment'
     | '/representantes'
     | '/sales-performance'
@@ -865,6 +876,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/produtos'
     | '/_authenticated/_app/profitability'
     | '/_authenticated/_app/prototipos'
+    | '/_authenticated/_app/quality'
     | '/_authenticated/_app/replenishment'
     | '/_authenticated/_app/representantes'
     | '/_authenticated/_app/sales-performance'
@@ -1007,6 +1019,13 @@ declare module '@tanstack/react-router' {
       path: '/replenishment'
       fullPath: '/replenishment'
       preLoaderRoute: typeof AuthenticatedAppReplenishmentRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/quality': {
+      id: '/_authenticated/_app/quality'
+      path: '/quality'
+      fullPath: '/quality'
+      preLoaderRoute: typeof AuthenticatedAppQualityRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/prototipos': {
@@ -1420,6 +1439,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppProdutosRoute: typeof AuthenticatedAppProdutosRoute
   AuthenticatedAppProfitabilityRoute: typeof AuthenticatedAppProfitabilityRoute
   AuthenticatedAppPrototiposRoute: typeof AuthenticatedAppPrototiposRoute
+  AuthenticatedAppQualityRoute: typeof AuthenticatedAppQualityRoute
   AuthenticatedAppReplenishmentRoute: typeof AuthenticatedAppReplenishmentRoute
   AuthenticatedAppRepresentantesRoute: typeof AuthenticatedAppRepresentantesRoute
   AuthenticatedAppSalesPerformanceRoute: typeof AuthenticatedAppSalesPerformanceRoute
@@ -1486,6 +1506,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppProdutosRoute: AuthenticatedAppProdutosRoute,
   AuthenticatedAppProfitabilityRoute: AuthenticatedAppProfitabilityRoute,
   AuthenticatedAppPrototiposRoute: AuthenticatedAppPrototiposRoute,
+  AuthenticatedAppQualityRoute: AuthenticatedAppQualityRoute,
   AuthenticatedAppReplenishmentRoute: AuthenticatedAppReplenishmentRoute,
   AuthenticatedAppRepresentantesRoute: AuthenticatedAppRepresentantesRoute,
   AuthenticatedAppSalesPerformanceRoute: AuthenticatedAppSalesPerformanceRoute,
