@@ -17,7 +17,19 @@ async function login(page: Page) {
 }
 
 const QUERY = "vestido";
-const TABS = ["production", "kanban", "dev", "score", "restock", "sales"] as const;
+
+// Per-tab spec: which queryKey holds the raw list and which fields the
+// in-app `intelFilter` matches against. Mirrors the wiring inside
+// src/routes/_authenticated/_app.intelligence.tsx.
+const TAB_SPEC = {
+  production: { key: ["intel", "products"], fields: ["name", "sku", "category"] },
+  kanban: { key: ["intel", "production_orders"], fields: ["code", "notes"] },
+  dev: { key: ["intel", "prototypes"], fields: ["code", "notes"] },
+  score: { key: ["intel", "products"], fields: ["name", "sku", "category"] },
+  restock: { key: ["intel", "products"], fields: ["name", "sku", "category"] },
+  sales: { key: ["intel", "products"], fields: ["name", "sku", "category"] },
+} as const;
+const TABS = Object.keys(TAB_SPEC) as Array<keyof typeof TAB_SPEC>;
 
 /**
  * For each tab, assert that:
