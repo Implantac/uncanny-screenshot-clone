@@ -47,6 +47,7 @@ import { Route as AuthenticatedAppInfluencersRouteImport } from './routes/_authe
 import { Route as AuthenticatedAppInfluencerRoiRouteImport } from './routes/_authenticated/_app.influencer-roi'
 import { Route as AuthenticatedAppGradeNeedsRouteImport } from './routes/_authenticated/_app.grade-needs'
 import { Route as AuthenticatedAppGeoSalesRouteImport } from './routes/_authenticated/_app.geo-sales'
+import { Route as AuthenticatedAppFpaRouteImport } from './routes/_authenticated/_app.fpa'
 import { Route as AuthenticatedAppFornecedoresRouteImport } from './routes/_authenticated/_app.fornecedores'
 import { Route as AuthenticatedAppFinanceiroRouteImport } from './routes/_authenticated/_app.financeiro'
 import { Route as AuthenticatedAppFichaTecnicaRouteImport } from './routes/_authenticated/_app.ficha-tecnica'
@@ -290,6 +291,11 @@ const AuthenticatedAppGeoSalesRoute =
     path: '/geo-sales',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppFpaRoute = AuthenticatedAppFpaRouteImport.update({
+  id: '/fpa',
+  path: '/fpa',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppFornecedoresRoute =
   AuthenticatedAppFornecedoresRouteImport.update({
     id: '/fornecedores',
@@ -491,6 +497,7 @@ export interface FileRoutesByFullPath {
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedAppFinanceiroRoute
   '/fornecedores': typeof AuthenticatedAppFornecedoresRoute
+  '/fpa': typeof AuthenticatedAppFpaRoute
   '/geo-sales': typeof AuthenticatedAppGeoSalesRoute
   '/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
@@ -558,6 +565,7 @@ export interface FileRoutesByTo {
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedAppFinanceiroRoute
   '/fornecedores': typeof AuthenticatedAppFornecedoresRoute
+  '/fpa': typeof AuthenticatedAppFpaRoute
   '/geo-sales': typeof AuthenticatedAppGeoSalesRoute
   '/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
@@ -627,6 +635,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/_authenticated/_app/financeiro': typeof AuthenticatedAppFinanceiroRoute
   '/_authenticated/_app/fornecedores': typeof AuthenticatedAppFornecedoresRoute
+  '/_authenticated/_app/fpa': typeof AuthenticatedAppFpaRoute
   '/_authenticated/_app/geo-sales': typeof AuthenticatedAppGeoSalesRoute
   '/_authenticated/_app/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/_authenticated/_app/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
@@ -697,6 +706,7 @@ export interface FileRouteTypes {
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fornecedores'
+    | '/fpa'
     | '/geo-sales'
     | '/grade-needs'
     | '/influencer-roi'
@@ -764,6 +774,7 @@ export interface FileRouteTypes {
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fornecedores'
+    | '/fpa'
     | '/geo-sales'
     | '/grade-needs'
     | '/influencer-roi'
@@ -832,6 +843,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/ficha-tecnica'
     | '/_authenticated/_app/financeiro'
     | '/_authenticated/_app/fornecedores'
+    | '/_authenticated/_app/fpa'
     | '/_authenticated/_app/geo-sales'
     | '/_authenticated/_app/grade-needs'
     | '/_authenticated/_app/influencer-roi'
@@ -1144,6 +1156,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppGeoSalesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/fpa': {
+      id: '/_authenticated/_app/fpa'
+      path: '/fpa'
+      fullPath: '/fpa'
+      preLoaderRoute: typeof AuthenticatedAppFpaRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/fornecedores': {
       id: '/_authenticated/_app/fornecedores'
       path: '/fornecedores'
@@ -1379,6 +1398,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppFichaTecnicaRoute: typeof AuthenticatedAppFichaTecnicaRoute
   AuthenticatedAppFinanceiroRoute: typeof AuthenticatedAppFinanceiroRoute
   AuthenticatedAppFornecedoresRoute: typeof AuthenticatedAppFornecedoresRoute
+  AuthenticatedAppFpaRoute: typeof AuthenticatedAppFpaRoute
   AuthenticatedAppGeoSalesRoute: typeof AuthenticatedAppGeoSalesRoute
   AuthenticatedAppGradeNeedsRoute: typeof AuthenticatedAppGradeNeedsRoute
   AuthenticatedAppInfluencerRoiRoute: typeof AuthenticatedAppInfluencerRoiRoute
@@ -1444,6 +1464,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppFichaTecnicaRoute: AuthenticatedAppFichaTecnicaRoute,
   AuthenticatedAppFinanceiroRoute: AuthenticatedAppFinanceiroRoute,
   AuthenticatedAppFornecedoresRoute: AuthenticatedAppFornecedoresRoute,
+  AuthenticatedAppFpaRoute: AuthenticatedAppFpaRoute,
   AuthenticatedAppGeoSalesRoute: AuthenticatedAppGeoSalesRoute,
   AuthenticatedAppGradeNeedsRoute: AuthenticatedAppGradeNeedsRoute,
   AuthenticatedAppInfluencerRoiRoute: AuthenticatedAppInfluencerRoiRoute,
