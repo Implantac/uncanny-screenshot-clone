@@ -23,19 +23,32 @@ type Camp = {
   days: number;
 };
 
+const normCode = (s: string | null | undefined) => (s ?? "").trim().toLowerCase();
+
 async function load(): Promise<Camp[]> {
-  const { data } = await supabase.from("marketing_campaigns").select("*").order("start_date", { ascending: false, nullsFirst: false });
-  const today = Date.now();
+  const [{ data }, { data: erpRows }] = await Promise.all([
+    supabase.from("marketing_campaigns").select("*").order("start_date", { ascending: false, nullsFirst: false }),
+    supabase.from("erp_sales_mirror").select("campaign_code, total_value").not("campaign_code", "is", null),
+  ]);
+  const erpByCode = new Map<string, number>();
+  (erpRows ?? []).forEach((s) => {
+    const code = normCode(s.campaign_code);
+    if (!code) return;
+    erpByCode.set(code, (erpByCode.get(code) ?? 0) + Number(s.total_value ?? 0));
+  });
   return (data ?? []).map((c) => {
     const investment = Number(c.investment);
     const roas = Number(c.roas);
-    const revenue = investment * roas;
+    const erpRev = erpByCode.get(normCode(c.name)) ?? 0;
+    const revenue = (investment * roas) + erpRev;
     const margin = revenue - investment;
     const days = c.start_date && c.end_date ? Math.max(1, Math.round((new Date(c.end_date).getTime() - new Date(c.start_date).getTime()) / 86400000)) : 1;
-    const cpa = roas > 0 ? investment / roas : 0;
-    return { ...c, investment, roas, revenue, margin, cpa, days } as Camp;
+    const effectiveRoas = investment > 0 ? revenue / investment : roas;
+    const cpa = effectiveRoas > 0 ? investment / effectiveRoas : 0;
+    return { ...c, investment, roas: effectiveRoas, revenue, margin, cpa, days } as Camp;
   });
 }
+
 
 function Campaigns() {
   const { data: rows = [], isLoading } = useQuery({ queryKey: ["campaigns"], queryFn: load });
