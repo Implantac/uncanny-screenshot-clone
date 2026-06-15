@@ -58,6 +58,7 @@ import { Route as AuthenticatedAppControlTowerRouteImport } from './routes/_auth
 import { Route as AuthenticatedAppComprasRouteImport } from './routes/_authenticated/_app.compras'
 import { Route as AuthenticatedAppComercialRouteImport } from './routes/_authenticated/_app.comercial'
 import { Route as AuthenticatedAppColecoesRouteImport } from './routes/_authenticated/_app.colecoes'
+import { Route as AuthenticatedAppColecao360RouteImport } from './routes/_authenticated/_app.colecao-360'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/_app.clientes'
 import { Route as AuthenticatedAppCentroDeCorteRouteImport } from './routes/_authenticated/_app.centro-de-corte'
 import { Route as AuthenticatedAppCashflowRouteImport } from './routes/_authenticated/_app.cashflow'
@@ -346,6 +347,12 @@ const AuthenticatedAppColecoesRoute =
     path: '/colecoes',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppColecao360Route =
+  AuthenticatedAppColecao360RouteImport.update({
+    id: '/colecao-360',
+    path: '/colecao-360',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppClientesRoute =
   AuthenticatedAppClientesRouteImport.update({
     id: '/clientes',
@@ -424,6 +431,7 @@ export interface FileRoutesByFullPath {
   '/cashflow': typeof AuthenticatedAppCashflowRoute
   '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/clientes': typeof AuthenticatedAppClientesRoute
+  '/colecao-360': typeof AuthenticatedAppColecao360Route
   '/colecoes': typeof AuthenticatedAppColecoesRoute
   '/comercial': typeof AuthenticatedAppComercialRoute
   '/compras': typeof AuthenticatedAppComprasRoute
@@ -484,6 +492,7 @@ export interface FileRoutesByTo {
   '/cashflow': typeof AuthenticatedAppCashflowRoute
   '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/clientes': typeof AuthenticatedAppClientesRoute
+  '/colecao-360': typeof AuthenticatedAppColecao360Route
   '/colecoes': typeof AuthenticatedAppColecoesRoute
   '/comercial': typeof AuthenticatedAppComercialRoute
   '/compras': typeof AuthenticatedAppComprasRoute
@@ -546,6 +555,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/cashflow': typeof AuthenticatedAppCashflowRoute
   '/_authenticated/_app/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/_authenticated/_app/clientes': typeof AuthenticatedAppClientesRoute
+  '/_authenticated/_app/colecao-360': typeof AuthenticatedAppColecao360Route
   '/_authenticated/_app/colecoes': typeof AuthenticatedAppColecoesRoute
   '/_authenticated/_app/comercial': typeof AuthenticatedAppComercialRoute
   '/_authenticated/_app/compras': typeof AuthenticatedAppComprasRoute
@@ -609,6 +619,7 @@ export interface FileRouteTypes {
     | '/cashflow'
     | '/centro-de-corte'
     | '/clientes'
+    | '/colecao-360'
     | '/colecoes'
     | '/comercial'
     | '/compras'
@@ -669,6 +680,7 @@ export interface FileRouteTypes {
     | '/cashflow'
     | '/centro-de-corte'
     | '/clientes'
+    | '/colecao-360'
     | '/colecoes'
     | '/comercial'
     | '/compras'
@@ -730,6 +742,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/cashflow'
     | '/_authenticated/_app/centro-de-corte'
     | '/_authenticated/_app/clientes'
+    | '/_authenticated/_app/colecao-360'
     | '/_authenticated/_app/colecoes'
     | '/_authenticated/_app/comercial'
     | '/_authenticated/_app/compras'
@@ -1130,6 +1143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppColecoesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/colecao-360': {
+      id: '/_authenticated/_app/colecao-360'
+      path: '/colecao-360'
+      fullPath: '/colecao-360'
+      preLoaderRoute: typeof AuthenticatedAppColecao360RouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/clientes': {
       id: '/_authenticated/_app/clientes'
       path: '/clientes'
@@ -1221,6 +1241,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppCashflowRoute: typeof AuthenticatedAppCashflowRoute
   AuthenticatedAppCentroDeCorteRoute: typeof AuthenticatedAppCentroDeCorteRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
+  AuthenticatedAppColecao360Route: typeof AuthenticatedAppColecao360Route
   AuthenticatedAppColecoesRoute: typeof AuthenticatedAppColecoesRoute
   AuthenticatedAppComercialRoute: typeof AuthenticatedAppComercialRoute
   AuthenticatedAppComprasRoute: typeof AuthenticatedAppComprasRoute
@@ -1278,6 +1299,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCashflowRoute: AuthenticatedAppCashflowRoute,
   AuthenticatedAppCentroDeCorteRoute: AuthenticatedAppCentroDeCorteRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
+  AuthenticatedAppColecao360Route: AuthenticatedAppColecao360Route,
   AuthenticatedAppColecoesRoute: AuthenticatedAppColecoesRoute,
   AuthenticatedAppComercialRoute: AuthenticatedAppComercialRoute,
   AuthenticatedAppComprasRoute: AuthenticatedAppComprasRoute,
@@ -1348,13 +1370,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

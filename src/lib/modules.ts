@@ -45,6 +45,7 @@ export const MODULES: ModuleDef[] = [
 
   // === Coleções ===
   { slug: "colecoes", path: "/colecoes", title: "Coleções", short: "Núcleo do PLM", description: "Planejamento, moodboard, tendências, produtos e cronograma.", icon: Layers, group: "Coleções", status: "parcial" },
+  { slug: "colecao-360", path: "/colecao-360", title: "Coleção 360º", short: "Ciclo completo", description: "Protótipos → produtos → OPs → vendas → margem em uma tela.", icon: Compass, group: "Coleções" },
   { slug: "trends", path: "/trends", title: "Hub de Tendências", short: "Moodboard e paleta", description: "Referências visuais, paleta e mood do catálogo.", icon: Compass, group: "Coleções" },
 
   // === Desenvolvimento ===
