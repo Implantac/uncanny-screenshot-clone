@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -34,7 +36,17 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
+const colecoesSearchSchema = z.object({
+  q: fallback(z.string(), "").default(""),
+  status: fallback(z.string(), "all").default("all"),
+  season: fallback(z.string(), "all").default("all"),
+  sort: fallback(z.enum(["recent", "name", "progress", "launch", "year"]), "recent").default("recent"),
+  page: fallback(z.number().int().min(1), 1).default(1),
+  id: fallback(z.string().optional(), undefined),
+});
+
 export const Route = createFileRoute("/_authenticated/_app/colecoes")({
+  validateSearch: zodValidator(colecoesSearchSchema),
   head: () => ({
     meta: [
       { title: "Coleções · USE MODA OS" },
@@ -130,15 +142,26 @@ function ColecoesPage() {
   const queryClient = useQueryClient();
   useRealtime("collections", ["collections", "collection-products"]);
 
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { q, status: statusFilter, season: seasonFilter, sort: sortBy, page, id: selectedId } = search;
+  const pageSize = 6;
+
+  const updateSearch = (patch: Partial<typeof search>) =>
+    navigate({ search: (prev: typeof search) => ({ ...prev, ...patch }), replace: true });
+  const setQ = (v: string) => updateSearch({ q: v, page: 1 });
+  const setStatusFilter = (v: string) => updateSearch({ status: v, page: 1 });
+  const setSeasonFilter = (v: string) => updateSearch({ season: v, page: 1 });
+  const setSortBy = (v: typeof sortBy) => updateSearch({ sort: v, page: 1 });
+  const setPage = (v: number | ((p: number) => number)) =>
+    updateSearch({ page: typeof v === "function" ? v(page) : v });
+  const setSelectedId = (v: string | null | ((cur: string | undefined) => string | undefined | null)) => {
+    const next = typeof v === "function" ? v(selectedId) : v;
+    updateSearch({ id: next ?? undefined });
+  };
+
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [q, setQ] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [seasonFilter, setSeasonFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"recent" | "name" | "progress" | "launch" | "year">("recent");
-  const [page, setPage] = useState(1);
-  const pageSize = 6;
 
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["collections"],
