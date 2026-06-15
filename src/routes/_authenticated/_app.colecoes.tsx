@@ -605,8 +605,10 @@ function ColecoesPage() {
                   {[
                     ["planejamento", "Planejamento"],
                     ["moodboard", "Moodboard"],
-                    ["mix", "Mix de Produtos"],
+                    ["tendencias", "Tendências"],
+                    ["mix", "Produtos"],
                     ["cronograma", "Cronograma"],
+                    ["status", "Status"],
                     ["performance", "Performance"],
                     ["roi", "ROI"],
                   ].map(([value, label]) => (
