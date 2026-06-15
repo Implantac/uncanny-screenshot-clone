@@ -95,7 +95,10 @@ function ProdutosPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const { q: search } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setSearch = (v: string) =>
+    navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
