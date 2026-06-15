@@ -105,4 +105,6 @@ Critério de remoção definitiva: quando os módulos equivalentes do ERP (Marke
 - **Onda 6** ✅ — Marketing/Influencers/Geo lendo `erp_sales_mirror`.
 - **Onda 7** ✅ — `src/lib/erp/` + tabelas `erp_*_mirror`.
 - **Onda 8** ✅ — triggers de duplicação desativados.
+- **Onda 9** ✅ — Tech Pack completo: BOM, operações (SAM), POM, custos recalculados.
+
 
