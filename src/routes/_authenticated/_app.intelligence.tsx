@@ -209,8 +209,8 @@ function IntelligencePage() {
 }
 
 /* ===================== PRODUÇÃO ===================== */
-function ProductionTab({ products, orders, inventory, b2b, sales = [] }: any) {
-  const [q, setQ] = useState("");
+function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQChange }: any) {
+  const setQ = onQChange;
   const SIZES = ["PP", "P", "M", "G", "GG"];
   const SIZE_DIST = [0.1, 0.2, 0.35, 0.25, 0.1];
 
