@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Boxes, Plus, Factory, History, CheckCircle2, Clock, AlertTriangle, Search } from "lucide-react";
+import { Boxes, Plus, Factory, History, CheckCircle2, Clock, AlertTriangle, Search, ArrowRightCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
