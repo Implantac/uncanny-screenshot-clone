@@ -19,13 +19,14 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey") ?? "";
         const cronSecret = request.headers.get("x-cron-secret") ?? "";
-        const expectedKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
         const expectedSecret = process.env.CRON_SECRET ?? "";
-        const ok =
-          (expectedKey && apikey === expectedKey) ||
-          (expectedSecret && cronSecret === expectedSecret);
+        // SUPABASE_PUBLISHABLE_KEY is a public key and must NOT be accepted as auth.
+        if (!expectedSecret) return new Response("CRON_SECRET not configured", { status: 503 });
+        // timingSafeEqual-style length+compare via Buffer
+        const a = Buffer.from(cronSecret);
+        const b = Buffer.from(expectedSecret);
+        const ok = a.length === b.length && (await import("crypto")).timingSafeEqual(a, b);
         if (!ok) return new Response("Unauthorized", { status: 401 });
 
         const apiKey = process.env.LOVABLE_API_KEY;
