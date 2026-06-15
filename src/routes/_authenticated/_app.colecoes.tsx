@@ -49,7 +49,7 @@ const colecoesSearchSchema = z.object({
   ).default("all"),
   sort: fallback(z.enum(SORT_KEYS), "recent").default("recent"),
   page: fallback(z.coerce.number().int().min(1).max(9999), 1).default(1),
-  id: fallback(z.string().regex(UUID_RE).optional(), undefined).default(undefined),
+  id: fallback(z.string().regex(UUID_RE).optional(), undefined),
 });
 
 export const Route = createFileRoute("/_authenticated/_app/colecoes")({
