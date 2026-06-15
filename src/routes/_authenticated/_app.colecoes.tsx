@@ -136,6 +136,9 @@ function ColecoesPage() {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [seasonFilter, setSeasonFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"recent" | "name" | "progress" | "launch" | "year">("recent");
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
 
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["collections"],
