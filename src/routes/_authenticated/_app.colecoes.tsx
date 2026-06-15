@@ -432,10 +432,21 @@ function ColecoesPage() {
               </Select>
             </div>
 
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Ordenar por" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Mais recentes</SelectItem>
+                <SelectItem value="name">Nome (A–Z)</SelectItem>
+                <SelectItem value="progress">Maior progresso</SelectItem>
+                <SelectItem value="launch">Lançamento mais próximo</SelectItem>
+                <SelectItem value="year">Ano (desc)</SelectItem>
+              </SelectContent>
+            </Select>
+
             <div className="space-y-2">
               {filteredCollections.length === 0 ? (
                 <div className="text-xs text-muted-foreground text-center py-6">Nenhuma coleção encontrada.</div>
-              ) : filteredCollections.map((collection) => {
+              ) : pagedCollections.map((collection) => {
                 const active = collection.id === selected?.id;
                 return (
                   <button
@@ -464,7 +475,22 @@ function ColecoesPage() {
                 );
               })}
             </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-1">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                  Anterior
+                </Button>
+                <div className="text-xs text-muted-foreground tabular-nums">
+                  Página {page} de {totalPages}
+                </div>
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                  Próxima
+                </Button>
+              </div>
+            )}
           </section>
+
 
 
           {selected && (
