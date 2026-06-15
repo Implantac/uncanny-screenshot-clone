@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Boxes, Plus, Factory, History, CheckCircle2, Clock, AlertTriangle, Search } from "lucide-react";
+import { Boxes, Plus, Factory, History, CheckCircle2, Clock, AlertTriangle, Search, ArrowRightCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -77,6 +77,7 @@ function LotesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Batch | null>(null);
+  const [passOrder, setPassOrder] = useState<OrderRef | null>(null);
 
   const { data: batches = [], isLoading } = useQuery({
     queryKey: ["batches"],
@@ -243,7 +244,7 @@ function LotesPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="text-xs text-muted-foreground border-b border-border">
-                        <tr><th className="text-left py-2">OP</th><th className="text-left">Estágio</th><th className="text-right">Qtd</th><th className="text-right">Progresso</th><th className="text-left pl-3">Prazo</th></tr>
+                        <tr><th className="text-left py-2">OP</th><th className="text-left">Estágio</th><th className="text-right">Qtd</th><th className="text-right">Progresso</th><th className="text-left pl-3">Prazo</th><th /></tr>
                       </thead>
                       <tbody>
                         {linkedOrders.map((o) => (
@@ -253,6 +254,11 @@ function LotesPage() {
                             <td className="text-right tabular-nums">{o.quantity}</td>
                             <td className="text-right tabular-nums">{o.progress}%</td>
                             <td className="pl-3 text-muted-foreground">{o.due_date ? new Date(o.due_date).toLocaleDateString("pt-BR") : "—"}</td>
+                            <td className="pl-3 text-right">
+                              <Button size="sm" variant="outline" className="gap-1.5 h-7" onClick={() => setPassOrder(o)}>
+                                <ArrowRightCircle className="size-3.5" /> Passagem
+                              </Button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -299,6 +305,7 @@ function LotesPage() {
       )}
 
       <BatchDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} />
+      <PassageDialog order={passOrder} onClose={() => setPassOrder(null)} userId={user?.id} />
     </div>
   );
 }
@@ -392,6 +399,97 @@ function BatchDialog({ open, onOpenChange, editing, userId }: { open: boolean; o
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={saveMut.isPending}>{saveMut.isPending ? "Salvando…" : "Salvar"}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PassageDialog({ order, onClose, userId }: { order: OrderRef | null; onClose: () => void; userId?: string }) {
+  const qc = useQueryClient();
+  const [kind, setKind] = useState<"integral" | "parcial">("parcial");
+  const [toStage, setToStage] = useState("");
+  const [qty, setQty] = useState(0);
+  const [note, setNote] = useState("");
+
+  useMemo(() => {
+    if (!order) return;
+    setKind("parcial");
+    setToStage("");
+    setQty(order.quantity);
+    setNote("");
+  }, [order?.id]);
+
+  const saveMut = useMutation({
+    mutationFn: async () => {
+      if (!userId || !order) throw new Error("Sessão expirada");
+      if (!toStage) throw new Error("Informe o estágio de destino");
+      if (qty <= 0) throw new Error("Quantidade deve ser maior que zero");
+      const code = `OS-${Date.now().toString().slice(-6)}`;
+      const { error } = await supabase.from("service_orders").insert({
+        owner_id: userId,
+        production_order_id: order.id,
+        code,
+        from_stage: order.stage,
+        to_stage: toStage,
+        kind,
+        quantity: qty,
+        qty_received: qty,
+        status: "recebida",
+        notes: note || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["batch-orders"] });
+      qc.invalidateQueries({ queryKey: ["batch-logs"] });
+      toast.success("Passagem registrada");
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={!!order} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Registrar passagem · {order?.code}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={(e) => { e.preventDefault(); saveMut.mutate(); }} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Tipo</Label>
+              <Select value={kind} onValueChange={(v) => setKind(v as "integral" | "parcial")}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="parcial">Parcial</SelectItem>
+                  <SelectItem value="integral">Integral</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Quantidade</Label>
+              <Input type="number" min={1} value={qty} onChange={(e) => setQty(Number(e.target.value))} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>De</Label>
+              <Input value={order?.stage ?? ""} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Para</Label>
+              <Input value={toStage} onChange={(e) => setToStage(e.target.value)} placeholder="costura, acabamento…" required />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Observação</Label>
+            <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={saveMut.isPending}>{saveMut.isPending ? "Registrando…" : "Registrar"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
