@@ -1,63 +1,47 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
-import { ArrowUpRight, Package, Factory, Users, CircleDollarSign, AlertTriangle, CheckCircle2, Sparkles, Activity, TrendingUp, Palette, Shirt, Scissors } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
+import { ArrowUpRight, Package, Factory, Layers, Scissors, AlertTriangle, CheckCircle2, Sparkles, Activity, TrendingUp, Palette, Shirt, FileText } from "lucide-react";
 import { MODULES } from "@/lib/modules";
 import { supabase } from "@/integrations/supabase/client";
-
 
 export const Route = createFileRoute("/_authenticated/_app/")({
   head: () => ({
     meta: [
-      { title: "Command Center · USE MODA OS" },
-      { name: "description", content: "Visão executiva em tempo real da operação de moda." },
+      { title: "Command Center · USE MODA PLM" },
+      { name: "description", content: "Pulso do desenvolvimento de produto e produção em tempo real." },
     ],
   }),
   component: CommandCenter,
 });
 
-const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-
 function useDashboard() {
   return useQuery({
-    queryKey: ["dashboard"],
+    queryKey: ["plm-dashboard"],
     queryFn: async () => {
-      const [orders, prod, cols, inv, prods, protos] = await Promise.all([
-        supabase.from("b2b_orders").select("total_value, customer_name, order_date, status, created_at"),
+      const [prod, cols, inv, prods, protos, tech] = await Promise.all([
         supabase.from("production_orders").select("code, quantity, progress, status, created_at, due_date"),
         supabase.from("collections").select("name, status, progress, year, created_at").order("created_at", { ascending: false }).limit(6),
         supabase.from("inventory_items").select("name, balance, minimum, unit"),
-        supabase.from("products").select("name, category, colors, created_at").order("created_at", { ascending: false }).limit(200),
-        supabase.from("prototypes").select("code, stage, created_at").order("created_at", { ascending: false }).limit(20),
+        supabase.from("products").select("name, category, colors, status, created_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("prototypes").select("code, stage, created_at").order("created_at", { ascending: false }).limit(50),
+        supabase.from("tech_sheets").select("id, status, created_at").order("created_at", { ascending: false }).limit(200),
       ]);
-      const o = orders.data ?? [];
       const p = prod.data ?? [];
       const c = cols.data ?? [];
       const i = inv.data ?? [];
       const pr = prods.data ?? [];
       const pt = protos.data ?? [];
+      const ts = tech.data ?? [];
 
-      const now = new Date();
-      const thisMonth = (d: string) => { const x = new Date(d); return x.getMonth() === now.getMonth() && x.getFullYear() === now.getFullYear(); };
-      const revenue = o.filter((r) => r.order_date && thisMonth(r.order_date)).reduce((a, b) => a + Number(b.total_value ?? 0), 0);
-      const pieces = p.filter((r) => r.status !== "concluida").reduce((a, b) => a + (b.quantity ?? 0), 0);
-      const ordersCount = o.length;
-      const customers = new Set(o.map((r) => r.customer_name).filter(Boolean)).size;
+      const activeCollections = c.filter((r: any) => r.status && !/finaliz|conclu/i.test(r.status)).length;
+      const productsInDev = pr.filter((r: any) => !r.status || /dev|brief|model|piloto|prot/i.test(r.status)).length;
+      const piecesInProd = p.filter((r) => r.status !== "concluida").reduce((a, b) => a + (b.quantity ?? 0), 0);
+      const protosOpen = pt.filter((r: any) => r.stage && !/aprov|conclu/i.test(r.stage)).length;
       const critical = i.filter((r) => Number(r.balance ?? 0) <= Number(r.minimum ?? 0));
 
-      const months: { m: string; v: number }[] = [];
-      for (let k = 11; k >= 0; k--) {
-        const dt = new Date(now.getFullYear(), now.getMonth() - k, 1);
-        const label = dt.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
-        const v = o.filter((r) => {
-          if (!r.order_date) return false;
-          const x = new Date(r.order_date);
-          return x.getMonth() === dt.getMonth() && x.getFullYear() === dt.getFullYear();
-        }).reduce((a, b) => a + Number(b.total_value ?? 0), 0) / 1000;
-        months.push({ m: label, v: Number(v.toFixed(1)) });
-      }
-
+      // Production by stage
       const planned = p.reduce((a, b) => a + (b.quantity ?? 0), 0);
       const done = p.reduce((a, b) => a + Math.round((b.quantity ?? 0) * ((b.progress ?? 0) / 100)), 0);
       const productionData = [
@@ -66,17 +50,25 @@ function useDashboard() {
         { d: "Concluído", v: p.filter((r) => r.status === "concluida").reduce((a, b) => a + (b.quantity ?? 0), 0) },
       ];
 
-      // Operational feed — unified timeline of recent events
-      type FeedItem = { ts: number; kind: "produto" | "coleção" | "produção" | "pedido" | "protótipo"; title: string; meta?: string };
+      // Development pipeline buckets
+      const bucket = (re: RegExp) => pr.filter((r: any) => re.test(r.status ?? "")).length;
+      const devPipeline = [
+        { d: "Briefing", v: bucket(/brief|pesquis/i) || pr.filter((r: any) => !r.status).length },
+        { d: "Modelagem", v: bucket(/model|cad/i) },
+        { d: "Protótipo", v: bucket(/prot/i) + pt.length },
+        { d: "Piloto", v: bucket(/piloto/i) },
+        { d: "Aprovado", v: bucket(/aprov/i) },
+      ];
+
+      type FeedItem = { ts: number; kind: "produto" | "coleção" | "produção" | "ficha" | "protótipo"; title: string; meta?: string };
       const feed: FeedItem[] = [];
       pr.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "produto", title: `Produto ${r.name} criado`, meta: r.category ?? undefined }));
       c.forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "coleção", title: `Coleção ${r.name}`, meta: r.status }));
       p.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "produção", title: `OP ${r.code ?? ""} · ${r.quantity ?? 0} pç`, meta: r.status }));
-      o.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "pedido", title: `Pedido B2B · ${r.customer_name ?? "—"}`, meta: r.status }));
       pt.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "protótipo", title: `Protótipo ${r.code ?? ""}`, meta: r.stage }));
+      ts.slice(0, 8).forEach((r: any) => r.created_at && feed.push({ ts: new Date(r.created_at).getTime(), kind: "ficha", title: `Ficha técnica atualizada`, meta: r.status }));
       feed.sort((a, b) => b.ts - a.ts);
 
-      // Trend radar — most frequent attributes across recent products
       const count = (arr: (string | null | undefined)[]) => {
         const m = new Map<string, number>();
         arr.forEach((x) => { if (x) m.set(x, (m.get(x) ?? 0) + 1); });
@@ -88,14 +80,13 @@ function useDashboard() {
         collections: count(c.map((r: any) => r.name)),
       };
 
-
       return {
-        kpis: { revenue, pieces, ordersCount, customers },
+        kpis: { activeCollections, productsInDev, piecesInProd, protosOpen },
         critical,
         collections: c,
-        months,
         productionData,
-        feed: feed.slice(0, 10),
+        devPipeline,
+        feed: feed.slice(0, 12),
         trends,
       };
     },
@@ -114,7 +105,7 @@ const FEED_ICON: Record<string, typeof Activity> = {
   produto: Package,
   coleção: Sparkles,
   produção: Factory,
-  pedido: CircleDollarSign,
+  ficha: FileText,
   protótipo: Scissors,
 };
 
@@ -142,9 +133,6 @@ function TrendBlock({ icon: Icon, title, items }: { icon: typeof Activity; title
   );
 }
 
-
-
-
 function CommandCenter() {
   const { data, isLoading } = useDashboard();
   const [today, setToday] = useState("");
@@ -158,22 +146,23 @@ function CommandCenter() {
   }, []);
 
   const kpis = [
-    { label: "Receita do mês", value: k ? brl(k.revenue) : "—", icon: CircleDollarSign, color: "text-success" },
-    { label: "Peças em produção", value: k ? k.pieces.toLocaleString("pt-BR") : "—", icon: Factory, color: "text-info" },
-    { label: "Pedidos B2B", value: k ? String(k.ordersCount) : "—", icon: Package, color: "text-primary" },
-    { label: "Clientes únicos", value: k ? String(k.customers) : "—", icon: Users, color: "text-warning" },
+    { label: "Coleções ativas", value: k ? String(k.activeCollections) : "—", icon: Layers, color: "text-primary" },
+    { label: "Produtos em desenvolvimento", value: k ? String(k.productsInDev) : "—", icon: Sparkles, color: "text-info" },
+    { label: "Peças em produção", value: k ? k.piecesInProd.toLocaleString("pt-BR") : "—", icon: Factory, color: "text-success" },
+    { label: "Protótipos em aberto", value: k ? String(k.protosOpen) : "—", icon: Scissors, color: "text-warning" },
   ];
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Command Center</div>
+          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Command Center · PLM</div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
             {greeting}, <span className="text-gradient">USE Moda</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Pulso da operação em tempo real{today && ` · ${today}`}
+            Desenvolvimento, produção e cadeia em tempo real{today && ` · ${today}`}
+            <span className="ml-2 inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground uppercase tracking-wider">Financeiro no ERP</span>
           </p>
         </div>
       </div>
@@ -199,24 +188,19 @@ function CommandCenter() {
         <div className="lg:col-span-2 glass rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="text-sm font-semibold">Receita 12 meses</div>
-              <div className="text-xs text-muted-foreground">Faturamento B2B em milhares (R$)</div>
+              <div className="text-sm font-semibold">Pipeline de desenvolvimento</div>
+              <div className="text-xs text-muted-foreground">Produtos por etapa do ciclo PLM</div>
             </div>
+            <Link to="/dev-kanban" className="text-xs text-primary hover:underline">Abrir Kanban →</Link>
           </div>
           <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={data?.months ?? []}>
-              <defs>
-                <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="oklch(0.72 0.18 295)" stopOpacity={0.5} />
-                  <stop offset="100%" stopColor="oklch(0.72 0.18 295)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
+            <BarChart data={data?.devPipeline ?? []}>
               <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.28 0.018 270)" vertical={false} />
-              <XAxis dataKey="m" stroke="oklch(0.68 0.02 270)" fontSize={11} tickLine={false} axisLine={false} />
+              <XAxis dataKey="d" stroke="oklch(0.68 0.02 270)" fontSize={11} tickLine={false} axisLine={false} />
               <YAxis stroke="oklch(0.68 0.02 270)" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={{ background: "oklch(0.20 0.015 270)", border: "1px solid oklch(0.28 0.018 270)", borderRadius: 8, fontSize: 12 }} />
-              <Area type="monotone" dataKey="v" stroke="oklch(0.72 0.18 295)" strokeWidth={2} fill="url(#rev)" />
-            </AreaChart>
+              <Bar dataKey="v" fill="oklch(0.72 0.18 295)" radius={[4, 4, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
 
@@ -273,8 +257,8 @@ function CommandCenter() {
         </div>
 
         <div className="glass rounded-xl p-5">
-          <div className="text-sm font-semibold mb-1">Alertas de estoque</div>
-          <div className="text-xs text-muted-foreground mb-4">Itens em nível crítico</div>
+          <div className="text-sm font-semibold mb-1">Alertas de insumos</div>
+          <div className="text-xs text-muted-foreground mb-4">Itens técnicos em nível crítico</div>
           {data?.critical.length ? (
             <ul className="space-y-3">
               {data.critical.slice(0, 6).map((i, idx) => (
@@ -292,7 +276,7 @@ function CommandCenter() {
           ) : (
             <div className="py-6 text-center text-sm text-muted-foreground">
               <CheckCircle2 className="size-8 text-success mx-auto mb-2" />
-              Estoque saudável
+              Insumos saudáveis
             </div>
           )}
         </div>
@@ -303,7 +287,7 @@ function CommandCenter() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="text-sm font-semibold flex items-center gap-2"><Activity className="size-4 text-primary" /> Feed operacional</div>
-              <div className="text-xs text-muted-foreground">Últimos eventos da operação</div>
+              <div className="text-xs text-muted-foreground">Últimos eventos de desenvolvimento e produção</div>
             </div>
           </div>
           {data?.feed?.length ? (
@@ -345,12 +329,10 @@ function CommandCenter() {
         </div>
       </div>
 
-
-
       <div>
-        <div className="text-sm font-semibold mb-3">Acesso rápido aos módulos</div>
+        <div className="text-sm font-semibold mb-3">Acesso rápido aos módulos PLM</div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {MODULES.filter((m) => m.path !== "/").slice(0, 12).map((m) => {
+          {MODULES.filter((m) => m.path !== "/" && !m.hidden && m.source !== "erp-mirror").slice(0, 12).map((m) => {
             const Icon = m.icon;
             return (
               <Link key={m.slug} to={m.path} className="glass rounded-xl p-4 hover:border-primary/40 hover:-translate-y-0.5 transition-all group">
