@@ -69,28 +69,40 @@
 | data-lake | Data Lake | PLM-core | Plataforma | Funcional | |
 | equipe | Equipe & Permissões | PLM-core | Plataforma | Funcional | |
 
-## Triggers de banco — duplicação com ERP (a desativar na Onda 8)
+## Triggers de banco — duplicação com ERP
 
-- `b2b_orders_to_financial_account` — gera "contas a receber" no PLM. ERP já faz.
-- `purchase_orders_to_financial_account` — gera "contas a pagar". ERP já faz.
-- `purchase_orders_to_stock_entries` — entrada de estoque por recebimento. Estoque fiscal = ERP.
+Status atual (Onda 8 aplicada): **DESATIVADOS**. Removidos do `pg_trigger`:
 
-Mantidos até a Onda 8 para preservar dados existentes; rotas correspondentes ficam ocultas no menu desde a Onda 1.
+- ~~`trg_b2b_to_financial`~~ — removido. ERP gera contas a receber.
+- ~~`trg_po_to_financial`~~ — removido. ERP gera contas a pagar.
+- ~~`trg_po_to_stock`~~ — removido. Estoque fiscal vive no ERP.
+
+Funções (`b2b_orders_to_financial_account`, `purchase_orders_to_financial_account`, `purchase_orders_to_stock_entries`) permanecem no schema caso seja necessário religar.
+
+## Rotas deprecadas (hidden no menu desde Onda 1)
+
+Não removidas para preservar URLs/histórico, mas marcadas como **DEPRECATED** — leitura migrada para `erp_*_mirror`:
+
+- `/financeiro` · `/cashflow` · `/comercial` · `/clientes` · `/representantes` · `/pedidos-compra` · `/movimentacoes`
+
+Critério de remoção definitiva: quando os módulos equivalentes do ERP (Marketing/Vendas/Compras) estiverem 100% espelhados em `erp_sales_mirror` / `erp_purchase_mirror` / `erp_inventory_mirror` e nenhum link interno apontar mais para essas rotas.
 
 ## Tabelas — classificação inicial
 
-- **PLM-core**: collections, collection_versions, products, prototypes, tech_sheets, production_orders, production_batches, production_stage_log, service_orders, ai_agents, marketing_campaigns, influencers, audit_logs, mobile_devices
+- **PLM-core**: collections, collection_versions, products, prototypes, tech_sheets, production_orders, production_batches, production_stage_log, service_orders, pcp_stages, ai_agents, marketing_campaigns, influencers, audit_logs, mobile_devices
 - **PLM-suporte**: suppliers, inventory_items (escopo insumos)
-- **ERP-mirror (a migrar p/ leitura)**: b2b_orders, customers, representatives, purchase_orders, purchase_order_items, financial_accounts, sales, stock_movements
+- **ERP-mirror (leitura)**: erp_sales_mirror, erp_purchase_mirror, erp_inventory_mirror
+- **ERP-legacy (deprecated, manter para histórico)**: b2b_orders, customers, representatives, purchase_orders, purchase_order_items, financial_accounts, sales, stock_movements
 - **Infra**: profiles, user_roles
 
-## Próximas ondas
+## Ondas — status
 
-- **Onda 1 (agora)**: regrupar menu, esconder módulos ERP-mirror não essenciais, sem deletar rotas/código.
-- **Onda 2**: Command Center operacional.
-- **Onda 3**: Coleções como núcleo.
-- **Onda 4**: Lotes multi-referência + passagens parciais + pacotes (migração).
-- **Onda 5**: Stages PCP configuráveis por empresa.
-- **Onda 6**: Marketing/Influencers/Geo consumindo ERP-mirror.
-- **Onda 7**: Camada de integração ERP (`src/lib/erp/` + tabelas `erp_*_mirror`).
-- **Onda 8**: Limpeza de triggers/rotas duplicadas com aprovação caso a caso.
+- **Onda 1** ✅ — regrupamento de menu, hidden de ERP-mirror.
+- **Onda 2** ✅ — Command Center operacional.
+- **Onda 3** ✅ — Coleções como núcleo.
+- **Onda 4** ✅ — Lotes + passagens parciais.
+- **Onda 5** ✅ — Stages PCP configuráveis (`pcp_stages`).
+- **Onda 6** ✅ — Marketing/Influencers/Geo lendo `erp_sales_mirror`.
+- **Onda 7** ✅ — `src/lib/erp/` + tabelas `erp_*_mirror`.
+- **Onda 8** ✅ — triggers de duplicação desativados.
+
