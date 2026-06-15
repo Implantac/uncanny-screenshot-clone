@@ -24,7 +24,9 @@ async function load() {
 
 function Influencers() {
   const { data: influencers = [], isLoading } = useQuery({ queryKey: ["influencers"], queryFn: load });
-  const [q, setQ] = useState("");
+  const { q } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setQ = (v: string) => navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
 
   const filtered = useMemo(() => influencers.filter((i) =>
     !q || i.nome.toLowerCase().includes(q.toLowerCase()) ||
