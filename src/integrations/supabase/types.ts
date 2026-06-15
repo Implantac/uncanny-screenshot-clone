@@ -717,6 +717,152 @@ export type Database = {
         }
         Relationships: []
       }
+      product_color_options: {
+        Row: {
+          active: boolean
+          created_at: string
+          hex: string | null
+          id: string
+          name: string
+          owner_id: string
+          position: number
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          hex?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          position?: number
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          hex?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          position?: number
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_color_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_size_options: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          label: string
+          owner_id: string
+          position: number
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          label: string
+          owner_id: string
+          position?: number
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          label?: string
+          owner_id?: string
+          position?: number
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_size_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_variants: {
+        Row: {
+          active: boolean
+          color_id: string | null
+          created_at: string
+          ean: string | null
+          id: string
+          owner_id: string
+          product_id: string
+          size_id: string | null
+          sku: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          color_id?: string | null
+          created_at?: string
+          ean?: string | null
+          id?: string
+          owner_id: string
+          product_id: string
+          size_id?: string | null
+          sku: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          color_id?: string | null
+          created_at?: string
+          ean?: string | null
+          id?: string
+          owner_id?: string
+          product_id?: string
+          size_id?: string | null
+          sku?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_color_id_fkey"
+            columns: ["color_id"]
+            isOneToOne: false
+            referencedRelation: "product_color_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_variants_size_id_fkey"
+            columns: ["size_id"]
+            isOneToOne: false
+            referencedRelation: "product_size_options"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       production_batches: {
         Row: {
           code: string
@@ -758,6 +904,51 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      production_order_grid: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          production_order_id: string
+          quantity: number
+          updated_at: string
+          variant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          production_order_id: string
+          quantity?: number
+          updated_at?: string
+          variant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          production_order_id?: string
+          quantity?: number
+          updated_at?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_order_grid_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_order_grid_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       production_orders: {
         Row: {
@@ -1238,6 +1429,54 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_order_grid: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          qty_received: number
+          quantity: number
+          service_order_id: string
+          updated_at: string
+          variant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          qty_received?: number
+          quantity?: number
+          service_order_id: string
+          updated_at?: string
+          variant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          qty_received?: number
+          quantity?: number
+          service_order_id?: string
+          updated_at?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_order_grid_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "service_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_order_grid_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
         ]
