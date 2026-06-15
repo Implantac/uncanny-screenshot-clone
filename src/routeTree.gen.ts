@@ -61,6 +61,7 @@ import { Route as AuthenticatedAppComprasRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAppComercialRouteImport } from './routes/_authenticated/_app.comercial'
 import { Route as AuthenticatedAppColecoesRouteImport } from './routes/_authenticated/_app.colecoes'
 import { Route as AuthenticatedAppColecao360RouteImport } from './routes/_authenticated/_app.colecao-360'
+import { Route as AuthenticatedAppClosedLoopRouteImport } from './routes/_authenticated/_app.closed-loop'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/_app.clientes'
 import { Route as AuthenticatedAppCentroDeCorteRouteImport } from './routes/_authenticated/_app.centro-de-corte'
 import { Route as AuthenticatedAppCashflowRouteImport } from './routes/_authenticated/_app.cashflow'
@@ -369,6 +370,12 @@ const AuthenticatedAppColecao360Route =
     path: '/colecao-360',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppClosedLoopRoute =
+  AuthenticatedAppClosedLoopRouteImport.update({
+    id: '/closed-loop',
+    path: '/closed-loop',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppClientesRoute =
   AuthenticatedAppClientesRouteImport.update({
     id: '/clientes',
@@ -461,6 +468,7 @@ export interface FileRoutesByFullPath {
   '/cashflow': typeof AuthenticatedAppCashflowRoute
   '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/clientes': typeof AuthenticatedAppClientesRoute
+  '/closed-loop': typeof AuthenticatedAppClosedLoopRoute
   '/colecao-360': typeof AuthenticatedAppColecao360Route
   '/colecoes': typeof AuthenticatedAppColecoesRoute
   '/comercial': typeof AuthenticatedAppComercialRoute
@@ -526,6 +534,7 @@ export interface FileRoutesByTo {
   '/cashflow': typeof AuthenticatedAppCashflowRoute
   '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/clientes': typeof AuthenticatedAppClientesRoute
+  '/closed-loop': typeof AuthenticatedAppClosedLoopRoute
   '/colecao-360': typeof AuthenticatedAppColecao360Route
   '/colecoes': typeof AuthenticatedAppColecoesRoute
   '/comercial': typeof AuthenticatedAppComercialRoute
@@ -593,6 +602,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/cashflow': typeof AuthenticatedAppCashflowRoute
   '/_authenticated/_app/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/_authenticated/_app/clientes': typeof AuthenticatedAppClientesRoute
+  '/_authenticated/_app/closed-loop': typeof AuthenticatedAppClosedLoopRoute
   '/_authenticated/_app/colecao-360': typeof AuthenticatedAppColecao360Route
   '/_authenticated/_app/colecoes': typeof AuthenticatedAppColecoesRoute
   '/_authenticated/_app/comercial': typeof AuthenticatedAppComercialRoute
@@ -661,6 +671,7 @@ export interface FileRouteTypes {
     | '/cashflow'
     | '/centro-de-corte'
     | '/clientes'
+    | '/closed-loop'
     | '/colecao-360'
     | '/colecoes'
     | '/comercial'
@@ -726,6 +737,7 @@ export interface FileRouteTypes {
     | '/cashflow'
     | '/centro-de-corte'
     | '/clientes'
+    | '/closed-loop'
     | '/colecao-360'
     | '/colecoes'
     | '/comercial'
@@ -792,6 +804,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/cashflow'
     | '/_authenticated/_app/centro-de-corte'
     | '/_authenticated/_app/clientes'
+    | '/_authenticated/_app/closed-loop'
     | '/_authenticated/_app/colecao-360'
     | '/_authenticated/_app/colecoes'
     | '/_authenticated/_app/comercial'
@@ -1216,6 +1229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppColecao360RouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/closed-loop': {
+      id: '/_authenticated/_app/closed-loop'
+      path: '/closed-loop'
+      fullPath: '/closed-loop'
+      preLoaderRoute: typeof AuthenticatedAppClosedLoopRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/clientes': {
       id: '/_authenticated/_app/clientes'
       path: '/clientes'
@@ -1323,6 +1343,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppCashflowRoute: typeof AuthenticatedAppCashflowRoute
   AuthenticatedAppCentroDeCorteRoute: typeof AuthenticatedAppCentroDeCorteRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
+  AuthenticatedAppClosedLoopRoute: typeof AuthenticatedAppClosedLoopRoute
   AuthenticatedAppColecao360Route: typeof AuthenticatedAppColecao360Route
   AuthenticatedAppColecoesRoute: typeof AuthenticatedAppColecoesRoute
   AuthenticatedAppComercialRoute: typeof AuthenticatedAppComercialRoute
@@ -1385,6 +1406,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCashflowRoute: AuthenticatedAppCashflowRoute,
   AuthenticatedAppCentroDeCorteRoute: AuthenticatedAppCentroDeCorteRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
+  AuthenticatedAppClosedLoopRoute: AuthenticatedAppClosedLoopRoute,
   AuthenticatedAppColecao360Route: AuthenticatedAppColecao360Route,
   AuthenticatedAppColecoesRoute: AuthenticatedAppColecoesRoute,
   AuthenticatedAppComercialRoute: AuthenticatedAppComercialRoute,
