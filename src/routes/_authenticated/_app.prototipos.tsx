@@ -55,9 +55,9 @@ function Prototipos() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const { q, stage: stageFilter } = search;
-  const setQ = (v: string) => navigate({ search: (p) => ({ ...p, q: v }), replace: true });
+  const setQ = (v: string) => navigate({ search: (p: typeof search) => ({ ...p, q: v }), replace: true });
   const setStageFilter = (v: string) =>
-    navigate({ search: (p) => ({ ...p, stage: v as typeof search.stage }), replace: true });
+    navigate({ search: (p: typeof search) => ({ ...p, stage: v as typeof search.stage }), replace: true });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prototype | null>(null);
   const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "" });
