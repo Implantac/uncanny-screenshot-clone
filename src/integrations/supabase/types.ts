@@ -313,6 +313,7 @@ export type Database = {
           name: string
           notes: string | null
           owner_id: string
+          product_id: string | null
           sku: string
           unit: string
           updated_at: string
@@ -327,6 +328,7 @@ export type Database = {
           name: string
           notes?: string | null
           owner_id: string
+          product_id?: string | null
           sku: string
           unit?: string
           updated_at?: string
@@ -341,11 +343,20 @@ export type Database = {
           name?: string
           notes?: string | null
           owner_id?: string
+          product_id?: string | null
           sku?: string
           unit?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       marketing_campaigns: {
         Row: {
@@ -849,6 +860,60 @@ export type Database = {
           },
         ]
       }
+      stock_movements: {
+        Row: {
+          created_at: string
+          id: string
+          inventory_item_id: string
+          notes: string | null
+          owner_id: string
+          product_id: string | null
+          quantity: number
+          reference_id: string | null
+          reference_kind: string | null
+          type: Database["public"]["Enums"]["stock_movement_type"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inventory_item_id: string
+          notes?: string | null
+          owner_id: string
+          product_id?: string | null
+          quantity: number
+          reference_id?: string | null
+          reference_kind?: string | null
+          type: Database["public"]["Enums"]["stock_movement_type"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inventory_item_id?: string
+          notes?: string | null
+          owner_id?: string
+          product_id?: string | null
+          quantity?: number
+          reference_id?: string | null
+          reference_kind?: string | null
+          type?: Database["public"]["Enums"]["stock_movement_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           active: boolean
@@ -1033,6 +1098,7 @@ export type Database = {
         | "em_andamento"
         | "recebida"
         | "cancelada"
+      stock_movement_type: "entrada" | "saida" | "ajuste" | "transferencia"
       tech_sheet_status: "rascunho" | "em_revisao" | "aprovada"
     }
     CompositeTypes: {
@@ -1219,6 +1285,7 @@ export const Constants = {
         "recebida",
         "cancelada",
       ],
+      stock_movement_type: ["entrada", "saida", "ajuste", "transferencia"],
       tech_sheet_status: ["rascunho", "em_revisao", "aprovada"],
     },
   },
