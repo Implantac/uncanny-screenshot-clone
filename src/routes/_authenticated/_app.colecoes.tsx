@@ -209,6 +209,32 @@ function ColecoesPage() {
     [products, selected?.id],
   );
 
+  const selectedProductIds = useMemo(() => selectedProducts.map((p) => p.id), [selectedProducts]);
+
+  const { data: productionByProduct = {} } = useQuery({
+    queryKey: ["collection-production", selected?.id, selectedProductIds.join(",")],
+    enabled: selectedProductIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("production_orders")
+        .select("product_id, quantity, progress, status, stage, due_date")
+        .in("product_id", selectedProductIds);
+      if (error) throw error;
+      const map: Record<string, { qty: number; done: number; stages: Record<string, number>; late: number; status: Record<string, number> }> = {};
+      const now = Date.now();
+      (data ?? []).forEach((o: any) => {
+        if (!o.product_id) return;
+        const m = (map[o.product_id] ??= { qty: 0, done: 0, stages: {}, late: 0, status: {} });
+        m.qty += o.quantity ?? 0;
+        m.done += Math.round((o.quantity ?? 0) * ((o.progress ?? 0) / 100));
+        if (o.stage) m.stages[o.stage] = (m.stages[o.stage] ?? 0) + (o.quantity ?? 0);
+        if (o.status) m.status[o.status] = (m.status[o.status] ?? 0) + 1;
+        if (o.due_date && new Date(o.due_date).getTime() < now && (o.progress ?? 0) < 100 && o.status !== "concluida") m.late += 1;
+      });
+      return map;
+    },
+  });
+
   const derived = useMemo(() => {
     const revenue = selectedProducts.reduce((sum, item) => sum + Number(item.sell_price || 0), 0);
     const cost = selectedProducts.reduce((sum, item) => sum + Number(item.cost_price || 0), 0);
