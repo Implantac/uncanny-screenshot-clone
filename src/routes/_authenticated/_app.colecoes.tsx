@@ -249,7 +249,7 @@ function ColecoesPage() {
 
   const filteredCollections = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return collections.filter((c) => {
+    const list = collections.filter((c) => {
       if (statusFilter !== "all" && c.status !== statusFilter) return false;
       if (seasonFilter !== "all" && c.season !== seasonFilter) return false;
       if (!term) return true;
@@ -260,7 +260,31 @@ function ColecoesPage() {
         (c.description ?? "").toLowerCase().includes(term)
       );
     });
-  }, [collections, q, statusFilter, seasonFilter]);
+    const sorted = [...list];
+    const farFuture = 8640000000000000;
+    sorted.sort((a, b) => {
+      switch (sortBy) {
+        case "name": return a.name.localeCompare(b.name, "pt-BR");
+        case "progress": return b.progress - a.progress;
+        case "year": return b.year - a.year;
+        case "launch": {
+          const av = a.launch_date ? new Date(a.launch_date).getTime() : farFuture;
+          const bv = b.launch_date ? new Date(b.launch_date).getTime() : farFuture;
+          return av - bv;
+        }
+        default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+    return sorted;
+  }, [collections, q, statusFilter, seasonFilter, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredCollections.length / pageSize));
+  useEffect(() => { setPage(1); }, [q, statusFilter, seasonFilter, sortBy]);
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
+  const pagedCollections = useMemo(
+    () => filteredCollections.slice((page - 1) * pageSize, page * pageSize),
+    [filteredCollections, page],
+  );
 
   function exportSpec(c: Collection) {
     const items = products.filter((p) => p.collection_id === c.id);
