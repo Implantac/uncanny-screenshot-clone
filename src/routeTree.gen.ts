@@ -26,6 +26,7 @@ import { Route as AuthenticatedAppSecurityCenterRouteImport } from './routes/_au
 import { Route as AuthenticatedAppSalesPerformanceRouteImport } from './routes/_authenticated/_app.sales-performance'
 import { Route as AuthenticatedAppRepresentantesRouteImport } from './routes/_authenticated/_app.representantes'
 import { Route as AuthenticatedAppReplenishmentRouteImport } from './routes/_authenticated/_app.replenishment'
+import { Route as AuthenticatedAppQualityRouteImport } from './routes/_authenticated/_app.quality'
 import { Route as AuthenticatedAppPrototiposRouteImport } from './routes/_authenticated/_app.prototipos'
 import { Route as AuthenticatedAppProfitabilityRouteImport } from './routes/_authenticated/_app.profitability'
 import { Route as AuthenticatedAppProdutosRouteImport } from './routes/_authenticated/_app.produtos'
@@ -35,6 +36,7 @@ import { Route as AuthenticatedAppPilotsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppPedidosCompraRouteImport } from './routes/_authenticated/_app.pedidos-compra'
 import { Route as AuthenticatedAppPcpKanbanRouteImport } from './routes/_authenticated/_app.pcp-kanban'
 import { Route as AuthenticatedAppPcpRouteImport } from './routes/_authenticated/_app.pcp'
+import { Route as AuthenticatedAppOmnichannelRouteImport } from './routes/_authenticated/_app.omnichannel'
 import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_authenticated/_app.movimentacoes'
 import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
 import { Route as AuthenticatedAppMarketingRouteImport } from './routes/_authenticated/_app.marketing'
@@ -46,6 +48,7 @@ import { Route as AuthenticatedAppInfluencersRouteImport } from './routes/_authe
 import { Route as AuthenticatedAppInfluencerRoiRouteImport } from './routes/_authenticated/_app.influencer-roi'
 import { Route as AuthenticatedAppGradeNeedsRouteImport } from './routes/_authenticated/_app.grade-needs'
 import { Route as AuthenticatedAppGeoSalesRouteImport } from './routes/_authenticated/_app.geo-sales'
+import { Route as AuthenticatedAppFpaRouteImport } from './routes/_authenticated/_app.fpa'
 import { Route as AuthenticatedAppFornecedoresRouteImport } from './routes/_authenticated/_app.fornecedores'
 import { Route as AuthenticatedAppFinanceiroRouteImport } from './routes/_authenticated/_app.financeiro'
 import { Route as AuthenticatedAppFichaTecnicaRouteImport } from './routes/_authenticated/_app.ficha-tecnica'
@@ -168,6 +171,11 @@ const AuthenticatedAppReplenishmentRoute =
     path: '/replenishment',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppQualityRoute = AuthenticatedAppQualityRouteImport.update({
+  id: '/quality',
+  path: '/quality',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppPrototiposRoute =
   AuthenticatedAppPrototiposRouteImport.update({
     id: '/prototipos',
@@ -220,6 +228,12 @@ const AuthenticatedAppPcpRoute = AuthenticatedAppPcpRouteImport.update({
   path: '/pcp',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppOmnichannelRoute =
+  AuthenticatedAppOmnichannelRouteImport.update({
+    id: '/omnichannel',
+    path: '/omnichannel',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppMovimentacoesRoute =
   AuthenticatedAppMovimentacoesRouteImport.update({
     id: '/movimentacoes',
@@ -283,6 +297,11 @@ const AuthenticatedAppGeoSalesRoute =
     path: '/geo-sales',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppFpaRoute = AuthenticatedAppFpaRouteImport.update({
+  id: '/fpa',
+  path: '/fpa',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppFornecedoresRoute =
   AuthenticatedAppFornecedoresRouteImport.update({
     id: '/fornecedores',
@@ -484,6 +503,7 @@ export interface FileRoutesByFullPath {
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedAppFinanceiroRoute
   '/fornecedores': typeof AuthenticatedAppFornecedoresRoute
+  '/fpa': typeof AuthenticatedAppFpaRoute
   '/geo-sales': typeof AuthenticatedAppGeoSalesRoute
   '/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
@@ -495,6 +515,7 @@ export interface FileRoutesByFullPath {
   '/marketing': typeof AuthenticatedAppMarketingRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
+  '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
   '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
@@ -504,6 +525,7 @@ export interface FileRoutesByFullPath {
   '/produtos': typeof AuthenticatedAppProdutosRoute
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/prototipos': typeof AuthenticatedAppPrototiposRoute
+  '/quality': typeof AuthenticatedAppQualityRoute
   '/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
@@ -550,6 +572,7 @@ export interface FileRoutesByTo {
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedAppFinanceiroRoute
   '/fornecedores': typeof AuthenticatedAppFornecedoresRoute
+  '/fpa': typeof AuthenticatedAppFpaRoute
   '/geo-sales': typeof AuthenticatedAppGeoSalesRoute
   '/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
@@ -561,6 +584,7 @@ export interface FileRoutesByTo {
   '/marketing': typeof AuthenticatedAppMarketingRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
+  '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
   '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
@@ -570,6 +594,7 @@ export interface FileRoutesByTo {
   '/produtos': typeof AuthenticatedAppProdutosRoute
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/prototipos': typeof AuthenticatedAppPrototiposRoute
+  '/quality': typeof AuthenticatedAppQualityRoute
   '/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
@@ -618,6 +643,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/_authenticated/_app/financeiro': typeof AuthenticatedAppFinanceiroRoute
   '/_authenticated/_app/fornecedores': typeof AuthenticatedAppFornecedoresRoute
+  '/_authenticated/_app/fpa': typeof AuthenticatedAppFpaRoute
   '/_authenticated/_app/geo-sales': typeof AuthenticatedAppGeoSalesRoute
   '/_authenticated/_app/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/_authenticated/_app/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
@@ -629,6 +655,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/marketing': typeof AuthenticatedAppMarketingRoute
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
   '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
+  '/_authenticated/_app/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/_authenticated/_app/pcp': typeof AuthenticatedAppPcpRoute
   '/_authenticated/_app/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
   '/_authenticated/_app/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
@@ -638,6 +665,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/produtos': typeof AuthenticatedAppProdutosRoute
   '/_authenticated/_app/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/_authenticated/_app/prototipos': typeof AuthenticatedAppPrototiposRoute
+  '/_authenticated/_app/quality': typeof AuthenticatedAppQualityRoute
   '/_authenticated/_app/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/_authenticated/_app/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/_authenticated/_app/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
@@ -687,6 +715,7 @@ export interface FileRouteTypes {
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fornecedores'
+    | '/fpa'
     | '/geo-sales'
     | '/grade-needs'
     | '/influencer-roi'
@@ -698,6 +727,7 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/mobile'
     | '/movimentacoes'
+    | '/omnichannel'
     | '/pcp'
     | '/pcp-kanban'
     | '/pedidos-compra'
@@ -707,6 +737,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/profitability'
     | '/prototipos'
+    | '/quality'
     | '/replenishment'
     | '/representantes'
     | '/sales-performance'
@@ -753,6 +784,7 @@ export interface FileRouteTypes {
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fornecedores'
+    | '/fpa'
     | '/geo-sales'
     | '/grade-needs'
     | '/influencer-roi'
@@ -764,6 +796,7 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/mobile'
     | '/movimentacoes'
+    | '/omnichannel'
     | '/pcp'
     | '/pcp-kanban'
     | '/pedidos-compra'
@@ -773,6 +806,7 @@ export interface FileRouteTypes {
     | '/produtos'
     | '/profitability'
     | '/prototipos'
+    | '/quality'
     | '/replenishment'
     | '/representantes'
     | '/sales-performance'
@@ -820,6 +854,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/ficha-tecnica'
     | '/_authenticated/_app/financeiro'
     | '/_authenticated/_app/fornecedores'
+    | '/_authenticated/_app/fpa'
     | '/_authenticated/_app/geo-sales'
     | '/_authenticated/_app/grade-needs'
     | '/_authenticated/_app/influencer-roi'
@@ -831,6 +866,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/marketing'
     | '/_authenticated/_app/mobile'
     | '/_authenticated/_app/movimentacoes'
+    | '/_authenticated/_app/omnichannel'
     | '/_authenticated/_app/pcp'
     | '/_authenticated/_app/pcp-kanban'
     | '/_authenticated/_app/pedidos-compra'
@@ -840,6 +876,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/produtos'
     | '/_authenticated/_app/profitability'
     | '/_authenticated/_app/prototipos'
+    | '/_authenticated/_app/quality'
     | '/_authenticated/_app/replenishment'
     | '/_authenticated/_app/representantes'
     | '/_authenticated/_app/sales-performance'
@@ -984,6 +1021,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppReplenishmentRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/quality': {
+      id: '/_authenticated/_app/quality'
+      path: '/quality'
+      fullPath: '/quality'
+      preLoaderRoute: typeof AuthenticatedAppQualityRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/prototipos': {
       id: '/_authenticated/_app/prototipos'
       path: '/prototipos'
@@ -1045,6 +1089,13 @@ declare module '@tanstack/react-router' {
       path: '/pcp'
       fullPath: '/pcp'
       preLoaderRoute: typeof AuthenticatedAppPcpRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/omnichannel': {
+      id: '/_authenticated/_app/omnichannel'
+      path: '/omnichannel'
+      fullPath: '/omnichannel'
+      preLoaderRoute: typeof AuthenticatedAppOmnichannelRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/movimentacoes': {
@@ -1122,6 +1173,13 @@ declare module '@tanstack/react-router' {
       path: '/geo-sales'
       fullPath: '/geo-sales'
       preLoaderRoute: typeof AuthenticatedAppGeoSalesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/fpa': {
+      id: '/_authenticated/_app/fpa'
+      path: '/fpa'
+      fullPath: '/fpa'
+      preLoaderRoute: typeof AuthenticatedAppFpaRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/fornecedores': {
@@ -1359,6 +1417,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppFichaTecnicaRoute: typeof AuthenticatedAppFichaTecnicaRoute
   AuthenticatedAppFinanceiroRoute: typeof AuthenticatedAppFinanceiroRoute
   AuthenticatedAppFornecedoresRoute: typeof AuthenticatedAppFornecedoresRoute
+  AuthenticatedAppFpaRoute: typeof AuthenticatedAppFpaRoute
   AuthenticatedAppGeoSalesRoute: typeof AuthenticatedAppGeoSalesRoute
   AuthenticatedAppGradeNeedsRoute: typeof AuthenticatedAppGradeNeedsRoute
   AuthenticatedAppInfluencerRoiRoute: typeof AuthenticatedAppInfluencerRoiRoute
@@ -1370,6 +1429,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMarketingRoute: typeof AuthenticatedAppMarketingRoute
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
   AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
+  AuthenticatedAppOmnichannelRoute: typeof AuthenticatedAppOmnichannelRoute
   AuthenticatedAppPcpRoute: typeof AuthenticatedAppPcpRoute
   AuthenticatedAppPcpKanbanRoute: typeof AuthenticatedAppPcpKanbanRoute
   AuthenticatedAppPedidosCompraRoute: typeof AuthenticatedAppPedidosCompraRoute
@@ -1379,6 +1439,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppProdutosRoute: typeof AuthenticatedAppProdutosRoute
   AuthenticatedAppProfitabilityRoute: typeof AuthenticatedAppProfitabilityRoute
   AuthenticatedAppPrototiposRoute: typeof AuthenticatedAppPrototiposRoute
+  AuthenticatedAppQualityRoute: typeof AuthenticatedAppQualityRoute
   AuthenticatedAppReplenishmentRoute: typeof AuthenticatedAppReplenishmentRoute
   AuthenticatedAppRepresentantesRoute: typeof AuthenticatedAppRepresentantesRoute
   AuthenticatedAppSalesPerformanceRoute: typeof AuthenticatedAppSalesPerformanceRoute
@@ -1423,6 +1484,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppFichaTecnicaRoute: AuthenticatedAppFichaTecnicaRoute,
   AuthenticatedAppFinanceiroRoute: AuthenticatedAppFinanceiroRoute,
   AuthenticatedAppFornecedoresRoute: AuthenticatedAppFornecedoresRoute,
+  AuthenticatedAppFpaRoute: AuthenticatedAppFpaRoute,
   AuthenticatedAppGeoSalesRoute: AuthenticatedAppGeoSalesRoute,
   AuthenticatedAppGradeNeedsRoute: AuthenticatedAppGradeNeedsRoute,
   AuthenticatedAppInfluencerRoiRoute: AuthenticatedAppInfluencerRoiRoute,
@@ -1434,6 +1496,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMarketingRoute: AuthenticatedAppMarketingRoute,
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
   AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
+  AuthenticatedAppOmnichannelRoute: AuthenticatedAppOmnichannelRoute,
   AuthenticatedAppPcpRoute: AuthenticatedAppPcpRoute,
   AuthenticatedAppPcpKanbanRoute: AuthenticatedAppPcpKanbanRoute,
   AuthenticatedAppPedidosCompraRoute: AuthenticatedAppPedidosCompraRoute,
@@ -1443,6 +1506,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppProdutosRoute: AuthenticatedAppProdutosRoute,
   AuthenticatedAppProfitabilityRoute: AuthenticatedAppProfitabilityRoute,
   AuthenticatedAppPrototiposRoute: AuthenticatedAppPrototiposRoute,
+  AuthenticatedAppQualityRoute: AuthenticatedAppQualityRoute,
   AuthenticatedAppReplenishmentRoute: AuthenticatedAppReplenishmentRoute,
   AuthenticatedAppRepresentantesRoute: AuthenticatedAppRepresentantesRoute,
   AuthenticatedAppSalesPerformanceRoute: AuthenticatedAppSalesPerformanceRoute,
@@ -1482,13 +1546,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

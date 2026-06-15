@@ -3,7 +3,7 @@ import {
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
   Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
   Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, Trophy, Target,
-  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, Leaf, Repeat, type LucideIcon,
+  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, Leaf, Repeat, Globe, ShieldAlert, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleGroup =
@@ -82,6 +82,9 @@ export const MODULES: ModuleDef[] = [
   // === Inteligência ===
   { slug: "intel-hub", path: "/intel-hub", title: "Inteligência Operacional", short: "Hub unificado", description: "Alertas, reposição técnica e scores em uma tela única.", icon: Brain, group: "Inteligência" },
   { slug: "closed-loop", path: "/closed-loop", title: "PLM Closed-Loop", short: "Voz do cliente → próxima coleção", description: "Reviews, NPS, ABC/lifecycle e replanejamento (repetir/repaginar/cortar).", icon: Repeat, group: "Inteligência" },
+  { slug: "omnichannel", path: "/omnichannel", title: "Omnichannel & Marketplace", short: "Mix de canais", description: "Receita por canal D2C/B2B/marketplace, ticket médio e geografia.", icon: Globe, group: "Marketing" },
+  { slug: "fpa", path: "/fpa", title: "Planejamento Financeiro (FP&A)", short: "Forecast e plano x real", description: "Orçamento por coleção, forecast 12 meses e variação plano x real.", icon: Banknote, group: "Plataforma" },
+  { slug: "quality", path: "/quality", title: "Centro de Qualidade & SLA", short: "OTD e defeitos", description: "Inspeções, taxa de defeito por fornecedor e cumprimento de prazo.", icon: ShieldAlert, group: "Cadeia (PLM)" },
   { slug: "intelligence", path: "/intelligence", title: "Intelligence Engine", short: "Inteligência operacional", description: "O que produzir, repor, atrasar — sinais operacionais.", icon: Brain, group: "Inteligência" },
   { slug: "control-tower", path: "/control-tower", title: "Control Tower", short: "Demand & Supply", description: "Necessidade por grade com semáforo de cobertura.", icon: Radar, group: "Inteligência" },
   { slug: "product-score", path: "/product-score", title: "Product Score", short: "Pontuação 0–100", description: "Pontuação por vendas, margem, ROI e giro.", icon: Star, group: "Inteligência" },
