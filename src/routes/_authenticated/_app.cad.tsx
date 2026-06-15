@@ -53,8 +53,11 @@ type Molde = {
 
 function CAD() {
   useRealtime("products", ["cad-products"]);
-  const [q, setQ] = useState("");
-  const [cat, setCat] = useState<string>("all");
+  const cadSearch = Route.useSearch();
+  const { q, cat } = cadSearch;
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setQ = (v: string) => navigate({ search: (p: typeof cadSearch) => ({ ...p, q: v }), replace: true });
+  const setCat = (v: string) => navigate({ search: (p: typeof cadSearch) => ({ ...p, cat: v }), replace: true });
   const [selected, setSelected] = useState<Molde | null>(null);
 
   const { data, isLoading } = useQuery({
