@@ -5,16 +5,20 @@ import {
   BarChart3,
   Calendar,
   Clock3,
+  Copy,
+  Download,
   Flag,
   ImagePlus,
   Layers,
   Palette,
   Pencil,
   Plus,
+  Search,
   Sparkles,
   Target,
   Trash2,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
