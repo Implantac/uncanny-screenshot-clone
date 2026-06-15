@@ -77,6 +77,7 @@ function LotesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Batch | null>(null);
+  const [passOrder, setPassOrder] = useState<OrderRef | null>(null);
 
   const { data: batches = [], isLoading } = useQuery({
     queryKey: ["batches"],
