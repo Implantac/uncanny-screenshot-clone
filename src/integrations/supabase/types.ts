@@ -105,12 +105,14 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          customer_id: string | null
           customer_name: string
           id: string
           notes: string | null
           order_date: string
           owner_id: string
           representative: string | null
+          representative_id: string | null
           status: Database["public"]["Enums"]["b2b_order_status"]
           total_value: number
           updated_at: string
@@ -118,12 +120,14 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
+          customer_id?: string | null
           customer_name: string
           id?: string
           notes?: string | null
           order_date?: string
           owner_id: string
           representative?: string | null
+          representative_id?: string | null
           status?: Database["public"]["Enums"]["b2b_order_status"]
           total_value?: number
           updated_at?: string
@@ -131,17 +135,72 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
+          customer_id?: string | null
           customer_name?: string
           id?: string
           notes?: string | null
           order_date?: string
           owner_id?: string
           representative?: string | null
+          representative_id?: string | null
           status?: Database["public"]["Enums"]["b2b_order_status"]
           total_value?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "b2b_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "b2b_orders_representative_id_fkey"
+            columns: ["representative_id"]
+            isOneToOne: false
+            referencedRelation: "representatives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_versions: {
+        Row: {
+          collection_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          snapshot: Json
+          version: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          snapshot?: Json
+          version: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          snapshot?: Json
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_versions_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       collections: {
         Row: {
@@ -191,6 +250,48 @@ export type Database = {
           status?: Database["public"]["Enums"]["collection_status"]
           updated_at?: string
           year?: number
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          city: string | null
+          created_at: string
+          document: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          owner_id: string
+          phone: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          owner_id: string
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -436,6 +537,48 @@ export type Database = {
           platform?: string
           updated_at?: string
           user_name?: string
+        }
+        Relationships: []
+      }
+      production_batches: {
+        Row: {
+          code: string
+          created_at: string
+          end_date: string | null
+          id: string
+          notes: string | null
+          owner_id: string
+          planned_qty: number
+          produced_qty: number
+          start_date: string | null
+          status: Database["public"]["Enums"]["production_batch_status"]
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          owner_id: string
+          planned_qty?: number
+          produced_qty?: number
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["production_batch_status"]
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          planned_qty?: number
+          produced_qty?: number
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["production_batch_status"]
+          updated_at?: string
         }
         Relationships: []
       }
@@ -814,6 +957,45 @@ export type Database = {
           },
         ]
       }
+      representatives: {
+        Row: {
+          active: boolean
+          commission_rate: number
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          owner_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          commission_rate?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          owner_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          commission_rate?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sales: {
         Row: {
           channel: string
@@ -1169,6 +1351,11 @@ export type Database = {
         | "aprovado"
         | "producao"
         | "descontinuado"
+      production_batch_status:
+        | "planejado"
+        | "em_producao"
+        | "finalizado"
+        | "cancelado"
       production_stage:
         | "cad"
         | "corte"
@@ -1357,6 +1544,12 @@ export const Constants = {
         "aprovado",
         "producao",
         "descontinuado",
+      ],
+      production_batch_status: [
+        "planejado",
+        "em_producao",
+        "finalizado",
+        "cancelado",
       ],
       production_stage: [
         "cad",
