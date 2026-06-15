@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/_app/quality")({
       { name: "description", content: "Inspeção de lotes, defeitos por fornecedor e SLA de entrega." },
     ],
   }),
-  component: Quality;
+  component: Quality,
 });
 
 function hash(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
