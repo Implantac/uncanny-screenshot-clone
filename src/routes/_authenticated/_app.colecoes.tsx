@@ -5,16 +5,20 @@ import {
   BarChart3,
   Calendar,
   Clock3,
+  Copy,
+  Download,
   Flag,
   ImagePlus,
   Layers,
   Palette,
   Pencil,
   Plus,
+  Search,
   Sparkles,
   Target,
   Trash2,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -129,6 +133,9 @@ function ColecoesPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [seasonFilter, setSeasonFilter] = useState<string>("all");
 
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["collections"],
@@ -211,6 +218,92 @@ function ColecoesPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const duplicateMut = useMutation({
+    mutationFn: async (c: Collection) => {
+      if (!user?.id) throw new Error("Sessão expirada");
+      const { error } = await supabase.from("collections").insert({
+        owner_id: user.id,
+        name: `${c.name} (cópia)`,
+        season: c.season,
+        year: c.year,
+        status: "briefing",
+        description: c.description,
+        palette: c.palette,
+        launch_date: c.launch_date,
+        progress: 0,
+        cover_path: c.cover_path,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      toast.success("Coleção duplicada");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const seasons = useMemo(() => Array.from(new Set(collections.map((c) => c.season))).sort(), [collections]);
+
+  const filteredCollections = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return collections.filter((c) => {
+      if (statusFilter !== "all" && c.status !== statusFilter) return false;
+      if (seasonFilter !== "all" && c.season !== seasonFilter) return false;
+      if (!term) return true;
+      return (
+        c.name.toLowerCase().includes(term) ||
+        c.season.toLowerCase().includes(term) ||
+        String(c.year).includes(term) ||
+        (c.description ?? "").toLowerCase().includes(term)
+      );
+    });
+  }, [collections, q, statusFilter, seasonFilter]);
+
+  function exportSpec(c: Collection) {
+    const items = products.filter((p) => p.collection_id === c.id);
+    const revenue = items.reduce((s, i) => s + Number(i.sell_price || 0), 0);
+    const cost = items.reduce((s, i) => s + Number(i.cost_price || 0), 0);
+    const spec = {
+      format: "USE-MODA-COLLECTION-SPEC/1.0",
+      exported_at: new Date().toISOString(),
+      collection: {
+        id: c.id,
+        name: c.name,
+        season: c.season,
+        year: c.year,
+        status: c.status,
+        description: c.description,
+        palette: c.palette,
+        launch_date: c.launch_date,
+        progress: c.progress,
+      },
+      mix: {
+        total: items.length,
+        revenue,
+        cost,
+        margin: revenue - cost,
+        products: items.map((p) => ({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          status: p.status,
+          sell_price: p.sell_price,
+          cost_price: p.cost_price,
+          colors: p.colors,
+        })),
+      },
+    };
+    const blob = new Blob([JSON.stringify(spec, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `colecao-${c.name.toLowerCase().replace(/\s+/g, "-")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Spec exportado");
+  }
+
+
   const timeline = useMemo(() => {
     if (!selected) return [];
     const start = new Date(selected.created_at);
@@ -265,13 +358,57 @@ function ColecoesPage() {
             <div className="flex items-center justify-between px-1">
               <div>
                 <div className="text-sm font-semibold">Portfólio sazonal</div>
-                <div className="text-xs text-muted-foreground">{collections.length} coleções monitoradas</div>
+                <div className="text-xs text-muted-foreground">
+                  {filteredCollections.length} de {collections.length} coleções
+                </div>
               </div>
               <Badge variant="outline">Notion-style</Badge>
             </div>
 
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar por nome, temporada, ano…"
+                className="pl-8 pr-8 h-9"
+              />
+              {q && (
+                <button
+                  type="button"
+                  onClick={() => setQ("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos status</SelectItem>
+                  {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={seasonFilter} onValueChange={setSeasonFilter}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Temporada" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas temporadas</SelectItem>
+                  {seasons.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
-              {collections.map((collection) => {
+              {filteredCollections.length === 0 ? (
+                <div className="text-xs text-muted-foreground text-center py-6">Nenhuma coleção encontrada.</div>
+              ) : filteredCollections.map((collection) => {
                 const active = collection.id === selected?.id;
                 return (
                   <button
@@ -301,6 +438,7 @@ function ColecoesPage() {
               })}
             </div>
           </section>
+
 
           {selected && (
             <section className="space-y-4">
@@ -536,20 +674,28 @@ function ColecoesPage() {
                 </TabsContent>
               </Tabs>
 
-              {selected.owner_id === user?.id && (
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => openEdit(selected)} className="gap-2">
-                    <Pencil className="size-4" /> Editar coleção
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => confirm("Remover esta coleção?") && deleteMut.mutate(selected.id)}
-                    className="gap-2 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="size-4" /> Remover
-                  </Button>
-                </div>
-              )}
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button variant="outline" onClick={() => exportSpec(selected)} className="gap-2">
+                  <Download className="size-4" /> Exportar spec
+                </Button>
+                {selected.owner_id === user?.id && (
+                  <>
+                    <Button variant="outline" onClick={() => duplicateMut.mutate(selected)} disabled={duplicateMut.isPending} className="gap-2">
+                      <Copy className="size-4" /> Duplicar
+                    </Button>
+                    <Button variant="outline" onClick={() => openEdit(selected)} className="gap-2">
+                      <Pencil className="size-4" /> Editar coleção
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => confirm("Remover esta coleção?") && deleteMut.mutate(selected.id)}
+                      className="gap-2 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="size-4" /> Remover
+                    </Button>
+                  </>
+                )}
+              </div>
             </section>
           )}
         </div>
