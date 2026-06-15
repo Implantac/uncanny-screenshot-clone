@@ -133,6 +133,9 @@ function ColecoesPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [seasonFilter, setSeasonFilter] = useState<string>("all");
 
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["collections"],
