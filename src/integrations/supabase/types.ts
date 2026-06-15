@@ -904,6 +904,7 @@ export type Database = {
         Row: {
           code: string
           content: string | null
+          cost_price: number | null
           created_at: string
           id: string
           owner_id: string
@@ -915,6 +916,7 @@ export type Database = {
         Insert: {
           code: string
           content?: string | null
+          cost_price?: number | null
           created_at?: string
           id?: string
           owner_id: string
@@ -926,6 +928,7 @@ export type Database = {
         Update: {
           code?: string
           content?: string | null
+          cost_price?: number | null
           created_at?: string
           id?: string
           owner_id?: string
