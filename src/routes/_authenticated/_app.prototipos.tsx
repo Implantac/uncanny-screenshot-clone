@@ -40,8 +40,11 @@ const STAGE_COLOR: Record<Stage, string> = {
 function Prototipos() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  useRealtime("prototypes", ["prototypes"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prototype | null>(null);
+  const [q, setQ] = useState("");
+  const [stageFilter, setStageFilter] = useState<string>("all");
   const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "" });
 
   const { data: items = [], isLoading } = useQuery({
