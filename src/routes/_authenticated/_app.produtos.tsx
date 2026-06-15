@@ -652,16 +652,18 @@ function ProductDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Coleção</Label>
+              <Label>Coleção <span className="text-destructive">*</span></Label>
               <Select value={collectionId} onValueChange={setCollectionId}>
-                <SelectTrigger><SelectValue placeholder="Nenhuma" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Selecione a coleção" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Nenhuma</SelectItem>
-                  {collections.map((collection) => (
+                  {collections.length === 0 ? (
+                    <SelectItem value="none" disabled>Crie uma coleção primeiro</SelectItem>
+                  ) : collections.map((collection) => (
                     <SelectItem key={collection.id} value={collection.id}>{collection.name} ({collection.season} {collection.year})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-[11px] text-muted-foreground">Todo produto PLM pertence a uma coleção.</p>
             </div>
           </div>
 
