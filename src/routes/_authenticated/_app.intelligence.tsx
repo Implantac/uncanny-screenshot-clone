@@ -124,7 +124,7 @@ function IntelligencePage() {
         </p>
       </header>
 
-      <Tabs defaultValue="production">
+      <Tabs value={search.tab} onValueChange={setTab}>
         <TabsList className="flex w-full flex-wrap justify-start h-auto">
           <TabsTrigger value="production"><Factory className="mr-1 h-4 w-4" />Produção</TabsTrigger>
           <TabsTrigger value="kanban"><Activity className="mr-1 h-4 w-4" />PCP Kanban</TabsTrigger>
