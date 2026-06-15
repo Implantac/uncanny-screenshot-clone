@@ -106,5 +106,6 @@ Critério de remoção definitiva: quando os módulos equivalentes do ERP (Marke
 - **Onda 7** ✅ — `src/lib/erp/` + tabelas `erp_*_mirror`.
 - **Onda 8** ✅ — triggers de duplicação desativados.
 - **Onda 9** ✅ — Tech Pack completo: BOM, operações (SAM), POM, custos recalculados.
+- **Onda 10** ✅ — Grade/Cor/SKU: `product_color_options`, `product_size_options`, `product_variants`, `production_order_grid`, `service_order_grid`. UI `/variantes` com gerador de combinações.
 
 

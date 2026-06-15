@@ -3,7 +3,7 @@ import {
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
   Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
   Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, Trophy, Target,
-  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, Leaf, Repeat, Globe, ShieldAlert, type LucideIcon,
+  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, Leaf, Repeat, Globe, ShieldAlert, Tag, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleGroup =
@@ -51,6 +51,7 @@ export const MODULES: ModuleDef[] = [
   // === Desenvolvimento ===
   { slug: "dev-kanban", path: "/dev-kanban", title: "Kanban de Desenvolvimento", short: "Pesquisa → liberação", description: "Pipeline completo do produto: pesquisa, modelagem, piloto, aprovação.", icon: Workflow, group: "Desenvolvimento" },
   { slug: "produtos", path: "/produtos", title: "Produtos", short: "Pipeline de produtos", description: "Do briefing à aprovação do estilo.", icon: Sparkles, group: "Desenvolvimento" },
+  { slug: "variantes", path: "/variantes", title: "Variantes & SKU", short: "Grade cor × tamanho", description: "Cores, tamanhos e SKUs gerados por combinação. Base para grade de produção.", icon: Tag, group: "Desenvolvimento" },
   { slug: "ficha-tecnica", path: "/ficha-tecnica", title: "Ficha Técnica", short: "Materiais, operações, consumos", description: "Engenharia de produto: materiais, aviamentos, operações, tempos e custos industriais.", icon: FileText, group: "Desenvolvimento", status: "parcial" },
   { slug: "cad", path: "/cad", title: "CAD e Modelagem", short: "AI/CDR/DXF/SVG/PDF/PLT", description: "Modelagem digital e biblioteca de moldes.", icon: PenTool, group: "Desenvolvimento", status: "parcial" },
   { slug: "prototipos", path: "/prototipos", title: "Protótipos", short: "Provas e ajustes", description: "Ciclo de protótipos, provas e aprovações.", icon: Scissors, group: "Desenvolvimento" },
