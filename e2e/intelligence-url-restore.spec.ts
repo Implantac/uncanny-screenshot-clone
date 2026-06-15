@@ -96,13 +96,48 @@ test.describe("Intelligence URL restore — filtered lists", () => {
           "utf8",
         );
 
-        // 5) Attach everything to the Playwright HTML report.
+        // 5) Expected vs actual JSON — pulls the unfiltered dataset from the
+        //    in-page TanStack Query cache (exposed as window.__QC__), applies
+        //    the same `intelFilter` the app uses, and pairs it with the rows
+        //    actually rendered in the DOM.
+        const spec = TAB_SPEC[tab];
+        const raw = await page.evaluate((key) => {
+          const qc = (window as unknown as { __QC__?: { getQueryData: (k: unknown) => unknown } }).__QC__;
+          return qc ? (qc.getQueryData(key) as unknown[] | undefined) ?? null : null;
+        }, spec.key as unknown as string[]);
+
+        const expected = Array.isArray(raw)
+          ? intelFilter(raw as Array<Record<string, unknown>>, QUERY, spec.fields as unknown as string[])
+          : null;
+
+        const actual = texts.map((t, i) => ({ index: i, text: t, matches: t.includes(QUERY) }));
+
+        const diff = {
+          tab,
+          query: QUERY,
+          url: page.url(),
+          queryKey: spec.key,
+          fields: spec.fields,
+          counts: {
+            expected: expected?.length ?? null,
+            actual: actual.length,
+            offenders: offenders.length,
+          },
+          expected,
+          actual,
+          offenders,
+          rawDatasetSize: Array.isArray(raw) ? raw.length : null,
+          note: expected == null
+            ? "Cache was empty — window.__QC__ not populated for this queryKey (run against the dev/preview build)."
+            : undefined,
+        };
+        const diffJson = JSON.stringify(diff, null, 2);
+        await writeFile(path.join(outDir, "expected-vs-actual.json"), diffJson, "utf8");
+
+        // 6) Attach everything to the Playwright HTML report.
         await testInfo.attach("page.png", { path: shotPath, contentType: "image/png" });
         await testInfo.attach("tabpanel.html", { body: panelHtml, contentType: "text/html" });
-        await testInfo.attach("offenders.json", {
-          body: JSON.stringify({ tab, query: QUERY, url: page.url(), offenders }, null, 2),
-          contentType: "application/json",
-        });
+        await testInfo.attach("expected-vs-actual.json", { body: diffJson, contentType: "application/json" });
 
         console.error(`[intel-debug] ${offenders.length} mismatches saved to ${outDir}`);
       }
