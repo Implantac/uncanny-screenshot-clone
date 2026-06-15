@@ -39,7 +39,7 @@ async function loadAll() {
       .select("id, code, name, status, planned_quantity, produced_quantity, updated_at")
       .in("status", ["planejado", "em_producao"]).limit(50),
     supabase.from("products")
-      .select("id, name, sku, cost_price, sale_price, status").eq("status", "ativo").limit(200),
+      .select("id, name, sku, cost_price, sale_price, status").eq("status", "aprovado").limit(200),
     supabase.from("suppliers")
       .select("id, name, rating, on_time_delivery_rate").limit(100),
   ]);

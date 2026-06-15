@@ -78,6 +78,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "geo-sales", path: "/geo-sales", title: "Geo Sales", short: "Mapa do Brasil", description: "Aceitação por UF e região (dados do ERP).", icon: MapPin, group: "Marketing", status: "parcial" },
 
   // === Inteligência ===
+  { slug: "intel-hub", path: "/intel-hub", title: "Inteligência Operacional", short: "Hub unificado", description: "Alertas, reposição técnica e scores em uma tela única.", icon: Brain, group: "Inteligência" },
   { slug: "intelligence", path: "/intelligence", title: "Intelligence Engine", short: "Inteligência operacional", description: "O que produzir, repor, atrasar — sinais operacionais.", icon: Brain, group: "Inteligência" },
   { slug: "control-tower", path: "/control-tower", title: "Control Tower", short: "Demand & Supply", description: "Necessidade por grade com semáforo de cobertura.", icon: Radar, group: "Inteligência" },
   { slug: "product-score", path: "/product-score", title: "Product Score", short: "Pontuação 0–100", description: "Pontuação por vendas, margem, ROI e giro.", icon: Star, group: "Inteligência" },

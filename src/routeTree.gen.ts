@@ -40,6 +40,7 @@ import { Route as AuthenticatedAppMarketingRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppMargemRouteImport } from './routes/_authenticated/_app.margem'
 import { Route as AuthenticatedAppLotesRouteImport } from './routes/_authenticated/_app.lotes'
 import { Route as AuthenticatedAppIntelligenceRouteImport } from './routes/_authenticated/_app.intelligence'
+import { Route as AuthenticatedAppIntelHubRouteImport } from './routes/_authenticated/_app.intel-hub'
 import { Route as AuthenticatedAppInfluencersRouteImport } from './routes/_authenticated/_app.influencers'
 import { Route as AuthenticatedAppInfluencerRoiRouteImport } from './routes/_authenticated/_app.influencer-roi'
 import { Route as AuthenticatedAppGradeNeedsRouteImport } from './routes/_authenticated/_app.grade-needs'
@@ -240,6 +241,12 @@ const AuthenticatedAppIntelligenceRoute =
     path: '/intelligence',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppIntelHubRoute =
+  AuthenticatedAppIntelHubRouteImport.update({
+    id: '/intel-hub',
+    path: '/intel-hub',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppInfluencersRoute =
   AuthenticatedAppInfluencersRouteImport.update({
     id: '/influencers',
@@ -434,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
   '/influencers': typeof AuthenticatedAppInfluencersRoute
+  '/intel-hub': typeof AuthenticatedAppIntelHubRoute
   '/intelligence': typeof AuthenticatedAppIntelligenceRoute
   '/lotes': typeof AuthenticatedAppLotesRoute
   '/margem': typeof AuthenticatedAppMargemRoute
@@ -493,6 +501,7 @@ export interface FileRoutesByTo {
   '/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
   '/influencers': typeof AuthenticatedAppInfluencersRoute
+  '/intel-hub': typeof AuthenticatedAppIntelHubRoute
   '/intelligence': typeof AuthenticatedAppIntelligenceRoute
   '/lotes': typeof AuthenticatedAppLotesRoute
   '/margem': typeof AuthenticatedAppMargemRoute
@@ -554,6 +563,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/_authenticated/_app/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
   '/_authenticated/_app/influencers': typeof AuthenticatedAppInfluencersRoute
+  '/_authenticated/_app/intel-hub': typeof AuthenticatedAppIntelHubRoute
   '/_authenticated/_app/intelligence': typeof AuthenticatedAppIntelligenceRoute
   '/_authenticated/_app/lotes': typeof AuthenticatedAppLotesRoute
   '/_authenticated/_app/margem': typeof AuthenticatedAppMargemRoute
@@ -616,6 +626,7 @@ export interface FileRouteTypes {
     | '/grade-needs'
     | '/influencer-roi'
     | '/influencers'
+    | '/intel-hub'
     | '/intelligence'
     | '/lotes'
     | '/margem'
@@ -675,6 +686,7 @@ export interface FileRouteTypes {
     | '/grade-needs'
     | '/influencer-roi'
     | '/influencers'
+    | '/intel-hub'
     | '/intelligence'
     | '/lotes'
     | '/margem'
@@ -735,6 +747,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/grade-needs'
     | '/_authenticated/_app/influencer-roi'
     | '/_authenticated/_app/influencers'
+    | '/_authenticated/_app/intel-hub'
     | '/_authenticated/_app/intelligence'
     | '/_authenticated/_app/lotes'
     | '/_authenticated/_app/margem'
@@ -991,6 +1004,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppIntelligenceRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/intel-hub': {
+      id: '/_authenticated/_app/intel-hub'
+      path: '/intel-hub'
+      fullPath: '/intel-hub'
+      preLoaderRoute: typeof AuthenticatedAppIntelHubRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/influencers': {
       id: '/_authenticated/_app/influencers'
       path: '/influencers'
@@ -1218,6 +1238,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppGradeNeedsRoute: typeof AuthenticatedAppGradeNeedsRoute
   AuthenticatedAppInfluencerRoiRoute: typeof AuthenticatedAppInfluencerRoiRoute
   AuthenticatedAppInfluencersRoute: typeof AuthenticatedAppInfluencersRoute
+  AuthenticatedAppIntelHubRoute: typeof AuthenticatedAppIntelHubRoute
   AuthenticatedAppIntelligenceRoute: typeof AuthenticatedAppIntelligenceRoute
   AuthenticatedAppLotesRoute: typeof AuthenticatedAppLotesRoute
   AuthenticatedAppMargemRoute: typeof AuthenticatedAppMargemRoute
@@ -1274,6 +1295,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppGradeNeedsRoute: AuthenticatedAppGradeNeedsRoute,
   AuthenticatedAppInfluencerRoiRoute: AuthenticatedAppInfluencerRoiRoute,
   AuthenticatedAppInfluencersRoute: AuthenticatedAppInfluencersRoute,
+  AuthenticatedAppIntelHubRoute: AuthenticatedAppIntelHubRoute,
   AuthenticatedAppIntelligenceRoute: AuthenticatedAppIntelligenceRoute,
   AuthenticatedAppLotesRoute: AuthenticatedAppLotesRoute,
   AuthenticatedAppMargemRoute: AuthenticatedAppMargemRoute,
@@ -1326,13 +1348,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
