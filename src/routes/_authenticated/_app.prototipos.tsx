@@ -17,6 +17,15 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipos")({
+  validateSearch: zodValidator(
+    z.object({
+      q: fallback(z.string().trim().max(80), "").default(""),
+      stage: fallback(
+        z.enum(["all", "solicitado", "em_confeccao", "em_prova", "aprovado", "reprovado"]),
+        "all",
+      ).default("all"),
+    }),
+  ),
   head: () => ({ meta: [{ title: "Protótipos · USE MODA OS" }, { name: "description", content: "Ciclo de protótipos, provas e aprovações." }] }),
   component: Prototipos,
 });
