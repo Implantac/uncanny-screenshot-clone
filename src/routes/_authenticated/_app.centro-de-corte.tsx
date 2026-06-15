@@ -43,7 +43,9 @@ const PHASE_STYLE: Record<Phase, string> = {
 function CentroCorte() {
   const qc = useQueryClient();
   useRealtime("production_orders", ["production_orders"]);
-  const [search, setSearch] = useState("");
+  const { q: search } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setSearch = (v: string) => navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["production_orders"],
