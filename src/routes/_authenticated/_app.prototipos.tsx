@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Scissors, Plus, Trash2, Pencil } from "lucide-react";
+import { Scissors, Plus, Trash2, Pencil, Search, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useRealtime } from "@/hooks/use-realtime";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,8 +40,11 @@ const STAGE_COLOR: Record<Stage, string> = {
 function Prototipos() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  useRealtime("prototypes", ["prototypes"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prototype | null>(null);
+  const [q, setQ] = useState("");
+  const [stageFilter, setStageFilter] = useState<string>("all");
   const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "" });
 
   const { data: items = [], isLoading } = useQuery({
@@ -125,6 +129,41 @@ function Prototipos() {
   const productName = (id: string | null) => products.find(p => p.id === id)?.name ?? "—";
   const supplierName = (id: string | null) => suppliers.find(s => s.id === id)?.name ?? "—";
 
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return items.filter(p => {
+      if (stageFilter !== "all" && p.stage !== stageFilter) return false;
+      if (!term) return true;
+      return (
+        p.code.toLowerCase().includes(term) ||
+        productName(p.product_id).toLowerCase().includes(term) ||
+        supplierName(p.supplier_id).toLowerCase().includes(term)
+      );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, q, stageFilter, products, suppliers]);
+
+  function exportSpec(p: Prototype) {
+    const spec = {
+      format: "USE-MODA-PROTO-SPEC/1.0",
+      exported_at: new Date().toISOString(),
+      prototype: {
+        code: p.code,
+        product: productName(p.product_id),
+        supplier: supplierName(p.supplier_id),
+        stage: p.stage,
+        due_date: p.due_date,
+        notes: p.notes,
+      },
+    };
+    const blob = new Blob([JSON.stringify(spec, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `proto-${p.code}.json`; a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Spec ${p.code} exportada`);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -157,9 +196,28 @@ function Prototipos() {
             })}
           </div>
 
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por código, produto ou facção…" className="pl-9" />
+              {q && (
+                <button onClick={() => setQ("")} className="absolute right-2 top-1/2 -translate-y-1/2 size-6 grid place-items-center text-muted-foreground hover:text-foreground" aria-label="Limpar busca">
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+            <Select value={stageFilter} onValueChange={setStageFilter}>
+              <SelectTrigger className="sm:w-56"><SelectValue placeholder="Etapa" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas etapas</SelectItem>
+                {(Object.keys(STAGE_LABEL) as Stage[]).map(st => <SelectItem key={st} value={st}>{STAGE_LABEL[st]}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {(Object.keys(STAGE_LABEL) as Stage[]).map(st => {
-              const col = items.filter(i => i.stage === st);
+              const col = filtered.filter(i => i.stage === st);
               return (
                 <div key={st} className="rounded-xl border border-border bg-muted/10 p-3 space-y-2 min-h-[200px]">
                   <div className="flex items-center justify-between">
@@ -197,7 +255,7 @@ function Prototipos() {
                 </tr>
               </thead>
               <tbody>
-                {items.map(p => (
+                {filtered.map(p => (
                   <tr key={p.id} className="border-t border-border hover:bg-muted/20">
                     <td className="px-4 py-3 font-mono text-xs">{p.code}</td>
                     <td className="px-4 py-3">{productName(p.product_id)}</td>
@@ -205,16 +263,19 @@ function Prototipos() {
                     <td className="px-4 py-3"><Badge variant="outline" className={STAGE_COLOR[p.stage]}>{STAGE_LABEL[p.stage]}</Badge></td>
                     <td className="px-4 py-3 text-muted-foreground">{p.due_date ?? "—"}</td>
                     <td className="px-4 py-3 text-right">
-                      {user?.id === p.owner_id && (
-                        <div className="flex gap-1 justify-end">
-                          <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="size-4" /></Button>
-                          <Button size="icon" variant="ghost" onClick={() => del.mutate(p.id)}><Trash2 className="size-4" /></Button>
-                        </div>
-                      )}
+                      <div className="flex gap-1 justify-end">
+                        <Button size="icon" variant="ghost" onClick={() => exportSpec(p)} title="Exportar spec"><Download className="size-4" /></Button>
+                        {user?.id === p.owner_id && (
+                          <>
+                            <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="size-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => del.mutate(p.id)}><Trash2 className="size-4" /></Button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
-                {items.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Nenhum protótipo ainda</td></tr>}
+                {filtered.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{items.length === 0 ? "Nenhum protótipo ainda" : "Nenhum resultado para os filtros"}</td></tr>}
               </tbody>
             </table>
           </div>
