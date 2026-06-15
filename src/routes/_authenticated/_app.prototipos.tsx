@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Scissors, Plus, Trash2, Pencil, Search, X, Download } from "lucide-react";
@@ -15,6 +17,15 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipos")({
+  validateSearch: zodValidator(
+    z.object({
+      q: fallback(z.string().trim().max(80), "").default(""),
+      stage: fallback(
+        z.enum(["all", "solicitado", "em_confeccao", "em_prova", "aprovado", "reprovado"]),
+        "all",
+      ).default("all"),
+    }),
+  ),
   head: () => ({ meta: [{ title: "Protótipos · USE MODA OS" }, { name: "description", content: "Ciclo de protótipos, provas e aprovações." }] }),
   component: Prototipos,
 });
@@ -41,10 +52,14 @@ function Prototipos() {
   const { user } = useAuth();
   const qc = useQueryClient();
   useRealtime("prototypes", ["prototypes"]);
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { q, stage: stageFilter } = search;
+  const setQ = (v: string) => navigate({ search: (p: typeof search) => ({ ...p, q: v }), replace: true });
+  const setStageFilter = (v: string) =>
+    navigate({ search: (p: typeof search) => ({ ...p, stage: v as typeof search.stage }), replace: true });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prototype | null>(null);
-  const [q, setQ] = useState("");
-  const [stageFilter, setStageFilter] = useState<string>("all");
   const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "" });
 
   const { data: items = [], isLoading } = useQuery({
