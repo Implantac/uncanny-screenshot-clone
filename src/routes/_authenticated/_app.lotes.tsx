@@ -244,7 +244,7 @@ function LotesPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="text-xs text-muted-foreground border-b border-border">
-                        <tr><th className="text-left py-2">OP</th><th className="text-left">Estágio</th><th className="text-right">Qtd</th><th className="text-right">Progresso</th><th className="text-left pl-3">Prazo</th></tr>
+                        <tr><th className="text-left py-2">OP</th><th className="text-left">Estágio</th><th className="text-right">Qtd</th><th className="text-right">Progresso</th><th className="text-left pl-3">Prazo</th><th /></tr>
                       </thead>
                       <tbody>
                         {linkedOrders.map((o) => (
@@ -254,6 +254,11 @@ function LotesPage() {
                             <td className="text-right tabular-nums">{o.quantity}</td>
                             <td className="text-right tabular-nums">{o.progress}%</td>
                             <td className="pl-3 text-muted-foreground">{o.due_date ? new Date(o.due_date).toLocaleDateString("pt-BR") : "—"}</td>
+                            <td className="pl-3 text-right">
+                              <Button size="sm" variant="outline" className="gap-1.5 h-7" onClick={() => setPassOrder(o)}>
+                                <ArrowRightCircle className="size-3.5" /> Passagem
+                              </Button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
