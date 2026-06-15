@@ -87,6 +87,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "omnichannel", path: "/omnichannel", title: "Omnichannel & Marketplace", short: "Mix de canais", description: "Receita por canal D2C/B2B/marketplace, ticket médio e geografia.", icon: Globe, group: "Marketing" },
   { slug: "fpa", path: "/fpa", title: "Planejamento Financeiro (FP&A)", short: "Forecast e plano x real", description: "Orçamento por coleção, forecast 12 meses e variação plano x real.", icon: Banknote, group: "Plataforma" },
   { slug: "quality", path: "/quality", title: "Centro de Qualidade & SLA", short: "OTD e defeitos", description: "Inspeções, taxa de defeito por fornecedor e cumprimento de prazo.", icon: ShieldAlert, group: "Cadeia (PLM)" },
+  { slug: "inspecoes", path: "/inspecoes", title: "Inspeções AQL", short: "Laudos por OP/OS", description: "Plano AQL, defeitos críticos/maiores/menores e resultado da inspeção.", icon: ShieldAlert, group: "Cadeia (PLM)" },
   { slug: "intelligence", path: "/intelligence", title: "Intelligence Engine", short: "Inteligência operacional", description: "O que produzir, repor, atrasar — sinais operacionais.", icon: Brain, group: "Inteligência" },
   { slug: "control-tower", path: "/control-tower", title: "Control Tower", short: "Demand & Supply", description: "Necessidade por grade com semáforo de cobertura.", icon: Radar, group: "Inteligência" },
   { slug: "product-score", path: "/product-score", title: "Product Score", short: "Pontuação 0–100", description: "Pontuação por vendas, margem, ROI e giro.", icon: Star, group: "Inteligência" },

@@ -79,6 +79,12 @@ Status atual (Onda 8 aplicada): **DESATIVADOS**. Removidos do `pg_trigger`:
 
 Funções (`b2b_orders_to_financial_account`, `purchase_orders_to_financial_account`, `purchase_orders_to_stock_entries`) permanecem no schema caso seja necessário religar.
 
+## Ondas concluídas
+
+- ✅ Onda 9 — Tech Pack completo (BOM, operações SAM, POM, custos automáticos via trigger).
+- ✅ Onda 10 — Grade/Cor/SKU (`product_color_options`, `product_size_options`, `product_variants`, grids OP/OS) em `/variantes`.
+- ✅ Onda 11 — Cadeia & Qualidade: `supplier_capabilities`, `supplier_compliance`, `quality_inspections` (AQL) em `/inspecoes`.
+
 ## Rotas deprecadas (hidden no menu desde Onda 1)
 
 Não removidas para preservar URLs/histórico, mas marcadas como **DEPRECATED** — leitura migrada para `erp_*_mirror`:
