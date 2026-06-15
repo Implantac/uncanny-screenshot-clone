@@ -674,20 +674,28 @@ function ColecoesPage() {
                 </TabsContent>
               </Tabs>
 
-              {selected.owner_id === user?.id && (
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => openEdit(selected)} className="gap-2">
-                    <Pencil className="size-4" /> Editar coleção
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => confirm("Remover esta coleção?") && deleteMut.mutate(selected.id)}
-                    className="gap-2 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="size-4" /> Remover
-                  </Button>
-                </div>
-              )}
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button variant="outline" onClick={() => exportSpec(selected)} className="gap-2">
+                  <Download className="size-4" /> Exportar spec
+                </Button>
+                {selected.owner_id === user?.id && (
+                  <>
+                    <Button variant="outline" onClick={() => duplicateMut.mutate(selected)} disabled={duplicateMut.isPending} className="gap-2">
+                      <Copy className="size-4" /> Duplicar
+                    </Button>
+                    <Button variant="outline" onClick={() => openEdit(selected)} className="gap-2">
+                      <Pencil className="size-4" /> Editar coleção
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => confirm("Remover esta coleção?") && deleteMut.mutate(selected.id)}
+                      className="gap-2 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="size-4" /> Remover
+                    </Button>
+                  </>
+                )}
+              </div>
             </section>
           )}
         </div>
