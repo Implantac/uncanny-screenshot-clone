@@ -196,9 +196,28 @@ function Prototipos() {
             })}
           </div>
 
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por código, produto ou facção…" className="pl-9" />
+              {q && (
+                <button onClick={() => setQ("")} className="absolute right-2 top-1/2 -translate-y-1/2 size-6 grid place-items-center text-muted-foreground hover:text-foreground" aria-label="Limpar busca">
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+            <Select value={stageFilter} onValueChange={setStageFilter}>
+              <SelectTrigger className="sm:w-56"><SelectValue placeholder="Etapa" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas etapas</SelectItem>
+                {(Object.keys(STAGE_LABEL) as Stage[]).map(st => <SelectItem key={st} value={st}>{STAGE_LABEL[st]}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {(Object.keys(STAGE_LABEL) as Stage[]).map(st => {
-              const col = items.filter(i => i.stage === st);
+              const col = filtered.filter(i => i.stage === st);
               return (
                 <div key={st} className="rounded-xl border border-border bg-muted/10 p-3 space-y-2 min-h-[200px]">
                   <div className="flex items-center justify-between">
@@ -236,7 +255,7 @@ function Prototipos() {
                 </tr>
               </thead>
               <tbody>
-                {items.map(p => (
+                {filtered.map(p => (
                   <tr key={p.id} className="border-t border-border hover:bg-muted/20">
                     <td className="px-4 py-3 font-mono text-xs">{p.code}</td>
                     <td className="px-4 py-3">{productName(p.product_id)}</td>
@@ -244,16 +263,19 @@ function Prototipos() {
                     <td className="px-4 py-3"><Badge variant="outline" className={STAGE_COLOR[p.stage]}>{STAGE_LABEL[p.stage]}</Badge></td>
                     <td className="px-4 py-3 text-muted-foreground">{p.due_date ?? "—"}</td>
                     <td className="px-4 py-3 text-right">
-                      {user?.id === p.owner_id && (
-                        <div className="flex gap-1 justify-end">
-                          <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="size-4" /></Button>
-                          <Button size="icon" variant="ghost" onClick={() => del.mutate(p.id)}><Trash2 className="size-4" /></Button>
-                        </div>
-                      )}
+                      <div className="flex gap-1 justify-end">
+                        <Button size="icon" variant="ghost" onClick={() => exportSpec(p)} title="Exportar spec"><Download className="size-4" /></Button>
+                        {user?.id === p.owner_id && (
+                          <>
+                            <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="size-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => del.mutate(p.id)}><Trash2 className="size-4" /></Button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
-                {items.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Nenhum protótipo ainda</td></tr>}
+                {filtered.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{items.length === 0 ? "Nenhum protótipo ainda" : "Nenhum resultado para os filtros"}</td></tr>}
               </tbody>
             </table>
           </div>
