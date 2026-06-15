@@ -509,6 +509,7 @@ function ProductDialog({
   const saveMut = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error("Sessão expirada");
+      if (!collectionId || collectionId === "none") throw new Error("Selecione uma coleção para o produto");
       const payload = {
         sku,
         name,
