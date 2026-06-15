@@ -6,6 +6,20 @@ import {
   KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, type LucideIcon,
 } from "lucide-react";
 
+export type ModuleGroup =
+  | "Operação"
+  | "Coleções"
+  | "Desenvolvimento"
+  | "PCP & Produção"
+  | "Cadeia (PLM)"
+  | "Marketing"
+  | "Inteligência"
+  | "ERP (Integração)"
+  | "Plataforma";
+
+export type ModuleSource = "plm" | "erp-mirror";
+export type ModuleStatus = "ativo" | "parcial" | "wip";
+
 export type ModuleDef = {
   slug: string;
   path: string;
@@ -13,64 +27,99 @@ export type ModuleDef = {
   short: string;
   description: string;
   icon: LucideIcon;
-  group: "Operação" | "Produto" | "Cadeia" | "Comercial" | "Inteligência" | "Plataforma";
+  group: ModuleGroup;
+  source?: ModuleSource;     // default: "plm"
+  status?: ModuleStatus;     // default: "ativo"
+  hidden?: boolean;          // mantém rota, oculta do menu
 };
 
+/**
+ * Reorganização Onda 1 — USE MODA PLM.
+ * Nada foi removido: rotas marcadas como ERP-mirror permanecem acessíveis
+ * via URL direta; apenas `hidden: true` as retira do sidebar do PLM.
+ */
 export const MODULES: ModuleDef[] = [
-  { slug: "command-center", path: "/", title: "Command Center", short: "Dashboard executivo", description: "Visão 360º do negócio em tempo real.", icon: LayoutDashboard, group: "Operação" },
-  { slug: "colecoes", path: "/colecoes", title: "Gestão de Coleções", short: "Coleções e linhas", description: "Planeje coleções, linhas e calendário sazonal.", icon: Layers, group: "Produto" },
-  { slug: "produtos", path: "/produtos", title: "Desenvolvimento de Produtos", short: "Pipeline de produtos", description: "Do briefing à aprovação do estilo.", icon: Sparkles, group: "Produto" },
-  { slug: "ficha-tecnica", path: "/ficha-tecnica", title: "Ficha Técnica Inteligente", short: "Tech packs com IA", description: "Fichas técnicas geradas e versionadas com IA.", icon: FileText, group: "Produto" },
-  { slug: "cad", path: "/cad", title: "CAD e Modelagem", short: "Modelagem digital", description: "Integração com CADs e biblioteca de moldes.", icon: PenTool, group: "Produto" },
-  { slug: "prototipos", path: "/prototipos", title: "Protótipos", short: "Provas e ajustes", description: "Ciclo de protótipos, provas e aprovações.", icon: Scissors, group: "Produto" },
-  { slug: "pcp", path: "/pcp", title: "PCP e Produção", short: "Ordens e capacidade", description: "Planejamento, ordens de produção e apontamento.", icon: Factory, group: "Cadeia" },
-  { slug: "pcp-kanban", path: "/pcp-kanban", title: "PCP Kanban", short: "Board drag-and-drop", description: "Mova ordens entre setores arrastando os cards.", icon: KanbanSquare, group: "Cadeia" },
-  { slug: "dev-kanban", path: "/dev-kanban", title: "Kanban de Desenvolvimento", short: "Pipeline do produto", description: "Pesquisa → modelagem → liberação para PCP.", icon: Workflow, group: "Produto" },
-  { slug: "pilots", path: "/pilots", title: "Gestão de Pilotos", short: "Aprovações de prova", description: "Ciclo de pilotos com status próprios e histórico.", icon: Ruler, group: "Produto" },
-  { slug: "compras", path: "/compras", title: "Compras", short: "Reposição e cotações", description: "Necessidade de compra, sugestão e mapa de fornecedores.", icon: ShoppingCart, group: "Cadeia" },
-  { slug: "pedidos-compra", path: "/pedidos-compra", title: "Pedidos de Compra", short: "POs e recebimento", description: "Pedidos, aprovação (gera contas a pagar) e recebimento (entrada no estoque).", icon: ShoppingCart, group: "Cadeia" },
-  { slug: "movimentacoes", path: "/movimentacoes", title: "Movimentações de Estoque", short: "Entradas e saídas", description: "Lançamento manual de entradas, saídas e ajustes de estoque.", icon: ArrowLeftRight, group: "Cadeia" },
-  { slug: "clientes", path: "/clientes", title: "Clientes", short: "Cadastro B2B / varejo", description: "Cadastro de clientes com contato e localização.", icon: Users, group: "Comercial" },
-  { slug: "representantes", path: "/representantes", title: "Representantes", short: "Equipe comercial", description: "Cadastro de representantes e comissões.", icon: UserCircle2, group: "Comercial" },
-  { slug: "centro-de-corte", path: "/centro-de-corte", title: "Centro de Corte", short: "Plano de corte", description: "Plano de corte, enfesto e peças cortadas.", icon: Scissors, group: "Cadeia" },
-  { slug: "almoxarifado", path: "/almoxarifado", title: "Almoxarifado", short: "Estoque e insumos", description: "Controle de tecidos, aviamentos e produtos acabados.", icon: Boxes, group: "Cadeia" },
-  { slug: "fornecedores", path: "/fornecedores", title: "Fornecedores", short: "Portal de parceiros", description: "Portal completo para fornecedores e facções.", icon: Truck, group: "Cadeia" },
-  { slug: "marketing", path: "/marketing", title: "Marketing", short: "Campanhas e mídia", description: "Calendário de campanhas e performance de mídia.", icon: Megaphone, group: "Comercial" },
-  { slug: "trends", path: "/trends", title: "Hub de Tendências", short: "Moodboard e paleta", description: "Referências visuais, paleta e mood do catálogo.", icon: Compass, group: "Produto" },
-  { slug: "influencers", path: "/influencers", title: "Influencer Management", short: "Cadastro de criadores", description: "Cadastro completo de influenciadores com uplift e ROI.", icon: UserCircle2, group: "Comercial" },
-  { slug: "attribution", path: "/attribution", title: "Marketing Attribution", short: "Origem da venda", description: "Receita atribuída por canal: social, marketplace, representantes.", icon: RouteIcon, group: "Comercial" },
-  { slug: "comercial", path: "/comercial", title: "Comercial / B2B", short: "Pedidos e clientes", description: "Portal B2B, pedidos, representantes e clientes.", icon: Store, group: "Comercial" },
-  { slug: "financeiro", path: "/financeiro", title: "Financeiro", short: "Caixa e DRE", description: "Contas a pagar, receber, fluxo de caixa e DRE.", icon: Wallet, group: "Comercial" },
-  { slug: "twin-factory", path: "/twin-factory", title: "Twin Factory", short: "Torre da produção", description: "Visão em tempo real de lotes, setores e gargalos.", icon: Activity, group: "Cadeia" },
-  { slug: "intelligence", path: "/intelligence", title: "Intelligence Engine", short: "Inteligência operacional", description: "Necessidade de produção, reposição, ROI de influencers, atribuição e Product Score.", icon: Brain, group: "Inteligência" },
-  { slug: "control-tower", path: "/control-tower", title: "Control Tower", short: "Demand & Supply", description: "O que produzir agora — necessidade por grade com semáforo de cobertura.", icon: Radar, group: "Inteligência" },
-  { slug: "replenishment", path: "/replenishment", title: "Smart Replenishment", short: "Reposição IA", description: "Sugestão de reposição, previsão de ruptura e excesso.", icon: Zap, group: "Inteligência" },
-  { slug: "geo-sales", path: "/geo-sales", title: "Geo Sales", short: "Mapa de vendas", description: "Aceitação por UF e região com mapa de calor.", icon: MapPin, group: "Inteligência" },
-  { slug: "margem", path: "/margem", title: "Margem & Rentabilidade", short: "CMV, margem, ABC", description: "Margem real por SKU, markup e curva ABC dos últimos 90 dias.", icon: Percent, group: "Inteligência" },
-  { slug: "profitability", path: "/profitability", title: "Motor de Rentabilidade", short: "ROI por coleção", description: "Lucro real por coleção: receita − CMV − marketing.", icon: Coins, group: "Inteligência" },
-  { slug: "product-success", path: "/product-success", title: "Product Success Engine", short: "Score preditivo", description: "Probabilidade de sucesso por produto (velocidade, margem, recência).", icon: Rocket, group: "Inteligência" },
-  { slug: "product-score", path: "/product-score", title: "Product Score", short: "Pontuação 0–100", description: "Pontuação por vendas, margem, ROI e giro.", icon: Star, group: "Inteligência" },
-  { slug: "grade-needs", path: "/grade-needs", title: "Necessidade por Grade", short: "Quebra PP/P/M/G/GG", description: "Distribuição sugerida por tamanho com base no histórico real.", icon: Ruler, group: "Inteligência" },
+  // === Operação ===
+  { slug: "command-center", path: "/", title: "Command Center", short: "Painel operacional", description: "Coleções, produtos, lotes e gargalos em tempo real.", icon: LayoutDashboard, group: "Operação", status: "parcial" },
   { slug: "fashion-calendar", path: "/fashion-calendar", title: "Fashion Calendar", short: "Linha do tempo", description: "Cronograma de coleções: desenvolvimento, produção e lançamento.", icon: Calendar, group: "Operação" },
-  { slug: "influencer-roi", path: "/influencer-roi", title: "Influencer ROI", short: "Atribuição e uplift", description: "ROAS, uplift e tiers por influenciador.", icon: Award, group: "Comercial" },
-  { slug: "sales-performance", path: "/sales-performance", title: "Sales Performance", short: "Receita e canais", description: "Receita diária, canais, ticket médio e top SKUs.", icon: LineChart, group: "Comercial" },
-  { slug: "stock-health", path: "/stock-health", title: "Stock Health", short: "Saúde do estoque", description: "Ruptura, baixo, morto, excesso e cobertura por SKU.", icon: PackageSearch, group: "Cadeia" },
-  { slug: "capacity", path: "/capacity", title: "Production Capacity", short: "OEE e carga", description: "OEE, WIP, atrasos e carga por fornecedor / facção.", icon: Gauge, group: "Cadeia" },
-  { slug: "cashflow", path: "/cashflow", title: "Cashflow Health", short: "Saldo projetado", description: "A pagar, a receber, atrasos e projeção de 30 dias.", icon: Banknote, group: "Comercial" },
-  { slug: "supplier-score", path: "/supplier-score", title: "Supplier Scorecard", short: "OTD e rating", description: "Score 0–100 por fornecedor com OTD, rating e tiers Ouro/Prata/Bronze.", icon: Trophy, group: "Cadeia" },
-  { slug: "campaigns", path: "/campaigns", title: "Campaign Performance", short: "ROAS por canal", description: "Investimento, receita atribuída, margem e ROAS por campanha e canal.", icon: Target, group: "Comercial" },
-  { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis e exploração de dados.", icon: BarChart3, group: "Inteligência" },
-  { slug: "fashion-gpt", path: "/fashion-gpt", title: "Fashion GPT", short: "Copiloto de moda", description: "Assistente especialista no seu negócio de moda.", icon: Bot, group: "Inteligência" },
-  { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação de processos.", icon: Cpu, group: "Inteligência" },
+
+  // === Coleções ===
+  { slug: "colecoes", path: "/colecoes", title: "Coleções", short: "Núcleo do PLM", description: "Planejamento, moodboard, tendências, produtos e cronograma.", icon: Layers, group: "Coleções", status: "parcial" },
+  { slug: "trends", path: "/trends", title: "Hub de Tendências", short: "Moodboard e paleta", description: "Referências visuais, paleta e mood do catálogo.", icon: Compass, group: "Coleções" },
+
+  // === Desenvolvimento ===
+  { slug: "dev-kanban", path: "/dev-kanban", title: "Kanban de Desenvolvimento", short: "Pesquisa → liberação", description: "Pipeline completo do produto: pesquisa, modelagem, piloto, aprovação.", icon: Workflow, group: "Desenvolvimento" },
+  { slug: "produtos", path: "/produtos", title: "Produtos", short: "Pipeline de produtos", description: "Do briefing à aprovação do estilo.", icon: Sparkles, group: "Desenvolvimento" },
+  { slug: "ficha-tecnica", path: "/ficha-tecnica", title: "Ficha Técnica", short: "Materiais, operações, consumos", description: "Engenharia de produto: materiais, aviamentos, operações, tempos e custos industriais.", icon: FileText, group: "Desenvolvimento", status: "parcial" },
+  { slug: "cad", path: "/cad", title: "CAD e Modelagem", short: "AI/CDR/DXF/SVG/PDF/PLT", description: "Modelagem digital e biblioteca de moldes.", icon: PenTool, group: "Desenvolvimento", status: "parcial" },
+  { slug: "prototipos", path: "/prototipos", title: "Protótipos", short: "Provas e ajustes", description: "Ciclo de protótipos, provas e aprovações.", icon: Scissors, group: "Desenvolvimento" },
+  { slug: "pilots", path: "/pilots", title: "Pilotos", short: "Aprovações de prova", description: "Ciclo de pilotos com status próprios e histórico.", icon: Ruler, group: "Desenvolvimento" },
+
+  // === PCP & Produção ===
+  { slug: "pcp", path: "/pcp", title: "PCP e Produção", short: "Ordens e capacidade", description: "Planejamento, ordens de produção e apontamento.", icon: Factory, group: "PCP & Produção" },
+  { slug: "pcp-kanban", path: "/pcp-kanban", title: "PCP Kanban", short: "Board drag-and-drop", description: "Mova ordens entre setores arrastando os cards.", icon: KanbanSquare, group: "PCP & Produção", status: "parcial" },
+  { slug: "centro-de-corte", path: "/centro-de-corte", title: "Centro de Corte", short: "Plano de corte", description: "Plano de corte, enfesto e peças cortadas.", icon: Scissors, group: "PCP & Produção" },
+  { slug: "twin-factory", path: "/twin-factory", title: "Torre de Controle", short: "Twin Factory", description: "Visão em tempo real de lotes, setores e gargalos.", icon: Activity, group: "PCP & Produção" },
+  { slug: "capacity", path: "/capacity", title: "Capacidade de Produção", short: "OEE e carga", description: "OEE, WIP, atrasos e carga por fornecedor / facção.", icon: Gauge, group: "PCP & Produção" },
+
+  // === Cadeia (PLM) — insumos / fornecedores ===
+  { slug: "almoxarifado", path: "/almoxarifado", title: "Almoxarifado (Insumos)", short: "Tecidos e aviamentos", description: "Controle técnico de insumos da produção.", icon: Boxes, group: "Cadeia (PLM)" },
+  { slug: "fornecedores", path: "/fornecedores", title: "Fornecedores", short: "Portal de parceiros", description: "Portal de fornecedores e facções.", icon: Truck, group: "Cadeia (PLM)" },
+  { slug: "supplier-score", path: "/supplier-score", title: "Supplier Scorecard", short: "OTD e rating", description: "Score 0–100 por fornecedor com OTD, rating e tiers.", icon: Trophy, group: "Cadeia (PLM)" },
+  { slug: "stock-health", path: "/stock-health", title: "Saúde de Insumos", short: "Cobertura técnica", description: "Ruptura, baixo, excesso e cobertura — escopo insumos PLM.", icon: PackageSearch, group: "Cadeia (PLM)", status: "parcial" },
+  { slug: "compras", path: "/compras", title: "Necessidade de Compra", short: "Sugestão técnica", description: "Necessidade técnica de insumos (sem financeiro — envia para o ERP).", icon: ShoppingCart, group: "Cadeia (PLM)", status: "parcial" },
+
+  // === Marketing (de produto) ===
+  { slug: "marketing", path: "/marketing", title: "Marketing de Produto", short: "Performance por produto", description: "Performance por produto, coleção e região (lê do ERP).", icon: Megaphone, group: "Marketing", status: "parcial" },
+  { slug: "influencers", path: "/influencers", title: "Influenciadores", short: "Cadastro e envios", description: "Cadastro, produtos enviados e baseline antes/depois.", icon: UserCircle2, group: "Marketing", status: "parcial" },
+  { slug: "influencer-roi", path: "/influencer-roi", title: "ROI de Influencers", short: "Uplift e ROAS", description: "Crescimento de vendas/pedidos após postagem (dados ERP).", icon: Award, group: "Marketing", status: "parcial" },
+  { slug: "campaigns", path: "/campaigns", title: "Campanhas", short: "Performance por canal", description: "Investimento, receita atribuída e ROAS por campanha.", icon: Target, group: "Marketing" },
+  { slug: "geo-sales", path: "/geo-sales", title: "Geo Sales", short: "Mapa do Brasil", description: "Aceitação por UF e região (dados do ERP).", icon: MapPin, group: "Marketing", status: "parcial" },
+
+  // === Inteligência ===
+  { slug: "intelligence", path: "/intelligence", title: "Intelligence Engine", short: "Inteligência operacional", description: "O que produzir, repor, atrasar — sinais operacionais.", icon: Brain, group: "Inteligência" },
+  { slug: "control-tower", path: "/control-tower", title: "Control Tower", short: "Demand & Supply", description: "Necessidade por grade com semáforo de cobertura.", icon: Radar, group: "Inteligência" },
+  { slug: "product-score", path: "/product-score", title: "Product Score", short: "Pontuação 0–100", description: "Pontuação por vendas, margem, ROI e giro.", icon: Star, group: "Inteligência" },
+  { slug: "product-success", path: "/product-success", title: "Product Success", short: "Score preditivo", description: "Probabilidade de sucesso por produto.", icon: Rocket, group: "Inteligência" },
+  { slug: "grade-needs", path: "/grade-needs", title: "Necessidade por Grade", short: "Quebra PP/P/M/G/GG", description: "Distribuição sugerida por tamanho.", icon: Ruler, group: "Inteligência" },
+  { slug: "replenishment", path: "/replenishment", title: "Sugestão de Reposição", short: "Sinal p/ produção", description: "Sinal técnico de reposição p/ PCP (sem compras financeiras).", icon: Zap, group: "Inteligência", status: "parcial" },
+
+  // === ERP (Integração) — leitura/espelho ===
+  { slug: "attribution", path: "/attribution", title: "Marketing Attribution (ERP)", short: "Leitura ERP", description: "Receita atribuída por canal — espelho do ERP.", icon: RouteIcon, group: "ERP (Integração)", source: "erp-mirror", status: "parcial" },
+  { slug: "sales-performance", path: "/sales-performance", title: "Sales Performance (ERP)", short: "Leitura ERP", description: "Receita, canais, ticket médio e top SKUs — espelho do ERP.", icon: LineChart, group: "ERP (Integração)", source: "erp-mirror", status: "parcial" },
+  { slug: "margem", path: "/margem", title: "Margem & Rentabilidade (ERP)", short: "Leitura ERP", description: "Margem real por SKU — espelho do ERP.", icon: Percent, group: "ERP (Integração)", source: "erp-mirror", status: "parcial" },
+  { slug: "profitability", path: "/profitability", title: "Rentabilidade por Coleção (ERP)", short: "Leitura ERP", description: "Lucro real por coleção — espelho do ERP.", icon: Coins, group: "ERP (Integração)", source: "erp-mirror", status: "parcial" },
+
+  // Módulos ERP-mirror operacionais — rotas mantidas, ocultas do menu PLM
+  { slug: "financeiro", path: "/financeiro", title: "Financeiro (ERP)", short: "Pertence ao ERP", description: "Operado no ERP — rota preservada para histórico.", icon: Wallet, group: "ERP (Integração)", source: "erp-mirror", hidden: true },
+  { slug: "cashflow", path: "/cashflow", title: "Cashflow (ERP)", short: "Pertence ao ERP", description: "Operado no ERP — rota preservada para histórico.", icon: Banknote, group: "ERP (Integração)", source: "erp-mirror", hidden: true },
+  { slug: "comercial", path: "/comercial", title: "Comercial / B2B (ERP)", short: "Pertence ao ERP", description: "Operado no ERP — rota preservada para histórico.", icon: Store, group: "ERP (Integração)", source: "erp-mirror", hidden: true },
+  { slug: "clientes", path: "/clientes", title: "Clientes (ERP)", short: "Pertence ao ERP", description: "Cadastro fica no ERP — rota preservada para histórico.", icon: Users, group: "ERP (Integração)", source: "erp-mirror", hidden: true },
+  { slug: "representantes", path: "/representantes", title: "Representantes (ERP)", short: "Pertence ao ERP", description: "Cadastro fica no ERP — rota preservada para histórico.", icon: UserCircle2, group: "ERP (Integração)", source: "erp-mirror", hidden: true },
+  { slug: "pedidos-compra", path: "/pedidos-compra", title: "Pedidos de Compra (ERP)", short: "Pertence ao ERP", description: "Compras financeiras ficam no ERP — rota preservada para histórico.", icon: ShoppingCart, group: "ERP (Integração)", source: "erp-mirror", hidden: true },
+  { slug: "movimentacoes", path: "/movimentacoes", title: "Movimentações Estoque (ERP)", short: "Pertence ao ERP", description: "Estoque fiscal fica no ERP — rota preservada para histórico.", icon: ArrowLeftRight, group: "ERP (Integração)", source: "erp-mirror", hidden: true },
+
+  // === Plataforma ===
   { slug: "dpp", path: "/dpp", title: "Digital Product Passport", short: "Rastreabilidade", description: "Passaporte digital e compliance ESG.", icon: ShieldCheck, group: "Plataforma" },
-  { slug: "showroom", path: "/showroom", title: "Showroom Digital", short: "Vitrine 3D", description: "Showroom virtual com lookbooks interativos.", icon: MonitorPlay, group: "Plataforma" },
-  { slug: "mobile", path: "/mobile", title: "Aplicativo Mobile", short: "App para times", description: "App nativo para campo, fábrica e vendedores.", icon: Smartphone, group: "Plataforma" },
-  { slug: "security-center", path: "/security-center", title: "Centro de Segurança", short: "MFA, LGPD, backup", description: "MFA TOTP, política de senhas, criptografia e backups.", icon: Lock, group: "Plataforma" },
-  { slug: "audit", path: "/audit", title: "Auditoria & LGPD", short: "Logs e rastreabilidade", description: "Eventos auditáveis com filtro por entidade/ação e exportação CSV.", icon: ScrollText, group: "Plataforma" },
-  { slug: "data-lake", path: "/data-lake", title: "Data Lake", short: "Camada unificada", description: "Visão consolidada de todos os domínios — base para IA e BI.", icon: Database, group: "Plataforma" },
+  { slug: "showroom", path: "/showroom", title: "Showroom Digital", short: "Vitrine 3D", description: "Showroom virtual com lookbooks interativos.", icon: MonitorPlay, group: "Plataforma", status: "wip" },
+  { slug: "mobile", path: "/mobile", title: "Aplicativo Mobile", short: "App para times", description: "App nativo para campo, fábrica e vendedores.", icon: Smartphone, group: "Plataforma", status: "wip" },
+  { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis.", icon: BarChart3, group: "Plataforma" },
+  { slug: "fashion-gpt", path: "/fashion-gpt", title: "Fashion GPT", short: "Copiloto de moda", description: "Assistente especialista no seu negócio de moda.", icon: Bot, group: "Plataforma" },
+  { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação.", icon: Cpu, group: "Plataforma" },
+  { slug: "security-center", path: "/security-center", title: "Segurança", short: "MFA, LGPD, backup", description: "MFA TOTP, política de senhas, criptografia e backups.", icon: Lock, group: "Plataforma" },
+  { slug: "audit", path: "/audit", title: "Auditoria & LGPD", short: "Logs e rastreabilidade", description: "Eventos auditáveis com filtro por entidade/ação.", icon: ScrollText, group: "Plataforma" },
+  { slug: "data-lake", path: "/data-lake", title: "Data Lake", short: "Camada unificada", description: "Visão consolidada de todos os domínios.", icon: Database, group: "Plataforma" },
   { slug: "equipe", path: "/equipe", title: "Equipe & Permissões", short: "Usuários e papéis", description: "Gerencie usuários e atribua papéis (admin).", icon: Users, group: "Plataforma" },
 ];
 
-export const MODULE_GROUPS: ModuleDef["group"][] = [
-  "Operação", "Produto", "Cadeia", "Comercial", "Inteligência", "Plataforma",
+export const MODULE_GROUPS: ModuleGroup[] = [
+  "Operação",
+  "Coleções",
+  "Desenvolvimento",
+  "PCP & Produção",
+  "Cadeia (PLM)",
+  "Marketing",
+  "Inteligência",
+  "ERP (Integração)",
+  "Plataforma",
 ];
