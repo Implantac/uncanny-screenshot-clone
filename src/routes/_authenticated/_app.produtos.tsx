@@ -18,6 +18,11 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/produtos")({
+  validateSearch: zodValidator(
+    z.object({
+      q: fallback(z.string().trim().max(80), "").default(""),
+    }),
+  ),
   head: () => ({
     meta: [
       { title: "Produtos · USE MODA OS" },
