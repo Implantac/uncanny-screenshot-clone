@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -17,7 +19,16 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
+const STATUS_VALS = ["aguardando","em_producao","concluida","atrasada","cancelada"] as const;
+const pcpSearchSchema = z.object({
+  q: fallback(z.string().trim().max(80), "").default(""),
+  status: fallback(z.enum(["all", ...STATUS_VALS]), "all").default("all"),
+  priority: fallback(z.enum(["all","1","2","3","4","5"]), "all").default("all"),
+  supplier: fallback(z.string().trim().max(80), "all").default("all"),
+});
+
 export const Route = createFileRoute("/_authenticated/_app/pcp")({
+  validateSearch: zodValidator(pcpSearchSchema),
   head: () => ({ meta: [{ title: "PCP · USE MODA OS" }, { name: "description", content: "Ordens de produção." }] }),
   component: PCP,
 });
@@ -63,10 +74,15 @@ function PCP() {
   useRealtime("production_orders", ["production_orders"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Order | null>(null);
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | Status>("all");
-  const [filterPriority, setFilterPriority] = useState<"all" | "1" | "2" | "3" | "4" | "5">("all");
-  const [filterSupplier, setFilterSupplier] = useState<string>("all");
+  const searchParams = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { q: search, status: filterStatus, priority: filterPriority, supplier: filterSupplier } = searchParams;
+  const patch = (p: Partial<typeof searchParams>) =>
+    navigate({ search: (prev: typeof searchParams) => ({ ...prev, ...p }), replace: true });
+  const setSearch = (v: string) => patch({ q: v });
+  const setFilterStatus = (v: typeof searchParams.status) => patch({ status: v });
+  const setFilterPriority = (v: typeof searchParams.priority) => patch({ priority: v });
+  const setFilterSupplier = (v: string) => patch({ supplier: v });
   const [form, setForm] = useState({
     code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0,
     due_date: "", status: "aguardando" as Status, stage: "cad" as Stage, priority: 3, notes: "", batch_code: "",

@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useMemo, useState } from "react";
 import { PenTool, Download, Eye, Loader2, Search, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/cad")({
+  validateSearch: zodValidator(z.object({
+    q: fallback(z.string().trim().max(80), "").default(""),
+    cat: fallback(z.string().trim().max(40), "all").default("all"),
+  })),
   head: () => ({
     meta: [
       { title: "CAD e Modelagem · USE MODA OS" },
@@ -47,8 +53,11 @@ type Molde = {
 
 function CAD() {
   useRealtime("products", ["cad-products"]);
-  const [q, setQ] = useState("");
-  const [cat, setCat] = useState<string>("all");
+  const cadSearch = Route.useSearch();
+  const { q, cat } = cadSearch;
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setQ = (v: string) => navigate({ search: (p: typeof cadSearch) => ({ ...p, q: v }), replace: true });
+  const setCat = (v: string) => navigate({ search: (p: typeof cadSearch) => ({ ...p, cat: v }), replace: true });
   const [selected, setSelected] = useState<Molde | null>(null);
 
   const { data, isLoading } = useQuery({

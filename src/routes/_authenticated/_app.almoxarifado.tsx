@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -15,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/almoxarifado")({
+  validateSearch: zodValidator(z.object({ q: fallback(z.string().trim().max(80), "").default("") })),
   head: () => ({
     meta: [
       { title: "Almoxarifado · USE MODA OS" },
@@ -39,7 +42,9 @@ function Almoxarifado() {
   const { user } = useAuth();
   const qc = useQueryClient();
   useRealtime("inventory_items", ["inventory_items"]);
-  const [q, setQ] = useState("");
+  const { q } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setQ = (v: string) => navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Item | null>(null);
 

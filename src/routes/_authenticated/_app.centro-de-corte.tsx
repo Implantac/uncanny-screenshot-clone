@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -9,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/centro-de-corte")({
+  validateSearch: zodValidator(z.object({ q: fallback(z.string().trim().max(80), "").default("") })),
   head: () => ({
     meta: [
       { title: "Centro de Corte · USE MODA OS" },
@@ -40,7 +43,9 @@ const PHASE_STYLE: Record<Phase, string> = {
 function CentroCorte() {
   const qc = useQueryClient();
   useRealtime("production_orders", ["production_orders"]);
-  const [search, setSearch] = useState("");
+  const { q: search } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setSearch = (v: string) => navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["production_orders"],
