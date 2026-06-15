@@ -46,6 +46,24 @@ const BRL = (n: number) => (n || 0).toLocaleString("pt-BR", { style: "currency",
 const PCT = (n: number) => `${Math.round(n)}%`;
 const palette = ["oklch(0.72 0.18 295)", "oklch(0.70 0.16 200)", "oklch(0.74 0.17 155)", "oklch(0.78 0.16 75)", "oklch(0.70 0.18 25)"];
 
+function intelFilter<T extends Record<string, any>>(items: T[], q: string, fields: string[], lookup?: any[]): T[] {
+  const term = q.trim().toLowerCase();
+  if (!term) return items;
+  const lookupMap = lookup ? new Map(lookup.map((x: any) => [x.id, x])) : null;
+  return items.filter((item) => {
+    for (const f of fields) {
+      const v = item?.[f];
+      if (typeof v === "string" && v.toLowerCase().includes(term)) return true;
+    }
+    if (lookupMap && "product_id" in item) {
+      const ref: any = lookupMap.get((item as any).product_id);
+      if (ref && typeof ref.name === "string" && ref.name.toLowerCase().includes(term)) return true;
+      if (ref && typeof ref.sku === "string" && ref.sku.toLowerCase().includes(term)) return true;
+    }
+    return false;
+  });
+}
+
 // Deterministic pseudo-random for stable demo metrics derived from id
 
 function KPI({ label, value, hint, icon: Icon, tone }: { label: string; value: string; hint?: string; icon: any; tone?: string }) {
