@@ -74,10 +74,15 @@ function PCP() {
   useRealtime("production_orders", ["production_orders"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Order | null>(null);
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | Status>("all");
-  const [filterPriority, setFilterPriority] = useState<"all" | "1" | "2" | "3" | "4" | "5">("all");
-  const [filterSupplier, setFilterSupplier] = useState<string>("all");
+  const searchParams = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { q: search, status: filterStatus, priority: filterPriority, supplier: filterSupplier } = searchParams;
+  const patch = (p: Partial<typeof searchParams>) =>
+    navigate({ search: (prev: typeof searchParams) => ({ ...prev, ...p }), replace: true });
+  const setSearch = (v: string) => patch({ q: v });
+  const setFilterStatus = (v: typeof searchParams.status) => patch({ status: v });
+  const setFilterPriority = (v: typeof searchParams.priority) => patch({ priority: v });
+  const setFilterSupplier = (v: string) => patch({ supplier: v });
   const [form, setForm] = useState({
     code: "", product_id: "", supplier_id: "", quantity: 0, progress: 0,
     due_date: "", status: "aguardando" as Status, stage: "cad" as Stage, priority: 3, notes: "", batch_code: "",
