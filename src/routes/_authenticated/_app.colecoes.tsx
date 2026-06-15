@@ -36,7 +36,17 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
+const colecoesSearchSchema = z.object({
+  q: fallback(z.string(), "").default(""),
+  status: fallback(z.string(), "all").default("all"),
+  season: fallback(z.string(), "all").default("all"),
+  sort: fallback(z.enum(["recent", "name", "progress", "launch", "year"]), "recent").default("recent"),
+  page: fallback(z.number().int().min(1), 1).default(1),
+  id: fallback(z.string().optional(), undefined),
+});
+
 export const Route = createFileRoute("/_authenticated/_app/colecoes")({
+  validateSearch: zodValidator(colecoesSearchSchema),
   head: () => ({
     meta: [
       { title: "Coleções · USE MODA OS" },
