@@ -46,6 +46,7 @@ import { Route as AuthenticatedAppMargemRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppLotesRouteImport } from './routes/_authenticated/_app.lotes'
 import { Route as AuthenticatedAppIntelligenceRouteImport } from './routes/_authenticated/_app.intelligence'
 import { Route as AuthenticatedAppIntelHubRouteImport } from './routes/_authenticated/_app.intel-hub'
+import { Route as AuthenticatedAppInspecoesRouteImport } from './routes/_authenticated/_app.inspecoes'
 import { Route as AuthenticatedAppInfluencersRouteImport } from './routes/_authenticated/_app.influencers'
 import { Route as AuthenticatedAppInfluencerRoiRouteImport } from './routes/_authenticated/_app.influencer-roi'
 import { Route as AuthenticatedAppGradeNeedsRouteImport } from './routes/_authenticated/_app.grade-needs'
@@ -287,6 +288,12 @@ const AuthenticatedAppIntelHubRoute =
     path: '/intel-hub',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppInspecoesRoute =
+  AuthenticatedAppInspecoesRouteImport.update({
+    id: '/inspecoes',
+    path: '/inspecoes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppInfluencersRoute =
   AuthenticatedAppInfluencersRouteImport.update({
     id: '/influencers',
@@ -522,6 +529,7 @@ export interface FileRoutesByFullPath {
   '/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
   '/influencers': typeof AuthenticatedAppInfluencersRoute
+  '/inspecoes': typeof AuthenticatedAppInspecoesRoute
   '/intel-hub': typeof AuthenticatedAppIntelHubRoute
   '/intelligence': typeof AuthenticatedAppIntelligenceRoute
   '/lotes': typeof AuthenticatedAppLotesRoute
@@ -593,6 +601,7 @@ export interface FileRoutesByTo {
   '/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
   '/influencers': typeof AuthenticatedAppInfluencersRoute
+  '/inspecoes': typeof AuthenticatedAppInspecoesRoute
   '/intel-hub': typeof AuthenticatedAppIntelHubRoute
   '/intelligence': typeof AuthenticatedAppIntelligenceRoute
   '/lotes': typeof AuthenticatedAppLotesRoute
@@ -666,6 +675,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/grade-needs': typeof AuthenticatedAppGradeNeedsRoute
   '/_authenticated/_app/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
   '/_authenticated/_app/influencers': typeof AuthenticatedAppInfluencersRoute
+  '/_authenticated/_app/inspecoes': typeof AuthenticatedAppInspecoesRoute
   '/_authenticated/_app/intel-hub': typeof AuthenticatedAppIntelHubRoute
   '/_authenticated/_app/intelligence': typeof AuthenticatedAppIntelligenceRoute
   '/_authenticated/_app/lotes': typeof AuthenticatedAppLotesRoute
@@ -740,6 +750,7 @@ export interface FileRouteTypes {
     | '/grade-needs'
     | '/influencer-roi'
     | '/influencers'
+    | '/inspecoes'
     | '/intel-hub'
     | '/intelligence'
     | '/lotes'
@@ -811,6 +822,7 @@ export interface FileRouteTypes {
     | '/grade-needs'
     | '/influencer-roi'
     | '/influencers'
+    | '/inspecoes'
     | '/intel-hub'
     | '/intelligence'
     | '/lotes'
@@ -883,6 +895,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/grade-needs'
     | '/_authenticated/_app/influencer-roi'
     | '/_authenticated/_app/influencers'
+    | '/_authenticated/_app/inspecoes'
     | '/_authenticated/_app/intel-hub'
     | '/_authenticated/_app/intelligence'
     | '/_authenticated/_app/lotes'
@@ -1187,6 +1200,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppIntelHubRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/inspecoes': {
+      id: '/_authenticated/_app/inspecoes'
+      path: '/inspecoes'
+      fullPath: '/inspecoes'
+      preLoaderRoute: typeof AuthenticatedAppInspecoesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/influencers': {
       id: '/_authenticated/_app/influencers'
       path: '/influencers'
@@ -1462,6 +1482,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppGradeNeedsRoute: typeof AuthenticatedAppGradeNeedsRoute
   AuthenticatedAppInfluencerRoiRoute: typeof AuthenticatedAppInfluencerRoiRoute
   AuthenticatedAppInfluencersRoute: typeof AuthenticatedAppInfluencersRoute
+  AuthenticatedAppInspecoesRoute: typeof AuthenticatedAppInspecoesRoute
   AuthenticatedAppIntelHubRoute: typeof AuthenticatedAppIntelHubRoute
   AuthenticatedAppIntelligenceRoute: typeof AuthenticatedAppIntelligenceRoute
   AuthenticatedAppLotesRoute: typeof AuthenticatedAppLotesRoute
@@ -1531,6 +1552,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppGradeNeedsRoute: AuthenticatedAppGradeNeedsRoute,
   AuthenticatedAppInfluencerRoiRoute: AuthenticatedAppInfluencerRoiRoute,
   AuthenticatedAppInfluencersRoute: AuthenticatedAppInfluencersRoute,
+  AuthenticatedAppInspecoesRoute: AuthenticatedAppInspecoesRoute,
   AuthenticatedAppIntelHubRoute: AuthenticatedAppIntelHubRoute,
   AuthenticatedAppIntelligenceRoute: AuthenticatedAppIntelligenceRoute,
   AuthenticatedAppLotesRoute: AuthenticatedAppLotesRoute,
