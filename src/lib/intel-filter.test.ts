@@ -1,9 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { intelFilter } from "./intel-filter";
 
-// Mirror of the schema defined in src/routes/_authenticated/_app.intelligence.tsx
 const INTEL_TABS = [
   "production", "kanban", "dev", "score", "restock",
   "sales", "geo", "influencers", "lake",
@@ -12,13 +11,12 @@ const schema = z.object({
   tab: fallback(z.enum(INTEL_TABS), "production").default("production"),
   q: fallback(z.string().trim().max(80), "").default(""),
 });
-const validate = zodValidator(schema);
 
 function parseUrl(url: string) {
   const u = new URL(url, "http://localhost");
   const raw: Record<string, unknown> = {};
   u.searchParams.forEach((v, k) => (raw[k] = v));
-  return validate(raw);
+  return schema.parse(raw);
 }
 
 // Synthetic data covering each filterable tab
