@@ -716,6 +716,104 @@ export type Database = {
           },
         ]
       }
+      purchase_order_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          inventory_item_id: string | null
+          owner_id: string
+          purchase_order_id: string
+          quantity: number
+          total: number | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          inventory_item_id?: string | null
+          owner_id: string
+          purchase_order_id: string
+          quantity: number
+          total?: number | null
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          inventory_item_id?: string | null
+          owner_id?: string
+          purchase_order_id?: string
+          quantity?: number
+          total?: number | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          code: string
+          created_at: string
+          expected_date: string | null
+          id: string
+          notes: string | null
+          owner_id: string
+          status: Database["public"]["Enums"]["purchase_order_status"]
+          supplier_id: string | null
+          total_value: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          owner_id: string
+          status?: Database["public"]["Enums"]["purchase_order_status"]
+          supplier_id?: string | null
+          total_value?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          status?: Database["public"]["Enums"]["purchase_order_status"]
+          supplier_id?: string | null
+          total_value?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales: {
         Row: {
           channel: string
@@ -1091,6 +1189,12 @@ export type Database = {
         | "em_prova"
         | "aprovado"
         | "reprovado"
+      purchase_order_status:
+        | "rascunho"
+        | "cotando"
+        | "aprovado"
+        | "recebido"
+        | "cancelado"
       service_order_kind: "parcial" | "integral"
       service_order_status:
         | "aberta"
@@ -1276,6 +1380,13 @@ export const Constants = {
         "em_prova",
         "aprovado",
         "reprovado",
+      ],
+      purchase_order_status: [
+        "rascunho",
+        "cotando",
+        "aprovado",
+        "recebido",
+        "cancelado",
       ],
       service_order_kind: ["parcial", "integral"],
       service_order_status: [
