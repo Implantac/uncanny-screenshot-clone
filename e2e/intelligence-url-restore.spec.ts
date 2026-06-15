@@ -31,7 +31,7 @@ test.describe("Intelligence URL restore — filtered lists", () => {
   });
 
   for (const tab of TABS) {
-    test(`/intelligence?tab=${tab}&q=${QUERY} → list matches filter`, async ({ page }) => {
+    test(`/intelligence?tab=${tab}&q=${QUERY} → list matches filter`, async ({ page }, testInfo) => {
       await page.goto(`/intelligence?tab=${tab}&q=${QUERY}`);
 
       // Search input + tab restored from URL
@@ -52,8 +52,52 @@ test.describe("Intelligence URL restore — filtered lists", () => {
       // Every visible list item must match the query. Empty list is acceptable
       // (means the dataset has no "vestido" rows for that tab) — what we forbid
       // is an item that does NOT contain the query slipping through the filter.
-      const offenders = texts.filter((t) => !t.includes(QUERY));
-      expect(offenders, `Tab "${tab}" rendered ${offenders.length} non-matching items`).toEqual([]);
+      const offenders = texts
+        .map((t, i) => ({ i, t }))
+        .filter(({ t }) => !t.includes(QUERY));
+
+      if (offenders.length > 0) {
+        const outDir = path.join("test-results", "intel-debug", `${tab}-${Date.now()}`);
+        await mkdir(outDir, { recursive: true });
+
+        // 1) Full-page screenshot of what the user would see.
+        const shotPath = path.join(outDir, "page.png");
+        await page.screenshot({ path: shotPath, fullPage: true });
+
+        // 2) Per-offender highlighted screenshots.
+        for (const { i } of offenders) {
+          const el = items.nth(i);
+          await el.scrollIntoViewIfNeeded().catch(() => {});
+          await el.screenshot({ path: path.join(outDir, `offender-${i}.png`) }).catch(() => {});
+        }
+
+        // 3) HTML dump of the active tab panel (smaller than full page).
+        const panel = page.locator('[role="tabpanel"]:not([hidden])').first();
+        const panelHtml = (await panel.innerHTML().catch(() => "")) || (await page.content());
+        await writeFile(path.join(outDir, "tabpanel.html"), panelHtml, "utf8");
+
+        // 4) Raw mismatch report for fast scanning.
+        await writeFile(
+          path.join(outDir, "offenders.json"),
+          JSON.stringify({ tab, query: QUERY, url: page.url(), count, offenders }, null, 2),
+          "utf8",
+        );
+
+        // 5) Attach everything to the Playwright HTML report.
+        await testInfo.attach("page.png", { path: shotPath, contentType: "image/png" });
+        await testInfo.attach("tabpanel.html", { body: panelHtml, contentType: "text/html" });
+        await testInfo.attach("offenders.json", {
+          body: JSON.stringify({ tab, query: QUERY, url: page.url(), offenders }, null, 2),
+          contentType: "application/json",
+        });
+
+        console.error(`[intel-debug] ${offenders.length} mismatches saved to ${outDir}`);
+      }
+
+      expect(
+        offenders.map((o) => o.t),
+        `Tab "${tab}" rendered ${offenders.length} non-matching items`,
+      ).toEqual([]);
     });
   }
 });
