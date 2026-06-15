@@ -218,6 +218,92 @@ function ColecoesPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const duplicateMut = useMutation({
+    mutationFn: async (c: Collection) => {
+      if (!user?.id) throw new Error("Sessão expirada");
+      const { error } = await supabase.from("collections").insert({
+        owner_id: user.id,
+        name: `${c.name} (cópia)`,
+        season: c.season,
+        year: c.year,
+        status: "briefing",
+        description: c.description,
+        palette: c.palette,
+        launch_date: c.launch_date,
+        progress: 0,
+        cover_path: c.cover_path,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      toast.success("Coleção duplicada");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const seasons = useMemo(() => Array.from(new Set(collections.map((c) => c.season))).sort(), [collections]);
+
+  const filteredCollections = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return collections.filter((c) => {
+      if (statusFilter !== "all" && c.status !== statusFilter) return false;
+      if (seasonFilter !== "all" && c.season !== seasonFilter) return false;
+      if (!term) return true;
+      return (
+        c.name.toLowerCase().includes(term) ||
+        c.season.toLowerCase().includes(term) ||
+        String(c.year).includes(term) ||
+        (c.description ?? "").toLowerCase().includes(term)
+      );
+    });
+  }, [collections, q, statusFilter, seasonFilter]);
+
+  function exportSpec(c: Collection) {
+    const items = products.filter((p) => p.collection_id === c.id);
+    const revenue = items.reduce((s, i) => s + Number(i.sell_price || 0), 0);
+    const cost = items.reduce((s, i) => s + Number(i.cost_price || 0), 0);
+    const spec = {
+      format: "USE-MODA-COLLECTION-SPEC/1.0",
+      exported_at: new Date().toISOString(),
+      collection: {
+        id: c.id,
+        name: c.name,
+        season: c.season,
+        year: c.year,
+        status: c.status,
+        description: c.description,
+        palette: c.palette,
+        launch_date: c.launch_date,
+        progress: c.progress,
+      },
+      mix: {
+        total: items.length,
+        revenue,
+        cost,
+        margin: revenue - cost,
+        products: items.map((p) => ({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          status: p.status,
+          sell_price: p.sell_price,
+          cost_price: p.cost_price,
+          colors: p.colors,
+        })),
+      },
+    };
+    const blob = new Blob([JSON.stringify(spec, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `colecao-${c.name.toLowerCase().replace(/\s+/g, "-")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Spec exportado");
+  }
+
+
   const timeline = useMemo(() => {
     if (!selected) return [];
     const start = new Date(selected.created_at);
