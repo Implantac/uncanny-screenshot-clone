@@ -17,10 +17,14 @@ const REGIONS: Record<string, string> = {
 type UFStat = { uf: string; revenue: number; qty: number; orders: number };
 
 async function loadGeo(): Promise<UFStat[]> {
-  const { data } = await supabase.from("sales").select("uf, quantity, total").gte("sold_at", new Date(Date.now() - 90 * 86400000).toISOString());
+  const since = new Date(Date.now() - 90 * 86400000).toISOString();
+  const [{ data: nativeRows }, { data: erpRows }] = await Promise.all([
+    supabase.from("sales").select("uf, quantity, total").gte("sold_at", since),
+    supabase.from("erp_sales_mirror").select("region, quantity, total_value").gte("sold_at", since),
+  ]);
   const map = new Map<string, UFStat>();
   UFS.forEach((u) => map.set(u, { uf: u, revenue: 0, qty: 0, orders: 0 }));
-  (data ?? []).forEach((s) => {
+  (nativeRows ?? []).forEach((s) => {
     if (!s.uf) return;
     const cur = map.get(s.uf) ?? { uf: s.uf, revenue: 0, qty: 0, orders: 0 };
     cur.revenue += Number(s.total);
@@ -28,8 +32,18 @@ async function loadGeo(): Promise<UFStat[]> {
     cur.orders += 1;
     map.set(s.uf, cur);
   });
+  (erpRows ?? []).forEach((s) => {
+    const uf = (s.region ?? "").toUpperCase();
+    if (!UFS.includes(uf)) return;
+    const cur = map.get(uf) ?? { uf, revenue: 0, qty: 0, orders: 0 };
+    cur.revenue += Number(s.total_value ?? 0);
+    cur.qty += Number(s.quantity ?? 0);
+    cur.orders += 1;
+    map.set(uf, cur);
+  });
   return Array.from(map.values());
 }
+
 
 function GeoSales() {
   const { data: stats = [], isLoading } = useQuery({ queryKey: ["geo-sales"], queryFn: loadGeo });

@@ -26,18 +26,30 @@ type Inf = {
   tier: "premium" | "atencao" | "ruim";
 };
 
+const normHandle = (s: string | null | undefined) => (s ?? "").replace(/^@/, "").trim().toLowerCase();
+
 async function load(): Promise<Inf[]> {
   const { data: infs } = await supabase.from("influencers").select("*").order("created_at", { ascending: false });
-  // Pull real attributed sales (sales.influencer_id) — fallback to stored vendas_antes/depois when none.
-  const { data: salesRows } = await supabase.from("sales").select("influencer_id, total, sold_at").not("influencer_id", "is", null);
+  const [{ data: salesRows }, { data: erpRows }] = await Promise.all([
+    supabase.from("sales").select("influencer_id, total").not("influencer_id", "is", null),
+    supabase.from("erp_sales_mirror").select("influencer_code, total_value").not("influencer_code", "is", null),
+  ]);
   const realByInf = new Map<string, number>();
   (salesRows ?? []).forEach((s) => {
     if (!s.influencer_id) return;
     realByInf.set(s.influencer_id, (realByInf.get(s.influencer_id) ?? 0) + Number(s.total ?? 0));
   });
+  const erpByCode = new Map<string, number>();
+  (erpRows ?? []).forEach((s) => {
+    const code = normHandle(s.influencer_code);
+    if (!code) return;
+    erpByCode.set(code, (erpByCode.get(code) ?? 0) + Number(s.total_value ?? 0));
+  });
   return (infs ?? []).map((i) => {
+    const erp = erpByCode.get(normHandle(i.instagram)) ?? 0;
     const realUplift = realByInf.get(i.id);
-    const uplift = realUplift !== undefined ? realUplift : Number(i.vendas_depois) - Number(i.vendas_antes);
+    const baseUplift = realUplift !== undefined ? realUplift : Number(i.vendas_depois) - Number(i.vendas_antes);
+    const uplift = baseUplift + erp;
     const upliftPct = Number(i.vendas_antes) > 0 ? (uplift / Number(i.vendas_antes)) * 100 : 0;
     const roas = Number(i.valor) > 0 ? uplift / Number(i.valor) : 0;
     const cpm = i.seguidores > 0 ? (Number(i.valor) / i.seguidores) * 1000 : 0;
@@ -50,6 +62,7 @@ async function load(): Promise<Inf[]> {
     };
   }).sort((a, b) => b.roas - a.roas);
 }
+
 
 function InfluencerROI() {
   const { data: rows = [], isLoading } = useQuery({ queryKey: ["influencer-roi"], queryFn: load });
