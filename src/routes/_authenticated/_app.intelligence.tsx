@@ -64,6 +64,12 @@ function KPI({ label, value, hint, icon: Icon, tone }: { label: string; value: s
 }
 
 function IntelligencePage() {
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setTab = (v: string) =>
+    navigate({ search: (p: typeof search) => ({ ...p, tab: v as typeof search.tab }), replace: true });
+  const setQ = (v: string) =>
+    navigate({ search: (p: typeof search) => ({ ...p, q: v }), replace: true });
   const productsQ = useQuery({
     queryKey: ["intel", "products"],
     queryFn: async () => (await supabase.from("products").select("*")).data ?? [],
