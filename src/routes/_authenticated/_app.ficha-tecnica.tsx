@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { MaterialsPanel, OperationsPanel, MeasurementsPanel, CostsPanel } from "@/components/tech-pack/panels";
 
 export const Route = createFileRoute("/_authenticated/_app/ficha-tecnica")({
   head: () => ({
@@ -265,19 +266,19 @@ function FichaTecnicaPage() {
                     </TabsList>
 
                     <TabsContent value="materiais" className="mt-0">
-                      <SectionList title="Materiais principais" icon={Layers3} items={selectedContent.materials} emptyLabel="Nenhum material detalhado." />
+                      <MaterialsPanel sheetId={selected.id} ownerId={selected.owner_id} canEdit={selected.owner_id === user?.id} />
                     </TabsContent>
                     <TabsContent value="operacoes" className="mt-0">
-                      <SectionList title="Fluxo operacional" icon={Scissors} items={selectedContent.operations} emptyLabel="Nenhuma operação cadastrada." />
+                      <OperationsPanel sheetId={selected.id} ownerId={selected.owner_id} canEdit={selected.owner_id === user?.id} />
                     </TabsContent>
                     <TabsContent value="medidas" className="mt-0">
-                      <SectionList title="Medidas e grade" icon={Ruler} items={selectedContent.measurements} emptyLabel="Nenhuma medida informada." />
+                      <MeasurementsPanel sheetId={selected.id} ownerId={selected.owner_id} canEdit={selected.owner_id === user?.id} />
                     </TabsContent>
                     <TabsContent value="consumo" className="mt-0">
                       <SectionList title="Consumo" icon={ClipboardList} items={selectedContent.consumption} emptyLabel="Nenhum consumo informado." />
                     </TabsContent>
                     <TabsContent value="custos" className="mt-0">
-                      <SectionList title="Custos" icon={Wallet} items={selectedContent.costs} emptyLabel="Nenhum custo informado." />
+                      <CostsPanel sheetId={selected.id} ownerId={selected.owner_id} canEdit={selected.owner_id === user?.id} />
                     </TabsContent>
                     <TabsContent value="documentos" className="mt-0">
                       <SectionList title="Documentos e anexos" icon={FileText} items={selectedContent.documents} emptyLabel="Nenhum documento referenciado." chips />

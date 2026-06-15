@@ -1422,6 +1422,260 @@ export type Database = {
         }
         Relationships: []
       }
+      tech_sheet_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_url: string
+          id: string
+          kind: string | null
+          mime_type: string | null
+          owner_id: string
+          size_bytes: number | null
+          tech_sheet_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_url: string
+          id?: string
+          kind?: string | null
+          mime_type?: string | null
+          owner_id: string
+          size_bytes?: number | null
+          tech_sheet_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          kind?: string | null
+          mime_type?: string | null
+          owner_id?: string
+          size_bytes?: number | null
+          tech_sheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tech_sheet_attachments_tech_sheet_id_fkey"
+            columns: ["tech_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "tech_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tech_sheet_labels: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          kind: string
+          owner_id: string
+          position: number
+          tech_sheet_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          kind: string
+          owner_id: string
+          position?: number
+          tech_sheet_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          owner_id?: string
+          position?: number
+          tech_sheet_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tech_sheet_labels_tech_sheet_id_fkey"
+            columns: ["tech_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "tech_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tech_sheet_materials: {
+        Row: {
+          consumption: number
+          created_at: string
+          id: string
+          inventory_item_id: string | null
+          loss_pct: number
+          name: string
+          notes: string | null
+          owner_id: string
+          position: number
+          tech_sheet_id: string
+          total_cost: number | null
+          unit: string
+          unit_cost: number
+          updated_at: string
+        }
+        Insert: {
+          consumption?: number
+          created_at?: string
+          id?: string
+          inventory_item_id?: string | null
+          loss_pct?: number
+          name: string
+          notes?: string | null
+          owner_id: string
+          position?: number
+          tech_sheet_id: string
+          total_cost?: number | null
+          unit?: string
+          unit_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          consumption?: number
+          created_at?: string
+          id?: string
+          inventory_item_id?: string | null
+          loss_pct?: number
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          position?: number
+          tech_sheet_id?: string
+          total_cost?: number | null
+          unit?: string
+          unit_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tech_sheet_materials_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tech_sheet_materials_tech_sheet_id_fkey"
+            columns: ["tech_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "tech_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tech_sheet_measurements: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          point: string
+          position: number
+          sizes: Json
+          tech_sheet_id: string
+          tolerance_minus: number
+          tolerance_plus: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          point: string
+          position?: number
+          sizes?: Json
+          tech_sheet_id: string
+          tolerance_minus?: number
+          tolerance_plus?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          point?: string
+          position?: number
+          sizes?: Json
+          tech_sheet_id?: string
+          tolerance_minus?: number
+          tolerance_plus?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tech_sheet_measurements_tech_sheet_id_fkey"
+            columns: ["tech_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "tech_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tech_sheet_operations: {
+        Row: {
+          created_at: string
+          id: string
+          machine: string | null
+          name: string
+          notes: string | null
+          owner_id: string
+          position: number
+          rate_per_min: number
+          sam: number
+          tech_sheet_id: string
+          total_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          machine?: string | null
+          name: string
+          notes?: string | null
+          owner_id: string
+          position?: number
+          rate_per_min?: number
+          sam?: number
+          tech_sheet_id: string
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          machine?: string | null
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          position?: number
+          rate_per_min?: number
+          sam?: number
+          tech_sheet_id?: string
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tech_sheet_operations_tech_sheet_id_fkey"
+            columns: ["tech_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "tech_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tech_sheets: {
         Row: {
           code: string
@@ -1429,6 +1683,9 @@ export type Database = {
           cost_price: number | null
           created_at: string
           id: string
+          labor_cost: number
+          materials_cost: number
+          overhead_pct: number
           owner_id: string
           product_id: string | null
           status: Database["public"]["Enums"]["tech_sheet_status"]
@@ -1441,6 +1698,9 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           id?: string
+          labor_cost?: number
+          materials_cost?: number
+          overhead_pct?: number
           owner_id: string
           product_id?: string | null
           status?: Database["public"]["Enums"]["tech_sheet_status"]
@@ -1453,6 +1713,9 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           id?: string
+          labor_cost?: number
+          materials_cost?: number
+          overhead_pct?: number
           owner_id?: string
           product_id?: string | null
           status?: Database["public"]["Enums"]["tech_sheet_status"]

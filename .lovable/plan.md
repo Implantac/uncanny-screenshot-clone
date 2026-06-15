@@ -1,67 +1,77 @@
-## Diagnóstico atual
+# Plano — USE MODA PLM 100% funcional
 
-A Onda 1 do reposicionamento **já está implementada** no projeto:
+## 1. Diagnóstico atual (o que já existe)
 
-- `docs/AUDIT.md` cataloga todos os módulos com classe (PLM-core / PLM-suporte / ERP-mirror / Wip) e status (Funcional / Parcial / Incompleto).
-- `src/lib/modules.ts` reagrupa o menu em 9 grupos PLM: Operação, Coleções, Desenvolvimento, PCP & Produção, Cadeia (PLM), Marketing, Inteligência, ERP (Integração), Plataforma.
-- Módulos financeiros/comerciais (financeiro, cashflow, comercial, clientes, representantes, pedidos-compra, movimentações) foram marcados `hidden: true` — **rotas preservadas**, apenas saem do sidebar PLM.
-- Módulos ERP-mirror restantes (attribution, sales-performance, margem, profitability) ficam visíveis no grupo "ERP (Integração)" com badge **ERP** no menu.
-- Triggers de duplicação com ERP catalogados em `AUDIT.md` para desativação na Onda 8 (preservam dados existentes até lá).
+Após Ondas 1–8 o projeto tem a fundação certa para PLM moda:
 
-Diretriz "não remover, só reorganizar" está sendo respeitada.
+- **Menu reorganizado** em 9 grupos PLM (`src/lib/modules.ts`), com ERP-mirror separado.
+- **Núcleo de dados**: `collections`, `collection_versions`, `products`, `prototypes`, `tech_sheets`, `production_orders`, `production_batches`, `service_orders` (com `kind=parcial`), `production_stage_log`, `pcp_stages` (configuráveis), `marketing_campaigns`, `influencers`, `suppliers`, `inventory_items`.
+- **Camada ERP**: `erp_sales_mirror` / `erp_purchase_mirror` / `erp_inventory_mirror` + `src/lib/erp/`.
+- **Triggers úteis ativos**: protótipo aprovado → OP, mudança de stage → log, OS recebida → log + avanço, ficha aprovada → custo do produto, movimentos → saldo. Triggers ERP-duplicantes desativados.
+- **Auth + RLS por `owner_id`** + roles (`has_role`), `handle_new_user` semeia perfil/role/stages.
 
-## Plano de execução por ondas
+## 2. Lacunas que impedem "100% PLM"
 
-Cada onda é um PR independente. Nenhuma onda apaga rotas/tabelas — só esconde, completa ou redireciona leitura para ERP.
+Identifiquei 6 grupos de lacunas — cada um vira uma onda nova (9 a 14).
 
-### Onda 2 — Command Center operacional
-Substituir KPIs financeiros do `/` por KPIs operacionais:
-- Coleções (em desenvolvimento / aprovadas / em produção)
-- Produtos (pesquisa / modelagem / piloto / aprovados)
-- Produção (lotes ativos / atrasados / setores em gargalo)
-- Alertas (produtos sem ficha, pilotos pendentes, lotes parados)
-- Timeline operacional em tempo real (via `production_stage_log` + realtime).
+### Onda 9 — Tech Pack completo (núcleo do PLM)
+Hoje `tech_sheets` é apenas um cabeçalho com `cost_price` e `status`. Falta o coração do PLM.
+- Tabelas filhas: `tech_sheet_materials` (BOM: insumo, consumo, unidade, perda %, custo), `tech_sheet_operations` (operação, SAM/SMV, máquina, valor), `tech_sheet_measurements` (POM: ponto, tolerância +/-, valores por tamanho), `tech_sheet_labels` (etiquetas, composição, cuidados), `tech_sheet_attachments` (CAD/imagem/PDF).
+- Recalcular `cost_price` automaticamente a partir de BOM + operações via trigger.
+- UI em abas dentro de `/ficha-tecnica/:id`: Resumo · BOM · Operações · Medidas · Etiquetas · Anexos · Custos.
 
-### Onda 3 — Coleções como núcleo
-`/colecoes/:id` ganha abas: Planejamento · Moodboard · Tendências · Produtos · Cronograma · Status · Performance. Criação de produto/protótipo passa a nascer **dentro** de uma coleção.
+### Onda 10 — Grade, cor e SKU
+PLM moda exige variantes (cor × tamanho).
+- `product_color_options`, `product_size_options`, `product_variants` (SKU, EAN, cor, tamanho, ativo).
+- `production_order_grid` (qty por variante) e `service_order_grid` (passagem por variante).
+- UI no `/produtos/:id` aba "Grade" + integração no PCP Kanban e nos lotes.
 
-### Onda 4 — Lotes multi-referência + passagens parciais
-- `production_batches` aceita N referências por lote (já existe a tabela; falta UI e regra de negócio).
-- `service_orders` já suporta `kind = 'parcial'` com `qty_received` — completar UI no `/pcp-kanban` e `/lotes` para movimentação por pacote / grade / quantidade.
-- Rastreabilidade: tela "onde está cada peça/lote/referência" consumindo `production_stage_log`.
+### Onda 11 — Cadeia & qualidade
+- `supplier_capabilities` (corte, costura, estamparia, lavanderia…) e `supplier_compliance` (certificações, vencimento).
+- `quality_inspections` (AQL, amostra, defeitos, aprovado/refação) ligadas a OP/OS e protótipo.
+- UI `/qualidade` lista + drawer + exporta laudo.
 
-### Onda 5 — Stages PCP configuráveis por empresa
-Hoje os stages são enum fixo. Criar `pcp_stages` (por owner, ordenável) e refatorar `production_orders.stage` para FK textual. Migração preserva dados atuais mapeando enum → linhas default.
+### Onda 12 — DPP (Digital Product Passport) real (ESPR-ready)
+Rota `/dpp/:id` já existe; falta dado.
+- Página pública com QR code (rota pública `/p/dpp/:id`), composição, origem, fornecedores, instruções de cuidado, reparabilidade, certificações.
+- `dpp_records` versionado por produto/variante + assinatura (hash) e log de visualizações.
 
-### Onda 6 — Marketing / Influencers / Geo consumindo ERP
-- `/marketing`, `/influencer-roi`, `/geo-sales` passam a ler de `erp_sales_mirror` (criada na Onda 7).
-- `/influencers`: baseline antes/depois da campanha calculada sobre vendas do ERP.
+### Onda 13 — Integração ERP viva
+- Webhook público `POST /api/public/erp-sync` com HMAC + Zod, escreve em `erp_*_mirror` via `supabaseAdmin`.
+- Server fns `pullErpSnapshot` / `pushPlmRelease` (release de ficha aprovada → item master ERP) sob `requireSupabaseAuth` + `has_role('admin')`.
+- Painel `/erp-integration` com último sync, erros, fila.
 
-### Onda 7 — Camada de integração ERP
-- `src/lib/erp/` com client + tipagens.
-- Tabelas `erp_*_mirror` (sales, customers, orders) populadas por job/webhook.
-- Server functions com `requireSupabaseAuth` para leitura; nada de escrita financeira no PLM.
+### Onda 14 — Polimento operacional
+- Realtime no Command Center (já preparado) ligado a `production_stage_log`, `pilots`, `prototypes`.
+- Notificações (`notifications` table + bell): aprovação pendente, OS atrasada, ficha sem BOM, piloto vencendo.
+- Permissões finas por papel (designer / modelista / pcp / qualidade / admin) usando `has_role` em todas as server fns de escrita sensível.
+- Export PDF do tech pack e do DPP.
+- Testes E2E mínimos: criar coleção → produto → protótipo aprovado → OP gerada → OS parcial → fechamento.
 
-### Onda 8 — Limpeza de duplicações (com aprovação caso a caso)
-Desativar triggers:
-- `b2b_orders_to_financial_account`
-- `purchase_orders_to_financial_account`
-- `purchase_orders_to_stock_entries`
+## 3. Como vou executar
 
-E avaliar remoção definitiva das rotas hidden quando o ERP estiver integrado.
+Cada onda será um PR independente, na ordem 9 → 14. Para cada uma eu:
+1. Crio a migração (tabelas + GRANT + RLS por `owner_id` + triggers).
+2. Adiciono server fns (`*.functions.ts`) com `requireSupabaseAuth` + role-check onde necessário.
+3. Atualizo/crio rota(s) com `head()`, loader via TanStack Query, `errorComponent`/`notFoundComponent`.
+4. Atualizo `docs/AUDIT.md` marcando o item como ✅.
+5. Não removo rotas/tabelas legadas — só completo, esconde ou redireciona leitura.
 
-## Detalhes técnicos
+## 4. Premissas
 
-- Stack mantida: TanStack Start + Supabase + RLS por `owner_id`.
-- Toda nova leitura ERP via `createServerFn` + `requireSupabaseAuth` (sem expor service role).
-- Realtime do Command Center via `useRealtime("production_stage_log", ...)`.
-- Nenhuma migração desta etapa apaga tabelas; apenas adições (`pcp_stages`, `erp_*_mirror`) e flags.
-- Menu segue dirigido por `src/lib/modules.ts`; `hidden: true` é o mecanismo oficial de ocultar sem quebrar links.
+- Stack: TanStack Start + Lovable Cloud + RLS por `owner_id` (mantida).
+- ERP continua dono de financeiro/fiscal/CRM — PLM só lê via `erp_*_mirror`.
+- Sem refactor de design system; uso tokens existentes (`glass`, `primary`, etc).
+- Não criamos Edge Functions; toda lógica em `createServerFn` ou rota server (`/api/public/*` só para webhooks ERP).
 
-## O que NÃO faremos
-- Não recriar Financeiro/Fiscal/CRM/Tesouraria no PLM.
-- Não apagar rotas existentes nesta fase — só esconder.
-- Não trocar a stack nem o design system.
+## 5. O que **não** está no escopo
 
-## Próximo passo sugerido
-Começar pela **Onda 2 (Command Center operacional)** — é a mudança mais visível do reposicionamento e não depende de integração ERP. Confirma?
+- Substituir o ERP (financeiro, fiscal, CRM, contas a pagar/receber).
+- Trocar autenticação/stack.
+- Editor 3D (CLO/Browzwear) — fica como roadmap.
+
+## 6. Sugestão de próximo passo
+
+Começar pela **Onda 9 (Tech Pack completo)** — é o que mais diferencia um PLM de moda de qualquer outro sistema e destrava as ondas 10–14 (grade depende de BOM, DPP depende de composição, qualidade depende de POM).
+
+Confirma começar pela Onda 9? Se preferir outra ordem ou quiser ondas adicionais (ex.: 3D, sustentabilidade scoring Higg, sourcing RFQ), me diga antes de eu executar.
