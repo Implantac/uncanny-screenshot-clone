@@ -335,7 +335,7 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQCha
               </TableHeader>
               <TableBody>
                 {filtered.slice(0, 40).map((r) => (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} data-testid="intel-item">
                     <TableCell>
                       <div className="font-medium">{r.name}</div>
                       <div className="text-xs text-muted-foreground">{r.sku}</div>
@@ -371,7 +371,7 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQCha
           </CardHeader>
           <CardContent className="space-y-3">
             {suggestions.map((s) => (
-              <div key={s.id} className="rounded-lg border p-3">
+              <div key={s.id} data-testid="intel-item" className="rounded-lg border p-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">{s.name}</div>
@@ -553,6 +553,7 @@ function PcpKanban({ orders, products }: any) {
                     return (
                       <div
                         key={o.id}
+                        data-testid="intel-item"
                         draggable={canMove}
                         onDragStart={(e) => { if (!canMove) { e.preventDefault(); return; } setDragId(o.id); e.dataTransfer.setData("text/plain", o.id); }}
                         onDragEnd={() => setDragId(null)}
@@ -627,7 +628,7 @@ function DevelopmentBoard({ prototypes }: any) {
                   </div>
                   <div className="space-y-2">
                     {(cols.get(s) ?? []).slice(0, 4).map((p) => (
-                      <div key={p.id} className="rounded-md border bg-card p-2">
+                      <div key={p.id} data-testid="intel-item" className="rounded-md border bg-card p-2">
                         <div className="text-xs font-medium truncate">{p.code}</div>
                         <div className="text-[10px] text-muted-foreground">
                           {p.due_date ? new Date(p.due_date).toLocaleDateString("pt-BR") : "Sem prazo"}
@@ -732,7 +733,7 @@ function ProductScore({ products, sales, inventory }: any) {
             </TableHeader>
             <TableBody>
               {top.map((p) => (
-                <TableRow key={p.id}>
+                <TableRow key={p.id} data-testid="intel-item">
                   <TableCell><div className="font-medium">{p.name}</div><div className="text-xs text-muted-foreground">{p.sku}</div></TableCell>
                   <TableCell className="text-right tabular-nums">{p.sales}</TableCell>
                   <TableCell className="text-right tabular-nums">{p.roi}%</TableCell>
@@ -1316,7 +1317,7 @@ function SalesSuite({ products }: { products: any[] }) {
               </TableHeader>
               <TableBody>
                 {items.map((s) => (
-                  <TableRow key={s.id}>
+                  <TableRow key={s.id} data-testid="intel-item">
                     <TableCell className="text-sm">{(s.sold_at || "").slice(0, 10)}</TableCell>
                     <TableCell className="text-sm font-medium">{s.sku || "—"}</TableCell>
                     <TableCell className="text-sm">{s.size || "—"}</TableCell>
