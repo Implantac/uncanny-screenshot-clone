@@ -42,7 +42,9 @@ function Almoxarifado() {
   const { user } = useAuth();
   const qc = useQueryClient();
   useRealtime("inventory_items", ["inventory_items"]);
-  const [q, setQ] = useState("");
+  const { q } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setQ = (v: string) => navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Item | null>(null);
 
