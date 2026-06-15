@@ -36,13 +36,20 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
+const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
+const SORT_KEYS = ["recent", "name", "progress", "launch", "year"] as const;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const colecoesSearchSchema = z.object({
-  q: fallback(z.string(), "").default(""),
-  status: fallback(z.string(), "all").default("all"),
-  season: fallback(z.string(), "all").default("all"),
-  sort: fallback(z.enum(["recent", "name", "progress", "launch", "year"]), "recent").default("recent"),
-  page: fallback(z.number().int().min(1), 1).default(1),
-  id: fallback(z.string().optional(), undefined),
+  q: fallback(z.string().trim().max(80), "").default(""),
+  status: fallback(z.enum(["all", ...STATUS_KEYS]), "all").default("all"),
+  season: fallback(
+    z.string().trim().max(40).regex(/^[\p{L}\p{N}\s\-–]+$/u),
+    "all",
+  ).default("all"),
+  sort: fallback(z.enum(SORT_KEYS), "recent").default("recent"),
+  page: fallback(z.coerce.number().int().min(1).max(9999), 1).default(1),
+  id: fallback(z.string().regex(UUID_RE).optional(), undefined),
 });
 
 export const Route = createFileRoute("/_authenticated/_app/colecoes")({
