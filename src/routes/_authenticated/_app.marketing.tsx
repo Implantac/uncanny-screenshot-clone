@@ -120,8 +120,9 @@ function Marketing() {
                   Marketing Intelligence
                 </span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight truncate">Command Center</h1>
-              <p className="text-sm text-muted-foreground mt-1">Performance de mídia em tempo real · {filtered.length} de {rows.length} campanhas monitoradas</p>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight truncate">Marketing de Produto</h1>
+              <p className="text-sm text-muted-foreground mt-1">Performance por produto e coleção · dados de receita lidos do ERP · {filtered.length} de {rows.length} campanhas</p>
+              <p className="text-[11px] text-muted-foreground/80 mt-1">⓵ O PLM mede o impacto do produto; o ERP permanece como fonte oficial financeira.</p>
             </div>
           </div>
           <div className="flex gap-2 shrink-0">
