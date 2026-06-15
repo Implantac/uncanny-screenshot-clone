@@ -305,6 +305,7 @@ function LotesPage() {
       )}
 
       <BatchDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} />
+      <PassageDialog order={passOrder} onClose={() => setPassOrder(null)} userId={user?.id} />
     </div>
   );
 }
