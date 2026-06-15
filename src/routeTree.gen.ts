@@ -38,6 +38,7 @@ import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_aut
 import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
 import { Route as AuthenticatedAppMarketingRouteImport } from './routes/_authenticated/_app.marketing'
 import { Route as AuthenticatedAppMargemRouteImport } from './routes/_authenticated/_app.margem'
+import { Route as AuthenticatedAppLotesRouteImport } from './routes/_authenticated/_app.lotes'
 import { Route as AuthenticatedAppIntelligenceRouteImport } from './routes/_authenticated/_app.intelligence'
 import { Route as AuthenticatedAppInfluencersRouteImport } from './routes/_authenticated/_app.influencers'
 import { Route as AuthenticatedAppInfluencerRoiRouteImport } from './routes/_authenticated/_app.influencer-roi'
@@ -226,6 +227,11 @@ const AuthenticatedAppMarketingRoute =
 const AuthenticatedAppMargemRoute = AuthenticatedAppMargemRouteImport.update({
   id: '/margem',
   path: '/margem',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppLotesRoute = AuthenticatedAppLotesRouteImport.update({
+  id: '/lotes',
+  path: '/lotes',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 const AuthenticatedAppIntelligenceRoute =
@@ -429,6 +435,7 @@ export interface FileRoutesByFullPath {
   '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
   '/influencers': typeof AuthenticatedAppInfluencersRoute
   '/intelligence': typeof AuthenticatedAppIntelligenceRoute
+  '/lotes': typeof AuthenticatedAppLotesRoute
   '/margem': typeof AuthenticatedAppMargemRoute
   '/marketing': typeof AuthenticatedAppMarketingRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
@@ -487,6 +494,7 @@ export interface FileRoutesByTo {
   '/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
   '/influencers': typeof AuthenticatedAppInfluencersRoute
   '/intelligence': typeof AuthenticatedAppIntelligenceRoute
+  '/lotes': typeof AuthenticatedAppLotesRoute
   '/margem': typeof AuthenticatedAppMargemRoute
   '/marketing': typeof AuthenticatedAppMarketingRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
@@ -547,6 +555,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/influencer-roi': typeof AuthenticatedAppInfluencerRoiRoute
   '/_authenticated/_app/influencers': typeof AuthenticatedAppInfluencersRoute
   '/_authenticated/_app/intelligence': typeof AuthenticatedAppIntelligenceRoute
+  '/_authenticated/_app/lotes': typeof AuthenticatedAppLotesRoute
   '/_authenticated/_app/margem': typeof AuthenticatedAppMargemRoute
   '/_authenticated/_app/marketing': typeof AuthenticatedAppMarketingRoute
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
@@ -608,6 +617,7 @@ export interface FileRouteTypes {
     | '/influencer-roi'
     | '/influencers'
     | '/intelligence'
+    | '/lotes'
     | '/margem'
     | '/marketing'
     | '/mobile'
@@ -666,6 +676,7 @@ export interface FileRouteTypes {
     | '/influencer-roi'
     | '/influencers'
     | '/intelligence'
+    | '/lotes'
     | '/margem'
     | '/marketing'
     | '/mobile'
@@ -725,6 +736,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/influencer-roi'
     | '/_authenticated/_app/influencers'
     | '/_authenticated/_app/intelligence'
+    | '/_authenticated/_app/lotes'
     | '/_authenticated/_app/margem'
     | '/_authenticated/_app/marketing'
     | '/_authenticated/_app/mobile'
@@ -965,6 +977,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppMargemRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/lotes': {
+      id: '/_authenticated/_app/lotes'
+      path: '/lotes'
+      fullPath: '/lotes'
+      preLoaderRoute: typeof AuthenticatedAppLotesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/intelligence': {
       id: '/_authenticated/_app/intelligence'
       path: '/intelligence'
@@ -1200,6 +1219,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppInfluencerRoiRoute: typeof AuthenticatedAppInfluencerRoiRoute
   AuthenticatedAppInfluencersRoute: typeof AuthenticatedAppInfluencersRoute
   AuthenticatedAppIntelligenceRoute: typeof AuthenticatedAppIntelligenceRoute
+  AuthenticatedAppLotesRoute: typeof AuthenticatedAppLotesRoute
   AuthenticatedAppMargemRoute: typeof AuthenticatedAppMargemRoute
   AuthenticatedAppMarketingRoute: typeof AuthenticatedAppMarketingRoute
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
@@ -1255,6 +1275,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppInfluencerRoiRoute: AuthenticatedAppInfluencerRoiRoute,
   AuthenticatedAppInfluencersRoute: AuthenticatedAppInfluencersRoute,
   AuthenticatedAppIntelligenceRoute: AuthenticatedAppIntelligenceRoute,
+  AuthenticatedAppLotesRoute: AuthenticatedAppLotesRoute,
   AuthenticatedAppMargemRoute: AuthenticatedAppMargemRoute,
   AuthenticatedAppMarketingRoute: AuthenticatedAppMarketingRoute,
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
