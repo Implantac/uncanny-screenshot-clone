@@ -99,7 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex-1 flex flex-col min-w-0 h-screen">
 
-        <header className="h-16 border-b border-border flex items-center gap-2 sm:gap-3 px-3 sm:px-5 sticky top-0 z-10 bg-background/80 backdrop-blur">
+        <header className="h-16 shrink-0 border-b border-border flex items-center gap-2 sm:gap-3 px-3 sm:px-5 bg-background/80 backdrop-blur z-10">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <button className="lg:hidden size-9 grid place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
