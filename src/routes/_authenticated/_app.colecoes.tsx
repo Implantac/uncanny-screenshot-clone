@@ -790,6 +790,43 @@ function ColecoesPage() {
                   </div>
                 </TabsContent>
 
+                <TabsContent value="status" className="mt-0 glass rounded-xl p-5 space-y-3">
+                  <div className="text-sm font-semibold">Status de produção por produto</div>
+                  <div className="text-xs text-muted-foreground mb-2">Consolidação das OPs vinculadas aos produtos desta coleção.</div>
+                  {selectedProducts.length ? (
+                    <div className="space-y-2">
+                      {selectedProducts.map((p) => {
+                        const m = (productionByProduct as any)[p.id];
+                        const pct = m && m.qty > 0 ? Math.min(100, Math.round((m.done / m.qty) * 100)) : 0;
+                        const topStage = m ? Object.entries(m.stages).sort((a: any, b: any) => b[1] - a[1])[0] : null;
+                        return (
+                          <div key={p.id} className="rounded-lg border border-border bg-background/30 p-3">
+                            <div className="flex items-center justify-between gap-3 text-sm">
+                              <div className="min-w-0">
+                                <div className="font-medium truncate">{p.name}</div>
+                                <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2">
+                                  <span>{m ? `${m.qty} pç` : "Sem OP"}</span>
+                                  {topStage && <span>· etapa {String(topStage[0])}</span>}
+                                  {m && m.late > 0 && <Badge variant="outline" className="bg-destructive/20 text-destructive border-destructive/30">{m.late} atrasada(s)</Badge>}
+                                </div>
+                              </div>
+                              <div className="w-32 shrink-0">
+                                <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+                                  <span>{pct}%</span>
+                                  <span className="tabular-nums">{m?.done ?? 0}/{m?.qty ?? 0}</span>
+                                </div>
+                                <Progress value={pct} className="h-1.5" />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground py-8 text-center">Nenhum produto vinculado.</div>
+                  )}
+                </TabsContent>
+
                 <TabsContent value="performance" className="mt-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                   <PerformanceCard label="Produtos em desenvolvimento" value={String(derived.statusCount.desenvolvimento ?? 0)} />
                   <PerformanceCard label="Produtos aprovados" value={String(derived.statusCount.aprovado ?? 0)} />
