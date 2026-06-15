@@ -57,18 +57,18 @@ function Colecao360() {
     return collections.map((c) => {
       const cProducts = products.filter((p) => p.collection_id === c.id);
       const productIds = new Set(cProducts.map((p) => p.id));
-      const cProtos = prototypes.filter((p) => p.collection_id === c.id);
+      const cProtos = prototypes.filter((p) => p.product_id && productIds.has(p.product_id));
       const cOrders = orders.filter((o) => o.product_id && productIds.has(o.product_id));
       const cSales = sales.filter((s) => s.product_id && productIds.has(s.product_id));
 
-      const revenue = cSales.reduce((a, s) => a + Number(s.total_value ?? 0), 0);
+      const revenue = cSales.reduce((a, s) => a + Number(s.total ?? 0), 0);
       const unitsSold = cSales.reduce((a, s) => a + s.quantity, 0);
       const opsActive = cOrders.filter((o) => o.stage !== "entregue").length;
       const opsDone = cOrders.filter((o) => o.stage === "entregue").length;
       const producedQty = cOrders.filter((o) => o.stage === "entregue").reduce((a, o) => a + o.quantity, 0);
 
       const avgCost = cProducts.length ? cProducts.reduce((a, p) => a + Number(p.cost_price ?? 0), 0) / cProducts.length : 0;
-      const avgPrice = cProducts.length ? cProducts.reduce((a, p) => a + Number(p.sale_price ?? 0), 0) / cProducts.length : 0;
+      const avgPrice = cProducts.length ? cProducts.reduce((a, p) => a + Number(p.sell_price ?? 0), 0) / cProducts.length : 0;
       const margin = avgPrice > 0 ? ((avgPrice - avgCost) / avgPrice) * 100 : 0;
       const sellThrough = producedQty > 0 ? (unitsSold / producedQty) * 100 : 0;
 
