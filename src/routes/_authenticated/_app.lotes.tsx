@@ -405,3 +405,94 @@ function BatchDialog({ open, onOpenChange, editing, userId }: { open: boolean; o
     </Dialog>
   );
 }
+
+function PassageDialog({ order, onClose, userId }: { order: OrderRef | null; onClose: () => void; userId?: string }) {
+  const qc = useQueryClient();
+  const [kind, setKind] = useState<"integral" | "parcial">("parcial");
+  const [toStage, setToStage] = useState("");
+  const [qty, setQty] = useState(0);
+  const [note, setNote] = useState("");
+
+  useMemo(() => {
+    if (!order) return;
+    setKind("parcial");
+    setToStage("");
+    setQty(order.quantity);
+    setNote("");
+  }, [order?.id]);
+
+  const saveMut = useMutation({
+    mutationFn: async () => {
+      if (!userId || !order) throw new Error("Sessão expirada");
+      if (!toStage) throw new Error("Informe o estágio de destino");
+      if (qty <= 0) throw new Error("Quantidade deve ser maior que zero");
+      const code = `OS-${Date.now().toString().slice(-6)}`;
+      const { error } = await supabase.from("service_orders").insert({
+        owner_id: userId,
+        production_order_id: order.id,
+        code,
+        from_stage: order.stage,
+        to_stage: toStage,
+        kind,
+        quantity: qty,
+        qty_received: qty,
+        status: "recebida",
+        notes: note || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["batch-orders"] });
+      qc.invalidateQueries({ queryKey: ["batch-logs"] });
+      toast.success("Passagem registrada");
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={!!order} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Registrar passagem · {order?.code}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={(e) => { e.preventDefault(); saveMut.mutate(); }} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Tipo</Label>
+              <Select value={kind} onValueChange={(v) => setKind(v as "integral" | "parcial")}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="parcial">Parcial</SelectItem>
+                  <SelectItem value="integral">Integral</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Quantidade</Label>
+              <Input type="number" min={1} value={qty} onChange={(e) => setQty(Number(e.target.value))} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>De</Label>
+              <Input value={order?.stage ?? ""} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Para</Label>
+              <Input value={toStage} onChange={(e) => setToStage(e.target.value)} placeholder="costura, acabamento…" required />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Observação</Label>
+            <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={saveMut.isPending}>{saveMut.isPending ? "Registrando…" : "Registrar"}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
