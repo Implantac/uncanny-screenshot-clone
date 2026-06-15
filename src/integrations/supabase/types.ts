@@ -1325,6 +1325,104 @@ export type Database = {
           },
         ]
       }
+      quality_inspections: {
+        Row: {
+          aql_level: string | null
+          attachments: Json
+          created_at: string
+          critical_defects: number
+          id: string
+          inspected_at: string
+          inspection_type: string
+          inspector: string | null
+          lot_size: number | null
+          major_defects: number
+          minor_defects: number
+          notes: string | null
+          owner_id: string
+          production_order_id: string | null
+          prototype_id: string | null
+          result: string
+          sample_size: number | null
+          service_order_id: string | null
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          aql_level?: string | null
+          attachments?: Json
+          created_at?: string
+          critical_defects?: number
+          id?: string
+          inspected_at?: string
+          inspection_type?: string
+          inspector?: string | null
+          lot_size?: number | null
+          major_defects?: number
+          minor_defects?: number
+          notes?: string | null
+          owner_id: string
+          production_order_id?: string | null
+          prototype_id?: string | null
+          result?: string
+          sample_size?: number | null
+          service_order_id?: string | null
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aql_level?: string | null
+          attachments?: Json
+          created_at?: string
+          critical_defects?: number
+          id?: string
+          inspected_at?: string
+          inspection_type?: string
+          inspector?: string | null
+          lot_size?: number | null
+          major_defects?: number
+          minor_defects?: number
+          notes?: string | null
+          owner_id?: string
+          production_order_id?: string | null
+          prototype_id?: string | null
+          result?: string
+          sample_size?: number | null
+          service_order_id?: string | null
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quality_inspections_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_inspections_prototype_id_fkey"
+            columns: ["prototype_id"]
+            isOneToOne: false
+            referencedRelation: "prototypes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_inspections_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "service_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_inspections_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       representatives: {
         Row: {
           active: boolean
@@ -1606,6 +1704,100 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_capabilities: {
+        Row: {
+          capability: string
+          created_at: string
+          id: string
+          monthly_capacity: number | null
+          notes: string | null
+          owner_id: string
+          supplier_id: string
+          updated_at: string
+        }
+        Insert: {
+          capability: string
+          created_at?: string
+          id?: string
+          monthly_capacity?: number | null
+          notes?: string | null
+          owner_id: string
+          supplier_id: string
+          updated_at?: string
+        }
+        Update: {
+          capability?: string
+          created_at?: string
+          id?: string
+          monthly_capacity?: number | null
+          notes?: string | null
+          owner_id?: string
+          supplier_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_capabilities_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_compliance: {
+        Row: {
+          attachment_url: string | null
+          cert_number: string | null
+          cert_type: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          issued_at: string | null
+          issuer: string | null
+          notes: string | null
+          owner_id: string
+          supplier_id: string
+          updated_at: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          cert_number?: string | null
+          cert_type: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          issuer?: string | null
+          notes?: string | null
+          owner_id: string
+          supplier_id: string
+          updated_at?: string
+        }
+        Update: {
+          attachment_url?: string | null
+          cert_number?: string | null
+          cert_type?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          issuer?: string | null
+          notes?: string | null
+          owner_id?: string
+          supplier_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_compliance_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
