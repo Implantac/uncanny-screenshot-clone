@@ -1,10 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Users, Instagram, TrendingUp, DollarSign } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/_app/influencers")({ component: Influencers });
+export const Route = createFileRoute("/_authenticated/_app/influencers")({
+  validateSearch: zodValidator(z.object({ q: fallback(z.string().trim().max(80), "").default("") })),
+  component: Influencers,
+});
 
 type Inf = {
   id: string; nome: string; instagram: string | null; tiktok: string | null; cidade: string | null; estado: string | null;
