@@ -136,6 +136,9 @@ function ColecoesPage() {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [seasonFilter, setSeasonFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"recent" | "name" | "progress" | "launch" | "year">("recent");
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
 
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["collections"],
@@ -246,7 +249,7 @@ function ColecoesPage() {
 
   const filteredCollections = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return collections.filter((c) => {
+    const list = collections.filter((c) => {
       if (statusFilter !== "all" && c.status !== statusFilter) return false;
       if (seasonFilter !== "all" && c.season !== seasonFilter) return false;
       if (!term) return true;
@@ -257,7 +260,31 @@ function ColecoesPage() {
         (c.description ?? "").toLowerCase().includes(term)
       );
     });
-  }, [collections, q, statusFilter, seasonFilter]);
+    const sorted = [...list];
+    const farFuture = 8640000000000000;
+    sorted.sort((a, b) => {
+      switch (sortBy) {
+        case "name": return a.name.localeCompare(b.name, "pt-BR");
+        case "progress": return b.progress - a.progress;
+        case "year": return b.year - a.year;
+        case "launch": {
+          const av = a.launch_date ? new Date(a.launch_date).getTime() : farFuture;
+          const bv = b.launch_date ? new Date(b.launch_date).getTime() : farFuture;
+          return av - bv;
+        }
+        default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+    return sorted;
+  }, [collections, q, statusFilter, seasonFilter, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredCollections.length / pageSize));
+  useEffect(() => { setPage(1); }, [q, statusFilter, seasonFilter, sortBy]);
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
+  const pagedCollections = useMemo(
+    () => filteredCollections.slice((page - 1) * pageSize, page * pageSize),
+    [filteredCollections, page],
+  );
 
   function exportSpec(c: Collection) {
     const items = products.filter((p) => p.collection_id === c.id);
@@ -405,10 +432,21 @@ function ColecoesPage() {
               </Select>
             </div>
 
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Ordenar por" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Mais recentes</SelectItem>
+                <SelectItem value="name">Nome (A–Z)</SelectItem>
+                <SelectItem value="progress">Maior progresso</SelectItem>
+                <SelectItem value="launch">Lançamento mais próximo</SelectItem>
+                <SelectItem value="year">Ano (desc)</SelectItem>
+              </SelectContent>
+            </Select>
+
             <div className="space-y-2">
               {filteredCollections.length === 0 ? (
                 <div className="text-xs text-muted-foreground text-center py-6">Nenhuma coleção encontrada.</div>
-              ) : filteredCollections.map((collection) => {
+              ) : pagedCollections.map((collection) => {
                 const active = collection.id === selected?.id;
                 return (
                   <button
@@ -437,7 +475,22 @@ function ColecoesPage() {
                 );
               })}
             </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-1">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                  Anterior
+                </Button>
+                <div className="text-xs text-muted-foreground tabular-nums">
+                  Página {page} de {totalPages}
+                </div>
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                  Próxima
+                </Button>
+              </div>
+            )}
           </section>
+
 
 
           {selected && (
