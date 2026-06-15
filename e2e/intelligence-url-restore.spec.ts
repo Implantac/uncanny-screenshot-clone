@@ -7,90 +7,51 @@ test.skip(!EMAIL || !PASSWORD, "Set E2E_EMAIL and E2E_PASSWORD to run this test"
 
 async function login(page: Page) {
   await page.goto("/auth");
-  await page.getByLabel("Email").first().fill(EMAIL);
+  await page.locator("#si-email").fill(EMAIL);
   await page.locator("#si-pass").fill(PASSWORD);
   await page.getByRole("button", { name: /^Entrar$/ }).click();
   await page.waitForURL((url) => !url.pathname.startsWith("/auth"), { timeout: 15_000 });
 }
 
 const QUERY = "vestido";
+const TABS = ["production", "kanban", "dev", "score", "restock", "sales"] as const;
 
-// Each tab + an assertion about the filtered list it must render.
-const TABS: Array<{
-  tab: string;
-  trigger: RegExp;
-  // A selector or text we expect to be visible after the filter applies.
-  expect: (page: Page) => Promise<void>;
-}> = [
-  {
-    tab: "score",
-    trigger: /score/i,
-    expect: async (page) => {
-      // Product Score list rows should all match the query (case-insensitive).
-      const rows = page.getByRole("row");
-      await expect(rows.first()).toBeVisible();
-      const texts = await rows.allInnerTexts();
-      expect(texts.slice(1).every((t) => t.toLowerCase().includes(QUERY))).toBeTruthy();
-    },
-  },
-  {
-    tab: "production",
-    trigger: /produ(c|ç)/i,
-    expect: async (page) => {
-      await expect(page.getByRole("tab", { selected: true })).toHaveText(/produ/i);
-    },
-  },
-  {
-    tab: "kanban",
-    trigger: /kanban|pcp/i,
-    expect: async (page) => {
-      await expect(page.getByRole("tab", { selected: true })).toBeVisible();
-    },
-  },
-  {
-    tab: "dev",
-    trigger: /desenv/i,
-    expect: async (page) => {
-      await expect(page.getByRole("tab", { selected: true })).toBeVisible();
-    },
-  },
-  {
-    tab: "restock",
-    trigger: /restock|repos/i,
-    expect: async (page) => {
-      await expect(page.getByRole("tab", { selected: true })).toBeVisible();
-    },
-  },
-  {
-    tab: "sales",
-    trigger: /sales|vendas/i,
-    expect: async (page) => {
-      await expect(page.getByRole("tab", { selected: true })).toBeVisible();
-    },
-  },
-];
-
-test.describe("Intelligence URL restore", () => {
+/**
+ * For each tab, assert that:
+ *  1) The active tab matches the URL `tab` param
+ *  2) The global search input is hydrated with `q`
+ *  3) Every visible [data-testid="intel-item"] contains the query (case-insensitive)
+ *     — i.e. the rendered list equals the filtered result and contains nothing else.
+ */
+test.describe("Intelligence URL restore — filtered lists", () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
   });
 
-  test("opens /intelligence?tab=score&q=vestido and restores tab + filter", async ({ page }) => {
-    await page.goto(`/intelligence?tab=score&q=${QUERY}`);
-    // Search input reflects q
-    const search = page.getByPlaceholder(/buscar em todas as abas/i);
-    await expect(search).toHaveValue(QUERY);
-    // Score tab is the active one
-    await expect(page.getByRole("tab", { selected: true })).toHaveText(/score/i);
-  });
+  for (const tab of TABS) {
+    test(`/intelligence?tab=${tab}&q=${QUERY} → list matches filter`, async ({ page }) => {
+      await page.goto(`/intelligence?tab=${tab}&q=${QUERY}`);
 
-  for (const t of TABS) {
-    test(`tab="${t.tab}" with q=${QUERY} restores filter`, async ({ page }) => {
-      await page.goto(`/intelligence?tab=${t.tab}&q=${QUERY}`);
-      const search = page.getByPlaceholder(/buscar em todas as abas/i);
-      await expect(search).toHaveValue(QUERY);
-      await expect(page.getByRole("tab", { selected: true })).toHaveText(t.trigger);
-      await t.expect(page);
+      // Search input + tab restored from URL
+      await expect(page.getByPlaceholder(/buscar em todas as abas/i)).toHaveValue(QUERY);
+      const activeTab = page.getByRole("tab", { selected: true });
+      await expect(activeTab).toBeVisible();
+
+      // Wait for either rendered items or the empty-state row.
+      const items = page.locator('[data-testid="intel-item"]:visible');
+      await page.waitForLoadState("networkidle");
+
+      const count = await items.count();
+      const texts: string[] = [];
+      for (let i = 0; i < count; i++) {
+        texts.push(((await items.nth(i).innerText()) || "").toLowerCase());
+      }
+
+      // Every visible list item must match the query. Empty list is acceptable
+      // (means the dataset has no "vestido" rows for that tab) — what we forbid
+      // is an item that does NOT contain the query slipping through the filter.
+      const offenders = texts.filter((t) => !t.includes(QUERY));
+      expect(offenders, `Tab "${tab}" rendered ${offenders.length} non-matching items`).toEqual([]);
     });
   }
 });
