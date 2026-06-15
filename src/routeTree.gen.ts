@@ -18,6 +18,7 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticated/_app.use-ai'
 import { Route as AuthenticatedAppTwinFactoryRouteImport } from './routes/_authenticated/_app.twin-factory'
 import { Route as AuthenticatedAppTrendsRouteImport } from './routes/_authenticated/_app.trends'
+import { Route as AuthenticatedAppSustentabilidade360RouteImport } from './routes/_authenticated/_app.sustentabilidade-360'
 import { Route as AuthenticatedAppSupplierScoreRouteImport } from './routes/_authenticated/_app.supplier-score'
 import { Route as AuthenticatedAppStockHealthRouteImport } from './routes/_authenticated/_app.stock-health'
 import { Route as AuthenticatedAppShowroomRouteImport } from './routes/_authenticated/_app.showroom'
@@ -53,6 +54,7 @@ import { Route as AuthenticatedAppFashionCalendarRouteImport } from './routes/_a
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/_app.equipe'
 import { Route as AuthenticatedAppDppRouteImport } from './routes/_authenticated/_app.dpp'
 import { Route as AuthenticatedAppDevKanbanRouteImport } from './routes/_authenticated/_app.dev-kanban'
+import { Route as AuthenticatedAppDesignerWorkspaceRouteImport } from './routes/_authenticated/_app.designer-workspace'
 import { Route as AuthenticatedAppDataLakeRouteImport } from './routes/_authenticated/_app.data-lake'
 import { Route as AuthenticatedAppControlTowerRouteImport } from './routes/_authenticated/_app.control-tower'
 import { Route as AuthenticatedAppComprasRouteImport } from './routes/_authenticated/_app.compras'
@@ -69,6 +71,7 @@ import { Route as AuthenticatedAppCadRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAppBiRouteImport } from './routes/_authenticated/_app.bi'
 import { Route as AuthenticatedAppAuditRouteImport } from './routes/_authenticated/_app.audit'
 import { Route as AuthenticatedAppAttributionRouteImport } from './routes/_authenticated/_app.attribution'
+import { Route as AuthenticatedAppApprovalsRouteImport } from './routes/_authenticated/_app.approvals'
 import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
 
@@ -116,6 +119,12 @@ const AuthenticatedAppTrendsRoute = AuthenticatedAppTrendsRouteImport.update({
   path: '/trends',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppSustentabilidade360Route =
+  AuthenticatedAppSustentabilidade360RouteImport.update({
+    id: '/sustentabilidade-360',
+    path: '/sustentabilidade-360',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppSupplierScoreRoute =
   AuthenticatedAppSupplierScoreRouteImport.update({
     id: '/supplier-score',
@@ -319,6 +328,12 @@ const AuthenticatedAppDevKanbanRoute =
     path: '/dev-kanban',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppDesignerWorkspaceRoute =
+  AuthenticatedAppDesignerWorkspaceRouteImport.update({
+    id: '/designer-workspace',
+    path: '/designer-workspace',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppDataLakeRoute =
   AuthenticatedAppDataLakeRouteImport.update({
     id: '/data-lake',
@@ -411,6 +426,12 @@ const AuthenticatedAppAttributionRoute =
     path: '/attribution',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppApprovalsRoute =
+  AuthenticatedAppApprovalsRouteImport.update({
+    id: '/approvals',
+    path: '/approvals',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppAlmoxarifadoRoute =
   AuthenticatedAppAlmoxarifadoRouteImport.update({
     id: '/almoxarifado',
@@ -429,6 +450,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/dpp/$id': typeof DppIdRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
+  '/approvals': typeof AuthenticatedAppApprovalsRoute
   '/attribution': typeof AuthenticatedAppAttributionRoute
   '/audit': typeof AuthenticatedAppAuditRoute
   '/bi': typeof AuthenticatedAppBiRoute
@@ -445,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/compras': typeof AuthenticatedAppComprasRoute
   '/control-tower': typeof AuthenticatedAppControlTowerRoute
   '/data-lake': typeof AuthenticatedAppDataLakeRoute
+  '/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
   '/dpp': typeof AuthenticatedAppDppRoute
   '/equipe': typeof AuthenticatedAppEquipeRoute
@@ -480,6 +503,7 @@ export interface FileRoutesByFullPath {
   '/showroom': typeof AuthenticatedAppShowroomRoute
   '/stock-health': typeof AuthenticatedAppStockHealthRoute
   '/supplier-score': typeof AuthenticatedAppSupplierScoreRoute
+  '/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
@@ -491,6 +515,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/dpp/$id': typeof DppIdRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
+  '/approvals': typeof AuthenticatedAppApprovalsRoute
   '/attribution': typeof AuthenticatedAppAttributionRoute
   '/audit': typeof AuthenticatedAppAuditRoute
   '/bi': typeof AuthenticatedAppBiRoute
@@ -507,6 +532,7 @@ export interface FileRoutesByTo {
   '/compras': typeof AuthenticatedAppComprasRoute
   '/control-tower': typeof AuthenticatedAppControlTowerRoute
   '/data-lake': typeof AuthenticatedAppDataLakeRoute
+  '/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
   '/dpp': typeof AuthenticatedAppDppRoute
   '/equipe': typeof AuthenticatedAppEquipeRoute
@@ -542,6 +568,7 @@ export interface FileRoutesByTo {
   '/showroom': typeof AuthenticatedAppShowroomRoute
   '/stock-health': typeof AuthenticatedAppStockHealthRoute
   '/supplier-score': typeof AuthenticatedAppSupplierScoreRoute
+  '/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
@@ -555,6 +582,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/dpp/$id': typeof DppIdRoute
   '/_authenticated/_app/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
+  '/_authenticated/_app/approvals': typeof AuthenticatedAppApprovalsRoute
   '/_authenticated/_app/attribution': typeof AuthenticatedAppAttributionRoute
   '/_authenticated/_app/audit': typeof AuthenticatedAppAuditRoute
   '/_authenticated/_app/bi': typeof AuthenticatedAppBiRoute
@@ -571,6 +599,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/compras': typeof AuthenticatedAppComprasRoute
   '/_authenticated/_app/control-tower': typeof AuthenticatedAppControlTowerRoute
   '/_authenticated/_app/data-lake': typeof AuthenticatedAppDataLakeRoute
+  '/_authenticated/_app/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/_authenticated/_app/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
   '/_authenticated/_app/dpp': typeof AuthenticatedAppDppRoute
   '/_authenticated/_app/equipe': typeof AuthenticatedAppEquipeRoute
@@ -606,6 +635,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/showroom': typeof AuthenticatedAppShowroomRoute
   '/_authenticated/_app/stock-health': typeof AuthenticatedAppStockHealthRoute
   '/_authenticated/_app/supplier-score': typeof AuthenticatedAppSupplierScoreRoute
+  '/_authenticated/_app/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/_authenticated/_app/trends': typeof AuthenticatedAppTrendsRoute
   '/_authenticated/_app/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/_authenticated/_app/use-ai': typeof AuthenticatedAppUseAiRoute
@@ -620,6 +650,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/dpp/$id'
     | '/almoxarifado'
+    | '/approvals'
     | '/attribution'
     | '/audit'
     | '/bi'
@@ -636,6 +667,7 @@ export interface FileRouteTypes {
     | '/compras'
     | '/control-tower'
     | '/data-lake'
+    | '/designer-workspace'
     | '/dev-kanban'
     | '/dpp'
     | '/equipe'
@@ -671,6 +703,7 @@ export interface FileRouteTypes {
     | '/showroom'
     | '/stock-health'
     | '/supplier-score'
+    | '/sustentabilidade-360'
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
@@ -682,6 +715,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/dpp/$id'
     | '/almoxarifado'
+    | '/approvals'
     | '/attribution'
     | '/audit'
     | '/bi'
@@ -698,6 +732,7 @@ export interface FileRouteTypes {
     | '/compras'
     | '/control-tower'
     | '/data-lake'
+    | '/designer-workspace'
     | '/dev-kanban'
     | '/dpp'
     | '/equipe'
@@ -733,6 +768,7 @@ export interface FileRouteTypes {
     | '/showroom'
     | '/stock-health'
     | '/supplier-score'
+    | '/sustentabilidade-360'
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
@@ -745,6 +781,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/dpp/$id'
     | '/_authenticated/_app/almoxarifado'
+    | '/_authenticated/_app/approvals'
     | '/_authenticated/_app/attribution'
     | '/_authenticated/_app/audit'
     | '/_authenticated/_app/bi'
@@ -761,6 +798,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/compras'
     | '/_authenticated/_app/control-tower'
     | '/_authenticated/_app/data-lake'
+    | '/_authenticated/_app/designer-workspace'
     | '/_authenticated/_app/dev-kanban'
     | '/_authenticated/_app/dpp'
     | '/_authenticated/_app/equipe'
@@ -796,6 +834,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/showroom'
     | '/_authenticated/_app/stock-health'
     | '/_authenticated/_app/supplier-score'
+    | '/_authenticated/_app/sustentabilidade-360'
     | '/_authenticated/_app/trends'
     | '/_authenticated/_app/twin-factory'
     | '/_authenticated/_app/use-ai'
@@ -874,6 +913,13 @@ declare module '@tanstack/react-router' {
       path: '/trends'
       fullPath: '/trends'
       preLoaderRoute: typeof AuthenticatedAppTrendsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/sustentabilidade-360': {
+      id: '/_authenticated/_app/sustentabilidade-360'
+      path: '/sustentabilidade-360'
+      fullPath: '/sustentabilidade-360'
+      preLoaderRoute: typeof AuthenticatedAppSustentabilidade360RouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/supplier-score': {
@@ -1121,6 +1167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppDevKanbanRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/designer-workspace': {
+      id: '/_authenticated/_app/designer-workspace'
+      path: '/designer-workspace'
+      fullPath: '/designer-workspace'
+      preLoaderRoute: typeof AuthenticatedAppDesignerWorkspaceRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/data-lake': {
       id: '/_authenticated/_app/data-lake'
       path: '/data-lake'
@@ -1233,6 +1286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAttributionRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/approvals': {
+      id: '/_authenticated/_app/approvals'
+      path: '/approvals'
+      fullPath: '/approvals'
+      preLoaderRoute: typeof AuthenticatedAppApprovalsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/almoxarifado': {
       id: '/_authenticated/_app/almoxarifado'
       path: '/almoxarifado'
@@ -1252,6 +1312,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAlmoxarifadoRoute: typeof AuthenticatedAppAlmoxarifadoRoute
+  AuthenticatedAppApprovalsRoute: typeof AuthenticatedAppApprovalsRoute
   AuthenticatedAppAttributionRoute: typeof AuthenticatedAppAttributionRoute
   AuthenticatedAppAuditRoute: typeof AuthenticatedAppAuditRoute
   AuthenticatedAppBiRoute: typeof AuthenticatedAppBiRoute
@@ -1268,6 +1329,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppComprasRoute: typeof AuthenticatedAppComprasRoute
   AuthenticatedAppControlTowerRoute: typeof AuthenticatedAppControlTowerRoute
   AuthenticatedAppDataLakeRoute: typeof AuthenticatedAppDataLakeRoute
+  AuthenticatedAppDesignerWorkspaceRoute: typeof AuthenticatedAppDesignerWorkspaceRoute
   AuthenticatedAppDevKanbanRoute: typeof AuthenticatedAppDevKanbanRoute
   AuthenticatedAppDppRoute: typeof AuthenticatedAppDppRoute
   AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
@@ -1303,6 +1365,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppShowroomRoute: typeof AuthenticatedAppShowroomRoute
   AuthenticatedAppStockHealthRoute: typeof AuthenticatedAppStockHealthRoute
   AuthenticatedAppSupplierScoreRoute: typeof AuthenticatedAppSupplierScoreRoute
+  AuthenticatedAppSustentabilidade360Route: typeof AuthenticatedAppSustentabilidade360Route
   AuthenticatedAppTrendsRoute: typeof AuthenticatedAppTrendsRoute
   AuthenticatedAppTwinFactoryRoute: typeof AuthenticatedAppTwinFactoryRoute
   AuthenticatedAppUseAiRoute: typeof AuthenticatedAppUseAiRoute
@@ -1311,6 +1374,7 @@ interface AuthenticatedAppRouteChildren {
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAlmoxarifadoRoute: AuthenticatedAppAlmoxarifadoRoute,
+  AuthenticatedAppApprovalsRoute: AuthenticatedAppApprovalsRoute,
   AuthenticatedAppAttributionRoute: AuthenticatedAppAttributionRoute,
   AuthenticatedAppAuditRoute: AuthenticatedAppAuditRoute,
   AuthenticatedAppBiRoute: AuthenticatedAppBiRoute,
@@ -1327,6 +1391,8 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppComprasRoute: AuthenticatedAppComprasRoute,
   AuthenticatedAppControlTowerRoute: AuthenticatedAppControlTowerRoute,
   AuthenticatedAppDataLakeRoute: AuthenticatedAppDataLakeRoute,
+  AuthenticatedAppDesignerWorkspaceRoute:
+    AuthenticatedAppDesignerWorkspaceRoute,
   AuthenticatedAppDevKanbanRoute: AuthenticatedAppDevKanbanRoute,
   AuthenticatedAppDppRoute: AuthenticatedAppDppRoute,
   AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
@@ -1362,6 +1428,8 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppShowroomRoute: AuthenticatedAppShowroomRoute,
   AuthenticatedAppStockHealthRoute: AuthenticatedAppStockHealthRoute,
   AuthenticatedAppSupplierScoreRoute: AuthenticatedAppSupplierScoreRoute,
+  AuthenticatedAppSustentabilidade360Route:
+    AuthenticatedAppSustentabilidade360Route,
   AuthenticatedAppTrendsRoute: AuthenticatedAppTrendsRoute,
   AuthenticatedAppTwinFactoryRoute: AuthenticatedAppTwinFactoryRoute,
   AuthenticatedAppUseAiRoute: AuthenticatedAppUseAiRoute,
