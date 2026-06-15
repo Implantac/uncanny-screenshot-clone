@@ -3,7 +3,7 @@ import {
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
   Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
   Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, Trophy, Target,
-  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, Leaf, type LucideIcon,
+  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, Leaf, Repeat, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleGroup =
@@ -81,6 +81,7 @@ export const MODULES: ModuleDef[] = [
 
   // === Inteligência ===
   { slug: "intel-hub", path: "/intel-hub", title: "Inteligência Operacional", short: "Hub unificado", description: "Alertas, reposição técnica e scores em uma tela única.", icon: Brain, group: "Inteligência" },
+  { slug: "closed-loop", path: "/closed-loop", title: "PLM Closed-Loop", short: "Voz do cliente → próxima coleção", description: "Reviews, NPS, ABC/lifecycle e replanejamento (repetir/repaginar/cortar).", icon: Repeat, group: "Inteligência" },
   { slug: "intelligence", path: "/intelligence", title: "Intelligence Engine", short: "Inteligência operacional", description: "O que produzir, repor, atrasar — sinais operacionais.", icon: Brain, group: "Inteligência" },
   { slug: "control-tower", path: "/control-tower", title: "Control Tower", short: "Demand & Supply", description: "Necessidade por grade com semáforo de cobertura.", icon: Radar, group: "Inteligência" },
   { slug: "product-score", path: "/product-score", title: "Product Score", short: "Pontuação 0–100", description: "Pontuação por vendas, margem, ROI e giro.", icon: Star, group: "Inteligência" },
