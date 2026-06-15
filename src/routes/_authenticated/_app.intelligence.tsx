@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,7 +27,12 @@ import {
   PieChart, Pie, Cell,
 } from "recharts";
 
+const INTEL_TABS = ["production","kanban","dev","score","restock","sales","geo","influencers","lake"] as const;
 export const Route = createFileRoute("/_authenticated/_app/intelligence")({
+  validateSearch: zodValidator(z.object({
+    tab: fallback(z.enum(INTEL_TABS), "production").default("production"),
+    q: fallback(z.string().trim().max(80), "").default(""),
+  })),
   head: () => ({
     meta: [
       { title: "Intelligence · USE MODA OS" },
@@ -57,6 +64,12 @@ function KPI({ label, value, hint, icon: Icon, tone }: { label: string; value: s
 }
 
 function IntelligencePage() {
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const setTab = (v: string) =>
+    navigate({ search: (p: typeof search) => ({ ...p, tab: v as typeof search.tab }), replace: true });
+  const setQ = (v: string) =>
+    navigate({ search: (p: typeof search) => ({ ...p, q: v }), replace: true });
   const productsQ = useQuery({
     queryKey: ["intel", "products"],
     queryFn: async () => (await supabase.from("products").select("*")).data ?? [],
@@ -111,7 +124,7 @@ function IntelligencePage() {
         </p>
       </header>
 
-      <Tabs defaultValue="production">
+      <Tabs value={search.tab} onValueChange={setTab}>
         <TabsList className="flex w-full flex-wrap justify-start h-auto">
           <TabsTrigger value="production"><Factory className="mr-1 h-4 w-4" />Produção</TabsTrigger>
           <TabsTrigger value="kanban"><Activity className="mr-1 h-4 w-4" />PCP Kanban</TabsTrigger>
@@ -132,6 +145,8 @@ function IntelligencePage() {
             inventory={invQ.data ?? []}
             b2b={b2bQ.data ?? []}
             sales={salesQ.data ?? []}
+            q={search.q}
+            onQChange={setQ}
           />
         </TabsContent>
 
@@ -194,8 +209,8 @@ function IntelligencePage() {
 }
 
 /* ===================== PRODUÇÃO ===================== */
-function ProductionTab({ products, orders, inventory, b2b, sales = [] }: any) {
-  const [q, setQ] = useState("");
+function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQChange }: any) {
+  const setQ = onQChange;
   const SIZES = ["PP", "P", "M", "G", "GG"];
   const SIZE_DIST = [0.1, 0.2, 0.35, 0.25, 0.1];
 
