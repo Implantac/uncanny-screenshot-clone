@@ -21,12 +21,12 @@ function useDashboard() {
     queryKey: ["plm-dashboard"],
     queryFn: async () => {
       const [prod, cols, inv, prods, protos, tech] = await Promise.all([
-        supabase.from("production_orders").select("code, quantity, progress, status, created_at, due_date"),
+        supabase.from("production_orders").select("id, code, quantity, progress, status, stage, stage_updated_at, created_at, due_date, product_id"),
         supabase.from("collections").select("name, status, progress, year, created_at").order("created_at", { ascending: false }).limit(6),
         supabase.from("inventory_items").select("name, balance, minimum, unit"),
-        supabase.from("products").select("name, category, colors, status, created_at").order("created_at", { ascending: false }).limit(200),
-        supabase.from("prototypes").select("code, stage, created_at").order("created_at", { ascending: false }).limit(50),
-        supabase.from("tech_sheets").select("id, status, created_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("products").select("id, name, category, colors, status, created_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("prototypes").select("id, code, stage, product_id, created_at").order("created_at", { ascending: false }).limit(50),
+        supabase.from("tech_sheets").select("id, product_id, status, created_at").order("created_at", { ascending: false }).limit(500),
       ]);
       const p = prod.data ?? [];
       const c = cols.data ?? [];
@@ -40,6 +40,43 @@ function useDashboard() {
       const piecesInProd = p.filter((r) => r.status !== "concluida").reduce((a, b) => a + (b.quantity ?? 0), 0);
       const protosOpen = pt.filter((r: any) => r.stage && !/aprov|conclu/i.test(r.stage)).length;
       const critical = i.filter((r) => Number(r.balance ?? 0) <= Number(r.minimum ?? 0));
+
+      // === Alertas operacionais (Onda 2) ===
+      const productsWithApprovedSheet = new Set(
+        ts.filter((t: any) => t.status === "aprovada" && t.product_id).map((t: any) => t.product_id as string),
+      );
+      const productsWithoutSheet = pr.filter(
+        (r: any) => r.id && !productsWithApprovedSheet.has(r.id) && (!r.status || /dev|brief|model|piloto|prot|aprov/i.test(r.status)),
+      );
+      const pendingPilots = pt.filter((r: any) => r.stage && /solicit|em_prova|ajuste|pend/i.test(r.stage));
+      const STUCK_DAYS = 5;
+      const now = Date.now();
+      const stuckBatches = p.filter((r: any) => {
+        if (r.status === "concluida" || r.status === "cancelada") return false;
+        const ref = r.stage_updated_at ?? r.created_at;
+        if (!ref) return false;
+        return (now - new Date(ref).getTime()) / 86400000 >= STUCK_DAYS;
+      });
+      const lateBatches = p.filter((r: any) => {
+        if (r.status === "concluida" || r.status === "cancelada") return false;
+        if (!r.due_date) return false;
+        return new Date(r.due_date).getTime() < now && (r.progress ?? 0) < 100;
+      });
+      const stageCounts = new Map<string, number>();
+      p.forEach((r: any) => {
+        if (r.status === "concluida" || r.status === "cancelada") return;
+        const s = r.stage ?? "—";
+        stageCounts.set(s, (stageCounts.get(s) ?? 0) + (r.quantity ?? 0));
+      });
+      const bottleneck = [...stageCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+
+      const alerts = {
+        productsWithoutSheet,
+        pendingPilots,
+        stuckBatches,
+        lateBatches,
+        bottleneck: bottleneck ? { stage: bottleneck[0], qty: bottleneck[1] } : null,
+      };
 
       // Production by stage
       const planned = p.reduce((a, b) => a + (b.quantity ?? 0), 0);
@@ -83,6 +120,7 @@ function useDashboard() {
       return {
         kpis: { activeCollections, productsInDev, piecesInProd, protosOpen },
         critical,
+        alerts,
         collections: c,
         productionData,
         devPipeline,
@@ -183,6 +221,44 @@ function CommandCenter() {
           );
         })}
       </div>
+
+      {/* === Alertas operacionais === */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {[
+          { label: "Produtos sem ficha", value: data?.alerts?.productsWithoutSheet.length ?? 0, to: "/ficha-tecnica", tone: "warning" as const },
+          { label: "Pilotos pendentes", value: data?.alerts?.pendingPilots.length ?? 0, to: "/pilots", tone: "info" as const },
+          { label: "Lotes parados (5d+)", value: data?.alerts?.stuckBatches.length ?? 0, to: "/pcp-kanban", tone: "warning" as const },
+          { label: "Lotes atrasados", value: data?.alerts?.lateBatches.length ?? 0, to: "/pcp", tone: "danger" as const },
+          {
+            label: "Setor gargalo",
+            value: data?.alerts?.bottleneck ? `${data.alerts.bottleneck.stage}` : "—",
+            sub: data?.alerts?.bottleneck ? `${data.alerts.bottleneck.qty} pç` : undefined,
+            to: "/twin-factory",
+            tone: "info" as const,
+          },
+        ].map((a) => {
+          const toneCls =
+            a.tone === "danger" ? "text-destructive" : a.tone === "warning" ? "text-warning" : "text-info";
+          const isZero = typeof a.value === "number" && a.value === 0;
+          return (
+            <Link
+              key={a.label}
+              to={a.to}
+              className="glass rounded-xl p-4 hover:border-primary/40 transition-colors flex items-start gap-3"
+            >
+              <AlertTriangle className={`size-4 mt-0.5 shrink-0 ${isZero ? "text-success" : toneCls}`} />
+              <div className="min-w-0">
+                <div className="text-lg font-semibold tabular-nums leading-tight truncate">
+                  {isLoading ? "…" : (isZero ? "✓" : a.value)}
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{a.label}</div>
+                {("sub" in a) && a.sub && <div className="text-[11px] text-muted-foreground/80 tabular-nums">{a.sub}</div>}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 glass rounded-xl p-5">
