@@ -63,6 +63,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "lotes", path: "/lotes", title: "Lotes & Rastreabilidade", short: "Batch tracking", description: "Lotes de produção, vínculo com OPs e histórico completo de estágios.", icon: Boxes, group: "PCP & Produção" },
   { slug: "twin-factory", path: "/twin-factory", title: "Torre de Controle", short: "Twin Factory", description: "Visão em tempo real de lotes, setores e gargalos.", icon: Activity, group: "PCP & Produção" },
   { slug: "capacity", path: "/capacity", title: "Capacidade de Produção", short: "OEE e carga", description: "OEE, WIP, atrasos e carga por fornecedor / facção.", icon: Gauge, group: "PCP & Produção" },
+  { slug: "pcp-stages", path: "/pcp-stages", title: "Etapas do PCP", short: "Configurar estágios", description: "Configure as etapas (setores) do seu fluxo de produção, ordem e cores.", icon: KanbanSquare, group: "PCP & Produção" },
 
   // === Cadeia (PLM) — insumos / fornecedores ===
   { slug: "almoxarifado", path: "/almoxarifado", title: "Almoxarifado (Insumos)", short: "Tecidos e aviamentos", description: "Controle técnico de insumos da produção.", icon: Boxes, group: "Cadeia (PLM)" },

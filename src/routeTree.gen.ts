@@ -34,6 +34,7 @@ import { Route as AuthenticatedAppProductSuccessRouteImport } from './routes/_au
 import { Route as AuthenticatedAppProductScoreRouteImport } from './routes/_authenticated/_app.product-score'
 import { Route as AuthenticatedAppPilotsRouteImport } from './routes/_authenticated/_app.pilots'
 import { Route as AuthenticatedAppPedidosCompraRouteImport } from './routes/_authenticated/_app.pedidos-compra'
+import { Route as AuthenticatedAppPcpStagesRouteImport } from './routes/_authenticated/_app.pcp-stages'
 import { Route as AuthenticatedAppPcpKanbanRouteImport } from './routes/_authenticated/_app.pcp-kanban'
 import { Route as AuthenticatedAppPcpRouteImport } from './routes/_authenticated/_app.pcp'
 import { Route as AuthenticatedAppOmnichannelRouteImport } from './routes/_authenticated/_app.omnichannel'
@@ -215,6 +216,12 @@ const AuthenticatedAppPedidosCompraRoute =
   AuthenticatedAppPedidosCompraRouteImport.update({
     id: '/pedidos-compra',
     path: '/pedidos-compra',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppPcpStagesRoute =
+  AuthenticatedAppPcpStagesRouteImport.update({
+    id: '/pcp-stages',
+    path: '/pcp-stages',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppPcpKanbanRoute =
@@ -518,6 +525,7 @@ export interface FileRoutesByFullPath {
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
+  '/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
   '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/pilots': typeof AuthenticatedAppPilotsRoute
   '/product-score': typeof AuthenticatedAppProductScoreRoute
@@ -587,6 +595,7 @@ export interface FileRoutesByTo {
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
+  '/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
   '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/pilots': typeof AuthenticatedAppPilotsRoute
   '/product-score': typeof AuthenticatedAppProductScoreRoute
@@ -658,6 +667,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/_authenticated/_app/pcp': typeof AuthenticatedAppPcpRoute
   '/_authenticated/_app/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
+  '/_authenticated/_app/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
   '/_authenticated/_app/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/_authenticated/_app/pilots': typeof AuthenticatedAppPilotsRoute
   '/_authenticated/_app/product-score': typeof AuthenticatedAppProductScoreRoute
@@ -730,6 +740,7 @@ export interface FileRouteTypes {
     | '/omnichannel'
     | '/pcp'
     | '/pcp-kanban'
+    | '/pcp-stages'
     | '/pedidos-compra'
     | '/pilots'
     | '/product-score'
@@ -799,6 +810,7 @@ export interface FileRouteTypes {
     | '/omnichannel'
     | '/pcp'
     | '/pcp-kanban'
+    | '/pcp-stages'
     | '/pedidos-compra'
     | '/pilots'
     | '/product-score'
@@ -869,6 +881,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/omnichannel'
     | '/_authenticated/_app/pcp'
     | '/_authenticated/_app/pcp-kanban'
+    | '/_authenticated/_app/pcp-stages'
     | '/_authenticated/_app/pedidos-compra'
     | '/_authenticated/_app/pilots'
     | '/_authenticated/_app/product-score'
@@ -1075,6 +1088,13 @@ declare module '@tanstack/react-router' {
       path: '/pedidos-compra'
       fullPath: '/pedidos-compra'
       preLoaderRoute: typeof AuthenticatedAppPedidosCompraRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/pcp-stages': {
+      id: '/_authenticated/_app/pcp-stages'
+      path: '/pcp-stages'
+      fullPath: '/pcp-stages'
+      preLoaderRoute: typeof AuthenticatedAppPcpStagesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/pcp-kanban': {
@@ -1432,6 +1452,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppOmnichannelRoute: typeof AuthenticatedAppOmnichannelRoute
   AuthenticatedAppPcpRoute: typeof AuthenticatedAppPcpRoute
   AuthenticatedAppPcpKanbanRoute: typeof AuthenticatedAppPcpKanbanRoute
+  AuthenticatedAppPcpStagesRoute: typeof AuthenticatedAppPcpStagesRoute
   AuthenticatedAppPedidosCompraRoute: typeof AuthenticatedAppPedidosCompraRoute
   AuthenticatedAppPilotsRoute: typeof AuthenticatedAppPilotsRoute
   AuthenticatedAppProductScoreRoute: typeof AuthenticatedAppProductScoreRoute
@@ -1499,6 +1520,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppOmnichannelRoute: AuthenticatedAppOmnichannelRoute,
   AuthenticatedAppPcpRoute: AuthenticatedAppPcpRoute,
   AuthenticatedAppPcpKanbanRoute: AuthenticatedAppPcpKanbanRoute,
+  AuthenticatedAppPcpStagesRoute: AuthenticatedAppPcpStagesRoute,
   AuthenticatedAppPedidosCompraRoute: AuthenticatedAppPedidosCompraRoute,
   AuthenticatedAppPilotsRoute: AuthenticatedAppPilotsRoute,
   AuthenticatedAppProductScoreRoute: AuthenticatedAppProductScoreRoute,
