@@ -145,6 +145,8 @@ function IntelligencePage() {
             inventory={invQ.data ?? []}
             b2b={b2bQ.data ?? []}
             sales={salesQ.data ?? []}
+            q={search.q}
+            onQChange={setQ}
           />
         </TabsContent>
 
