@@ -148,7 +148,7 @@ function ColecoesPage() {
   const pageSize = 6;
 
   const updateSearch = (patch: Partial<typeof search>) =>
-    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+    navigate({ search: (prev: typeof search) => ({ ...prev, ...patch }), replace: true });
   const setQ = (v: string) => updateSearch({ q: v, page: 1 });
   const setStatusFilter = (v: string) => updateSearch({ status: v, page: 1 });
   const setSeasonFilter = (v: string) => updateSearch({ season: v, page: 1 });
