@@ -59,6 +59,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "pcp", path: "/pcp", title: "PCP e Produção", short: "Ordens e capacidade", description: "Planejamento, ordens de produção e apontamento.", icon: Factory, group: "PCP & Produção" },
   { slug: "pcp-kanban", path: "/pcp-kanban", title: "PCP Kanban", short: "Board drag-and-drop", description: "Mova ordens entre setores arrastando os cards.", icon: KanbanSquare, group: "PCP & Produção", status: "parcial" },
   { slug: "centro-de-corte", path: "/centro-de-corte", title: "Centro de Corte", short: "Plano de corte", description: "Plano de corte, enfesto e peças cortadas.", icon: Scissors, group: "PCP & Produção" },
+  { slug: "lotes", path: "/lotes", title: "Lotes & Rastreabilidade", short: "Batch tracking", description: "Lotes de produção, vínculo com OPs e histórico completo de estágios.", icon: Boxes, group: "PCP & Produção" },
   { slug: "twin-factory", path: "/twin-factory", title: "Torre de Controle", short: "Twin Factory", description: "Visão em tempo real de lotes, setores e gargalos.", icon: Activity, group: "PCP & Produção" },
   { slug: "capacity", path: "/capacity", title: "Capacidade de Produção", short: "OEE e carga", description: "OEE, WIP, atrasos e carga por fornecedor / facção.", icon: Gauge, group: "PCP & Produção" },
 
