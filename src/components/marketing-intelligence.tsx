@@ -3,9 +3,23 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MapPin, Package, Brain, Loader2, Radio, Download } from "lucide-react";
+import { Sparkles, MapPin, Package, Brain, Loader2, Radio, Download, TrendingUp, TrendingDown, Repeat, XCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList, PieChart, Pie, Legend } from "recharts";
 import { Markdown } from "@/components/markdown";
+
+type Verdict = "repetir" | "apostar" | "avaliar" | "abandonar";
+const VERDICT_META: Record<Verdict, { label: string; cls: string; icon: typeof Repeat; reason: (m: number, share: number) => string }> = {
+  repetir:   { label: "Repetir",      cls: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30", icon: Repeat,        reason: (m, s) => `Campeão: ${s.toFixed(1)}% da receita, momentum +${(m * 100).toFixed(0)}%` },
+  apostar:   { label: "Apostar +",    cls: "bg-primary/15 text-primary border-primary/30",             icon: TrendingUp,    reason: (m) => `Em alta: vendas recentes +${(m * 100).toFixed(0)}% vs período anterior` },
+  avaliar:   { label: "Avaliar",      cls: "bg-amber-500/15 text-amber-600 border-amber-500/30",       icon: TrendingDown,  reason: (m) => `Estável/em queda leve (${(m * 100).toFixed(0)}%) — testar campanha antes de repor` },
+  abandonar: { label: "Abandonar",    cls: "bg-destructive/15 text-destructive border-destructive/30", icon: XCircle,       reason: (m) => `Queda forte (${(m * 100).toFixed(0)}%) e baixa relevância — não repor` },
+};
+function classify(momentum: number, share: number): Verdict {
+  if (share >= 8 && momentum >= 0) return "repetir";
+  if (momentum >= 0.2) return "apostar";
+  if (momentum <= -0.4 && share < 3) return "abandonar";
+  return "avaliar";
+}
 import { recommendStrategy } from "@/lib/marketing-ai.functions";
 import { exportToPdf } from "@/lib/pdf";
 import { toast } from "sonner";
