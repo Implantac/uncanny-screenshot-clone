@@ -139,6 +139,8 @@ function Replenishment() {
 
       {isLoading && <div className="text-muted-foreground">Calculando prioridades…</div>}
 
+      <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — onde investir produção" question="Olhando ruptura, ABC, margem e velocidade: quais 3 SKUs produzir hoje e por quê?" />
+
       <Section title="Prioridade de produção" icon={<Flame className="size-4 text-primary" />} desc="Ordenado por score — combina giro, margem, ruptura, ABC e tendência">
         <PriorityTable items={priority} />
       </Section>
