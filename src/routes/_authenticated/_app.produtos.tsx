@@ -313,14 +313,72 @@ function ProductDetail({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const sketchRef = useRef<HTMLInputElement>(null);
+  const [sketchUploading, setSketchUploading] = useState(false);
+
   const { data: imageUrl } = useQuery({
     queryKey: ["product-detail-image", product.image_url],
     queryFn: () => resolveImageUrl(product.image_url),
     staleTime: 50 * 60 * 1000,
   });
 
-  const margin = Number(product.sell_price || 0) - Number(product.cost_price || 0);
-  const marginPct = Number(product.sell_price || 0) > 0 ? (margin / Number(product.sell_price)) * 100 : 0;
+  const { data: nextStepInfo } = useQuery({
+    queryKey: ["product-next-step", product.id, product.image_url, product.status],
+    queryFn: async () => {
+      const [{ data: protos }, { data: sheets }] = await Promise.all([
+        supabase.from("prototypes").select("id, stage, needs_adjustment, updated_at").eq("product_id", product.id),
+        supabase.from("tech_sheets").select("id, status").eq("product_id", product.id),
+      ]);
+      return { protos: protos ?? [], sheets: sheets ?? [] };
+    },
+  });
+
+  const nextStep = useMemo(() => {
+    if (!product.image_url) {
+      return { title: "Adicionar croqui", reason: "Sem imagem o time não consegue solicitar piloto nem cotar tecidos.", action: "sketch" as const };
+    }
+    const protos = nextStepInfo?.protos ?? [];
+    const sheets = nextStepInfo?.sheets ?? [];
+    if (protos.length === 0) {
+      return { title: "Solicitar piloto", reason: "Croqui pronto e nenhum protótipo aberto — hora de produzir a peça-piloto.", action: "prototype" as const };
+    }
+    const stuck = protos.find((p: any) => p.needs_adjustment && p.updated_at && (Date.now() - new Date(p.updated_at).getTime()) / 86400000 > 7);
+    if (stuck) {
+      return { title: "Cobrar ajuste do fornecedor", reason: "Protótipo em ajuste há mais de 7 dias sem atualização.", action: "prototype" as const };
+    }
+    const approved = protos.some((p: any) => p.stage === "aprovado");
+    const hasSheet = sheets.length > 0;
+    if (approved && !hasSheet) {
+      return { title: "Criar ficha técnica", reason: "Protótipo aprovado — sem ficha, produção e compras ficam paradas.", action: "techsheet" as const };
+    }
+    if (approved && sheets.every((s: any) => s.status !== "aprovada")) {
+      return { title: "Aprovar ficha técnica", reason: "Ficha existe mas ainda não está aprovada — bloqueia repasse de custo.", action: "techsheet" as const };
+    }
+    return { title: "Tudo fluindo", reason: "Sem pendências críticas neste produto agora.", action: null };
+  }, [product.image_url, nextStepInfo]);
+
+  async function handleSketchUpload(file: File) {
+    if (!user?.id) { toast.error("Sessão expirada"); return; }
+    if (file.size > 4 * 1024 * 1024) { toast.error("Imagem maior que 4MB"); return; }
+    setSketchUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+      if (upErr) throw upErr;
+      const { error: updErr } = await supabase.from("products").update({ image_url: path }).eq("id", product.id);
+      if (updErr) throw updErr;
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Croqui adicionado");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSketchUploading(false);
+    }
+  }
+
 
 
 
