@@ -182,6 +182,8 @@ function Colecao360() {
               </div>
 
               {/* IA Coordenador — diagnóstico em linguagem natural */}
+              <InvestmentResult c={current} />
+
               <CoordinatorBriefing c={current} />
 
               {/* Sala de Guerra — sinais operacionais */}
