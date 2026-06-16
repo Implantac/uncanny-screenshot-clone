@@ -656,6 +656,7 @@ function StageHistoryDialog({ order, onClose }: { order: Order | null; onClose: 
 
 type SOKind = "parcial" | "integral";
 type SOStatus = "aberta" | "enviada" | "em_andamento" | "recebida" | "cancelada";
+type SOLineType = "primeira" | "segunda_linha";
 type ServiceOrder = {
   id: string;
   owner_id: string;
@@ -665,6 +666,7 @@ type ServiceOrder = {
   from_stage: string | null;
   to_stage: Stage;
   kind: SOKind;
+  line_type: SOLineType;
   quantity: number;
   qty_received: number;
   status: SOStatus;
@@ -692,7 +694,7 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     code: "", production_order_id: "", supplier_id: "", from_stage: "" as "" | Stage,
-    to_stage: "costura" as Stage, kind: "integral" as SOKind, quantity: 0, due_at: "", notes: "",
+    to_stage: "costura" as Stage, kind: "integral" as SOKind, line_type: "primeira" as SOLineType, quantity: 0, due_at: "", notes: "",
   });
 
   const { data: items = [], isLoading } = useQuery({
@@ -717,6 +719,7 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
         from_stage: form.from_stage || null,
         to_stage: form.to_stage,
         kind: form.kind,
+        line_type: form.line_type,
         quantity: Number(form.quantity) || 0,
         due_at: form.due_at || null,
         notes: form.notes.trim() || null,
@@ -728,7 +731,7 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
       qc.invalidateQueries({ queryKey: ["service_orders"] });
       toast.success("O.S. criada");
       setOpen(false);
-      setForm({ code: "", production_order_id: "", supplier_id: "", from_stage: "", to_stage: "costura", kind: "integral", quantity: 0, due_at: "", notes: "" });
+      setForm({ code: "", production_order_id: "", supplier_id: "", from_stage: "", to_stage: "costura", kind: "integral", line_type: "primeira", quantity: 0, due_at: "", notes: "" });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -763,6 +766,7 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
     andamento: items.filter((i) => i.status === "em_andamento").length,
     recebidas: items.filter((i) => i.status === "recebida").length,
     parciais: items.filter((i) => i.kind === "parcial").length,
+    segundaLinha: items.filter((i) => i.line_type === "segunda_linha").length,
     qtyEnviada: items.filter((i) => i.status !== "cancelada").reduce((s, i) => s + Number(i.quantity || 0), 0),
     qtyRecebida: items.reduce((s, i) => s + Number(i.qty_received || 0), 0),
   }), [items]);
@@ -781,7 +785,7 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
         <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Total O.S.</div><div className="text-xl font-semibold">{kpis.total}</div></div>
         <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Abertas/Enviadas</div><div className="text-xl font-semibold text-blue-500">{kpis.abertas}</div></div>
         <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Em andamento</div><div className="text-xl font-semibold text-orange-500">{kpis.andamento}</div></div>
-        <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Parciais</div><div className="text-xl font-semibold">{kpis.parciais}</div></div>
+        <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Parciais / 2ª linha</div><div className="text-xl font-semibold tabular-nums">{kpis.parciais} / <span className="text-orange-500">{kpis.segundaLinha}</span></div></div>
         <div className="rounded-xl border border-border bg-card p-3"><div className="text-xs text-muted-foreground">Pç enviadas / recebidas</div><div className="text-xl font-semibold tabular-nums">{kpis.qtyEnviada} / <span className="text-emerald-500">{kpis.qtyRecebida}</span></div></div>
       </div>
 
@@ -794,6 +798,7 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
               <th className="text-left px-3 py-2">Terceirizado</th>
               <th className="text-left px-3 py-2">Setor</th>
               <th className="text-left px-3 py-2">Tipo</th>
+              <th className="text-left px-3 py-2">Linha</th>
               <th className="text-right px-3 py-2">Qtd</th>
               <th className="text-right px-3 py-2">Recebida</th>
               <th className="text-left px-3 py-2">Prazo</th>
@@ -802,8 +807,8 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">Carregando…</td></tr>}
-            {!isLoading && items.length === 0 && <tr><td colSpan={10} className="p-6 text-center text-muted-foreground">Nenhuma O.S. ainda. Crie a primeira para enviar à facção.</td></tr>}
+            {isLoading && <tr><td colSpan={11} className="p-6 text-center text-muted-foreground">Carregando…</td></tr>}
+            {!isLoading && items.length === 0 && <tr><td colSpan={11} className="p-6 text-center text-muted-foreground">Nenhuma O.S. ainda. Crie a primeira para enviar à facção.</td></tr>}
             {items.map((s) => {
               const progress = s.quantity > 0 ? Math.round((Number(s.qty_received) / Number(s.quantity)) * 100) : 0;
               const overdue = s.due_at && s.status !== "recebida" && s.status !== "cancelada" && new Date(s.due_at).getTime() < Date.now();
@@ -817,6 +822,7 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
                     <span className="font-medium">{STAGE_LABEL[s.to_stage]}</span>
                   </td>
                   <td className="px-3 py-2"><Badge variant="outline" className={s.kind === "parcial" ? "border-orange-500/40 text-orange-500" : "border-emerald-500/40 text-emerald-500"}>{s.kind}</Badge></td>
+                  <td className="px-3 py-2"><Badge variant="outline" className={s.line_type === "segunda_linha" ? "border-orange-500/40 text-orange-500" : "border-border text-muted-foreground"}>{s.line_type === "segunda_linha" ? "2ª linha" : "1ª linha"}</Badge></td>
                   <td className="px-3 py-2 text-right tabular-nums">{s.quantity}</td>
                   <td className="px-3 py-2 text-right tabular-nums">
                     <input
@@ -889,6 +895,25 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
                     <SelectItem value="parcial">Parcial</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+            <div>
+              <Label>Linha da peça</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, line_type: "primeira" })}
+                  className={`rounded-md border px-3 py-2 text-sm transition ${form.line_type === "primeira" ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted"}`}
+                >
+                  1ª linha
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, line_type: "segunda_linha" })}
+                  className={`rounded-md border px-3 py-2 text-sm transition ${form.line_type === "segunda_linha" ? "border-orange-500/40 bg-orange-500/10 text-orange-500" : "border-border hover:bg-muted"}`}
+                >
+                  2ª linha
+                </button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

@@ -2482,6 +2482,7 @@ export type Database = {
           from_stage: string | null
           id: string
           kind: Database["public"]["Enums"]["service_order_kind"]
+          line_type: string
           notes: string | null
           owner_id: string
           package_id: string | null
@@ -2503,6 +2504,7 @@ export type Database = {
           from_stage?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["service_order_kind"]
+          line_type?: string
           notes?: string | null
           owner_id: string
           package_id?: string | null
@@ -2524,6 +2526,7 @@ export type Database = {
           from_stage?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["service_order_kind"]
+          line_type?: string
           notes?: string | null
           owner_id?: string
           package_id?: string | null

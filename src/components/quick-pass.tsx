@@ -15,6 +15,7 @@ type Props = {
 };
 
 type Mode = "qty" | "package" | "grid";
+type LineType = "primeira" | "segunda_linha";
 
 /** Passagem rápida entre setores: por Quantidade, Pacote ou Grade (variante). */
 export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStage, remaining }: Props) {
@@ -25,6 +26,7 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
   const [packageId, setPackageId] = useState<string>("");
   const [gridSel, setGridSel] = useState<Record<string, number>>({});
   const [supplierId, setSupplierId] = useState<string>("");
+  const [lineType, setLineType] = useState<LineType>("primeira");
 
   // Fornecedores ativos do owner (para select rápido)
   const suppliersQ = useQuery({
@@ -88,6 +90,7 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
           from_stage: fromStage,
           to_stage: toStage,
           supplier_id: supplierId || null,
+          line_type: lineType,
           status: "enviada",
           sent_at: new Date().toISOString(),
         } as any);
@@ -108,6 +111,7 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
           from_stage: fromStage,
           to_stage: toStage,
           supplier_id: supplierId || null,
+          line_type: lineType,
           status: "enviada" as const,
           sent_at: new Date().toISOString(),
         }));
@@ -128,6 +132,7 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
         from_stage: fromStage,
         to_stage: toStage,
         supplier_id: supplierId || null,
+        line_type: lineType,
         status: "enviada",
         sent_at: new Date().toISOString(),
       } as any);
@@ -135,12 +140,14 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
       return { qty, label: kind };
     },
     onSuccess: ({ qty, label }) => {
-      toast.success(`Passagem criada: ${qty} pç → ${toStage} (${label})`);
+      toast.success(`Passagem criada: ${qty} pç → ${toStage} (${label}${lineType === "segunda_linha" ? " · 2ª linha" : ""})`);
       qc.invalidateQueries({ queryKey: ["pcp-kanban"] });
       qc.invalidateQueries({ queryKey: ["day-production"] });
+      qc.invalidateQueries({ queryKey: ["outsourced-wip"] });
       setOpen(false);
       setGridSel({});
       setPackageId("");
+      setLineType("primeira");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -283,6 +290,25 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
                 ))}
               </select>
             </label>
+            <div>
+              <div className="text-[10px] text-muted-foreground mb-1">Linha da peça</div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setLineType("primeira")}
+                  className={`text-[10px] px-2 py-1.5 rounded border transition ${lineType === "primeira" ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted"}`}
+                >
+                  1ª linha
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLineType("segunda_linha")}
+                  className={`text-[10px] px-2 py-1.5 rounded border transition ${lineType === "segunda_linha" ? "border-orange-500/40 bg-orange-500/10 text-orange-500" : "border-border hover:bg-muted"}`}
+                >
+                  2ª linha
+                </button>
+              </div>
+            </div>
             <div className="flex gap-2 pt-1">
               <button
                 onClick={() => create.mutate()}

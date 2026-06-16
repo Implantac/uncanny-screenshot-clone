@@ -412,6 +412,7 @@ function BatchDialog({ open, onOpenChange, editing, userId }: { open: boolean; o
 function PassageDialog({ order, onClose, userId }: { order: OrderRef | null; onClose: () => void; userId?: string }) {
   const qc = useQueryClient();
   const [kind, setKind] = useState<"integral" | "parcial">("parcial");
+  const [lineType, setLineType] = useState<"primeira" | "segunda_linha">("primeira");
   const [toStage, setToStage] = useState("");
   const [qty, setQty] = useState(0);
   const [note, setNote] = useState("");
@@ -419,6 +420,7 @@ function PassageDialog({ order, onClose, userId }: { order: OrderRef | null; onC
   useMemo(() => {
     if (!order) return;
     setKind("parcial");
+    setLineType("primeira");
     setToStage("");
     setQty(order.quantity);
     setNote("");
@@ -437,6 +439,7 @@ function PassageDialog({ order, onClose, userId }: { order: OrderRef | null; onC
         from_stage: order.stage,
         to_stage: toStage,
         kind,
+        line_type: lineType,
         quantity: qty,
         qty_received: qty,
         status: "recebida",
@@ -474,6 +477,13 @@ function PassageDialog({ order, onClose, userId }: { order: OrderRef | null; onC
             <div className="space-y-2">
               <Label>Quantidade</Label>
               <Input type="number" min={1} value={qty} onChange={(e) => setQty(Number(e.target.value))} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Linha da peça</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant={lineType === "primeira" ? "default" : "outline"} onClick={() => setLineType("primeira")}>1ª linha</Button>
+              <Button type="button" variant={lineType === "segunda_linha" ? "default" : "outline"} onClick={() => setLineType("segunda_linha")}>2ª linha</Button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
