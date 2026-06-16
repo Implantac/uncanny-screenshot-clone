@@ -7,6 +7,7 @@ import {
   ArrowRight, TrendingUp, PackageSearch,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
+import { AskFashionAI } from "@/components/ask-fashion-ai";
 
 export const Route = createFileRoute("/_authenticated/_app/intel-hub")({
   head: () => ({
@@ -112,6 +113,8 @@ function IntelHub() {
           <Link to="/control-tower" className="text-xs px-3 py-1.5 rounded border border-border hover:bg-muted">Control Tower</Link>
         </div>
       </header>
+
+      <AskFashionAI />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">

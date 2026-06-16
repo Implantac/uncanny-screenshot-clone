@@ -1,77 +1,78 @@
-# Plano — USE MODA PLM 100% funcional
 
-## 1. Diagnóstico atual (o que já existe)
+# Evolução incremental do USE MODA PLM
 
-Após Ondas 1–8 o projeto tem a fundação certa para PLM moda:
+Filosofia: **melhorar sem destruir, reutilizar antes de criar, reduzir cliques**. Nada do que já existe será removido — apenas estendido.
 
-- **Menu reorganizado** em 9 grupos PLM (`src/lib/modules.ts`), com ERP-mirror separado.
-- **Núcleo de dados**: `collections`, `collection_versions`, `products`, `prototypes`, `tech_sheets`, `production_orders`, `production_batches`, `service_orders` (com `kind=parcial`), `production_stage_log`, `pcp_stages` (configuráveis), `marketing_campaigns`, `influencers`, `suppliers`, `inventory_items`.
-- **Camada ERP**: `erp_sales_mirror` / `erp_purchase_mirror` / `erp_inventory_mirror` + `src/lib/erp/`.
-- **Triggers úteis ativos**: protótipo aprovado → OP, mudança de stage → log, OS recebida → log + avanço, ficha aprovada → custo do produto, movimentos → saldo. Triggers ERP-duplicantes desativados.
-- **Auth + RLS por `owner_id`** + roles (`has_role`), `handle_new_user` semeia perfil/role/stages.
+## Diagnóstico do que já existe (reutilizar)
 
-## 2. Lacunas que impedem "100% PLM"
+| Pronto hoje | Como será reaproveitado |
+|---|---|
+| `intel-hub.tsx` (257 linhas) | Vira host das 3 IAs (Desenvolvimento / PCP / Marketing) em abas |
+| `fashion-gpt.tsx` + `fashion-context.ts` | Camada de prompt já especializada — passa a ler dados reais via novas server fns |
+| `marketing-ai.functions.ts`, `pcp-ops.functions.ts`, `agents.functions.ts` | Base para os endpoints de insight; ganham handlers novos sem quebrar os atuais |
+| `replenishment.tsx` (140 linhas) | Recebe o motor inteligente (hoje só estoque mínimo) |
+| `control-tower.tsx` (345 linhas, com WIP/gargalos realtime) | Já é a base da "sala de guerra"; ganha aba "Coleção" |
+| `colecao-360.tsx` (255 linhas) | Vira a Sala de Guerra por coleção — sem nova rota |
+| `producao-do-dia.$stage.tsx` | Ganha colunas de prioridade/prazo/tempo previsto |
+| `quick-pass.tsx` | Já entrega passagem parcial/integral em 2 cliques — só falta variante por grade/pacote |
+| `product-score.tsx` | Vira fonte do Score de Prioridade (estende fórmula) |
 
-Identifiquei 6 grupos de lacunas — cada um vira uma onda nova (9 a 14).
+## Entregas (4 ondas, todas incrementais)
 
-### Onda 9 — Tech Pack completo (núcleo do PLM)
-Hoje `tech_sheets` é apenas um cabeçalho com `cost_price` e `status`. Falta o coração do PLM.
-- Tabelas filhas: `tech_sheet_materials` (BOM: insumo, consumo, unidade, perda %, custo), `tech_sheet_operations` (operação, SAM/SMV, máquina, valor), `tech_sheet_measurements` (POM: ponto, tolerância +/-, valores por tamanho), `tech_sheet_labels` (etiquetas, composição, cuidados), `tech_sheet_attachments` (CAD/imagem/PDF).
-- Recalcular `cost_price` automaticamente a partir de BOM + operações via trigger.
-- UI em abas dentro de `/ficha-tecnica/:id`: Resumo · BOM · Operações · Medidas · Etiquetas · Anexos · Custos.
+### Onda A — Camada de IA especialista (3 personas, 1 tela)
+- Server fn nova `src/lib/ai-insights.functions.ts` com 3 handlers: `askDevelopment`, `askPcp`, `askMarketing`. Cada um monta contexto real (queries `production_orders`, `prototypes`, `tech_sheets`, `erp_sales_mirror`) e chama Lovable AI Gateway (`google/gemini-3-flash-preview`) via helper `ai-gateway.server.ts` já existente.
+- `intel-hub.tsx` ganha 3 abas: **Desenvolvimento**, **PCP**, **Marketing**, cada uma com chat curto + lista de perguntas pré-prontas (atrasos, gargalos, pilotos pendentes, ROI por produto, etc.).
+- Nada é recriado: `fashion-gpt.tsx` permanece como chat livre.
 
-### Onda 10 — Grade, cor e SKU
-PLM moda exige variantes (cor × tamanho).
-- `product_color_options`, `product_size_options`, `product_variants` (SKU, EAN, cor, tamanho, ativo).
-- `production_order_grid` (qty por variante) e `service_order_grid` (passagem por variante).
-- UI no `/produtos/:id` aba "Grade" + integração no PCP Kanban e nos lotes.
+### Onda B — Motor inteligente de necessidade de produção
+- Server fn `computeReplenishmentNeeds()` em `src/lib/replenishment.functions.ts`:
+  - Lê `erp_inventory_mirror`, `erp_sales_mirror` (7/30/90d), `production_orders` em curso, `product_target_costs`, `product_variants`.
+  - Para cada SKU calcula: velocidade de venda, cobertura em dias, risco de ruptura, excesso, lead time, rentabilidade.
+  - Retorna **Score de Prioridade 0–100** + motivos (lista de strings) + sugestão de quantidade.
+- `replenishment.tsx` passa a renderizar a tabela com: produto, prioridade, motivos, sugestão, ação "Gerar OP" (já existe via `pcp-ops.functions.ts`).
+- Cálculo por grade (PP/P/M/G/GG/XG/XXG) a partir de `product_size_options` × histórico real em `erp_sales_mirror.items` (sem divisão proporcional).
 
-### Onda 11 — Cadeia & qualidade
-- `supplier_capabilities` (corte, costura, estamparia, lavanderia…) e `supplier_compliance` (certificações, vencimento).
-- `quality_inspections` (AQL, amostra, defeitos, aprovado/refação) ligadas a OP/OS e protótipo.
-- UI `/qualidade` lista + drawer + exporta laudo.
+### Onda C — Sala de Guerra da Coleção
+- Estende `colecao-360.tsx` (sem nova rota): adiciona 6 cards consolidados em uma única tela — produtos em dev, pilotos pendentes, sem ficha, liberados, lotes em produção, campeões/críticos. Reutiliza queries já existentes.
+- Aba "Marketing" puxa `marketing-ai.functions.ts` (investimento, ROI, sell-out por coleção — só leitura ERP).
 
-### Onda 12 — DPP (Digital Product Passport) real (ESPR-ready)
-Rota `/dpp/:id` já existe; falta dado.
-- Página pública com QR code (rota pública `/p/dpp/:id`), composição, origem, fornecedores, instruções de cuidado, reparabilidade, certificações.
-- `dpp_records` versionado por produto/variante + assinatura (hash) e log de visualizações.
+### Onda D — Produção do Dia + Passagens
+- `producao-do-dia.$stage.tsx`: ordenar por Score de Prioridade da Onda B; adicionar colunas Prazo, Tempo Previsto (de `tech_sheet_operations.minutes`), Responsável.
+- `quick-pass.tsx`: adicionar toggle de modo (Integral / Parcial / Por Pacote / Por Grade) sem sair do popover atual — máx. 2 cliques.
 
-### Onda 13 — Integração ERP viva
-- Webhook público `POST /api/public/erp-sync` com HMAC + Zod, escreve em `erp_*_mirror` via `supabaseAdmin`.
-- Server fns `pullErpSnapshot` / `pushPlmRelease` (release de ficha aprovada → item master ERP) sob `requireSupabaseAuth` + `has_role('admin')`.
-- Painel `/erp-integration` com último sync, erros, fila.
+## O que NÃO faremos (proteções)
+- Não criar tabelas financeiras, fiscais, de pedidos B2B ou de clientes — tudo isso já é ERP-mirror.
+- Não tocar em `marketing.tsx`, `campaigns.tsx`, `influencers.tsx` além de plugar os mesmos insights via Onda A.
+- Não remover rotas legadas (auditoria anterior já marcou `hidden` as órfãs).
+- Não trocar provider de IA (continua Lovable AI Gateway, sem chave do usuário).
 
-### Onda 14 — Polimento operacional
-- Realtime no Command Center (já preparado) ligado a `production_stage_log`, `pilots`, `prototypes`.
-- Notificações (`notifications` table + bell): aprovação pendente, OS atrasada, ficha sem BOM, piloto vencendo.
-- Permissões finas por papel (designer / modelista / pcp / qualidade / admin) usando `has_role` em todas as server fns de escrita sensível.
-- Export PDF do tech pack e do DPP.
-- Testes E2E mínimos: criar coleção → produto → protótipo aprovado → OP gerada → OS parcial → fechamento.
+## Detalhes técnicos
 
-## 3. Como vou executar
+```
+src/lib/
+├── ai-insights.functions.ts        (novo) askDevelopment | askPcp | askMarketing
+├── replenishment.functions.ts      (novo) computeReplenishmentNeeds + computeGridNeeds
+└── priority-score.ts               (novo) puro, testável — fórmula do score 0-100
 
-Cada onda será um PR independente, na ordem 9 → 14. Para cada uma eu:
-1. Crio a migração (tabelas + GRANT + RLS por `owner_id` + triggers).
-2. Adiciono server fns (`*.functions.ts`) com `requireSupabaseAuth` + role-check onde necessário.
-3. Atualizo/crio rota(s) com `head()`, loader via TanStack Query, `errorComponent`/`notFoundComponent`.
-4. Atualizo `docs/AUDIT.md` marcando o item como ✅.
-5. Não removo rotas/tabelas legadas — só completo, esconde ou redireciona leitura.
+src/routes/_authenticated/
+├── _app.intel-hub.tsx              (estende) 3 abas de IA
+├── _app.replenishment.tsx          (estende) motor + tabela com score
+├── _app.colecao-360.tsx            (estende) sala de guerra (6 cards)
+└── _app.producao-do-dia.$stage.tsx (estende) ordenação por score
+```
 
-## 4. Premissas
+Fórmula do Score (`priority-score.ts`):
+```
+score = 0.30*sellOutVelocity + 0.25*margin + 0.20*ruptureRisk
+      + 0.15*abcWeight       + 0.10*seasonality
+```
+Cada componente normalizado 0–1. Motivos são as 3 maiores contribuições.
 
-- Stack: TanStack Start + Lovable Cloud + RLS por `owner_id` (mantida).
-- ERP continua dono de financeiro/fiscal/CRM — PLM só lê via `erp_*_mirror`.
-- Sem refactor de design system; uso tokens existentes (`glass`, `primary`, etc).
-- Não criamos Edge Functions; toda lógica em `createServerFn` ou rota server (`/api/public/*` só para webhooks ERP).
+## Ordem sugerida de execução
 
-## 5. O que **não** está no escopo
+1. **Onda A** (IA × 3) — maior impacto percebido, baixo risco.
+2. **Onda B** (motor de necessidade + score) — base para C e D.
+3. **Onda C** (Sala de Guerra) — usa dados de A+B.
+4. **Onda D** (Produção do Dia + Passagens) — polimento operacional.
 
-- Substituir o ERP (financeiro, fiscal, CRM, contas a pagar/receber).
-- Trocar autenticação/stack.
-- Editor 3D (CLO/Browzwear) — fica como roadmap.
-
-## 6. Sugestão de próximo passo
-
-Começar pela **Onda 9 (Tech Pack completo)** — é o que mais diferencia um PLM de moda de qualquer outro sistema e destrava as ondas 10–14 (grade depende de BOM, DPP depende de composição, qualidade depende de POM).
-
-Confirma começar pela Onda 9? Se preferir outra ordem ou quiser ondas adicionais (ex.: 3D, sustentabilidade scoring Higg, sourcing RFQ), me diga antes de eu executar.
+Posso começar pela Onda A?
