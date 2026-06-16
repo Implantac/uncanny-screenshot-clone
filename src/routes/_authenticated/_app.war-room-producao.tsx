@@ -87,8 +87,11 @@ function WarRoomProducao() {
     });
     const suppliers = [...bySupplier.values()].sort((a, b) => b.pieces - a.pieces);
 
-    return { stageRows, maxQty, bottleneck, late, stuck, suppliers };
-  }, [data]);
+    const filteredProductName = productId
+      ? (allOrders.find((o: any) => o.product_id === productId)?.products?.name ?? null)
+      : null;
+    return { stageRows, maxQty, bottleneck, late, stuck, suppliers, filteredProductName };
+  }, [data, productId]);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
