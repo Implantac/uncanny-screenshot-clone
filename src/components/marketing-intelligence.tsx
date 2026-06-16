@@ -200,6 +200,49 @@ export function MarketingIntelligence() {
         </span>
       </div>
 
+      <div className="glass rounded-xl p-5">
+        <div className="text-sm font-semibold inline-flex items-center gap-1.5 mb-1">
+          <Brain className="size-4 text-primary" />
+          Veredito por produto
+        </div>
+        <div className="text-[11px] text-muted-foreground mb-4">
+          O que repetir, em que apostar mais e o que parar de repor · baseado em receita + momentum dos últimos {days}d
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {productVerdicts.map((p) => {
+            const meta = VERDICT_META[p.verdict];
+            const Icon = meta.icon;
+            const active = selectedProduct === p.name;
+            return (
+              <button
+                key={p.name}
+                onClick={() => setSelectedProduct(active ? null : p.name)}
+                className={`text-left rounded-lg border p-3 transition-all hover:border-primary/50 ${
+                  active ? "border-primary bg-primary/5" : "border-border bg-card/40"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="text-xs font-medium truncate flex-1">{p.name}</div>
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border inline-flex items-center gap-1 shrink-0 ${meta.cls}`}>
+                    <Icon className="size-3" /> {meta.label}
+                  </span>
+                </div>
+                <div className="text-[10px] text-muted-foreground leading-tight mb-1.5">
+                  {meta.reason(p.momentum, p.share)}
+                </div>
+                <div className="flex items-center gap-3 text-[10px] tabular-nums">
+                  <span className="text-muted-foreground">{brl(p.revenue)}</span>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="text-muted-foreground">{p.units}u</span>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="text-muted-foreground">{p.share.toFixed(1)}% mix</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass rounded-xl p-5">
           <div className="text-sm font-semibold inline-flex items-center gap-1.5 mb-1">
