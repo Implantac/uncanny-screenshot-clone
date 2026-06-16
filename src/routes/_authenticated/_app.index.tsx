@@ -260,9 +260,23 @@ function CommandCenter() {
         })}
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <AICoordinatorPanel persona="development" title="Desenvolvimento · prioridades" />
+        <AICoordinatorPanel persona="pcp" title="Produção · diagnóstico do dia" />
+        <AICoordinatorPanel persona="marketing" title="Marketing · onde investir" />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AICoordinatorPanel persona="pcp" title="Coordenador de PCP · diagnóstico do dia" />
-        <AICoordinatorPanel persona="development" title="Coordenador de Desenvolvimento · prioridades" />
+        <AICoordinatorPanel
+          persona="pcp"
+          title="Qualidade · pontos de atenção"
+          question="Quais defeitos e retrabalhos mais aparecem agora e como reduzir? Liste 3 ações."
+        />
+        <AICoordinatorPanel
+          persona="marketing"
+          title="Comercial · risco de meta"
+          question="Estou no caminho de bater a meta comercial do mês? Onde os riscos e o que fazer hoje?"
+        />
       </div>
 
 
