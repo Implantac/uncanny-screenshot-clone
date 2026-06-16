@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
 import {
   Compass, Layers, Scissors, Factory, TrendingUp, Percent, DollarSign,
-  Package, ArrowRight, Sparkles, AlertTriangle, FileWarning, Clock, CheckCircle2, Radio,
+  Package, ArrowRight, Sparkles, AlertTriangle, FileWarning, Clock, CheckCircle2, Radio, Wallet, Database,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 
@@ -77,6 +77,14 @@ function Colecao360() {
       const margin = avgPrice > 0 ? ((avgPrice - avgCost) / avgPrice) * 100 : 0;
       const sellThrough = producedQty > 0 ? (unitsSold / producedQty) * 100 : 0;
 
+      // Investimento × Resultado (espelho ERP)
+      const investment = cOrders.reduce((a, o) => {
+        const p = cProducts.find((pr) => pr.id === o.product_id);
+        return a + Number(p?.cost_price ?? avgCost) * o.quantity;
+      }, 0);
+      const profit = revenue - investment;
+      const roi = investment > 0 ? (profit / investment) * 100 : 0;
+
       // Sala de Guerra — derivados
       const productsWithApprovedProto = new Set(
         cProtos.filter((p) => p.stage === "aprovado" && p.product_id).map((p) => p.product_id!)
@@ -105,6 +113,7 @@ function Colecao360() {
         protoApproved: cProtos.filter((p) => p.stage === "aprovado").length,
         opsActive, opsDone, producedQty,
         revenue, unitsSold, margin, sellThrough,
+        investment, profit, roi,
         semPiloto, protoPendentes, opsAguardando, liberadosPCP, avanco,
         semFicha, champions, criticos,
       };
@@ -173,6 +182,8 @@ function Colecao360() {
               </div>
 
               {/* IA Coordenador — diagnóstico em linguagem natural */}
+              <InvestmentResult c={current} />
+
               <CoordinatorBriefing c={current} />
 
               {/* Sala de Guerra — sinais operacionais */}
@@ -352,6 +363,73 @@ function CoordinatorBriefing({ c }: { c: any }) {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function fmt(v: number) {
+  if (Math.abs(v) >= 1000) return `R$ ${(v / 1000).toFixed(1)}k`;
+  return `R$ ${v.toFixed(0)}`;
+}
+
+function InvestmentResult({ c }: { c: any }) {
+  const investment: number = c.investment;
+  const revenue: number = c.revenue;
+  const profit: number = c.profit;
+  const roi: number = c.roi;
+  const recovered = investment > 0 ? Math.min(100, (revenue / investment) * 100) : 0;
+  const positive = profit >= 0;
+
+  const verdict = investment === 0
+    ? "Sem OPs com custo registrado — preencha custo dos produtos para calcular ROI."
+    : revenue === 0
+    ? `Investido ${fmt(investment)} em produção, ainda sem receita registrada. Acompanhe sell-through nas próximas semanas.`
+    : positive
+    ? `Cada R$ 1 investido retornou R$ ${(revenue / investment).toFixed(2)}. Lucro de ${fmt(profit)} (ROI ${roi.toFixed(0)}%).`
+    : `Coleção ainda no vermelho: faltam ${fmt(-profit)} para cobrir o investimento. Recuperado ${recovered.toFixed(0)}% até agora.`;
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <Wallet className="size-3.5 text-primary" /> Investimento × Resultado
+        </div>
+        <div className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
+          <Database className="size-3" /> espelho ERP
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Metric label="Investido (produção)" value={fmt(investment)} tone="neutral" />
+        <Metric label="Receita realizada" value={fmt(revenue)} tone="primary" />
+        <Metric label={positive ? "Lucro" : "A recuperar"} value={fmt(Math.abs(profit))} tone={positive ? "green" : "red"} />
+        <Metric label="ROI" value={investment > 0 ? `${roi.toFixed(0)}%` : "—"} tone={roi >= 30 ? "green" : roi >= 0 ? "yellow" : "red"} />
+      </div>
+      <div className="mt-3">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+          <span>Recuperação do investimento</span>
+          <span className="tabular-nums">{recovered.toFixed(0)}%</span>
+        </div>
+        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+          <div className={`h-full transition-all ${positive ? "bg-success" : "bg-warning"}`} style={{ width: `${recovered}%` }} />
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground mt-3 leading-relaxed">{verdict}</p>
+    </div>
+  );
+}
+
+function Metric({ label, value, tone }: { label: string; value: string; tone: "red" | "yellow" | "green" | "primary" | "neutral" }) {
+  const tones: Record<string, string> = {
+    red: "text-destructive",
+    yellow: "text-warning",
+    green: "text-success",
+    primary: "text-primary",
+    neutral: "text-foreground",
+  };
+  return (
+    <div className="rounded-lg border border-border bg-muted/10 p-2.5">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`text-xl font-semibold tabular-nums mt-0.5 ${tones[tone]}`}>{value}</div>
     </div>
   );
 }
