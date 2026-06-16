@@ -131,6 +131,8 @@ function PcpKanban() {
         <KPI label="Prioridade alta" value={summary.urgent} icon={<Flag className="size-4" />} tone="warning" />
       </div>
 
+      <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         {STAGES.map((col) => {
           const items = grouped.get(col.key) ?? [];
