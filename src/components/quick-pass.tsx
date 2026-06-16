@@ -289,6 +289,25 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
                 ))}
               </select>
             </label>
+            <div>
+              <div className="text-[10px] text-muted-foreground mb-1">Linha da peça</div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setLineType("primeira")}
+                  className={`text-[10px] px-2 py-1.5 rounded border transition ${lineType === "primeira" ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted"}`}
+                >
+                  1ª linha
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLineType("segunda_linha")}
+                  className={`text-[10px] px-2 py-1.5 rounded border transition ${lineType === "segunda_linha" ? "border-orange-500/40 bg-orange-500/10 text-orange-500" : "border-border hover:bg-muted"}`}
+                >
+                  2ª linha
+                </button>
+              </div>
+            </div>
             <div className="flex gap-2 pt-1">
               <button
                 onClick={() => create.mutate()}
