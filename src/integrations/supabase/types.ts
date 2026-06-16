@@ -950,6 +950,42 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          owner_id: string
+          read_at: string | null
+          ref_id: string | null
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          owner_id: string
+          read_at?: string | null
+          ref_id?: string | null
+          title: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          owner_id?: string
+          read_at?: string | null
+          ref_id?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       material_library: {
         Row: {
           active: boolean
