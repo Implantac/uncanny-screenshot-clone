@@ -267,6 +267,33 @@ function ColecoesPage() {
     return map;
   }, [productionAll, products]);
 
+  const { data: techSheets = [] } = useQuery({
+    queryKey: ["collections-tech-sheets"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tech_sheets")
+        .select("product_id, status");
+      if (error) throw error;
+      return (data ?? []) as Array<{ product_id: string | null; status: string | null }>;
+    },
+  });
+
+  const devReadinessByCollection = useMemo(() => {
+    const approved = new Set(
+      techSheets.filter((t) => t.status === "aprovada" && t.product_id).map((t) => t.product_id as string),
+    );
+    const map: Record<string, { total: number; ready: number; pct: number }> = {};
+    products.forEach((p) => {
+      if (!p.collection_id) return;
+      const a = (map[p.collection_id] ??= { total: 0, ready: 0, pct: 0 });
+      a.total += 1;
+      if (approved.has(p.id)) a.ready += 1;
+    });
+    Object.values(map).forEach((a) => { a.pct = a.total > 0 ? Math.round((a.ready / a.total) * 100) : 0; });
+    return map;
+  }, [techSheets, products]);
+
+
 
   const derived = useMemo(() => {
     const revenue = selectedProducts.reduce((sum, item) => sum + Number(item.sell_price || 0), 0);
@@ -647,6 +674,31 @@ function ColecoesPage() {
                         </div>
                       );
                     })()}
+
+                    {(() => {
+                      const d = devReadinessByCollection[selected.id];
+                      if (!d || d.total === 0) return null;
+                      const ok = d.pct === 100;
+                      return (
+                        <div className="col-span-2 rounded-xl border border-border bg-background/30 p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Target className="size-4 text-primary" />
+                              <div className="text-sm font-medium">Pronta para entrar em produção</div>
+                            </div>
+                            <Badge variant="outline" className={ok ? "bg-success/20 text-success border-success/30" : "bg-warning/20 text-warning border-warning/30"}>
+                              {ok ? "Liberada" : `${d.pct}%`}
+                            </Badge>
+                          </div>
+                          <Progress value={d.pct} className="h-2" />
+                          <div className="text-xs text-muted-foreground mt-2">
+                            {d.ready} de {d.total} produtos com ficha técnica aprovada
+                            {!ok && ` · faltam ${d.total - d.ready}`}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
 
                     <div className="col-span-2 rounded-xl border border-border bg-background/30 p-4 flex flex-wrap gap-2 items-center justify-between">
                       <div>
