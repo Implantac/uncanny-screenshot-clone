@@ -471,12 +471,14 @@ function SheetDialog({
   open,
   onOpenChange,
   editing,
+  initialProductId,
   userId,
   products,
 }: {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   editing: Sheet | null;
+  initialProductId?: string | null;
   userId?: string;
   products: ProductRef[];
 }) {
