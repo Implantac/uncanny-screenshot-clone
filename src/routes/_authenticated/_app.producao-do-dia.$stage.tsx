@@ -67,16 +67,26 @@ function DayProductionPage() {
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={7} className="text-center py-8 text-muted-foreground">Carregando…</td></tr>}
-            {!isLoading && (data?.length ?? 0) === 0 && <tr><td colSpan={7} className="text-center py-8 text-muted-foreground">Nada para produzir neste setor hoje.</td></tr>}
+            {isLoading && <tr><td colSpan={8} className="text-center py-8 text-muted-foreground">Carregando…</td></tr>}
+            {!isLoading && (data?.length ?? 0) === 0 && <tr><td colSpan={8} className="text-center py-8 text-muted-foreground">Nada para produzir neste setor hoje.</td></tr>}
             {data?.map((r: any) => {
               const prio = PRIORITY_LABEL[r.priority ?? 1] ?? PRIORITY_LABEL[1];
               const isLate = r.due_date && r.due_date < today;
               const daysInStage = r.stage_updated_at
                 ? Math.floor((Date.now() - new Date(r.stage_updated_at).getTime()) / 86400000)
                 : 0;
+              const score = Math.round(r.score ?? 0);
+              const scoreCls =
+                score >= 70 ? "bg-destructive/15 text-destructive border-destructive/30"
+                : score >= 40 ? "bg-amber-500/15 text-amber-600 border-amber-500/30"
+                : "bg-muted text-muted-foreground border-border";
               return (
                 <tr key={r.id} className="border-t border-border hover:bg-muted/20">
+                  <td className="px-4 py-3">
+                    <span className={`text-[11px] font-mono font-semibold px-2 py-0.5 rounded border ${scoreCls}`} title={(r.score_reasons ?? []).join(" · ")}>
+                      {score}
+                    </span>
+                  </td>
                   <td className="px-4 py-3">
                     <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${prio.cls}`}>{prio.label}</span>
                   </td>
