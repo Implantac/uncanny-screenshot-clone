@@ -1,9 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingDown, TrendingUp, Sparkles, Flame, Brain } from "lucide-react";
-import { useMemo } from "react";
+import { TrendingDown, TrendingUp, Sparkles, Flame, Brain, Loader2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { computePriority, classifyABC, type PriorityResult } from "@/lib/priority-score";
+import { createOpFromSuggestion } from "@/lib/pcp-ops.functions";
 
 export const Route = createFileRoute("/_authenticated/_app/replenishment")({
   head: () => ({ meta: [{ title: "Necessidade de Produção · USE MODA PLM" }] }),
