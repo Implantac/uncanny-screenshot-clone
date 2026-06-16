@@ -58,7 +58,7 @@ function LotePage() {
     queryKey: ["lote-orders", batch?.code],
     queryFn: async () => {
       const { data, error } = await supabase.from("production_orders")
-        .select("id, code, stage, status, quantity, progress, due_date, stage_updated_at, product_id, supplier_id, products(name, sku, image_url), suppliers(name)")
+        .select("id, code, stage, status, quantity, progress, due_date, stage_updated_at, product_id, supplier_id, owner_id, products(name, sku, image_url), suppliers(name)")
         .eq("batch_code", batch!.code)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -179,7 +179,7 @@ function LotePage() {
                 </div>
               )}
               <div className="flex gap-1">
-                <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} />
+                <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
               </div>
             </div>
           ))}
