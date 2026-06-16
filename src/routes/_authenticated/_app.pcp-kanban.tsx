@@ -11,6 +11,7 @@ export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ compon
 type Stage = "cad" | "corte" | "costura" | "acabamento" | "qualidade" | "expedicao" | "entregue";
 type Order = {
   id: string;
+  owner_id: string;
   code: string;
   stage: Stage;
   quantity: number;
