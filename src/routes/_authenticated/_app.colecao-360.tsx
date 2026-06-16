@@ -72,6 +72,17 @@ function Colecao360() {
       const margin = avgPrice > 0 ? ((avgPrice - avgCost) / avgPrice) * 100 : 0;
       const sellThrough = producedQty > 0 ? (unitsSold / producedQty) * 100 : 0;
 
+      // Sala de Guerra — derivados
+      const productsWithApprovedProto = new Set(
+        cProtos.filter((p) => p.stage === "aprovado" && p.product_id).map((p) => p.product_id!)
+      );
+      const semPiloto = cProducts.filter((p) => !productsWithApprovedProto.has(p.id)).length;
+      const protoPendentes = cProtos.filter((p) => p.stage !== "aprovado" && p.stage !== "reprovado").length;
+      const opsAguardando = cOrders.filter((o) => o.status === "aguardando").length;
+      const liberadosPCP = cOrders.filter((o) => o.stage !== "cad" && o.stage !== "entregue").length;
+      const totalQty = cOrders.reduce((a, o) => a + o.quantity, 0);
+      const avanco = totalQty > 0 ? (producedQty / totalQty) * 100 : 0;
+
       return {
         collection: c,
         productCount: cProducts.length,
@@ -79,6 +90,7 @@ function Colecao360() {
         protoApproved: cProtos.filter((p) => p.stage === "aprovado").length,
         opsActive, opsDone, producedQty,
         revenue, unitsSold, margin, sellThrough,
+        semPiloto, protoPendentes, opsAguardando, liberadosPCP, avanco,
       };
     });
   }, [collections, products, prototypes, orders, sales]);
