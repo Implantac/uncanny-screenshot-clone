@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { listDayProduction } from "@/lib/pcp-ops.functions";
 import { AlertTriangle, Clock, Factory, Truck } from "lucide-react";
 import { QuickPassButton } from "@/components/quick-pass";
+import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/producao-do-dia/$stage")({
   head: ({ params }) => ({
