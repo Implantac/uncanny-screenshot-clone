@@ -703,3 +703,40 @@ function VersionDiffDialog({
     </Dialog>
   );
 }
+
+function AiSuggestionsPanel({ sheetId }: { sheetId: string }) {
+  const run = useServerFn(suggestTechSheetImprovements);
+  const [text, setText] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleRun() {
+    setLoading(true);
+    try {
+      const res = await run({ data: { techSheetId: sheetId } });
+      setText(res.text);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao gerar sugestões");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-sm font-semibold flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" /> Fashion-GPT — sugestões para esta ficha
+          </div>
+          <div className="text-xs text-muted-foreground">Analisa BOM, operações e custo e propõe otimizações.</div>
+        </div>
+        <Button size="sm" onClick={handleRun} disabled={loading}>
+          {loading ? "Analisando…" : "Gerar análise"}
+        </Button>
+      </div>
+      <div className="rounded-xl border border-border bg-background/30 p-4 min-h-32 text-sm">
+        {text ? <Markdown>{text}</Markdown> : <div className="text-xs text-muted-foreground">Clique em "Gerar análise" para receber recomendações.</div>}
+      </div>
+    </div>
+  );
+}
