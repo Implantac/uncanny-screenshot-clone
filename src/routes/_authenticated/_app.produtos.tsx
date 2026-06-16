@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { ProductTimeline } from "@/components/product-timeline";
 
 export const Route = createFileRoute("/_authenticated/_app/produtos")({
   validateSearch: zodValidator(
@@ -300,11 +301,8 @@ function ProductDetail({
   const margin = Number(product.sell_price || 0) - Number(product.cost_price || 0);
   const marginPct = Number(product.sell_price || 0) > 0 ? (margin / Number(product.sell_price)) * 100 : 0;
 
-  const timeline = [
-    { label: "Produto criado", detail: new Date(product.created_at).toLocaleDateString("pt-BR") },
-    { label: "Status atual", detail: STATUS_LABELS[product.status] },
-    { label: "Coleção", detail: collection ? `${collection.name} · ${collection.season} ${collection.year}` : "Sem coleção vinculada" },
-  ];
+
+
 
   return (
     <section className="space-y-4">
@@ -367,26 +365,10 @@ function ProductDetail({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-4">
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div>
-            <div className="text-sm font-semibold">Timeline visual</div>
-            <div className="text-xs text-muted-foreground mt-1">Rastro principal do produto dentro do catálogo.</div>
-          </div>
-          <div className="space-y-4">
-            {timeline.map((step, index) => (
-              <div key={step.label} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="size-8 rounded-full bg-primary/10 text-primary grid place-items-center text-xs font-semibold">{index + 1}</div>
-                  {index < timeline.length - 1 && <div className="w-px flex-1 bg-border mt-2" />}
-                </div>
-                <div className="pb-4">
-                  <div className="font-medium">{step.label}</div>
-                  <div className="text-sm text-muted-foreground mt-1">{step.detail}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="glass rounded-xl p-5">
+          <ProductTimeline productId={product.id} createdAt={product.created_at} />
         </div>
+
 
         <div className="glass rounded-xl p-5 space-y-4">
           <div>
