@@ -70,6 +70,8 @@ function PcpKanban() {
   const { data: orders = [], isLoading } = useQuery({ queryKey: ["pcp-kanban"], queryFn: load });
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<Stage | null>(null);
+  const [mode, setMode] = useState<"ordens" | "lotes">("ordens");
+  const [batchFilter, setBatchFilter] = useState<string | null>(null);
 
   const update = useMutation({
     mutationFn: async (patch: { id: string } & Partial<Pick<Order, "stage" | "priority" | "due_date" | "progress">>) => {
