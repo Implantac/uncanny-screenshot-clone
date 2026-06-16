@@ -494,6 +494,34 @@ function ColecoesPage() {
     return steps;
   }, [selected]);
 
+  const pendingForSelected = useMemo(() => {
+    if (!selected) return null;
+    const ps = selectedProducts;
+    const sheetsByProduct = new Map<string, string[]>();
+    techSheets.filter((t) => t.status === "aprovada" && t.product_id).forEach((t) => {
+      const arr = sheetsByProduct.get(t.product_id!) ?? [];
+      arr.push(t.id);
+      sheetsByProduct.set(t.product_id!, arr);
+    });
+    const matsBySheet = new Map<string, typeof bom>();
+    bom.forEach((m) => {
+      const arr = matsBySheet.get(m.tech_sheet_id) ?? [];
+      arr.push(m);
+      matsBySheet.set(m.tech_sheet_id, arr);
+    });
+    const noSheet = ps.filter((p) => !sheetsByProduct.has(p.id));
+    const noStock = ps.filter((p) => {
+      const sids = sheetsByProduct.get(p.id);
+      if (!sids) return false;
+      return !sids.some((sid) => {
+        const mats = matsBySheet.get(sid) ?? [];
+        return mats.length > 0 && mats.every((m) => m.inventory_item_id && Number(m.inventory_items?.balance ?? 0) > 0);
+      });
+    });
+    const lateProducts = ps.filter((p) => (productionByProduct[p.id]?.late ?? 0) > 0);
+    return { noSheet, noStock, lateProducts, missingLaunch: !selected.launch_date };
+  }, [selected, selectedProducts, techSheets, bom, productionByProduct]);
+
   function openCreate() {
     setEditing(null);
     setOpen(true);
