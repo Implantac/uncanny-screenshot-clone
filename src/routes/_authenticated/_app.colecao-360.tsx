@@ -88,6 +88,16 @@ function Colecao360() {
       const totalQty = cOrders.reduce((a, o) => a + o.quantity, 0);
       const avanco = totalQty > 0 ? (producedQty / totalQty) * 100 : 0;
 
+      const approvedSheetIds = new Set(sheets.filter(s => s.status === "aprovada" && s.product_id).map(s => s.product_id!));
+      const semFicha = cProducts.filter(p => !approvedSheetIds.has(p.id)).length;
+
+      // Champions e críticos por receita
+      const revenuePerProduct = new Map<string, number>();
+      cSales.forEach(s => { if (s.product_id) revenuePerProduct.set(s.product_id, (revenuePerProduct.get(s.product_id) ?? 0) + Number(s.total ?? 0)); });
+      const ranked = cProducts.map(p => ({ p, rev: revenuePerProduct.get(p.id) ?? 0 })).sort((a,b) => b.rev - a.rev);
+      const champions = ranked.slice(0, 3).filter(x => x.rev > 0);
+      const criticos = ranked.filter(x => x.rev === 0).slice(0, 3);
+
       return {
         collection: c,
         productCount: cProducts.length,
@@ -96,9 +106,10 @@ function Colecao360() {
         opsActive, opsDone, producedQty,
         revenue, unitsSold, margin, sellThrough,
         semPiloto, protoPendentes, opsAguardando, liberadosPCP, avanco,
+        semFicha, champions, criticos,
       };
     });
-  }, [collections, products, prototypes, orders, sales]);
+  }, [collections, products, prototypes, orders, sales, sheets]);
 
   const current = summary.find((s) => s.collection.id === currentId) ?? summary[0];
 
