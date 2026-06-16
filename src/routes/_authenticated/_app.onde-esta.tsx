@@ -97,7 +97,7 @@ function OndeEsta() {
     queryFn: async () => {
       const { data } = await supabase
         .from("products")
-        .select("name,code")
+        .select("name")
         .eq("id", order!.product_id!)
         .maybeSingle();
       return data;
