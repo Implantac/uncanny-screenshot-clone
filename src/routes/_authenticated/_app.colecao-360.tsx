@@ -7,6 +7,8 @@ import {
   Package, ArrowRight, Sparkles, AlertTriangle, FileWarning, Clock, CheckCircle2, Radio, Wallet, Database,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
+import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { Target, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/colecao-360")({
   head: () => ({
