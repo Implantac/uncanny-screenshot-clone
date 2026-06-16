@@ -23,13 +23,15 @@ export const Route = createFileRoute("/_authenticated/_app/war-room-producao")({
 });
 
 function WarRoomProducao() {
+  const { productId } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const { data, isLoading } = useQuery({
     queryKey: ["war-room-producao"],
     queryFn: async () => {
       const [ordersR, stagesR, suppliersR] = await Promise.all([
         supabase
           .from("production_orders")
-          .select("id, code, stage, status, quantity, due_date, stage_updated_at, outsourced, products(name, sku), suppliers(name)")
+          .select("id, code, stage, status, quantity, due_date, stage_updated_at, outsourced, product_id, products(name, sku), suppliers(name)")
           .neq("status", "cancelada")
           .neq("status", "concluida")
           .limit(500),
