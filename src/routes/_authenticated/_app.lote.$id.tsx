@@ -1,0 +1,236 @@
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useRealtime } from "@/hooks/use-realtime";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { ProductionOccurrenceButton } from "@/components/production-occurrence";
+
+export const Route = createFileRoute("/_authenticated/_app/lote/$id")({
+  head: () => ({
+    meta: [
+      { title: "Lote · USE MODA PLM" },
+      { name: "description", content: "Visão completa do lote: OPs, grade, ocorrências e timeline." },
+    ],
+  }),
+  component: LotePage,
+});
+
+const STAGE_LABEL: Record<string, string> = {
+  cad: "CAD", modelagem: "Modelagem", corte: "Corte", costura: "Costura",
+  acabamento: "Acabamento", expedicao: "Expedição", concluido: "Concluído",
+};
+
+const STATUS_TONE: Record<string, string> = {
+  planejado: "bg-muted text-muted-foreground border-border",
+  em_producao: "bg-primary/15 text-primary border-primary/30",
+  finalizado: "bg-success/15 text-success border-success/30",
+  cancelado: "bg-destructive/15 text-destructive border-destructive/30",
+};
+
+function relTime(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const h = Math.floor(diff / 36e5);
+  if (h < 1) return `${Math.floor(diff / 60000)} min`;
+  if (h < 24) return `${h}h`;
+  return `${Math.floor(h / 24)}d`;
+}
+
+function LotePage() {
+  const { id } = useParams({ from: "/_authenticated/_app/lote/$id" });
+  useRealtime("production_orders", ["lote-orders", id]);
+  useRealtime("production_stage_log", ["lote-logs", id]);
+
+  const { data: batch, isLoading } = useQuery({
+    queryKey: ["lote", id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("production_batches").select("*").eq("id", id).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: orders = [] } = useQuery({
+    enabled: !!batch?.code,
+    queryKey: ["lote-orders", batch?.code],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("production_orders")
+        .select("id, code, stage, status, quantity, progress, due_date, stage_updated_at, product_id, supplier_id, owner_id, products(name, sku, image_url), suppliers(name)")
+        .eq("batch_code", batch!.code)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const orderIds = orders.map((o) => o.id);
+  const { data: logs = [] } = useQuery({
+    enabled: orderIds.length > 0,
+    queryKey: ["lote-logs", orderIds.join(",")],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("production_stage_log")
+        .select("id, order_id, from_stage, to_stage, quantity, note, is_partial, created_at")
+        .in("order_id", orderIds)
+        .order("created_at", { ascending: false })
+        .limit(80);
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const summary = useMemo(() => {
+    const total = orders.reduce((s, o) => s + (o.quantity ?? 0), 0);
+    const done = orders.filter((o) => o.stage === "concluido").length;
+    const pct = orders.length ? Math.round((done / orders.length) * 100) : 0;
+    const late = orders.filter((o) => o.due_date && new Date(o.due_date).getTime() < Date.now() && o.stage !== "concluido");
+    const byStage = new Map<string, number>();
+    orders.forEach((o) => byStage.set(o.stage, (byStage.get(o.stage) ?? 0) + 1));
+    return { total, done, pct, late: late.length, byStage: [...byStage.entries()] };
+  }, [orders]);
+
+  if (isLoading) return <div className="p-6 text-muted-foreground">Carregando…</div>;
+  if (!batch) {
+    return (
+      <div className="p-6 space-y-4">
+        <Link to="/lotes"><Button variant="ghost" size="sm"><ArrowLeft className="size-4 mr-1" />Voltar</Button></Link>
+        <div className="rounded-xl border border-border bg-card/50 p-8 text-center text-muted-foreground">Lote não encontrado.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 sm:p-6 space-y-5">
+      <div className="flex items-center gap-3">
+        <Link to="/lotes"><Button variant="ghost" size="sm"><ArrowLeft className="size-4 mr-1" />Lotes</Button></Link>
+        <Badge variant="outline" className={STATUS_TONE[batch.status] ?? ""}>{batch.status}</Badge>
+      </div>
+
+      <div className="flex items-start gap-3">
+        <div className="size-12 rounded-xl bg-primary/10 grid place-items-center">
+          <Boxes className="size-6 text-primary" />
+        </div>
+        <div className="flex-1">
+          <h1 className="text-2xl font-semibold">Lote {batch.code}</h1>
+          <p className="text-sm text-muted-foreground">
+            {orders.length} OPs · {summary.total} peças · {summary.done}/{orders.length} concluídas
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="text-3xl font-semibold tabular-nums">{summary.pct}%</div>
+          <div className="text-xs text-muted-foreground">progresso</div>
+        </div>
+      </div>
+
+      <Progress value={summary.pct} className="h-2" />
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card icon={Package} label="Peças no lote" value={summary.total} />
+        <Card icon={Factory} label="OPs ativas" value={orders.length - summary.done} />
+        <Card icon={CheckCircle2} label="Concluídas" value={summary.done} tone="text-success" />
+        <Card icon={AlertTriangle} label="Atrasadas" value={summary.late} tone={summary.late > 0 ? "text-destructive" : "text-success"} />
+      </div>
+
+      {summary.byStage.length > 0 && (
+        <div className="glass rounded-xl p-4">
+          <div className="text-sm font-semibold mb-3 flex items-center gap-2"><ListChecks className="size-4 text-primary" /> Distribuição por etapa</div>
+          <div className="flex flex-wrap gap-2">
+            {summary.byStage.map(([stage, n]) => (
+              <Badge key={stage} variant="outline" className="bg-muted/40">
+                {STAGE_LABEL[stage] ?? stage} · {n}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <div className="text-sm font-semibold mb-3">Referências do lote</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {orders.map((o) => (
+            <div key={o.id} className="rounded-xl border border-border bg-card/50 p-3 space-y-2">
+              <div className="flex gap-3">
+                <div className="size-16 rounded-lg overflow-hidden bg-muted/40 shrink-0">
+                  {o.products?.image_url ? (
+                    <img src={o.products.image_url} alt={o.products?.name} loading="lazy" className="size-full object-cover" />
+                  ) : (
+                    <div className="size-full grid place-items-center text-[10px] text-muted-foreground">sem foto</div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-mono text-[11px] text-muted-foreground">{o.code}</div>
+                  <div className="text-sm font-medium truncate">{o.products?.name ?? "—"}</div>
+                  <div className="text-xs text-muted-foreground truncate">{o.suppliers?.name ?? "—"}</div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px]">
+                  {STAGE_LABEL[o.stage] ?? o.stage}
+                </Badge>
+                <span className="text-[11px] text-muted-foreground tabular-nums">
+                  {o.quantity} pç · {o.progress ?? 0}%
+                </span>
+              </div>
+              {o.stage_updated_at && (
+                <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Clock className="size-3" /> nesta etapa há {relTime(o.stage_updated_at)}
+                </div>
+              )}
+              <div className="flex gap-1">
+                <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
+              </div>
+            </div>
+          ))}
+          {orders.length === 0 && (
+            <div className="col-span-full text-center text-sm text-muted-foreground py-6">
+              Sem OPs vinculadas a este lote.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="glass rounded-xl p-4">
+        <div className="text-sm font-semibold mb-3">Linha do tempo do lote</div>
+        {logs.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Sem movimentações registradas.</p>
+        ) : (
+          <ol className="relative border-l border-border ml-2 space-y-3 max-h-96 overflow-y-auto pr-2">
+            {logs.map((l) => {
+              const op = orders.find((o) => o.id === l.order_id);
+              return (
+                <li key={l.id} className="pl-5 relative">
+                  <span className="absolute -left-1.5 top-1.5 size-3 rounded-full bg-primary border-2 border-background" />
+                  <div className="flex items-center gap-2 text-xs font-medium">
+                    {l.from_stage && (
+                      <>
+                        <span className="text-muted-foreground">{STAGE_LABEL[l.from_stage] ?? l.from_stage}</span>
+                        <ArrowRight className="size-3 text-muted-foreground" />
+                      </>
+                    )}
+                    <span>{STAGE_LABEL[l.to_stage] ?? l.to_stage}</span>
+                    {l.is_partial && <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 text-[9px]">parcial</Badge>}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {op?.code} · {l.quantity} pç · há {relTime(l.created_at)}
+                  </div>
+                  {l.note && <div className="text-[11px] italic text-muted-foreground mt-0.5">"{l.note}"</div>}
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Card({ icon: Icon, label, value, tone }: { icon: any; label: string; value: number; tone?: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-card/50 p-3">
+      <div className="text-xs text-muted-foreground flex items-center gap-1.5"><Icon className="size-3.5" /> {label}</div>
+      <div className={`text-2xl font-semibold tabular-nums mt-1 ${tone ?? ""}`}>{value}</div>
+    </div>
+  );
+}
