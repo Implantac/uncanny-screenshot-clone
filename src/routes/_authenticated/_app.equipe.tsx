@@ -3,8 +3,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Shield, Users, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { listTeam, setUserRole } from "@/lib/team.functions";
+import { listTeam, setUserRole, setUserSector } from "@/lib/team.functions";
 import { useRoles } from "@/hooks/use-role";
+import { APP_SECTORS, SECTOR_LABEL, type AppSector } from "@/lib/modules";
 
 export const Route = createFileRoute("/_authenticated/_app/equipe")({
   head: () => ({
@@ -22,6 +23,7 @@ function TeamPage() {
   const { isAdmin, loading } = useRoles();
   const fetchTeam = useServerFn(listTeam);
   const mutateRole = useServerFn(setUserRole);
+  const mutateSector = useServerFn(setUserSector);
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -30,14 +32,25 @@ function TeamPage() {
     enabled: isAdmin,
   });
 
-  const m = useMutation({
+  const onOk = () => {
+    qc.invalidateQueries({ queryKey: ["team"] });
+    qc.invalidateQueries({ queryKey: ["user-sectors"] });
+    qc.invalidateQueries({ queryKey: ["user-roles"] });
+    toast.success("Permissões atualizadas");
+  };
+  const onErr = (e: any) => toast.error(e.message || "Falha ao atualizar");
+
+  const mRole = useMutation({
     mutationFn: (vars: { userId: string; role: (typeof ROLES)[number]; enabled: boolean }) =>
       mutateRole({ data: vars }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["team"] });
-      toast.success("Permissões atualizadas");
-    },
-    onError: (e: any) => toast.error(e.message || "Falha ao atualizar"),
+    onSuccess: onOk,
+    onError: onErr,
+  });
+  const mSector = useMutation({
+    mutationFn: (vars: { userId: string; sector: AppSector; enabled: boolean }) =>
+      mutateSector({ data: vars }),
+    onSuccess: onOk,
+    onError: onErr,
   });
 
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
@@ -53,6 +66,8 @@ function TeamPage() {
     );
   }
 
+  const busy = mRole.isPending || mSector.isPending;
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
@@ -61,23 +76,30 @@ function TeamPage() {
         </div>
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Equipe & Permissões</h1>
-          <p className="text-xs text-muted-foreground">Atribua papéis aos usuários da plataforma</p>
+          <p className="text-xs text-muted-foreground">Atribua papéis e setores aos usuários da plataforma</p>
         </div>
       </div>
 
-      <div className="glass rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="glass rounded-2xl overflow-x-auto">
+        <table className="w-full text-sm min-w-[900px]">
           <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
-              <th className="text-left px-4 py-3">Usuário</th>
-              {ROLES.map((r) => (
-                <th key={r} className="px-2 py-3 text-center">{ROLE_LABEL[r]}</th>
+              <th className="text-left px-4 py-3" rowSpan={2}>Usuário</th>
+              <th className="px-2 py-2 text-center border-l border-border" colSpan={ROLES.length}>Papéis</th>
+              <th className="px-2 py-2 text-center border-l border-border" colSpan={APP_SECTORS.length}>Setores (telas)</th>
+            </tr>
+            <tr>
+              {ROLES.map((r, i) => (
+                <th key={r} className={`px-2 py-2 text-center ${i === 0 ? "border-l border-border" : ""}`}>{ROLE_LABEL[r]}</th>
+              ))}
+              {APP_SECTORS.map((s, i) => (
+                <th key={s} className={`px-2 py-2 text-center ${i === 0 ? "border-l border-border" : ""}`}>{SECTOR_LABEL[s]}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {isLoading && (
-              <tr><td colSpan={ROLES.length + 1} className="text-center py-8 text-muted-foreground">Carregando…</td></tr>
+              <tr><td colSpan={ROLES.length + APP_SECTORS.length + 1} className="text-center py-8 text-muted-foreground">Carregando…</td></tr>
             )}
             {data?.map((u) => (
               <tr key={u.id} className="border-t border-border">
@@ -92,15 +114,29 @@ function TeamPage() {
                     </div>
                   </div>
                 </td>
-                {ROLES.map((r) => {
+                {ROLES.map((r, i) => {
                   const checked = u.roles.includes(r);
                   return (
-                    <td key={r} className="px-2 py-3 text-center">
+                    <td key={r} className={`px-2 py-3 text-center ${i === 0 ? "border-l border-border" : ""}`}>
                       <input
                         type="checkbox"
                         checked={checked}
-                        disabled={m.isPending}
-                        onChange={(e) => m.mutate({ userId: u.id, role: r, enabled: e.target.checked })}
+                        disabled={busy}
+                        onChange={(e) => mRole.mutate({ userId: u.id, role: r, enabled: e.target.checked })}
+                        className="size-4 accent-primary cursor-pointer"
+                      />
+                    </td>
+                  );
+                })}
+                {APP_SECTORS.map((s, i) => {
+                  const checked = u.sectors.includes(s);
+                  return (
+                    <td key={s} className={`px-2 py-3 text-center ${i === 0 ? "border-l border-border" : ""}`}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={busy}
+                        onChange={(e) => mSector.mutate({ userId: u.id, sector: s, enabled: e.target.checked })}
                         className="size-4 accent-primary cursor-pointer"
                       />
                     </td>
@@ -114,7 +150,11 @@ function TeamPage() {
 
       <div className="flex items-start gap-2 text-xs text-muted-foreground">
         <Shield className="size-4 shrink-0 mt-0.5" />
-        <p>Papéis são verificados no servidor via <code>has_role()</code>. Mudanças aplicam imediatamente. Novos usuários recebem <strong>designer</strong> por padrão.</p>
+        <p>
+          Setores controlam quais <strong>telas</strong> cada usuário enxerga no menu (Marketing, PCP, Desenvolvimento).
+          Administradores veem tudo. Demais áreas (Operação, Coleções, Cadeia, Inteligência, ERP, Plataforma) são liberadas
+          a todos os usuários autenticados.
+        </p>
       </div>
     </div>
   );
