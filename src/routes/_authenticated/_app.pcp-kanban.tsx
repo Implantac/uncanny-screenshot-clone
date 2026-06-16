@@ -6,6 +6,7 @@ import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History, Package, X } 
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
+import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { QuickPassButton } from "@/components/quick-pass";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
