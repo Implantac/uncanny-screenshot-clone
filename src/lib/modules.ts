@@ -80,6 +80,7 @@ export const MODULES: ModuleDef[] = [
   // === PCP & Produção ===
   { slug: "pcp", path: "/pcp", title: "PCP e Produção", short: "Ordens e capacidade", description: "Planejamento, ordens de produção e apontamento.", icon: Factory, group: "PCP & Produção", hidden: true },
   { slug: "produzir-hoje", path: "/produzir-hoje", title: "Produzir Hoje", short: "Operação sem filtros", description: "Top 3 OPs por setor, ordenadas por prioridade e prazo. Operador abre e trabalha.", icon: Flame, group: "PCP & Produção" },
+  { slug: "produtividade", path: "/produtividade", title: "Produtividade", short: "Ranking 7 dias", description: "Quem mais passou peças hoje e na semana, por setor.", icon: Activity, group: "PCP & Produção" },
   { slug: "pcp-kanban", path: "/pcp-kanban", title: "PCP Kanban", short: "Board drag-and-drop", description: "Mova ordens entre setores arrastando os cards.", icon: KanbanSquare, group: "PCP & Produção", status: "parcial" },
   { slug: "centro-de-corte", path: "/centro-de-corte", title: "Centro de Corte", short: "Plano de corte", description: "Plano de corte, enfesto e peças cortadas.", icon: Scissors, group: "PCP & Produção" },
   { slug: "lotes", path: "/lotes", title: "Lotes & Rastreabilidade", short: "Batch tracking", description: "Lotes de produção, vínculo com OPs e histórico completo de estágios.", icon: Boxes, group: "PCP & Produção" },
