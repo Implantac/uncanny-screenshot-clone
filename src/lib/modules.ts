@@ -3,7 +3,7 @@ import {
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
   Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
   Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, Trophy, Target,
-  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, Leaf, Repeat, Globe, ShieldAlert, Tag, Send, type LucideIcon,
+  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, Leaf, Repeat, Globe, ShieldAlert, Tag, Send, Flame, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleGroup =
@@ -38,7 +38,7 @@ export const PRIMARY_SLUGS = new Set<string>([
   "command-center", "fashion-calendar", "approvals",
   "colecoes", "colecao-360",
   "dev-kanban", "produtos", "ficha-tecnica", "prototipos", "materiais",
-  "pcp-kanban", "lotes", "terceirizados", "twin-factory", "capacity",
+  "produzir-hoje", "pcp-kanban", "lotes", "terceirizados", "twin-factory", "capacity",
   "fornecedores", "almoxarifado", "compras", "stock-health",
   "marketing", "campaigns", "influencer-roi", "geo-sales",
   "intel-hub", "closed-loop", "control-tower", "product-success",
@@ -79,6 +79,7 @@ export const MODULES: ModuleDef[] = [
 
   // === PCP & Produção ===
   { slug: "pcp", path: "/pcp", title: "PCP e Produção", short: "Ordens e capacidade", description: "Planejamento, ordens de produção e apontamento.", icon: Factory, group: "PCP & Produção", hidden: true },
+  { slug: "produzir-hoje", path: "/produzir-hoje", title: "Produzir Hoje", short: "Operação sem filtros", description: "Top 3 OPs por setor, ordenadas por prioridade e prazo. Operador abre e trabalha.", icon: Flame, group: "PCP & Produção" },
   { slug: "pcp-kanban", path: "/pcp-kanban", title: "PCP Kanban", short: "Board drag-and-drop", description: "Mova ordens entre setores arrastando os cards.", icon: KanbanSquare, group: "PCP & Produção", status: "parcial" },
   { slug: "centro-de-corte", path: "/centro-de-corte", title: "Centro de Corte", short: "Plano de corte", description: "Plano de corte, enfesto e peças cortadas.", icon: Scissors, group: "PCP & Produção" },
   { slug: "lotes", path: "/lotes", title: "Lotes & Rastreabilidade", short: "Batch tracking", description: "Lotes de produção, vínculo com OPs e histórico completo de estágios.", icon: Boxes, group: "PCP & Produção" },
