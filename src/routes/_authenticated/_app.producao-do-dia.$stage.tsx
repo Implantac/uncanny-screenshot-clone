@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listDayProduction } from "@/lib/pcp-ops.functions";
 import { AlertTriangle, Clock, Factory, Truck } from "lucide-react";
+import { QuickPassButton } from "@/components/quick-pass";
 
 export const Route = createFileRoute("/_authenticated/_app/producao-do-dia/$stage")({
   head: ({ params }) => ({
@@ -10,6 +11,15 @@ export const Route = createFileRoute("/_authenticated/_app/producao-do-dia/$stag
   }),
   component: DayProductionPage,
 });
+
+const NEXT_STAGE: Record<string, string> = {
+  cad: "corte",
+  corte: "costura",
+  costura: "acabamento",
+  acabamento: "qualidade",
+  qualidade: "embalagem",
+  embalagem: "entregue",
+};
 
 const PRIORITY_LABEL: Record<number, { label: string; cls: string }> = {
   3: { label: "Urgente", cls: "bg-destructive/15 text-destructive border-destructive/30" },
@@ -64,11 +74,12 @@ function DayProductionPage() {
               <th className="text-right px-4 py-3">Qtd</th>
               <th className="text-left px-4 py-3">Entrega</th>
               <th className="text-left px-4 py-3">Tempo no setor</th>
+              <th className="text-right px-4 py-3">Passar →</th>
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={8} className="text-center py-8 text-muted-foreground">Carregando…</td></tr>}
-            {!isLoading && (data?.length ?? 0) === 0 && <tr><td colSpan={8} className="text-center py-8 text-muted-foreground">Nada para produzir neste setor hoje.</td></tr>}
+            {isLoading && <tr><td colSpan={9} className="text-center py-8 text-muted-foreground">Carregando…</td></tr>}
+            {!isLoading && (data?.length ?? 0) === 0 && <tr><td colSpan={9} className="text-center py-8 text-muted-foreground">Nada para produzir neste setor hoje.</td></tr>}
             {data?.map((r: any) => {
               const prio = PRIORITY_LABEL[r.priority ?? 1] ?? PRIORITY_LABEL[1];
               const isLate = r.due_date && r.due_date < today;
@@ -108,6 +119,20 @@ function DayProductionPage() {
                   <td className={`px-4 py-3 ${isLate ? "text-destructive font-medium" : ""}`}>{r.due_date ?? "—"}</td>
                   <td className="px-4 py-3 inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="size-3" /> {daysInStage}d
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {NEXT_STAGE[stage] && r.owner_id ? (
+                      <QuickPassButton
+                        orderId={r.id}
+                        orderCode={r.code}
+                        ownerId={r.owner_id}
+                        fromStage={stage}
+                        toStage={NEXT_STAGE[stage]}
+                        remaining={r.quantity}
+                      />
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground">—</span>
+                    )}
                   </td>
                 </tr>
               );
