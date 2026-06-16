@@ -23,6 +23,7 @@ type Order = {
   id: string; code: string; quantity: number; progress: number;
   status: string; stage: string; due_date: string | null;
   product_id: string | null; batch_code: string | null;
+  stage_updated_at: string | null;
   products: { name: string; sku: string } | null;
 };
 
