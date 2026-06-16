@@ -3,7 +3,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, ImageIcon, Loader2, Package, Pencil, Plus, Scissors, Search, Tag, Trash2, Upload } from "lucide-react";
+import { Download, ImageIcon, Loader2, Package, Pencil, Plus, Scissors, Search, Sparkles, Tag, Trash2, Upload } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
