@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { listDayProduction } from "@/lib/pcp-ops.functions";
 import { AlertTriangle, Clock, Factory, Truck } from "lucide-react";
 import { QuickPassButton } from "@/components/quick-pass";
+import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/producao-do-dia/$stage")({
   head: ({ params }) => ({
@@ -61,6 +62,12 @@ function DayProductionPage() {
           )}
         </div>
       </header>
+
+      <AICoordinatorPanel
+        persona="pcp"
+        title={`Coordenador de PCP — foco em ${stage}`}
+        question={`Olhando as OPs ativas em ${stage}, quais 3 devo priorizar agora e por quê (atraso, score, gargalo)?`}
+      />
 
       <div className="glass rounded-2xl overflow-hidden">
         <table className="w-full text-sm">
