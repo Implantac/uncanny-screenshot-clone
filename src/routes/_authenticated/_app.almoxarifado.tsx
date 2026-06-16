@@ -31,8 +31,18 @@ type Category = "tecido" | "aviamento" | "acabado" | "outros";
 type Item = {
   id: string; owner_id: string; sku: string; name: string;
   category: Category; deposit: string | null; unit: string;
-  balance: number; minimum: number; notes: string | null;
+  balance: number; minimum: number; maximum: number; notes: string | null;
+  last_entry_at: string | null; last_exit_at: string | null; turnover_30d: number;
 };
+
+function fmtDate(d: string | null) {
+  if (!d) return "—";
+  const days = Math.floor((Date.now() - new Date(d).getTime()) / 86_400_000);
+  if (days === 0) return "hoje";
+  if (days === 1) return "ontem";
+  if (days < 30) return `${days}d`;
+  return new Date(d).toLocaleDateString("pt-BR");
+}
 
 const CAT_LABEL: Record<Category, string> = {
   tecido: "Tecido", aviamento: "Aviamento", acabado: "Acabado", outros: "Outros",
@@ -160,28 +170,36 @@ function Almoxarifado() {
                   <th className="text-left font-medium px-5 py-2.5">SKU</th>
                   <th className="text-left font-medium px-5 py-2.5">Item</th>
                   <th className="text-left font-medium px-5 py-2.5">Categoria</th>
-                  <th className="text-left font-medium px-5 py-2.5">Depósito</th>
                   <th className="text-right font-medium px-5 py-2.5">Saldo</th>
-                  <th className="text-right font-medium px-5 py-2.5">Mínimo</th>
+                  <th className="text-right font-medium px-5 py-2.5">Mín / Máx</th>
+                  <th className="text-right font-medium px-5 py-2.5" title="Saídas últimos 30 dias">Giro 30d</th>
+                  <th className="text-right font-medium px-5 py-2.5">Últ. entrada</th>
                   <th className="text-left font-medium px-5 py-2.5">Status</th>
                   <th className="px-5 py-2.5"></th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((i) => {
-                  const critico = Number(i.balance) < Number(i.minimum);
+                  const bal = Number(i.balance);
+                  const min = Number(i.minimum);
+                  const max = Number(i.maximum);
+                  const critico = bal < min;
+                  const excesso = max > 0 && bal > max;
                   const mine = i.owner_id === user?.id;
                   return (
                     <tr key={i.id} className="border-t border-border hover:bg-muted/30">
                       <td className="px-5 py-3 tabular-nums text-muted-foreground">{i.sku}</td>
-                      <td className="px-5 py-3 font-medium">{i.name}</td>
+                      <td className="px-5 py-3 font-medium">{i.name}<div className="text-xs text-muted-foreground">{i.deposit || "—"}</div></td>
                       <td className="px-5 py-3 text-muted-foreground">{CAT_LABEL[i.category]}</td>
-                      <td className="px-5 py-3 text-muted-foreground">{i.deposit || "—"}</td>
-                      <td className={`px-5 py-3 text-right tabular-nums ${critico ? "text-destructive font-medium" : ""}`}>{i.balance} {i.unit}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{i.minimum} {i.unit}</td>
+                      <td className={`px-5 py-3 text-right tabular-nums ${critico ? "text-destructive font-medium" : excesso ? "text-amber-500" : ""}`}>{bal} {i.unit}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{min} / {max || "—"}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{Number(i.turnover_30d || 0)} {i.unit}</td>
+                      <td className="px-5 py-3 text-right text-muted-foreground text-xs">{fmtDate(i.last_entry_at)}</td>
                       <td className="px-5 py-3">
                         {critico
                           ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-destructive/15 text-destructive"><AlertTriangle className="size-3" /> Crítico</span>
+                          : excesso
+                          ? <span className="px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-500">Excesso</span>
                           : <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/15 text-emerald-400">Ok</span>}
                       </td>
                       <td className="px-5 py-3 text-right">
@@ -221,6 +239,7 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
   const [unit, setUnit] = useState("un");
   const [balance, setBalance] = useState("0");
   const [minimum, setMinimum] = useState("0");
+  const [maximum, setMaximum] = useState("0");
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -228,10 +247,11 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
       setSku(editing.sku); setName(editing.name); setCategory(editing.category);
       setDeposit(editing.deposit || ""); setUnit(editing.unit);
       setBalance(String(editing.balance)); setMinimum(String(editing.minimum));
+      setMaximum(String(editing.maximum || 0));
       setNotes(editing.notes || "");
     } else if (open) {
       setSku(""); setName(""); setCategory("tecido"); setDeposit(""); setUnit("un");
-      setBalance("0"); setMinimum("0"); setNotes("");
+      setBalance("0"); setMinimum("0"); setMaximum("0"); setNotes("");
     }
   }, [open, editing]);
 
@@ -240,7 +260,8 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
       if (!userId) throw new Error("Sessão expirada");
       const payload = {
         sku, name, category, deposit: deposit || null, unit,
-        balance: Number(balance), minimum: Number(minimum), notes: notes || null,
+        balance: Number(balance), minimum: Number(minimum), maximum: Number(maximum),
+        notes: notes || null,
       };
       if (editing) {
         const { error } = await supabase.from("inventory_items").update(payload).eq("id", editing.id);
@@ -284,10 +305,11 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
             </div>
             <div className="space-y-2"><Label>Depósito</Label><Input value={deposit} onChange={(e) => setDeposit(e.target.value)} placeholder="DP-01" /></div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <div className="space-y-2"><Label>Unidade</Label><Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="m, kg, un" /></div>
             <div className="space-y-2"><Label>Saldo</Label><Input type="number" step="0.01" value={balance} onChange={(e) => setBalance(e.target.value)} /></div>
             <div className="space-y-2"><Label>Mínimo</Label><Input type="number" step="0.01" value={minimum} onChange={(e) => setMinimum(e.target.value)} /></div>
+            <div className="space-y-2"><Label>Máximo</Label><Input type="number" step="0.01" value={maximum} onChange={(e) => setMaximum(e.target.value)} /></div>
           </div>
           <div className="space-y-2"><Label>Observações</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
           <DialogFooter>

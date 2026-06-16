@@ -938,12 +938,16 @@ export type Database = {
           created_at: string
           deposit: string | null
           id: string
+          last_entry_at: string | null
+          last_exit_at: string | null
+          maximum: number
           minimum: number
           name: string
           notes: string | null
           owner_id: string
           product_id: string | null
           sku: string
+          turnover_30d: number
           unit: string
           updated_at: string
         }
@@ -953,12 +957,16 @@ export type Database = {
           created_at?: string
           deposit?: string | null
           id?: string
+          last_entry_at?: string | null
+          last_exit_at?: string | null
+          maximum?: number
           minimum?: number
           name: string
           notes?: string | null
           owner_id: string
           product_id?: string | null
           sku: string
+          turnover_30d?: number
           unit?: string
           updated_at?: string
         }
@@ -968,12 +976,16 @@ export type Database = {
           created_at?: string
           deposit?: string | null
           id?: string
+          last_entry_at?: string | null
+          last_exit_at?: string | null
+          maximum?: number
           minimum?: number
           name?: string
           notes?: string | null
           owner_id?: string
           product_id?: string | null
           sku?: string
+          turnover_30d?: number
           unit?: string
           updated_at?: string
         }
