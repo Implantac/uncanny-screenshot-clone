@@ -141,7 +141,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "mobile", path: "/mobile", title: "Aplicativo Mobile", short: "App para times", description: "App nativo para campo, fábrica e vendedores.", icon: Smartphone, group: "Plataforma", status: "wip", hidden: true },
   { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis.", icon: BarChart3, group: "Plataforma" },
   { slug: "fashion-gpt", path: "/fashion-gpt", title: "Fashion GPT", short: "Copiloto de moda", description: "Assistente especialista no seu negócio de moda.", icon: Bot, group: "Plataforma" },
-  { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação.", icon: Cpu, group: "Plataforma" },
+  { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação.", icon: Cpu, group: "Plataforma", hidden: true },
   { slug: "security-center", path: "/security-center", title: "Segurança", short: "MFA, LGPD, backup", description: "MFA TOTP, política de senhas, criptografia e backups.", icon: Lock, group: "Plataforma" },
   { slug: "audit", path: "/audit", title: "Auditoria & LGPD", short: "Logs e rastreabilidade", description: "Eventos auditáveis com filtro por entidade/ação.", icon: ScrollText, group: "Plataforma" },
   { slug: "data-lake", path: "/data-lake", title: "Data Lake", short: "Camada unificada", description: "Visão consolidada de todos os domínios.", icon: Database, group: "Plataforma", hidden: true },
