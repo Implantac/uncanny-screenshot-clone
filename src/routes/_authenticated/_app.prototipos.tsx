@@ -71,15 +71,6 @@ function Prototipos() {
   const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "", current_sector: "" as AdjustmentSector | "" });
 
   const handledProductIdRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!deepProductId) return;
-    if (handledProductIdRef.current === deepProductId) return;
-    handledProductIdRef.current = deepProductId;
-    setEditing(null);
-    setForm({ code: "", product_id: deepProductId, supplier_id: "", stage: "solicitado", due_date: "", notes: "", current_sector: "" });
-    setOpen(true);
-    navigate({ search: (p: typeof search) => ({ ...p, productId: undefined }), replace: true });
-  }, [deepProductId, navigate]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const toggleSel = (id: string) =>
@@ -94,7 +85,7 @@ function Prototipos() {
     },
   });
 
-  const { data: products = [] } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ["products-ref"],
     queryFn: async () => {
       const { data, error } = await supabase.from("products").select("id,name,image_url").order("name");
@@ -102,6 +93,23 @@ function Prototipos() {
       return data as (Ref & { image_url: string | null })[];
     },
   });
+
+  useEffect(() => {
+    if (!deepProductId || productsLoading) return;
+    if (handledProductIdRef.current === deepProductId) return;
+    handledProductIdRef.current = deepProductId;
+    const exists = products.some((p) => p.id === deepProductId);
+    if (!exists) {
+      toast.error("Produto não encontrado ou inválido");
+      navigate({ search: (p: typeof search) => ({ ...p, productId: undefined }), replace: true });
+      return;
+    }
+    setEditing(null);
+    setForm({ code: "", product_id: deepProductId, supplier_id: "", stage: "solicitado", due_date: "", notes: "", current_sector: "" });
+    setOpen(true);
+    navigate({ search: (p: typeof search) => ({ ...p, productId: undefined }), replace: true });
+  }, [deepProductId, productsLoading, products, navigate]);
+
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ["suppliers-ref"],
