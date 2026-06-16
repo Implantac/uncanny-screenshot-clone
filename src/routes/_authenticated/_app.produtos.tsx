@@ -286,7 +286,7 @@ function ProdutosPage() {
         </div>
       )}
 
-      <ProductDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} collections={collections} />
+      <ProductDialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setPrefill(null); }} editing={editing} userId={user?.id} collections={collections} prefill={prefill} />
     </div>
   );
 }
