@@ -106,8 +106,24 @@ function DayProductionPage() {
                     {r.batch_code && <div className="text-xs text-muted-foreground">Lote {r.batch_code}</div>}
                   </td>
                   <td className="px-4 py-3">
-                    <div>{r.products?.name ?? "—"}</div>
-                    <div className="text-xs text-muted-foreground">{r.products?.sku}</div>
+                    <div className="flex items-center gap-2.5">
+                      {r.products?.image_url ? (
+                        <img
+                          src={r.products.image_url}
+                          alt={r.products?.name ?? ""}
+                          loading="lazy"
+                          className="size-10 rounded-md object-cover border border-border flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="size-10 rounded-md bg-muted/40 border border-border flex-shrink-0 grid place-items-center text-[9px] text-muted-foreground">
+                          s/foto
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <div className="truncate">{r.products?.name ?? "—"}</div>
+                        <div className="text-xs text-muted-foreground font-mono">{r.products?.sku}</div>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="inline-flex items-center gap-1">

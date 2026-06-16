@@ -172,6 +172,9 @@ function Colecao360() {
                 </div>
               </div>
 
+              {/* IA Coordenador — diagnóstico em linguagem natural */}
+              <CoordinatorBriefing c={current} />
+
               {/* Sala de Guerra — sinais operacionais */}
               <div className="rounded-xl border border-border bg-card p-4">
                 <div className="flex items-center justify-between mb-3">
@@ -300,5 +303,55 @@ function Shortcut({ to, label }: { to: string; label: string }) {
     <Link to={to} className="rounded-lg border border-border bg-card px-3 py-2 text-sm hover:border-primary hover:bg-muted/30 transition-colors flex items-center justify-between">
       <span>{label}</span><ArrowRight className="size-3 text-muted-foreground" />
     </Link>
+  );
+}
+
+function CoordinatorBriefing({ c }: { c: any }) {
+  const alerts: string[] = [];
+  if (c.semPiloto > 0) alerts.push(`${c.semPiloto} produto${c.semPiloto > 1 ? "s" : ""} sem piloto aprovado`);
+  if (c.semFicha > 0) alerts.push(`${c.semFicha} sem ficha técnica`);
+  if (c.protoPendentes > 5) alerts.push(`${c.protoPendentes} protótipos pendentes`);
+  if (c.opsAguardando > 0) alerts.push(`${c.opsAguardando} OPs aguardando liberação`);
+
+  const verdict =
+    alerts.length === 0 && c.avanco >= 80
+      ? { tone: "success", label: "Coleção saudável", msg: `Avanço de ${Math.round(c.avanco)}% e sem bloqueios — siga com o ritmo atual.` }
+      : alerts.length >= 3 || c.semPiloto > 3
+      ? { tone: "destructive", label: "Coleção em risco", msg: `Atenção: ${alerts.slice(0, 3).join(", ")}. Priorize destravar pilotos e fichas antes de abrir novas OPs.` }
+      : alerts.length > 0
+      ? { tone: "warning", label: "Pontos de atenção", msg: `${alerts.slice(0, 3).join(" · ")}. Ajustar nesta semana mantém o cronograma.` }
+      : { tone: "primary", label: "Coleção em ritmo", msg: `Pipeline rodando com avanço de ${Math.round(c.avanco)}%. Acompanhar gargalos da produção.` };
+
+  const tones: Record<string, string> = {
+    success: "border-success/40 bg-success/5",
+    destructive: "border-destructive/40 bg-destructive/5",
+    warning: "border-warning/40 bg-warning/5",
+    primary: "border-primary/40 bg-primary/5",
+  };
+  const labelTones: Record<string, string> = {
+    success: "text-success",
+    destructive: "text-destructive",
+    warning: "text-warning",
+    primary: "text-primary",
+  };
+
+  return (
+    <div className={`rounded-xl border p-4 ${tones[verdict.tone]}`}>
+      <div className="flex items-start gap-3">
+        <div className="size-8 rounded-lg bg-[image:var(--gradient-primary)] grid place-items-center flex-shrink-0 shadow-[var(--shadow-glow)]">
+          <Sparkles className="size-4 text-primary-foreground" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Coordenador de Desenvolvimento · IA</div>
+          <div className={`text-sm font-semibold ${labelTones[verdict.tone]} mt-0.5`}>{verdict.label}</div>
+          <p className="text-sm text-foreground/90 mt-1 leading-relaxed">{verdict.msg}</p>
+          {c.champions[0] && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Campeão da coleção: <span className="text-foreground font-medium">{c.champions[0].p.name}</span> ({c.champions[0].p.sku}) — R$ {(c.champions[0].rev / 1000).toFixed(1)}k em vendas. Considere reforçar produção.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
