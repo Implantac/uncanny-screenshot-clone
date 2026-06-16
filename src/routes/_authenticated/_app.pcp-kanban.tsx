@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
 import { QuickPassButton } from "@/components/quick-pass";
+import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
