@@ -78,6 +78,7 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
   const qc = useQueryClient();
   const { user } = useAuth();
   const [severity, setSeverity] = useState<Severity>("media");
+  const [linha, setLinha] = useState<1 | 2>(1);
   const [body, setBody] = useState("");
   const [photo, setPhoto] = useState("");
 
@@ -86,7 +87,8 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
       if (!user) throw new Error("Não autenticado");
       const text = body.trim();
       if (!text) throw new Error("Descreva a ocorrência");
-      const tagged = `${TAG_PREFIX}${severity}] ${text}${photo.trim() ? `\nFoto: ${photo.trim()}` : ""}`;
+      const linhaTag = linha === 2 ? ":2L" : "";
+      const tagged = `${TAG_PREFIX}${severity}${linhaTag}] ${text}${photo.trim() ? `\nFoto: ${photo.trim()}` : ""}`;
 
       const { error: cErr } = await supabase.from("production_order_comments").insert({
         production_order_id: orderId,
@@ -100,7 +102,7 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
       const { error: qErr } = await supabase.from("quality_inspections").insert({
         owner_id: ownerId,
         production_order_id: orderId,
-        inspection_type: `ocorrencia:${stage}`,
+        inspection_type: `ocorrencia:${stage}${linha === 2 ? ":2a-linha" : ""}`,
         inspector: user.email ?? null,
         result: severity === "critica" ? "reprovada" : "condicional",
         minor_defects: d.minor,
