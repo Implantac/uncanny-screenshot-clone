@@ -135,6 +135,30 @@ export function NotificationsBell() {
               </div>
             </Link>
           ))}
+          {data?.stuck.map((o: any) => {
+            const days = Math.floor((Date.now() - new Date(o.stage_updated_at).getTime()) / 86_400_000);
+            return (
+              <Link key={`stuck-${o.id}`} to="/pcp-kanban" className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0">
+                <Pause className="size-4 text-warning shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium truncate">OP {o.code} parada em {o.stage}</div>
+                  <div className="text-xs text-muted-foreground">Sem movimento há {days} dia{days === 1 ? "" : "s"}</div>
+                </div>
+              </Link>
+            );
+          })}
+          {data?.oldProtos.map((p: any) => {
+            const days = Math.floor((Date.now() - new Date(p.updated_at).getTime()) / 86_400_000);
+            return (
+              <Link key={`proto-${p.id}`} to="/prototipos" className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0">
+                <Sparkles className="size-4 text-warning shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium truncate">Protótipo {p.code} sem evolução</div>
+                  <div className="text-xs text-muted-foreground truncate">{p.name} · {p.stage} há {days} dias</div>
+                </div>
+              </Link>
+            );
+          })}
           {data?.comments.map((c) => (
             <Link
               key={`cm-${c.id}`}
