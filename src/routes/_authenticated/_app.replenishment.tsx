@@ -176,6 +176,23 @@ function Section({ title, icon, desc, children }: { title: string; icon: React.R
 }
 
 function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion?: boolean }) {
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  const createOp = useServerFn(createOpFromSuggestion);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const mutation = useMutation({
+    mutationFn: async (row: Row) =>
+      createOp({ data: { productId: row.id, quantity: row.suggestion, reason: row.reasons.join(" · "), priority: row.score >= 75 ? 3 : 2 } }),
+    onMutate: (row: Row) => setPendingId(row.id),
+    onSuccess: (op: any) => {
+      toast.success(`OP ${op.code} criada`);
+      qc.invalidateQueries({ queryKey: ["pcp-kanban"] });
+      navigate({ to: "/pcp-kanban" });
+    },
+    onError: (e: Error) => toast.error(e.message),
+    onSettled: () => setPendingId(null),
+  });
+
   if (items.length === 0) return <div className="p-6 text-center text-sm text-muted-foreground">Nada por aqui. ✅</div>;
   return (
     <div className="overflow-x-auto">
