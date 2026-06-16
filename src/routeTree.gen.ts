@@ -94,6 +94,7 @@ import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_auth
 import { Route as ApiPublicSupplierPortalTokenRouteImport } from './routes/api/public/supplier-portal.$token'
 import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
+import { Route as AuthenticatedAppWarRoomColecaoIdRouteImport } from './routes/_authenticated/_app.war-room-colecao.$id'
 import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes/_authenticated/_app.producao-do-dia.$stage'
 
 const AuthRoute = AuthRouteImport.update({
@@ -581,6 +582,12 @@ const ApiPublicAgentsRunDueRoute = ApiPublicAgentsRunDueRouteImport.update({
   path: '/api/public/agents/run-due',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAppWarRoomColecaoIdRoute =
+  AuthenticatedAppWarRoomColecaoIdRouteImport.update({
+    id: '/war-room-colecao/$id',
+    path: '/war-room-colecao/$id',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppProducaoDoDiaStageRoute =
   AuthenticatedAppProducaoDoDiaStageRouteImport.update({
     id: '/producao-do-dia/$stage',
@@ -670,6 +677,7 @@ export interface FileRoutesByFullPath {
   '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
+  '/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
@@ -756,6 +764,7 @@ export interface FileRoutesByTo {
   '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
+  '/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
@@ -845,6 +854,7 @@ export interface FileRoutesById {
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/_app/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
+  '/_authenticated/_app/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
@@ -933,6 +943,7 @@ export interface FileRouteTypes {
     | '/war-room-producao'
     | '/portal/fornecedor/$token'
     | '/producao-do-dia/$stage'
+    | '/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/supplier-portal/$token'
@@ -1019,6 +1030,7 @@ export interface FileRouteTypes {
     | '/war-room-producao'
     | '/portal/fornecedor/$token'
     | '/producao-do-dia/$stage'
+    | '/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/supplier-portal/$token'
@@ -1107,6 +1119,7 @@ export interface FileRouteTypes {
     | '/portal/fornecedor/$token'
     | '/_authenticated/_app/'
     | '/_authenticated/_app/producao-do-dia/$stage'
+    | '/_authenticated/_app/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/supplier-portal/$token'
@@ -1720,6 +1733,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAgentsRunDueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/_app/war-room-colecao/$id': {
+      id: '/_authenticated/_app/war-room-colecao/$id'
+      path: '/war-room-colecao/$id'
+      fullPath: '/war-room-colecao/$id'
+      preLoaderRoute: typeof AuthenticatedAppWarRoomColecaoIdRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/producao-do-dia/$stage': {
       id: '/_authenticated/_app/producao-do-dia/$stage'
       path: '/producao-do-dia/$stage'
@@ -1808,6 +1828,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppWarRoomProducaoRoute: typeof AuthenticatedAppWarRoomProducaoRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppProducaoDoDiaStageRoute: typeof AuthenticatedAppProducaoDoDiaStageRoute
+  AuthenticatedAppWarRoomColecaoIdRoute: typeof AuthenticatedAppWarRoomColecaoIdRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
@@ -1891,6 +1912,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppProducaoDoDiaStageRoute:
     AuthenticatedAppProducaoDoDiaStageRoute,
+  AuthenticatedAppWarRoomColecaoIdRoute: AuthenticatedAppWarRoomColecaoIdRoute,
 }
 
 const AuthenticatedAppRouteWithChildren =
