@@ -368,26 +368,10 @@ function ProductDetail({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-4">
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div>
-            <div className="text-sm font-semibold">Timeline visual</div>
-            <div className="text-xs text-muted-foreground mt-1">Rastro principal do produto dentro do catálogo.</div>
-          </div>
-          <div className="space-y-4">
-            {timeline.map((step, index) => (
-              <div key={step.label} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="size-8 rounded-full bg-primary/10 text-primary grid place-items-center text-xs font-semibold">{index + 1}</div>
-                  {index < timeline.length - 1 && <div className="w-px flex-1 bg-border mt-2" />}
-                </div>
-                <div className="pb-4">
-                  <div className="font-medium">{step.label}</div>
-                  <div className="text-sm text-muted-foreground mt-1">{step.detail}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="glass rounded-xl p-5">
+          <ProductTimeline productId={product.id} createdAt={product.created_at} />
         </div>
+
 
         <div className="glass rounded-xl p-5 space-y-4">
           <div>
