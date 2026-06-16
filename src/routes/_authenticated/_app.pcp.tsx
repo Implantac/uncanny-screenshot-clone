@@ -897,6 +897,25 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
                 </Select>
               </div>
             </div>
+            <div>
+              <Label>Linha da peça</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, line_type: "primeira" })}
+                  className={`rounded-md border px-3 py-2 text-sm transition ${form.line_type === "primeira" ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted"}`}
+                >
+                  1ª linha
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, line_type: "segunda_linha" })}
+                  className={`rounded-md border px-3 py-2 text-sm transition ${form.line_type === "segunda_linha" ? "border-orange-500/40 bg-orange-500/10 text-orange-500" : "border-border hover:bg-muted"}`}
+                >
+                  2ª linha
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Quantidade</Label><Input type="number" min={0} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} /></div>
               <div><Label>Prazo</Label><Input type="date" value={form.due_at} onChange={(e) => setForm({ ...form, due_at: e.target.value })} /></div>
