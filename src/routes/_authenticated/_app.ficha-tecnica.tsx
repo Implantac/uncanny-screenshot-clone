@@ -11,7 +11,11 @@ import {
   Scissors,
   Trash2,
   Wallet,
+  Sparkles,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { suggestTechSheetImprovements } from "@/lib/tech-pack-ai.functions";
+import { Markdown } from "@/components/markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
