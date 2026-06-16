@@ -171,7 +171,7 @@ function BI() {
         </div>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">BI e Analytics</h1>
-          <p className="text-sm text-muted-foreground">Dashboards e KPIs do negócio (dados reais)</p>
+          <p className="text-sm text-muted-foreground">{personaInfo[persona].subtitle}</p>
         </div>
       </div>
 
