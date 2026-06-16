@@ -136,8 +136,11 @@ async function resolveProductImage(path: string | null) {
 function FichaTecnicaPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { productId: deepLinkProductId } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Sheet | null>(null);
+  const [initialProductId, setInitialProductId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [diffOpen, setDiffOpen] = useState(false);
 
