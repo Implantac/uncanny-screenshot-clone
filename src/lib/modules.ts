@@ -75,7 +75,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "fit-sessions", path: "/fit-sessions", title: "Fit Sessions", short: "Provas estruturadas", description: "Iterações de prova com comentários por ponto de medida (POM).", icon: Ruler, group: "Desenvolvimento" },
   { slug: "target-costing", path: "/target-costing", title: "Target Costing", short: "Custo alvo × real", description: "Meta de custo e margem por produto comparada ao custo real da ficha técnica.", icon: Target, group: "Desenvolvimento" },
   { slug: "sourcing", path: "/sourcing", title: "Sourcing & RFQ", short: "Cotação de materiais", description: "Cotações de material em múltiplos fornecedores com comparação lado a lado.", icon: ShoppingCart, group: "Cadeia (PLM)" },
-  { slug: "sustentabilidade", path: "/sustentabilidade", title: "Sustainability Scoring", short: "CO₂, % reciclado, cert.", description: "Score sustentável por produto: pegada CO₂, água, reciclado, orgânico e certificações.", icon: Leaf, group: "Plataforma" },
+  { slug: "sustentabilidade", path: "/sustentabilidade", title: "Sustainability Scoring", short: "CO₂, % reciclado, cert.", description: "Score sustentável por produto: pegada CO₂, água, reciclado, orgânico e certificações.", icon: Leaf, group: "Plataforma", hidden: true },
 
   // === PCP & Produção ===
   { slug: "pcp", path: "/pcp", title: "PCP e Produção", short: "Ordens e capacidade", description: "Planejamento, ordens de produção e apontamento.", icon: Factory, group: "PCP & Produção", hidden: true },
