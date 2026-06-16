@@ -24,13 +24,16 @@ type Prototype = { id: string; product_id: string | null; stage: string };
 type Order = { id: string; product_id: string | null; stage: string; status: string; quantity: number };
 type Sale = { product_id: string | null; quantity: number; total: number | null };
 
+type Sheet = { product_id: string | null; status: string };
+
 async function loadAll() {
-  const [collections, products, prototypes, orders, sales] = await Promise.all([
+  const [collections, products, prototypes, orders, sales, sheets] = await Promise.all([
     supabase.from("collections").select("id, name, season, year, status").order("year", { ascending: false }).limit(50),
     supabase.from("products").select("id, collection_id, name, sku, status, cost_price, sell_price").limit(1000),
     supabase.from("prototypes").select("id, product_id, stage").limit(1000),
     supabase.from("production_orders").select("id, product_id, stage, status, quantity").neq("status", "cancelada").limit(1000),
     supabase.from("sales").select("product_id, quantity, total").limit(5000),
+    supabase.from("tech_sheets").select("product_id, status").limit(2000),
   ]);
   return {
     collections: (collections.data ?? []) as Collection[],
@@ -38,6 +41,7 @@ async function loadAll() {
     prototypes: (prototypes.data ?? []) as Prototype[],
     orders: (orders.data ?? []) as Order[],
     sales: (sales.data ?? []) as Sale[],
+    sheets: (sheets.data ?? []) as Sheet[],
   };
 }
 
