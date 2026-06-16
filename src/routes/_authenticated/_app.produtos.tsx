@@ -202,6 +202,9 @@ function ProdutosPage() {
         <SummaryCard label="Margem média" value={brl(summary.avgMargin)} />
       </div>
 
+      <AICoordinatorPanel persona="development" title="Coordenador de Desenvolvimento — leitura do catálogo" />
+
+
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
       ) : products.length === 0 ? (
