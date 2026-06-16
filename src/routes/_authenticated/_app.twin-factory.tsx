@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
-import { Factory, AlertTriangle, Clock, CheckCircle2, Boxes } from "lucide-react";
+import { Factory, AlertTriangle, Clock, CheckCircle2, Boxes, Activity, Pause, Gauge, TrendingUp } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 
 export const Route = createFileRoute("/_authenticated/_app/twin-factory")({
@@ -23,6 +23,7 @@ type Order = {
   id: string; code: string; quantity: number; progress: number;
   status: string; stage: string; due_date: string | null;
   product_id: string | null; batch_code: string | null;
+  stage_updated_at: string | null;
   products: { name: string; sku: string } | null;
 };
 
@@ -31,10 +32,13 @@ type Batch = {
   planned_quantity: number | null; produced_quantity: number | null;
 };
 
-async function loadAll(): Promise<{ orders: Order[]; batches: Batch[] }> {
-  const [{ data: orders }, { data: batches }] = await Promise.all([
+type StageLog = { to_stage: string; quantity: number | null; created_at: string };
+
+async function loadAll(): Promise<{ orders: Order[]; batches: Batch[]; logs: StageLog[] }> {
+  const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
+  const [{ data: orders }, { data: batches }, { data: logs }] = await Promise.all([
     supabase.from("production_orders")
-      .select("id, code, quantity, progress, status, stage, due_date, product_id, batch_code, products(name, sku)")
+      .select("id, code, quantity, progress, status, stage, due_date, product_id, batch_code, stage_updated_at, products(name, sku)")
       .order("due_date", { ascending: true, nullsFirst: false })
       .limit(300),
     supabase.from("production_batches")
@@ -42,10 +46,15 @@ async function loadAll(): Promise<{ orders: Order[]; batches: Batch[] }> {
       .in("status", ["planejado", "em_producao"])
       .order("created_at", { ascending: false })
       .limit(20),
+    supabase.from("production_stage_log")
+      .select("to_stage, quantity, created_at")
+      .gte("created_at", since7)
+      .limit(2000),
   ]);
   return {
     orders: (orders ?? []) as unknown as Order[],
     batches: (batches ?? []) as unknown as Batch[],
+    logs: (logs ?? []) as StageLog[],
   };
 }
 
@@ -55,6 +64,7 @@ function TwinFactory() {
   const { data, isLoading } = useQuery({ queryKey: ["twin-factory"], queryFn: loadAll });
   const orders = data?.orders ?? [];
   const batches = data?.batches ?? [];
+  const logs = data?.logs ?? [];
 
   const today = new Date();
   const stats = useMemo(() => {
@@ -75,6 +85,33 @@ function TwinFactory() {
     return counts.sort((a, b) => b.count - a.count)[0];
   }, [byStage]);
 
+  // === Inteligência adicional (sem nova rota) ===
+  const todayKey = today.toISOString().slice(0, 10);
+  const intel = useMemo(() => {
+    const passToday = logs.filter((l) => l.created_at.slice(0, 10) === todayKey);
+    const passWeek = logs;
+    const qtyToday = passToday.reduce((s, l) => s + (Number(l.quantity) || 0), 0);
+    const qtyWeek = passWeek.reduce((s, l) => s + (Number(l.quantity) || 0), 0);
+
+    const now = today.getTime();
+    const stalled = STAGES.filter((s) => s.key !== "entregue").map((s) => {
+      const itemsHere = orders.filter((o) => o.stage === s.key && o.status !== "cancelada");
+      if (itemsHere.length === 0) return null;
+      const lastMove = itemsHere
+        .map((o) => o.stage_updated_at ? new Date(o.stage_updated_at).getTime() : 0)
+        .reduce((a, b) => Math.max(a, b), 0);
+      const hoursIdle = lastMove ? Math.floor((now - lastMove) / 3600000) : 9999;
+      return { stage: s.label, hoursIdle, count: itemsHere.length };
+    }).filter(Boolean).filter((x) => x!.hoursIdle >= 48) as { stage: string; hoursIdle: number; count: number }[];
+
+    const planned = batches.reduce((s, b) => s + Number(b.planned_quantity ?? 0), 0);
+    const produced = batches.reduce((s, b) => s + Number(b.produced_quantity ?? 0), 0);
+    const efficiency = planned > 0 ? Math.round((produced / planned) * 100) : 0;
+
+    return { qtyToday, qtyWeek, stalled, efficiency, passCountToday: passToday.length };
+  }, [logs, orders, batches, today, todayKey]);
+
+
   return (
     <div className="p-6 space-y-6">
       <header>
@@ -88,6 +125,43 @@ function TwinFactory() {
         <Stat label="Vencem em 7d" value={stats.dueSoon} icon={<Clock className="size-4" />} tone="yellow" />
         <Stat label="Entregues" value={stats.delivered} icon={<CheckCircle2 className="size-4" />} tone="green" />
         <Stat label="Gargalo" value={bottleneck?.label ?? "—"} tone="primary" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><Activity className="size-4" /> Produção</div>
+          <div className="mt-2 flex items-baseline gap-3">
+            <div>
+              <div className="text-2xl font-semibold">{intel.qtyToday.toLocaleString("pt-BR")}</div>
+              <div className="text-[11px] text-muted-foreground">peças hoje · {intel.passCountToday} passagens</div>
+            </div>
+            <div className="ml-auto text-right">
+              <div className="text-sm font-medium flex items-center gap-1 justify-end"><TrendingUp className="size-3" />{intel.qtyWeek.toLocaleString("pt-BR")}</div>
+              <div className="text-[11px] text-muted-foreground">últimos 7 dias</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><Gauge className="size-4" /> Eficiência (lotes ativos)</div>
+          <div className="mt-2 text-2xl font-semibold">{intel.efficiency}%</div>
+          <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+            <div className={`h-full ${intel.efficiency >= 80 ? "bg-success" : intel.efficiency >= 50 ? "bg-warning" : "bg-destructive"}`} style={{ width: `${intel.efficiency}%` }} />
+          </div>
+        </div>
+
+        <div className={`rounded-xl border p-4 ${intel.stalled.length > 0 ? "border-warning/50 bg-warning/5" : "border-border bg-card"}`}>
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><Pause className="size-4" /> Setores parados (≥48h)</div>
+          {intel.stalled.length === 0 ? (
+            <div className="mt-2 text-sm text-muted-foreground">Nenhum setor parado.</div>
+          ) : (
+            <ul className="mt-2 space-y-1 text-sm">
+              {intel.stalled.slice(0, 4).map((s) => (
+                <li key={s.stage} className="flex justify-between"><span>{s.stage} <span className="text-xs text-muted-foreground">({s.count} OPs)</span></span><span className="font-semibold text-warning">{s.hoursIdle}h</span></li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       {batches.length > 0 && (
