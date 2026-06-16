@@ -12,7 +12,7 @@ export const listDayProduction = createServerFn({ method: "POST" })
       .from("production_orders")
       .select("id, code, quantity, priority, due_date, stage, stage_updated_at, batch_code, outsourced, product_id, supplier_id, products(name, sku), suppliers(name)")
       .eq("owner_id", userId)
-      .eq("stage", data.stage)
+      .eq("stage", data.stage as any)
       .neq("status", "concluida")
       .order("priority", { ascending: false, nullsFirst: false })
       .order("due_date", { ascending: true, nullsFirst: false });
