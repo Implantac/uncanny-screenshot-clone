@@ -375,7 +375,14 @@ function FichaTecnicaPage() {
         </div>
       )}
 
-      <SheetDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} products={products} />
+      <SheetDialog
+        open={open}
+        onOpenChange={(v) => { setOpen(v); if (!v) setInitialProductId(null); }}
+        editing={editing}
+        initialProductId={initialProductId}
+        userId={user?.id}
+        products={products}
+      />
       <VersionDiffDialog open={diffOpen} onOpenChange={setDiffOpen} versions={versionHistory} />
     </div>
   );
