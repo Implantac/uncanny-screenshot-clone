@@ -78,6 +78,7 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
   const qc = useQueryClient();
   const { user } = useAuth();
   const [severity, setSeverity] = useState<Severity>("media");
+  const [linha, setLinha] = useState<1 | 2>(1);
   const [body, setBody] = useState("");
   const [photo, setPhoto] = useState("");
 
@@ -86,7 +87,8 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
       if (!user) throw new Error("Não autenticado");
       const text = body.trim();
       if (!text) throw new Error("Descreva a ocorrência");
-      const tagged = `${TAG_PREFIX}${severity}] ${text}${photo.trim() ? `\nFoto: ${photo.trim()}` : ""}`;
+      const linhaTag = linha === 2 ? ":2L" : "";
+      const tagged = `${TAG_PREFIX}${severity}${linhaTag}] ${text}${photo.trim() ? `\nFoto: ${photo.trim()}` : ""}`;
 
       const { error: cErr } = await supabase.from("production_order_comments").insert({
         production_order_id: orderId,
@@ -100,7 +102,7 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
       const { error: qErr } = await supabase.from("quality_inspections").insert({
         owner_id: ownerId,
         production_order_id: orderId,
-        inspection_type: `ocorrencia:${stage}`,
+        inspection_type: `ocorrencia:${stage}${linha === 2 ? ":2a-linha" : ""}`,
         inspector: user.email ?? null,
         result: severity === "critica" ? "reprovada" : "condicional",
         minor_defects: d.minor,
@@ -136,6 +138,19 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
               {SEVERITY[s].label}
             </button>
           ))}
+        </div>
+      </div>
+      <div>
+        <label className="text-xs text-muted-foreground mb-1 block">Destino da peça</label>
+        <div className="flex gap-1.5">
+          <button type="button" onClick={() => setLinha(1)}
+            className={`flex-1 text-xs px-2 py-1.5 rounded border transition ${linha === 1 ? "bg-primary/15 text-primary border-primary/30" : "border-border text-muted-foreground hover:bg-muted"}`}>
+            1ª linha (recupera)
+          </button>
+          <button type="button" onClick={() => setLinha(2)}
+            className={`flex-1 text-xs px-2 py-1.5 rounded border transition ${linha === 2 ? "bg-amber-500/15 text-amber-500 border-amber-500/30" : "border-border text-muted-foreground hover:bg-muted"}`}>
+            2ª linha (outlet)
+          </button>
         </div>
       </div>
       <div>
