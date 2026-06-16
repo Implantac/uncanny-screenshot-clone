@@ -415,6 +415,48 @@ export type Database = {
           },
         ]
       }
+      erp_integration_config: {
+        Row: {
+          active: boolean
+          created_at: string
+          erp_endpoint: string | null
+          erp_name: string | null
+          id: string
+          last_error: string | null
+          last_inbound_at: string | null
+          last_outbound_at: string | null
+          owner_id: string
+          updated_at: string
+          webhook_public_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          erp_endpoint?: string | null
+          erp_name?: string | null
+          id?: string
+          last_error?: string | null
+          last_inbound_at?: string | null
+          last_outbound_at?: string | null
+          owner_id: string
+          updated_at?: string
+          webhook_public_id?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          erp_endpoint?: string | null
+          erp_name?: string | null
+          id?: string
+          last_error?: string | null
+          last_inbound_at?: string | null
+          last_outbound_at?: string | null
+          owner_id?: string
+          updated_at?: string
+          webhook_public_id?: string
+        }
+        Relationships: []
+      }
       erp_inventory_mirror: {
         Row: {
           balance: number
@@ -553,6 +595,48 @@ export type Database = {
           synced_at?: string
           total_value?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      erp_sync_log: {
+        Row: {
+          created_at: string
+          direction: string
+          entity_ref: string | null
+          entity_type: string | null
+          error_message: string | null
+          event_type: string
+          id: string
+          owner_id: string
+          payload: Json | null
+          records_affected: number | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          direction: string
+          entity_ref?: string | null
+          entity_type?: string | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          owner_id: string
+          payload?: Json | null
+          records_affected?: number | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          entity_ref?: string | null
+          entity_type?: string | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          owner_id?: string
+          payload?: Json | null
+          records_affected?: number | null
+          status?: string
         }
         Relationships: []
       }
