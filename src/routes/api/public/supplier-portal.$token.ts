@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { log } from "@/lib/observability";
 
 const Submit = z.object({
   rfq_id: z.string().uuid(),
