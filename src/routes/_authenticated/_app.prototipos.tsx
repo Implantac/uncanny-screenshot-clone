@@ -272,6 +272,19 @@ function Prototipos() {
                         )}
                       </button>
                       <div className="flex justify-end gap-1 -mb-1 -mr-1 opacity-70 group-hover:opacity-100 transition">
+                        {p.stage === "aprovado" && p.product_id && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Criar ficha técnica deste protótipo"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate({ to: "/ficha-tecnica", search: { productId: p.product_id! } });
+                            }}
+                          >
+                            <FileText className="size-4 text-emerald-500" />
+                          </Button>
+                        )}
                         <PrototypeTimelineButton prototypeId={p.id} prototypeCode={p.code} />
                         <PrototypeAdjustmentsButton
                           prototypeId={p.id}
