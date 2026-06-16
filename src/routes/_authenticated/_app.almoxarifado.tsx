@@ -239,6 +239,7 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
   const [unit, setUnit] = useState("un");
   const [balance, setBalance] = useState("0");
   const [minimum, setMinimum] = useState("0");
+  const [maximum, setMaximum] = useState("0");
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -246,10 +247,11 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
       setSku(editing.sku); setName(editing.name); setCategory(editing.category);
       setDeposit(editing.deposit || ""); setUnit(editing.unit);
       setBalance(String(editing.balance)); setMinimum(String(editing.minimum));
+      setMaximum(String(editing.maximum || 0));
       setNotes(editing.notes || "");
     } else if (open) {
       setSku(""); setName(""); setCategory("tecido"); setDeposit(""); setUnit("un");
-      setBalance("0"); setMinimum("0"); setNotes("");
+      setBalance("0"); setMinimum("0"); setMaximum("0"); setNotes("");
     }
   }, [open, editing]);
 
@@ -258,7 +260,8 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
       if (!userId) throw new Error("Sessão expirada");
       const payload = {
         sku, name, category, deposit: deposit || null, unit,
-        balance: Number(balance), minimum: Number(minimum), notes: notes || null,
+        balance: Number(balance), minimum: Number(minimum), maximum: Number(maximum),
+        notes: notes || null,
       };
       if (editing) {
         const { error } = await supabase.from("inventory_items").update(payload).eq("id", editing.id);
