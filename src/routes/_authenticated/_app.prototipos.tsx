@@ -248,17 +248,33 @@ function Prototipos() {
                     <span className="text-xs text-muted-foreground">{col.length}</span>
                   </div>
                   {col.map(p => (
-                    <div key={p.id} className="rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-1 group">
+                    <div key={p.id} className={`rounded-lg border bg-card hover:bg-muted/30 transition p-3 space-y-1 group ${p.needs_adjustment ? "border-amber-500/60" : "border-border"}`}>
                       <button
                         onClick={() => user?.id === p.owner_id && openEdit(p)}
                         className="w-full text-left"
                       >
-                        <div className="font-mono text-xs text-muted-foreground">{p.code}</div>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-mono text-xs text-muted-foreground">{p.code}</div>
+                          {p.current_sector && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded border border-border bg-muted/40 text-muted-foreground">
+                              {SECTORS.find(s => s.key === p.current_sector)?.label}
+                            </span>
+                          )}
+                        </div>
                         <div className="text-sm font-medium truncate">{productName(p.product_id)}</div>
                         <div className="text-xs text-muted-foreground truncate">{supplierName(p.supplier_id)}</div>
                         {p.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {p.due_date}</div>}
+                        {p.needs_adjustment && (
+                          <div className="text-[10px] text-amber-600 mt-1 font-medium">⚠ Aguardando ajuste</div>
+                        )}
                       </button>
-                      <div className="flex justify-end -mb-1 -mr-1 opacity-60 group-hover:opacity-100 transition">
+                      <div className="flex justify-end gap-1 -mb-1 -mr-1 opacity-70 group-hover:opacity-100 transition">
+                        <PrototypeAdjustmentsButton
+                          prototypeId={p.id}
+                          prototypeCode={p.code}
+                          defaultSector={p.current_sector ?? null}
+                          needsAdjustment={p.needs_adjustment}
+                        />
                         <PrototypeCommentsButton prototypeId={p.id} prototypeCode={p.code} />
                       </div>
                     </div>
