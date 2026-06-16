@@ -141,6 +141,19 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
         </div>
       </div>
       <div>
+        <label className="text-xs text-muted-foreground mb-1 block">Destino da peça</label>
+        <div className="flex gap-1.5">
+          <button type="button" onClick={() => setLinha(1)}
+            className={`flex-1 text-xs px-2 py-1.5 rounded border transition ${linha === 1 ? "bg-primary/15 text-primary border-primary/30" : "border-border text-muted-foreground hover:bg-muted"}`}>
+            1ª linha (recupera)
+          </button>
+          <button type="button" onClick={() => setLinha(2)}
+            className={`flex-1 text-xs px-2 py-1.5 rounded border transition ${linha === 2 ? "bg-amber-500/15 text-amber-500 border-amber-500/30" : "border-border text-muted-foreground hover:bg-muted"}`}>
+            2ª linha (outlet)
+          </button>
+        </div>
+      </div>
+      <div>
         <label className="text-xs text-muted-foreground mb-1 block">O que aconteceu? · setor {stage}</label>
         <Textarea
           value={body}
