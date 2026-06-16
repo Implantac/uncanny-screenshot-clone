@@ -38,7 +38,7 @@ export const PRIMARY_SLUGS = new Set<string>([
   "command-center", "fashion-calendar", "approvals",
   "colecoes", "colecao-360",
   "dev-kanban", "produtos", "ficha-tecnica", "prototipos", "materiais",
-  "produzir-hoje", "pcp-kanban", "lotes", "terceirizados", "twin-factory", "capacity",
+  "produzir-hoje", "pcp-kanban", "produtividade", "lotes", "terceirizados", "twin-factory", "capacity",
   "fornecedores", "almoxarifado", "compras", "stock-health",
   "marketing", "campaigns", "influencer-roi", "geo-sales",
   "intel-hub", "closed-loop", "control-tower", "product-success",
