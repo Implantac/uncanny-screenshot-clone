@@ -113,6 +113,7 @@ function Colecao360() {
         protoApproved: cProtos.filter((p) => p.stage === "aprovado").length,
         opsActive, opsDone, producedQty,
         revenue, unitsSold, margin, sellThrough,
+        investment, profit, roi,
         semPiloto, protoPendentes, opsAguardando, liberadosPCP, avanco,
         semFicha, champions, criticos,
       };
