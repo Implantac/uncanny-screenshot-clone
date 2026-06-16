@@ -97,6 +97,42 @@ export function computePriority(i: PriorityInput): PriorityResult {
   const target = Math.ceil(velocity * (lead + 15));
   const suggestion = Math.max(0, target - i.stock - i.wip);
 
+  // Veredito do Coordenador de PCP
+  const daysToStockout = velocity > 0 ? Math.min(999, (i.stock + i.wip) / velocity) : 999;
+  // Janela ideal: começar antes do estoque acabar - lead time. Se já passou, começar já.
+  const startInDays = Math.max(0, Math.round(daysToStockout - lead));
+
+  let verdict: PriorityResult["verdict"];
+  let verdictLabel: string;
+  let verdictReason: string;
+  if (suggestion <= 0) {
+    verdict = "nao-produzir";
+    verdictLabel = "Não produzir";
+    verdictReason = velocity <= 0
+      ? "Sem giro nos últimos 30 dias — não há venda para reposição."
+      : `Cobertura de ${Math.round(daysToStockout)}d já supera o lead time.`;
+  } else if (margin > 0 && margin < 0.1 && (i.abc ?? 3) >= 3) {
+    verdict = "nao-produzir";
+    verdictLabel = "Não vale";
+    verdictReason = `Margem ${Math.round(margin * 100)}% e curva C — risco de produzir e não vender.`;
+  } else if (daysToStockout < lead) {
+    verdict = "produzir-ja";
+    verdictLabel = "Produzir já";
+    verdictReason = `Ruptura em ${Math.round(daysToStockout)}d, lead time ${lead}d. Atrasou ${lead - Math.round(daysToStockout)}d.`;
+  } else if (startInDays <= 7 && score >= 50) {
+    verdict = "produzir-ja";
+    verdictLabel = "Produzir já";
+    verdictReason = `Janela ideal abre em ${startInDays}d — programar agora evita ruptura.`;
+  } else if (score >= 40) {
+    verdict = "programar";
+    verdictLabel = `Programar em ${startInDays}d`;
+    verdictReason = `Estoque cobre ${Math.round(daysToStockout)}d. Iniciar OP em ~${startInDays}d para entregar na hora.`;
+  } else {
+    verdict = "monitorar";
+    verdictLabel = "Monitorar";
+    verdictReason = "Sem urgência — acompanhar evolução de vendas antes de programar.";
+  }
+
   return {
     sku: i.sku,
     score,
@@ -105,8 +141,14 @@ export function computePriority(i: PriorityInput): PriorityResult {
     daysCover: Math.min(daysCover, 999),
     margin,
     velocity,
+    verdict,
+    verdictLabel,
+    verdictReason,
+    daysToStockout,
+    startInDays,
   };
 }
+
 
 /** Classifica produtos em ABC pelo faturamento dos últimos 30 dias (80/15/5). */
 export function classifyABC(revenues: { sku: string; revenue: number }[]): Map<string, 1 | 2 | 3> {
