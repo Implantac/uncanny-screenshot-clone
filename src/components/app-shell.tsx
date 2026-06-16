@@ -3,7 +3,8 @@ import { LogOut, Menu, Sun, Moon } from "lucide-react";
 import logoAsset from "@/assets/logo.png.asset.json";
 import { CommandPalette } from "./command-palette";
 import { NotificationsBell } from "./notifications-bell";
-import { MODULES, MODULE_GROUPS } from "@/lib/modules";
+import { MODULES, MODULE_GROUPS, moduleAllowed } from "@/lib/modules";
+import { useSectors } from "@/hooks/use-sectors";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useRoles } from "@/hooks/use-role";
@@ -21,6 +22,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const active = location.pathname;
   const { user } = useAuth();
   const { primary } = useRoles();
+  const { sectors, isAdmin } = useSectors();
+  const visibleModules = MODULES.filter((m) => !m.hidden && moduleAllowed(m, sectors, isAdmin));
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -49,13 +52,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5 text-sm">
-        {MODULE_GROUPS.map((group) => (
-          <div key={group}>
-            <div className="px-2 mb-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-              {group}
-            </div>
-            <ul className="space-y-0.5">
-              {MODULES.filter((m) => m.group === group && !m.hidden).map((m) => {
+        {MODULE_GROUPS.map((group) => {
+          const items = visibleModules.filter((m) => m.group === group);
+          if (items.length === 0) return null;
+          return (
+            <div key={group}>
+              <div className="px-2 mb-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                {group}
+              </div>
+              <ul className="space-y-0.5">
+                {items.map((m) => {
                 const isActive = active === m.path;
                 const Icon = m.icon;
                 const isErp = m.source === "erp-mirror";
@@ -81,9 +87,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </li>
                 );
               })}
-            </ul>
-          </div>
-        ))}
+              </ul>
+            </div>
+          );
+        })}
       </nav>
       <div className="m-3 p-3 rounded-lg glass">
         <div className="flex items-center gap-2 text-xs font-medium">

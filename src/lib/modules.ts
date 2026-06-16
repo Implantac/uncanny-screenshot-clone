@@ -143,3 +143,33 @@ export const MODULE_GROUPS: ModuleGroup[] = [
   "ERP (Integração)",
   "Plataforma",
 ];
+
+export type AppSector = "marketing" | "pcp" | "desenvolvimento";
+export const APP_SECTORS: AppSector[] = ["marketing", "pcp", "desenvolvimento"];
+export const SECTOR_LABEL: Record<AppSector, string> = {
+  marketing: "Marketing",
+  pcp: "PCP",
+  desenvolvimento: "Desenvolvimento",
+};
+
+/** Mapa grupo → setor exigido. Grupos ausentes são livres (visíveis a todos). */
+export const GROUP_SECTOR: Partial<Record<ModuleGroup, AppSector>> = {
+  Marketing: "marketing",
+  "PCP & Produção": "pcp",
+  Desenvolvimento: "desenvolvimento",
+};
+
+export function moduleSector(m: ModuleDef): AppSector | null {
+  return GROUP_SECTOR[m.group] ?? null;
+}
+
+export function moduleAllowed(
+  m: ModuleDef,
+  userSectors: AppSector[],
+  isAdmin: boolean,
+): boolean {
+  if (isAdmin) return true;
+  const required = moduleSector(m);
+  if (!required) return true;
+  return userSectors.includes(required);
+}
