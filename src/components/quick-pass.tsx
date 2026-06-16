@@ -84,6 +84,7 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
         if (!pkg) throw new Error("Selecione um pacote");
         const { error } = await supabase.from("service_orders").insert({
           owner_id: ownerId,
+          created_by,
           production_order_id: orderId,
           code: baseCode,
           kind: pkg.qty < remaining ? "parcial" : "integral",
