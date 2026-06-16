@@ -70,10 +70,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1 text-sm">
         {MODULE_GROUPS.map((group) => {
           const bucket = grouped.get(group);
-          if (!bucket || (bucket.primary.length === 0 && bucket.secondary.length === 0)) return null;
+          if (!bucket || bucket.items.length === 0) return null;
           const isOpen = openGroups[group] ?? bucket.activeIn ?? false;
-          const totalCount = bucket.primary.length + bucket.secondary.length;
-          const showMore = expandedMore[group] ?? bucket.activeIn;
+          const totalCount = bucket.items.length;
           const renderItem = (m: ModuleDef) => {
             const isActive = active === m.path;
             const Icon = m.icon;
@@ -113,20 +112,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </button>
               {isOpen && (
                 <ul className="space-y-0.5 mt-1 mb-2">
-                  {bucket.primary.map(renderItem)}
-                  {showMore && bucket.secondary.map(renderItem)}
-                  {bucket.secondary.length > 0 && (
-                    <li>
-                      <button
-                        type="button"
-                        onClick={() => toggleMore(group)}
-                        className="w-full flex items-center gap-2 px-2 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/40 transition-colors"
-                      >
-                        <Plus className="size-3" />
-                        {showMore ? "Ver menos" : `Ver mais (${bucket.secondary.length})`}
-                      </button>
-                    </li>
-                  )}
+                  {bucket.items.map(renderItem)}
                 </ul>
               )}
             </div>
