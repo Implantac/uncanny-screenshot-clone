@@ -19,9 +19,12 @@ import { Route as AuthenticatedAppVariantesRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticated/_app.use-ai'
 import { Route as AuthenticatedAppTwinFactoryRouteImport } from './routes/_authenticated/_app.twin-factory'
 import { Route as AuthenticatedAppTrendsRouteImport } from './routes/_authenticated/_app.trends'
+import { Route as AuthenticatedAppTargetCostingRouteImport } from './routes/_authenticated/_app.target-costing'
 import { Route as AuthenticatedAppSustentabilidade360RouteImport } from './routes/_authenticated/_app.sustentabilidade-360'
+import { Route as AuthenticatedAppSustentabilidadeRouteImport } from './routes/_authenticated/_app.sustentabilidade'
 import { Route as AuthenticatedAppSupplierScoreRouteImport } from './routes/_authenticated/_app.supplier-score'
 import { Route as AuthenticatedAppStockHealthRouteImport } from './routes/_authenticated/_app.stock-health'
+import { Route as AuthenticatedAppSourcingRouteImport } from './routes/_authenticated/_app.sourcing'
 import { Route as AuthenticatedAppShowroomRouteImport } from './routes/_authenticated/_app.showroom'
 import { Route as AuthenticatedAppSecurityCenterRouteImport } from './routes/_authenticated/_app.security-center'
 import { Route as AuthenticatedAppSalesPerformanceRouteImport } from './routes/_authenticated/_app.sales-performance'
@@ -41,6 +44,7 @@ import { Route as AuthenticatedAppPcpRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAppOmnichannelRouteImport } from './routes/_authenticated/_app.omnichannel'
 import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_authenticated/_app.movimentacoes'
 import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
+import { Route as AuthenticatedAppMateriaisRouteImport } from './routes/_authenticated/_app.materiais'
 import { Route as AuthenticatedAppMarketingRouteImport } from './routes/_authenticated/_app.marketing'
 import { Route as AuthenticatedAppMargemRouteImport } from './routes/_authenticated/_app.margem'
 import { Route as AuthenticatedAppLotesRouteImport } from './routes/_authenticated/_app.lotes'
@@ -53,6 +57,7 @@ import { Route as AuthenticatedAppGradeNeedsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppGeoSalesRouteImport } from './routes/_authenticated/_app.geo-sales'
 import { Route as AuthenticatedAppFpaRouteImport } from './routes/_authenticated/_app.fpa'
 import { Route as AuthenticatedAppFornecedoresRouteImport } from './routes/_authenticated/_app.fornecedores'
+import { Route as AuthenticatedAppFitSessionsRouteImport } from './routes/_authenticated/_app.fit-sessions'
 import { Route as AuthenticatedAppFinanceiroRouteImport } from './routes/_authenticated/_app.financeiro'
 import { Route as AuthenticatedAppFichaTecnicaRouteImport } from './routes/_authenticated/_app.ficha-tecnica'
 import { Route as AuthenticatedAppFashionGptRouteImport } from './routes/_authenticated/_app.fashion-gpt'
@@ -134,10 +139,22 @@ const AuthenticatedAppTrendsRoute = AuthenticatedAppTrendsRouteImport.update({
   path: '/trends',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppTargetCostingRoute =
+  AuthenticatedAppTargetCostingRouteImport.update({
+    id: '/target-costing',
+    path: '/target-costing',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppSustentabilidade360Route =
   AuthenticatedAppSustentabilidade360RouteImport.update({
     id: '/sustentabilidade-360',
     path: '/sustentabilidade-360',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppSustentabilidadeRoute =
+  AuthenticatedAppSustentabilidadeRouteImport.update({
+    id: '/sustentabilidade',
+    path: '/sustentabilidade',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppSupplierScoreRoute =
@@ -150,6 +167,12 @@ const AuthenticatedAppStockHealthRoute =
   AuthenticatedAppStockHealthRouteImport.update({
     id: '/stock-health',
     path: '/stock-health',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppSourcingRoute =
+  AuthenticatedAppSourcingRouteImport.update({
+    id: '/sourcing',
+    path: '/sourcing',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppShowroomRoute =
@@ -262,6 +285,12 @@ const AuthenticatedAppMobileRoute = AuthenticatedAppMobileRouteImport.update({
   path: '/mobile',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppMateriaisRoute =
+  AuthenticatedAppMateriaisRouteImport.update({
+    id: '/materiais',
+    path: '/materiais',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppMarketingRoute =
   AuthenticatedAppMarketingRouteImport.update({
     id: '/marketing',
@@ -329,6 +358,12 @@ const AuthenticatedAppFornecedoresRoute =
   AuthenticatedAppFornecedoresRouteImport.update({
     id: '/fornecedores',
     path: '/fornecedores',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppFitSessionsRoute =
+  AuthenticatedAppFitSessionsRouteImport.update({
+    id: '/fit-sessions',
+    path: '/fit-sessions',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppFinanceiroRoute =
@@ -538,6 +573,7 @@ export interface FileRoutesByFullPath {
   '/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedAppFinanceiroRoute
+  '/fit-sessions': typeof AuthenticatedAppFitSessionsRoute
   '/fornecedores': typeof AuthenticatedAppFornecedoresRoute
   '/fpa': typeof AuthenticatedAppFpaRoute
   '/geo-sales': typeof AuthenticatedAppGeoSalesRoute
@@ -550,6 +586,7 @@ export interface FileRoutesByFullPath {
   '/lotes': typeof AuthenticatedAppLotesRoute
   '/margem': typeof AuthenticatedAppMargemRoute
   '/marketing': typeof AuthenticatedAppMarketingRoute
+  '/materiais': typeof AuthenticatedAppMateriaisRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
@@ -569,9 +606,12 @@ export interface FileRoutesByFullPath {
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
   '/security-center': typeof AuthenticatedAppSecurityCenterRoute
   '/showroom': typeof AuthenticatedAppShowroomRoute
+  '/sourcing': typeof AuthenticatedAppSourcingRoute
   '/stock-health': typeof AuthenticatedAppStockHealthRoute
   '/supplier-score': typeof AuthenticatedAppSupplierScoreRoute
+  '/sustentabilidade': typeof AuthenticatedAppSustentabilidadeRoute
   '/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
+  '/target-costing': typeof AuthenticatedAppTargetCostingRoute
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
@@ -612,6 +652,7 @@ export interface FileRoutesByTo {
   '/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedAppFinanceiroRoute
+  '/fit-sessions': typeof AuthenticatedAppFitSessionsRoute
   '/fornecedores': typeof AuthenticatedAppFornecedoresRoute
   '/fpa': typeof AuthenticatedAppFpaRoute
   '/geo-sales': typeof AuthenticatedAppGeoSalesRoute
@@ -624,6 +665,7 @@ export interface FileRoutesByTo {
   '/lotes': typeof AuthenticatedAppLotesRoute
   '/margem': typeof AuthenticatedAppMargemRoute
   '/marketing': typeof AuthenticatedAppMarketingRoute
+  '/materiais': typeof AuthenticatedAppMateriaisRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
@@ -643,9 +685,12 @@ export interface FileRoutesByTo {
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
   '/security-center': typeof AuthenticatedAppSecurityCenterRoute
   '/showroom': typeof AuthenticatedAppShowroomRoute
+  '/sourcing': typeof AuthenticatedAppSourcingRoute
   '/stock-health': typeof AuthenticatedAppStockHealthRoute
   '/supplier-score': typeof AuthenticatedAppSupplierScoreRoute
+  '/sustentabilidade': typeof AuthenticatedAppSustentabilidadeRoute
   '/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
+  '/target-costing': typeof AuthenticatedAppTargetCostingRoute
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
@@ -688,6 +733,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/_authenticated/_app/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/_authenticated/_app/financeiro': typeof AuthenticatedAppFinanceiroRoute
+  '/_authenticated/_app/fit-sessions': typeof AuthenticatedAppFitSessionsRoute
   '/_authenticated/_app/fornecedores': typeof AuthenticatedAppFornecedoresRoute
   '/_authenticated/_app/fpa': typeof AuthenticatedAppFpaRoute
   '/_authenticated/_app/geo-sales': typeof AuthenticatedAppGeoSalesRoute
@@ -700,6 +746,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/lotes': typeof AuthenticatedAppLotesRoute
   '/_authenticated/_app/margem': typeof AuthenticatedAppMargemRoute
   '/_authenticated/_app/marketing': typeof AuthenticatedAppMarketingRoute
+  '/_authenticated/_app/materiais': typeof AuthenticatedAppMateriaisRoute
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
   '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/_authenticated/_app/omnichannel': typeof AuthenticatedAppOmnichannelRoute
@@ -719,9 +766,12 @@ export interface FileRoutesById {
   '/_authenticated/_app/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
   '/_authenticated/_app/security-center': typeof AuthenticatedAppSecurityCenterRoute
   '/_authenticated/_app/showroom': typeof AuthenticatedAppShowroomRoute
+  '/_authenticated/_app/sourcing': typeof AuthenticatedAppSourcingRoute
   '/_authenticated/_app/stock-health': typeof AuthenticatedAppStockHealthRoute
   '/_authenticated/_app/supplier-score': typeof AuthenticatedAppSupplierScoreRoute
+  '/_authenticated/_app/sustentabilidade': typeof AuthenticatedAppSustentabilidadeRoute
   '/_authenticated/_app/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
+  '/_authenticated/_app/target-costing': typeof AuthenticatedAppTargetCostingRoute
   '/_authenticated/_app/trends': typeof AuthenticatedAppTrendsRoute
   '/_authenticated/_app/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/_authenticated/_app/use-ai': typeof AuthenticatedAppUseAiRoute
@@ -765,6 +815,7 @@ export interface FileRouteTypes {
     | '/fashion-gpt'
     | '/ficha-tecnica'
     | '/financeiro'
+    | '/fit-sessions'
     | '/fornecedores'
     | '/fpa'
     | '/geo-sales'
@@ -777,6 +828,7 @@ export interface FileRouteTypes {
     | '/lotes'
     | '/margem'
     | '/marketing'
+    | '/materiais'
     | '/mobile'
     | '/movimentacoes'
     | '/omnichannel'
@@ -796,9 +848,12 @@ export interface FileRouteTypes {
     | '/sales-performance'
     | '/security-center'
     | '/showroom'
+    | '/sourcing'
     | '/stock-health'
     | '/supplier-score'
+    | '/sustentabilidade'
     | '/sustentabilidade-360'
+    | '/target-costing'
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
@@ -839,6 +894,7 @@ export interface FileRouteTypes {
     | '/fashion-gpt'
     | '/ficha-tecnica'
     | '/financeiro'
+    | '/fit-sessions'
     | '/fornecedores'
     | '/fpa'
     | '/geo-sales'
@@ -851,6 +907,7 @@ export interface FileRouteTypes {
     | '/lotes'
     | '/margem'
     | '/marketing'
+    | '/materiais'
     | '/mobile'
     | '/movimentacoes'
     | '/omnichannel'
@@ -870,9 +927,12 @@ export interface FileRouteTypes {
     | '/sales-performance'
     | '/security-center'
     | '/showroom'
+    | '/sourcing'
     | '/stock-health'
     | '/supplier-score'
+    | '/sustentabilidade'
     | '/sustentabilidade-360'
+    | '/target-costing'
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
@@ -914,6 +974,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/fashion-gpt'
     | '/_authenticated/_app/ficha-tecnica'
     | '/_authenticated/_app/financeiro'
+    | '/_authenticated/_app/fit-sessions'
     | '/_authenticated/_app/fornecedores'
     | '/_authenticated/_app/fpa'
     | '/_authenticated/_app/geo-sales'
@@ -926,6 +987,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/lotes'
     | '/_authenticated/_app/margem'
     | '/_authenticated/_app/marketing'
+    | '/_authenticated/_app/materiais'
     | '/_authenticated/_app/mobile'
     | '/_authenticated/_app/movimentacoes'
     | '/_authenticated/_app/omnichannel'
@@ -945,9 +1007,12 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/sales-performance'
     | '/_authenticated/_app/security-center'
     | '/_authenticated/_app/showroom'
+    | '/_authenticated/_app/sourcing'
     | '/_authenticated/_app/stock-health'
     | '/_authenticated/_app/supplier-score'
+    | '/_authenticated/_app/sustentabilidade'
     | '/_authenticated/_app/sustentabilidade-360'
+    | '/_authenticated/_app/target-costing'
     | '/_authenticated/_app/trends'
     | '/_authenticated/_app/twin-factory'
     | '/_authenticated/_app/use-ai'
@@ -1038,11 +1103,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppTrendsRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/target-costing': {
+      id: '/_authenticated/_app/target-costing'
+      path: '/target-costing'
+      fullPath: '/target-costing'
+      preLoaderRoute: typeof AuthenticatedAppTargetCostingRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/sustentabilidade-360': {
       id: '/_authenticated/_app/sustentabilidade-360'
       path: '/sustentabilidade-360'
       fullPath: '/sustentabilidade-360'
       preLoaderRoute: typeof AuthenticatedAppSustentabilidade360RouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/sustentabilidade': {
+      id: '/_authenticated/_app/sustentabilidade'
+      path: '/sustentabilidade'
+      fullPath: '/sustentabilidade'
+      preLoaderRoute: typeof AuthenticatedAppSustentabilidadeRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/supplier-score': {
@@ -1057,6 +1136,13 @@ declare module '@tanstack/react-router' {
       path: '/stock-health'
       fullPath: '/stock-health'
       preLoaderRoute: typeof AuthenticatedAppStockHealthRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/sourcing': {
+      id: '/_authenticated/_app/sourcing'
+      path: '/sourcing'
+      fullPath: '/sourcing'
+      preLoaderRoute: typeof AuthenticatedAppSourcingRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/showroom': {
@@ -1192,6 +1278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppMobileRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/materiais': {
+      id: '/_authenticated/_app/materiais'
+      path: '/materiais'
+      fullPath: '/materiais'
+      preLoaderRoute: typeof AuthenticatedAppMateriaisRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/marketing': {
       id: '/_authenticated/_app/marketing'
       path: '/marketing'
@@ -1274,6 +1367,13 @@ declare module '@tanstack/react-router' {
       path: '/fornecedores'
       fullPath: '/fornecedores'
       preLoaderRoute: typeof AuthenticatedAppFornecedoresRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/fit-sessions': {
+      id: '/_authenticated/_app/fit-sessions'
+      path: '/fit-sessions'
+      fullPath: '/fit-sessions'
+      preLoaderRoute: typeof AuthenticatedAppFitSessionsRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/financeiro': {
@@ -1518,6 +1618,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppFashionGptRoute: typeof AuthenticatedAppFashionGptRoute
   AuthenticatedAppFichaTecnicaRoute: typeof AuthenticatedAppFichaTecnicaRoute
   AuthenticatedAppFinanceiroRoute: typeof AuthenticatedAppFinanceiroRoute
+  AuthenticatedAppFitSessionsRoute: typeof AuthenticatedAppFitSessionsRoute
   AuthenticatedAppFornecedoresRoute: typeof AuthenticatedAppFornecedoresRoute
   AuthenticatedAppFpaRoute: typeof AuthenticatedAppFpaRoute
   AuthenticatedAppGeoSalesRoute: typeof AuthenticatedAppGeoSalesRoute
@@ -1530,6 +1631,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppLotesRoute: typeof AuthenticatedAppLotesRoute
   AuthenticatedAppMargemRoute: typeof AuthenticatedAppMargemRoute
   AuthenticatedAppMarketingRoute: typeof AuthenticatedAppMarketingRoute
+  AuthenticatedAppMateriaisRoute: typeof AuthenticatedAppMateriaisRoute
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
   AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
   AuthenticatedAppOmnichannelRoute: typeof AuthenticatedAppOmnichannelRoute
@@ -1549,9 +1651,12 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppSalesPerformanceRoute: typeof AuthenticatedAppSalesPerformanceRoute
   AuthenticatedAppSecurityCenterRoute: typeof AuthenticatedAppSecurityCenterRoute
   AuthenticatedAppShowroomRoute: typeof AuthenticatedAppShowroomRoute
+  AuthenticatedAppSourcingRoute: typeof AuthenticatedAppSourcingRoute
   AuthenticatedAppStockHealthRoute: typeof AuthenticatedAppStockHealthRoute
   AuthenticatedAppSupplierScoreRoute: typeof AuthenticatedAppSupplierScoreRoute
+  AuthenticatedAppSustentabilidadeRoute: typeof AuthenticatedAppSustentabilidadeRoute
   AuthenticatedAppSustentabilidade360Route: typeof AuthenticatedAppSustentabilidade360Route
+  AuthenticatedAppTargetCostingRoute: typeof AuthenticatedAppTargetCostingRoute
   AuthenticatedAppTrendsRoute: typeof AuthenticatedAppTrendsRoute
   AuthenticatedAppTwinFactoryRoute: typeof AuthenticatedAppTwinFactoryRoute
   AuthenticatedAppUseAiRoute: typeof AuthenticatedAppUseAiRoute
@@ -1589,6 +1694,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppFashionGptRoute: AuthenticatedAppFashionGptRoute,
   AuthenticatedAppFichaTecnicaRoute: AuthenticatedAppFichaTecnicaRoute,
   AuthenticatedAppFinanceiroRoute: AuthenticatedAppFinanceiroRoute,
+  AuthenticatedAppFitSessionsRoute: AuthenticatedAppFitSessionsRoute,
   AuthenticatedAppFornecedoresRoute: AuthenticatedAppFornecedoresRoute,
   AuthenticatedAppFpaRoute: AuthenticatedAppFpaRoute,
   AuthenticatedAppGeoSalesRoute: AuthenticatedAppGeoSalesRoute,
@@ -1601,6 +1707,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppLotesRoute: AuthenticatedAppLotesRoute,
   AuthenticatedAppMargemRoute: AuthenticatedAppMargemRoute,
   AuthenticatedAppMarketingRoute: AuthenticatedAppMarketingRoute,
+  AuthenticatedAppMateriaisRoute: AuthenticatedAppMateriaisRoute,
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
   AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
   AuthenticatedAppOmnichannelRoute: AuthenticatedAppOmnichannelRoute,
@@ -1620,10 +1727,13 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppSalesPerformanceRoute: AuthenticatedAppSalesPerformanceRoute,
   AuthenticatedAppSecurityCenterRoute: AuthenticatedAppSecurityCenterRoute,
   AuthenticatedAppShowroomRoute: AuthenticatedAppShowroomRoute,
+  AuthenticatedAppSourcingRoute: AuthenticatedAppSourcingRoute,
   AuthenticatedAppStockHealthRoute: AuthenticatedAppStockHealthRoute,
   AuthenticatedAppSupplierScoreRoute: AuthenticatedAppSupplierScoreRoute,
+  AuthenticatedAppSustentabilidadeRoute: AuthenticatedAppSustentabilidadeRoute,
   AuthenticatedAppSustentabilidade360Route:
     AuthenticatedAppSustentabilidade360Route,
+  AuthenticatedAppTargetCostingRoute: AuthenticatedAppTargetCostingRoute,
   AuthenticatedAppTrendsRoute: AuthenticatedAppTrendsRoute,
   AuthenticatedAppTwinFactoryRoute: AuthenticatedAppTwinFactoryRoute,
   AuthenticatedAppUseAiRoute: AuthenticatedAppUseAiRoute,
@@ -1656,13 +1766,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
