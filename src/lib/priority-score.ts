@@ -45,7 +45,11 @@ export type PriorityResult = {
 };
 
 
+
+const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+
 export function computePriority(i: PriorityInput): PriorityResult {
+
   const lead = i.leadTimeDays ?? 30;
   const daily30 = i.sold30 / 30;
   const daily7 = i.sold7 / 7;
