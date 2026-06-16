@@ -170,6 +170,20 @@ function FichaTecnicaPage() {
     setSelectedId((current) => (current && sheets.some((sheet) => sheet.id === current) ? current : sheets[0].id));
   }, [sheets]);
 
+  useEffect(() => {
+    if (!deepLinkProductId) return;
+    const match = sheets.find((s) => s.product_id === deepLinkProductId);
+    if (match) {
+      setSelectedId(match.id);
+    } else {
+      setEditing(null);
+      setInitialProductId(deepLinkProductId);
+      setOpen(true);
+      toast.info("Nenhuma ficha para esse produto — criando uma nova.");
+    }
+    navigate({ search: { productId: undefined }, replace: true });
+  }, [deepLinkProductId, sheets, navigate]);
+
   const selected = useMemo(() => sheets.find((item) => item.id === selectedId) ?? sheets[0] ?? null, [selectedId, sheets]);
   const selectedContent = useMemo(() => parseSheetContent(selected?.content ?? null), [selected?.content]);
   const selectedProduct = useMemo(() => products.find((product) => product.id === selected?.product_id) ?? null, [products, selected?.product_id]);
