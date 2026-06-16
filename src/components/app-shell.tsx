@@ -52,13 +52,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5 text-sm">
-        {MODULE_GROUPS.map((group) => (
-          <div key={group}>
-            <div className="px-2 mb-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-              {group}
-            </div>
-            <ul className="space-y-0.5">
-              {MODULES.filter((m) => m.group === group && !m.hidden).map((m) => {
+        {MODULE_GROUPS.map((group) => {
+          const items = visibleModules.filter((m) => m.group === group);
+          if (items.length === 0) return null;
+          return (
+            <div key={group}>
+              <div className="px-2 mb-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                {group}
+              </div>
+              <ul className="space-y-0.5">
+                {items.map((m) => {
                 const isActive = active === m.path;
                 const Icon = m.icon;
                 const isErp = m.source === "erp-mirror";
