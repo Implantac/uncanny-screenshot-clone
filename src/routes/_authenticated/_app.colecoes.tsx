@@ -235,6 +235,39 @@ function ColecoesPage() {
     },
   });
 
+  const { data: productionAll = [] } = useQuery({
+    queryKey: ["collections-production-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("production_orders")
+        .select("product_id, quantity, progress, status, stage")
+        .neq("status", "cancelada");
+      if (error) throw error;
+      return (data ?? []) as Array<{ product_id: string | null; quantity: number | null; progress: number | null; status: string | null; stage: string | null }>;
+    },
+  });
+
+  const readinessByCollection = useMemo(() => {
+    const productToCol = new Map(products.map((p) => [p.id, p.collection_id] as const));
+    const agg = new Map<string, { planned: number; done: number; ops: number }>();
+    productionAll.forEach((o) => {
+      const col = o.product_id ? productToCol.get(o.product_id) : null;
+      if (!col) return;
+      const a = agg.get(col) ?? { planned: 0, done: 0, ops: 0 };
+      const q = Number(o.quantity ?? 0);
+      a.planned += q;
+      a.done += Math.round(q * (Number(o.progress ?? 0) / 100));
+      a.ops += 1;
+      agg.set(col, a);
+    });
+    const map: Record<string, { planned: number; done: number; ops: number; pct: number }> = {};
+    agg.forEach((v, k) => {
+      map[k] = { ...v, pct: v.planned > 0 ? Math.round((v.done / v.planned) * 100) : 0 };
+    });
+    return map;
+  }, [productionAll, products]);
+
+
   const derived = useMemo(() => {
     const revenue = selectedProducts.reduce((sum, item) => sum + Number(item.sell_price || 0), 0);
     const cost = selectedProducts.reduce((sum, item) => sum + Number(item.cost_price || 0), 0);
