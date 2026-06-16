@@ -78,7 +78,7 @@ function Prototipos() {
     setEditing(null);
     setForm({ code: "", product_id: deepProductId, supplier_id: "", stage: "solicitado", due_date: "", notes: "", current_sector: "" });
     setOpen(true);
-    navigate({ search: (p) => ({ ...p, productId: undefined }), replace: true });
+    navigate({ search: (p: typeof search) => ({ ...p, productId: undefined }), replace: true });
   }, [deepProductId, navigate]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
