@@ -182,17 +182,50 @@ function Colecao360() {
                     Avanço da produção: <span className="font-semibold text-foreground tabular-nums">{Math.round(current.avanco)}%</span>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
                   <WarKPI label="Sem piloto aprovado" value={current.semPiloto} icon={<FileWarning className="size-3.5" />} tone={current.semPiloto > 0 ? "red" : "green"} to="/prototipos" />
+                  <WarKPI label="Sem ficha técnica" value={current.semFicha} icon={<FileWarning className="size-3.5" />} tone={current.semFicha > 0 ? "red" : "green"} to="/tech-sheets" />
                   <WarKPI label="Protótipos pendentes" value={current.protoPendentes} icon={<Sparkles className="size-3.5" />} tone={current.protoPendentes > 5 ? "yellow" : "neutral"} to="/dev-kanban" />
                   <WarKPI label="OPs aguardando" value={current.opsAguardando} icon={<Clock className="size-3.5" />} tone={current.opsAguardando > 0 ? "yellow" : "green"} to="/pcp-kanban" />
                   <WarKPI label="Liberados p/ PCP" value={current.liberadosPCP} icon={<CheckCircle2 className="size-3.5" />} tone="primary" to="/pcp-kanban" />
-                  <WarKPI label="OPs em atraso" value={current.opsActive - current.liberadosPCP - current.opsAguardando} icon={<AlertTriangle className="size-3.5" />} tone="neutral" to="/twin-factory" />
+                  <WarKPI label="OPs em atraso" value={Math.max(0, current.opsActive - current.liberadosPCP - current.opsAguardando)} icon={<AlertTriangle className="size-3.5" />} tone="neutral" to="/twin-factory" />
                 </div>
                 <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
                   <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, current.avanco)}%` }} />
                 </div>
               </div>
+
+              {/* Champions e críticos */}
+              {(current.champions.length > 0 || current.criticos.length > 0) && (
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-success/30 bg-card p-4">
+                    <div className="text-xs uppercase tracking-wider text-success mb-2 flex items-center gap-1.5"><TrendingUp className="size-3.5" /> Campeões da coleção</div>
+                    {current.champions.length === 0 ? <div className="text-xs text-muted-foreground">Sem dados de venda.</div> : (
+                      <ul className="space-y-1.5">
+                        {current.champions.map(({ p, rev }) => (
+                          <li key={p.id} className="flex items-center justify-between text-sm">
+                            <span className="truncate"><span className="text-muted-foreground text-xs">{p.sku}</span> · {p.name}</span>
+                            <span className="tabular-nums font-medium">R$ {(rev/1000).toFixed(1)}k</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="rounded-xl border border-destructive/30 bg-card p-4">
+                    <div className="text-xs uppercase tracking-wider text-destructive mb-2 flex items-center gap-1.5"><AlertTriangle className="size-3.5" /> Críticos (sem venda)</div>
+                    {current.criticos.length === 0 ? <div className="text-xs text-muted-foreground">Todos os produtos têm venda.</div> : (
+                      <ul className="space-y-1.5">
+                        {current.criticos.map(({ p }) => (
+                          <li key={p.id} className="flex items-center justify-between text-sm">
+                            <span className="truncate"><span className="text-muted-foreground text-xs">{p.sku}</span> · {p.name}</span>
+                            <span className="text-xs text-muted-foreground">{p.status}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* KPIs financeiros */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
