@@ -305,10 +305,11 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
             </div>
             <div className="space-y-2"><Label>Depósito</Label><Input value={deposit} onChange={(e) => setDeposit(e.target.value)} placeholder="DP-01" /></div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <div className="space-y-2"><Label>Unidade</Label><Input value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="m, kg, un" /></div>
             <div className="space-y-2"><Label>Saldo</Label><Input type="number" step="0.01" value={balance} onChange={(e) => setBalance(e.target.value)} /></div>
             <div className="space-y-2"><Label>Mínimo</Label><Input type="number" step="0.01" value={minimum} onChange={(e) => setMinimum(e.target.value)} /></div>
+            <div className="space-y-2"><Label>Máximo</Label><Input type="number" step="0.01" value={maximum} onChange={(e) => setMaximum(e.target.value)} /></div>
           </div>
           <div className="space-y-2"><Label>Observações</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
           <DialogFooter>
