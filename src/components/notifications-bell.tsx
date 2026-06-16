@@ -77,7 +77,7 @@ export function NotificationsBell() {
     qc.invalidateQueries({ queryKey: ["notifications"] });
   };
 
-  const total = (data?.critical.length ?? 0) + (data?.overdue.length ?? 0) + (data?.comments.length ?? 0) + (data?.marketing.length ?? 0);
+  const total = (data?.critical.length ?? 0) + (data?.overdue.length ?? 0) + (data?.stuck.length ?? 0) + (data?.oldProtos.length ?? 0) + (data?.comments.length ?? 0) + (data?.marketing.length ?? 0);
 
   return (
     <DropdownMenu>
