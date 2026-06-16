@@ -87,9 +87,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </li>
                 );
               })}
-            </ul>
-          </div>
-        ))}
+              </ul>
+            </div>
+          );
+        })}
       </nav>
       <div className="m-3 p-3 rounded-lg glass">
         <div className="flex items-center gap-2 text-xs font-medium">
