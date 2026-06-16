@@ -3,7 +3,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Scissors, Plus, Trash2, Pencil, Search, X, Download } from "lucide-react";
+import { Scissors, Plus, Trash2, Pencil, Search, X, Download, GitCompare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -62,6 +62,10 @@ function Prototipos() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prototype | null>(null);
   const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "" });
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const toggleSel = (id: string) =>
+    setSelectedIds((s) => (s.includes(id) ? s.filter((x) => x !== id) : s.length >= 3 ? s : [...s, id]));
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["prototypes"],
@@ -266,6 +270,7 @@ function Prototipos() {
             <table className="w-full text-sm">
               <thead className="bg-muted/30 text-xs uppercase text-muted-foreground">
                 <tr>
+                  <th className="w-10 px-3"></th>
                   <th className="text-left px-4 py-3">Código</th>
                   <th className="text-left px-4 py-3">Produto</th>
                   <th className="text-left px-4 py-3">Facção</th>
@@ -277,6 +282,15 @@ function Prototipos() {
               <tbody>
                 {filtered.map(p => (
                   <tr key={p.id} className="border-t border-border hover:bg-muted/20">
+                    <td className="px-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(p.id)}
+                        onChange={() => toggleSel(p.id)}
+                        disabled={!selectedIds.includes(p.id) && selectedIds.length >= 3}
+                        title="Selecionar para comparar (máx. 3)"
+                      />
+                    </td>
                     <td className="px-4 py-3 font-mono text-xs">{p.code}</td>
                     <td className="px-4 py-3">{productName(p.product_id)}</td>
                     <td className="px-4 py-3">{supplierName(p.supplier_id)}</td>
@@ -296,12 +310,49 @@ function Prototipos() {
                     </td>
                   </tr>
                 ))}
-                {filtered.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{items.length === 0 ? "Nenhum protótipo ainda" : "Nenhum resultado para os filtros"}</td></tr>}
+                {filtered.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">{items.length === 0 ? "Nenhum protótipo ainda" : "Nenhum resultado para os filtros"}</td></tr>}
               </tbody>
             </table>
           </div>
         </>
       )}
+
+      {selectedIds.length >= 2 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 glass rounded-full pl-4 pr-2 py-2 shadow-lg flex items-center gap-3">
+          <GitCompare className="size-4 text-primary" />
+          <span className="text-sm">{selectedIds.length} protótipos selecionados</span>
+          <Button size="sm" onClick={() => setCompareOpen(true)}>Comparar</Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>Limpar</Button>
+        </div>
+      )}
+
+      <Dialog open={compareOpen} onOpenChange={setCompareOpen}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><GitCompare className="size-5 text-primary" /> Comparar protótipos</DialogTitle></DialogHeader>
+          <div className={`grid gap-3 ${selectedIds.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+            {selectedIds.map((id) => {
+              const p = items.find((x) => x.id === id);
+              if (!p) return null;
+              return (
+                <div key={id} className="rounded-lg border border-border p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className={STAGE_COLOR[p.stage]}>{STAGE_LABEL[p.stage]}</Badge>
+                    <span className="font-mono text-xs text-muted-foreground">{p.code}</span>
+                  </div>
+                  <div className="text-sm font-medium">{productName(p.product_id)}</div>
+                  <div className="text-xs text-muted-foreground">Facção: {supplierName(p.supplier_id)}</div>
+                  <div className="text-xs text-muted-foreground">Prazo: {p.due_date ?? "—"}</div>
+                  <div className="text-xs text-muted-foreground">Criado: {new Date(p.created_at).toLocaleDateString("pt-BR")}</div>
+                  {p.notes && (
+                    <div className="text-xs mt-2 pt-2 border-t border-border whitespace-pre-wrap">{p.notes}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={open} onOpenChange={(o) => !o && reset()}>
         <DialogContent>
