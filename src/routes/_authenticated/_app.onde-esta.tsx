@@ -1,153 +1,243 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
-import { Search, MapPin, Loader2, Package, Clock, ArrowRight, CheckCircle2 } from "lucide-react";
-import { getOrderTimeline } from "@/lib/traceability.functions";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { MapPin, Search, Clock, ArrowRight, Package } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/_app/onde-esta")({
   head: () => ({
     meta: [
-      { title: "Onde está? · Rastreabilidade · USE MODA PLM" },
-      { name: "description", content: "Rastreie qualquer OP ou lote: por onde passou, quando e quanto." },
+      { title: "Onde está? · USE MODA OS" },
+      { name: "description", content: "Rastreabilidade visual de OPs e lotes" },
     ],
   }),
   component: OndeEsta,
 });
 
+type LogRow = {
+  id: string;
+  order_id: string;
+  from_stage: string | null;
+  to_stage: string;
+  quantity: number;
+  is_partial: boolean;
+  note: string | null;
+  created_at: string;
+};
+type OrderRow = {
+  id: string;
+  code: string;
+  stage: string;
+  quantity: number;
+  stage_updated_at: string | null;
+  product_id: string | null;
+  supplier_id: string | null;
+};
+
+const STAGE_LABEL: Record<string, string> = {
+  cad: "CAD",
+  modelagem: "Modelagem",
+  corte: "Corte",
+  costura: "Costura",
+  acabamento: "Acabamento",
+  expedicao: "Expedição",
+  concluido: "Concluído",
+};
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}
 function relTime(iso: string) {
-  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (diff < 60) return "agora";
-  if (diff < 3600) return `${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} h`;
-  return `${Math.floor(diff / 86400)} d`;
+  const diff = Date.now() - new Date(iso).getTime();
+  const h = Math.floor(diff / 36e5);
+  if (h < 1) return `${Math.floor(diff / 60000)} min`;
+  if (h < 24) return `${h} h`;
+  return `${Math.floor(h / 24)} d`;
 }
 
 function OndeEsta() {
-  const fn = useServerFn(getOrderTimeline);
-  const [q, setQ] = useState("");
-  const mutation = useMutation({ mutationFn: (query: string) => fn({ data: { query } }) });
+  const [query, setQuery] = useState("");
+  const [submitted, setSubmitted] = useState("");
 
-  const submit = (e: React.FormEvent) => {
+  const { data: order, isLoading: loadingOrder } = useQuery({
+    enabled: !!submitted,
+    queryKey: ["traceability-order", submitted],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("production_orders")
+        .select("id,code,stage,quantity,stage_updated_at,product_id,supplier_id")
+        .ilike("code", `%${submitted}%`)
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data as OrderRow | null;
+    },
+  });
+
+  const { data: logs = [], isLoading: loadingLogs } = useQuery({
+    enabled: !!order?.id,
+    queryKey: ["traceability-logs", order?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("production_stage_log")
+        .select("*")
+        .eq("order_id", order!.id)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as LogRow[];
+    },
+  });
+
+  const { data: product } = useQuery({
+    enabled: !!order?.product_id,
+    queryKey: ["traceability-product", order?.product_id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("name,code")
+        .eq("id", order!.product_id!)
+        .maybeSingle();
+      return data;
+    },
+  });
+  const { data: supplier } = useQuery({
+    enabled: !!order?.supplier_id,
+    queryKey: ["traceability-supplier", order?.supplier_id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("suppliers")
+        .select("name")
+        .eq("id", order!.supplier_id!)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const currentSince = useMemo(() => {
+    if (!order?.stage_updated_at) return null;
+    return relTime(order.stage_updated_at);
+  }, [order]);
+
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (q.trim().length >= 2) mutation.mutate(q.trim());
-  };
+    setSubmitted(query.trim());
+  }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl mx-auto">
-      <div>
-        <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Rastreabilidade</div>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
-          <MapPin className="size-7 text-primary" /> Onde está?
-        </h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Digite o código da OP ou do lote para ver toda a passagem por setores, parcial ou integral.
-        </p>
+    <div className="space-y-6 max-w-4xl">
+      <div className="flex items-center gap-3">
+        <div className="size-10 rounded-xl bg-primary/10 grid place-items-center">
+          <MapPin className="size-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-semibold">Onde está?</h1>
+          <p className="text-sm text-muted-foreground">
+            Digite o código da OP — veja a jornada completa em segundos.
+          </p>
+        </div>
       </div>
 
-      <form onSubmit={submit} className="glass rounded-xl p-3 flex gap-2">
+      <form onSubmit={onSubmit} className="flex gap-2">
         <div className="relative flex-1">
           <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Ex.: OP-20251202-ABC123 ou LOTE-..."
-            className="w-full pl-9 pr-3 py-2 bg-transparent rounded-lg border border-border focus:border-primary outline-none text-sm"
-            autoFocus
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Ex: OP-20260101-abc123"
+            className="pl-9"
           />
         </div>
-        <button
-          type="submit"
-          disabled={mutation.isPending || q.trim().length < 2}
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 inline-flex items-center gap-2"
-        >
-          {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
-          Rastrear
-        </button>
+        <Button type="submit" disabled={!query.trim()}>Rastrear</Button>
       </form>
 
-      {mutation.error && (
-        <div className="glass rounded-xl p-4 text-sm text-destructive">{(mutation.error as Error).message}</div>
+      {submitted && loadingOrder && (
+        <p className="text-muted-foreground text-sm">Procurando…</p>
       )}
 
-      {mutation.data && mutation.data.orders.length === 0 && (
-        <div className="glass rounded-xl p-8 text-center text-sm text-muted-foreground">
-          Nada encontrado para <span className="font-mono">{q}</span>.
+      {submitted && !loadingOrder && !order && (
+        <div className="rounded-xl border border-border bg-card/50 p-8 text-center">
+          <Package className="size-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">
+            Nenhuma OP encontrada para "{submitted}".
+          </p>
         </div>
       )}
 
-      {mutation.data && mutation.data.orders.length > 0 && (
-        <div className="space-y-5">
-          {mutation.data.orders.map((o: any) => {
-            const evts = mutation.data.events.filter((e: any) => e.order_id === o.id);
-            const last = evts[evts.length - 1];
-            const here = last ? `Atualmente em ${last.to_stage}` : `Atualmente em ${o.stage}`;
-            const since = last?.created_at ?? o.stage_updated_at ?? o.created_at;
-            return (
-              <div key={o.id} className="glass rounded-xl p-5">
-                <div className="flex items-start justify-between gap-3 flex-wrap">
-                  <div className="flex items-start gap-3 min-w-0">
-                    {o.products?.image_url && (
-                      <img src={o.products.image_url} alt="" className="size-12 rounded-lg object-cover" />
-                    )}
-                    <div className="min-w-0">
-                      <div className="font-mono text-sm">{o.code}</div>
-                      <div className="text-sm font-medium truncate">{o.products?.name ?? "—"}</div>
-                      <div className="text-xs text-muted-foreground">
-                        SKU {o.products?.sku ?? "—"} · {o.quantity} pç
-                        {o.batch_code && <> · lote <span className="font-mono">{o.batch_code}</span></>}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                      <Package className="size-3" /> {here}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground mt-1 inline-flex items-center gap-1">
-                      <Clock className="size-3" /> há {relTime(since)}
-                    </div>
-                  </div>
+      {order && (
+        <>
+          <div className="rounded-xl border border-border bg-card/50 p-5">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <div className="font-mono text-xs text-muted-foreground">{order.code}</div>
+                <div className="text-lg font-semibold mt-1">
+                  {product?.name ?? "Produto —"}
                 </div>
-
-                <div className="mt-5 border-l border-border ml-4 pl-5 space-y-4">
-                  {evts.length === 0 ? (
-                    <div className="text-xs text-muted-foreground -ml-9">
-                      <span className="inline-block size-2 rounded-full bg-muted-foreground mr-2" />
-                      Sem movimentos ainda. Etapa atual: <span className="font-medium">{o.stage}</span>.
-                    </div>
-                  ) : (
-                    evts.map((e: any, idx: number) => (
-                      <div key={e.id} className="relative">
-                        <span className={`absolute -left-[27px] top-1 size-2.5 rounded-full ${idx === evts.length - 1 ? "bg-primary ring-2 ring-primary/30" : "bg-muted-foreground"}`} />
-                        <div className="flex items-center gap-2 text-sm">
-                          {e.from_stage && (
-                            <>
-                              <span className="text-muted-foreground">{e.from_stage}</span>
-                              <ArrowRight className="size-3 text-muted-foreground" />
-                            </>
-                          )}
-                          <span className="font-medium">{e.to_stage}</span>
-                          <span className="text-xs text-muted-foreground">· {e.quantity} pç</span>
-                          {e.is_partial ? (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-warning/15 text-warning font-medium">parcial</span>
-                          ) : (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/15 text-success font-medium inline-flex items-center gap-1">
-                              <CheckCircle2 className="size-2.5" /> integral
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground mt-0.5">
-                          {new Date(e.created_at).toLocaleString("pt-BR")} · há {relTime(e.created_at)}
-                        </div>
-                        {e.note && <div className="text-xs text-muted-foreground mt-1 italic">"{e.note}"</div>}
-                      </div>
-                    ))
-                  )}
+                <div className="text-xs text-muted-foreground">
+                  Facção: {supplier?.name ?? "—"} · Qtd: {order.quantity}
                 </div>
               </div>
-            );
-          })}
-        </div>
+              <div className="text-right">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                  Agora em: {STAGE_LABEL[order.stage] ?? order.stage}
+                </Badge>
+                {currentSince && (
+                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1 justify-end">
+                    <Clock className="size-3" /> há {currentSince}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="mt-4 flex gap-2">
+              <Link to="/pcp-kanban">
+                <Button size="sm" variant="outline">Abrir no Kanban</Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card/50 p-5">
+            <h2 className="text-sm font-medium mb-4">Linha do tempo</h2>
+            {loadingLogs ? (
+              <p className="text-sm text-muted-foreground">Carregando histórico…</p>
+            ) : logs.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Sem movimentações registradas ainda.
+              </p>
+            ) : (
+              <ol className="relative border-l border-border ml-3 space-y-4">
+                {logs.map((l) => (
+                  <li key={l.id} className="pl-6 relative">
+                    <span className="absolute -left-2 top-1.5 size-4 rounded-full bg-primary border-4 border-background" />
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      {l.from_stage && (
+                        <>
+                          <span className="text-muted-foreground">
+                            {STAGE_LABEL[l.from_stage] ?? l.from_stage}
+                          </span>
+                          <ArrowRight className="size-3 text-muted-foreground" />
+                        </>
+                      )}
+                      <span>{STAGE_LABEL[l.to_stage] ?? l.to_stage}</span>
+                      {l.is_partial && (
+                        <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 text-[10px]">
+                          parcial
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      Qtd: {l.quantity} · {fmtDate(l.created_at)} · há {relTime(l.created_at)}
+                    </div>
+                    {l.note && (
+                      <div className="text-xs text-muted-foreground italic mt-1">"{l.note}"</div>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
