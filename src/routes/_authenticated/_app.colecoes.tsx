@@ -494,6 +494,34 @@ function ColecoesPage() {
     return steps;
   }, [selected]);
 
+  const pendingForSelected = useMemo(() => {
+    if (!selected) return null;
+    const ps = selectedProducts;
+    const sheetsByProduct = new Map<string, string[]>();
+    techSheets.filter((t) => t.status === "aprovada" && t.product_id).forEach((t) => {
+      const arr = sheetsByProduct.get(t.product_id!) ?? [];
+      arr.push(t.id);
+      sheetsByProduct.set(t.product_id!, arr);
+    });
+    const matsBySheet = new Map<string, typeof bom>();
+    bom.forEach((m) => {
+      const arr = matsBySheet.get(m.tech_sheet_id) ?? [];
+      arr.push(m);
+      matsBySheet.set(m.tech_sheet_id, arr);
+    });
+    const noSheet = ps.filter((p) => !sheetsByProduct.has(p.id));
+    const noStock = ps.filter((p) => {
+      const sids = sheetsByProduct.get(p.id);
+      if (!sids) return false;
+      return !sids.some((sid) => {
+        const mats = matsBySheet.get(sid) ?? [];
+        return mats.length > 0 && mats.every((m) => m.inventory_item_id && Number(m.inventory_items?.balance ?? 0) > 0);
+      });
+    });
+    const lateProducts = ps.filter((p) => (productionByProduct[p.id]?.late ?? 0) > 0);
+    return { noSheet, noStock, lateProducts, missingLaunch: !selected.launch_date };
+  }, [selected, selectedProducts, techSheets, bom, productionByProduct]);
+
   function openCreate() {
     setEditing(null);
     setOpen(true);
@@ -922,22 +950,83 @@ function ColecoesPage() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="cronograma" className="mt-0 glass rounded-xl p-5">
-                  <div className="flex items-center gap-2 mb-5 text-sm font-semibold"><Clock3 className="size-4 text-primary" /> Cronograma macro</div>
-                  <div className="space-y-4">
-                    {timeline.map((step, index) => (
-                      <div key={step.label} className="flex gap-4">
-                        <div className="flex flex-col items-center">
-                          <div className="size-8 rounded-full bg-primary/10 text-primary grid place-items-center text-xs font-semibold">{index + 1}</div>
-                          {index < timeline.length - 1 && <div className="w-px flex-1 bg-border mt-2" />}
+                <TabsContent value="cronograma" className="mt-0 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4">
+                  <div className="glass rounded-xl p-5">
+                    <div className="flex items-center gap-2 mb-4 text-sm font-semibold">
+                      <Flag className="size-4 text-warning" /> Pendências que travam a coleção
+                    </div>
+                    {pendingForSelected && (() => {
+                      const items: Array<{ key: string; tone: string; title: string; detail: string; cta: string; onClick: () => void }> = [];
+                      if (pendingForSelected.noSheet.length) items.push({
+                        key: "sheet",
+                        tone: "bg-warning/15 text-warning border-warning/30",
+                        title: `${pendingForSelected.noSheet.length} produto(s) sem ficha técnica aprovada`,
+                        detail: pendingForSelected.noSheet.slice(0, 3).map((p) => p.name).join(" · ") + (pendingForSelected.noSheet.length > 3 ? "…" : ""),
+                        cta: "Abrir Ficha técnica",
+                        onClick: () => navigate({ to: "/ficha-tecnica" }),
+                      });
+                      if (pendingForSelected.noStock.length) items.push({
+                        key: "stock",
+                        tone: "bg-destructive/15 text-destructive border-destructive/30",
+                        title: `${pendingForSelected.noStock.length} produto(s) com ficha aprovada mas sem material em estoque`,
+                        detail: pendingForSelected.noStock.slice(0, 3).map((p) => p.name).join(" · ") + (pendingForSelected.noStock.length > 3 ? "…" : ""),
+                        cta: "Abrir Almoxarifado",
+                        onClick: () => navigate({ to: "/almoxarifado" }),
+                      });
+                      if (pendingForSelected.lateProducts.length) items.push({
+                        key: "late",
+                        tone: "bg-destructive/15 text-destructive border-destructive/30",
+                        title: `${pendingForSelected.lateProducts.length} produto(s) com ordens atrasadas`,
+                        detail: pendingForSelected.lateProducts.slice(0, 3).map((p) => p.name).join(" · ") + (pendingForSelected.lateProducts.length > 3 ? "…" : ""),
+                        cta: "Abrir War Room",
+                        onClick: () => navigate({ to: "/war-room-producao" }),
+                      });
+                      if (pendingForSelected.missingLaunch) items.push({
+                        key: "launch",
+                        tone: "bg-info/15 text-info border-info/30",
+                        title: "Data de lançamento não definida",
+                        detail: "Sem go-live a coleção não entra no calendário comercial.",
+                        cta: "Editar coleção",
+                        onClick: () => selected && openEdit(selected),
+                      });
+                      if (!items.length) {
+                        return (
+                          <div className="text-sm text-success border border-success/30 bg-success/10 rounded-lg p-4">
+                            Nenhum bloqueio crítico. A coleção está fluindo dentro do plano.
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="space-y-3">
+                          {items.map((it) => (
+                            <div key={it.key} className={`rounded-xl border p-3 ${it.tone}`}>
+                              <div className="text-sm font-medium leading-tight">{it.title}</div>
+                              {it.detail && <div className="text-xs opacity-80 mt-1 line-clamp-2">{it.detail}</div>}
+                              <Button size="sm" variant="outline" className="mt-3 h-7 text-xs" onClick={it.onClick}>{it.cta}</Button>
+                            </div>
+                          ))}
                         </div>
-                        <div className="pb-5">
-                          <div className="font-medium">{step.label}</div>
-                          <div className="text-sm text-muted-foreground mt-1">{step.at.toLocaleDateString("pt-BR")}</div>
-                          <div className="text-xs text-muted-foreground mt-2">Meta acumulada {step.progress}% do calendário.</div>
+                      );
+                    })()}
+                  </div>
+
+                  <div className="glass rounded-xl p-5">
+                    <div className="flex items-center gap-2 mb-5 text-sm font-semibold"><Clock3 className="size-4 text-primary" /> Cronograma macro</div>
+                    <div className="space-y-4">
+                      {timeline.map((step, index) => (
+                        <div key={step.label} className="flex gap-4">
+                          <div className="flex flex-col items-center">
+                            <div className="size-8 rounded-full bg-primary/10 text-primary grid place-items-center text-xs font-semibold">{index + 1}</div>
+                            {index < timeline.length - 1 && <div className="w-px flex-1 bg-border mt-2" />}
+                          </div>
+                          <div className="pb-5">
+                            <div className="font-medium">{step.label}</div>
+                            <div className="text-sm text-muted-foreground mt-1">{step.at.toLocaleDateString("pt-BR")}</div>
+                            <div className="text-xs text-muted-foreground mt-2">Meta acumulada {step.progress}% do calendário.</div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </TabsContent>
 
