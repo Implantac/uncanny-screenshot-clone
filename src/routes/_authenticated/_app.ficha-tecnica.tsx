@@ -31,7 +31,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { MaterialsPanel, OperationsPanel, MeasurementsPanel, CostsPanel } from "@/components/tech-pack/panels";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/_authenticated/_app/ficha-tecnica")({
+  validateSearch: zodValidator(
+    z.object({ productId: fallback(z.string().regex(UUID_RE).optional(), undefined) }),
+  ),
   head: () => ({
     meta: [
       { title: "Ficha Técnica · USE MODA OS" },
