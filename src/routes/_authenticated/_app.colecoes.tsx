@@ -675,6 +675,31 @@ function ColecoesPage() {
                       );
                     })()}
 
+                    {(() => {
+                      const d = devReadinessByCollection[selected.id];
+                      if (!d || d.total === 0) return null;
+                      const ok = d.pct === 100;
+                      return (
+                        <div className="col-span-2 rounded-xl border border-border bg-background/30 p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Target className="size-4 text-primary" />
+                              <div className="text-sm font-medium">Pronta para entrar em produção</div>
+                            </div>
+                            <Badge variant="outline" className={ok ? "bg-success/20 text-success border-success/30" : "bg-warning/20 text-warning border-warning/30"}>
+                              {ok ? "Liberada" : `${d.pct}%`}
+                            </Badge>
+                          </div>
+                          <Progress value={d.pct} className="h-2" />
+                          <div className="text-xs text-muted-foreground mt-2">
+                            {d.ready} de {d.total} produtos com ficha técnica aprovada
+                            {!ok && ` · faltam ${d.total - d.ready}`}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+
                     <div className="col-span-2 rounded-xl border border-border bg-background/30 p-4 flex flex-wrap gap-2 items-center justify-between">
                       <div>
                         <div className="text-sm font-medium">Direção cromática</div>
