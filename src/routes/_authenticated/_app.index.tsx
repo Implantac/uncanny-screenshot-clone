@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGri
 import { ArrowUpRight, Package, Factory, Layers, Scissors, AlertTriangle, CheckCircle2, Sparkles, Activity, TrendingUp, Palette, Shirt, FileText } from "lucide-react";
 import { MODULES } from "@/lib/modules";
 import { supabase } from "@/integrations/supabase/client";
+import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/")({
   head: () => ({
@@ -258,6 +259,13 @@ function CommandCenter() {
           );
         })}
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <AICoordinatorPanel persona="pcp" title="Coordenador de PCP · diagnóstico do dia" />
+        <AICoordinatorPanel persona="development" title="Coordenador de Desenvolvimento · prioridades" />
+      </div>
+
+
 
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
