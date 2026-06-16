@@ -113,5 +113,7 @@ Critério de remoção definitiva: quando os módulos equivalentes do ERP (Marke
 - **Onda 8** ✅ — triggers de duplicação desativados.
 - **Onda 9** ✅ — Tech Pack completo: BOM, operações (SAM), POM, custos recalculados.
 - **Onda 10** ✅ — Grade/Cor/SKU: `product_color_options`, `product_size_options`, `product_variants`, `production_order_grid`, `service_order_grid`. UI `/variantes` com gerador de combinações.
+- **Onda 11** ✅ — Cadeia & Qualidade: `supplier_capabilities`, `supplier_compliance`, `quality_inspections` (AQL) em `/inspecoes`.
+- **Onda 12** ✅ — DPP versionado: `dpp_records` + `dpp_views`, publicação com hash SHA-256, QR público em `/dpp/:id` lê última versão publicada.
 
 

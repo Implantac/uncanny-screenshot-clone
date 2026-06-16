@@ -72,6 +72,14 @@ function PublicPassport() {
           <Card icon={<ShieldCheck className="size-4 text-muted-foreground" />} label="Peças emitidas" value={String(p.emitidos)} />
         </div>
 
+        {(p.composition || p.care || p.repairability != null) && (
+          <div className="rounded-xl border border-border p-4 space-y-2 text-sm">
+            {p.composition && (<div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Composição</div><div>{p.composition}</div></div>)}
+            {p.care && (<div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Cuidados</div><div>{p.care}</div></div>)}
+            {p.repairability != null && (<div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Reparabilidade</div><div>{p.repairability}/10</div></div>)}
+          </div>
+        )}
+
         <div className="rounded-xl border border-border p-4">
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Cadeia produtiva</div>
           <div className="flex flex-wrap gap-1.5">
@@ -82,7 +90,7 @@ function PublicPassport() {
         </div>
 
         <div className="text-[10px] text-muted-foreground text-center">
-          Verificado por USE MODA OS · ID {p.id.slice(0, 8)}
+          Verificado por USE MODA OS · v{p.version} · ID {(p.record_id ?? p.id).slice(0, 8)}
         </div>
       </div>
     </div>

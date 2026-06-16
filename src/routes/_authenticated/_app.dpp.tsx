@@ -1,11 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ShieldCheck, QrCode, Leaf, Globe, Loader2, Printer, ExternalLink } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { ShieldCheck, QrCode, Leaf, Globe, Loader2, Printer, ExternalLink, Send } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useServerFn } from "@tanstack/react-start";
+import { publishPassport } from "@/lib/dpp.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/dpp")({
   head: () => ({
@@ -176,6 +182,7 @@ function PassportDialog({ passport, onClose }: { passport: Passport | null; onCl
                 ))}
               </div>
             </div>
+            <PublishBlock productId={passport.id} />
             <Button variant="outline" className="w-full gap-2" onClick={() => window.print()}>
               <Printer className="size-4" /> Imprimir / salvar PDF
             </Button>
@@ -192,5 +199,64 @@ function Field({ label, value, accent }: { label: string; value: string; accent?
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
       <div className={`mt-0.5 truncate ${accent ? "text-emerald-400 font-medium" : "font-medium"}`}>{value}</div>
     </div>
+  );
+}
+
+function PublishBlock({ productId }: { productId: string }) {
+  const qc = useQueryClient();
+  const publish = useServerFn(publishPassport);
+  const [open, setOpen] = useState(false);
+  const [composition, setComposition] = useState("");
+  const [origin, setOrigin] = useState("");
+  const [care, setCare] = useState("");
+  const [repair, setRepair] = useState("");
+  const [certs, setCerts] = useState("");
+
+  const m = useMutation({
+    mutationFn: () =>
+      publish({
+        data: {
+          product_id: productId,
+          composition: composition || undefined,
+          origin: origin || undefined,
+          care_instructions: care || undefined,
+          repairability_score: repair ? Number(repair) : undefined,
+          certifications: certs ? certs.split(",").map((s) => s.trim()).filter(Boolean) : undefined,
+        },
+      }),
+    onSuccess: (rec) => {
+      toast.success(`Passaporte v${rec.version} publicado`);
+      qc.invalidateQueries({ queryKey: ["public-passport", productId] });
+      setOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <>
+      <Button className="w-full gap-2" onClick={() => setOpen(true)}>
+        <Send className="size-4" /> Publicar nova versão
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Publicar passaporte</DialogTitle>
+            <DialogDescription>Gera uma versão imutável com hash SHA-256.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div><Label>Composição</Label><Input value={composition} onChange={(e) => setComposition(e.target.value)} placeholder="100% algodão orgânico" /></div>
+            <div><Label>Origem</Label><Input value={origin} onChange={(e) => setOrigin(e.target.value)} placeholder="Brasil · SP" /></div>
+            <div><Label>Cuidados</Label><Textarea value={care} onChange={(e) => setCare(e.target.value)} rows={2} placeholder="Lavar a 30°C, não usar alvejante…" /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><Label>Reparabilidade (0-10)</Label><Input type="number" min={0} max={10} value={repair} onChange={(e) => setRepair(e.target.value)} /></div>
+              <div><Label>Certificações</Label><Input value={certs} onChange={(e) => setCerts(e.target.value)} placeholder="GOTS, OEKO-TEX" /></div>
+            </div>
+            <Button className="w-full" onClick={() => m.mutate()} disabled={m.isPending}>
+              {m.isPending ? <Loader2 className="size-4 animate-spin" /> : "Publicar"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

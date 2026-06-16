@@ -295,6 +295,126 @@ export type Database = {
         }
         Relationships: []
       }
+      dpp_records: {
+        Row: {
+          care_instructions: string | null
+          certifications: string[] | null
+          composition: string | null
+          created_at: string
+          hash: string | null
+          id: string
+          origin: string | null
+          owner_id: string
+          product_id: string
+          published_at: string | null
+          repairability_score: number | null
+          revoked_at: string | null
+          snapshot: Json
+          status: string
+          updated_at: string
+          variant_id: string | null
+          version: number
+        }
+        Insert: {
+          care_instructions?: string | null
+          certifications?: string[] | null
+          composition?: string | null
+          created_at?: string
+          hash?: string | null
+          id?: string
+          origin?: string | null
+          owner_id: string
+          product_id: string
+          published_at?: string | null
+          repairability_score?: number | null
+          revoked_at?: string | null
+          snapshot?: Json
+          status?: string
+          updated_at?: string
+          variant_id?: string | null
+          version?: number
+        }
+        Update: {
+          care_instructions?: string | null
+          certifications?: string[] | null
+          composition?: string | null
+          created_at?: string
+          hash?: string | null
+          id?: string
+          origin?: string | null
+          owner_id?: string
+          product_id?: string
+          published_at?: string | null
+          repairability_score?: number | null
+          revoked_at?: string | null
+          snapshot?: Json
+          status?: string
+          updated_at?: string
+          variant_id?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dpp_records_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dpp_records_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dpp_views: {
+        Row: {
+          dpp_record_id: string
+          id: string
+          ip_hash: string | null
+          product_id: string | null
+          referrer: string | null
+          user_agent: string | null
+          viewed_at: string
+        }
+        Insert: {
+          dpp_record_id: string
+          id?: string
+          ip_hash?: string | null
+          product_id?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          dpp_record_id?: string
+          id?: string
+          ip_hash?: string | null
+          product_id?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dpp_views_dpp_record_id_fkey"
+            columns: ["dpp_record_id"]
+            isOneToOne: false
+            referencedRelation: "dpp_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dpp_views_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_inventory_mirror: {
         Row: {
           balance: number
