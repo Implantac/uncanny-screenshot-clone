@@ -144,7 +144,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação.", icon: Cpu, group: "Plataforma" },
   { slug: "security-center", path: "/security-center", title: "Segurança", short: "MFA, LGPD, backup", description: "MFA TOTP, política de senhas, criptografia e backups.", icon: Lock, group: "Plataforma" },
   { slug: "audit", path: "/audit", title: "Auditoria & LGPD", short: "Logs e rastreabilidade", description: "Eventos auditáveis com filtro por entidade/ação.", icon: ScrollText, group: "Plataforma" },
-  { slug: "data-lake", path: "/data-lake", title: "Data Lake", short: "Camada unificada", description: "Visão consolidada de todos os domínios.", icon: Database, group: "Plataforma" },
+  { slug: "data-lake", path: "/data-lake", title: "Data Lake", short: "Camada unificada", description: "Visão consolidada de todos os domínios.", icon: Database, group: "Plataforma", hidden: true },
   { slug: "equipe", path: "/equipe", title: "Equipe & Permissões", short: "Usuários e papéis", description: "Gerencie usuários e atribua papéis (admin).", icon: Users, group: "Plataforma" },
 ];
 
