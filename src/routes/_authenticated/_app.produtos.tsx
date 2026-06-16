@@ -24,6 +24,9 @@ export const Route = createFileRoute("/_authenticated/_app/produtos")({
   validateSearch: zodValidator(
     z.object({
       q: fallback(z.string().trim().max(80), "").default(""),
+      prefillName: fallback(z.string().trim().max(120).optional(), undefined),
+      prefillCategory: fallback(z.string().trim().max(60).optional(), undefined),
+      prefillColors: fallback(z.string().trim().max(300).optional(), undefined),
     }),
   ),
   head: () => ({
@@ -34,6 +37,9 @@ export const Route = createFileRoute("/_authenticated/_app/produtos")({
   }),
   component: ProdutosPage,
 });
+
+type Prefill = { name?: string; category?: string; colors?: string };
+
 
 type Product = {
   id: string;
