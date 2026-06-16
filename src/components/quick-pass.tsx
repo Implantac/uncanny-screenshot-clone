@@ -26,6 +26,22 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
   const [gridSel, setGridSel] = useState<Record<string, number>>({});
   const [supplierId, setSupplierId] = useState<string>("");
 
+  // Fornecedores ativos do owner (para select rápido)
+  const suppliersQ = useQuery({
+    queryKey: ["suppliers-quick", ownerId],
+    enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("suppliers")
+        .select("id, name")
+        .eq("owner_id", ownerId)
+        .order("name")
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   // Pacotes da OP (carrega só quando popover abre na aba pacote)
   const packagesQ = useQuery({
     queryKey: ["op-packages", orderId],
