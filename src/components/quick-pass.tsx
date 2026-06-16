@@ -129,6 +129,7 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
       const kind = qty < remaining ? "parcial" : "integral";
       const { error } = await supabase.from("service_orders").insert({
         owner_id: ownerId,
+        created_by,
         production_order_id: orderId,
         code: baseCode,
         kind,
