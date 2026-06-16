@@ -63,6 +63,12 @@ function DayProductionPage() {
         </div>
       </header>
 
+      <AICoordinatorPanel
+        persona="pcp"
+        title={`Coordenador de PCP — foco em ${stage}`}
+        question={`Olhando as OPs ativas em ${stage}, quais 3 devo priorizar agora e por quê (atraso, score, gargalo)?`}
+      />
+
       <div className="glass rounded-2xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
