@@ -392,6 +392,15 @@ function FichaTecnicaPage() {
                   </Button>
                   <Button
                     variant="outline"
+                    onClick={() => newVersion.mutate(selected)}
+                    disabled={newVersion.isPending}
+                    className="gap-2"
+                    title={`Cria ${bumpVersion(selected.version)} a partir desta ficha`}
+                  >
+                    <Copy className="size-4" /> Nova versão ({bumpVersion(selected.version)})
+                  </Button>
+                  <Button
+                    variant="outline"
                     onClick={() => del.mutate(selected.id)}
                     className="gap-2 text-destructive hover:text-destructive"
                   >
