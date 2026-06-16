@@ -272,26 +272,59 @@ function ColecoesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tech_sheets")
-        .select("product_id, status");
+        .select("id, product_id, status");
       if (error) throw error;
-      return (data ?? []) as Array<{ product_id: string | null; status: string | null }>;
+      return (data ?? []) as Array<{ id: string; product_id: string | null; status: string | null }>;
+    },
+  });
+
+  const { data: bom = [] } = useQuery({
+    queryKey: ["collections-bom"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tech_sheet_materials")
+        .select("tech_sheet_id, inventory_item_id, inventory_items(balance)");
+      if (error) throw error;
+      return (data ?? []) as Array<{ tech_sheet_id: string; inventory_item_id: string | null; inventory_items: { balance: number | null } | null }>;
     },
   });
 
   const devReadinessByCollection = useMemo(() => {
-    const approved = new Set(
-      techSheets.filter((t) => t.status === "aprovada" && t.product_id).map((t) => t.product_id as string),
-    );
-    const map: Record<string, { total: number; ready: number; pct: number }> = {};
+    const approvedSheets = techSheets.filter((t) => t.status === "aprovada" && t.product_id);
+    const sheetsByProduct = new Map<string, string[]>();
+    approvedSheets.forEach((t) => {
+      const arr = sheetsByProduct.get(t.product_id!) ?? [];
+      arr.push(t.id);
+      sheetsByProduct.set(t.product_id!, arr);
+    });
+    const matsBySheet = new Map<string, typeof bom>();
+    bom.forEach((m) => {
+      const arr = matsBySheet.get(m.tech_sheet_id) ?? [];
+      arr.push(m);
+      matsBySheet.set(m.tech_sheet_id, arr);
+    });
+    const productMaterialsOk = (pid: string) => {
+      const sheets = sheetsByProduct.get(pid);
+      if (!sheets?.length) return false;
+      return sheets.some((sid) => {
+        const mats = matsBySheet.get(sid) ?? [];
+        if (mats.length === 0) return true;
+        return mats.every((m) => m.inventory_item_id && Number(m.inventory_items?.balance ?? 0) > 0);
+      });
+    };
+    const map: Record<string, { total: number; sheetOk: number; matOk: number; pct: number }> = {};
     products.forEach((p) => {
       if (!p.collection_id) return;
-      const a = (map[p.collection_id] ??= { total: 0, ready: 0, pct: 0 });
+      const a = (map[p.collection_id] ??= { total: 0, sheetOk: 0, matOk: 0, pct: 0 });
       a.total += 1;
-      if (approved.has(p.id)) a.ready += 1;
+      const hasSheet = sheetsByProduct.has(p.id);
+      if (hasSheet) a.sheetOk += 1;
+      if (hasSheet && productMaterialsOk(p.id)) a.matOk += 1;
     });
-    Object.values(map).forEach((a) => { a.pct = a.total > 0 ? Math.round((a.ready / a.total) * 100) : 0; });
+    Object.values(map).forEach((a) => { a.pct = a.total > 0 ? Math.round((a.matOk / a.total) * 100) : 0; });
     return map;
-  }, [techSheets, products]);
+  }, [techSheets, bom, products]);
+
 
 
 
@@ -692,9 +725,11 @@ function ColecoesPage() {
                           </div>
                           <Progress value={d.pct} className="h-2" />
                           <div className="text-xs text-muted-foreground mt-2">
-                            {d.ready} de {d.total} produtos com ficha técnica aprovada
-                            {!ok && ` · faltam ${d.total - d.ready}`}
+                            {d.matOk} de {d.total} produtos com ficha aprovada <span className="opacity-60">e materiais em estoque</span>
+                            {!ok && ` · faltam ${d.total - d.matOk}`}
+                            {d.sheetOk > d.matOk && ` (${d.sheetOk - d.matOk} sem material)`}
                           </div>
+
                         </div>
                       );
                     })()}
