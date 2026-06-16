@@ -679,6 +679,107 @@ export type Database = {
         }
         Relationships: []
       }
+      fit_session_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          fit_session_id: string
+          id: string
+          image_url: string | null
+          owner_id: string
+          pom_label: string | null
+          resolved: boolean
+          severity: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          fit_session_id: string
+          id?: string
+          image_url?: string | null
+          owner_id: string
+          pom_label?: string | null
+          resolved?: boolean
+          severity?: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          fit_session_id?: string
+          id?: string
+          image_url?: string | null
+          owner_id?: string
+          pom_label?: string | null
+          resolved?: boolean
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fit_session_comments_fit_session_id_fkey"
+            columns: ["fit_session_id"]
+            isOneToOne: false
+            referencedRelation: "fit_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fit_sessions: {
+        Row: {
+          created_at: string
+          fit_model: string | null
+          id: string
+          iteration: number
+          notes: string | null
+          owner_id: string
+          product_id: string | null
+          prototype_id: string | null
+          session_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fit_model?: string | null
+          id?: string
+          iteration?: number
+          notes?: string | null
+          owner_id: string
+          product_id?: string | null
+          prototype_id?: string | null
+          session_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fit_model?: string | null
+          id?: string
+          iteration?: number
+          notes?: string | null
+          owner_id?: string
+          product_id?: string | null
+          prototype_id?: string | null
+          session_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fit_sessions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fit_sessions_prototype_id_fkey"
+            columns: ["prototype_id"]
+            isOneToOne: false
+            referencedRelation: "prototypes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       influencers: {
         Row: {
           cidade: string | null
@@ -849,6 +950,71 @@ export type Database = {
         }
         Relationships: []
       }
+      material_library: {
+        Row: {
+          active: boolean
+          attributes: Json | null
+          code: string
+          color_hex: string | null
+          composition: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          kind: string
+          name: string
+          owner_id: string
+          preferred_supplier_id: string | null
+          reference_cost: number | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          attributes?: Json | null
+          code: string
+          color_hex?: string | null
+          composition?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          kind: string
+          name: string
+          owner_id: string
+          preferred_supplier_id?: string | null
+          reference_cost?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          attributes?: Json | null
+          code?: string
+          color_hex?: string | null
+          composition?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          kind?: string
+          name?: string
+          owner_id?: string
+          preferred_supplier_id?: string | null
+          reference_cost?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_library_preferred_supplier_id_fkey"
+            columns: ["preferred_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mobile_devices: {
         Row: {
           active: boolean
@@ -999,6 +1165,106 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "product_size_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_sustainability: {
+        Row: {
+          certifications: string[] | null
+          co2_kg: number | null
+          created_at: string
+          higg_msi_score: number | null
+          id: string
+          notes: string | null
+          organic_pct: number | null
+          owner_id: string
+          product_id: string
+          recycled_pct: number | null
+          score_overall: number | null
+          updated_at: string
+          water_liters: number | null
+        }
+        Insert: {
+          certifications?: string[] | null
+          co2_kg?: number | null
+          created_at?: string
+          higg_msi_score?: number | null
+          id?: string
+          notes?: string | null
+          organic_pct?: number | null
+          owner_id: string
+          product_id: string
+          recycled_pct?: number | null
+          score_overall?: number | null
+          updated_at?: string
+          water_liters?: number | null
+        }
+        Update: {
+          certifications?: string[] | null
+          co2_kg?: number | null
+          created_at?: string
+          higg_msi_score?: number | null
+          id?: string
+          notes?: string | null
+          organic_pct?: number | null
+          owner_id?: string
+          product_id?: string
+          recycled_pct?: number | null
+          score_overall?: number | null
+          updated_at?: string
+          water_liters?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_sustainability_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_target_costs: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          product_id: string
+          target_cost: number
+          target_margin_pct: number
+          target_retail_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          product_id: string
+          target_cost?: number
+          target_margin_pct?: number
+          target_retail_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          product_id?: string
+          target_cost?: number
+          target_margin_pct?: number
+          target_retail_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_target_costs_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
@@ -1665,6 +1931,125 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      rfq_quotes: {
+        Row: {
+          awarded: boolean
+          created_at: string
+          id: string
+          lead_time_days: number | null
+          moq: number | null
+          notes: string | null
+          owner_id: string
+          payment_terms: string | null
+          rfq_id: string
+          supplier_id: string | null
+          supplier_name: string | null
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          awarded?: boolean
+          created_at?: string
+          id?: string
+          lead_time_days?: number | null
+          moq?: number | null
+          notes?: string | null
+          owner_id: string
+          payment_terms?: string | null
+          rfq_id: string
+          supplier_id?: string | null
+          supplier_name?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          awarded?: boolean
+          created_at?: string
+          id?: string
+          lead_time_days?: number | null
+          moq?: number | null
+          notes?: string | null
+          owner_id?: string
+          payment_terms?: string | null
+          rfq_id?: string
+          supplier_id?: string | null
+          supplier_name?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfq_quotes_rfq_id_fkey"
+            columns: ["rfq_id"]
+            isOneToOne: false
+            referencedRelation: "rfq_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_quotes_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfq_requests: {
+        Row: {
+          awarded_quote_id: string | null
+          code: string
+          created_at: string
+          id: string
+          material_id: string | null
+          needed_by: string | null
+          notes: string | null
+          owner_id: string
+          quantity: number
+          status: string
+          title: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          awarded_quote_id?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          material_id?: string | null
+          needed_by?: string | null
+          notes?: string | null
+          owner_id: string
+          quantity?: number
+          status?: string
+          title: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          awarded_quote_id?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          material_id?: string | null
+          needed_by?: string | null
+          notes?: string | null
+          owner_id?: string
+          quantity?: number
+          status?: string
+          title?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfq_requests_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "material_library"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sales: {
         Row: {
