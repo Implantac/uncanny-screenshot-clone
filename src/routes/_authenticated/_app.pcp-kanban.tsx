@@ -6,6 +6,7 @@ import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History } from "lucide
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
+import { QuickPassButton } from "@/components/quick-pass";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
@@ -217,13 +218,23 @@ function PcpKanban() {
                           {STAGES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
                         </select>
                         {nextStage && (
-                          <button
-                            onClick={() => move(o.id, nextStage.key)}
-                            className="text-[10px] inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary text-primary-foreground hover:opacity-90"
-                            title={`Avançar para ${nextStage.label}`}
-                          >
-                            <ArrowRight className="size-3" />
-                          </button>
+                          <>
+                            <QuickPassButton
+                              orderId={o.id}
+                              orderCode={o.code}
+                              ownerId={o.owner_id}
+                              fromStage={col.key}
+                              toStage={nextStage.key}
+                              remaining={Math.max(1, o.quantity - Math.floor((o.quantity * o.progress) / 100))}
+                            />
+                            <button
+                              onClick={() => move(o.id, nextStage.key)}
+                              className="text-[10px] inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary text-primary-foreground hover:opacity-90"
+                              title={`Avançar tudo para ${nextStage.label}`}
+                            >
+                              <ArrowRight className="size-3" />
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
