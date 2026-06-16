@@ -127,6 +127,43 @@ function TwinFactory() {
         <Stat label="Gargalo" value={bottleneck?.label ?? "—"} tone="primary" />
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><Activity className="size-4" /> Produção</div>
+          <div className="mt-2 flex items-baseline gap-3">
+            <div>
+              <div className="text-2xl font-semibold">{intel.qtyToday.toLocaleString("pt-BR")}</div>
+              <div className="text-[11px] text-muted-foreground">peças hoje · {intel.passCountToday} passagens</div>
+            </div>
+            <div className="ml-auto text-right">
+              <div className="text-sm font-medium flex items-center gap-1 justify-end"><TrendingUp className="size-3" />{intel.qtyWeek.toLocaleString("pt-BR")}</div>
+              <div className="text-[11px] text-muted-foreground">últimos 7 dias</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><Gauge className="size-4" /> Eficiência (lotes ativos)</div>
+          <div className="mt-2 text-2xl font-semibold">{intel.efficiency}%</div>
+          <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+            <div className={`h-full ${intel.efficiency >= 80 ? "bg-success" : intel.efficiency >= 50 ? "bg-warning" : "bg-destructive"}`} style={{ width: `${intel.efficiency}%` }} />
+          </div>
+        </div>
+
+        <div className={`rounded-xl border p-4 ${intel.stalled.length > 0 ? "border-warning/50 bg-warning/5" : "border-border bg-card"}`}>
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><Pause className="size-4" /> Setores parados (≥48h)</div>
+          {intel.stalled.length === 0 ? (
+            <div className="mt-2 text-sm text-muted-foreground">Nenhum setor parado.</div>
+          ) : (
+            <ul className="mt-2 space-y-1 text-sm">
+              {intel.stalled.slice(0, 4).map((s) => (
+                <li key={s.stage} className="flex justify-between"><span>{s.stage} <span className="text-xs text-muted-foreground">({s.count} OPs)</span></span><span className="font-semibold text-warning">{s.hoursIdle}h</span></li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
       {batches.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="text-sm font-medium mb-3 flex items-center gap-2"><Boxes className="size-4 text-primary" />Lotes ativos</div>
