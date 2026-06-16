@@ -181,9 +181,10 @@ function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion
           <tr>
             <th className="text-left px-3 py-2 w-16">Score</th>
             <th className="text-left px-3 py-2">SKU · Produto</th>
+            <th className="text-left px-3 py-2">Veredito</th>
             <th className="text-right px-3 py-2">Estoque</th>
             <th className="text-right px-3 py-2">WIP</th>
-            <th className="text-right px-3 py-2">Cobertura</th>
+            <th className="text-right px-3 py-2">Stockout</th>
             <th className="text-right px-3 py-2">Velocidade</th>
             {!hideSuggestion && <th className="text-right px-3 py-2">Sugestão</th>}
             <th className="text-left px-3 py-2">Motivos</th>
@@ -192,7 +193,7 @@ function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion
         </thead>
         <tbody>
           {items.map((i) => (
-            <tr key={i.id} className="border-t border-border hover:bg-muted/20">
+            <tr key={i.id} className="border-t border-border hover:bg-muted/20 align-top">
               <td className="px-3 py-2">
                 <ScoreBadge score={i.score} />
               </td>
@@ -200,11 +201,15 @@ function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion
                 <div className="font-mono text-xs text-muted-foreground">{i.sku}</div>
                 <div className="truncate max-w-[220px]">{i.name}</div>
               </td>
+              <td className="px-3 py-2 max-w-[220px]">
+                <VerdictBadge verdict={i.verdict} label={i.verdictLabel} />
+                <div className="text-[10px] text-muted-foreground mt-1 leading-snug">{i.verdictReason}</div>
+              </td>
               <td className="px-3 py-2 text-right tabular-nums">{i.stock}</td>
               <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{i.wip || "—"}</td>
               <td className="px-3 py-2 text-right tabular-nums">
-                <span className={i.daysCover < 14 ? "text-destructive" : i.daysCover > 120 ? "text-warning" : ""}>
-                  {i.daysCover >= 999 ? "—" : `${Math.round(i.daysCover)}d`}
+                <span className={i.daysToStockout < 14 ? "text-destructive" : i.daysToStockout > 120 ? "text-warning" : ""}>
+                  {i.daysToStockout >= 999 ? "—" : `${Math.round(i.daysToStockout)}d`}
                 </span>
               </td>
               <td className="px-3 py-2 text-right tabular-nums">{i.velocity.toFixed(1)}/d</td>
@@ -231,6 +236,20 @@ function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion
     </div>
   );
 }
+
+function VerdictBadge({ verdict, label }: { verdict: PriorityResult["verdict"]; label: string }) {
+  const tone =
+    verdict === "produzir-ja" ? "bg-destructive/15 text-destructive border-destructive/30"
+    : verdict === "programar" ? "bg-primary/10 text-primary border-primary/30"
+    : verdict === "monitorar" ? "bg-warning/15 text-warning border-warning/30"
+    : "bg-muted text-muted-foreground border-border";
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-medium ${tone}`}>
+      {label}
+    </span>
+  );
+}
+
 
 function ScoreBadge({ score }: { score: number }) {
   const tone =
