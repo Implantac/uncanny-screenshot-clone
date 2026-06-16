@@ -241,12 +241,15 @@ function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion
               </td>
               {!hideSuggestion && (
                 <td className="px-3 py-2 text-right">
-                  <Link
-                    to="/pcp-kanban"
-                    className="text-[11px] px-2 py-1 rounded bg-primary text-primary-foreground hover:opacity-90 inline-flex items-center gap-1"
+                  <button
+                    type="button"
+                    disabled={mutation.isPending || i.suggestion <= 0}
+                    onClick={() => mutation.mutate(i)}
+                    className="text-[11px] px-2 py-1 rounded bg-primary text-primary-foreground hover:opacity-90 inline-flex items-center gap-1 disabled:opacity-50"
                   >
-                    <Sparkles className="size-3" /> Gerar OP
-                  </Link>
+                    {pendingId === i.id ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+                    Gerar OP
+                  </button>
                 </td>
               )}
             </tr>
