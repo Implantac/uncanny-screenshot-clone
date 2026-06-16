@@ -3,9 +3,23 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MapPin, Package, Brain, Loader2, Radio, Download } from "lucide-react";
+import { Sparkles, MapPin, Package, Brain, Loader2, Radio, Download, TrendingUp, TrendingDown, Repeat, XCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList, PieChart, Pie, Legend } from "recharts";
 import { Markdown } from "@/components/markdown";
+
+type Verdict = "repetir" | "apostar" | "avaliar" | "abandonar";
+const VERDICT_META: Record<Verdict, { label: string; cls: string; icon: typeof Repeat; reason: (m: number, share: number) => string }> = {
+  repetir:   { label: "Repetir",      cls: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30", icon: Repeat,        reason: (m, s) => `Campeão: ${s.toFixed(1)}% da receita, momentum +${(m * 100).toFixed(0)}%` },
+  apostar:   { label: "Apostar +",    cls: "bg-primary/15 text-primary border-primary/30",             icon: TrendingUp,    reason: (m) => `Em alta: vendas recentes +${(m * 100).toFixed(0)}% vs período anterior` },
+  avaliar:   { label: "Avaliar",      cls: "bg-amber-500/15 text-amber-600 border-amber-500/30",       icon: TrendingDown,  reason: (m) => `Estável/em queda leve (${(m * 100).toFixed(0)}%) — testar campanha antes de repor` },
+  abandonar: { label: "Abandonar",    cls: "bg-destructive/15 text-destructive border-destructive/30", icon: XCircle,       reason: (m) => `Queda forte (${(m * 100).toFixed(0)}%) e baixa relevância — não repor` },
+};
+function classify(momentum: number, share: number): Verdict {
+  if (share >= 8 && momentum >= 0) return "repetir";
+  if (momentum >= 0.2) return "apostar";
+  if (momentum <= -0.4 && share < 3) return "abandonar";
+  return "avaliar";
+}
 import { recommendStrategy } from "@/lib/marketing-ai.functions";
 import { exportToPdf } from "@/lib/pdf";
 import { toast } from "sonner";
@@ -55,6 +69,30 @@ export function MarketingIntelligence() {
     });
     return Array.from(m.values()).sort((a, b) => b.revenue - a.revenue).slice(0, 8);
   }, [sales]);
+
+  const productVerdicts = useMemo(() => {
+    const totalRevenue = sales.reduce((a, b) => a + Number(b.total), 0) || 1;
+    const mid = Date.now() - (days / 2) * 86400_000;
+    const m = new Map<string, { name: string; revenue: number; recent: number; older: number; units: number }>();
+    sales.forEach((s) => {
+      const name = s.products?.name ?? "Sem produto";
+      const cur = m.get(name) ?? { name, revenue: 0, recent: 0, older: 0, units: 0 };
+      const v = Number(s.total);
+      cur.revenue += v;
+      cur.units += s.quantity;
+      if (new Date(s.sold_at).getTime() >= mid) cur.recent += v; else cur.older += v;
+      m.set(name, cur);
+    });
+    return Array.from(m.values())
+      .map((p) => {
+        const momentum = p.older > 0 ? (p.recent - p.older) / p.older : (p.recent > 0 ? 1 : 0);
+        const share = (p.revenue / totalRevenue) * 100;
+        const verdict = classify(momentum, share);
+        return { ...p, momentum, share, verdict };
+      })
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 12);
+  }, [sales, days]);
 
   const regionsForSelected = useMemo(() => {
     const filtered = selectedProduct
@@ -160,6 +198,49 @@ export function MarketingIntelligence() {
         <span className="text-[11px] text-muted-foreground ml-2">
           {sales.length.toLocaleString("pt-BR")} vendas analisadas
         </span>
+      </div>
+
+      <div className="glass rounded-xl p-5">
+        <div className="text-sm font-semibold inline-flex items-center gap-1.5 mb-1">
+          <Brain className="size-4 text-primary" />
+          Veredito por produto
+        </div>
+        <div className="text-[11px] text-muted-foreground mb-4">
+          O que repetir, em que apostar mais e o que parar de repor · baseado em receita + momentum dos últimos {days}d
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {productVerdicts.map((p) => {
+            const meta = VERDICT_META[p.verdict];
+            const Icon = meta.icon;
+            const active = selectedProduct === p.name;
+            return (
+              <button
+                key={p.name}
+                onClick={() => setSelectedProduct(active ? null : p.name)}
+                className={`text-left rounded-lg border p-3 transition-all hover:border-primary/50 ${
+                  active ? "border-primary bg-primary/5" : "border-border bg-card/40"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="text-xs font-medium truncate flex-1">{p.name}</div>
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border inline-flex items-center gap-1 shrink-0 ${meta.cls}`}>
+                    <Icon className="size-3" /> {meta.label}
+                  </span>
+                </div>
+                <div className="text-[10px] text-muted-foreground leading-tight mb-1.5">
+                  {meta.reason(p.momentum, p.share)}
+                </div>
+                <div className="flex items-center gap-3 text-[10px] tabular-nums">
+                  <span className="text-muted-foreground">{brl(p.revenue)}</span>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="text-muted-foreground">{p.units}u</span>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="text-muted-foreground">{p.share.toFixed(1)}% mix</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
