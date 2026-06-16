@@ -1,28 +1,53 @@
 import { useQuery } from "@tanstack/react-query";
-import { Bell, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
+import { Bell, AlertTriangle, Clock, CheckCircle2, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "@tanstack/react-router";
 import { useRealtime } from "@/hooks/use-realtime";
+import { useAuth } from "@/hooks/use-auth";
 
 export function NotificationsBell() {
+  const { user } = useAuth();
   const { data } = useQuery({
-    queryKey: ["notifications"],
+    queryKey: ["notifications", user?.id ?? null],
     refetchInterval: 60_000,
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
-      const [{ data: inv }, { data: ops }] = await Promise.all([
+      const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+      const [{ data: inv }, { data: ops }, { data: pComments }, { data: poComments }] = await Promise.all([
         supabase.from("inventory_items").select("id, name, balance, minimum, unit"),
         supabase.from("production_orders").select("id, code, due_date, status, progress").neq("status", "concluida").lte("due_date", today),
+        supabase
+          .from("prototype_comments")
+          .select("id, prototype_id, body, created_at, author_id, prototypes(code)")
+          .gte("created_at", since)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase
+          .from("production_order_comments")
+          .select("id, production_order_id, body, created_at, author_id, production_orders(code)")
+          .gte("created_at", since)
+          .order("created_at", { ascending: false })
+          .limit(10),
       ]);
       const critical = (inv ?? []).filter((i) => Number(i.balance ?? 0) <= Number(i.minimum ?? 0));
-      return { critical, overdue: ops ?? [] };
+      const comments = [
+        ...((pComments ?? []) as any[])
+          .filter((c) => c.author_id !== user?.id)
+          .map((c) => ({ kind: "proto" as const, id: c.id, refCode: c.prototypes?.code ?? "", body: c.body, when: c.created_at })),
+        ...((poComments ?? []) as any[])
+          .filter((c) => c.author_id !== user?.id)
+          .map((c) => ({ kind: "op" as const, id: c.id, refCode: c.production_orders?.code ?? "", body: c.body, when: c.created_at })),
+      ].sort((a, b) => b.when.localeCompare(a.when)).slice(0, 8);
+      return { critical, overdue: ops ?? [], comments };
     },
   });
   useRealtime("inventory_items", ["notifications"]);
   useRealtime("production_orders", ["notifications"]);
+  useRealtime("prototype_comments", ["notifications"]);
+  useRealtime("production_order_comments", ["notifications"]);
 
-  const total = (data?.critical.length ?? 0) + (data?.overdue.length ?? 0);
+  const total = (data?.critical.length ?? 0) + (data?.overdue.length ?? 0) + (data?.comments.length ?? 0);
 
   return (
     <DropdownMenu>
@@ -63,6 +88,21 @@ export function NotificationsBell() {
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium truncate">OP {o.code} atrasada</div>
                 <div className="text-xs text-muted-foreground">Prazo {o.due_date} · {o.progress ?? 0}%</div>
+              </div>
+            </Link>
+          ))}
+          {data?.comments.map((c) => (
+            <Link
+              key={`cm-${c.id}`}
+              to={c.kind === "proto" ? "/prototipos" : "/pcp-kanban"}
+              className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0"
+            >
+              <MessageSquare className="size-4 text-primary shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium truncate">
+                  {c.kind === "proto" ? "Protótipo" : "OP"} {c.refCode} · novo comentário
+                </div>
+                <div className="text-xs text-muted-foreground truncate">{c.body}</div>
               </div>
             </Link>
           ))}
