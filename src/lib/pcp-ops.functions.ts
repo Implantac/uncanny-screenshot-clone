@@ -68,7 +68,7 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
       supabase.from("v_supplier_wip").select("*").eq("owner_id", userId),
       supabase
         .from("service_orders")
-        .select("id, code, supplier_id, production_order_id, quantity, qty_received, sent_at, due_at, status, from_stage, to_stage, variant_id, package_id, suppliers(name), production_orders(code, batch_code), product_variants(sku, color, size), production_packages(code)")
+        .select("id, code, supplier_id, production_order_id, quantity, qty_received, sent_at, due_at, status, from_stage, to_stage, line_type, variant_id, package_id, suppliers(name), production_orders(code, batch_code), product_variants(sku, color, size), production_packages(code)")
         .eq("owner_id", userId)
         .in("status", ["enviada", "em_andamento"])
         .order("sent_at", { ascending: true, nullsFirst: false }),
@@ -84,6 +84,7 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
       const sid = o.supplier_id!;
       if (!suppliersById[sid]) continue;
       suppliersById[sid].supplier_name = (o as any).suppliers?.name ?? null;
+      suppliersById[sid].second_line_count = (suppliersById[sid].second_line_count ?? 0) + ((o as any).line_type === "segunda_linha" ? 1 : 0);
       suppliersById[sid].orders.push(o);
     }
     return Object.values(suppliersById).sort((a: any, b: any) => b.pieces_at_supplier - a.pieces_at_supplier);
