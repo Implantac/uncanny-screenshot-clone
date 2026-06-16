@@ -310,7 +310,7 @@ function Prototipos() {
                     </td>
                   </tr>
                 ))}
-                {filtered.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{items.length === 0 ? "Nenhum protótipo ainda" : "Nenhum resultado para os filtros"}</td></tr>}
+                {filtered.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">{items.length === 0 ? "Nenhum protótipo ainda" : "Nenhum resultado para os filtros"}</td></tr>}
               </tbody>
             </table>
           </div>
