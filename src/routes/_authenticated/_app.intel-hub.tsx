@@ -7,6 +7,7 @@ import {
   ArrowRight, TrendingUp, PackageSearch,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
+import { AskFashionAI } from "@/components/ask-fashion-ai";
 
 export const Route = createFileRoute("/_authenticated/_app/intel-hub")({
   head: () => ({
