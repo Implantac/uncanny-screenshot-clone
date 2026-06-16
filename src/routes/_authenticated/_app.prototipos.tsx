@@ -335,6 +335,16 @@ function Prototipos() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" onClick={() => exportSpec(p)} title="Exportar spec"><Download className="size-4" /></Button>
+                        {p.stage === "aprovado" && p.product_id && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Criar ficha técnica deste protótipo"
+                            onClick={() => navigate({ to: "/ficha-tecnica", search: { productId: p.product_id! } })}
+                          >
+                            <FileText className="size-4 text-emerald-500" />
+                          </Button>
+                        )}
                         <PrototypeTimelineButton prototypeId={p.id} prototypeCode={p.code} />
                         <PrototypeAdjustmentsButton prototypeId={p.id} prototypeCode={p.code} defaultSector={p.current_sector ?? null} needsAdjustment={p.needs_adjustment} />
                         <PrototypeCommentsButton prototypeId={p.id} prototypeCode={p.code} />
