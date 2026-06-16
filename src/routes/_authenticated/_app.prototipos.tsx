@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Scissors, Plus, Trash2, Pencil, Search, X, Download, GitCompare, FileText } from "lucide-react";
+import { Scissors, Plus, Trash2, Pencil, Search, X, Download, GitCompare, FileText, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -19,6 +19,8 @@ import { PrototypeCommentsButton } from "@/components/prototype-comments";
 import { PrototypeAdjustmentsButton, SECTORS, type AdjustmentSector } from "@/components/prototype-adjustments";
 import { PrototypeTimelineButton } from "@/components/prototype-timeline";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/_authenticated/_app/prototipos")({
   validateSearch: zodValidator(
     z.object({
@@ -27,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/_app/prototipos")({
         z.enum(["all", "solicitado", "em_confeccao", "em_prova", "aprovado", "reprovado"]),
         "all",
       ).default("all"),
+      productId: fallback(z.string().regex(UUID_RE).optional(), undefined),
     }),
   ),
   head: () => ({ meta: [{ title: "Protótipos · USE MODA OS" }, { name: "description", content: "Ciclo de protótipos, provas e aprovações." }] }),
@@ -59,13 +62,21 @@ function Prototipos() {
   useRealtime("prototypes", ["prototypes"]);
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { q, stage: stageFilter } = search;
+  const { q, stage: stageFilter, productId: deepProductId } = search;
   const setQ = (v: string) => navigate({ search: (p: typeof search) => ({ ...p, q: v }), replace: true });
   const setStageFilter = (v: string) =>
     navigate({ search: (p: typeof search) => ({ ...p, stage: v as typeof search.stage }), replace: true });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prototype | null>(null);
   const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "", current_sector: "" as AdjustmentSector | "" });
+
+  useEffect(() => {
+    if (!deepProductId) return;
+    setEditing(null);
+    setForm((f) => ({ ...f, product_id: deepProductId }));
+    setOpen(true);
+    navigate({ search: (p: typeof search) => ({ ...p, productId: undefined }), replace: true });
+  }, [deepProductId, navigate, search]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const toggleSel = (id: string) =>
@@ -137,6 +148,14 @@ function Prototipos() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const approve = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("prototypes").update({ stage: "aprovado", needs_adjustment: false }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["prototypes"] }); toast.success("Protótipo aprovado"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
   function reset() {
     setOpen(false); setEditing(null);
     setForm({ code: "", product_id: "", supplier_id: "", stage: "solicitado", due_date: "", notes: "", current_sector: "" });
@@ -272,6 +291,16 @@ function Prototipos() {
                         )}
                       </button>
                       <div className="flex justify-end gap-1 -mb-1 -mr-1 opacity-70 group-hover:opacity-100 transition">
+                        {(p.stage === "em_prova" || p.stage === "em_confeccao") && !p.needs_adjustment && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Aprovar protótipo"
+                            onClick={(e) => { e.stopPropagation(); approve.mutate(p.id); }}
+                          >
+                            <Check className="size-4 text-emerald-500" />
+                          </Button>
+                        )}
                         {p.stage === "aprovado" && p.product_id && (
                           <Button
                             size="icon"
@@ -335,6 +364,16 @@ function Prototipos() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" onClick={() => exportSpec(p)} title="Exportar spec"><Download className="size-4" /></Button>
+                        {(p.stage === "em_prova" || p.stage === "em_confeccao") && !p.needs_adjustment && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Aprovar protótipo"
+                            onClick={() => approve.mutate(p.id)}
+                          >
+                            <Check className="size-4 text-emerald-500" />
+                          </Button>
+                        )}
                         {p.stage === "aprovado" && p.product_id && (
                           <Button
                             size="icon"

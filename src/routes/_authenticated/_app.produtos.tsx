@@ -1,9 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, ImageIcon, Loader2, Package, Pencil, Plus, Search, Tag, Trash2, Upload } from "lucide-react";
+import { Download, ImageIcon, Loader2, Package, Pencil, Plus, Scissors, Search, Tag, Trash2, Upload } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -384,12 +384,19 @@ function ProductDetail({
             <div key={line} className="rounded-xl border border-border bg-background/30 p-3 text-sm text-muted-foreground">{line}</div>
           ))}
 
-          {canEdit && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              <Button variant="outline" onClick={onEdit} className="gap-2"><Pencil className="size-4" /> Editar</Button>
-              <Button variant="outline" onClick={onDelete} className="gap-2 text-destructive hover:text-destructive"><Trash2 className="size-4" /> Remover</Button>
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button asChild variant="outline" className="gap-2">
+              <Link to="/prototipos" search={{ productId: product.id }}>
+                <Scissors className="size-4" /> Solicitar piloto
+              </Link>
+            </Button>
+            {canEdit && (
+              <>
+                <Button variant="outline" onClick={onEdit} className="gap-2"><Pencil className="size-4" /> Editar</Button>
+                <Button variant="outline" onClick={onDelete} className="gap-2 text-destructive hover:text-destructive"><Trash2 className="size-4" /> Remover</Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
