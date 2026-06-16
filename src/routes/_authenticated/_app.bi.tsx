@@ -187,7 +187,12 @@ function BI() {
         ))}
       </div>
 
-      <Tabs defaultValue="comercial" className="space-y-4">
+      <div className="glass rounded-xl p-3 flex items-center gap-2 border-l-2 border-primary">
+        <Sparkles className="size-4 text-primary" />
+        <span className="text-sm"><span className="font-medium">{personaInfo[persona].title}.</span> <span className="text-muted-foreground">Tab inicial selecionada conforme seu setor.</span></span>
+      </div>
+
+      <Tabs defaultValue={defaultTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="comercial">Comercial</TabsTrigger>
           <TabsTrigger value="dev">Desenvolvimento</TabsTrigger>
