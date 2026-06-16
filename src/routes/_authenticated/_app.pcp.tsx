@@ -29,6 +29,9 @@ const pcpSearchSchema = z.object({
 
 export const Route = createFileRoute("/_authenticated/_app/pcp")({
   validateSearch: zodValidator(pcpSearchSchema),
+  beforeLoad: () => {
+    throw redirect({ to: "/pcp-kanban" });
+  },
   head: () => ({ meta: [{ title: "PCP · USE MODA OS" }, { name: "description", content: "Ordens de produção." }] }),
   component: PCP,
 });
