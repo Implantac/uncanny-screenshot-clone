@@ -482,6 +482,29 @@ function ProductDetail({
 
 
         <div className="glass rounded-xl p-5 space-y-4">
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary font-semibold">
+              <Sparkles className="size-3.5" /> Próximo passo · IA Coordenador Dev
+            </div>
+            <div className="text-base font-semibold">{nextStep.title}</div>
+            <div className="text-xs text-muted-foreground">{nextStep.reason}</div>
+            {nextStep.action === "sketch" && canEdit && (
+              <Button size="sm" disabled={sketchUploading} onClick={() => sketchRef.current?.click()} className="gap-2 mt-1">
+                {sketchUploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} Adicionar croqui
+              </Button>
+            )}
+            {nextStep.action === "prototype" && (
+              <Button asChild size="sm" className="gap-2 mt-1">
+                <Link to="/prototipos" search={{ productId: product.id }}><Scissors className="size-4" /> Ir para protótipos</Link>
+              </Button>
+            )}
+            {nextStep.action === "techsheet" && (
+              <Button asChild size="sm" className="gap-2 mt-1">
+                <Link to="/ficha-tecnica" search={{ productId: product.id }}><Sparkles className="size-4" /> Abrir ficha técnica</Link>
+              </Button>
+            )}
+          </div>
+
           <div>
             <div className="text-sm font-semibold">Leitura comercial</div>
             <div className="text-xs text-muted-foreground mt-1">Resumo rápido para estilo, comercial e pricing.</div>
@@ -508,6 +531,7 @@ function ProductDetail({
             )}
           </div>
         </div>
+
       </div>
 
       <ProductGallery productId={product.id} canEdit={canEdit} />
