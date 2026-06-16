@@ -94,12 +94,17 @@ function PcpKanban() {
     onSettled: () => qc.invalidateQueries({ queryKey: ["pcp-kanban"] }),
   });
 
+  const filtered = useMemo(
+    () => (batchFilter ? orders.filter((o) => (o.batch_code ?? "—") === batchFilter) : orders),
+    [orders, batchFilter],
+  );
+
   const grouped = useMemo(() => {
     const m = new Map<Stage, Order[]>();
     STAGES.forEach((s) => m.set(s.key, []));
-    orders.forEach((o) => m.get(o.stage)?.push(o));
+    filtered.forEach((o) => m.get(o.stage)?.push(o));
     return m;
-  }, [orders]);
+  }, [filtered]);
 
   const summary = useMemo(() => {
     const wip = orders.filter((o) => o.stage !== "entregue" && o.stage !== "cad").reduce((s, o) => s + o.quantity, 0);
