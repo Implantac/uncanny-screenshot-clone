@@ -35,10 +35,7 @@ const Input = z.object({
   question: z.string().trim().min(3).max(500),
 });
 
-async function buildContext(
-  supabase: ReturnType<typeof requireSupabaseAuth> extends never ? never : any, // typed in handler
-  persona: Persona,
-): Promise<string> {
+async function buildContext(supabase: any, persona: Persona): Promise<string> {
   const today = new Date();
   const iso30 = new Date(today.getTime() - 30 * 86400000).toISOString();
   const iso7 = new Date(today.getTime() - 7 * 86400000).toISOString();
