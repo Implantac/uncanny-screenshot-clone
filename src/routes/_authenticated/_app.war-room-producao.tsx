@@ -51,7 +51,8 @@ function WarRoomProducao() {
   });
 
   const analysis = useMemo(() => {
-    const orders = data?.orders ?? [];
+    const allOrders = data?.orders ?? [];
+    const orders = productId ? allOrders.filter((o: any) => o.product_id === productId) : allOrders;
     const stages = data?.stages ?? [];
     const now = Date.now();
     const STUCK = 5 * 86400000;
