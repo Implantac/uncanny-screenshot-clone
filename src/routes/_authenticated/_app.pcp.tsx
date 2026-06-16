@@ -656,6 +656,7 @@ function StageHistoryDialog({ order, onClose }: { order: Order | null; onClose: 
 
 type SOKind = "parcial" | "integral";
 type SOStatus = "aberta" | "enviada" | "em_andamento" | "recebida" | "cancelada";
+type SOLineType = "primeira" | "segunda_linha";
 type ServiceOrder = {
   id: string;
   owner_id: string;
@@ -665,6 +666,7 @@ type ServiceOrder = {
   from_stage: string | null;
   to_stage: Stage;
   kind: SOKind;
+  line_type: SOLineType;
   quantity: number;
   qty_received: number;
   status: SOStatus;
@@ -692,7 +694,7 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     code: "", production_order_id: "", supplier_id: "", from_stage: "" as "" | Stage,
-    to_stage: "costura" as Stage, kind: "integral" as SOKind, quantity: 0, due_at: "", notes: "",
+    to_stage: "costura" as Stage, kind: "integral" as SOKind, line_type: "primeira" as SOLineType, quantity: 0, due_at: "", notes: "",
   });
 
   const { data: items = [], isLoading } = useQuery({
@@ -717,6 +719,7 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
         from_stage: form.from_stage || null,
         to_stage: form.to_stage,
         kind: form.kind,
+        line_type: form.line_type,
         quantity: Number(form.quantity) || 0,
         due_at: form.due_at || null,
         notes: form.notes.trim() || null,
@@ -728,7 +731,7 @@ function ServiceOrdersPanel({ orders, suppliers, products, ownerId }: { orders: 
       qc.invalidateQueries({ queryKey: ["service_orders"] });
       toast.success("O.S. criada");
       setOpen(false);
-      setForm({ code: "", production_order_id: "", supplier_id: "", from_stage: "", to_stage: "costura", kind: "integral", quantity: 0, due_at: "", notes: "" });
+      setForm({ code: "", production_order_id: "", supplier_id: "", from_stage: "", to_stage: "costura", kind: "integral", line_type: "primeira", quantity: 0, due_at: "", notes: "" });
     },
     onError: (e: Error) => toast.error(e.message),
   });
