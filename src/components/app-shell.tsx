@@ -29,23 +29,21 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => { setMobileOpen(false); }, [active]);
 
-  // Group → modules (primary + secondary) e qual grupo contém a rota ativa
+  // Group → modules e qual grupo contém a rota ativa
   const grouped = useMemo(() => {
-    const map = new Map<ModuleGroup, { primary: ModuleDef[]; secondary: ModuleDef[]; activeIn: boolean }>();
-    for (const g of MODULE_GROUPS) map.set(g, { primary: [], secondary: [], activeIn: false });
+    const map = new Map<ModuleGroup, { items: ModuleDef[]; activeIn: boolean }>();
+    for (const g of MODULE_GROUPS) map.set(g, { items: [], activeIn: false });
     for (const m of visibleModules) {
       const bucket = map.get(m.group);
       if (!bucket) continue;
-      (isPrimaryModule(m) ? bucket.primary : bucket.secondary).push(m);
+      bucket.items.push(m);
       if (active === m.path) bucket.activeIn = true;
     }
     return map;
   }, [visibleModules, active]);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-  const [expandedMore, setExpandedMore] = useState<Record<string, boolean>>({});
   const toggleGroup = (g: string) => setOpenGroups((s) => ({ ...s, [g]: !(s[g] ?? false) }));
-  const toggleMore = (g: string) => setExpandedMore((s) => ({ ...s, [g]: !s[g] }));
 
   async function handleSignOut() {
     await supabase.auth.signOut();
