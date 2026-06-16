@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ProductTimeline } from "@/components/product-timeline";
+import { ProductGallery } from "@/components/product-gallery";
 
 export const Route = createFileRoute("/_authenticated/_app/produtos")({
   validateSearch: zodValidator(
