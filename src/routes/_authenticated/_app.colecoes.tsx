@@ -559,7 +559,17 @@ function ColecoesPage() {
                         <span>{collection.progress}%</span>
                       </div>
                       <Progress value={collection.progress} className="h-1.5" />
+                      {readinessByCollection[collection.id]?.planned > 0 && (
+                        <>
+                          <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                            <span>Produção (real/plan)</span>
+                            <span className="tabular-nums">{readinessByCollection[collection.id].pct}%</span>
+                          </div>
+                          <Progress value={readinessByCollection[collection.id].pct} className="h-1.5" />
+                        </>
+                      )}
                     </div>
+
                   </button>
                 );
               })}
