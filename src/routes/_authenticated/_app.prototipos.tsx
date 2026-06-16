@@ -148,6 +148,14 @@ function Prototipos() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const approve = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("prototypes").update({ stage: "aprovado", needs_adjustment: false }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["prototypes"] }); toast.success("Protótipo aprovado"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
   function reset() {
     setOpen(false); setEditing(null);
     setForm({ code: "", product_id: "", supplier_id: "", stage: "solicitado", due_date: "", notes: "", current_sector: "" });
