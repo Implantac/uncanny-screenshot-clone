@@ -76,12 +76,15 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
   const create = useMutation({
     mutationFn: async () => {
       const baseCode = `OS-${orderCode}-${Date.now().toString(36).slice(-4).toUpperCase()}`;
+      const { data: u } = await supabase.auth.getUser();
+      const created_by = u.user?.id ?? null;
 
       if (mode === "package") {
         const pkg = (packagesQ.data ?? []).find((p: any) => p.id === packageId);
         if (!pkg) throw new Error("Selecione um pacote");
         const { error } = await supabase.from("service_orders").insert({
           owner_id: ownerId,
+          created_by,
           production_order_id: orderId,
           code: baseCode,
           kind: pkg.qty < remaining ? "parcial" : "integral",
@@ -103,6 +106,7 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
         if (rows.length === 0) throw new Error("Selecione pelo menos uma grade");
         const items = rows.map(([variant_id, quantity], i) => ({
           owner_id: ownerId,
+          created_by,
           production_order_id: orderId,
           code: `${baseCode}-${i + 1}`,
           kind: "parcial" as const,
@@ -125,6 +129,7 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
       const kind = qty < remaining ? "parcial" : "integral";
       const { error } = await supabase.from("service_orders").insert({
         owner_id: ownerId,
+        created_by,
         production_order_id: orderId,
         code: baseCode,
         kind,

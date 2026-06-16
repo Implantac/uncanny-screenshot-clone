@@ -2490,6 +2490,7 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          created_by: string | null
           due_at: string | null
           from_stage: string | null
           id: string
@@ -2512,6 +2513,7 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
+          created_by?: string | null
           due_at?: string | null
           from_stage?: string | null
           id?: string
@@ -2534,6 +2536,7 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
+          created_by?: string | null
           due_at?: string | null
           from_stage?: string | null
           id?: string

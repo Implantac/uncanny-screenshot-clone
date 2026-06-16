@@ -38,6 +38,7 @@ import { Route as AuthenticatedAppPrototiposRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppProfitabilityRouteImport } from './routes/_authenticated/_app.profitability'
 import { Route as AuthenticatedAppProduzirHojeRouteImport } from './routes/_authenticated/_app.produzir-hoje'
 import { Route as AuthenticatedAppProdutosRouteImport } from './routes/_authenticated/_app.produtos'
+import { Route as AuthenticatedAppProdutividadeRouteImport } from './routes/_authenticated/_app.produtividade'
 import { Route as AuthenticatedAppProductSuccessRouteImport } from './routes/_authenticated/_app.product-success'
 import { Route as AuthenticatedAppProductScoreRouteImport } from './routes/_authenticated/_app.product-score'
 import { Route as AuthenticatedAppPilotsRouteImport } from './routes/_authenticated/_app.pilots'
@@ -259,6 +260,12 @@ const AuthenticatedAppProdutosRoute =
   AuthenticatedAppProdutosRouteImport.update({
     id: '/produtos',
     path: '/produtos',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppProdutividadeRoute =
+  AuthenticatedAppProdutividadeRouteImport.update({
+    id: '/produtividade',
+    path: '/produtividade',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppProductSuccessRoute =
@@ -667,6 +674,7 @@ export interface FileRoutesByFullPath {
   '/pilots': typeof AuthenticatedAppPilotsRoute
   '/product-score': typeof AuthenticatedAppProductScoreRoute
   '/product-success': typeof AuthenticatedAppProductSuccessRoute
+  '/produtividade': typeof AuthenticatedAppProdutividadeRoute
   '/produtos': typeof AuthenticatedAppProdutosRoute
   '/produzir-hoje': typeof AuthenticatedAppProduzirHojeRoute
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
@@ -756,6 +764,7 @@ export interface FileRoutesByTo {
   '/pilots': typeof AuthenticatedAppPilotsRoute
   '/product-score': typeof AuthenticatedAppProductScoreRoute
   '/product-success': typeof AuthenticatedAppProductSuccessRoute
+  '/produtividade': typeof AuthenticatedAppProdutividadeRoute
   '/produtos': typeof AuthenticatedAppProdutosRoute
   '/produzir-hoje': typeof AuthenticatedAppProduzirHojeRoute
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
@@ -847,6 +856,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/pilots': typeof AuthenticatedAppPilotsRoute
   '/_authenticated/_app/product-score': typeof AuthenticatedAppProductScoreRoute
   '/_authenticated/_app/product-success': typeof AuthenticatedAppProductSuccessRoute
+  '/_authenticated/_app/produtividade': typeof AuthenticatedAppProdutividadeRoute
   '/_authenticated/_app/produtos': typeof AuthenticatedAppProdutosRoute
   '/_authenticated/_app/produzir-hoje': typeof AuthenticatedAppProduzirHojeRoute
   '/_authenticated/_app/profitability': typeof AuthenticatedAppProfitabilityRoute
@@ -939,6 +949,7 @@ export interface FileRouteTypes {
     | '/pilots'
     | '/product-score'
     | '/product-success'
+    | '/produtividade'
     | '/produtos'
     | '/produzir-hoje'
     | '/profitability'
@@ -1028,6 +1039,7 @@ export interface FileRouteTypes {
     | '/pilots'
     | '/product-score'
     | '/product-success'
+    | '/produtividade'
     | '/produtos'
     | '/produzir-hoje'
     | '/profitability'
@@ -1118,6 +1130,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/pilots'
     | '/_authenticated/_app/product-score'
     | '/_authenticated/_app/product-success'
+    | '/_authenticated/_app/produtividade'
     | '/_authenticated/_app/produtos'
     | '/_authenticated/_app/produzir-hoje'
     | '/_authenticated/_app/profitability'
@@ -1364,6 +1377,13 @@ declare module '@tanstack/react-router' {
       path: '/produtos'
       fullPath: '/produtos'
       preLoaderRoute: typeof AuthenticatedAppProdutosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/produtividade': {
+      id: '/_authenticated/_app/produtividade'
+      path: '/produtividade'
+      fullPath: '/produtividade'
+      preLoaderRoute: typeof AuthenticatedAppProdutividadeRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/product-success': {
@@ -1844,6 +1864,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppPilotsRoute: typeof AuthenticatedAppPilotsRoute
   AuthenticatedAppProductScoreRoute: typeof AuthenticatedAppProductScoreRoute
   AuthenticatedAppProductSuccessRoute: typeof AuthenticatedAppProductSuccessRoute
+  AuthenticatedAppProdutividadeRoute: typeof AuthenticatedAppProdutividadeRoute
   AuthenticatedAppProdutosRoute: typeof AuthenticatedAppProdutosRoute
   AuthenticatedAppProduzirHojeRoute: typeof AuthenticatedAppProduzirHojeRoute
   AuthenticatedAppProfitabilityRoute: typeof AuthenticatedAppProfitabilityRoute
@@ -1928,6 +1949,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppPilotsRoute: AuthenticatedAppPilotsRoute,
   AuthenticatedAppProductScoreRoute: AuthenticatedAppProductScoreRoute,
   AuthenticatedAppProductSuccessRoute: AuthenticatedAppProductSuccessRoute,
+  AuthenticatedAppProdutividadeRoute: AuthenticatedAppProdutividadeRoute,
   AuthenticatedAppProdutosRoute: AuthenticatedAppProdutosRoute,
   AuthenticatedAppProduzirHojeRoute: AuthenticatedAppProduzirHojeRoute,
   AuthenticatedAppProfitabilityRoute: AuthenticatedAppProfitabilityRoute,
