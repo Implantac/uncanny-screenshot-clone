@@ -1,8 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { computePriority } from "@/lib/priority-score";
 
-/** Produção do Dia: OPs ativas em um setor, ordenadas por prioridade e atraso. */
+/** Produção do Dia: OPs ativas em um setor, ordenadas por Score de Prioridade. */
 export const listDayProduction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: { stage: string }) => z.object({ stage: z.string().min(1) }).parse(i))
@@ -10,14 +11,52 @@ export const listDayProduction = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: rows, error } = await supabase
       .from("production_orders")
-      .select("id, code, quantity, priority, due_date, stage, stage_updated_at, batch_code, outsourced, product_id, supplier_id, products(name, sku), suppliers(name)")
+      .select("id, code, quantity, priority, due_date, stage, stage_updated_at, batch_code, outsourced, product_id, supplier_id, products(name, sku, cost_price, sell_price), suppliers(name)")
       .eq("owner_id", userId)
       .eq("stage", data.stage as any)
       .neq("status", "concluida")
       .order("priority", { ascending: false, nullsFirst: false })
       .order("due_date", { ascending: true, nullsFirst: false });
     if (error) throw new Error(error.message);
-    return rows ?? [];
+    const list = rows ?? [];
+
+    const skus = Array.from(new Set(list.map((r: any) => r.products?.sku).filter(Boolean))) as string[];
+    if (skus.length === 0) return list;
+
+    const since30 = new Date(Date.now() - 30 * 86400000).toISOString();
+    const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
+    const since90 = new Date(Date.now() - 90 * 86400000).toISOString();
+
+    const [s30, s7, s90, inv] = await Promise.all([
+      supabase.from("erp_sales_mirror").select("sku, quantity").eq("owner_id", userId).in("sku", skus).gte("sold_at", since30),
+      supabase.from("erp_sales_mirror").select("sku, quantity").eq("owner_id", userId).in("sku", skus).gte("sold_at", since7),
+      supabase.from("erp_sales_mirror").select("sku, quantity").eq("owner_id", userId).in("sku", skus).gte("sold_at", since90),
+      supabase.from("erp_inventory_mirror").select("sku, balance").eq("owner_id", userId).in("sku", skus),
+    ]);
+
+    const sum = (rs: any[] | null | undefined, sku: string) =>
+      (rs ?? []).filter((r: any) => r.sku === sku).reduce((a: number, r: any) => a + Number(r.quantity ?? 0), 0);
+    const stockOf = (sku: string) =>
+      (inv.data ?? []).filter((r: any) => r.sku === sku).reduce((a: number, r: any) => a + Number(r.balance ?? 0), 0);
+
+    const scored = list.map((r: any) => {
+      const sku = r.products?.sku;
+      if (!sku) return { ...r, score: 0, score_reasons: [] };
+      const res = computePriority({
+        sku,
+        sold7: sum(s7.data, sku),
+        sold30: sum(s30.data, sku),
+        sold90: sum(s90.data, sku),
+        stock: stockOf(sku),
+        wip: r.quantity,
+        cost: r.products?.cost_price ?? null,
+        price: r.products?.sell_price ?? null,
+      });
+      return { ...r, score: res.score, score_reasons: res.reasons };
+    });
+
+    scored.sort((a: any, b: any) => (b.score ?? 0) - (a.score ?? 0));
+    return scored;
   });
 
 /** Terceirizados: WIP por fornecedor + detalhamento de OSs abertas. */

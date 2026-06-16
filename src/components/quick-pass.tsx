@@ -64,6 +64,24 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
             <div className="text-[10px] text-muted-foreground">
               {orderCode} · {fromStage} → <strong>{toStage}</strong>
             </div>
+            <div className="flex gap-1">
+              {[
+                { label: "1/4", v: Math.max(1, Math.floor(remaining / 4)) },
+                { label: "Metade", v: Math.max(1, Math.floor(remaining / 2)) },
+                { label: "Tudo", v: remaining },
+              ].map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => setQty(p.v)}
+                  className={`flex-1 text-[10px] py-1 rounded border transition ${
+                    qty === p.v ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted"
+                  }`}
+                >
+                  {p.label} ({p.v})
+                </button>
+              ))}
+            </div>
             <label className="block text-[10px] text-muted-foreground">
               Quantidade ({remaining} restantes)
               <input
