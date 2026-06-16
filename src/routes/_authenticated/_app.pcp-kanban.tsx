@@ -130,6 +130,32 @@ function PcpKanban() {
           <h1 className="text-2xl font-semibold tracking-tight">PCP — Passagem por setores</h1>
           <p className="text-sm text-muted-foreground">Arraste cards entre colunas para programar a passagem entre setores. Prioridade, prazo e tempo no setor visíveis em cada card.</p>
         </div>
+        <div className="flex items-center gap-2">
+          {batchFilter && (
+            <button
+              onClick={() => setBatchFilter(null)}
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border border-border bg-card hover:bg-muted"
+              title="Limpar filtro de lote"
+            >
+              Lote: <span className="font-semibold tabular-nums">{batchFilter}</span>
+              <X className="size-3" />
+            </button>
+          )}
+          <div className="inline-flex rounded-md border border-border bg-card overflow-hidden text-xs">
+            <button
+              onClick={() => setMode("ordens")}
+              className={`px-3 py-1.5 inline-flex items-center gap-1 ${mode === "ordens" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+            >
+              <Factory className="size-3.5" /> Ordens
+            </button>
+            <button
+              onClick={() => { setMode("lotes"); setBatchFilter(null); }}
+              className={`px-3 py-1.5 inline-flex items-center gap-1 ${mode === "lotes" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+            >
+              <Package className="size-3.5" /> Lotes
+            </button>
+          </div>
+        </div>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
