@@ -105,6 +105,21 @@ function WarRoomProducao() {
         </p>
       </div>
 
+      {productId && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-sm">
+          <span>
+            Filtrando por produto: <strong>{analysis.filteredProductName ?? productId}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={() => navigate({ search: { productId: undefined }, replace: true })}
+            className="flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            <X className="size-3" /> limpar filtro
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 glass rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
