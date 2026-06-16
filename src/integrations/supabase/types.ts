@@ -2814,6 +2814,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_sectors: {
+        Row: {
+          created_at: string
+          id: string
+          sector: Database["public"]["Enums"]["app_sector"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sector: Database["public"]["Enums"]["app_sector"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sector?: Database["public"]["Enums"]["app_sector"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -2826,12 +2847,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_sector: {
+        Args: {
+          _sector: Database["public"]["Enums"]["app_sector"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       account_status: "pendente" | "pago" | "atrasado" | "cancelado"
       account_type: "pagar" | "receber"
       ai_agent_status: "ativo" | "pausado" | "erro"
       app_role: "admin" | "gerente" | "designer" | "comprador" | "vendedor"
+      app_sector: "marketing" | "pcp" | "desenvolvimento"
       b2b_order_status:
         | "rascunho"
         | "aprovado"
@@ -3023,6 +3052,7 @@ export const Constants = {
       account_type: ["pagar", "receber"],
       ai_agent_status: ["ativo", "pausado", "erro"],
       app_role: ["admin", "gerente", "designer", "comprador", "vendedor"],
+      app_sector: ["marketing", "pcp", "desenvolvimento"],
       b2b_order_status: [
         "rascunho",
         "aprovado",
