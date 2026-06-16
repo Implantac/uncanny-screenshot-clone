@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listDayProduction } from "@/lib/pcp-ops.functions";
 import { AlertTriangle, Clock, Factory, Truck } from "lucide-react";
+import { QuickPassButton } from "@/components/quick-pass";
 
 export const Route = createFileRoute("/_authenticated/_app/producao-do-dia/$stage")({
   head: ({ params }) => ({
@@ -10,6 +11,15 @@ export const Route = createFileRoute("/_authenticated/_app/producao-do-dia/$stag
   }),
   component: DayProductionPage,
 });
+
+const NEXT_STAGE: Record<string, string> = {
+  cad: "corte",
+  corte: "costura",
+  costura: "acabamento",
+  acabamento: "qualidade",
+  qualidade: "embalagem",
+  embalagem: "entregue",
+};
 
 const PRIORITY_LABEL: Record<number, { label: string; cls: string }> = {
   3: { label: "Urgente", cls: "bg-destructive/15 text-destructive border-destructive/30" },
