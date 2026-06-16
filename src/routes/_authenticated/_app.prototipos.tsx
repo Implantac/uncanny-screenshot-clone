@@ -71,15 +71,6 @@ function Prototipos() {
   const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "", current_sector: "" as AdjustmentSector | "" });
 
   const handledProductIdRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (!deepProductId) return;
-    if (handledProductIdRef.current === deepProductId) return;
-    handledProductIdRef.current = deepProductId;
-    setEditing(null);
-    setForm({ code: "", product_id: deepProductId, supplier_id: "", stage: "solicitado", due_date: "", notes: "", current_sector: "" });
-    setOpen(true);
-    navigate({ search: (p: typeof search) => ({ ...p, productId: undefined }), replace: true });
-  }, [deepProductId, navigate]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const toggleSel = (id: string) =>
