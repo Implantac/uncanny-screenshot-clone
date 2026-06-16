@@ -11,7 +11,7 @@ export const listDayProduction = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: rows, error } = await supabase
       .from("production_orders")
-      .select("id, code, quantity, priority, due_date, stage, stage_updated_at, batch_code, outsourced, product_id, supplier_id, products(name, sku, cost_price, sell_price), suppliers(name)")
+      .select("id, code, owner_id, quantity, priority, due_date, stage, stage_updated_at, batch_code, outsourced, product_id, supplier_id, products(name, sku, cost_price, sell_price), suppliers(name)")
       .eq("owner_id", userId)
       .eq("stage", data.stage as any)
       .neq("status", "concluida")
