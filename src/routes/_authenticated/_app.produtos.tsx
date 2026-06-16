@@ -301,11 +301,8 @@ function ProductDetail({
   const margin = Number(product.sell_price || 0) - Number(product.cost_price || 0);
   const marginPct = Number(product.sell_price || 0) > 0 ? (margin / Number(product.sell_price)) * 100 : 0;
 
-  const timeline = [
-    { label: "Produto criado", detail: new Date(product.created_at).toLocaleDateString("pt-BR") },
-    { label: "Status atual", detail: STATUS_LABELS[product.status] },
-    { label: "Coleção", detail: collection ? `${collection.name} · ${collection.season} ${collection.year}` : "Sem coleção vinculada" },
-  ];
+
+
 
   return (
     <section className="space-y-4">
