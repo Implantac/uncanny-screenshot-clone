@@ -138,7 +138,7 @@ function Prototipos() {
 
   function reset() {
     setOpen(false); setEditing(null);
-    setForm({ code: "", product_id: "", supplier_id: "", stage: "solicitado", due_date: "", notes: "" });
+    setForm({ code: "", product_id: "", supplier_id: "", stage: "solicitado", due_date: "", notes: "", current_sector: "" });
   }
 
   function openEdit(p: Prototype) {
@@ -146,6 +146,7 @@ function Prototipos() {
     setForm({
       code: p.code, product_id: p.product_id ?? "", supplier_id: p.supplier_id ?? "",
       stage: p.stage, due_date: p.due_date ?? "", notes: p.notes ?? "",
+      current_sector: (p.current_sector ?? "") as AdjustmentSector | "",
     });
     setOpen(true);
   }
