@@ -114,6 +114,8 @@ function IntelHub() {
         </div>
       </header>
 
+      <AskFashionAI />
+
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KPI label="OPs atrasadas" value={alerts.overdue.length} icon={<AlertTriangle className="size-4" />} tone="red" to="/twin-factory" />
