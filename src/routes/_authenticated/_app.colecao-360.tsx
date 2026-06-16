@@ -24,13 +24,16 @@ type Prototype = { id: string; product_id: string | null; stage: string };
 type Order = { id: string; product_id: string | null; stage: string; status: string; quantity: number };
 type Sale = { product_id: string | null; quantity: number; total: number | null };
 
+type Sheet = { product_id: string | null; status: string };
+
 async function loadAll() {
-  const [collections, products, prototypes, orders, sales] = await Promise.all([
+  const [collections, products, prototypes, orders, sales, sheets] = await Promise.all([
     supabase.from("collections").select("id, name, season, year, status").order("year", { ascending: false }).limit(50),
     supabase.from("products").select("id, collection_id, name, sku, status, cost_price, sell_price").limit(1000),
     supabase.from("prototypes").select("id, product_id, stage").limit(1000),
     supabase.from("production_orders").select("id, product_id, stage, status, quantity").neq("status", "cancelada").limit(1000),
     supabase.from("sales").select("product_id, quantity, total").limit(5000),
+    supabase.from("tech_sheets").select("product_id, status").limit(2000),
   ]);
   return {
     collections: (collections.data ?? []) as Collection[],
@@ -38,6 +41,7 @@ async function loadAll() {
     prototypes: (prototypes.data ?? []) as Prototype[],
     orders: (orders.data ?? []) as Order[],
     sales: (sales.data ?? []) as Sale[],
+    sheets: (sheets.data ?? []) as Sheet[],
   };
 }
 
@@ -49,6 +53,7 @@ function Colecao360() {
   const prototypes = data?.prototypes ?? [];
   const orders = data?.orders ?? [];
   const sales = data?.sales ?? [];
+  const sheets = data?.sheets ?? [];
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const currentId = selectedId ?? collections[0]?.id ?? null;
@@ -83,6 +88,16 @@ function Colecao360() {
       const totalQty = cOrders.reduce((a, o) => a + o.quantity, 0);
       const avanco = totalQty > 0 ? (producedQty / totalQty) * 100 : 0;
 
+      const approvedSheetIds = new Set(sheets.filter(s => s.status === "aprovada" && s.product_id).map(s => s.product_id!));
+      const semFicha = cProducts.filter(p => !approvedSheetIds.has(p.id)).length;
+
+      // Champions e críticos por receita
+      const revenuePerProduct = new Map<string, number>();
+      cSales.forEach(s => { if (s.product_id) revenuePerProduct.set(s.product_id, (revenuePerProduct.get(s.product_id) ?? 0) + Number(s.total ?? 0)); });
+      const ranked = cProducts.map(p => ({ p, rev: revenuePerProduct.get(p.id) ?? 0 })).sort((a,b) => b.rev - a.rev);
+      const champions = ranked.slice(0, 3).filter(x => x.rev > 0);
+      const criticos = ranked.filter(x => x.rev === 0).slice(0, 3);
+
       return {
         collection: c,
         productCount: cProducts.length,
@@ -91,9 +106,10 @@ function Colecao360() {
         opsActive, opsDone, producedQty,
         revenue, unitsSold, margin, sellThrough,
         semPiloto, protoPendentes, opsAguardando, liberadosPCP, avanco,
+        semFicha, champions, criticos,
       };
     });
-  }, [collections, products, prototypes, orders, sales]);
+  }, [collections, products, prototypes, orders, sales, sheets]);
 
   const current = summary.find((s) => s.collection.id === currentId) ?? summary[0];
 
@@ -166,17 +182,50 @@ function Colecao360() {
                     Avanço da produção: <span className="font-semibold text-foreground tabular-nums">{Math.round(current.avanco)}%</span>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
                   <WarKPI label="Sem piloto aprovado" value={current.semPiloto} icon={<FileWarning className="size-3.5" />} tone={current.semPiloto > 0 ? "red" : "green"} to="/prototipos" />
+                  <WarKPI label="Sem ficha técnica" value={current.semFicha} icon={<FileWarning className="size-3.5" />} tone={current.semFicha > 0 ? "red" : "green"} to="/tech-sheets" />
                   <WarKPI label="Protótipos pendentes" value={current.protoPendentes} icon={<Sparkles className="size-3.5" />} tone={current.protoPendentes > 5 ? "yellow" : "neutral"} to="/dev-kanban" />
                   <WarKPI label="OPs aguardando" value={current.opsAguardando} icon={<Clock className="size-3.5" />} tone={current.opsAguardando > 0 ? "yellow" : "green"} to="/pcp-kanban" />
                   <WarKPI label="Liberados p/ PCP" value={current.liberadosPCP} icon={<CheckCircle2 className="size-3.5" />} tone="primary" to="/pcp-kanban" />
-                  <WarKPI label="OPs em atraso" value={current.opsActive - current.liberadosPCP - current.opsAguardando} icon={<AlertTriangle className="size-3.5" />} tone="neutral" to="/twin-factory" />
+                  <WarKPI label="OPs em atraso" value={Math.max(0, current.opsActive - current.liberadosPCP - current.opsAguardando)} icon={<AlertTriangle className="size-3.5" />} tone="neutral" to="/twin-factory" />
                 </div>
                 <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
                   <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, current.avanco)}%` }} />
                 </div>
               </div>
+
+              {/* Champions e críticos */}
+              {(current.champions.length > 0 || current.criticos.length > 0) && (
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-success/30 bg-card p-4">
+                    <div className="text-xs uppercase tracking-wider text-success mb-2 flex items-center gap-1.5"><TrendingUp className="size-3.5" /> Campeões da coleção</div>
+                    {current.champions.length === 0 ? <div className="text-xs text-muted-foreground">Sem dados de venda.</div> : (
+                      <ul className="space-y-1.5">
+                        {current.champions.map(({ p, rev }) => (
+                          <li key={p.id} className="flex items-center justify-between text-sm">
+                            <span className="truncate"><span className="text-muted-foreground text-xs">{p.sku}</span> · {p.name}</span>
+                            <span className="tabular-nums font-medium">R$ {(rev/1000).toFixed(1)}k</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="rounded-xl border border-destructive/30 bg-card p-4">
+                    <div className="text-xs uppercase tracking-wider text-destructive mb-2 flex items-center gap-1.5"><AlertTriangle className="size-3.5" /> Críticos (sem venda)</div>
+                    {current.criticos.length === 0 ? <div className="text-xs text-muted-foreground">Todos os produtos têm venda.</div> : (
+                      <ul className="space-y-1.5">
+                        {current.criticos.map(({ p }) => (
+                          <li key={p.id} className="flex items-center justify-between text-sm">
+                            <span className="truncate"><span className="text-muted-foreground text-xs">{p.sku}</span> · {p.name}</span>
+                            <span className="text-xs text-muted-foreground">{p.status}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* KPIs financeiros */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
