@@ -138,7 +138,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "designer-workspace", path: "/designer-workspace", title: "Workspace do Designer", short: "Tudo no seu nome", description: "Protótipos abertos, aprovações pendentes e atalhos de criação.", icon: PenTool, group: "Desenvolvimento" },
   { slug: "approvals", path: "/approvals", title: "Workflow de Aprovações", short: "Gates do PLM", description: "Coleção → ficha técnica → piloto → liberação para produção.", icon: Workflow, group: "Operação" },
   { slug: "showroom", path: "/showroom", title: "Showroom Digital", short: "Vitrine 3D", description: "Showroom virtual com lookbooks interativos.", icon: MonitorPlay, group: "Plataforma", status: "wip" },
-  { slug: "mobile", path: "/mobile", title: "Aplicativo Mobile", short: "App para times", description: "App nativo para campo, fábrica e vendedores.", icon: Smartphone, group: "Plataforma", status: "wip" },
+  { slug: "mobile", path: "/mobile", title: "Aplicativo Mobile", short: "App para times", description: "App nativo para campo, fábrica e vendedores.", icon: Smartphone, group: "Plataforma", status: "wip", hidden: true },
   { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis.", icon: BarChart3, group: "Plataforma" },
   { slug: "fashion-gpt", path: "/fashion-gpt", title: "Fashion GPT", short: "Copiloto de moda", description: "Assistente especialista no seu negócio de moda.", icon: Bot, group: "Plataforma" },
   { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação.", icon: Cpu, group: "Plataforma" },
