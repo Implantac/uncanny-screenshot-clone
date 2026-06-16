@@ -479,6 +479,13 @@ function PassageDialog({ order, onClose, userId }: { order: OrderRef | null; onC
               <Input type="number" min={1} value={qty} onChange={(e) => setQty(Number(e.target.value))} />
             </div>
           </div>
+          <div className="space-y-2">
+            <Label>Linha da peça</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant={lineType === "primeira" ? "default" : "outline"} onClick={() => setLineType("primeira")}>1ª linha</Button>
+              <Button type="button" variant={lineType === "segunda_linha" ? "default" : "outline"} onClick={() => setLineType("segunda_linha")}>2ª linha</Button>
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>De</Label>
