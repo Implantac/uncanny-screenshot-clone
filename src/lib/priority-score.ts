@@ -34,9 +34,16 @@ export type PriorityResult = {
   daysCover: number; // dias de cobertura (stock + wip) / velocidade
   margin: number; // 0–1
   velocity: number; // un/dia (média 30d)
+  /** Veredito do "Coordenador de PCP" — diz claramente o que fazer. */
+  verdict: "produzir-ja" | "programar" | "monitorar" | "nao-produzir";
+  verdictLabel: string; // texto curto para UI
+  verdictReason: string; // motivo em linguagem natural
+  /** Dias até estoque zerar (stock+wip / velocidade). 999 = sem giro. */
+  daysToStockout: number;
+  /** Janela ideal para iniciar a produção (dias a partir de hoje). 0 = começar já. */
+  startInDays: number;
 };
 
-const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
 export function computePriority(i: PriorityInput): PriorityResult {
   const lead = i.leadTimeDays ?? 30;
