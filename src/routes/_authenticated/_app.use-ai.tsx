@@ -48,7 +48,9 @@ function UseAI() {
   useRealtime("ai_agents", ["ai-agents"]);
   const qc = useQueryClient();
   const { user } = useAuth();
+  const [ask, setAsk] = useState<{ persona: Persona; question: string } | null>(null);
   const { data, isLoading } = useQuery({
+
     queryKey: ["ai-agents"],
     queryFn: async () => {
       const { data, error } = await supabase.from("ai_agents").select("*").order("created_at", { ascending: false });
