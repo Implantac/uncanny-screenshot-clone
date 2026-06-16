@@ -156,6 +156,28 @@ function Colecao360() {
                 </div>
               </div>
 
+              {/* Sala de Guerra — sinais operacionais */}
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Radio className="size-3.5 text-primary" /> Sala de Guerra
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Avanço da produção: <span className="font-semibold text-foreground tabular-nums">{Math.round(current.avanco)}%</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  <WarKPI label="Sem piloto aprovado" value={current.semPiloto} icon={<FileWarning className="size-3.5" />} tone={current.semPiloto > 0 ? "red" : "green"} to="/prototipos" />
+                  <WarKPI label="Protótipos pendentes" value={current.protoPendentes} icon={<Sparkles className="size-3.5" />} tone={current.protoPendentes > 5 ? "yellow" : "neutral"} to="/dev-kanban" />
+                  <WarKPI label="OPs aguardando" value={current.opsAguardando} icon={<Clock className="size-3.5" />} tone={current.opsAguardando > 0 ? "yellow" : "green"} to="/pcp-kanban" />
+                  <WarKPI label="Liberados p/ PCP" value={current.liberadosPCP} icon={<CheckCircle2 className="size-3.5" />} tone="primary" to="/pcp-kanban" />
+                  <WarKPI label="OPs em atraso" value={current.opsActive - current.liberadosPCP - current.opsAguardando} icon={<AlertTriangle className="size-3.5" />} tone="neutral" to="/twin-factory" />
+                </div>
+                <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, current.avanco)}%` }} />
+                </div>
+              </div>
+
               {/* KPIs financeiros */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <KPI label="Receita" value={`R$ ${(current.revenue / 1000).toFixed(1)}k`} icon={<DollarSign className="size-4" />} tone="primary" />
