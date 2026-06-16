@@ -1840,6 +1840,62 @@ export type Database = {
         }
         Relationships: []
       }
+      prototype_adjustments: {
+        Row: {
+          assignee_id: string | null
+          attachments: Json
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          prototype_id: string
+          reason: string
+          requested_by: string | null
+          resolved_at: string | null
+          sector: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          attachments?: Json
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          prototype_id: string
+          reason: string
+          requested_by?: string | null
+          resolved_at?: string | null
+          sector?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          attachments?: Json
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          prototype_id?: string
+          reason?: string
+          requested_by?: string | null
+          resolved_at?: string | null
+          sector?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prototype_adjustments_prototype_id_fkey"
+            columns: ["prototype_id"]
+            isOneToOne: false
+            referencedRelation: "prototypes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prototype_comments: {
         Row: {
           author_id: string
@@ -1880,10 +1936,15 @@ export type Database = {
       }
       prototypes: {
         Row: {
+          adjustment_reason: string | null
+          adjustment_requested_at: string | null
+          adjustment_requested_by: string | null
           code: string
           created_at: string
+          current_sector: string | null
           due_date: string | null
           id: string
+          needs_adjustment: boolean
           notes: string | null
           owner_id: string
           product_id: string | null
@@ -1892,10 +1953,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          adjustment_reason?: string | null
+          adjustment_requested_at?: string | null
+          adjustment_requested_by?: string | null
           code: string
           created_at?: string
+          current_sector?: string | null
           due_date?: string | null
           id?: string
+          needs_adjustment?: boolean
           notes?: string | null
           owner_id: string
           product_id?: string | null
@@ -1904,10 +1970,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          adjustment_reason?: string | null
+          adjustment_requested_at?: string | null
+          adjustment_requested_by?: string | null
           code?: string
           created_at?: string
+          current_sector?: string | null
           due_date?: string | null
           id?: string
+          needs_adjustment?: boolean
           notes?: string | null
           owner_id?: string
           product_id?: string | null

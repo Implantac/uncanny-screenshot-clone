@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { PrototypeCommentsButton } from "@/components/prototype-comments";
+import { PrototypeAdjustmentsButton, SECTORS, type AdjustmentSector } from "@/components/prototype-adjustments";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipos")({
   validateSearch: zodValidator(
@@ -35,6 +36,8 @@ type Stage = "solicitado" | "em_confeccao" | "em_prova" | "aprovado" | "reprovad
 type Prototype = {
   id: string; owner_id: string; product_id: string | null; supplier_id: string | null;
   code: string; stage: Stage; due_date: string | null; notes: string | null; created_at: string;
+  current_sector?: AdjustmentSector | null;
+  needs_adjustment?: boolean;
 };
 type Ref = { id: string; name: string };
 
@@ -61,7 +64,7 @@ function Prototipos() {
     navigate({ search: (p: typeof search) => ({ ...p, stage: v as typeof search.stage }), replace: true });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prototype | null>(null);
-  const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "" });
+  const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "", current_sector: "" as AdjustmentSector | "" });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const toggleSel = (id: string) =>
@@ -106,6 +109,7 @@ function Prototipos() {
         stage: form.stage,
         due_date: form.due_date || null,
         notes: form.notes.trim() || null,
+        current_sector: form.current_sector || null,
       };
       if (editing) {
         const { error } = await supabase.from("prototypes").update(payload).eq("id", editing.id);
@@ -134,7 +138,7 @@ function Prototipos() {
 
   function reset() {
     setOpen(false); setEditing(null);
-    setForm({ code: "", product_id: "", supplier_id: "", stage: "solicitado", due_date: "", notes: "" });
+    setForm({ code: "", product_id: "", supplier_id: "", stage: "solicitado", due_date: "", notes: "", current_sector: "" });
   }
 
   function openEdit(p: Prototype) {
@@ -142,6 +146,7 @@ function Prototipos() {
     setForm({
       code: p.code, product_id: p.product_id ?? "", supplier_id: p.supplier_id ?? "",
       stage: p.stage, due_date: p.due_date ?? "", notes: p.notes ?? "",
+      current_sector: (p.current_sector ?? "") as AdjustmentSector | "",
     });
     setOpen(true);
   }
@@ -245,17 +250,33 @@ function Prototipos() {
                     <span className="text-xs text-muted-foreground">{col.length}</span>
                   </div>
                   {col.map(p => (
-                    <div key={p.id} className="rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-1 group">
+                    <div key={p.id} className={`rounded-lg border bg-card hover:bg-muted/30 transition p-3 space-y-1 group ${p.needs_adjustment ? "border-amber-500/60" : "border-border"}`}>
                       <button
                         onClick={() => user?.id === p.owner_id && openEdit(p)}
                         className="w-full text-left"
                       >
-                        <div className="font-mono text-xs text-muted-foreground">{p.code}</div>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-mono text-xs text-muted-foreground">{p.code}</div>
+                          {p.current_sector && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded border border-border bg-muted/40 text-muted-foreground">
+                              {SECTORS.find(s => s.key === p.current_sector)?.label}
+                            </span>
+                          )}
+                        </div>
                         <div className="text-sm font-medium truncate">{productName(p.product_id)}</div>
                         <div className="text-xs text-muted-foreground truncate">{supplierName(p.supplier_id)}</div>
                         {p.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {p.due_date}</div>}
+                        {p.needs_adjustment && (
+                          <div className="text-[10px] text-amber-600 mt-1 font-medium">⚠ Aguardando ajuste</div>
+                        )}
                       </button>
-                      <div className="flex justify-end -mb-1 -mr-1 opacity-60 group-hover:opacity-100 transition">
+                      <div className="flex justify-end gap-1 -mb-1 -mr-1 opacity-70 group-hover:opacity-100 transition">
+                        <PrototypeAdjustmentsButton
+                          prototypeId={p.id}
+                          prototypeCode={p.code}
+                          defaultSector={p.current_sector ?? null}
+                          needsAdjustment={p.needs_adjustment}
+                        />
                         <PrototypeCommentsButton prototypeId={p.id} prototypeCode={p.code} />
                       </div>
                     </div>
@@ -299,6 +320,7 @@ function Prototipos() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" onClick={() => exportSpec(p)} title="Exportar spec"><Download className="size-4" /></Button>
+                        <PrototypeAdjustmentsButton prototypeId={p.id} prototypeCode={p.code} defaultSector={p.current_sector ?? null} needsAdjustment={p.needs_adjustment} />
                         <PrototypeCommentsButton prototypeId={p.id} prototypeCode={p.code} />
                         {user?.id === p.owner_id && (
                           <>
@@ -409,6 +431,13 @@ function Prototipos() {
                 </Select>
               </div>
               <div><Label>Prazo</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} /></div>
+            </div>
+            <div>
+              <Label>Setor atual</Label>
+              <Select value={form.current_sector} onValueChange={(v) => setForm({ ...form, current_sector: v as AdjustmentSector })}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>{SECTORS.map(s => <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div><Label>Notas</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
