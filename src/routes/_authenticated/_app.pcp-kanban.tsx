@@ -171,7 +171,10 @@ function PcpKanban() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-semibold tabular-nums">{o.code}</span>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>{pri.label}</span>
+                        <div className="flex items-center gap-1">
+                          <ProductionOrderCommentsButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} />
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>{pri.label}</span>
+                        </div>
                       </div>
                       {o.product && <div className="text-muted-foreground truncate" title={o.product}>{o.product}</div>}
                       <div className="flex items-center justify-between text-muted-foreground tabular-nums">
