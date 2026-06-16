@@ -1375,6 +1375,44 @@ export type Database = {
         }
         Relationships: []
       }
+      production_order_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          owner_id: string
+          production_order_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          production_order_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          production_order_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_order_comments_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       production_order_grid: {
         Row: {
           created_at: string

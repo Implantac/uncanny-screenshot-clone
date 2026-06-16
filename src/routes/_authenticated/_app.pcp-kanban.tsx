@@ -5,12 +5,14 @@ import { useMemo, useState } from "react";
 import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History } from "lucide-react";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
+import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
 type Stage = "cad" | "corte" | "costura" | "acabamento" | "qualidade" | "expedicao" | "entregue";
 type Order = {
   id: string;
+  owner_id: string;
   code: string;
   stage: Stage;
   quantity: number;
@@ -43,7 +45,7 @@ const PRIORITY: Record<number, { label: string; tone: string }> = {
 async function load(): Promise<Order[]> {
   const { data, error } = await supabase
     .from("production_orders")
-    .select("id, code, stage, quantity, progress, due_date, priority, stage_updated_at, suppliers(name), products(name)")
+    .select("id, owner_id, code, stage, quantity, progress, due_date, priority, stage_updated_at, suppliers(name), products(name)")
     .order("priority", { ascending: true })
     .order("due_date", { ascending: true, nullsFirst: false });
   if (error) throw error;
@@ -169,7 +171,10 @@ function PcpKanban() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-semibold tabular-nums">{o.code}</span>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>{pri.label}</span>
+                        <div className="flex items-center gap-1">
+                          <ProductionOrderCommentsButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} />
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>{pri.label}</span>
+                        </div>
                       </div>
                       {o.product && <div className="text-muted-foreground truncate" title={o.product}>{o.product}</div>}
                       <div className="flex items-center justify-between text-muted-foreground tabular-nums">
