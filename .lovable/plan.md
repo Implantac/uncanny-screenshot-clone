@@ -1,78 +1,63 @@
+# Onda 13 — Evolução incremental (sem reconstruir nada)
 
-# Evolução incremental do USE MODA PLM
+Filosofia: **completar o que existe, ≤2 cliques, IA explica o porquê**. Nenhuma rota é removida, nenhuma tabela nova é criada. Reutiliza dados de `production_orders`, `production_stage_log`, `prototypes`, `collections`, `erp_*_mirror` e as funções já prontas em `pcp-ops.functions.ts`, `marketing-ai.functions.ts`, `ai-insights.functions.ts`, `priority-score.ts`.
 
-Filosofia: **melhorar sem destruir, reutilizar antes de criar, reduzir cliques**. Nada do que já existe será removido — apenas estendido.
+## Entregas (6 itens, ordem de execução)
 
-## Diagnóstico do que já existe (reutilizar)
+### 1. Command Center operacional na home
+Hoje `_app.index.tsx` mostra KPIs genéricos. Trocar por painel operacional:
+- OPs hoje (count por stage), gargalo do dia (stage com maior WIP em `v_supplier_wip` + `production_orders`), 3 OPs mais atrasadas (`due_date < now`), top-3 sugestões do motor de necessidade (reusa `computeReplenishmentNeeds`), insight IA curto (reusa `askPcp`).
+- Tudo em 1 tela, cards clicáveis levam direto à ação (≤2 cliques).
 
-| Pronto hoje | Como será reaproveitado |
-|---|---|
-| `intel-hub.tsx` (257 linhas) | Vira host das 3 IAs (Desenvolvimento / PCP / Marketing) em abas |
-| `fashion-gpt.tsx` + `fashion-context.ts` | Camada de prompt já especializada — passa a ler dados reais via novas server fns |
-| `marketing-ai.functions.ts`, `pcp-ops.functions.ts`, `agents.functions.ts` | Base para os endpoints de insight; ganham handlers novos sem quebrar os atuais |
-| `replenishment.tsx` (140 linhas) | Recebe o motor inteligente (hoje só estoque mínimo) |
-| `control-tower.tsx` (345 linhas, com WIP/gargalos realtime) | Já é a base da "sala de guerra"; ganha aba "Coleção" |
-| `colecao-360.tsx` (255 linhas) | Vira a Sala de Guerra por coleção — sem nova rota |
-| `producao-do-dia.$stage.tsx` | Ganha colunas de prioridade/prazo/tempo previsto |
-| `quick-pass.tsx` | Já entrega passagem parcial/integral em 2 cliques — só falta variante por grade/pacote |
-| `product-score.tsx` | Vira fonte do Score de Prioridade (estende fórmula) |
+### 2. War Room da Coleção
+Nova rota `_app.war-room-colecao.$id.tsx`. Reutiliza queries do `colecao-360`. Layout consolidado:
+- Header com nome/temporada/% concluído.
+- 6 cards: produtos em dev, pilotos pendentes, sem ficha, liberados, lotes em produção, campeões/críticos (vindo de `erp_sales_mirror`).
+- Painel lateral `<AICoordinatorPanel persona="dev"/>` com sugestões proativas.
 
-## Entregas (4 ondas, todas incrementais)
+### 3. War Room da Produção
+Nova rota `_app.war-room-producao.tsx`. Consolida `twin-factory` + `listDayProduction` + `listOutsourcedWip` numa visão única:
+- Heatmap stages × OPs, lista de gargalos, OPs críticas, terceirizados com WIP alto.
+- Painel `<AICoordinatorPanel persona="pcp"/>` explica por que cada item é crítico.
 
-### Onda A — Camada de IA especialista (3 personas, 1 tela)
-- Server fn nova `src/lib/ai-insights.functions.ts` com 3 handlers: `askDevelopment`, `askPcp`, `askMarketing`. Cada um monta contexto real (queries `production_orders`, `prototypes`, `tech_sheets`, `erp_sales_mirror`) e chama Lovable AI Gateway (`google/gemini-3-flash-preview`) via helper `ai-gateway.server.ts` já existente.
-- `intel-hub.tsx` ganha 3 abas: **Desenvolvimento**, **PCP**, **Marketing**, cada uma com chat curto + lista de perguntas pré-prontas (atrasos, gargalos, pilotos pendentes, ROI por produto, etc.).
-- Nada é recriado: `fashion-gpt.tsx` permanece como chat livre.
+### 4. Rastreabilidade visual `/onde-esta`
+Nova rota `_app.onde-esta.tsx`. Input: código OP ou batch. Lê `production_stage_log` ordenado por `created_at`:
+- Timeline vertical (stage, qty, parcial/integral, fornecedor, quando).
+- Mostra "agora está em X há Y horas". Sem nova tabela.
 
-### Onda B — Motor inteligente de necessidade de produção
-- Server fn `computeReplenishmentNeeds()` em `src/lib/replenishment.functions.ts`:
-  - Lê `erp_inventory_mirror`, `erp_sales_mirror` (7/30/90d), `production_orders` em curso, `product_target_costs`, `product_variants`.
-  - Para cada SKU calcula: velocidade de venda, cobertura em dias, risco de ruptura, excesso, lead time, rentabilidade.
-  - Retorna **Score de Prioridade 0–100** + motivos (lista de strings) + sugestão de quantidade.
-- `replenishment.tsx` passa a renderizar a tabela com: produto, prioridade, motivos, sugestão, ação "Gerar OP" (já existe via `pcp-ops.functions.ts`).
-- Cálculo por grade (PP/P/M/G/GG/XG/XXG) a partir de `product_size_options` × histórico real em `erp_sales_mirror.items` (sem divisão proporcional).
+### 5. Comparador de pilotos (aba dentro de `/prototipos`)
+Estende `_app.prototipos.tsx` adicionando uma aba "Comparar": selecionar 2-3 protótipos do mesmo produto e ver lado a lado (foto, fit, custo, materiais, decisão). Reusa dados já carregados. Sem nova rota.
 
-### Onda C — Sala de Guerra da Coleção
-- Estende `colecao-360.tsx` (sem nova rota): adiciona 6 cards consolidados em uma única tela — produtos em dev, pilotos pendentes, sem ficha, liberados, lotes em produção, campeões/críticos. Reutiliza queries já existentes.
-- Aba "Marketing" puxa `marketing-ai.functions.ts` (investimento, ROI, sell-out por coleção — só leitura ERP).
+### 6. Componente `<AICoordinatorPanel persona="dev|pcp|marketing"/>`
+Reutilizável em qualquer tela. Chama `askDevelopment`/`askPcp`/`askMarketing` (já existem em `ai-insights.functions.ts`) com contexto da página atual. Renderiza:
+- Lista de 3 alertas proativos com **motivo** (não só número).
+- Botão "Ação rápida" quando aplicável (ex: gerar OP, abrir kanban, contatar fornecedor).
 
-### Onda D — Produção do Dia + Passagens
-- `producao-do-dia.$stage.tsx`: ordenar por Score de Prioridade da Onda B; adicionar colunas Prazo, Tempo Previsto (de `tech_sheet_operations.minutes`), Responsável.
-- `quick-pass.tsx`: adicionar toggle de modo (Integral / Parcial / Por Pacote / Por Grade) sem sair do popover atual — máx. 2 cliques.
-
-## O que NÃO faremos (proteções)
-- Não criar tabelas financeiras, fiscais, de pedidos B2B ou de clientes — tudo isso já é ERP-mirror.
-- Não tocar em `marketing.tsx`, `campaigns.tsx`, `influencers.tsx` além de plugar os mesmos insights via Onda A.
-- Não remover rotas legadas (auditoria anterior já marcou `hidden` as órfãs).
-- Não trocar provider de IA (continua Lovable AI Gateway, sem chave do usuário).
-
-## Detalhes técnicos
+## Arquivos
 
 ```
-src/lib/
-├── ai-insights.functions.ts        (novo) askDevelopment | askPcp | askMarketing
-├── replenishment.functions.ts      (novo) computeReplenishmentNeeds + computeGridNeeds
-└── priority-score.ts               (novo) puro, testável — fórmula do score 0-100
-
-src/routes/_authenticated/
-├── _app.intel-hub.tsx              (estende) 3 abas de IA
-├── _app.replenishment.tsx          (estende) motor + tabela com score
-├── _app.colecao-360.tsx            (estende) sala de guerra (6 cards)
-└── _app.producao-do-dia.$stage.tsx (estende) ordenação por score
+src/
+├── components/
+│   ├── ai-coordinator-panel.tsx          (novo, reutilizável)
+│   └── command-center-ops.tsx            (novo, usado na home)
+├── routes/_authenticated/
+│   ├── _app.index.tsx                    (estende — troca KPIs)
+│   ├── _app.war-room-colecao.$id.tsx     (novo)
+│   ├── _app.war-room-producao.tsx        (novo)
+│   ├── _app.onde-esta.tsx                (novo)
+│   └── _app.prototipos.tsx               (estende — aba Comparar)
+└── lib/
+    └── traceability.functions.ts         (novo — getOrderTimeline)
 ```
 
-Fórmula do Score (`priority-score.ts`):
-```
-score = 0.30*sellOutVelocity + 0.25*margin + 0.20*ruptureRisk
-      + 0.15*abcWeight       + 0.10*seasonality
-```
-Cada componente normalizado 0–1. Motivos são as 3 maiores contribuições.
+## Garantias
+- Nenhuma tabela nova, nenhuma migration.
+- Nenhuma rota antiga removida.
+- IA continua via Lovable AI Gateway (sem chave do usuário).
+- Cada nova tela cabe em 1 viewport, ação principal em ≤2 cliques.
+- Sem dados financeiros/fiscais — tudo PLM/operacional.
 
-## Ordem sugerida de execução
+## Ordem de execução
+1 → 6 → 4 → 2 → 3 → 5. O componente IA (item 6) vem cedo porque os War Rooms o consomem.
 
-1. **Onda A** (IA × 3) — maior impacto percebido, baixo risco.
-2. **Onda B** (motor de necessidade + score) — base para C e D.
-3. **Onda C** (Sala de Guerra) — usa dados de A+B.
-4. **Onda D** (Produção do Dia + Passagens) — polimento operacional.
-
-Posso começar pela Onda A?
+Posso começar pelo item 1 (Command Center operacional) + item 6 (AICoordinatorPanel) em paralelo?

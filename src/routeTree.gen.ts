@@ -16,6 +16,7 @@ import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/_app.index'
 import { Route as PortalFornecedorTokenRouteImport } from './routes/portal.fornecedor.$token'
+import { Route as AuthenticatedAppWarRoomProducaoRouteImport } from './routes/_authenticated/_app.war-room-producao'
 import { Route as AuthenticatedAppVariantesRouteImport } from './routes/_authenticated/_app.variantes'
 import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticated/_app.use-ai'
 import { Route as AuthenticatedAppTwinFactoryRouteImport } from './routes/_authenticated/_app.twin-factory'
@@ -43,6 +44,7 @@ import { Route as AuthenticatedAppPedidosCompraRouteImport } from './routes/_aut
 import { Route as AuthenticatedAppPcpStagesRouteImport } from './routes/_authenticated/_app.pcp-stages'
 import { Route as AuthenticatedAppPcpKanbanRouteImport } from './routes/_authenticated/_app.pcp-kanban'
 import { Route as AuthenticatedAppPcpRouteImport } from './routes/_authenticated/_app.pcp'
+import { Route as AuthenticatedAppOndeEstaRouteImport } from './routes/_authenticated/_app.onde-esta'
 import { Route as AuthenticatedAppOmnichannelRouteImport } from './routes/_authenticated/_app.omnichannel'
 import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_authenticated/_app.movimentacoes'
 import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
@@ -127,6 +129,12 @@ const PortalFornecedorTokenRoute = PortalFornecedorTokenRouteImport.update({
   path: '/portal/fornecedor/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAppWarRoomProducaoRoute =
+  AuthenticatedAppWarRoomProducaoRouteImport.update({
+    id: '/war-room-producao',
+    path: '/war-room-producao',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppVariantesRoute =
   AuthenticatedAppVariantesRouteImport.update({
     id: '/variantes',
@@ -284,6 +292,12 @@ const AuthenticatedAppPcpRoute = AuthenticatedAppPcpRouteImport.update({
   path: '/pcp',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppOndeEstaRoute =
+  AuthenticatedAppOndeEstaRouteImport.update({
+    id: '/onde-esta',
+    path: '/onde-esta',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppOmnichannelRoute =
   AuthenticatedAppOmnichannelRouteImport.update({
     id: '/omnichannel',
@@ -625,6 +639,7 @@ export interface FileRoutesByFullPath {
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
+  '/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
   '/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
@@ -652,6 +667,7 @@ export interface FileRoutesByFullPath {
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
+  '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
@@ -709,6 +725,7 @@ export interface FileRoutesByTo {
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
+  '/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
   '/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
@@ -736,6 +753,7 @@ export interface FileRoutesByTo {
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
+  '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
@@ -795,6 +813,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
   '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/_authenticated/_app/omnichannel': typeof AuthenticatedAppOmnichannelRoute
+  '/_authenticated/_app/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/_authenticated/_app/pcp': typeof AuthenticatedAppPcpRoute
   '/_authenticated/_app/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
   '/_authenticated/_app/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
@@ -822,6 +841,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/_authenticated/_app/use-ai': typeof AuthenticatedAppUseAiRoute
   '/_authenticated/_app/variantes': typeof AuthenticatedAppVariantesRoute
+  '/_authenticated/_app/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/_app/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
@@ -882,6 +902,7 @@ export interface FileRouteTypes {
     | '/mobile'
     | '/movimentacoes'
     | '/omnichannel'
+    | '/onde-esta'
     | '/pcp'
     | '/pcp-kanban'
     | '/pcp-stages'
@@ -909,6 +930,7 @@ export interface FileRouteTypes {
     | '/twin-factory'
     | '/use-ai'
     | '/variantes'
+    | '/war-room-producao'
     | '/portal/fornecedor/$token'
     | '/producao-do-dia/$stage'
     | '/api/public/agents/run-due'
@@ -966,6 +988,7 @@ export interface FileRouteTypes {
     | '/mobile'
     | '/movimentacoes'
     | '/omnichannel'
+    | '/onde-esta'
     | '/pcp'
     | '/pcp-kanban'
     | '/pcp-stages'
@@ -993,6 +1016,7 @@ export interface FileRouteTypes {
     | '/twin-factory'
     | '/use-ai'
     | '/variantes'
+    | '/war-room-producao'
     | '/portal/fornecedor/$token'
     | '/producao-do-dia/$stage'
     | '/api/public/agents/run-due'
@@ -1051,6 +1075,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/mobile'
     | '/_authenticated/_app/movimentacoes'
     | '/_authenticated/_app/omnichannel'
+    | '/_authenticated/_app/onde-esta'
     | '/_authenticated/_app/pcp'
     | '/_authenticated/_app/pcp-kanban'
     | '/_authenticated/_app/pcp-stages'
@@ -1078,6 +1103,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/twin-factory'
     | '/_authenticated/_app/use-ai'
     | '/_authenticated/_app/variantes'
+    | '/_authenticated/_app/war-room-producao'
     | '/portal/fornecedor/$token'
     | '/_authenticated/_app/'
     | '/_authenticated/_app/producao-do-dia/$stage'
@@ -1147,6 +1173,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/fornecedor/$token'
       preLoaderRoute: typeof PortalFornecedorTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_app/war-room-producao': {
+      id: '/_authenticated/_app/war-room-producao'
+      path: '/war-room-producao'
+      fullPath: '/war-room-producao'
+      preLoaderRoute: typeof AuthenticatedAppWarRoomProducaoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/variantes': {
       id: '/_authenticated/_app/variantes'
@@ -1335,6 +1368,13 @@ declare module '@tanstack/react-router' {
       path: '/pcp'
       fullPath: '/pcp'
       preLoaderRoute: typeof AuthenticatedAppPcpRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/onde-esta': {
+      id: '/_authenticated/_app/onde-esta'
+      path: '/onde-esta'
+      fullPath: '/onde-esta'
+      preLoaderRoute: typeof AuthenticatedAppOndeEstaRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/omnichannel': {
@@ -1737,6 +1777,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
   AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
   AuthenticatedAppOmnichannelRoute: typeof AuthenticatedAppOmnichannelRoute
+  AuthenticatedAppOndeEstaRoute: typeof AuthenticatedAppOndeEstaRoute
   AuthenticatedAppPcpRoute: typeof AuthenticatedAppPcpRoute
   AuthenticatedAppPcpKanbanRoute: typeof AuthenticatedAppPcpKanbanRoute
   AuthenticatedAppPcpStagesRoute: typeof AuthenticatedAppPcpStagesRoute
@@ -1764,6 +1805,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppTwinFactoryRoute: typeof AuthenticatedAppTwinFactoryRoute
   AuthenticatedAppUseAiRoute: typeof AuthenticatedAppUseAiRoute
   AuthenticatedAppVariantesRoute: typeof AuthenticatedAppVariantesRoute
+  AuthenticatedAppWarRoomProducaoRoute: typeof AuthenticatedAppWarRoomProducaoRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppProducaoDoDiaStageRoute: typeof AuthenticatedAppProducaoDoDiaStageRoute
 }
@@ -1816,6 +1858,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
   AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
   AuthenticatedAppOmnichannelRoute: AuthenticatedAppOmnichannelRoute,
+  AuthenticatedAppOndeEstaRoute: AuthenticatedAppOndeEstaRoute,
   AuthenticatedAppPcpRoute: AuthenticatedAppPcpRoute,
   AuthenticatedAppPcpKanbanRoute: AuthenticatedAppPcpKanbanRoute,
   AuthenticatedAppPcpStagesRoute: AuthenticatedAppPcpStagesRoute,
@@ -1844,6 +1887,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppTwinFactoryRoute: AuthenticatedAppTwinFactoryRoute,
   AuthenticatedAppUseAiRoute: AuthenticatedAppUseAiRoute,
   AuthenticatedAppVariantesRoute: AuthenticatedAppVariantesRoute,
+  AuthenticatedAppWarRoomProducaoRoute: AuthenticatedAppWarRoomProducaoRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppProducaoDoDiaStageRoute:
     AuthenticatedAppProducaoDoDiaStageRoute,
@@ -1876,13 +1920,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

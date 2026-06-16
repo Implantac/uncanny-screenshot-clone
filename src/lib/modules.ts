@@ -116,6 +116,8 @@ export const MODULES: ModuleDef[] = [
   { slug: "product-success", path: "/product-success", title: "Product Success", short: "Score preditivo", description: "Probabilidade de sucesso por produto.", icon: Rocket, group: "Inteligência" },
   { slug: "grade-needs", path: "/grade-needs", title: "Necessidade por Grade", short: "Quebra PP/P/M/G/GG", description: "Distribuição sugerida por tamanho.", icon: Ruler, group: "Inteligência" },
   { slug: "replenishment", path: "/replenishment", title: "Sugestão de Reposição", short: "Sinal p/ produção", description: "Sinal técnico de reposição p/ PCP (sem compras financeiras).", icon: Zap, group: "Inteligência", status: "parcial" },
+  { slug: "war-room-producao", path: "/war-room-producao", title: "Sala de Guerra · Produção", short: "Visão única do dia", description: "Heatmap de etapas, OPs críticas, terceirizados e IA do PCP.", icon: Factory, group: "PCP & Produção" },
+  { slug: "onde-esta", path: "/onde-esta", title: "Onde está?", short: "Rastreabilidade visual", description: "Timeline de passagens de qualquer OP ou lote.", icon: MapPin, group: "PCP & Produção" },
 
   // === ERP (Integração) — leitura/espelho ===
   { slug: "erp-integration", path: "/erp-integration", title: "Integração ERP", short: "Webhook + releases", description: "Endpoint HMAC para receber vendas/compras/estoque do ERP e enviar releases do PLM.", icon: Workflow, group: "ERP (Integração)" },
