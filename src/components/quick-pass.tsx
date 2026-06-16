@@ -272,13 +272,16 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
 
             <label className="block text-[10px] text-muted-foreground">
               Fornecedor (opcional)
-              <input
-                type="text"
-                placeholder="UUID do fornecedor ou vazio"
+              <select
                 value={supplierId}
                 onChange={(e) => setSupplierId(e.target.value)}
-                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1 font-mono"
-              />
+                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
+              >
+                <option value="">— Interno —</option>
+                {suppliersQ.data?.map((s: any) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
             </label>
             <div className="flex gap-2 pt-1">
               <button
