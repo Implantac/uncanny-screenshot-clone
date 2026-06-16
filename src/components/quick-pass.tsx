@@ -26,6 +26,22 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
   const [gridSel, setGridSel] = useState<Record<string, number>>({});
   const [supplierId, setSupplierId] = useState<string>("");
 
+  // Fornecedores ativos do owner (para select rápido)
+  const suppliersQ = useQuery({
+    queryKey: ["suppliers-quick", ownerId],
+    enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("suppliers")
+        .select("id, name")
+        .eq("owner_id", ownerId)
+        .order("name")
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   // Pacotes da OP (carrega só quando popover abre na aba pacote)
   const packagesQ = useQuery({
     queryKey: ["op-packages", orderId],
@@ -256,13 +272,16 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
 
             <label className="block text-[10px] text-muted-foreground">
               Fornecedor (opcional)
-              <input
-                type="text"
-                placeholder="UUID do fornecedor ou vazio"
+              <select
                 value={supplierId}
                 onChange={(e) => setSupplierId(e.target.value)}
-                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1 font-mono"
-              />
+                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
+              >
+                <option value="">— Interno —</option>
+                {suppliersQ.data?.map((s: any) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
             </label>
             <div className="flex gap-2 pt-1">
               <button
