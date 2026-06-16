@@ -106,6 +106,7 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
         if (rows.length === 0) throw new Error("Selecione pelo menos uma grade");
         const items = rows.map(([variant_id, quantity], i) => ({
           owner_id: ownerId,
+          created_by,
           production_order_id: orderId,
           code: `${baseCode}-${i + 1}`,
           kind: "parcial" as const,
