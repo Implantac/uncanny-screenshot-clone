@@ -33,6 +33,21 @@ export type ModuleDef = {
   hidden?: boolean;          // mantém rota, oculta do menu
 };
 
+/** Slugs primários por hub (sempre visíveis na sidebar; demais ficam atrás de "Ver mais"). */
+export const PRIMARY_SLUGS = new Set<string>([
+  "command-center", "fashion-calendar", "approvals",
+  "colecoes", "colecao-360",
+  "dev-kanban", "produtos", "ficha-tecnica", "prototipos", "materiais",
+  "pcp-kanban", "lotes", "terceirizados", "twin-factory", "capacity",
+  "fornecedores", "almoxarifado", "compras", "stock-health",
+  "marketing", "campaigns", "influencer-roi", "geo-sales",
+  "intel-hub", "closed-loop", "control-tower", "product-success",
+  "erp-integration", "sales-performance", "margem",
+  "equipe", "fashion-gpt", "bi", "security-center",
+]);
+
+export const isPrimaryModule = (m: ModuleDef) => PRIMARY_SLUGS.has(m.slug);
+
 /**
  * Reorganização Onda 1 — USE MODA PLM.
  * Nada foi removido: rotas marcadas como ERP-mirror permanecem acessíveis
