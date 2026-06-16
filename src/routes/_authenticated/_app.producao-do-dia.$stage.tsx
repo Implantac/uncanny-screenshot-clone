@@ -120,6 +120,20 @@ function DayProductionPage() {
                   <td className="px-4 py-3 inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="size-3" /> {daysInStage}d
                   </td>
+                  <td className="px-4 py-3 text-right">
+                    {NEXT_STAGE[stage] && r.owner_id ? (
+                      <QuickPassButton
+                        orderId={r.id}
+                        orderCode={r.code}
+                        ownerId={r.owner_id}
+                        fromStage={stage}
+                        toStage={NEXT_STAGE[stage]}
+                        remaining={r.quantity}
+                      />
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground">—</span>
+                    )}
+                  </td>
                 </tr>
               );
             })}
