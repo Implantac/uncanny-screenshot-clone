@@ -1,9 +1,9 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LogOut, Menu, Sun, Moon, ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { LogOut, Menu, Sun, Moon, ChevronDown, ChevronRight } from "lucide-react";
 import logoAsset from "@/assets/logo.png.asset.json";
 import { CommandPalette } from "./command-palette";
 import { NotificationsBell } from "./notifications-bell";
-import { MODULES, MODULE_GROUPS, moduleAllowed, isPrimaryModule, type ModuleDef, type ModuleGroup } from "@/lib/modules";
+import { MODULES, MODULE_GROUPS, moduleAllowed, type ModuleDef, type ModuleGroup } from "@/lib/modules";
 import { useSectors } from "@/hooks/use-sectors";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
