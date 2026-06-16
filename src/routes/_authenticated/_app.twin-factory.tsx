@@ -31,10 +31,13 @@ type Batch = {
   planned_quantity: number | null; produced_quantity: number | null;
 };
 
-async function loadAll(): Promise<{ orders: Order[]; batches: Batch[] }> {
-  const [{ data: orders }, { data: batches }] = await Promise.all([
+type StageLog = { to_stage: string; quantity: number | null; created_at: string };
+
+async function loadAll(): Promise<{ orders: Order[]; batches: Batch[]; logs: StageLog[] }> {
+  const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
+  const [{ data: orders }, { data: batches }, { data: logs }] = await Promise.all([
     supabase.from("production_orders")
-      .select("id, code, quantity, progress, status, stage, due_date, product_id, batch_code, products(name, sku)")
+      .select("id, code, quantity, progress, status, stage, due_date, product_id, batch_code, stage_updated_at, products(name, sku)")
       .order("due_date", { ascending: true, nullsFirst: false })
       .limit(300),
     supabase.from("production_batches")
@@ -42,10 +45,15 @@ async function loadAll(): Promise<{ orders: Order[]; batches: Batch[] }> {
       .in("status", ["planejado", "em_producao"])
       .order("created_at", { ascending: false })
       .limit(20),
+    supabase.from("production_stage_log")
+      .select("to_stage, quantity, created_at")
+      .gte("created_at", since7)
+      .limit(2000),
   ]);
   return {
     orders: (orders ?? []) as unknown as Order[],
     batches: (batches ?? []) as unknown as Batch[],
+    logs: (logs ?? []) as StageLog[],
   };
 }
 
