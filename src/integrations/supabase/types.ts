@@ -780,6 +780,88 @@ export type Database = {
           },
         ]
       }
+      influencer_shipments: {
+        Row: {
+          collection_id: string | null
+          created_at: string
+          delivered_at: string | null
+          id: string
+          influencer_id: string
+          notes: string | null
+          owner_id: string
+          post_url: string | null
+          posted_at: string | null
+          product_id: string | null
+          quantity: number
+          region: string | null
+          sales_after: number
+          sales_before: number
+          shipped_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          collection_id?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          influencer_id: string
+          notes?: string | null
+          owner_id?: string
+          post_url?: string | null
+          posted_at?: string | null
+          product_id?: string | null
+          quantity?: number
+          region?: string | null
+          sales_after?: number
+          sales_before?: number
+          shipped_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          collection_id?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          influencer_id?: string
+          notes?: string | null
+          owner_id?: string
+          post_url?: string | null
+          posted_at?: string | null
+          product_id?: string | null
+          quantity?: number
+          region?: string | null
+          sales_after?: number
+          sales_before?: number
+          shipped_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "influencer_shipments_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "influencer_shipments_influencer_id_fkey"
+            columns: ["influencer_id"]
+            isOneToOne: false
+            referencedRelation: "influencers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "influencer_shipments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       influencers: {
         Row: {
           cidade: string | null

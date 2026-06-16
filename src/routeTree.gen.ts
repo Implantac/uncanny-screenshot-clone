@@ -47,6 +47,7 @@ import { Route as AuthenticatedAppOmnichannelRouteImport } from './routes/_authe
 import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_authenticated/_app.movimentacoes'
 import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
 import { Route as AuthenticatedAppMateriaisRouteImport } from './routes/_authenticated/_app.materiais'
+import { Route as AuthenticatedAppMarketingEnviosRouteImport } from './routes/_authenticated/_app.marketing-envios'
 import { Route as AuthenticatedAppMarketingRouteImport } from './routes/_authenticated/_app.marketing'
 import { Route as AuthenticatedAppMargemRouteImport } from './routes/_authenticated/_app.margem'
 import { Route as AuthenticatedAppLotesRouteImport } from './routes/_authenticated/_app.lotes'
@@ -304,6 +305,12 @@ const AuthenticatedAppMateriaisRoute =
   AuthenticatedAppMateriaisRouteImport.update({
     id: '/materiais',
     path: '/materiais',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppMarketingEnviosRoute =
+  AuthenticatedAppMarketingEnviosRouteImport.update({
+    id: '/marketing-envios',
+    path: '/marketing-envios',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppMarketingRoute =
@@ -613,6 +620,7 @@ export interface FileRoutesByFullPath {
   '/lotes': typeof AuthenticatedAppLotesRoute
   '/margem': typeof AuthenticatedAppMargemRoute
   '/marketing': typeof AuthenticatedAppMarketingRoute
+  '/marketing-envios': typeof AuthenticatedAppMarketingEnviosRoute
   '/materiais': typeof AuthenticatedAppMateriaisRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
@@ -696,6 +704,7 @@ export interface FileRoutesByTo {
   '/lotes': typeof AuthenticatedAppLotesRoute
   '/margem': typeof AuthenticatedAppMargemRoute
   '/marketing': typeof AuthenticatedAppMarketingRoute
+  '/marketing-envios': typeof AuthenticatedAppMarketingEnviosRoute
   '/materiais': typeof AuthenticatedAppMateriaisRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
@@ -781,6 +790,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/lotes': typeof AuthenticatedAppLotesRoute
   '/_authenticated/_app/margem': typeof AuthenticatedAppMargemRoute
   '/_authenticated/_app/marketing': typeof AuthenticatedAppMarketingRoute
+  '/_authenticated/_app/marketing-envios': typeof AuthenticatedAppMarketingEnviosRoute
   '/_authenticated/_app/materiais': typeof AuthenticatedAppMateriaisRoute
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
   '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
@@ -867,6 +877,7 @@ export interface FileRouteTypes {
     | '/lotes'
     | '/margem'
     | '/marketing'
+    | '/marketing-envios'
     | '/materiais'
     | '/mobile'
     | '/movimentacoes'
@@ -950,6 +961,7 @@ export interface FileRouteTypes {
     | '/lotes'
     | '/margem'
     | '/marketing'
+    | '/marketing-envios'
     | '/materiais'
     | '/mobile'
     | '/movimentacoes'
@@ -1034,6 +1046,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/lotes'
     | '/_authenticated/_app/margem'
     | '/_authenticated/_app/marketing'
+    | '/_authenticated/_app/marketing-envios'
     | '/_authenticated/_app/materiais'
     | '/_authenticated/_app/mobile'
     | '/_authenticated/_app/movimentacoes'
@@ -1350,6 +1363,13 @@ declare module '@tanstack/react-router' {
       path: '/materiais'
       fullPath: '/materiais'
       preLoaderRoute: typeof AuthenticatedAppMateriaisRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/marketing-envios': {
+      id: '/_authenticated/_app/marketing-envios'
+      path: '/marketing-envios'
+      fullPath: '/marketing-envios'
+      preLoaderRoute: typeof AuthenticatedAppMarketingEnviosRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/marketing': {
@@ -1712,6 +1732,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppLotesRoute: typeof AuthenticatedAppLotesRoute
   AuthenticatedAppMargemRoute: typeof AuthenticatedAppMargemRoute
   AuthenticatedAppMarketingRoute: typeof AuthenticatedAppMarketingRoute
+  AuthenticatedAppMarketingEnviosRoute: typeof AuthenticatedAppMarketingEnviosRoute
   AuthenticatedAppMateriaisRoute: typeof AuthenticatedAppMateriaisRoute
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
   AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
@@ -1790,6 +1811,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppLotesRoute: AuthenticatedAppLotesRoute,
   AuthenticatedAppMargemRoute: AuthenticatedAppMargemRoute,
   AuthenticatedAppMarketingRoute: AuthenticatedAppMarketingRoute,
+  AuthenticatedAppMarketingEnviosRoute: AuthenticatedAppMarketingEnviosRoute,
   AuthenticatedAppMateriaisRoute: AuthenticatedAppMateriaisRoute,
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
   AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
