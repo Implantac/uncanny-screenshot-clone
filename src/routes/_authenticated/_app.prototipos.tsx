@@ -109,6 +109,7 @@ function Prototipos() {
         stage: form.stage,
         due_date: form.due_date || null,
         notes: form.notes.trim() || null,
+        current_sector: form.current_sector || null,
       };
       if (editing) {
         const { error } = await supabase.from("prototypes").update(payload).eq("id", editing.id);
