@@ -205,6 +205,34 @@ function FichaTecnicaPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  function bumpVersion(v: string) {
+    const m = v.match(/^v?(\d+)\.(\d+)$/i);
+    if (m) return `v${m[1]}.${Number(m[2]) + 1}`;
+    return `${v}-r${Date.now().toString().slice(-3)}`;
+  }
+
+  const newVersion = useMutation({
+    mutationFn: async (sheet: Sheet) => {
+      if (!user?.id) throw new Error("Sessão expirada");
+      const { data, error } = await supabase.from("tech_sheets").insert({
+        owner_id: user.id,
+        product_id: sheet.product_id,
+        code: sheet.code,
+        version: bumpVersion(sheet.version),
+        status: "rascunho",
+        content: sheet.content,
+      }).select("id").single();
+      if (error) throw error;
+      return data.id as string;
+    },
+    onSuccess: (id) => {
+      queryClient.invalidateQueries({ queryKey: ["tech_sheets"] });
+      setSelectedId(id);
+      toast.success("Nova versão criada");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   function openCreate() {
     setEditing(null);
     setOpen(true);
