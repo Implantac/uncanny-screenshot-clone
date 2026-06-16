@@ -78,7 +78,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "sustentabilidade", path: "/sustentabilidade", title: "Sustainability Scoring", short: "CO₂, % reciclado, cert.", description: "Score sustentável por produto: pegada CO₂, água, reciclado, orgânico e certificações.", icon: Leaf, group: "Plataforma" },
 
   // === PCP & Produção ===
-  { slug: "pcp", path: "/pcp", title: "PCP e Produção", short: "Ordens e capacidade", description: "Planejamento, ordens de produção e apontamento.", icon: Factory, group: "PCP & Produção" },
+  { slug: "pcp", path: "/pcp", title: "PCP e Produção", short: "Ordens e capacidade", description: "Planejamento, ordens de produção e apontamento.", icon: Factory, group: "PCP & Produção", hidden: true },
   { slug: "pcp-kanban", path: "/pcp-kanban", title: "PCP Kanban", short: "Board drag-and-drop", description: "Mova ordens entre setores arrastando os cards.", icon: KanbanSquare, group: "PCP & Produção", status: "parcial" },
   { slug: "centro-de-corte", path: "/centro-de-corte", title: "Centro de Corte", short: "Plano de corte", description: "Plano de corte, enfesto e peças cortadas.", icon: Scissors, group: "PCP & Produção" },
   { slug: "lotes", path: "/lotes", title: "Lotes & Rastreabilidade", short: "Batch tracking", description: "Lotes de produção, vínculo com OPs e histórico completo de estágios.", icon: Boxes, group: "PCP & Produção" },
@@ -138,13 +138,13 @@ export const MODULES: ModuleDef[] = [
   { slug: "designer-workspace", path: "/designer-workspace", title: "Workspace do Designer", short: "Tudo no seu nome", description: "Protótipos abertos, aprovações pendentes e atalhos de criação.", icon: PenTool, group: "Desenvolvimento" },
   { slug: "approvals", path: "/approvals", title: "Workflow de Aprovações", short: "Gates do PLM", description: "Coleção → ficha técnica → piloto → liberação para produção.", icon: Workflow, group: "Operação" },
   { slug: "showroom", path: "/showroom", title: "Showroom Digital", short: "Vitrine 3D", description: "Showroom virtual com lookbooks interativos.", icon: MonitorPlay, group: "Plataforma", status: "wip" },
-  { slug: "mobile", path: "/mobile", title: "Aplicativo Mobile", short: "App para times", description: "App nativo para campo, fábrica e vendedores.", icon: Smartphone, group: "Plataforma", status: "wip" },
+  { slug: "mobile", path: "/mobile", title: "Aplicativo Mobile", short: "App para times", description: "App nativo para campo, fábrica e vendedores.", icon: Smartphone, group: "Plataforma", status: "wip", hidden: true },
   { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis.", icon: BarChart3, group: "Plataforma" },
   { slug: "fashion-gpt", path: "/fashion-gpt", title: "Fashion GPT", short: "Copiloto de moda", description: "Assistente especialista no seu negócio de moda.", icon: Bot, group: "Plataforma" },
-  { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação.", icon: Cpu, group: "Plataforma" },
+  { slug: "use-ai", path: "/use-ai", title: "USE AI", short: "Automação inteligente", description: "Agentes de IA para automação.", icon: Cpu, group: "Plataforma", hidden: true },
   { slug: "security-center", path: "/security-center", title: "Segurança", short: "MFA, LGPD, backup", description: "MFA TOTP, política de senhas, criptografia e backups.", icon: Lock, group: "Plataforma" },
   { slug: "audit", path: "/audit", title: "Auditoria & LGPD", short: "Logs e rastreabilidade", description: "Eventos auditáveis com filtro por entidade/ação.", icon: ScrollText, group: "Plataforma" },
-  { slug: "data-lake", path: "/data-lake", title: "Data Lake", short: "Camada unificada", description: "Visão consolidada de todos os domínios.", icon: Database, group: "Plataforma" },
+  { slug: "data-lake", path: "/data-lake", title: "Data Lake", short: "Camada unificada", description: "Visão consolidada de todos os domínios.", icon: Database, group: "Plataforma", hidden: true },
   { slug: "equipe", path: "/equipe", title: "Equipe & Permissões", short: "Usuários e papéis", description: "Gerencie usuários e atribua papéis (admin).", icon: Users, group: "Plataforma" },
 ];
 

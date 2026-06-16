@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
@@ -29,6 +29,9 @@ const pcpSearchSchema = z.object({
 
 export const Route = createFileRoute("/_authenticated/_app/pcp")({
   validateSearch: zodValidator(pcpSearchSchema),
+  beforeLoad: () => {
+    throw redirect({ to: "/pcp-kanban" });
+  },
   head: () => ({ meta: [{ title: "PCP · USE MODA OS" }, { name: "description", content: "Ordens de produção." }] }),
   component: PCP,
 });
