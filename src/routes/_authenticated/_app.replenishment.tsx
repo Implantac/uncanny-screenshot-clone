@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { computePriority, classifyABC, type PriorityResult } from "@/lib/priority-score";
 import { createOpFromSuggestion } from "@/lib/pcp-ops.functions";
+import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/replenishment")({
   head: () => ({ meta: [{ title: "Necessidade de Produção · USE MODA PLM" }] }),
