@@ -76,6 +76,8 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
   const create = useMutation({
     mutationFn: async () => {
       const baseCode = `OS-${orderCode}-${Date.now().toString(36).slice(-4).toUpperCase()}`;
+      const { data: u } = await supabase.auth.getUser();
+      const created_by = u.user?.id ?? null;
 
       if (mode === "package") {
         const pkg = (packagesQ.data ?? []).find((p: any) => p.id === packageId);
