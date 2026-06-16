@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
 import {
   Compass, Layers, Scissors, Factory, TrendingUp, Percent, DollarSign,
-  Package, ArrowRight, Sparkles,
+  Package, ArrowRight, Sparkles, AlertTriangle, FileWarning, Clock, CheckCircle2, Radio,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 
@@ -72,6 +72,17 @@ function Colecao360() {
       const margin = avgPrice > 0 ? ((avgPrice - avgCost) / avgPrice) * 100 : 0;
       const sellThrough = producedQty > 0 ? (unitsSold / producedQty) * 100 : 0;
 
+      // Sala de Guerra — derivados
+      const productsWithApprovedProto = new Set(
+        cProtos.filter((p) => p.stage === "aprovado" && p.product_id).map((p) => p.product_id!)
+      );
+      const semPiloto = cProducts.filter((p) => !productsWithApprovedProto.has(p.id)).length;
+      const protoPendentes = cProtos.filter((p) => p.stage !== "aprovado" && p.stage !== "reprovado").length;
+      const opsAguardando = cOrders.filter((o) => o.status === "aguardando").length;
+      const liberadosPCP = cOrders.filter((o) => o.stage !== "cad" && o.stage !== "entregue").length;
+      const totalQty = cOrders.reduce((a, o) => a + o.quantity, 0);
+      const avanco = totalQty > 0 ? (producedQty / totalQty) * 100 : 0;
+
       return {
         collection: c,
         productCount: cProducts.length,
@@ -79,6 +90,7 @@ function Colecao360() {
         protoApproved: cProtos.filter((p) => p.stage === "aprovado").length,
         opsActive, opsDone, producedQty,
         revenue, unitsSold, margin, sellThrough,
+        semPiloto, protoPendentes, opsAguardando, liberadosPCP, avanco,
       };
     });
   }, [collections, products, prototypes, orders, sales]);
@@ -144,6 +156,28 @@ function Colecao360() {
                 </div>
               </div>
 
+              {/* Sala de Guerra — sinais operacionais */}
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Radio className="size-3.5 text-primary" /> Sala de Guerra
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Avanço da produção: <span className="font-semibold text-foreground tabular-nums">{Math.round(current.avanco)}%</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  <WarKPI label="Sem piloto aprovado" value={current.semPiloto} icon={<FileWarning className="size-3.5" />} tone={current.semPiloto > 0 ? "red" : "green"} to="/prototipos" />
+                  <WarKPI label="Protótipos pendentes" value={current.protoPendentes} icon={<Sparkles className="size-3.5" />} tone={current.protoPendentes > 5 ? "yellow" : "neutral"} to="/dev-kanban" />
+                  <WarKPI label="OPs aguardando" value={current.opsAguardando} icon={<Clock className="size-3.5" />} tone={current.opsAguardando > 0 ? "yellow" : "green"} to="/pcp-kanban" />
+                  <WarKPI label="Liberados p/ PCP" value={current.liberadosPCP} icon={<CheckCircle2 className="size-3.5" />} tone="primary" to="/pcp-kanban" />
+                  <WarKPI label="OPs em atraso" value={current.opsActive - current.liberadosPCP - current.opsAguardando} icon={<AlertTriangle className="size-3.5" />} tone="neutral" to="/twin-factory" />
+                </div>
+                <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, current.avanco)}%` }} />
+                </div>
+              </div>
+
               {/* KPIs financeiros */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <KPI label="Receita" value={`R$ ${(current.revenue / 1000).toFixed(1)}k`} icon={<DollarSign className="size-4" />} tone="primary" />
@@ -193,6 +227,22 @@ function KPI({ label, value, icon, tone }: { label: string; value: string; icon:
       <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">{icon}{label}</div>
       <div className="mt-1 text-2xl font-semibold">{value}</div>
     </div>
+  );
+}
+
+function WarKPI({ label, value, icon, tone, to }: { label: string; value: number; icon: React.ReactNode; tone: "red" | "yellow" | "green" | "primary" | "neutral"; to: string }) {
+  const tones = {
+    red: "border-destructive/40 text-destructive",
+    yellow: "border-warning/40 text-warning",
+    green: "border-success/40 text-success",
+    primary: "border-primary/40 text-primary",
+    neutral: "border-border text-muted-foreground",
+  };
+  return (
+    <Link to={to} className={`rounded-lg border bg-muted/10 p-2.5 hover:bg-muted/30 transition-colors ${tones[tone]}`}>
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">{icon}{label}</div>
+      <div className="text-xl font-semibold tabular-nums mt-0.5 text-foreground">{value}</div>
+    </Link>
   );
 }
 
