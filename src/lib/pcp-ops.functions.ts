@@ -88,3 +88,44 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
     }
     return Object.values(suppliersById).sort((a: any, b: any) => b.pieces_at_supplier - a.pieces_at_supplier);
   });
+
+/** Cria uma OP a partir da sugestão do motor de necessidade (1 clique). */
+export const createOpFromSuggestion = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { productId: string; quantity: number; reason?: string; priority?: number }) =>
+    z.object({
+      productId: z.string().uuid(),
+      quantity: z.number().int().positive(),
+      reason: z.string().optional(),
+      priority: z.number().int().min(0).max(3).optional(),
+    }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: product, error: pErr } = await supabase
+      .from("products")
+      .select("id, sku, name")
+      .eq("id", data.productId)
+      .eq("owner_id", userId)
+      .maybeSingle();
+    if (pErr) throw new Error(pErr.message);
+    if (!product) throw new Error("Produto não encontrado.");
+
+    const code = `OP-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${product.sku.slice(0, 6).toUpperCase()}-${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    const { data: op, error } = await supabase
+      .from("production_orders")
+      .insert({
+        owner_id: userId,
+        product_id: data.productId,
+        code,
+        quantity: data.quantity,
+        status: "aguardando",
+        stage: "cad",
+        priority: data.priority ?? 2,
+        notes: data.reason ? `Sugerida pelo motor: ${data.reason}` : "Sugerida pelo motor de necessidade",
+      } as any)
+      .select("id, code")
+      .single();
+    if (error) throw new Error(error.message);
+    return op;
+  });
