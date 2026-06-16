@@ -117,6 +117,26 @@ function PcpKanban() {
     return { wip, late, urgent, total: orders.length };
   }, [orders]);
 
+  const bottleneck = useMemo(() => {
+    const now = Date.now();
+    let worst: { stage: Stage; label: string; count: number; avgDays: number; oldest: number } | null = null;
+    for (const col of STAGES) {
+      if (col.key === "entregue" || col.key === "cad") continue;
+      const items = orders.filter((o) => o.stage === col.key);
+      if (items.length < 2) continue;
+      const days = items.map((o) => (now - new Date(o.stage_updated_at).getTime()) / 86400000);
+      const avg = days.reduce((a, b) => a + b, 0) / days.length;
+      const oldest = Math.max(...days);
+      const score = avg * items.length;
+      if (!worst || score > worst.avgDays * worst.count) {
+        worst = { stage: col.key, label: col.label, count: items.length, avgDays: avg, oldest };
+      }
+    }
+    if (!worst || worst.avgDays < 2) return null;
+    return worst;
+  }, [orders]);
+
+
   const move = (id: string, stage: Stage) => {
     const o = orders.find((x) => x.id === id);
     if (!o || o.stage === stage) return;
