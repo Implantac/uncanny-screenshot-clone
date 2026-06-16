@@ -129,7 +129,7 @@ export function AskFashionAI() {
           <div className="rounded-lg border border-border bg-muted/20 p-3">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{m.data.persona}</div>
             <div className="prose prose-sm dark:prose-invert max-w-none">
-              <Markdown>{m.data.text}</Markdown>
+              <Markdown content={m.data.text} />
             </div>
           </div>
         )}
