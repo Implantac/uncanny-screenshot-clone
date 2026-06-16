@@ -49,6 +49,21 @@ function BarPanel({ title, subtitle, data, empty }: { title: string; subtitle: s
 }
 
 function BI() {
+  const { sectors, isAdmin } = useSectors();
+  const persona = isAdmin
+    ? "admin"
+    : sectors.includes("pcp") ? "pcp"
+    : sectors.includes("desenvolvimento") ? "dev"
+    : sectors.includes("marketing") ? "marketing"
+    : "admin";
+  const defaultTab = persona === "pcp" ? "prod" : persona === "dev" ? "dev" : persona === "marketing" ? "marketing" : "comercial";
+  const personaInfo: Record<string, { title: string; subtitle: string }> = {
+    admin: { title: "Visão geral", subtitle: "Você vê todos os módulos. Comece pelo comercial." },
+    pcp: { title: "Visão PCP", subtitle: "Foco em ordens, etapas e gargalos. Tab Produção aberta por padrão." },
+    dev: { title: "Visão Desenvolvimento", subtitle: "Pipeline de produtos e protótipos. Tab Desenvolvimento aberta." },
+    marketing: { title: "Visão Marketing", subtitle: "Campanhas, canais e envios a influenciadores." },
+  };
+
   const ordersQ = useQuery({
     queryKey: ["bi", "b2b_orders"],
     queryFn: async () => (await supabase.from("b2b_orders").select("status,total_value,order_date")).data ?? [],
