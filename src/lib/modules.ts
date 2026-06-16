@@ -96,6 +96,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "replenishment", path: "/replenishment", title: "Sugestão de Reposição", short: "Sinal p/ produção", description: "Sinal técnico de reposição p/ PCP (sem compras financeiras).", icon: Zap, group: "Inteligência", status: "parcial" },
 
   // === ERP (Integração) — leitura/espelho ===
+  { slug: "erp-integration", path: "/erp-integration", title: "Integração ERP", short: "Webhook + releases", description: "Endpoint HMAC para receber vendas/compras/estoque do ERP e enviar releases do PLM.", icon: Workflow, group: "ERP (Integração)" },
   { slug: "attribution", path: "/attribution", title: "Marketing Attribution (ERP)", short: "Leitura ERP", description: "Receita atribuída por canal — espelho do ERP.", icon: RouteIcon, group: "ERP (Integração)", source: "erp-mirror", status: "parcial" },
   { slug: "sales-performance", path: "/sales-performance", title: "Sales Performance (ERP)", short: "Leitura ERP", description: "Receita, canais, ticket médio e top SKUs — espelho do ERP.", icon: LineChart, group: "ERP (Integração)", source: "erp-mirror", status: "parcial" },
   { slug: "margem", path: "/margem", title: "Margem & Rentabilidade (ERP)", short: "Leitura ERP", description: "Margem real por SKU — espelho do ERP.", icon: Percent, group: "ERP (Integração)", source: "erp-mirror", status: "parcial" },
