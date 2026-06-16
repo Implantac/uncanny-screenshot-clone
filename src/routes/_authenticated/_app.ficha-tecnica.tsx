@@ -11,7 +11,11 @@ import {
   Scissors,
   Trash2,
   Wallet,
+  Sparkles,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { suggestTechSheetImprovements } from "@/lib/tech-pack-ai.functions";
+import { Markdown } from "@/components/markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -258,6 +262,7 @@ function FichaTecnicaPage() {
                         ["consumo", "Consumo"],
                         ["custos", "Custos"],
                         ["documentos", "Documentos"],
+                        ["ia", "IA"],
                       ].map(([value, label]) => (
                         <TabsTrigger key={value} value={value} className="rounded-lg border border-border bg-background/40 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                           {label}
@@ -282,6 +287,9 @@ function FichaTecnicaPage() {
                     </TabsContent>
                     <TabsContent value="documentos" className="mt-0">
                       <SectionList title="Documentos e anexos" icon={FileText} items={selectedContent.documents} emptyLabel="Nenhum documento referenciado." chips />
+                    </TabsContent>
+                    <TabsContent value="ia" className="mt-0">
+                      <AiSuggestionsPanel sheetId={selected.id} />
                     </TabsContent>
                   </Tabs>
                 </div>
@@ -693,5 +701,42 @@ function VersionDiffDialog({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function AiSuggestionsPanel({ sheetId }: { sheetId: string }) {
+  const run = useServerFn(suggestTechSheetImprovements);
+  const [text, setText] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleRun() {
+    setLoading(true);
+    try {
+      const res = await run({ data: { techSheetId: sheetId } });
+      setText(res.text);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao gerar sugestões");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-sm font-semibold flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" /> Fashion-GPT — sugestões para esta ficha
+          </div>
+          <div className="text-xs text-muted-foreground">Analisa BOM, operações e custo e propõe otimizações.</div>
+        </div>
+        <Button size="sm" onClick={handleRun} disabled={loading}>
+          {loading ? "Analisando…" : "Gerar análise"}
+        </Button>
+      </div>
+      <div className="rounded-xl border border-border bg-background/30 p-4 min-h-32 text-sm">
+        {text ? <Markdown>{text}</Markdown> : <div className="text-xs text-muted-foreground">Clique em "Gerar análise" para receber recomendações.</div>}
+      </div>
+    </div>
   );
 }
