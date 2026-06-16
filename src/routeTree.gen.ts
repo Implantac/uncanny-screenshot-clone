@@ -15,6 +15,7 @@ import { Route as DppIdRouteImport } from './routes/dpp.$id'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/_app.index'
+import { Route as PortalFornecedorTokenRouteImport } from './routes/portal.fornecedor.$token'
 import { Route as AuthenticatedAppVariantesRouteImport } from './routes/_authenticated/_app.variantes'
 import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticated/_app.use-ai'
 import { Route as AuthenticatedAppTwinFactoryRouteImport } from './routes/_authenticated/_app.twin-factory'
@@ -117,6 +118,11 @@ const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const PortalFornecedorTokenRoute = PortalFornecedorTokenRouteImport.update({
+  id: '/portal/fornecedor/$token',
+  path: '/portal/fornecedor/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAppVariantesRoute =
   AuthenticatedAppVariantesRouteImport.update({
@@ -623,6 +629,7 @@ export interface FileRoutesByFullPath {
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
+  '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
@@ -703,6 +710,7 @@ export interface FileRoutesByTo {
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
+  '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
@@ -785,6 +793,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/_authenticated/_app/use-ai': typeof AuthenticatedAppUseAiRoute
   '/_authenticated/_app/variantes': typeof AuthenticatedAppVariantesRoute
+  '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
@@ -868,6 +877,7 @@ export interface FileRouteTypes {
     | '/twin-factory'
     | '/use-ai'
     | '/variantes'
+    | '/portal/fornecedor/$token'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/supplier-portal/$token'
@@ -948,6 +958,7 @@ export interface FileRouteTypes {
     | '/twin-factory'
     | '/use-ai'
     | '/variantes'
+    | '/portal/fornecedor/$token'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/supplier-portal/$token'
@@ -1029,6 +1040,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/twin-factory'
     | '/_authenticated/_app/use-ai'
     | '/_authenticated/_app/variantes'
+    | '/portal/fornecedor/$token'
     | '/_authenticated/_app/'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
@@ -1040,6 +1052,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
   DppIdRoute: typeof DppIdRoute
+  PortalFornecedorTokenRoute: typeof PortalFornecedorTokenRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
   ApiPublicErpSyncPublicIdRoute: typeof ApiPublicErpSyncPublicIdRoute
   ApiPublicSupplierPortalTokenRoute: typeof ApiPublicSupplierPortalTokenRoute
@@ -1088,6 +1101,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/portal/fornecedor/$token': {
+      id: '/portal/fornecedor/$token'
+      path: '/portal/fornecedor/$token'
+      fullPath: '/portal/fornecedor/$token'
+      preLoaderRoute: typeof PortalFornecedorTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_app/variantes': {
       id: '/_authenticated/_app/variantes'
@@ -1781,6 +1801,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
   DppIdRoute: DppIdRoute,
+  PortalFornecedorTokenRoute: PortalFornecedorTokenRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
   ApiPublicErpSyncPublicIdRoute: ApiPublicErpSyncPublicIdRoute,
   ApiPublicSupplierPortalTokenRoute: ApiPublicSupplierPortalTokenRoute,
