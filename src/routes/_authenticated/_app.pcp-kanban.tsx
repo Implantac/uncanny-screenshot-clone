@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
 import { QuickPassButton } from "@/components/quick-pass";
+import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
@@ -129,6 +130,8 @@ function PcpKanban() {
         <KPI label="Atrasadas" value={summary.late} icon={<AlertTriangle className="size-4" />} tone="destructive" />
         <KPI label="Prioridade alta" value={summary.urgent} icon={<Flag className="size-4" />} tone="warning" />
       </div>
+
+      <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         {STAGES.map((col) => {

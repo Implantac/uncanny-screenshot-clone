@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/produtos")({
   validateSearch: zodValidator(
@@ -200,6 +201,9 @@ function ProdutosPage() {
         <SummaryCard label="Em desenvolvimento" value={String(summary.inDev)} />
         <SummaryCard label="Margem média" value={brl(summary.avgMargin)} />
       </div>
+
+      <AICoordinatorPanel persona="development" title="Coordenador de Desenvolvimento — leitura do catálogo" />
+
 
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
