@@ -77,6 +77,14 @@ function Colecao360() {
       const margin = avgPrice > 0 ? ((avgPrice - avgCost) / avgPrice) * 100 : 0;
       const sellThrough = producedQty > 0 ? (unitsSold / producedQty) * 100 : 0;
 
+      // Investimento × Resultado (espelho ERP)
+      const investment = cOrders.reduce((a, o) => {
+        const p = cProducts.find((pr) => pr.id === o.product_id);
+        return a + Number(p?.cost_price ?? avgCost) * o.quantity;
+      }, 0);
+      const profit = revenue - investment;
+      const roi = investment > 0 ? (profit / investment) * 100 : 0;
+
       // Sala de Guerra — derivados
       const productsWithApprovedProto = new Set(
         cProtos.filter((p) => p.stage === "aprovado" && p.product_id).map((p) => p.product_id!)
