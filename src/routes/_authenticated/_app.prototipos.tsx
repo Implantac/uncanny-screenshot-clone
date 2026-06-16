@@ -270,6 +270,7 @@ function Prototipos() {
             <table className="w-full text-sm">
               <thead className="bg-muted/30 text-xs uppercase text-muted-foreground">
                 <tr>
+                  <th className="w-10 px-3"></th>
                   <th className="text-left px-4 py-3">Código</th>
                   <th className="text-left px-4 py-3">Produto</th>
                   <th className="text-left px-4 py-3">Facção</th>
@@ -281,6 +282,15 @@ function Prototipos() {
               <tbody>
                 {filtered.map(p => (
                   <tr key={p.id} className="border-t border-border hover:bg-muted/20">
+                    <td className="px-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(p.id)}
+                        onChange={() => toggleSel(p.id)}
+                        disabled={!selectedIds.includes(p.id) && selectedIds.length >= 3}
+                        title="Selecionar para comparar (máx. 3)"
+                      />
+                    </td>
                     <td className="px-4 py-3 font-mono text-xs">{p.code}</td>
                     <td className="px-4 py-3">{productName(p.product_id)}</td>
                     <td className="px-4 py-3">{supplierName(p.supplier_id)}</td>
