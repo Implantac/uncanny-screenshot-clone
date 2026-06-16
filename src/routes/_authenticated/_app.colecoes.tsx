@@ -308,7 +308,7 @@ function ColecoesPage() {
       if (!sheets?.length) return false;
       return sheets.some((sid) => {
         const mats = matsBySheet.get(sid) ?? [];
-        if (mats.length === 0) return true;
+        if (mats.length === 0) return false;
         return mats.every((m) => m.inventory_item_id && Number(m.inventory_items?.balance ?? 0) > 0);
       });
     };
