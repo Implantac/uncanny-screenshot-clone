@@ -20,32 +20,34 @@ export const listDayProduction = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const list = rows ?? [];
 
-    const productIds = Array.from(new Set(list.map((r: any) => r.product_id).filter(Boolean)));
-    if (productIds.length === 0) return list;
+    const skus = Array.from(new Set(list.map((r: any) => r.products?.sku).filter(Boolean))) as string[];
+    if (skus.length === 0) return list;
 
-    const since30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-    const since7 = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-    const since90 = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+    const since30 = new Date(Date.now() - 30 * 86400000).toISOString();
+    const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
+    const since90 = new Date(Date.now() - 90 * 86400000).toISOString();
 
     const [s30, s7, s90, inv] = await Promise.all([
-      supabase.from("erp_sales_mirror").select("product_id, qty, sell_price").eq("owner_id", userId).in("product_id", productIds).gte("sold_at", since30),
-      supabase.from("erp_sales_mirror").select("product_id, qty").eq("owner_id", userId).in("product_id", productIds).gte("sold_at", since7),
-      supabase.from("erp_sales_mirror").select("product_id, qty").eq("owner_id", userId).in("product_id", productIds).gte("sold_at", since90),
-      supabase.from("erp_inventory_mirror").select("product_id, on_hand").eq("owner_id", userId).in("product_id", productIds),
+      supabase.from("erp_sales_mirror").select("sku, quantity").eq("owner_id", userId).in("sku", skus).gte("sold_at", since30),
+      supabase.from("erp_sales_mirror").select("sku, quantity").eq("owner_id", userId).in("sku", skus).gte("sold_at", since7),
+      supabase.from("erp_sales_mirror").select("sku, quantity").eq("owner_id", userId).in("sku", skus).gte("sold_at", since90),
+      supabase.from("erp_inventory_mirror").select("sku, balance").eq("owner_id", userId).in("sku", skus),
     ]);
 
-    const sum = (rs: any[] | null, pid: string) => (rs ?? []).filter(r => r.product_id === pid).reduce((a, r) => a + Number(r.qty ?? 0), 0);
-    const stockOf = (pid: string) => (inv.data ?? []).filter(r => r.product_id === pid).reduce((a, r) => a + Number(r.on_hand ?? 0), 0);
+    const sum = (rs: any[] | null | undefined, sku: string) =>
+      (rs ?? []).filter((r: any) => r.sku === sku).reduce((a: number, r: any) => a + Number(r.quantity ?? 0), 0);
+    const stockOf = (sku: string) =>
+      (inv.data ?? []).filter((r: any) => r.sku === sku).reduce((a: number, r: any) => a + Number(r.balance ?? 0), 0);
 
     const scored = list.map((r: any) => {
-      const pid = r.product_id;
-      if (!pid) return { ...r, score: 0, score_reasons: [] };
+      const sku = r.products?.sku;
+      if (!sku) return { ...r, score: 0, score_reasons: [] };
       const res = computePriority({
-        sku: r.products?.sku ?? r.code,
-        sold7: sum(s7.data, pid),
-        sold30: sum(s30.data, pid),
-        sold90: sum(s90.data, pid),
-        stock: stockOf(pid),
+        sku,
+        sold7: sum(s7.data, sku),
+        sold30: sum(s30.data, sku),
+        sold90: sum(s90.data, sku),
+        stock: stockOf(sku),
         wip: r.quantity,
         cost: r.products?.cost_price ?? null,
         price: r.products?.sell_price ?? null,
