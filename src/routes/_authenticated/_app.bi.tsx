@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
+import { BarChart3, TrendingUp, TrendingDown, Sparkles } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useSectors } from "@/hooks/use-sectors";
 
 export const Route = createFileRoute("/_authenticated/_app/bi")({
   head: () => ({
