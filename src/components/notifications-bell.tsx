@@ -15,9 +15,26 @@ export function NotificationsBell() {
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
       const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-      const [{ data: inv }, { data: ops }, { data: pComments }, { data: poComments }, { data: mkt }] = await Promise.all([
+      const stuckCutoff = new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString();
+      const oldProtoCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+      const [{ data: inv }, { data: ops }, { data: stuckOps }, { data: oldProtos }, { data: pComments }, { data: poComments }, { data: mkt }] = await Promise.all([
         supabase.from("inventory_items").select("id, name, balance, minimum, unit"),
         supabase.from("production_orders").select("id, code, due_date, status, progress").neq("status", "concluida").lte("due_date", today),
+        supabase
+          .from("production_orders")
+          .select("id, code, stage, stage_updated_at")
+          .neq("status", "concluida")
+          .neq("stage", "entregue")
+          .lt("stage_updated_at", stuckCutoff)
+          .order("stage_updated_at", { ascending: true })
+          .limit(8),
+        supabase
+          .from("prototypes")
+          .select("id, code, name, stage, updated_at")
+          .not("stage", "in", "(aprovado,reprovado)")
+          .lt("updated_at", oldProtoCutoff)
+          .order("updated_at", { ascending: true })
+          .limit(8),
         supabase
           .from("prototype_comments")
           .select("id, prototype_id, body, created_at, author_id, prototypes(code)")
@@ -46,7 +63,7 @@ export function NotificationsBell() {
           .filter((c) => c.author_id !== user?.id)
           .map((c) => ({ kind: "op" as const, id: c.id, refCode: c.production_orders?.code ?? "", body: c.body, when: c.created_at })),
       ].sort((a, b) => b.when.localeCompare(a.when)).slice(0, 8);
-      return { critical, overdue: ops ?? [], comments, marketing: (mkt ?? []) as any[] };
+      return { critical, overdue: ops ?? [], stuck: stuckOps ?? [], oldProtos: oldProtos ?? [], comments, marketing: (mkt ?? []) as any[] };
     },
   });
   useRealtime("inventory_items", ["notifications"]);
