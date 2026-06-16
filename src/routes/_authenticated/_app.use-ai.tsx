@@ -1,13 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Cpu, Play, Pause, Plus, Activity, Loader2, Sparkles } from "lucide-react";
+import { Cpu, Play, Pause, Plus, Activity, Loader2, Sparkles, MessageCircleQuestion } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { runAgent } from "@/lib/agents.functions";
 import { Markdown } from "@/components/markdown";
+import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+
+type Persona = "development" | "pcp" | "marketing";
+const CHIPS: { label: string; persona: Persona; question: string }[] = [
+  { label: "Top 3 gargalos do PCP hoje", persona: "pcp", question: "Quais são os 3 maiores gargalos do PCP hoje, por setor, e a ação imediata para cada um?" },
+  { label: "Quais protótipos estão travando coleção?", persona: "development", question: "Quais protótipos estão travados há mais tempo e como destravar cada um?" },
+  { label: "Onde investir em marketing nesta semana?", persona: "marketing", question: "Onde devo investir em marketing nesta semana? Liste 3 ações com retorno esperado." },
+  { label: "Quais lotes vão atrasar a entrega?", persona: "pcp", question: "Quais lotes têm risco real de atraso e qual o plano para acelerar?" },
+  { label: "Top produtos sub-aproveitados", persona: "marketing", question: "Quais produtos do meu acervo estão sub-aproveitados (vendas vs estoque) e como impulsionar?" },
+  { label: "O que aprovar primeiro hoje?", persona: "development", question: "Liste em ordem o que devo aprovar/decidir primeiro hoje no desenvolvimento, com justificativa." },
+  { label: "Influenciadores com melhor ROI", persona: "marketing", question: "Quais influenciadores trouxeram melhor ROI e quais devo repetir/cortar?" },
+  { label: "Risco de não bater a meta do mês", persona: "pcp", question: "Vou bater a meta de produção do mês? Onde estão os riscos e como mitigar?" },
+];
+
+
 
 export const Route = createFileRoute("/_authenticated/_app/use-ai")({
   head: () => ({
