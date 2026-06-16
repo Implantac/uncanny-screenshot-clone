@@ -19,6 +19,8 @@ import { PrototypeCommentsButton } from "@/components/prototype-comments";
 import { PrototypeAdjustmentsButton, SECTORS, type AdjustmentSector } from "@/components/prototype-adjustments";
 import { PrototypeTimelineButton } from "@/components/prototype-timeline";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/_authenticated/_app/prototipos")({
   validateSearch: zodValidator(
     z.object({
@@ -27,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/_app/prototipos")({
         z.enum(["all", "solicitado", "em_confeccao", "em_prova", "aprovado", "reprovado"]),
         "all",
       ).default("all"),
+      productId: fallback(z.string().regex(UUID_RE).optional(), undefined),
     }),
   ),
   head: () => ({ meta: [{ title: "Protótipos · USE MODA OS" }, { name: "description", content: "Ciclo de protótipos, provas e aprovações." }] }),
