@@ -392,9 +392,13 @@ function ProductDetail({
           )}
         </div>
       </div>
+
+      <ProductGallery productId={product.id} canEdit={canEdit} />
     </section>
   );
 }
+
+function _UNUSED_END() { return null;
 
 function ProductDialog({
   open,
