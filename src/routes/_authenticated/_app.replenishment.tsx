@@ -25,7 +25,7 @@ async function loadReplenishment(): Promise<Row[]> {
   const since7 = new Date(now - 7 * 86400000).toISOString();
 
   const [{ data: products }, { data: erpInv }, { data: invItems }, { data: s90 }, { data: ops }] = await Promise.all([
-    supabase.from("products").select("id, sku, name, cost_price, sale_price, status").eq("status", "aprovado").limit(800),
+    supabase.from("products").select("id, sku, name, cost_price, sell_price, status").eq("status", "aprovado").limit(800),
     supabase.from("erp_inventory_mirror").select("sku, balance").limit(2000),
     supabase.from("inventory_items").select("sku, balance").limit(2000),
     supabase.from("erp_sales_mirror").select("sku, quantity, total_value, sold_at").gte("sold_at", since90).limit(20000),
@@ -77,7 +77,7 @@ async function loadReplenishment(): Promise<Row[]> {
       stock: stockBySku.get(p.sku) ?? 0,
       wip: wipBySku.get(p.sku) ?? 0,
       cost: p.cost_price ? Number(p.cost_price) : null,
-      price: p.sale_price ? Number(p.sale_price) : null,
+      price: p.sell_price ? Number(p.sell_price) : null,
       abc: abc.get(p.sku) ?? 3,
     });
     return {
