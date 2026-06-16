@@ -198,7 +198,16 @@ function Colecao360() {
               {/* IA Coordenador — diagnóstico em linguagem natural */}
               <InvestmentResult c={current} />
 
-              <CoordinatorBriefing c={current} />
+              <MetaMood c={current} />
+
+              <div className="grid md:grid-cols-2 gap-3">
+                <CoordinatorBriefing c={current} />
+                <AICoordinatorPanel
+                  persona="marketing"
+                  title={`Marketing · ${current.collection.name}`}
+                  question={`Para a coleção "${current.collection.name}" (${current.productCount} produtos, receita R$ ${Math.round(current.revenue)}, sell-through ${Math.round(current.sellThrough)}%), quais são as 3 ações de marketing mais eficazes para os próximos 14 dias? Justifique cada uma.`}
+                />
+              </div>
 
               {/* Sala de Guerra — sinais operacionais */}
               <div className="rounded-xl border border-border bg-card p-4">
