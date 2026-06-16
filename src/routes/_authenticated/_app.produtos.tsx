@@ -432,12 +432,14 @@ function ProductDialog({
   editing,
   userId,
   collections,
+  prefill,
 }: {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   editing: Product | null;
   userId?: string;
   collections: CollectionRef[];
+  prefill?: Prefill | null;
 }) {
   const queryClient = useQueryClient();
   const [sku, setSku] = useState("");
@@ -481,7 +483,13 @@ function ProductDialog({
       return;
     }
     reset();
-  }, [editing, open]);
+    if (prefill) {
+      if (prefill.name) setName(prefill.name);
+      if (prefill.category) setCategory(prefill.category);
+      if (prefill.colors) setColorsStr(prefill.colors);
+    }
+  }, [editing, open, prefill]);
+
 
   function reset() {
     setSku("");
