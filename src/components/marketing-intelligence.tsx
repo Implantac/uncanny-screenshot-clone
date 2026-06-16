@@ -70,6 +70,30 @@ export function MarketingIntelligence() {
     return Array.from(m.values()).sort((a, b) => b.revenue - a.revenue).slice(0, 8);
   }, [sales]);
 
+  const productVerdicts = useMemo(() => {
+    const totalRevenue = sales.reduce((a, b) => a + Number(b.total), 0) || 1;
+    const mid = Date.now() - (days / 2) * 86400_000;
+    const m = new Map<string, { name: string; revenue: number; recent: number; older: number; units: number }>();
+    sales.forEach((s) => {
+      const name = s.products?.name ?? "Sem produto";
+      const cur = m.get(name) ?? { name, revenue: 0, recent: 0, older: 0, units: 0 };
+      const v = Number(s.total);
+      cur.revenue += v;
+      cur.units += s.quantity;
+      if (new Date(s.sold_at).getTime() >= mid) cur.recent += v; else cur.older += v;
+      m.set(name, cur);
+    });
+    return Array.from(m.values())
+      .map((p) => {
+        const momentum = p.older > 0 ? (p.recent - p.older) / p.older : (p.recent > 0 ? 1 : 0);
+        const share = (p.revenue / totalRevenue) * 100;
+        const verdict = classify(momentum, share);
+        return { ...p, momentum, share, verdict };
+      })
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 12);
+  }, [sales, days]);
+
   const regionsForSelected = useMemo(() => {
     const filtered = selectedProduct
       ? sales.filter((s) => (s.products?.name ?? "Sem produto") === selectedProduct)
