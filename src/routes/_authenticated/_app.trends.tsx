@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useRef, useState } from "react";
-import { Palette, Sparkles, Upload, Loader2, X } from "lucide-react";
+import { Palette, Sparkles, Upload, Loader2, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { analyzeTrendImage } from "@/lib/trends.functions";
 
