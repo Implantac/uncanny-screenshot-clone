@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
+import { BarChart3, TrendingUp, TrendingDown, Sparkles } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useSectors } from "@/hooks/use-sectors";
 
 export const Route = createFileRoute("/_authenticated/_app/bi")({
   head: () => ({
@@ -48,6 +49,21 @@ function BarPanel({ title, subtitle, data, empty }: { title: string; subtitle: s
 }
 
 function BI() {
+  const { sectors, isAdmin } = useSectors();
+  const persona = isAdmin
+    ? "admin"
+    : sectors.includes("pcp") ? "pcp"
+    : sectors.includes("desenvolvimento") ? "dev"
+    : sectors.includes("marketing") ? "marketing"
+    : "admin";
+  const defaultTab = persona === "pcp" ? "prod" : persona === "dev" ? "dev" : persona === "marketing" ? "marketing" : "comercial";
+  const personaInfo: Record<string, { title: string; subtitle: string }> = {
+    admin: { title: "Visão geral", subtitle: "Você vê todos os módulos. Comece pelo comercial." },
+    pcp: { title: "Visão PCP", subtitle: "Foco em ordens, etapas e gargalos. Tab Produção aberta por padrão." },
+    dev: { title: "Visão Desenvolvimento", subtitle: "Pipeline de produtos e protótipos. Tab Desenvolvimento aberta." },
+    marketing: { title: "Visão Marketing", subtitle: "Campanhas, canais e envios a influenciadores." },
+  };
+
   const ordersQ = useQuery({
     queryKey: ["bi", "b2b_orders"],
     queryFn: async () => (await supabase.from("b2b_orders").select("status,total_value,order_date")).data ?? [],
@@ -155,7 +171,7 @@ function BI() {
         </div>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">BI e Analytics</h1>
-          <p className="text-sm text-muted-foreground">Dashboards e KPIs do negócio (dados reais)</p>
+          <p className="text-sm text-muted-foreground">{personaInfo[persona].subtitle}</p>
         </div>
       </div>
 
@@ -171,7 +187,12 @@ function BI() {
         ))}
       </div>
 
-      <Tabs defaultValue="comercial" className="space-y-4">
+      <div className="glass rounded-xl p-3 flex items-center gap-2 border-l-2 border-primary">
+        <Sparkles className="size-4 text-primary" />
+        <span className="text-sm"><span className="font-medium">{personaInfo[persona].title}.</span> <span className="text-muted-foreground">Tab inicial selecionada conforme seu setor.</span></span>
+      </div>
+
+      <Tabs defaultValue={defaultTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="comercial">Comercial</TabsTrigger>
           <TabsTrigger value="dev">Desenvolvimento</TabsTrigger>
