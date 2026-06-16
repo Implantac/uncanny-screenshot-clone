@@ -1,11 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ShieldCheck, QrCode, Leaf, Globe, Loader2, Printer, ExternalLink } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { ShieldCheck, QrCode, Leaf, Globe, Loader2, Printer, ExternalLink, Send } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useServerFn } from "@tanstack/react-start";
+import { publishPassport } from "@/lib/dpp.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/dpp")({
   head: () => ({
