@@ -103,11 +103,25 @@ function ProdutosPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [prefill, setPrefill] = useState<Prefill | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { q: search } = Route.useSearch();
+  const sp = Route.useSearch();
+  const { q: search, prefillName, prefillCategory, prefillColors } = sp;
   const navigate = useNavigate({ from: Route.fullPath });
   const setSearch = (v: string) =>
-    navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
+    navigate({ search: (p: typeof sp) => ({ ...p, q: v }), replace: true });
+
+  const prefillHandledRef = useRef(false);
+  useEffect(() => {
+    if (prefillHandledRef.current) return;
+    if (!prefillName && !prefillCategory && !prefillColors) return;
+    prefillHandledRef.current = true;
+    setPrefill({ name: prefillName, category: prefillCategory, colors: prefillColors });
+    setEditing(null);
+    setOpen(true);
+    navigate({ search: (p: typeof sp) => ({ ...p, prefillName: undefined, prefillCategory: undefined, prefillColors: undefined }), replace: true });
+  }, [prefillName, prefillCategory, prefillColors, navigate]);
+
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
