@@ -182,6 +182,7 @@ function PassportDialog({ passport, onClose }: { passport: Passport | null; onCl
                 ))}
               </div>
             </div>
+            <PublishBlock productId={passport.id} />
             <Button variant="outline" className="w-full gap-2" onClick={() => window.print()}>
               <Printer className="size-4" /> Imprimir / salvar PDF
             </Button>
