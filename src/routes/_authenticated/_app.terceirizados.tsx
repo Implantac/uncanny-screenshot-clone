@@ -5,6 +5,8 @@ import { useState } from "react";
 import { listOutsourcedWip } from "@/lib/pcp-ops.functions";
 import { Truck, Package, Tags, Boxes, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 
+const lineLabel = (line?: string | null) => line === "segunda_linha" ? "2ª linha" : "1ª linha";
+
 export const Route = createFileRoute("/_authenticated/_app/terceirizados")({
   head: () => ({ meta: [{ title: "Terceirizados · USE MODA OS" }] }),
   component: OutsourcedPage,
@@ -73,6 +75,11 @@ function OutsourcedPage() {
                   <div className="font-mono font-semibold">{(s.pieces_at_supplier ?? 0).toLocaleString("pt-BR")}</div>
                   <div className="text-[11px] text-muted-foreground">peças</div>
                 </div>
+                {(s.second_line_count ?? 0) > 0 && (
+                  <div className="text-xs px-2 py-1 rounded border bg-orange-500/10 text-orange-500 border-orange-500/30">
+                    {s.second_line_count} OS 2ª linha
+                  </div>
+                )}
                 <div className={`ml-4 text-xs px-2 py-1 rounded border inline-flex items-center gap-1 ${lateDays > 15 ? "bg-destructive/15 text-destructive border-destructive/30" : "bg-muted text-muted-foreground border-border"}`}>
                   {lateDays > 15 && <AlertTriangle className="size-3" />}
                   {lateDays}d máx
@@ -88,6 +95,7 @@ function OutsourcedPage() {
                         <th className="text-left py-2">Lote</th>
                         <th className="text-left py-2">Referência</th>
                         <th className="text-left py-2">Pacote</th>
+                        <th className="text-left py-2">Linha</th>
                         <th className="text-left py-2">Etapa</th>
                         <th className="text-right py-2">Qtd / Recebida</th>
                         <th className="text-left py-2">Enviado em</th>
@@ -105,6 +113,9 @@ function OutsourcedPage() {
                               : "—"}
                           </td>
                           <td className="py-2">{o.production_packages?.code ?? "—"}</td>
+                          <td className="py-2">
+                            <span className={`px-1.5 py-0.5 rounded border ${o.line_type === "segunda_linha" ? "bg-orange-500/10 text-orange-500 border-orange-500/30" : "bg-muted text-muted-foreground border-border"}`}>{lineLabel(o.line_type)}</span>
+                          </td>
                           <td className="py-2 text-muted-foreground">{o.from_stage} → {o.to_stage}</td>
                           <td className="py-2 text-right font-mono">{o.quantity} / {o.qty_received ?? 0}</td>
                           <td className="py-2">{o.sent_at ? new Date(o.sent_at).toLocaleDateString("pt-BR") : "—"}</td>
