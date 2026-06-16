@@ -69,6 +69,14 @@ function Prototipos() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prototype | null>(null);
   const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "", current_sector: "" as AdjustmentSector | "" });
+
+  useEffect(() => {
+    if (!deepProductId) return;
+    setEditing(null);
+    setForm((f) => ({ ...f, product_id: deepProductId }));
+    setOpen(true);
+    navigate({ search: (p: typeof search) => ({ ...p, productId: undefined }), replace: true });
+  }, [deepProductId, navigate, search]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const toggleSel = (id: string) =>
