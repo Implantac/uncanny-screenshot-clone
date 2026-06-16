@@ -155,11 +155,31 @@ export const askInsight = createServerFn({ method: "POST" })
     const gateway = createLovableAiGatewayProvider(apiKey);
     const model = gateway("google/gemini-3-flash-preview");
 
-    const res = await generateText({
-      model,
-      system: persona.system,
-      prompt: `${ctx}\n\n---\n\n## Pergunta\n${data.question}\n\nResponda usando somente os dados acima.`,
-      temperature: 0.3,
-    });
-    return { text: res.text, persona: persona.label };
+    try {
+      const res = await generateText({
+        model,
+        system: persona.system,
+        prompt: `${ctx}\n\n---\n\n## Pergunta\n${data.question}\n\nResponda usando somente os dados acima.`,
+        temperature: 0.3,
+      });
+      return { text: res.text, persona: persona.label };
+    } catch (err: any) {
+      const msg = String(err?.message ?? err);
+      const status = err?.statusCode ?? err?.lastError?.statusCode;
+      if (status === 429 || /Too Many Requests/i.test(msg)) {
+        return {
+          text: "**Limite de requisições atingido.** A IA está recebendo muitas chamadas no momento. Aguarde alguns segundos e tente novamente.",
+          persona: persona.label,
+          error: "rate_limited" as const,
+        };
+      }
+      if (status === 402 || /Payment Required/i.test(msg)) {
+        return {
+          text: "**Créditos de IA esgotados.** Adicione créditos no workspace para continuar usando o assistente.",
+          persona: persona.label,
+          error: "credits_exhausted" as const,
+        };
+      }
+      throw err;
+    }
   });
