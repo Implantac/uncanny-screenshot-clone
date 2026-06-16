@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGri
 import { ArrowUpRight, Package, Factory, Layers, Scissors, AlertTriangle, CheckCircle2, Sparkles, Activity, TrendingUp, Palette, Shirt, FileText } from "lucide-react";
 import { MODULES } from "@/lib/modules";
 import { supabase } from "@/integrations/supabase/client";
+import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/")({
   head: () => ({
