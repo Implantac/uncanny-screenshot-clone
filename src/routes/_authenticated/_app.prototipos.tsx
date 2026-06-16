@@ -3,7 +3,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Scissors, Plus, Trash2, Pencil, Search, X, Download } from "lucide-react";
+import { Scissors, Plus, Trash2, Pencil, Search, X, Download, GitCompare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -62,6 +62,10 @@ function Prototipos() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prototype | null>(null);
   const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "" });
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const toggleSel = (id: string) =>
+    setSelectedIds((s) => (s.includes(id) ? s.filter((x) => x !== id) : s.length >= 3 ? s : [...s, id]));
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["prototypes"],
