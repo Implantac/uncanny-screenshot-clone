@@ -398,7 +398,6 @@ function ProductDetail({
   );
 }
 
-function _UNUSED_END() { return null;
 
 function ProductDialog({
   open,
