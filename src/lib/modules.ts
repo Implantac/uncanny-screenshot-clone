@@ -98,6 +98,7 @@ export const MODULES: ModuleDef[] = [
   // === Marketing (de produto) ===
   { slug: "marketing", path: "/marketing", title: "Marketing de Produto", short: "Performance por produto", description: "Performance por produto, coleção e região (lê do ERP).", icon: Megaphone, group: "Marketing", status: "parcial" },
   { slug: "influencers", path: "/influencers", title: "Influenciadores", short: "Cadastro e envios", description: "Cadastro, produtos enviados e baseline antes/depois.", icon: UserCircle2, group: "Marketing", status: "parcial" },
+  { slug: "marketing-envios", path: "/marketing-envios", title: "Envios para Influencers", short: "Coleção → influencer", description: "Controle de envios por coleção, sugestões IA e uplift de vendas.", icon: Send, group: "Marketing" },
   { slug: "influencer-roi", path: "/influencer-roi", title: "ROI de Influencers", short: "Uplift e ROAS", description: "Crescimento de vendas/pedidos após postagem (dados ERP).", icon: Award, group: "Marketing", status: "parcial" },
   { slug: "campaigns", path: "/campaigns", title: "Campanhas", short: "Performance por canal", description: "Investimento, receita atribuída e ROAS por campanha.", icon: Target, group: "Marketing" },
   { slug: "geo-sales", path: "/geo-sales", title: "Geo Sales", short: "Mapa do Brasil", description: "Aceitação por UF e região (dados do ERP).", icon: MapPin, group: "Marketing", status: "parcial" },
