@@ -3,7 +3,7 @@ import {
   Factory, Boxes, Truck, Megaphone, Store, Wallet, BarChart3,
   Bot, Cpu, ShieldCheck, MonitorPlay, Smartphone, Users, Brain,
   Radar, Zap, MapPin, Activity, Percent, Calendar, Award, LineChart, PackageSearch, Gauge, Banknote, Trophy, Target,
-  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, Leaf, Repeat, Globe, ShieldAlert, Tag, type LucideIcon,
+  KanbanSquare, Workflow, Ruler, ShoppingCart, Rocket, Star, Coins, Compass, UserCircle2, Route as RouteIcon, Database, ScrollText, Lock, ArrowLeftRight, Leaf, Repeat, Globe, ShieldAlert, Tag, Send, type LucideIcon,
 } from "lucide-react";
 
 export type ModuleGroup =
