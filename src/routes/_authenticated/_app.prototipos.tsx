@@ -431,6 +431,13 @@ function Prototipos() {
               </div>
               <div><Label>Prazo</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} /></div>
             </div>
+            <div>
+              <Label>Setor atual</Label>
+              <Select value={form.current_sector} onValueChange={(v) => setForm({ ...form, current_sector: v as AdjustmentSector })}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>{SECTORS.map(s => <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
             <div><Label>Notas</Label><Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
           <DialogFooter>
