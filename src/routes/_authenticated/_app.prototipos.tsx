@@ -62,7 +62,7 @@ function Prototipos() {
   useRealtime("prototypes", ["prototypes"]);
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { q, stage: stageFilter } = search;
+  const { q, stage: stageFilter, productId: deepProductId } = search;
   const setQ = (v: string) => navigate({ search: (p: typeof search) => ({ ...p, q: v }), replace: true });
   const setStageFilter = (v: string) =>
     navigate({ search: (p: typeof search) => ({ ...p, stage: v as typeof search.stage }), replace: true });
