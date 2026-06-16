@@ -1,9 +1,9 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LogOut, Menu, Sun, Moon } from "lucide-react";
+import { LogOut, Menu, Sun, Moon, ChevronDown, ChevronRight, Plus } from "lucide-react";
 import logoAsset from "@/assets/logo.png.asset.json";
 import { CommandPalette } from "./command-palette";
 import { NotificationsBell } from "./notifications-bell";
-import { MODULES, MODULE_GROUPS, moduleAllowed } from "@/lib/modules";
+import { MODULES, MODULE_GROUPS, moduleAllowed, isPrimaryModule, type ModuleDef, type ModuleGroup } from "@/lib/modules";
 import { useSectors } from "@/hooks/use-sectors";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -11,7 +11,7 @@ import { useRoles } from "@/hooks/use-role";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Admin", gerente: "Gerente", designer: "Designer", comprador: "Comprador", vendedor: "Vendedor",
@@ -28,6 +28,24 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => { setMobileOpen(false); }, [active]);
+
+  // Group → modules (primary + secondary) e qual grupo contém a rota ativa
+  const grouped = useMemo(() => {
+    const map = new Map<ModuleGroup, { primary: ModuleDef[]; secondary: ModuleDef[]; activeIn: boolean }>();
+    for (const g of MODULE_GROUPS) map.set(g, { primary: [], secondary: [], activeIn: false });
+    for (const m of visibleModules) {
+      const bucket = map.get(m.group);
+      if (!bucket) continue;
+      (isPrimaryModule(m) ? bucket.primary : bucket.secondary).push(m);
+      if (active === m.path) bucket.activeIn = true;
+    }
+    return map;
+  }, [visibleModules, active]);
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [expandedMore, setExpandedMore] = useState<Record<string, boolean>>({});
+  const toggleGroup = (g: string) => setOpenGroups((s) => ({ ...s, [g]: !(s[g] ?? false) }));
+  const toggleMore = (g: string) => setExpandedMore((s) => ({ ...s, [g]: !s[g] }));
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -51,43 +69,68 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Fashion OS</div>
         </div>
       </div>
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5 text-sm">
+      <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1 text-sm">
         {MODULE_GROUPS.map((group) => {
-          const items = visibleModules.filter((m) => m.group === group);
-          if (items.length === 0) return null;
+          const bucket = grouped.get(group);
+          if (!bucket || (bucket.primary.length === 0 && bucket.secondary.length === 0)) return null;
+          const isOpen = openGroups[group] ?? bucket.activeIn ?? false;
+          const totalCount = bucket.primary.length + bucket.secondary.length;
+          const showMore = expandedMore[group] ?? bucket.activeIn;
+          const renderItem = (m: ModuleDef) => {
+            const isActive = active === m.path;
+            const Icon = m.icon;
+            const isErp = m.source === "erp-mirror";
+            return (
+              <li key={m.slug}>
+                <Link
+                  to={m.path}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                  )}
+                >
+                  <Icon className={cn("size-4", isActive && "text-primary")} />
+                  <span className="truncate flex-1">{m.title}</span>
+                  {isErp && (
+                    <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                      ERP
+                    </span>
+                  )}
+                </Link>
+              </li>
+            );
+          };
           return (
             <div key={group}>
-              <div className="px-2 mb-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                {group}
-              </div>
-              <ul className="space-y-0.5">
-                {items.map((m) => {
-                const isActive = active === m.path;
-                const Icon = m.icon;
-                const isErp = m.source === "erp-mirror";
-                return (
-                  <li key={m.slug}>
-                    <Link
-                      to={m.path}
-                      className={cn(
-                        "flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors",
-                        isActive
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
-                      )}
-                    >
-                      <Icon className={cn("size-4", isActive && "text-primary")} />
-                      <span className="truncate flex-1">{m.title}</span>
-                      {isErp && (
-                        <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                          ERP
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-              </ul>
+              <button
+                type="button"
+                onClick={() => toggleGroup(group)}
+                className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-semibold uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/40 transition-colors"
+              >
+                {isOpen ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
+                <span className="flex-1 text-left">{group}</span>
+                <span className="text-[10px] font-normal text-muted-foreground/70">{totalCount}</span>
+              </button>
+              {isOpen && (
+                <ul className="space-y-0.5 mt-1 mb-2">
+                  {bucket.primary.map(renderItem)}
+                  {showMore && bucket.secondary.map(renderItem)}
+                  {bucket.secondary.length > 0 && (
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => toggleMore(group)}
+                        className="w-full flex items-center gap-2 px-2 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/40 transition-colors"
+                      >
+                        <Plus className="size-3" />
+                        {showMore ? "Ver menos" : `Ver mais (${bucket.secondary.length})`}
+                      </button>
+                    </li>
+                  )}
+                </ul>
+              )}
             </div>
           );
         })}
