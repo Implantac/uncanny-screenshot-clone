@@ -412,6 +412,7 @@ function BatchDialog({ open, onOpenChange, editing, userId }: { open: boolean; o
 function PassageDialog({ order, onClose, userId }: { order: OrderRef | null; onClose: () => void; userId?: string }) {
   const qc = useQueryClient();
   const [kind, setKind] = useState<"integral" | "parcial">("parcial");
+  const [lineType, setLineType] = useState<"primeira" | "segunda_linha">("primeira");
   const [toStage, setToStage] = useState("");
   const [qty, setQty] = useState(0);
   const [note, setNote] = useState("");
@@ -419,6 +420,7 @@ function PassageDialog({ order, onClose, userId }: { order: OrderRef | null; onC
   useMemo(() => {
     if (!order) return;
     setKind("parcial");
+    setLineType("primeira");
     setToStage("");
     setQty(order.quantity);
     setNote("");
@@ -437,6 +439,7 @@ function PassageDialog({ order, onClose, userId }: { order: OrderRef | null; onC
         from_stage: order.stage,
         to_stage: toStage,
         kind,
+        line_type: lineType,
         quantity: qty,
         qty_received: qty,
         status: "recebida",
