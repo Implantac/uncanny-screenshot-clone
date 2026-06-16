@@ -735,7 +735,7 @@ function AiSuggestionsPanel({ sheetId }: { sheetId: string }) {
         </Button>
       </div>
       <div className="rounded-xl border border-border bg-background/30 p-4 min-h-32 text-sm">
-        {text ? <Markdown>{text}</Markdown> : <div className="text-xs text-muted-foreground">Clique em "Gerar análise" para receber recomendações.</div>}
+        {text ? <Markdown content={text} /> : <div className="text-xs text-muted-foreground">Clique em "Gerar análise" para receber recomendações.</div>}
       </div>
     </div>
   );
