@@ -241,16 +241,20 @@ function Prototipos() {
                     <span className="text-xs text-muted-foreground">{col.length}</span>
                   </div>
                   {col.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => user?.id === p.owner_id && openEdit(p)}
-                      className="w-full text-left rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-1"
-                    >
-                      <div className="font-mono text-xs text-muted-foreground">{p.code}</div>
-                      <div className="text-sm font-medium truncate">{productName(p.product_id)}</div>
-                      <div className="text-xs text-muted-foreground truncate">{supplierName(p.supplier_id)}</div>
-                      {p.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {p.due_date}</div>}
-                    </button>
+                    <div key={p.id} className="rounded-lg border border-border bg-card hover:bg-muted/30 transition p-3 space-y-1 group">
+                      <button
+                        onClick={() => user?.id === p.owner_id && openEdit(p)}
+                        className="w-full text-left"
+                      >
+                        <div className="font-mono text-xs text-muted-foreground">{p.code}</div>
+                        <div className="text-sm font-medium truncate">{productName(p.product_id)}</div>
+                        <div className="text-xs text-muted-foreground truncate">{supplierName(p.supplier_id)}</div>
+                        {p.due_date && <div className="text-[10px] text-muted-foreground">Prazo: {p.due_date}</div>}
+                      </button>
+                      <div className="flex justify-end -mb-1 -mr-1 opacity-60 group-hover:opacity-100 transition">
+                        <PrototypeCommentsButton prototypeId={p.id} prototypeCode={p.code} />
+                      </div>
+                    </div>
                   ))}
                   {!col.length && <p className="text-xs text-muted-foreground/60 text-center py-6">vazio</p>}
                 </div>
