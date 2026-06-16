@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
-import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History } from "lucide-react";
+import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History, Package, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
@@ -22,6 +22,7 @@ type Order = {
   due_date: string | null;
   priority: number;
   stage_updated_at: string;
+  batch_code: string | null;
   supplier?: string | null;
   product?: string | null;
 };
@@ -47,7 +48,7 @@ const PRIORITY: Record<number, { label: string; tone: string }> = {
 async function load(): Promise<Order[]> {
   const { data, error } = await supabase
     .from("production_orders")
-    .select("id, owner_id, code, stage, quantity, progress, due_date, priority, stage_updated_at, suppliers(name), products(name)")
+    .select("id, owner_id, code, stage, quantity, progress, due_date, priority, stage_updated_at, batch_code, suppliers(name), products(name)")
     .order("priority", { ascending: true })
     .order("due_date", { ascending: true, nullsFirst: false });
   if (error) throw error;
@@ -69,6 +70,8 @@ function PcpKanban() {
   const { data: orders = [], isLoading } = useQuery({ queryKey: ["pcp-kanban"], queryFn: load });
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<Stage | null>(null);
+  const [mode, setMode] = useState<"ordens" | "lotes">("ordens");
+  const [batchFilter, setBatchFilter] = useState<string | null>(null);
 
   const update = useMutation({
     mutationFn: async (patch: { id: string } & Partial<Pick<Order, "stage" | "priority" | "due_date" | "progress">>) => {
@@ -91,12 +94,17 @@ function PcpKanban() {
     onSettled: () => qc.invalidateQueries({ queryKey: ["pcp-kanban"] }),
   });
 
+  const filtered = useMemo(
+    () => (batchFilter ? orders.filter((o) => (o.batch_code ?? "—") === batchFilter) : orders),
+    [orders, batchFilter],
+  );
+
   const grouped = useMemo(() => {
     const m = new Map<Stage, Order[]>();
     STAGES.forEach((s) => m.set(s.key, []));
-    orders.forEach((o) => m.get(o.stage)?.push(o));
+    filtered.forEach((o) => m.get(o.stage)?.push(o));
     return m;
-  }, [orders]);
+  }, [filtered]);
 
   const summary = useMemo(() => {
     const wip = orders.filter((o) => o.stage !== "entregue" && o.stage !== "cad").reduce((s, o) => s + o.quantity, 0);
@@ -121,6 +129,32 @@ function PcpKanban() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">PCP — Passagem por setores</h1>
           <p className="text-sm text-muted-foreground">Arraste cards entre colunas para programar a passagem entre setores. Prioridade, prazo e tempo no setor visíveis em cada card.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {batchFilter && (
+            <button
+              onClick={() => setBatchFilter(null)}
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border border-border bg-card hover:bg-muted"
+              title="Limpar filtro de lote"
+            >
+              Lote: <span className="font-semibold tabular-nums">{batchFilter}</span>
+              <X className="size-3" />
+            </button>
+          )}
+          <div className="inline-flex rounded-md border border-border bg-card overflow-hidden text-xs">
+            <button
+              onClick={() => setMode("ordens")}
+              className={`px-3 py-1.5 inline-flex items-center gap-1 ${mode === "ordens" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+            >
+              <Factory className="size-3.5" /> Ordens
+            </button>
+            <button
+              onClick={() => { setMode("lotes"); setBatchFilter(null); }}
+              className={`px-3 py-1.5 inline-flex items-center gap-1 ${mode === "lotes" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+            >
+              <Package className="size-3.5" /> Lotes
+            </button>
+          </div>
         </div>
       </header>
 
@@ -158,6 +192,41 @@ function PcpKanban() {
                   <div className="text-xs text-muted-foreground p-2">Carregando…</div>
                 ) : items.length === 0 ? (
                   <div className="text-[11px] text-muted-foreground p-3 border border-dashed border-border rounded-lg text-center">Solte aqui</div>
+                ) : mode === "lotes" && !batchFilter ? (
+                  Array.from(items.reduce((m, o) => {
+                    const k = o.batch_code ?? "—";
+                    const v = m.get(k) ?? { code: k, qty: 0, count: 0, urgent: 0, late: 0, progressSum: 0 };
+                    v.qty += o.quantity; v.count += 1;
+                    v.progressSum += o.progress;
+                    if (o.priority <= 2) v.urgent += 1;
+                    const d = daysTo(o.due_date);
+                    if (d !== null && d < 0 && col.key !== "entregue") v.late += 1;
+                    m.set(k, v); return m;
+                  }, new Map<string, { code: string; qty: number; count: number; urgent: number; late: number; progressSum: number }>()).values()).map((b) => (
+                    <button
+                      key={b.code}
+                      onClick={() => setBatchFilter(b.code)}
+                      className="w-full text-left rounded-lg border border-border bg-background p-2.5 text-xs space-y-1 hover:border-primary/50 transition"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold inline-flex items-center gap-1"><Package className="size-3" />{b.code}</span>
+                        <span className="text-[10px] text-muted-foreground tabular-nums">{b.count} OPs</span>
+                      </div>
+                      <div className="flex items-center justify-between text-muted-foreground tabular-nums">
+                        <span>{b.qty} pç</span>
+                        <span>{Math.round(b.progressSum / b.count)}%</span>
+                      </div>
+                      <div className="h-1 bg-muted rounded overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${Math.round(b.progressSum / b.count)}%` }} />
+                      </div>
+                      {(b.urgent > 0 || b.late > 0) && (
+                        <div className="flex gap-1 pt-0.5">
+                          {b.urgent > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">{b.urgent} urg</span>}
+                          {b.late > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">{b.late} atras</span>}
+                        </div>
+                      )}
+                    </button>
+                  ))
                 ) : items.map((o) => {
                   const d = daysTo(o.due_date);
                   const overdue = d !== null && d < 0 && col.key !== "entregue";
