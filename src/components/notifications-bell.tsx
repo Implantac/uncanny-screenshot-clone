@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, AlertTriangle, Clock, CheckCircle2, MessageSquare, Megaphone } from "lucide-react";
+import { Bell, AlertTriangle, Clock, CheckCircle2, MessageSquare, Megaphone, Pause, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "@tanstack/react-router";
