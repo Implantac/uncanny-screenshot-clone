@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { PrototypeCommentsButton } from "@/components/prototype-comments";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipos")({
   validateSearch: zodValidator(
@@ -280,6 +281,7 @@ function Prototipos() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" onClick={() => exportSpec(p)} title="Exportar spec"><Download className="size-4" /></Button>
+                        <PrototypeCommentsButton prototypeId={p.id} prototypeCode={p.code} />
                         {user?.id === p.owner_id && (
                           <>
                             <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="size-4" /></Button>

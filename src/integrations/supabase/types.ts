@@ -1684,6 +1684,44 @@ export type Database = {
         }
         Relationships: []
       }
+      prototype_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          owner_id: string
+          prototype_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          prototype_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          prototype_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prototype_comments_prototype_id_fkey"
+            columns: ["prototype_id"]
+            isOneToOne: false
+            referencedRelation: "prototypes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prototypes: {
         Row: {
           code: string
