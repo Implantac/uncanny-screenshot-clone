@@ -113,6 +113,33 @@ function UseAI() {
         </button>
       </div>
 
+      <div className="glass rounded-xl p-4 space-y-3">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <MessageCircleQuestion className="size-4 text-primary" /> Pergunte ao USE AI
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {CHIPS.map((c) => (
+            <button
+              key={c.label}
+              onClick={() => setAsk({ persona: c.persona, question: c.question })}
+              className={`text-xs px-3 py-1.5 rounded-full border transition ${ask?.question === c.question ? "bg-primary text-primary-foreground border-primary" : "border-border bg-card hover:bg-muted"}`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+        {ask && (
+          <AICoordinatorPanel
+            key={ask.question}
+            persona={ask.persona}
+            question={ask.question}
+            title={ask.question}
+          />
+        )}
+      </div>
+
+
+
       {isLoading ? (
         <div className="glass rounded-xl p-12 grid place-items-center text-muted-foreground"><Loader2 className="size-5 animate-spin" /></div>
       ) : agentes.length === 0 ? (
