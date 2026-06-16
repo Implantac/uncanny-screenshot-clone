@@ -147,6 +147,7 @@ export function QuickPassButton({ orderId, orderCode, ownerId, fromStage, toStag
       setOpen(false);
       setGridSel({});
       setPackageId("");
+      setLineType("primeira");
     },
     onError: (e: Error) => toast.error(e.message),
   });
