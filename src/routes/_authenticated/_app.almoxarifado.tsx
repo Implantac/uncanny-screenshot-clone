@@ -170,28 +170,36 @@ function Almoxarifado() {
                   <th className="text-left font-medium px-5 py-2.5">SKU</th>
                   <th className="text-left font-medium px-5 py-2.5">Item</th>
                   <th className="text-left font-medium px-5 py-2.5">Categoria</th>
-                  <th className="text-left font-medium px-5 py-2.5">Depósito</th>
                   <th className="text-right font-medium px-5 py-2.5">Saldo</th>
-                  <th className="text-right font-medium px-5 py-2.5">Mínimo</th>
+                  <th className="text-right font-medium px-5 py-2.5">Mín / Máx</th>
+                  <th className="text-right font-medium px-5 py-2.5" title="Saídas últimos 30 dias">Giro 30d</th>
+                  <th className="text-right font-medium px-5 py-2.5">Últ. entrada</th>
                   <th className="text-left font-medium px-5 py-2.5">Status</th>
                   <th className="px-5 py-2.5"></th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((i) => {
-                  const critico = Number(i.balance) < Number(i.minimum);
+                  const bal = Number(i.balance);
+                  const min = Number(i.minimum);
+                  const max = Number(i.maximum);
+                  const critico = bal < min;
+                  const excesso = max > 0 && bal > max;
                   const mine = i.owner_id === user?.id;
                   return (
                     <tr key={i.id} className="border-t border-border hover:bg-muted/30">
                       <td className="px-5 py-3 tabular-nums text-muted-foreground">{i.sku}</td>
-                      <td className="px-5 py-3 font-medium">{i.name}</td>
+                      <td className="px-5 py-3 font-medium">{i.name}<div className="text-xs text-muted-foreground">{i.deposit || "—"}</div></td>
                       <td className="px-5 py-3 text-muted-foreground">{CAT_LABEL[i.category]}</td>
-                      <td className="px-5 py-3 text-muted-foreground">{i.deposit || "—"}</td>
-                      <td className={`px-5 py-3 text-right tabular-nums ${critico ? "text-destructive font-medium" : ""}`}>{i.balance} {i.unit}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{i.minimum} {i.unit}</td>
+                      <td className={`px-5 py-3 text-right tabular-nums ${critico ? "text-destructive font-medium" : excesso ? "text-amber-500" : ""}`}>{bal} {i.unit}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{min} / {max || "—"}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{Number(i.turnover_30d || 0)} {i.unit}</td>
+                      <td className="px-5 py-3 text-right text-muted-foreground text-xs">{fmtDate(i.last_entry_at)}</td>
                       <td className="px-5 py-3">
                         {critico
                           ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-destructive/15 text-destructive"><AlertTriangle className="size-3" /> Crítico</span>
+                          : excesso
+                          ? <span className="px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-500">Excesso</span>
                           : <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/15 text-emerald-400">Ok</span>}
                       </td>
                       <td className="px-5 py-3 text-right">
