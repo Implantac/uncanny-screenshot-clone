@@ -329,26 +329,51 @@ function Prototipos() {
       <Dialog open={compareOpen} onOpenChange={setCompareOpen}>
         <DialogContent className="max-w-5xl">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><GitCompare className="size-5 text-primary" /> Comparar protótipos</DialogTitle></DialogHeader>
-          <div className={`grid gap-3 ${selectedIds.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
-            {selectedIds.map((id) => {
-              const p = items.find((x) => x.id === id);
-              if (!p) return null;
-              return (
-                <div key={id} className="rounded-lg border border-border p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline" className={STAGE_COLOR[p.stage]}>{STAGE_LABEL[p.stage]}</Badge>
-                    <span className="font-mono text-xs text-muted-foreground">{p.code}</span>
-                  </div>
-                  <div className="text-sm font-medium">{productName(p.product_id)}</div>
-                  <div className="text-xs text-muted-foreground">Facção: {supplierName(p.supplier_id)}</div>
-                  <div className="text-xs text-muted-foreground">Prazo: {p.due_date ?? "—"}</div>
-                  <div className="text-xs text-muted-foreground">Criado: {new Date(p.created_at).toLocaleDateString("pt-BR")}</div>
-                  {p.notes && (
-                    <div className="text-xs mt-2 pt-2 border-t border-border whitespace-pre-wrap">{p.notes}</div>
-                  )}
-                </div>
-              );
-            })}
+          {(() => {
+            const selected = selectedIds.map((id) => items.find((x) => x.id === id)).filter(Boolean) as Prototype[];
+            const diff = (key: keyof Prototype) => new Set(selected.map((p) => String(p[key] ?? "—"))).size > 1;
+            const diffCls = (k: keyof Prototype) => diff(k) ? "bg-amber-500/10 border-amber-500/30 rounded px-1.5 py-0.5" : "";
+            return (
+              <div className={`grid gap-3 ${selected.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+                {selected.map((p) => {
+                  const prod = products.find((x) => x.id === p.product_id);
+                  const days = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 86400000);
+                  return (
+                    <div key={p.id} className="rounded-lg border border-border p-4 space-y-2">
+                      <div className="aspect-square rounded-md overflow-hidden bg-muted/40 border border-border">
+                        {prod?.image_url ? (
+                          <img src={prod.image_url} alt={prod.name} loading="lazy" className="size-full object-cover" />
+                        ) : (
+                          <div className="size-full grid place-items-center text-xs text-muted-foreground">sem foto</div>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className={`${STAGE_COLOR[p.stage]} ${diff("stage") ? "ring-1 ring-amber-500/50" : ""}`}>{STAGE_LABEL[p.stage]}</Badge>
+                        <span className="font-mono text-xs text-muted-foreground">{p.code}</span>
+                      </div>
+                      <div className={`text-sm font-medium ${diff("product_id") ? "bg-amber-500/10 border border-amber-500/30 rounded px-1.5 py-0.5" : ""}`}>
+                        {productName(p.product_id)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Facção: <span className={diffCls("supplier_id")}>{supplierName(p.supplier_id)}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Prazo: <span className={diffCls("due_date")}>{p.due_date ?? "—"}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Ciclo: <span className={days > 30 ? "text-amber-500 font-medium" : ""}>{days}d</span> ({new Date(p.created_at).toLocaleDateString("pt-BR")})
+                      </div>
+                      {p.notes && (
+                        <div className="text-xs mt-2 pt-2 border-t border-border whitespace-pre-wrap">{p.notes}</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+          <div className="text-[11px] text-muted-foreground pt-2 border-t border-border">
+            Campos destacados em âmbar diferem entre os pilotos selecionados.
           </div>
         </DialogContent>
       </Dialog>
