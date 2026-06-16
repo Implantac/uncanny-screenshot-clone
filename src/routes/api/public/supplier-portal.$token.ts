@@ -111,6 +111,11 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
         }
         await supabaseAdmin.from("rfq_requests").update({ status: "cotando" }).eq("id", parsed.data.rfq_id).eq("status", "aberta");
 
+        log("info", "supplier_portal.quote_submitted", {
+          rfq_id: parsed.data.rfq_id,
+          supplier_id: tok.supplier_id,
+          updated: Boolean(existing),
+        });
         return Response.json({ ok: true });
       },
     },
