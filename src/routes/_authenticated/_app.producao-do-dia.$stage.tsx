@@ -56,6 +56,7 @@ function DayProductionPage() {
         <table className="w-full text-sm">
           <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
+              <th className="text-left px-4 py-3">Score</th>
               <th className="text-left px-4 py-3">Prioridade</th>
               <th className="text-left px-4 py-3">OP / Lote</th>
               <th className="text-left px-4 py-3">Produto</th>
