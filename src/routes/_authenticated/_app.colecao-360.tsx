@@ -172,6 +172,9 @@ function Colecao360() {
                 </div>
               </div>
 
+              {/* IA Coordenador — diagnóstico em linguagem natural */}
+              <CoordinatorBriefing c={current} />
+
               {/* Sala de Guerra — sinais operacionais */}
               <div className="rounded-xl border border-border bg-card p-4">
                 <div className="flex items-center justify-between mb-3">
