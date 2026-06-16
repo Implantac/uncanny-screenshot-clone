@@ -86,6 +86,7 @@ import { Route as AuthenticatedAppAuditRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAppAttributionRouteImport } from './routes/_authenticated/_app.attribution'
 import { Route as AuthenticatedAppApprovalsRouteImport } from './routes/_authenticated/_app.approvals'
 import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
+import { Route as ApiPublicSupplierPortalTokenRouteImport } from './routes/api/public/supplier-portal.$token'
 import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
 
@@ -528,6 +529,12 @@ const AuthenticatedAppAlmoxarifadoRoute =
     path: '/almoxarifado',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const ApiPublicSupplierPortalTokenRoute =
+  ApiPublicSupplierPortalTokenRouteImport.update({
+    id: '/api/public/supplier-portal/$token',
+    path: '/api/public/supplier-portal/$token',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicErpSyncPublicIdRoute =
   ApiPublicErpSyncPublicIdRouteImport.update({
     id: '/api/public/erp-sync/$publicId',
@@ -618,6 +625,7 @@ export interface FileRoutesByFullPath {
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
+  '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedAppIndexRoute
@@ -697,6 +705,7 @@ export interface FileRoutesByTo {
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
+  '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -779,6 +788,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
+  '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -860,6 +870,7 @@ export interface FileRouteTypes {
     | '/variantes'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
+    | '/api/public/supplier-portal/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -939,6 +950,7 @@ export interface FileRouteTypes {
     | '/variantes'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
+    | '/api/public/supplier-portal/$token'
   id:
     | '__root__'
     | '/_authenticated'
@@ -1020,6 +1032,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
+    | '/api/public/supplier-portal/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1029,6 +1042,7 @@ export interface RootRouteChildren {
   DppIdRoute: typeof DppIdRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
   ApiPublicErpSyncPublicIdRoute: typeof ApiPublicErpSyncPublicIdRoute
+  ApiPublicSupplierPortalTokenRoute: typeof ApiPublicSupplierPortalTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1572,6 +1586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAlmoxarifadoRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/api/public/supplier-portal/$token': {
+      id: '/api/public/supplier-portal/$token'
+      path: '/api/public/supplier-portal/$token'
+      fullPath: '/api/public/supplier-portal/$token'
+      preLoaderRoute: typeof ApiPublicSupplierPortalTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/erp-sync/$publicId': {
       id: '/api/public/erp-sync/$publicId'
       path: '/api/public/erp-sync/$publicId'
@@ -1762,6 +1783,7 @@ const rootRouteChildren: RootRouteChildren = {
   DppIdRoute: DppIdRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
   ApiPublicErpSyncPublicIdRoute: ApiPublicErpSyncPublicIdRoute,
+  ApiPublicSupplierPortalTokenRoute: ApiPublicSupplierPortalTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
