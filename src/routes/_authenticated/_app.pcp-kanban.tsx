@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
-import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History } from "lucide-react";
+import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History, Package, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
