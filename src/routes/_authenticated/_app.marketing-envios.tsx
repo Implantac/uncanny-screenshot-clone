@@ -89,7 +89,7 @@ function MarketingEnvios() {
   });
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, patch }: { id: string; patch: Partial<Shipment> }) => {
+    mutationFn: async ({ id, patch }: { id: string; patch: { status?: string; shipped_at?: string; posted_at?: string } }) => {
       const { error } = await supabase.from("influencer_shipments").update(patch).eq("id", id);
       if (error) throw error;
     },
