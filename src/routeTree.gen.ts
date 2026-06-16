@@ -57,6 +57,7 @@ import { Route as AuthenticatedAppFinanceiroRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppFichaTecnicaRouteImport } from './routes/_authenticated/_app.ficha-tecnica'
 import { Route as AuthenticatedAppFashionGptRouteImport } from './routes/_authenticated/_app.fashion-gpt'
 import { Route as AuthenticatedAppFashionCalendarRouteImport } from './routes/_authenticated/_app.fashion-calendar'
+import { Route as AuthenticatedAppErpIntegrationRouteImport } from './routes/_authenticated/_app.erp-integration'
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/_app.equipe'
 import { Route as AuthenticatedAppDppRouteImport } from './routes/_authenticated/_app.dpp'
 import { Route as AuthenticatedAppDevKanbanRouteImport } from './routes/_authenticated/_app.dev-kanban'
@@ -80,6 +81,7 @@ import { Route as AuthenticatedAppAuditRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAppAttributionRouteImport } from './routes/_authenticated/_app.attribution'
 import { Route as AuthenticatedAppApprovalsRouteImport } from './routes/_authenticated/_app.approvals'
 import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
+import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
 
 const AuthRoute = AuthRouteImport.update({
@@ -353,6 +355,12 @@ const AuthenticatedAppFashionCalendarRoute =
     path: '/fashion-calendar',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppErpIntegrationRoute =
+  AuthenticatedAppErpIntegrationRouteImport.update({
+    id: '/erp-integration',
+    path: '/erp-integration',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppEquipeRoute = AuthenticatedAppEquipeRouteImport.update({
   id: '/equipe',
   path: '/equipe',
@@ -485,6 +493,12 @@ const AuthenticatedAppAlmoxarifadoRoute =
     path: '/almoxarifado',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const ApiPublicErpSyncPublicIdRoute =
+  ApiPublicErpSyncPublicIdRouteImport.update({
+    id: '/api/public/erp-sync/$publicId',
+    path: '/api/public/erp-sync/$publicId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAgentsRunDueRoute = ApiPublicAgentsRunDueRouteImport.update({
   id: '/api/public/agents/run-due',
   path: '/api/public/agents/run-due',
@@ -519,6 +533,7 @@ export interface FileRoutesByFullPath {
   '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
   '/dpp': typeof AuthenticatedAppDppRoute
   '/equipe': typeof AuthenticatedAppEquipeRoute
+  '/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
   '/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
   '/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
@@ -562,6 +577,7 @@ export interface FileRoutesByFullPath {
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
+  '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedAppIndexRoute
@@ -591,6 +607,7 @@ export interface FileRoutesByTo {
   '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
   '/dpp': typeof AuthenticatedAppDppRoute
   '/equipe': typeof AuthenticatedAppEquipeRoute
+  '/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
   '/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
   '/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
@@ -634,6 +651,7 @@ export interface FileRoutesByTo {
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
+  '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -665,6 +683,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
   '/_authenticated/_app/dpp': typeof AuthenticatedAppDppRoute
   '/_authenticated/_app/equipe': typeof AuthenticatedAppEquipeRoute
+  '/_authenticated/_app/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
   '/_authenticated/_app/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
   '/_authenticated/_app/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/_authenticated/_app/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
@@ -709,6 +728,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/variantes': typeof AuthenticatedAppVariantesRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
+  '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -740,6 +760,7 @@ export interface FileRouteTypes {
     | '/dev-kanban'
     | '/dpp'
     | '/equipe'
+    | '/erp-integration'
     | '/fashion-calendar'
     | '/fashion-gpt'
     | '/ficha-tecnica'
@@ -783,6 +804,7 @@ export interface FileRouteTypes {
     | '/use-ai'
     | '/variantes'
     | '/api/public/agents/run-due'
+    | '/api/public/erp-sync/$publicId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -812,6 +834,7 @@ export interface FileRouteTypes {
     | '/dev-kanban'
     | '/dpp'
     | '/equipe'
+    | '/erp-integration'
     | '/fashion-calendar'
     | '/fashion-gpt'
     | '/ficha-tecnica'
@@ -855,6 +878,7 @@ export interface FileRouteTypes {
     | '/use-ai'
     | '/variantes'
     | '/api/public/agents/run-due'
+    | '/api/public/erp-sync/$publicId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -885,6 +909,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/dev-kanban'
     | '/_authenticated/_app/dpp'
     | '/_authenticated/_app/equipe'
+    | '/_authenticated/_app/erp-integration'
     | '/_authenticated/_app/fashion-calendar'
     | '/_authenticated/_app/fashion-gpt'
     | '/_authenticated/_app/ficha-tecnica'
@@ -929,6 +954,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/variantes'
     | '/_authenticated/_app/'
     | '/api/public/agents/run-due'
+    | '/api/public/erp-sync/$publicId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -937,6 +963,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   DppIdRoute: typeof DppIdRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
+  ApiPublicErpSyncPublicIdRoute: typeof ApiPublicErpSyncPublicIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1277,6 +1304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppFashionCalendarRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/erp-integration': {
+      id: '/_authenticated/_app/erp-integration'
+      path: '/erp-integration'
+      fullPath: '/erp-integration'
+      preLoaderRoute: typeof AuthenticatedAppErpIntegrationRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/equipe': {
       id: '/_authenticated/_app/equipe'
       path: '/equipe'
@@ -1438,6 +1472,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAlmoxarifadoRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/api/public/erp-sync/$publicId': {
+      id: '/api/public/erp-sync/$publicId'
+      path: '/api/public/erp-sync/$publicId'
+      fullPath: '/api/public/erp-sync/$publicId'
+      preLoaderRoute: typeof ApiPublicErpSyncPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/agents/run-due': {
       id: '/api/public/agents/run-due'
       path: '/api/public/agents/run-due'
@@ -1472,6 +1513,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppDevKanbanRoute: typeof AuthenticatedAppDevKanbanRoute
   AuthenticatedAppDppRoute: typeof AuthenticatedAppDppRoute
   AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
+  AuthenticatedAppErpIntegrationRoute: typeof AuthenticatedAppErpIntegrationRoute
   AuthenticatedAppFashionCalendarRoute: typeof AuthenticatedAppFashionCalendarRoute
   AuthenticatedAppFashionGptRoute: typeof AuthenticatedAppFashionGptRoute
   AuthenticatedAppFichaTecnicaRoute: typeof AuthenticatedAppFichaTecnicaRoute
@@ -1542,6 +1584,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppDevKanbanRoute: AuthenticatedAppDevKanbanRoute,
   AuthenticatedAppDppRoute: AuthenticatedAppDppRoute,
   AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
+  AuthenticatedAppErpIntegrationRoute: AuthenticatedAppErpIntegrationRoute,
   AuthenticatedAppFashionCalendarRoute: AuthenticatedAppFashionCalendarRoute,
   AuthenticatedAppFashionGptRoute: AuthenticatedAppFashionGptRoute,
   AuthenticatedAppFichaTecnicaRoute: AuthenticatedAppFichaTecnicaRoute,
@@ -1608,6 +1651,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   DppIdRoute: DppIdRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
+  ApiPublicErpSyncPublicIdRoute: ApiPublicErpSyncPublicIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
