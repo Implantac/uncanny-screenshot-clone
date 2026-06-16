@@ -3,7 +3,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, ImageIcon, Loader2, Package, Pencil, Plus, Scissors, Search, Tag, Trash2, Upload } from "lucide-react";
+import { Download, ImageIcon, Loader2, Package, Pencil, Plus, Scissors, Search, Sparkles, Tag, Trash2, Upload } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -24,6 +24,9 @@ export const Route = createFileRoute("/_authenticated/_app/produtos")({
   validateSearch: zodValidator(
     z.object({
       q: fallback(z.string().trim().max(80), "").default(""),
+      prefillName: fallback(z.string().trim().max(120).optional(), undefined),
+      prefillCategory: fallback(z.string().trim().max(60).optional(), undefined),
+      prefillColors: fallback(z.string().trim().max(300).optional(), undefined),
     }),
   ),
   head: () => ({
@@ -34,6 +37,9 @@ export const Route = createFileRoute("/_authenticated/_app/produtos")({
   }),
   component: ProdutosPage,
 });
+
+type Prefill = { name?: string; category?: string; colors?: string };
+
 
 type Product = {
   id: string;
@@ -97,11 +103,25 @@ function ProdutosPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [prefill, setPrefill] = useState<Prefill | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { q: search } = Route.useSearch();
+  const sp = Route.useSearch();
+  const { q: search, prefillName, prefillCategory, prefillColors } = sp;
   const navigate = useNavigate({ from: Route.fullPath });
   const setSearch = (v: string) =>
-    navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
+    navigate({ search: (p: typeof sp) => ({ ...p, q: v }), replace: true });
+
+  const prefillHandledRef = useRef(false);
+  useEffect(() => {
+    if (prefillHandledRef.current) return;
+    if (!prefillName && !prefillCategory && !prefillColors) return;
+    prefillHandledRef.current = true;
+    setPrefill({ name: prefillName, category: prefillCategory, colors: prefillColors });
+    setEditing(null);
+    setOpen(true);
+    navigate({ search: (p: typeof sp) => ({ ...p, prefillName: undefined, prefillCategory: undefined, prefillColors: undefined }), replace: true });
+  }, [prefillName, prefillCategory, prefillColors, navigate]);
+
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
@@ -266,7 +286,7 @@ function ProdutosPage() {
         </div>
       )}
 
-      <ProductDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} collections={collections} />
+      <ProductDialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setPrefill(null); }} editing={editing} userId={user?.id} collections={collections} prefill={prefill} />
     </div>
   );
 }
@@ -293,14 +313,76 @@ function ProductDetail({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const sketchRef = useRef<HTMLInputElement>(null);
+  const [sketchUploading, setSketchUploading] = useState(false);
+
   const { data: imageUrl } = useQuery({
     queryKey: ["product-detail-image", product.image_url],
     queryFn: () => resolveImageUrl(product.image_url),
     staleTime: 50 * 60 * 1000,
   });
 
+  const { data: nextStepInfo } = useQuery({
+    queryKey: ["product-next-step", product.id, product.image_url, product.status],
+    queryFn: async () => {
+      const [{ data: protos }, { data: sheets }] = await Promise.all([
+        supabase.from("prototypes").select("id, stage, needs_adjustment, updated_at").eq("product_id", product.id),
+        supabase.from("tech_sheets").select("id, status").eq("product_id", product.id),
+      ]);
+      return { protos: protos ?? [], sheets: sheets ?? [] };
+    },
+  });
+
+  const nextStep = useMemo(() => {
+    if (!product.image_url) {
+      return { title: "Adicionar croqui", reason: "Sem imagem o time não consegue solicitar piloto nem cotar tecidos.", action: "sketch" as const };
+    }
+    const protos = nextStepInfo?.protos ?? [];
+    const sheets = nextStepInfo?.sheets ?? [];
+    if (protos.length === 0) {
+      return { title: "Solicitar piloto", reason: "Croqui pronto e nenhum protótipo aberto — hora de produzir a peça-piloto.", action: "prototype" as const };
+    }
+    const stuck = protos.find((p: any) => p.needs_adjustment && p.updated_at && (Date.now() - new Date(p.updated_at).getTime()) / 86400000 > 7);
+    if (stuck) {
+      return { title: "Cobrar ajuste do fornecedor", reason: "Protótipo em ajuste há mais de 7 dias sem atualização.", action: "prototype" as const };
+    }
+    const approved = protos.some((p: any) => p.stage === "aprovado");
+    const hasSheet = sheets.length > 0;
+    if (approved && !hasSheet) {
+      return { title: "Criar ficha técnica", reason: "Protótipo aprovado — sem ficha, produção e compras ficam paradas.", action: "techsheet" as const };
+    }
+    if (approved && sheets.every((s: any) => s.status !== "aprovada")) {
+      return { title: "Aprovar ficha técnica", reason: "Ficha existe mas ainda não está aprovada — bloqueia repasse de custo.", action: "techsheet" as const };
+    }
+    return { title: "Tudo fluindo", reason: "Sem pendências críticas neste produto agora.", action: null };
+  }, [product.image_url, nextStepInfo]);
+
+  async function handleSketchUpload(file: File) {
+    if (!user?.id) { toast.error("Sessão expirada"); return; }
+    if (file.size > 4 * 1024 * 1024) { toast.error("Imagem maior que 4MB"); return; }
+    setSketchUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+      if (upErr) throw upErr;
+      const { error: updErr } = await supabase.from("products").update({ image_url: path }).eq("id", product.id);
+      if (updErr) throw updErr;
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Croqui adicionado");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSketchUploading(false);
+    }
+  }
+
   const margin = Number(product.sell_price || 0) - Number(product.cost_price || 0);
   const marginPct = Number(product.sell_price || 0) > 0 ? (margin / Number(product.sell_price)) * 100 : 0;
+
+
 
 
 
@@ -309,15 +391,43 @@ function ProductDetail({
     <section className="space-y-4">
       <div className="glass rounded-xl overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-0">
-          <div className="min-h-[320px] bg-muted/20 overflow-hidden">
+          <div className="min-h-[320px] bg-muted/20 overflow-hidden relative group">
             {imageUrl ? (
               <img src={imageUrl} alt={product.name} className="size-full object-cover" loading="lazy" />
             ) : (
-              <div className="size-full grid place-items-center text-muted-foreground">
-                <ImageIcon className="size-10 text-primary/70" />
-              </div>
+              <button
+                type="button"
+                disabled={!canEdit || sketchUploading}
+                onClick={() => sketchRef.current?.click()}
+                className="size-full grid place-items-center text-muted-foreground hover:bg-muted/40 transition disabled:cursor-not-allowed"
+              >
+                <div className="flex flex-col items-center gap-2">
+                  {sketchUploading ? <Loader2 className="size-8 animate-spin" /> : <Upload className="size-8 text-primary/70" />}
+                  <span className="text-xs font-medium">{canEdit ? "Adicionar croqui" : "Sem croqui"}</span>
+                  {canEdit && <span className="text-[10px]">PNG/JPG até 4MB</span>}
+                </div>
+              </button>
             )}
+            {imageUrl && canEdit && (
+              <button
+                type="button"
+                disabled={sketchUploading}
+                onClick={() => sketchRef.current?.click()}
+                className="absolute top-2 right-2 px-2 py-1 rounded-md bg-background/90 border border-border text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition"
+              >
+                {sketchUploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />}
+                Trocar
+              </button>
+            )}
+            <input
+              ref={sketchRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSketchUpload(f); e.currentTarget.value = ""; }}
+            />
           </div>
+
 
           <div className="p-5 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center gap-2">
@@ -372,6 +482,29 @@ function ProductDetail({
 
 
         <div className="glass rounded-xl p-5 space-y-4">
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary font-semibold">
+              <Sparkles className="size-3.5" /> Próximo passo · IA Coordenador Dev
+            </div>
+            <div className="text-base font-semibold">{nextStep.title}</div>
+            <div className="text-xs text-muted-foreground">{nextStep.reason}</div>
+            {nextStep.action === "sketch" && canEdit && (
+              <Button size="sm" disabled={sketchUploading} onClick={() => sketchRef.current?.click()} className="gap-2 mt-1">
+                {sketchUploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} Adicionar croqui
+              </Button>
+            )}
+            {nextStep.action === "prototype" && (
+              <Button asChild size="sm" className="gap-2 mt-1">
+                <Link to="/prototipos" search={{ productId: product.id }}><Scissors className="size-4" /> Ir para protótipos</Link>
+              </Button>
+            )}
+            {nextStep.action === "techsheet" && (
+              <Button asChild size="sm" className="gap-2 mt-1">
+                <Link to="/ficha-tecnica" search={{ productId: product.id }}><Sparkles className="size-4" /> Abrir ficha técnica</Link>
+              </Button>
+            )}
+          </div>
+
           <div>
             <div className="text-sm font-semibold">Leitura comercial</div>
             <div className="text-xs text-muted-foreground mt-1">Resumo rápido para estilo, comercial e pricing.</div>
@@ -398,6 +531,7 @@ function ProductDetail({
             )}
           </div>
         </div>
+
       </div>
 
       <ProductGallery productId={product.id} canEdit={canEdit} />
@@ -412,12 +546,14 @@ function ProductDialog({
   editing,
   userId,
   collections,
+  prefill,
 }: {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   editing: Product | null;
   userId?: string;
   collections: CollectionRef[];
+  prefill?: Prefill | null;
 }) {
   const queryClient = useQueryClient();
   const [sku, setSku] = useState("");
@@ -461,7 +597,13 @@ function ProductDialog({
       return;
     }
     reset();
-  }, [editing, open]);
+    if (prefill) {
+      if (prefill.name) setName(prefill.name);
+      if (prefill.category) setCategory(prefill.category);
+      if (prefill.colors) setColorsStr(prefill.colors);
+    }
+  }, [editing, open, prefill]);
+
 
   function reset() {
     setSku("");
