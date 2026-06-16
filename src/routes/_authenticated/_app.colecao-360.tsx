@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
 import {
   Compass, Layers, Scissors, Factory, TrendingUp, Percent, DollarSign,
-  Package, ArrowRight, Sparkles,
+  Package, ArrowRight, Sparkles, AlertTriangle, FileWarning, Clock, CheckCircle2, Radio,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 
