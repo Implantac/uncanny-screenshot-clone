@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
-import { Factory, AlertTriangle, Clock, CheckCircle2, Boxes } from "lucide-react";
+import { Factory, AlertTriangle, Clock, CheckCircle2, Boxes, Activity, Pause, Gauge, TrendingUp } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 
 export const Route = createFileRoute("/_authenticated/_app/twin-factory")({
