@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { PrototypeCommentsButton } from "@/components/prototype-comments";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipos")({
   validateSearch: zodValidator(
