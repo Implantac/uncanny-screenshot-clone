@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { PrototypeCommentsButton } from "@/components/prototype-comments";
+import { PrototypeAdjustmentsButton, SECTORS, type AdjustmentSector } from "@/components/prototype-adjustments";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipos")({
   validateSearch: zodValidator(
