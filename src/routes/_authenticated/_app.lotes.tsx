@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Boxes, Plus, Factory, History, CheckCircle2, Clock, AlertTriangle, Search, ArrowRightCircle } from "lucide-react";
@@ -223,6 +223,9 @@ function LotesPage() {
                     {selected.notes && <p className="text-sm text-muted-foreground mt-1">{selected.notes}</p>}
                   </div>
                   <div className="flex gap-2">
+                    <Link to="/lote/$id" params={{ id: selected.id }}>
+                      <Button size="sm">Abrir lote</Button>
+                    </Link>
                     <Button variant="outline" size="sm" onClick={() => openEdit(selected)}>Editar</Button>
                     <Button variant="outline" size="sm" onClick={() => { if (confirm("Remover lote?")) deleteMut.mutate(selected.id); }}>Remover</Button>
                   </div>
