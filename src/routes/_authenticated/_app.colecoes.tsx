@@ -628,6 +628,26 @@ function ColecoesPage() {
                       );
                     })}
 
+                    {(() => {
+                      const r = readinessByCollection[selected.id];
+                      if (!r || r.planned <= 0) return null;
+                      return (
+                        <div className="col-span-2 rounded-xl border border-border bg-background/30 p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Flag className="size-4 text-primary" />
+                              <div className="text-sm font-medium">Pronta para lançamento</div>
+                            </div>
+                            <span className="text-lg font-semibold tabular-nums">{r.pct}%</span>
+                          </div>
+                          <Progress value={r.pct} className="h-2" />
+                          <div className="text-xs text-muted-foreground mt-2">
+                            {r.done.toLocaleString("pt-BR")} de {r.planned.toLocaleString("pt-BR")} peças produzidas · {r.ops} OPs ativas
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     <div className="col-span-2 rounded-xl border border-border bg-background/30 p-4 flex flex-wrap gap-2 items-center justify-between">
                       <div>
                         <div className="text-sm font-medium">Direção cromática</div>
@@ -639,6 +659,7 @@ function ColecoesPage() {
                         ))}
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
