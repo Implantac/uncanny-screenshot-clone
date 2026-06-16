@@ -36,6 +36,8 @@ type Stage = "solicitado" | "em_confeccao" | "em_prova" | "aprovado" | "reprovad
 type Prototype = {
   id: string; owner_id: string; product_id: string | null; supplier_id: string | null;
   code: string; stage: Stage; due_date: string | null; notes: string | null; created_at: string;
+  current_sector?: AdjustmentSector | null;
+  needs_adjustment?: boolean;
 };
 type Ref = { id: string; name: string };
 
