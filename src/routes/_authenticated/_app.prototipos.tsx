@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { PrototypeCommentsButton } from "@/components/prototype-comments";
 import { PrototypeAdjustmentsButton, SECTORS, type AdjustmentSector } from "@/components/prototype-adjustments";
+import { PrototypeTimelineButton } from "@/components/prototype-timeline";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipos")({
   validateSearch: zodValidator(
@@ -271,6 +272,7 @@ function Prototipos() {
                         )}
                       </button>
                       <div className="flex justify-end gap-1 -mb-1 -mr-1 opacity-70 group-hover:opacity-100 transition">
+                        <PrototypeTimelineButton prototypeId={p.id} prototypeCode={p.code} />
                         <PrototypeAdjustmentsButton
                           prototypeId={p.id}
                           prototypeCode={p.code}
@@ -320,6 +322,7 @@ function Prototipos() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" onClick={() => exportSpec(p)} title="Exportar spec"><Download className="size-4" /></Button>
+                        <PrototypeTimelineButton prototypeId={p.id} prototypeCode={p.code} />
                         <PrototypeAdjustmentsButton prototypeId={p.id} prototypeCode={p.code} defaultSector={p.current_sector ?? null} needsAdjustment={p.needs_adjustment} />
                         <PrototypeCommentsButton prototypeId={p.id} prototypeCode={p.code} />
                         {user?.id === p.owner_id && (
