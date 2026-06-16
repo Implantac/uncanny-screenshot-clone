@@ -1498,6 +1498,47 @@ export type Database = {
           },
         ]
       }
+      production_packages: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          production_order_id: string
+          qty: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          production_order_id: string
+          qty: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          production_order_id?: string
+          qty?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_packages_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       production_stage_log: {
         Row: {
           created_at: string
@@ -2178,6 +2219,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["service_order_kind"]
           notes: string | null
           owner_id: string
+          package_id: string | null
           production_order_id: string
           qty_received: number
           quantity: number
@@ -2187,6 +2229,7 @@ export type Database = {
           supplier_id: string | null
           to_stage: string
           updated_at: string
+          variant_id: string | null
         }
         Insert: {
           code: string
@@ -2197,6 +2240,7 @@ export type Database = {
           kind?: Database["public"]["Enums"]["service_order_kind"]
           notes?: string | null
           owner_id: string
+          package_id?: string | null
           production_order_id: string
           qty_received?: number
           quantity?: number
@@ -2206,6 +2250,7 @@ export type Database = {
           supplier_id?: string | null
           to_stage: string
           updated_at?: string
+          variant_id?: string | null
         }
         Update: {
           code?: string
@@ -2216,6 +2261,7 @@ export type Database = {
           kind?: Database["public"]["Enums"]["service_order_kind"]
           notes?: string | null
           owner_id?: string
+          package_id?: string | null
           production_order_id?: string
           qty_received?: number
           quantity?: number
@@ -2225,8 +2271,16 @@ export type Database = {
           supplier_id?: string | null
           to_stage?: string
           updated_at?: string
+          variant_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "service_orders_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "production_packages"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "service_orders_production_order_id_fkey"
             columns: ["production_order_id"]
@@ -2239,6 +2293,13 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -2837,7 +2898,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_supplier_wip: {
+        Row: {
+          distinct_refs: number | null
+          max_days_at_supplier: number | null
+          oldest_sent_at: string | null
+          open_lot_count: number | null
+          open_os_count: number | null
+          owner_id: string | null
+          pieces_at_supplier: number | null
+          supplier_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {

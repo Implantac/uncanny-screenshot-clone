@@ -20,6 +20,7 @@ import { Route as AuthenticatedAppVariantesRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticated/_app.use-ai'
 import { Route as AuthenticatedAppTwinFactoryRouteImport } from './routes/_authenticated/_app.twin-factory'
 import { Route as AuthenticatedAppTrendsRouteImport } from './routes/_authenticated/_app.trends'
+import { Route as AuthenticatedAppTerceirizadosRouteImport } from './routes/_authenticated/_app.terceirizados'
 import { Route as AuthenticatedAppTargetCostingRouteImport } from './routes/_authenticated/_app.target-costing'
 import { Route as AuthenticatedAppSustentabilidade360RouteImport } from './routes/_authenticated/_app.sustentabilidade-360'
 import { Route as AuthenticatedAppSustentabilidadeRouteImport } from './routes/_authenticated/_app.sustentabilidade'
@@ -90,6 +91,7 @@ import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_auth
 import { Route as ApiPublicSupplierPortalTokenRouteImport } from './routes/api/public/supplier-portal.$token'
 import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
+import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes/_authenticated/_app.producao-do-dia.$stage'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -146,6 +148,12 @@ const AuthenticatedAppTrendsRoute = AuthenticatedAppTrendsRouteImport.update({
   path: '/trends',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppTerceirizadosRoute =
+  AuthenticatedAppTerceirizadosRouteImport.update({
+    id: '/terceirizados',
+    path: '/terceirizados',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppTargetCostingRoute =
   AuthenticatedAppTargetCostingRouteImport.update({
     id: '/target-costing',
@@ -552,6 +560,12 @@ const ApiPublicAgentsRunDueRoute = ApiPublicAgentsRunDueRouteImport.update({
   path: '/api/public/agents/run-due',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAppProducaoDoDiaStageRoute =
+  AuthenticatedAppProducaoDoDiaStageRouteImport.update({
+    id: '/producao-do-dia/$stage',
+    path: '/producao-do-dia/$stage',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedAppIndexRoute
@@ -625,11 +639,13 @@ export interface FileRoutesByFullPath {
   '/sustentabilidade': typeof AuthenticatedAppSustentabilidadeRoute
   '/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/target-costing': typeof AuthenticatedAppTargetCostingRoute
+  '/terceirizados': typeof AuthenticatedAppTerceirizadosRoute
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
+  '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
@@ -706,11 +722,13 @@ export interface FileRoutesByTo {
   '/sustentabilidade': typeof AuthenticatedAppSustentabilidadeRoute
   '/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/target-costing': typeof AuthenticatedAppTargetCostingRoute
+  '/terceirizados': typeof AuthenticatedAppTerceirizadosRoute
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
+  '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
@@ -789,12 +807,14 @@ export interface FileRoutesById {
   '/_authenticated/_app/sustentabilidade': typeof AuthenticatedAppSustentabilidadeRoute
   '/_authenticated/_app/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/_authenticated/_app/target-costing': typeof AuthenticatedAppTargetCostingRoute
+  '/_authenticated/_app/terceirizados': typeof AuthenticatedAppTerceirizadosRoute
   '/_authenticated/_app/trends': typeof AuthenticatedAppTrendsRoute
   '/_authenticated/_app/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/_authenticated/_app/use-ai': typeof AuthenticatedAppUseAiRoute
   '/_authenticated/_app/variantes': typeof AuthenticatedAppVariantesRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
+  '/_authenticated/_app/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
@@ -873,11 +893,13 @@ export interface FileRouteTypes {
     | '/sustentabilidade'
     | '/sustentabilidade-360'
     | '/target-costing'
+    | '/terceirizados'
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
     | '/variantes'
     | '/portal/fornecedor/$token'
+    | '/producao-do-dia/$stage'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/supplier-portal/$token'
@@ -954,11 +976,13 @@ export interface FileRouteTypes {
     | '/sustentabilidade'
     | '/sustentabilidade-360'
     | '/target-costing'
+    | '/terceirizados'
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
     | '/variantes'
     | '/portal/fornecedor/$token'
+    | '/producao-do-dia/$stage'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/supplier-portal/$token'
@@ -1036,12 +1060,14 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/sustentabilidade'
     | '/_authenticated/_app/sustentabilidade-360'
     | '/_authenticated/_app/target-costing'
+    | '/_authenticated/_app/terceirizados'
     | '/_authenticated/_app/trends'
     | '/_authenticated/_app/twin-factory'
     | '/_authenticated/_app/use-ai'
     | '/_authenticated/_app/variantes'
     | '/portal/fornecedor/$token'
     | '/_authenticated/_app/'
+    | '/_authenticated/_app/producao-do-dia/$stage'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/supplier-portal/$token'
@@ -1135,6 +1161,13 @@ declare module '@tanstack/react-router' {
       path: '/trends'
       fullPath: '/trends'
       preLoaderRoute: typeof AuthenticatedAppTrendsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/terceirizados': {
+      id: '/_authenticated/_app/terceirizados'
+      path: '/terceirizados'
+      fullPath: '/terceirizados'
+      preLoaderRoute: typeof AuthenticatedAppTerceirizadosRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/target-costing': {
@@ -1627,6 +1660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAgentsRunDueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/_app/producao-do-dia/$stage': {
+      id: '/_authenticated/_app/producao-do-dia/$stage'
+      path: '/producao-do-dia/$stage'
+      fullPath: '/producao-do-dia/$stage'
+      preLoaderRoute: typeof AuthenticatedAppProducaoDoDiaStageRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
   }
 }
 
@@ -1698,11 +1738,13 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppSustentabilidadeRoute: typeof AuthenticatedAppSustentabilidadeRoute
   AuthenticatedAppSustentabilidade360Route: typeof AuthenticatedAppSustentabilidade360Route
   AuthenticatedAppTargetCostingRoute: typeof AuthenticatedAppTargetCostingRoute
+  AuthenticatedAppTerceirizadosRoute: typeof AuthenticatedAppTerceirizadosRoute
   AuthenticatedAppTrendsRoute: typeof AuthenticatedAppTrendsRoute
   AuthenticatedAppTwinFactoryRoute: typeof AuthenticatedAppTwinFactoryRoute
   AuthenticatedAppUseAiRoute: typeof AuthenticatedAppUseAiRoute
   AuthenticatedAppVariantesRoute: typeof AuthenticatedAppVariantesRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+  AuthenticatedAppProducaoDoDiaStageRoute: typeof AuthenticatedAppProducaoDoDiaStageRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
@@ -1775,11 +1817,14 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppSustentabilidade360Route:
     AuthenticatedAppSustentabilidade360Route,
   AuthenticatedAppTargetCostingRoute: AuthenticatedAppTargetCostingRoute,
+  AuthenticatedAppTerceirizadosRoute: AuthenticatedAppTerceirizadosRoute,
   AuthenticatedAppTrendsRoute: AuthenticatedAppTrendsRoute,
   AuthenticatedAppTwinFactoryRoute: AuthenticatedAppTwinFactoryRoute,
   AuthenticatedAppUseAiRoute: AuthenticatedAppUseAiRoute,
   AuthenticatedAppVariantesRoute: AuthenticatedAppVariantesRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+  AuthenticatedAppProducaoDoDiaStageRoute:
+    AuthenticatedAppProducaoDoDiaStageRoute,
 }
 
 const AuthenticatedAppRouteWithChildren =
