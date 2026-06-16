@@ -64,6 +64,7 @@ function TwinFactory() {
   const { data, isLoading } = useQuery({ queryKey: ["twin-factory"], queryFn: loadAll });
   const orders = data?.orders ?? [];
   const batches = data?.batches ?? [];
+  const logs = data?.logs ?? [];
 
   const today = new Date();
   const stats = useMemo(() => {
@@ -83,6 +84,33 @@ function TwinFactory() {
     const counts = byStage.filter((s) => s.key !== "entregue").map((s) => ({ ...s, count: s.items.reduce((a, i) => a + i.quantity, 0) }));
     return counts.sort((a, b) => b.count - a.count)[0];
   }, [byStage]);
+
+  // === Inteligência adicional (sem nova rota) ===
+  const todayKey = today.toISOString().slice(0, 10);
+  const intel = useMemo(() => {
+    const passToday = logs.filter((l) => l.created_at.slice(0, 10) === todayKey);
+    const passWeek = logs;
+    const qtyToday = passToday.reduce((s, l) => s + (Number(l.quantity) || 0), 0);
+    const qtyWeek = passWeek.reduce((s, l) => s + (Number(l.quantity) || 0), 0);
+
+    const now = today.getTime();
+    const stalled = STAGES.filter((s) => s.key !== "entregue").map((s) => {
+      const itemsHere = orders.filter((o) => o.stage === s.key && o.status !== "cancelada");
+      if (itemsHere.length === 0) return null;
+      const lastMove = itemsHere
+        .map((o) => o.stage_updated_at ? new Date(o.stage_updated_at).getTime() : 0)
+        .reduce((a, b) => Math.max(a, b), 0);
+      const hoursIdle = lastMove ? Math.floor((now - lastMove) / 3600000) : 9999;
+      return { stage: s.label, hoursIdle, count: itemsHere.length };
+    }).filter(Boolean).filter((x) => x!.hoursIdle >= 48) as { stage: string; hoursIdle: number; count: number }[];
+
+    const planned = batches.reduce((s, b) => s + Number(b.planned_quantity ?? 0), 0);
+    const produced = batches.reduce((s, b) => s + Number(b.produced_quantity ?? 0), 0);
+    const efficiency = planned > 0 ? Math.round((produced / planned) * 100) : 0;
+
+    return { qtyToday, qtyWeek, stalled, efficiency, passCountToday: passToday.length };
+  }, [logs, orders, batches, today, todayKey]);
+
 
   return (
     <div className="p-6 space-y-6">
