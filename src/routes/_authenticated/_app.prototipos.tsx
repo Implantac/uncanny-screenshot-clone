@@ -364,6 +364,16 @@ function Prototipos() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" onClick={() => exportSpec(p)} title="Exportar spec"><Download className="size-4" /></Button>
+                        {(p.stage === "em_prova" || p.stage === "em_confeccao") && !p.needs_adjustment && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Aprovar protótipo"
+                            onClick={() => approve.mutate(p.id)}
+                          >
+                            <Check className="size-4 text-emerald-500" />
+                          </Button>
+                        )}
                         {p.stage === "aprovado" && p.product_id && (
                           <Button
                             size="icon"
