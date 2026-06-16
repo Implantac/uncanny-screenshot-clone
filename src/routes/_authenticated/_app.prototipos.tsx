@@ -291,6 +291,16 @@ function Prototipos() {
                         )}
                       </button>
                       <div className="flex justify-end gap-1 -mb-1 -mr-1 opacity-70 group-hover:opacity-100 transition">
+                        {(p.stage === "em_prova" || p.stage === "em_confeccao") && !p.needs_adjustment && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Aprovar protótipo"
+                            onClick={(e) => { e.stopPropagation(); approve.mutate(p.id); }}
+                          >
+                            <Check className="size-4 text-emerald-500" />
+                          </Button>
+                        )}
                         {p.stage === "aprovado" && p.product_id && (
                           <Button
                             size="icon"
