@@ -77,6 +77,20 @@ function FornecedoresPage() {
     }, {})
   ).sort((a, b) => b[1] - a[1]).slice(0, 4);
 
+  async function generatePortalLink(supplierId: string) {
+    if (!user) return;
+    const token = (crypto as any).randomUUID().replace(/-/g, "") + Math.random().toString(36).slice(2, 10);
+    const { error } = await supabase.from("supplier_portal_tokens").insert({
+      owner_id: user.id, supplier_id: supplierId, token,
+      expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24 * 90).toISOString(),
+    });
+    if (error) { toast.error(error.message); return; }
+    const url = `${window.location.origin}/portal/fornecedor/${token}`;
+    try { await navigator.clipboard.writeText(url); toast.success("Link copiado: " + url); }
+    catch { toast.success(url); }
+  }
+
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -171,6 +185,9 @@ function FornecedoresPage() {
               {s.notes && <p className="text-xs text-muted-foreground line-clamp-2">{s.notes}</p>}
               {s.owner_id === user?.id && (
                 <div className="flex justify-end gap-1 pt-2 border-t border-border">
+                  <button onClick={() => generatePortalLink(s.id)} className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border hover:bg-muted">
+                    Link do portal
+                  </button>
                   <button onClick={() => { setEditing(s); setOpen(true); }} className="size-7 grid place-items-center rounded hover:bg-muted">
                     <Pencil className="size-3.5" />
                   </button>
