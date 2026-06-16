@@ -29,7 +29,7 @@ function WarRoomProducao() {
         supabase.from("pcp_stages").select("key, label, color, position").eq("active", true).order("position"),
         supabase
           .from("service_orders")
-          .select("id, code, supplier_id, quantity, qty_received, sent_at, due_at, status, suppliers(name)")
+          .select("id, code, supplier_id, quantity, qty_received, sent_at, due_at, status, line_type, suppliers(name)")
           .in("status", ["enviada", "em_andamento"])
           .limit(200),
       ]);
@@ -65,12 +65,13 @@ function WarRoomProducao() {
     const late = orders.filter((o: any) => o.due_date && new Date(o.due_date).getTime() < now);
     const stuck = orders.filter((o: any) => o.stage_updated_at && now - new Date(o.stage_updated_at).getTime() > STUCK);
 
-    const bySupplier = new Map<string, { name: string; pieces: number; ops: number; oldest: string | null }>();
+    const bySupplier = new Map<string, { name: string; pieces: number; ops: number; secondLine: number; oldest: string | null }>();
     (data?.outsourced ?? []).forEach((s: any) => {
       const key = s.supplier_id ?? "—";
-      const cur = bySupplier.get(key) ?? { name: s.suppliers?.name ?? "—", pieces: 0, ops: 0, oldest: null };
+      const cur = bySupplier.get(key) ?? { name: s.suppliers?.name ?? "—", pieces: 0, ops: 0, secondLine: 0, oldest: null };
       cur.pieces += (s.quantity ?? 0) - (s.qty_received ?? 0);
       cur.ops += 1;
+      if (s.line_type === "segunda_linha") cur.secondLine += 1;
       if (s.sent_at && (!cur.oldest || s.sent_at < cur.oldest)) cur.oldest = s.sent_at;
       bySupplier.set(key, cur);
     });
@@ -204,6 +205,7 @@ function WarRoomProducao() {
               <div key={i} className="border border-border rounded-lg p-3">
                 <div className="text-sm font-medium truncate">{s.name}</div>
                 <div className="text-xs text-muted-foreground">{s.ops} OS · {s.pieces} pç em campo</div>
+                {s.secondLine > 0 && <div className="text-[11px] text-orange-500 mt-1">{s.secondLine} OS em 2ª linha</div>}
                 {s.oldest && (
                   <div className="text-[11px] text-muted-foreground mt-1">
                     OS mais antiga: {new Date(s.oldest).toLocaleDateString("pt-BR")}
