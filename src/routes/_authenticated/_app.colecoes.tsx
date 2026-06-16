@@ -235,6 +235,39 @@ function ColecoesPage() {
     },
   });
 
+  const { data: productionAll = [] } = useQuery({
+    queryKey: ["collections-production-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("production_orders")
+        .select("product_id, quantity, progress, status, stage")
+        .neq("status", "cancelada");
+      if (error) throw error;
+      return (data ?? []) as Array<{ product_id: string | null; quantity: number | null; progress: number | null; status: string | null; stage: string | null }>;
+    },
+  });
+
+  const readinessByCollection = useMemo(() => {
+    const productToCol = new Map(products.map((p) => [p.id, p.collection_id] as const));
+    const agg = new Map<string, { planned: number; done: number; ops: number }>();
+    productionAll.forEach((o) => {
+      const col = o.product_id ? productToCol.get(o.product_id) : null;
+      if (!col) return;
+      const a = agg.get(col) ?? { planned: 0, done: 0, ops: 0 };
+      const q = Number(o.quantity ?? 0);
+      a.planned += q;
+      a.done += Math.round(q * (Number(o.progress ?? 0) / 100));
+      a.ops += 1;
+      agg.set(col, a);
+    });
+    const map: Record<string, { planned: number; done: number; ops: number; pct: number }> = {};
+    agg.forEach((v, k) => {
+      map[k] = { ...v, pct: v.planned > 0 ? Math.round((v.done / v.planned) * 100) : 0 };
+    });
+    return map;
+  }, [productionAll, products]);
+
+
   const derived = useMemo(() => {
     const revenue = selectedProducts.reduce((sum, item) => sum + Number(item.sell_price || 0), 0);
     const cost = selectedProducts.reduce((sum, item) => sum + Number(item.cost_price || 0), 0);
@@ -526,7 +559,17 @@ function ColecoesPage() {
                         <span>{collection.progress}%</span>
                       </div>
                       <Progress value={collection.progress} className="h-1.5" />
+                      {readinessByCollection[collection.id]?.planned > 0 && (
+                        <>
+                          <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                            <span>Produção (real/plan)</span>
+                            <span className="tabular-nums">{readinessByCollection[collection.id].pct}%</span>
+                          </div>
+                          <Progress value={readinessByCollection[collection.id].pct} className="h-1.5" />
+                        </>
+                      )}
                     </div>
+
                   </button>
                 );
               })}
@@ -585,6 +628,26 @@ function ColecoesPage() {
                       );
                     })}
 
+                    {(() => {
+                      const r = readinessByCollection[selected.id];
+                      if (!r || r.planned <= 0) return null;
+                      return (
+                        <div className="col-span-2 rounded-xl border border-border bg-background/30 p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Flag className="size-4 text-primary" />
+                              <div className="text-sm font-medium">Pronta para lançamento</div>
+                            </div>
+                            <span className="text-lg font-semibold tabular-nums">{r.pct}%</span>
+                          </div>
+                          <Progress value={r.pct} className="h-2" />
+                          <div className="text-xs text-muted-foreground mt-2">
+                            {r.done.toLocaleString("pt-BR")} de {r.planned.toLocaleString("pt-BR")} peças produzidas · {r.ops} OPs ativas
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     <div className="col-span-2 rounded-xl border border-border bg-background/30 p-4 flex flex-wrap gap-2 items-center justify-between">
                       <div>
                         <div className="text-sm font-medium">Direção cromática</div>
@@ -596,6 +659,7 @@ function ColecoesPage() {
                         ))}
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
