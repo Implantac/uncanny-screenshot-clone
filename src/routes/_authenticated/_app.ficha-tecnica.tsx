@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -29,7 +31,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { MaterialsPanel, OperationsPanel, MeasurementsPanel, CostsPanel } from "@/components/tech-pack/panels";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/_authenticated/_app/ficha-tecnica")({
+  validateSearch: zodValidator(
+    z.object({ productId: fallback(z.string().regex(UUID_RE).optional(), undefined) }),
+  ),
   head: () => ({
     meta: [
       { title: "Ficha Técnica · USE MODA OS" },
@@ -129,8 +136,11 @@ async function resolveProductImage(path: string | null) {
 function FichaTecnicaPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { productId: deepLinkProductId } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Sheet | null>(null);
+  const [initialProductId, setInitialProductId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [diffOpen, setDiffOpen] = useState(false);
 
@@ -159,6 +169,20 @@ function FichaTecnicaPage() {
     }
     setSelectedId((current) => (current && sheets.some((sheet) => sheet.id === current) ? current : sheets[0].id));
   }, [sheets]);
+
+  useEffect(() => {
+    if (!deepLinkProductId) return;
+    const match = sheets.find((s) => s.product_id === deepLinkProductId);
+    if (match) {
+      setSelectedId(match.id);
+    } else {
+      setEditing(null);
+      setInitialProductId(deepLinkProductId);
+      setOpen(true);
+      toast.info("Nenhuma ficha para esse produto — criando uma nova.");
+    }
+    navigate({ search: { productId: undefined }, replace: true });
+  }, [deepLinkProductId, sheets, navigate]);
 
   const selected = useMemo(() => sheets.find((item) => item.id === selectedId) ?? sheets[0] ?? null, [selectedId, sheets]);
   const selectedContent = useMemo(() => parseSheetContent(selected?.content ?? null), [selected?.content]);
@@ -351,7 +375,14 @@ function FichaTecnicaPage() {
         </div>
       )}
 
-      <SheetDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} products={products} />
+      <SheetDialog
+        open={open}
+        onOpenChange={(v) => { setOpen(v); if (!v) setInitialProductId(null); }}
+        editing={editing}
+        initialProductId={initialProductId}
+        userId={user?.id}
+        products={products}
+      />
       <VersionDiffDialog open={diffOpen} onOpenChange={setDiffOpen} versions={versionHistory} />
     </div>
   );
@@ -440,12 +471,14 @@ function SheetDialog({
   open,
   onOpenChange,
   editing,
+  initialProductId,
   userId,
   products,
 }: {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   editing: Sheet | null;
+  initialProductId?: string | null;
   userId?: string;
   products: ProductRef[];
 }) {
@@ -480,7 +513,8 @@ function SheetDialog({
       return;
     }
     reset();
-  }, [editing, open]);
+    if (initialProductId) setProductId(initialProductId);
+  }, [editing, open, initialProductId]);
 
   function reset() {
     setCode("");

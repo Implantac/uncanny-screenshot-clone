@@ -957,30 +957,39 @@ function ColecoesPage() {
                     </div>
                     {pendingForSelected && (() => {
                       const items: Array<{ key: string; tone: string; title: string; detail: string; cta: string; onClick: () => void }> = [];
-                      if (pendingForSelected.noSheet.length) items.push({
-                        key: "sheet",
-                        tone: "bg-warning/15 text-warning border-warning/30",
-                        title: `${pendingForSelected.noSheet.length} produto(s) sem ficha técnica aprovada`,
-                        detail: pendingForSelected.noSheet.slice(0, 3).map((p) => p.name).join(" · ") + (pendingForSelected.noSheet.length > 3 ? "…" : ""),
-                        cta: "Abrir Ficha técnica",
-                        onClick: () => navigate({ to: "/ficha-tecnica" }),
-                      });
-                      if (pendingForSelected.noStock.length) items.push({
-                        key: "stock",
-                        tone: "bg-destructive/15 text-destructive border-destructive/30",
-                        title: `${pendingForSelected.noStock.length} produto(s) com ficha aprovada mas sem material em estoque`,
-                        detail: pendingForSelected.noStock.slice(0, 3).map((p) => p.name).join(" · ") + (pendingForSelected.noStock.length > 3 ? "…" : ""),
-                        cta: "Abrir Almoxarifado",
-                        onClick: () => navigate({ to: "/almoxarifado" }),
-                      });
-                      if (pendingForSelected.lateProducts.length) items.push({
-                        key: "late",
-                        tone: "bg-destructive/15 text-destructive border-destructive/30",
-                        title: `${pendingForSelected.lateProducts.length} produto(s) com ordens atrasadas`,
-                        detail: pendingForSelected.lateProducts.slice(0, 3).map((p) => p.name).join(" · ") + (pendingForSelected.lateProducts.length > 3 ? "…" : ""),
-                        cta: "Abrir War Room",
-                        onClick: () => navigate({ to: "/war-room-producao" }),
-                      });
+                      if (pendingForSelected.noSheet.length) {
+                        const first = pendingForSelected.noSheet[0];
+                        items.push({
+                          key: "sheet",
+                          tone: "bg-warning/15 text-warning border-warning/30",
+                          title: `${pendingForSelected.noSheet.length} produto(s) sem ficha técnica aprovada`,
+                          detail: `Próximo: ${first.name}` + (pendingForSelected.noSheet.length > 1 ? ` (+${pendingForSelected.noSheet.length - 1})` : ""),
+                          cta: `Criar ficha de "${first.name}"`,
+                          onClick: () => navigate({ to: "/ficha-tecnica", search: { productId: first.id } }),
+                        });
+                      }
+                      if (pendingForSelected.noStock.length) {
+                        const first = pendingForSelected.noStock[0];
+                        items.push({
+                          key: "stock",
+                          tone: "bg-destructive/15 text-destructive border-destructive/30",
+                          title: `${pendingForSelected.noStock.length} produto(s) com ficha aprovada mas sem material em estoque`,
+                          detail: `Próximo: ${first.name}` + (pendingForSelected.noStock.length > 1 ? ` (+${pendingForSelected.noStock.length - 1})` : ""),
+                          cta: `Abrir materiais de "${first.name}"`,
+                          onClick: () => navigate({ to: "/ficha-tecnica", search: { productId: first.id } }),
+                        });
+                      }
+                      if (pendingForSelected.lateProducts.length) {
+                        const first = pendingForSelected.lateProducts[0];
+                        items.push({
+                          key: "late",
+                          tone: "bg-destructive/15 text-destructive border-destructive/30",
+                          title: `${pendingForSelected.lateProducts.length} produto(s) com ordens atrasadas`,
+                          detail: `Próximo: ${first.name}` + (pendingForSelected.lateProducts.length > 1 ? ` (+${pendingForSelected.lateProducts.length - 1})` : ""),
+                          cta: `War Room de "${first.name}"`,
+                          onClick: () => navigate({ to: "/war-room-producao", search: { productId: first.id } }),
+                        });
+                      }
                       if (pendingForSelected.missingLaunch) items.push({
                         key: "launch",
                         tone: "bg-info/15 text-info border-info/30",

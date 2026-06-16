@@ -1,11 +1,18 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
-import { Factory, AlertTriangle, Clock, Truck, Activity } from "lucide-react";
+import { Factory, AlertTriangle, Clock, Truck, Activity, X } from "lucide-react";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/_authenticated/_app/war-room-producao")({
+  validateSearch: zodValidator(
+    z.object({ productId: fallback(z.string().regex(UUID_RE).optional(), undefined) }),
+  ),
   head: () => ({
     meta: [
       { title: "Sala de Guerra · Produção · USE MODA PLM" },
@@ -16,13 +23,15 @@ export const Route = createFileRoute("/_authenticated/_app/war-room-producao")({
 });
 
 function WarRoomProducao() {
+  const { productId } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const { data, isLoading } = useQuery({
     queryKey: ["war-room-producao"],
     queryFn: async () => {
       const [ordersR, stagesR, suppliersR] = await Promise.all([
         supabase
           .from("production_orders")
-          .select("id, code, stage, status, quantity, due_date, stage_updated_at, outsourced, products(name, sku), suppliers(name)")
+          .select("id, code, stage, status, quantity, due_date, stage_updated_at, outsourced, product_id, products(name, sku), suppliers(name)")
           .neq("status", "cancelada")
           .neq("status", "concluida")
           .limit(500),
@@ -42,7 +51,8 @@ function WarRoomProducao() {
   });
 
   const analysis = useMemo(() => {
-    const orders = data?.orders ?? [];
+    const allOrders = data?.orders ?? [];
+    const orders = productId ? allOrders.filter((o: any) => o.product_id === productId) : allOrders;
     const stages = data?.stages ?? [];
     const now = Date.now();
     const STUCK = 5 * 86400000;
@@ -77,8 +87,11 @@ function WarRoomProducao() {
     });
     const suppliers = [...bySupplier.values()].sort((a, b) => b.pieces - a.pieces);
 
-    return { stageRows, maxQty, bottleneck, late, stuck, suppliers };
-  }, [data]);
+    const filteredProductName = productId
+      ? (allOrders.find((o: any) => o.product_id === productId)?.products?.name ?? null)
+      : null;
+    return { stageRows, maxQty, bottleneck, late, stuck, suppliers, filteredProductName };
+  }, [data, productId]);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
@@ -91,6 +104,21 @@ function WarRoomProducao() {
           Heatmap de etapas, OPs críticas e terceirizados — com IA explicando o porquê de cada alerta.
         </p>
       </div>
+
+      {productId && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-sm">
+          <span>
+            Filtrando por produto: <strong>{analysis.filteredProductName ?? productId}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={() => navigate({ search: { productId: undefined }, replace: true })}
+            className="flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            <X className="size-3" /> limpar filtro
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 glass rounded-xl p-5">
