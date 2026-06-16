@@ -379,6 +379,10 @@ function ProductDetail({
     }
   }
 
+  const margin = Number(product.sell_price || 0) - Number(product.cost_price || 0);
+  const marginPct = Number(product.sell_price || 0) > 0 ? (margin / Number(product.sell_price)) * 100 : 0;
+
+
 
 
 
