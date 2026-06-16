@@ -247,6 +247,7 @@ function PcpKanban() {
                         <span className="font-semibold tabular-nums">{o.code}</span>
                         <div className="flex items-center gap-1">
                           <ProductionOrderCommentsButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} />
+                          <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={col.key} />
                           <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>{pri.label}</span>
                         </div>
                       </div>
