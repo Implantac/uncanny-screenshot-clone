@@ -3,7 +3,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Scissors, Plus, Trash2, Pencil, Search, X, Download, GitCompare } from "lucide-react";
+import { Scissors, Plus, Trash2, Pencil, Search, X, Download, GitCompare, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -272,6 +272,19 @@ function Prototipos() {
                         )}
                       </button>
                       <div className="flex justify-end gap-1 -mb-1 -mr-1 opacity-70 group-hover:opacity-100 transition">
+                        {p.stage === "aprovado" && p.product_id && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Criar ficha técnica deste protótipo"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate({ to: "/ficha-tecnica", search: { productId: p.product_id! } });
+                            }}
+                          >
+                            <FileText className="size-4 text-emerald-500" />
+                          </Button>
+                        )}
                         <PrototypeTimelineButton prototypeId={p.id} prototypeCode={p.code} />
                         <PrototypeAdjustmentsButton
                           prototypeId={p.id}
@@ -322,6 +335,16 @@ function Prototipos() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex gap-1 justify-end">
                         <Button size="icon" variant="ghost" onClick={() => exportSpec(p)} title="Exportar spec"><Download className="size-4" /></Button>
+                        {p.stage === "aprovado" && p.product_id && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Criar ficha técnica deste protótipo"
+                            onClick={() => navigate({ to: "/ficha-tecnica", search: { productId: p.product_id! } })}
+                          >
+                            <FileText className="size-4 text-emerald-500" />
+                          </Button>
+                        )}
                         <PrototypeTimelineButton prototypeId={p.id} prototypeCode={p.code} />
                         <PrototypeAdjustmentsButton prototypeId={p.id} prototypeCode={p.code} defaultSector={p.current_sector ?? null} needsAdjustment={p.needs_adjustment} />
                         <PrototypeCommentsButton prototypeId={p.id} prototypeCode={p.code} />
