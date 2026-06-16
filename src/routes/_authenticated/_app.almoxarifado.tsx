@@ -31,8 +31,18 @@ type Category = "tecido" | "aviamento" | "acabado" | "outros";
 type Item = {
   id: string; owner_id: string; sku: string; name: string;
   category: Category; deposit: string | null; unit: string;
-  balance: number; minimum: number; notes: string | null;
+  balance: number; minimum: number; maximum: number; notes: string | null;
+  last_entry_at: string | null; last_exit_at: string | null; turnover_30d: number;
 };
+
+function fmtDate(d: string | null) {
+  if (!d) return "—";
+  const days = Math.floor((Date.now() - new Date(d).getTime()) / 86_400_000);
+  if (days === 0) return "hoje";
+  if (days === 1) return "ontem";
+  if (days < 30) return `${days}d`;
+  return new Date(d).toLocaleDateString("pt-BR");
+}
 
 const CAT_LABEL: Record<Category, string> = {
   tecido: "Tecido", aviamento: "Aviamento", acabado: "Acabado", outros: "Outros",
