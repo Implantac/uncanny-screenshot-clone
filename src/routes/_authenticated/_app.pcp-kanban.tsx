@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History } from "lucide-react";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
+import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
