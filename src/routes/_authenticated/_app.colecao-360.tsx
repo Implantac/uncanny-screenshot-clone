@@ -456,3 +456,48 @@ function Metric({ label, value, tone }: { label: string; value: string; tone: "r
     </div>
   );
 }
+
+function MetaMood({ c }: { c: any }) {
+  const goal = c.investment > 0 ? c.investment * 1.5 : Math.max(c.revenue * 1.2, 50000);
+  const pct = goal > 0 ? Math.min(100, (c.revenue / goal) * 100) : 0;
+  const moodKey = c.avanco >= 80 && c.semPiloto === 0 ? "confiante"
+    : c.semPiloto > 3 || c.protoPendentes > 10 ? "tenso"
+    : c.opsAguardando > 0 ? "expectativa" : "neutro";
+  const mood: Record<string, { emoji: string; label: string; tone: string; msg: string }> = {
+    confiante:    { emoji: "😎", label: "Confiante",  tone: "text-success",     msg: "Time alinhado, produção fluindo." },
+    tenso:        { emoji: "😰", label: "Tenso",      tone: "text-destructive", msg: "Muitos bloqueios — concentrar esforço em desbloquear." },
+    expectativa:  { emoji: "🤔", label: "Expectativa",tone: "text-warning",     msg: "OPs aguardando decisão — destravar essa semana." },
+    neutro:       { emoji: "🙂", label: "Neutro",     tone: "text-primary",     msg: "Ritmo normal, manter atenção." },
+  };
+  const m = mood[moodKey];
+
+  return (
+    <div className="grid md:grid-cols-2 gap-3">
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-2">
+          <Target className="size-3.5 text-primary" /> Meta de receita
+        </div>
+        <div className="flex items-baseline justify-between">
+          <div className="text-2xl font-semibold tabular-nums">{fmt(c.revenue)}</div>
+          <div className="text-xs text-muted-foreground">meta {fmt(goal)}</div>
+        </div>
+        <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+          <div className={`h-full transition-all ${pct >= 100 ? "bg-success" : pct >= 60 ? "bg-primary" : "bg-warning"}`} style={{ width: `${pct}%` }} />
+        </div>
+        <div className="text-[10px] text-muted-foreground mt-1 tabular-nums">{pct.toFixed(0)}% da meta · faltam {fmt(Math.max(0, goal - c.revenue))}</div>
+      </div>
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-2">
+          <Heart className="size-3.5 text-primary" /> Mood da coleção
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-4xl">{m.emoji}</div>
+          <div className="min-w-0">
+            <div className={`text-sm font-semibold ${m.tone}`}>{m.label}</div>
+            <div className="text-xs text-muted-foreground leading-relaxed">{m.msg}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
