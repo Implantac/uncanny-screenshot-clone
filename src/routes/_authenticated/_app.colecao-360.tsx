@@ -124,14 +124,26 @@ function Colecao360() {
 
   return (
     <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-          <Compass className="size-6 text-primary" />Coleção 360º
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Ciclo completo da coleção — do protótipo à margem real, em uma única tela.
-        </p>
+      <header className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <Compass className="size-6 text-primary" />Coleção 360º
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Ciclo completo da coleção — do protótipo à margem real, em uma única tela.
+          </p>
+        </div>
+        {current && (
+          <Link
+            to="/war-room-colecao/$id"
+            params={{ id: current.collection.id }}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
+          >
+            <Radio className="size-3.5" /> Abrir War Room
+          </Link>
+        )}
       </header>
+
 
       {isLoading ? <div className="text-sm text-muted-foreground">Carregando…</div> : collections.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
