@@ -22,6 +22,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const active = location.pathname;
   const { user } = useAuth();
   const { primary } = useRoles();
+  const { sectors, isAdmin } = useSectors();
+  const visibleModules = MODULES.filter((m) => !m.hidden && moduleAllowed(m, sectors, isAdmin));
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
