@@ -1,11 +1,18 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
-import { Factory, AlertTriangle, Clock, Truck, Activity } from "lucide-react";
+import { Factory, AlertTriangle, Clock, Truck, Activity, X } from "lucide-react";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/_authenticated/_app/war-room-producao")({
+  validateSearch: zodValidator(
+    z.object({ productId: fallback(z.string().regex(UUID_RE).optional(), undefined) }),
+  ),
   head: () => ({
     meta: [
       { title: "Sala de Guerra · Produção · USE MODA PLM" },
