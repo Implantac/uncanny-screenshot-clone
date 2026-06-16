@@ -262,6 +262,7 @@ function FichaTecnicaPage() {
                         ["consumo", "Consumo"],
                         ["custos", "Custos"],
                         ["documentos", "Documentos"],
+                        ["ia", "IA"],
                       ].map(([value, label]) => (
                         <TabsTrigger key={value} value={value} className="rounded-lg border border-border bg-background/40 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                           {label}
@@ -286,6 +287,9 @@ function FichaTecnicaPage() {
                     </TabsContent>
                     <TabsContent value="documentos" className="mt-0">
                       <SectionList title="Documentos e anexos" icon={FileText} items={selectedContent.documents} emptyLabel="Nenhum documento referenciado." chips />
+                    </TabsContent>
+                    <TabsContent value="ia" className="mt-0">
+                      <AiSuggestionsPanel sheetId={selected.id} />
                     </TabsContent>
                   </Tabs>
                 </div>
