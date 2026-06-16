@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { Bell, AlertTriangle, Clock, CheckCircle2, MessageSquare } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell, AlertTriangle, Clock, CheckCircle2, MessageSquare, Megaphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "@tanstack/react-router";
@@ -8,13 +8,14 @@ import { useAuth } from "@/hooks/use-auth";
 
 export function NotificationsBell() {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["notifications", user?.id ?? null],
     refetchInterval: 60_000,
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
       const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-      const [{ data: inv }, { data: ops }, { data: pComments }, { data: poComments }] = await Promise.all([
+      const [{ data: inv }, { data: ops }, { data: pComments }, { data: poComments }, { data: mkt }] = await Promise.all([
         supabase.from("inventory_items").select("id, name, balance, minimum, unit"),
         supabase.from("production_orders").select("id, code, due_date, status, progress").neq("status", "concluida").lte("due_date", today),
         supabase
@@ -29,6 +30,12 @@ export function NotificationsBell() {
           .gte("created_at", since)
           .order("created_at", { ascending: false })
           .limit(10),
+        supabase
+          .from("marketing_notifications")
+          .select("id, kind, title, body, link, created_at, read_at")
+          .is("read_at", null)
+          .order("created_at", { ascending: false })
+          .limit(10),
       ]);
       const critical = (inv ?? []).filter((i) => Number(i.balance ?? 0) <= Number(i.minimum ?? 0));
       const comments = [
@@ -39,15 +46,21 @@ export function NotificationsBell() {
           .filter((c) => c.author_id !== user?.id)
           .map((c) => ({ kind: "op" as const, id: c.id, refCode: c.production_orders?.code ?? "", body: c.body, when: c.created_at })),
       ].sort((a, b) => b.when.localeCompare(a.when)).slice(0, 8);
-      return { critical, overdue: ops ?? [], comments };
+      return { critical, overdue: ops ?? [], comments, marketing: (mkt ?? []) as any[] };
     },
   });
   useRealtime("inventory_items", ["notifications"]);
   useRealtime("production_orders", ["notifications"]);
   useRealtime("prototype_comments", ["notifications"]);
   useRealtime("production_order_comments", ["notifications"]);
+  useRealtime("marketing_notifications", ["notifications"]);
 
-  const total = (data?.critical.length ?? 0) + (data?.overdue.length ?? 0) + (data?.comments.length ?? 0);
+  const markRead = async (id: string) => {
+    await supabase.from("marketing_notifications").update({ read_at: new Date().toISOString() }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["notifications"] });
+  };
+
+  const total = (data?.critical.length ?? 0) + (data?.overdue.length ?? 0) + (data?.comments.length ?? 0) + (data?.marketing.length ?? 0);
 
   return (
     <DropdownMenu>
