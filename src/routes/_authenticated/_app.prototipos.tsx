@@ -64,7 +64,7 @@ function Prototipos() {
     navigate({ search: (p: typeof search) => ({ ...p, stage: v as typeof search.stage }), replace: true });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Prototype | null>(null);
-  const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "" });
+  const [form, setForm] = useState({ code: "", product_id: "", supplier_id: "", stage: "solicitado" as Stage, due_date: "", notes: "", current_sector: "" as AdjustmentSector | "" });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const toggleSel = (id: string) =>
