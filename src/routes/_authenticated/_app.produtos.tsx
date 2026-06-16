@@ -391,15 +391,43 @@ function ProductDetail({
     <section className="space-y-4">
       <div className="glass rounded-xl overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-0">
-          <div className="min-h-[320px] bg-muted/20 overflow-hidden">
+          <div className="min-h-[320px] bg-muted/20 overflow-hidden relative group">
             {imageUrl ? (
               <img src={imageUrl} alt={product.name} className="size-full object-cover" loading="lazy" />
             ) : (
-              <div className="size-full grid place-items-center text-muted-foreground">
-                <ImageIcon className="size-10 text-primary/70" />
-              </div>
+              <button
+                type="button"
+                disabled={!canEdit || sketchUploading}
+                onClick={() => sketchRef.current?.click()}
+                className="size-full grid place-items-center text-muted-foreground hover:bg-muted/40 transition disabled:cursor-not-allowed"
+              >
+                <div className="flex flex-col items-center gap-2">
+                  {sketchUploading ? <Loader2 className="size-8 animate-spin" /> : <Upload className="size-8 text-primary/70" />}
+                  <span className="text-xs font-medium">{canEdit ? "Adicionar croqui" : "Sem croqui"}</span>
+                  {canEdit && <span className="text-[10px]">PNG/JPG até 4MB</span>}
+                </div>
+              </button>
             )}
+            {imageUrl && canEdit && (
+              <button
+                type="button"
+                disabled={sketchUploading}
+                onClick={() => sketchRef.current?.click()}
+                className="absolute top-2 right-2 px-2 py-1 rounded-md bg-background/90 border border-border text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition"
+              >
+                {sketchUploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />}
+                Trocar
+              </button>
+            )}
+            <input
+              ref={sketchRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSketchUpload(f); e.currentTarget.value = ""; }}
+            />
           </div>
+
 
           <div className="p-5 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center gap-2">
