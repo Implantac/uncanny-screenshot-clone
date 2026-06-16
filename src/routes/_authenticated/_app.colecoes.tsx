@@ -725,9 +725,11 @@ function ColecoesPage() {
                           </div>
                           <Progress value={d.pct} className="h-2" />
                           <div className="text-xs text-muted-foreground mt-2">
-                            {d.ready} de {d.total} produtos com ficha técnica aprovada
-                            {!ok && ` · faltam ${d.total - d.ready}`}
+                            {d.matOk} de {d.total} produtos com ficha aprovada <span className="opacity-60">e materiais em estoque</span>
+                            {!ok && ` · faltam ${d.total - d.matOk}`}
+                            {d.sheetOk > d.matOk && ` (${d.sheetOk - d.matOk} sem material)`}
                           </div>
+
                         </div>
                       );
                     })()}
