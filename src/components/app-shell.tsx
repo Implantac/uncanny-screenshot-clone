@@ -1,9 +1,9 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LogOut, Menu, Sun, Moon, ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { LogOut, Menu, Sun, Moon, ChevronDown, ChevronRight } from "lucide-react";
 import logoAsset from "@/assets/logo.png.asset.json";
 import { CommandPalette } from "./command-palette";
 import { NotificationsBell } from "./notifications-bell";
-import { MODULES, MODULE_GROUPS, moduleAllowed, isPrimaryModule, type ModuleDef, type ModuleGroup } from "@/lib/modules";
+import { MODULES, MODULE_GROUPS, moduleAllowed, type ModuleDef, type ModuleGroup } from "@/lib/modules";
 import { useSectors } from "@/hooks/use-sectors";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -29,23 +29,21 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => { setMobileOpen(false); }, [active]);
 
-  // Group → modules (primary + secondary) e qual grupo contém a rota ativa
+  // Group → modules e qual grupo contém a rota ativa
   const grouped = useMemo(() => {
-    const map = new Map<ModuleGroup, { primary: ModuleDef[]; secondary: ModuleDef[]; activeIn: boolean }>();
-    for (const g of MODULE_GROUPS) map.set(g, { primary: [], secondary: [], activeIn: false });
+    const map = new Map<ModuleGroup, { items: ModuleDef[]; activeIn: boolean }>();
+    for (const g of MODULE_GROUPS) map.set(g, { items: [], activeIn: false });
     for (const m of visibleModules) {
       const bucket = map.get(m.group);
       if (!bucket) continue;
-      (isPrimaryModule(m) ? bucket.primary : bucket.secondary).push(m);
+      bucket.items.push(m);
       if (active === m.path) bucket.activeIn = true;
     }
     return map;
   }, [visibleModules, active]);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-  const [expandedMore, setExpandedMore] = useState<Record<string, boolean>>({});
   const toggleGroup = (g: string) => setOpenGroups((s) => ({ ...s, [g]: !(s[g] ?? false) }));
-  const toggleMore = (g: string) => setExpandedMore((s) => ({ ...s, [g]: !s[g] }));
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -72,10 +70,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1 text-sm">
         {MODULE_GROUPS.map((group) => {
           const bucket = grouped.get(group);
-          if (!bucket || (bucket.primary.length === 0 && bucket.secondary.length === 0)) return null;
+          if (!bucket || bucket.items.length === 0) return null;
           const isOpen = openGroups[group] ?? bucket.activeIn ?? false;
-          const totalCount = bucket.primary.length + bucket.secondary.length;
-          const showMore = expandedMore[group] ?? bucket.activeIn;
+          const totalCount = bucket.items.length;
           const renderItem = (m: ModuleDef) => {
             const isActive = active === m.path;
             const Icon = m.icon;
@@ -115,20 +112,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </button>
               {isOpen && (
                 <ul className="space-y-0.5 mt-1 mb-2">
-                  {bucket.primary.map(renderItem)}
-                  {showMore && bucket.secondary.map(renderItem)}
-                  {bucket.secondary.length > 0 && (
-                    <li>
-                      <button
-                        type="button"
-                        onClick={() => toggleMore(group)}
-                        className="w-full flex items-center gap-2 px-2 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/40 transition-colors"
-                      >
-                        <Plus className="size-3" />
-                        {showMore ? "Ver menos" : `Ver mais (${bucket.secondary.length})`}
-                      </button>
-                    </li>
-                  )}
+                  {bucket.items.map(renderItem)}
                 </ul>
               )}
             </div>
