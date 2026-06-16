@@ -80,6 +80,7 @@ import { Route as AuthenticatedAppAuditRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAppAttributionRouteImport } from './routes/_authenticated/_app.attribution'
 import { Route as AuthenticatedAppApprovalsRouteImport } from './routes/_authenticated/_app.approvals'
 import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
+import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
 
 const AuthRoute = AuthRouteImport.update({
@@ -485,6 +486,12 @@ const AuthenticatedAppAlmoxarifadoRoute =
     path: '/almoxarifado',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const ApiPublicErpSyncPublicIdRoute =
+  ApiPublicErpSyncPublicIdRouteImport.update({
+    id: '/api/public/erp-sync/$publicId',
+    path: '/api/public/erp-sync/$publicId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAgentsRunDueRoute = ApiPublicAgentsRunDueRouteImport.update({
   id: '/api/public/agents/run-due',
   path: '/api/public/agents/run-due',
@@ -562,6 +569,7 @@ export interface FileRoutesByFullPath {
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
+  '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedAppIndexRoute
@@ -634,6 +642,7 @@ export interface FileRoutesByTo {
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
+  '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -709,6 +718,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/variantes': typeof AuthenticatedAppVariantesRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
+  '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -783,6 +793,7 @@ export interface FileRouteTypes {
     | '/use-ai'
     | '/variantes'
     | '/api/public/agents/run-due'
+    | '/api/public/erp-sync/$publicId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -855,6 +866,7 @@ export interface FileRouteTypes {
     | '/use-ai'
     | '/variantes'
     | '/api/public/agents/run-due'
+    | '/api/public/erp-sync/$publicId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -929,6 +941,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/variantes'
     | '/_authenticated/_app/'
     | '/api/public/agents/run-due'
+    | '/api/public/erp-sync/$publicId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -937,6 +950,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   DppIdRoute: typeof DppIdRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
+  ApiPublicErpSyncPublicIdRoute: typeof ApiPublicErpSyncPublicIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1438,6 +1452,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAlmoxarifadoRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/api/public/erp-sync/$publicId': {
+      id: '/api/public/erp-sync/$publicId'
+      path: '/api/public/erp-sync/$publicId'
+      fullPath: '/api/public/erp-sync/$publicId'
+      preLoaderRoute: typeof ApiPublicErpSyncPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/agents/run-due': {
       id: '/api/public/agents/run-due'
       path: '/api/public/agents/run-due'
@@ -1608,6 +1629,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   DppIdRoute: DppIdRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
+  ApiPublicErpSyncPublicIdRoute: ApiPublicErpSyncPublicIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

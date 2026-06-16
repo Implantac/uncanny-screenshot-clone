@@ -95,14 +95,14 @@ export const Route = createFileRoute("/api/public/erp-sync/$publicId")({
               purchasesIns++;
             } else if (ev.type === "inventory") {
               const d = ev.data as Record<string, unknown>;
-              const { error } = await supabaseAdmin.from("erp_inventory_mirror").upsert({
+              const { error } = await supabaseAdmin.from("erp_inventory_mirror").insert({
                 owner_id: ownerId,
                 sku: String(d.sku),
                 balance: Number(d.balance ?? 0),
                 location: (d.location as string) ?? null,
                 erp_updated_at: (d.erp_updated_at as string) ?? null,
                 synced_at: new Date().toISOString(),
-              }, { onConflict: "owner_id,sku" });
+              });
               if (error) throw error;
               invIns++;
             }
