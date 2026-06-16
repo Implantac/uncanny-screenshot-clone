@@ -171,6 +171,9 @@ function FornecedoresPage() {
               {s.notes && <p className="text-xs text-muted-foreground line-clamp-2">{s.notes}</p>}
               {s.owner_id === user?.id && (
                 <div className="flex justify-end gap-1 pt-2 border-t border-border">
+                  <button onClick={() => generatePortalLink(s.id)} className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border hover:bg-muted">
+                    Link do portal
+                  </button>
                   <button onClick={() => { setEditing(s); setOpen(true); }} className="size-7 grid place-items-center rounded hover:bg-muted">
                     <Pencil className="size-3.5" />
                   </button>
