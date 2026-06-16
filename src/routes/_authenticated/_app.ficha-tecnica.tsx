@@ -513,7 +513,8 @@ function SheetDialog({
       return;
     }
     reset();
-  }, [editing, open]);
+    if (initialProductId) setProductId(initialProductId);
+  }, [editing, open, initialProductId]);
 
   function reset() {
     setCode("");
