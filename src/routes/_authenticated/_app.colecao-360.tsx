@@ -230,6 +230,22 @@ function KPI({ label, value, icon, tone }: { label: string; value: string; icon:
   );
 }
 
+function WarKPI({ label, value, icon, tone, to }: { label: string; value: number; icon: React.ReactNode; tone: "red" | "yellow" | "green" | "primary" | "neutral"; to: string }) {
+  const tones = {
+    red: "border-destructive/40 text-destructive",
+    yellow: "border-warning/40 text-warning",
+    green: "border-success/40 text-success",
+    primary: "border-primary/40 text-primary",
+    neutral: "border-border text-muted-foreground",
+  };
+  return (
+    <Link to={to} className={`rounded-lg border bg-muted/10 p-2.5 hover:bg-muted/30 transition-colors ${tones[tone]}`}>
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">{icon}{label}</div>
+      <div className="text-xl font-semibold tabular-nums mt-0.5 text-foreground">{value}</div>
+    </Link>
+  );
+}
+
 function Shortcut({ to, label }: { to: string; label: string }) {
   return (
     <Link to={to} className="rounded-lg border border-border bg-card px-3 py-2 text-sm hover:border-primary hover:bg-muted/30 transition-colors flex items-center justify-between">
