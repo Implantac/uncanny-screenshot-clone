@@ -95,6 +95,20 @@ export function NotificationsBell() {
               </div>
             </Link>
           ))}
+          {data?.marketing.map((m) => (
+            <Link
+              key={`mkt-${m.id}`}
+              to={m.link || "/marketing"}
+              onClick={() => markRead(m.id)}
+              className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0"
+            >
+              <Megaphone className="size-4 text-primary shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium truncate">{m.title}</div>
+                {m.body && <div className="text-xs text-muted-foreground truncate">{m.body}</div>}
+              </div>
+            </Link>
+          ))}
           {data?.overdue.map((o) => (
             <Link key={`op-${o.id}`} to="/pcp" className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0">
               <Clock className="size-4 text-destructive shrink-0 mt-0.5" />
