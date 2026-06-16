@@ -12,7 +12,6 @@ type Stage = "solicitado" | "em_confeccao" | "em_prova" | "aprovado" | "reprovad
 type Pilot = {
   id: string;
   code: string;
-  name: string | null;
   stage: Stage;
   due_date: string | null;
   notes: string | null;
@@ -31,7 +30,7 @@ const STAGES: { key: Stage; label: string; hint: string }[] = [
 async function load(): Promise<Pilot[]> {
   const { data } = await supabase
     .from("prototypes")
-    .select("id, code, name, stage, due_date, notes, suppliers(name), products(name)")
+    .select("id, code, stage, due_date, notes, suppliers(name), products(name)")
     .order("due_date", { ascending: true, nullsFirst: false });
   return (data ?? []).map((p: any) => ({
     ...p,
@@ -155,8 +154,7 @@ function Pilots() {
                           <span className="font-semibold tabular-nums">{p.code}</span>
                           {p.notes && <MessageSquare className="size-3 text-muted-foreground" />}
                         </div>
-                        {p.name && <div className="truncate" title={p.name}>{p.name}</div>}
-                        {p.product && <div className="text-muted-foreground truncate" title={p.product}>{p.product}</div>}
+                        {p.product && <div className="truncate" title={p.product}>{p.product}</div>}
                         <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
                           <span className="truncate">{p.supplier ?? "Interno"}</span>
                           {p.due_date && (
