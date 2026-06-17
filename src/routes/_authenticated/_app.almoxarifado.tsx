@@ -247,8 +247,11 @@ function Almoxarifado() {
                   const bal = Number(i.balance);
                   const min = Number(i.minimum);
                   const max = Number(i.maximum);
+                  const giro = Number(i.turnover_30d || 0);
+                  const pp = reorderPoint(giro, min);
                   const critico = bal < min;
                   const excesso = max > 0 && bal > max;
+                  const repor = !critico && bal <= pp && pp > min;
                   const mine = i.owner_id === user?.id;
                   return (
                     <tr key={i.id} className="border-t border-border hover:bg-muted/30">
@@ -257,11 +260,14 @@ function Almoxarifado() {
                       <td className="px-5 py-3 text-muted-foreground">{CAT_LABEL[i.category]}</td>
                       <td className={`px-5 py-3 text-right tabular-nums ${critico ? "text-destructive font-medium" : excesso ? "text-amber-500" : ""}`}>{bal} {i.unit}</td>
                       <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{min} / {max || "—"}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{Number(i.turnover_30d || 0)} {i.unit}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{giro} {i.unit}</td>
+                      <td className={`px-5 py-3 text-right tabular-nums ${repor ? "text-amber-500 font-medium" : "text-muted-foreground"}`}>{pp} {i.unit}</td>
                       <td className="px-5 py-3 text-right text-muted-foreground text-xs">{fmtDate(i.last_entry_at)}</td>
                       <td className="px-5 py-3">
                         {critico
                           ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-destructive/15 text-destructive"><AlertTriangle className="size-3" /> Crítico</span>
+                          : repor
+                          ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-500"><Zap className="size-3" /> Repor</span>
                           : excesso
                           ? <span className="px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-500">Excesso</span>
                           : <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/15 text-emerald-400">Ok</span>}
