@@ -192,7 +192,7 @@ export function NotificationsBell() {
               </Link>
             );
           })}
-          {data?.comments.map((c) => (
+          {show("comentario") && data?.comments.map((c) => (
             <Link
               key={`cm-${c.id}`}
               to={c.kind === "proto" ? "/prototipos" : "/pcp-kanban"}
