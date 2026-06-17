@@ -148,6 +148,16 @@ function UseAI() {
 
       {isLoading ? (
         <div className="glass rounded-xl p-12 grid place-items-center text-muted-foreground"><Loader2 className="size-5 animate-spin" /></div>
+      ) : isError ? (
+        <div className="glass rounded-xl p-6 text-sm space-y-3 border-destructive/40">
+          <div className="flex items-center gap-2 text-destructive font-medium">
+            <AlertTriangle className="size-4" /> Não foi possível carregar os agentes
+          </div>
+          <div className="text-xs text-muted-foreground break-words">{(error as Error)?.message ?? "Erro desconhecido"}</div>
+          <button onClick={() => refetch()} disabled={isFetching} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-60">
+            <RefreshCw className={`size-3 ${isFetching ? "animate-spin" : ""}`} /> Tentar novamente
+          </button>
+        </div>
       ) : agentes.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center text-sm text-muted-foreground">Nenhum agente cadastrado. Crie o primeiro.</div>
       ) : (
