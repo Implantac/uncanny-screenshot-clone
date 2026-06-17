@@ -265,8 +265,36 @@ function LotePage() {
                   <Clock className="size-3" /> nesta etapa há {relTime(o.stage_updated_at)}
                 </div>
               )}
-              <div className="flex gap-1">
-                <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
+              <div className="grid grid-cols-5 gap-1 pt-1 border-t border-border/60">
+                <RefMenuLink to="/movimentacoes" search={{ op: o.code } as any} icon={ArrowRight} label="Passagem 1ª" title="Passagem 1ª linha (entrada/saída entre setores)" />
+                <RefMenuLink to="/ficha-tecnica" search={{ product: o.product_id } as any} icon={FileText} label="Ficha" title="Ficha técnica completa" />
+                <RefMenuLink to="/produtos" search={{ q: o.products?.sku ?? o.code } as any} icon={ImageIcon} label="Layout" title="Arte / layout visual" />
+                <button
+                  type="button"
+                  onClick={() => document.getElementById(`occ-retrabalho-${o.id}`)?.click()}
+                  className="flex flex-col items-center gap-0.5 py-1.5 rounded-md hover:bg-muted/60 text-[10px] text-muted-foreground hover:text-foreground"
+                  title="Passagem 2ª linha (retrabalho)"
+                >
+                  <RefreshCcw className="size-3.5" />
+                  <span>2ª linha</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => document.getElementById(`occ-default-${o.id}`)?.click()}
+                  className="flex flex-col items-center gap-0.5 py-1.5 rounded-md hover:bg-muted/60 text-[10px] text-muted-foreground hover:text-foreground"
+                  title="Registrar ocorrência"
+                >
+                  <ClipboardList className="size-3.5" />
+                  <span>Ocorrência</span>
+                </button>
+              </div>
+              <div className="hidden">
+                <span id={`occ-default-${o.id}`}>
+                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
+                </span>
+                <span id={`occ-retrabalho-${o.id}`}>
+                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} defaultKind="retrabalho" />
+                </span>
               </div>
             </div>
           ))}
