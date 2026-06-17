@@ -410,36 +410,53 @@ function fmt(v: number) {
 
 function InvestmentResult({ c }: { c: any }) {
   const investment: number = c.investment;
+  const productionCost: number = c.productionCost ?? 0;
+  const marketingCost: number = c.marketingCost ?? 0;
   const revenue: number = c.revenue;
   const profit: number = c.profit;
   const roi: number = c.roi;
   const recovered = investment > 0 ? Math.min(100, (revenue / investment) * 100) : 0;
   const positive = profit >= 0;
+  const prodPct = investment > 0 ? (productionCost / investment) * 100 : 0;
+  const mktPct = investment > 0 ? (marketingCost / investment) * 100 : 0;
 
   const verdict = investment === 0
-    ? "Sem OPs com custo registrado — preencha custo dos produtos para calcular ROI."
+    ? "Sem custos registrados — preencha custo dos produtos e campanhas de marketing para calcular ROI."
     : revenue === 0
-    ? `Investido ${fmt(investment)} em produção, ainda sem receita registrada. Acompanhe sell-through nas próximas semanas.`
+    ? `Investido ${fmt(investment)} (${fmt(productionCost)} produção + ${fmt(marketingCost)} marketing), ainda sem receita. Acompanhe sell-through.`
     : positive
-    ? `Cada R$ 1 investido retornou R$ ${(revenue / investment).toFixed(2)}. Lucro de ${fmt(profit)} (ROI ${roi.toFixed(0)}%).`
-    : `Coleção ainda no vermelho: faltam ${fmt(-profit)} para cobrir o investimento. Recuperado ${recovered.toFixed(0)}% até agora.`;
+    ? `Cada R$ 1 investido (produção + marketing) retornou R$ ${(revenue / investment).toFixed(2)}. Lucro consolidado ${fmt(profit)} · ROI ${roi.toFixed(0)}%.`
+    : `Coleção ainda no vermelho: faltam ${fmt(-profit)} para cobrir produção (${fmt(productionCost)}) + marketing (${fmt(marketingCost)}). Recuperado ${recovered.toFixed(0)}%.`;
 
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-          <Wallet className="size-3.5 text-primary" /> Investimento × Resultado
+          <Wallet className="size-3.5 text-primary" /> ROI consolidado · produção + marketing × receita
         </div>
         <div className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
-          <Database className="size-3" /> espelho ERP
+          <Database className="size-3" /> receita espelho ERP
         </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Metric label="Investido (produção)" value={fmt(investment)} tone="neutral" />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <Metric label="Produção" value={fmt(productionCost)} tone="neutral" />
+        <Metric label="Marketing" value={fmt(marketingCost)} tone="neutral" />
         <Metric label="Receita realizada" value={fmt(revenue)} tone="primary" />
         <Metric label={positive ? "Lucro" : "A recuperar"} value={fmt(Math.abs(profit))} tone={positive ? "green" : "red"} />
         <Metric label="ROI" value={investment > 0 ? `${roi.toFixed(0)}%` : "—"} tone={roi >= 30 ? "green" : roi >= 0 ? "yellow" : "red"} />
       </div>
+      {investment > 0 && (
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+            <span>Composição do investimento</span>
+            <span className="tabular-nums">{prodPct.toFixed(0)}% prod · {mktPct.toFixed(0)}% mkt</span>
+          </div>
+          <div className="flex h-1.5 rounded-full overflow-hidden bg-muted">
+            <div className="h-full bg-primary" style={{ width: `${prodPct}%` }} />
+            <div className="h-full bg-amber-500" style={{ width: `${mktPct}%` }} />
+          </div>
+        </div>
+      )}
       <div className="mt-3">
         <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
           <span>Recuperação do investimento</span>
