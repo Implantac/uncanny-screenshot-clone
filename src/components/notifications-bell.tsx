@@ -5,6 +5,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/compon
 import { Link } from "@tanstack/react-router";
 import { useRealtime } from "@/hooks/use-realtime";
 import { useAuth } from "@/hooks/use-auth";
+import { useState } from "react";
+
+type Cat = "all" | "estoque" | "atraso" | "parado" | "proto" | "comentario" | "marketing";
+const CAT_LABEL: Record<Cat, string> = {
+  all: "Tudo", estoque: "Estoque", atraso: "Atraso", parado: "Parado",
+  proto: "Protótipo", comentario: "Comentários", marketing: "Marketing",
+};
 
 export function NotificationsBell() {
   const { user } = useAuth();
