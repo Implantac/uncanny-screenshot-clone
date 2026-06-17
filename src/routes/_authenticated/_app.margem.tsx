@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
 import { TrendingUp, DollarSign, Percent, Trophy } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CostVariancePanel } from "@/components/cost-variance-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/margem")({
   component: MargemPage,
@@ -90,8 +92,16 @@ function MargemPage() {
     <div className="p-6 space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Margem & Rentabilidade</h1>
-        <p className="text-sm text-muted-foreground">CMV, margem real, markup e curva ABC dos últimos 90 dias.</p>
+        <p className="text-sm text-muted-foreground">Margem real por SKU e variação de custo (teórico × real) por OP.</p>
       </header>
+
+      <Tabs defaultValue="sku" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="sku">Margem por SKU</TabsTrigger>
+          <TabsTrigger value="variance">Custo Real × Teórico</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="sku" className="space-y-6">
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KPI label="Receita 90d" value={fmt(totals.revenue)} icon={<DollarSign className="size-4" />} />
@@ -150,6 +160,12 @@ function MargemPage() {
           </table>
         </div>
       </div>
+        </TabsContent>
+
+        <TabsContent value="variance">
+          <CostVariancePanel />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
