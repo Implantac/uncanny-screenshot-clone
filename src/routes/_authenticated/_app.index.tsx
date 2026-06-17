@@ -120,11 +120,32 @@ function useDashboard() {
         collections: count(c.map((r: any) => r.name)),
       };
 
+      // === Coleção em destaque (mais "quente": maior progresso entre ativas) ===
+      const activeCols = c.filter((r: any) => r.status && !/finaliz|conclu/i.test(r.status));
+      const hotCollection = [...activeCols].sort((a: any, b: any) => (b.progress ?? 0) - (a.progress ?? 0))[0] ?? c[0] ?? null;
+
+      // === Marketing ROI consolidado ===
+      const activeCamps = cmp.filter((r: any) => r.status === "ativa" || r.status === "active");
+      const baseCamps = (activeCamps.length ? activeCamps : cmp).filter((r: any) => Number(r.roas) > 0);
+      const invTotal = baseCamps.reduce((a: number, b: any) => a + Number(b.investment ?? 0), 0);
+      const recTotal = baseCamps.reduce((a: number, b: any) => a + Number(b.investment ?? 0) * Number(b.roas ?? 0), 0);
+      const roasAvg = baseCamps.length ? baseCamps.reduce((a: number, b: any) => a + Number(b.roas ?? 0), 0) / baseCamps.length : 0;
+      const sorted = [...baseCamps].sort((a, b) => Number(b.roas) - Number(a.roas));
+      const bestCampaign = sorted[0] ?? null;
+      const worstCampaign = sorted[sorted.length - 1] ?? null;
+      const marketing = {
+        invTotal, recTotal, roasAvg, count: baseCamps.length,
+        best: bestCampaign ? { name: bestCampaign.name, roas: Number(bestCampaign.roas) } : null,
+        worst: worstCampaign && worstCampaign !== bestCampaign ? { name: worstCampaign.name, roas: Number(worstCampaign.roas) } : null,
+      };
+
       return {
         kpis: { activeCollections, productsInDev, piecesInProd, protosOpen },
         critical,
         alerts,
         collections: c,
+        hotCollection,
+        marketing,
         productionData,
         devPipeline,
         feed: feed.slice(0, 12),
