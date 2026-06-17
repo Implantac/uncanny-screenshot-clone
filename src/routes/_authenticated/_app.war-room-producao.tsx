@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
-import { Factory, AlertTriangle, Clock, Truck, Activity, X, Boxes, Bell } from "lucide-react";
+import { Factory, AlertTriangle, Clock, Truck, Activity, X, Boxes, Bell, Loader2, RefreshCw } from "lucide-react";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/_app/war-room-producao")({
 function WarRoomProducao() {
   const { productId } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["war-room-producao"],
     queryFn: async () => {
       const [ordersR, stagesR, suppliersR] = await Promise.all([
@@ -42,6 +42,8 @@ function WarRoomProducao() {
           .in("status", ["enviada", "em_andamento"])
           .limit(200),
       ]);
+      const firstError = [ordersR, stagesR, suppliersR].find((r) => r.error)?.error;
+      if (firstError) throw new Error(firstError.message);
       return {
         orders: ordersR.data ?? [],
         stages: stagesR.data ?? [],
@@ -51,28 +53,31 @@ function WarRoomProducao() {
   });
 
   // Alerta proativo: lotes ativos sem passagem nas últimas 24h
-  const { data: staleBatches = [] } = useQuery({
+  const { data: staleBatches = [], isError: staleError } = useQuery({
     queryKey: ["war-room-stale-batches"],
     queryFn: async () => {
       const since24h = new Date(Date.now() - 24 * 3600_000).toISOString();
-      const { data: batches } = await supabase
+      const { data: batches, error: bErr } = await supabase
         .from("production_batches")
         .select("id, code, status, produced_qty, planned_qty, updated_at")
         .eq("status", "em_producao")
         .limit(100);
+      if (bErr) throw new Error(bErr.message);
       if (!batches || batches.length === 0) return [];
       const codes = batches.map((b: any) => b.code);
-      const { data: recentOrders } = await supabase
+      const { data: recentOrders, error: oErr } = await supabase
         .from("production_orders")
         .select("id, batch_code")
         .in("batch_code", codes);
+      if (oErr) throw new Error(oErr.message);
       const orderIds = (recentOrders ?? []).map((o: any) => o.id);
       if (orderIds.length === 0) return batches.map((b: any) => ({ ...b, lastMove: null }));
-      const { data: recentLogs } = await supabase
+      const { data: recentLogs, error: lErr } = await supabase
         .from("production_stage_log")
         .select("order_id, created_at")
         .in("order_id", orderIds)
         .gte("created_at", since24h);
+      if (lErr) throw new Error(lErr.message);
       const movedCodes = new Set<string>();
       (recentLogs ?? []).forEach((l: any) => {
         const order = (recentOrders ?? []).find((o: any) => o.id === l.order_id);
@@ -137,6 +142,23 @@ function WarRoomProducao() {
           Heatmap de etapas, OPs críticas e terceirizados — com IA explicando o porquê de cada alerta.
         </p>
       </div>
+      {isError && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm space-y-2">
+          <div className="flex items-center gap-2 text-destructive font-medium">
+            <AlertTriangle className="size-4" /> Falha ao carregar a Sala de Guerra
+          </div>
+          <div className="text-xs text-muted-foreground break-words">{(error as Error)?.message ?? "Erro desconhecido"}</div>
+          <button onClick={() => refetch()} disabled={isFetching} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-60">
+            <RefreshCw className={`size-3 ${isFetching ? "animate-spin" : ""}`} /> Tentar novamente
+          </button>
+        </div>
+      )}
+
+      {staleError && (
+        <div className="rounded-lg border border-warning/40 bg-warning/5 p-3 text-xs text-warning">
+          Alerta de lotes parados indisponível no momento.
+        </div>
+      )}
 
       {productId && (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2.5 text-sm">
@@ -204,7 +226,7 @@ function WarRoomProducao() {
             )}
           </div>
           {isLoading ? (
-            <div className="text-xs text-muted-foreground">Carregando…</div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="size-3.5 animate-spin" /> Carregando heatmap…</div>
           ) : (
             <div className="space-y-2.5">
               {analysis.stageRows.map((s) => {

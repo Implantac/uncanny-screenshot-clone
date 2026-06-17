@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Cpu, Play, Pause, Plus, Activity, Loader2, Sparkles, MessageCircleQuestion } from "lucide-react";
+import { Cpu, Play, Pause, Plus, Activity, Loader2, Sparkles, MessageCircleQuestion, AlertTriangle, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -55,8 +55,7 @@ function UseAI() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const [ask, setAsk] = useState<{ persona: Persona; question: string } | null>(null);
-  const { data, isLoading } = useQuery({
-
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["ai-agents"],
     queryFn: async () => {
       const { data, error } = await supabase.from("ai_agents").select("*").order("created_at", { ascending: false });
@@ -149,6 +148,16 @@ function UseAI() {
 
       {isLoading ? (
         <div className="glass rounded-xl p-12 grid place-items-center text-muted-foreground"><Loader2 className="size-5 animate-spin" /></div>
+      ) : isError ? (
+        <div className="glass rounded-xl p-6 text-sm space-y-3 border-destructive/40">
+          <div className="flex items-center gap-2 text-destructive font-medium">
+            <AlertTriangle className="size-4" /> Não foi possível carregar os agentes
+          </div>
+          <div className="text-xs text-muted-foreground break-words">{(error as Error)?.message ?? "Erro desconhecido"}</div>
+          <button onClick={() => refetch()} disabled={isFetching} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-60">
+            <RefreshCw className={`size-3 ${isFetching ? "animate-spin" : ""}`} /> Tentar novamente
+          </button>
+        </div>
       ) : agentes.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center text-sm text-muted-foreground">Nenhum agente cadastrado. Crie o primeiro.</div>
       ) : (
@@ -239,6 +248,8 @@ function ProactiveSuggestions({
         supabase.from("prototypes").select("id", { count: "exact", head: true }).in("stage", ["solicitado", "em_confeccao", "em_prova"]),
         supabase.from("sales").select("total", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 7 * 86400_000).toISOString()),
       ]);
+      const firstError = [ordersLate, protosPending, salesRecent].find((r) => r.error)?.error;
+      if (firstError) throw new Error(firstError.message);
       return {
         lateOrders: ordersLate.count ?? 0,
         pendingProtos: protosPending.count ?? 0,

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
 import {
   Compass, Layers, Scissors, Factory, TrendingUp, Percent, DollarSign,
-  Package, ArrowRight, Sparkles, AlertTriangle, FileWarning, Clock, CheckCircle2, Radio, Wallet, Database,
+  Package, ArrowRight, Sparkles, AlertTriangle, FileWarning, Clock, CheckCircle2, Radio, Wallet, Database, Loader2, RefreshCw,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
@@ -35,7 +35,7 @@ type Campaign = {
 };
 
 async function loadAll() {
-  const [collections, products, prototypes, orders, sales, sheets, campaigns] = await Promise.all([
+  const results = await Promise.all([
     supabase.from("collections").select("id, name, season, year, status").order("year", { ascending: false }).limit(50),
     supabase.from("products").select("id, collection_id, name, sku, status, cost_price, sell_price").limit(1000),
     supabase.from("prototypes").select("id, product_id, stage").limit(1000),
@@ -44,6 +44,9 @@ async function loadAll() {
     supabase.from("tech_sheets").select("product_id, status").limit(2000),
     supabase.from("marketing_campaigns").select("collection_id, cost_shoot, cost_photos, cost_traffic").limit(1000),
   ]);
+  const firstError = results.find((r) => r.error)?.error;
+  if (firstError) throw new Error(firstError.message);
+  const [collections, products, prototypes, orders, sales, sheets, campaigns] = results;
   return {
     collections: (collections.data ?? []) as Collection[],
     products: (products.data ?? []) as Product[],
@@ -57,7 +60,7 @@ async function loadAll() {
 
 function Colecao360() {
   useRealtime("production_orders", ["colecao-360"]);
-  const { data, isLoading } = useQuery({ queryKey: ["colecao-360"], queryFn: loadAll });
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({ queryKey: ["colecao-360"], queryFn: loadAll });
   const collections = data?.collections ?? [];
   const products = data?.products ?? [];
   const prototypes = data?.prototypes ?? [];
@@ -160,7 +163,22 @@ function Colecao360() {
       </header>
 
 
-      {isLoading ? <div className="text-sm text-muted-foreground">Carregando…</div> : collections.length === 0 ? (
+      {isLoading ? (
+        <div className="rounded-xl border border-border bg-card p-8 grid place-items-center text-sm text-muted-foreground gap-2">
+          <Loader2 className="size-5 animate-spin text-primary" />
+          Carregando coleções…
+        </div>
+      ) : isError ? (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-sm space-y-3">
+          <div className="flex items-center gap-2 text-destructive font-medium">
+            <AlertTriangle className="size-4" /> Não foi possível carregar a Coleção 360º
+          </div>
+          <div className="text-xs text-muted-foreground break-words">{(error as Error)?.message ?? "Erro desconhecido"}</div>
+          <button onClick={() => refetch()} disabled={isFetching} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-60">
+            <RefreshCw className={`size-3 ${isFetching ? "animate-spin" : ""}`} /> Tentar novamente
+          </button>
+        </div>
+      ) : collections.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
           Nenhuma coleção cadastrada.
           <Link to="/colecoes" className="ml-2 text-primary hover:underline">Criar coleção →</Link>
