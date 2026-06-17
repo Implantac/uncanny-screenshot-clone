@@ -37,6 +37,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionIntelligencePanel } from "@/components/collection-intelligence-panel";
+import { CollectionCompareDialog } from "@/components/collection-compare-dialog";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
 const SORT_KEYS = ["recent", "name", "progress", "launch", "year"] as const;
@@ -600,9 +601,12 @@ function ColecoesPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Planejamento, direção criativa, mix, cronograma, performance e ROI em uma única visão.</p>
         </div>
-        <Button onClick={openCreate} className="gap-2">
-          <Plus className="size-4" /> Nova coleção
-        </Button>
+        <div className="flex gap-2">
+          <CollectionCompareDialog collections={collections as any} />
+          <Button onClick={openCreate} className="gap-2">
+            <Plus className="size-4" /> Nova coleção
+          </Button>
+        </div>
       </div>
 
       <CollectionIntelligencePanel />
