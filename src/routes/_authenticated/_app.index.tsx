@@ -288,7 +288,6 @@ function CommandCenter() {
         {data?.hotCollection ? (
           <Link
             to="/colecao-360"
-            search={{ id: (data.hotCollection as any).id }}
             className="glass rounded-xl p-5 hover:border-primary/40 transition-colors group"
           >
             <div className="flex items-start justify-between mb-3">
