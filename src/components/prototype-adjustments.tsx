@@ -256,49 +256,76 @@ function AdjustmentsDialog({
         </div>
 
         <div className="space-y-2">
-          <div className="text-xs font-semibold text-muted-foreground uppercase">Histórico</div>
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-semibold text-muted-foreground uppercase">Timeline do protótipo</div>
+            {defaultSector && (
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px]">
+                Setor atual: {SECTORS.find((s) => s.key === defaultSector)?.label ?? defaultSector}
+              </Badge>
+            )}
+          </div>
           {isLoading ? (
             <div className="text-xs text-muted-foreground">Carregando…</div>
           ) : list.length === 0 ? (
-            <div className="text-xs text-muted-foreground">Nenhum ajuste registrado.</div>
+            <div className="text-xs text-muted-foreground py-4 text-center rounded-lg border border-dashed border-border">
+              Nenhum ajuste registrado. A timeline aparece aqui conforme a peça evolui.
+            </div>
           ) : (
-            <ol className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-              {list.map((a) => (
-                <li key={a.id} className="rounded-lg border border-border p-3 space-y-1.5 bg-card">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className={STATUS_TONE[a.status]}>{STATUS_LABEL[a.status]}</Badge>
-                      {a.sector && <Badge variant="outline">{SECTORS.find((s) => s.key === a.sector)?.label ?? a.sector}</Badge>}
-                      <span className="text-[10px] text-muted-foreground font-mono">
-                        {new Date(a.created_at).toLocaleString("pt-BR")}
-                      </span>
+            <ol className="relative border-l-2 border-border ml-3 space-y-3 max-h-[340px] overflow-y-auto pr-1 pt-1">
+              {list.map((a) => {
+                const dot =
+                  a.status === "concluido"
+                    ? "bg-emerald-500 border-emerald-500"
+                    : a.status === "em_andamento"
+                    ? "bg-blue-500 border-blue-500 animate-pulse"
+                    : a.status === "cancelado"
+                    ? "bg-muted-foreground border-muted-foreground"
+                    : "bg-amber-500 border-amber-500";
+                return (
+                  <li key={a.id} className="pl-5 relative">
+                    <span className={`absolute -left-[7px] top-2 size-3 rounded-full border-2 ${dot}`} />
+                    <div className="rounded-lg border border-border p-3 space-y-1.5 bg-card">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className={STATUS_TONE[a.status]}>{STATUS_LABEL[a.status]}</Badge>
+                          {a.sector && <Badge variant="outline">{SECTORS.find((s) => s.key === a.sector)?.label ?? a.sector}</Badge>}
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {new Date(a.created_at).toLocaleString("pt-BR")}
+                          </span>
+                        </div>
+                        {(a.status === "aberto" || a.status === "em_andamento") && (
+                          <Button size="sm" variant="ghost" className="h-7" onClick={() => resolve.mutate(a.id)}>
+                            <CheckCircle2 className="size-3.5 mr-1" /> Concluir
+                          </Button>
+                        )}
+                      </div>
+                      <div className="text-sm">{a.reason}</div>
+                      {a.notes && <div className="text-xs text-muted-foreground">{a.notes}</div>}
+                      {a.resolved_at && (
+                        <div className="text-[10px] text-emerald-600">
+                          Resolvido em {new Date(a.resolved_at).toLocaleString("pt-BR")}
+                        </div>
+                      )}
+                      {a.attachments?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {a.attachments.map((att, i) => (
+                            <a
+                              key={i}
+                              href={att.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border border-border hover:bg-muted/40"
+                            >
+                              {att.kind === "video" ? <Video className="size-3" /> : <ImageIcon className="size-3" />}
+                              <span className="max-w-[160px] truncate">{att.name ?? att.url}</span>
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    {(a.status === "aberto" || a.status === "em_andamento") && (
-                      <Button size="sm" variant="ghost" className="h-7" onClick={() => resolve.mutate(a.id)}>
-                        <CheckCircle2 className="size-3.5 mr-1" /> Concluir
-                      </Button>
-                    )}
-                  </div>
-                  <div className="text-sm">{a.reason}</div>
-                  {a.notes && <div className="text-xs text-muted-foreground">{a.notes}</div>}
-                  {a.attachments?.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {a.attachments.map((att, i) => (
-                        <a
-                          key={i}
-                          href={att.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border border-border hover:bg-muted/40"
-                        >
-                          {att.kind === "video" ? <Video className="size-3" /> : <ImageIcon className="size-3" />}
-                          <span className="max-w-[160px] truncate">{att.name ?? att.url}</span>
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ol>
           )}
         </div>

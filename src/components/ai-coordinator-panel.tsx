@@ -4,6 +4,7 @@ import { Sparkles, Loader2, RefreshCw } from "lucide-react";
 import { useEffect } from "react";
 import { askInsight } from "@/lib/ai-insights.functions";
 import { Markdown } from "@/components/markdown";
+import { InlineChart } from "@/components/inline-chart";
 
 type Persona = "development" | "pcp" | "marketing";
 
@@ -69,7 +70,10 @@ export function AICoordinatorPanel({
         ) : mutation.error ? (
           <div className="text-xs text-destructive">Falha ao consultar IA: {(mutation.error as Error).message}</div>
         ) : mutation.data ? (
-          <Markdown content={mutation.data.text} />
+          <>
+            <Markdown content={mutation.data.text} />
+            <InlineChart text={mutation.data.text} />
+          </>
         ) : (
           <div className="text-xs text-muted-foreground">Clique em atualizar para gerar insights.</div>
         )}
