@@ -252,7 +252,7 @@ function Marketing() {
         </TabsContent>
       </Tabs>
 
-      <CampaignDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} />
+      <CampaignDialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setPrefillName(null); }} editing={editing} userId={user?.id} prefillName={prefillName} />
     </div>
   );
 }
