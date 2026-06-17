@@ -173,9 +173,10 @@ export const SECTOR_LABEL: Record<AppSector, string> = {
   desenvolvimento: "Desenvolvimento",
 };
 
-/** Mapa grupo → setor exigido. Grupos ausentes são livres (visíveis a todos). */
+/** Mapa grupo → setor exigido. Grupos ausentes são livres (visíveis a todos).
+ *  Marketing/Influencers liberados a todos: são telas de inteligência (leitura),
+ *  não operam dados sensíveis — voltam a aparecer no menu para qualquer usuário. */
 export const GROUP_SECTOR: Partial<Record<ModuleGroup, AppSector>> = {
-  Marketing: "marketing",
   Desenvolvimento: "desenvolvimento",
 };
 
