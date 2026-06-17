@@ -163,7 +163,22 @@ function Colecao360() {
       </header>
 
 
-      {isLoading ? <div className="text-sm text-muted-foreground">Carregando…</div> : collections.length === 0 ? (
+      {isLoading ? (
+        <div className="rounded-xl border border-border bg-card p-8 grid place-items-center text-sm text-muted-foreground gap-2">
+          <Loader2 className="size-5 animate-spin text-primary" />
+          Carregando coleções…
+        </div>
+      ) : isError ? (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-sm space-y-3">
+          <div className="flex items-center gap-2 text-destructive font-medium">
+            <AlertTriangle className="size-4" /> Não foi possível carregar a Coleção 360º
+          </div>
+          <div className="text-xs text-muted-foreground break-words">{(error as Error)?.message ?? "Erro desconhecido"}</div>
+          <button onClick={() => refetch()} disabled={isFetching} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-60">
+            <RefreshCw className={`size-3 ${isFetching ? "animate-spin" : ""}`} /> Tentar novamente
+          </button>
+        </div>
+      ) : collections.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
           Nenhuma coleção cadastrada.
           <Link to="/colecoes" className="ml-2 text-primary hover:underline">Criar coleção →</Link>
