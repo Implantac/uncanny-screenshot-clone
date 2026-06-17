@@ -153,6 +153,43 @@ function WarRoomProducao() {
         </div>
       )}
 
+      {staleBatches.length > 0 && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
+              <Bell className="size-4 animate-pulse" />
+              {staleBatches.length} lote{staleBatches.length > 1 ? "s" : ""} sem passagem nas últimas 24h
+            </div>
+            <Link to="/lotes" className="text-xs text-destructive hover:underline">Abrir lotes →</Link>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Lotes em produção sem movimentação recente. Provável fila invisível — confirme com o setor responsável.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {staleBatches.slice(0, 6).map((b: any) => {
+              const pct = b.planned_qty > 0 ? Math.round((b.produced_qty / b.planned_qty) * 100) : 0;
+              return (
+                <Link
+                  key={b.id}
+                  to="/lote/$id"
+                  params={{ id: b.id }}
+                  className="rounded-lg border border-destructive/30 bg-card p-2.5 hover:bg-destructive/10 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Boxes className="size-3.5 text-destructive shrink-0" />
+                    <div className="font-medium text-sm truncate">{b.code}</div>
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-1 tabular-nums">
+                    {b.produced_qty}/{b.planned_qty} pç · {pct}%
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 glass rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
