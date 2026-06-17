@@ -91,7 +91,7 @@ export function NotificationsBell() {
     comentario: data?.comments.length ?? 0,
     marketing: data?.marketing.length ?? 0,
   };
-  const show = (k: Exclude<Cat, "all">) => cat === "all" || cat === k;
+  const show = (k: Exclude<Cat, "all">) => showSection(cat, k);
 
   return (
     <DropdownMenu>
