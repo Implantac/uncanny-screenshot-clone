@@ -2280,6 +2280,107 @@ export type Database = {
           },
         ]
       }
+      quality_capa: {
+        Row: {
+          assigned_to: string | null
+          closed_at: string | null
+          corrective_action: string | null
+          created_at: string
+          due_date: string | null
+          effectiveness_check: string | null
+          id: string
+          inspection_id: string | null
+          occurrence_id: string | null
+          order_id: string | null
+          owner_id: string
+          preventive_action: string | null
+          problem: string
+          root_cause: string | null
+          severity: string
+          status: string
+          supplier_id: string | null
+          title: string
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          closed_at?: string | null
+          corrective_action?: string | null
+          created_at?: string
+          due_date?: string | null
+          effectiveness_check?: string | null
+          id?: string
+          inspection_id?: string | null
+          occurrence_id?: string | null
+          order_id?: string | null
+          owner_id: string
+          preventive_action?: string | null
+          problem: string
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          supplier_id?: string | null
+          title: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          closed_at?: string | null
+          corrective_action?: string | null
+          created_at?: string
+          due_date?: string | null
+          effectiveness_check?: string | null
+          id?: string
+          inspection_id?: string | null
+          occurrence_id?: string | null
+          order_id?: string | null
+          owner_id?: string
+          preventive_action?: string | null
+          problem?: string
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          supplier_id?: string | null
+          title?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quality_capa_inspection_id_fkey"
+            columns: ["inspection_id"]
+            isOneToOne: false
+            referencedRelation: "quality_inspections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_capa_occurrence_id_fkey"
+            columns: ["occurrence_id"]
+            isOneToOne: false
+            referencedRelation: "production_occurrences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_capa_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_capa_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quality_inspections: {
         Row: {
           aql_level: string | null
