@@ -88,11 +88,15 @@ function Colecao360() {
       const margin = avgPrice > 0 ? ((avgPrice - avgCost) / avgPrice) * 100 : 0;
       const sellThrough = producedQty > 0 ? (unitsSold / producedQty) * 100 : 0;
 
-      // Investimento × Resultado (espelho ERP)
-      const investment = cOrders.reduce((a, o) => {
+      // Investimento × Resultado (produção + marketing × receita ERP)
+      const productionCost = cOrders.reduce((a, o) => {
         const p = cProducts.find((pr) => pr.id === o.product_id);
         return a + Number(p?.cost_price ?? avgCost) * o.quantity;
       }, 0);
+      const marketingCost = campaigns
+        .filter((cp) => cp.collection_id === c.id)
+        .reduce((a, cp) => a + Number(cp.cost_shoot ?? 0) + Number(cp.cost_photos ?? 0) + Number(cp.cost_traffic ?? 0), 0);
+      const investment = productionCost + marketingCost;
       const profit = revenue - investment;
       const roi = investment > 0 ? (profit / investment) * 100 : 0;
 
