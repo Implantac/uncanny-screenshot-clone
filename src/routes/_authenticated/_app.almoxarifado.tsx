@@ -241,17 +241,25 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
   const [minimum, setMinimum] = useState("0");
   const [maximum, setMaximum] = useState("0");
   const [notes, setNotes] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [supplierColor, setSupplierColor] = useState("");
+  const [internalColor, setInternalColor] = useState("");
+  const [techSheetPdfUrl, setTechSheetPdfUrl] = useState("");
 
   useEffect(() => {
     if (open && editing) {
-      setSku(editing.sku); setName(editing.name); setCategory(editing.category);
-      setDeposit(editing.deposit || ""); setUnit(editing.unit);
-      setBalance(String(editing.balance)); setMinimum(String(editing.minimum));
-      setMaximum(String(editing.maximum || 0));
-      setNotes(editing.notes || "");
+      const e = editing as Item & { photo_url?: string | null; supplier_color?: string | null; internal_color?: string | null; tech_sheet_pdf_url?: string | null };
+      setSku(e.sku); setName(e.name); setCategory(e.category);
+      setDeposit(e.deposit || ""); setUnit(e.unit);
+      setBalance(String(e.balance)); setMinimum(String(e.minimum));
+      setMaximum(String(e.maximum || 0));
+      setNotes(e.notes || "");
+      setPhotoUrl(e.photo_url || ""); setSupplierColor(e.supplier_color || "");
+      setInternalColor(e.internal_color || ""); setTechSheetPdfUrl(e.tech_sheet_pdf_url || "");
     } else if (open) {
       setSku(""); setName(""); setCategory("tecido"); setDeposit(""); setUnit("un");
       setBalance("0"); setMinimum("0"); setMaximum("0"); setNotes("");
+      setPhotoUrl(""); setSupplierColor(""); setInternalColor(""); setTechSheetPdfUrl("");
     }
   }, [open, editing]);
 
