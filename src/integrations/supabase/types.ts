@@ -3248,6 +3248,50 @@ export type Database = {
           },
         ]
       }
+      tech_sheet_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string | null
+          notes: string | null
+          owner_id: string
+          snapshot: Json
+          tech_sheet_id: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+          notes?: string | null
+          owner_id: string
+          snapshot: Json
+          tech_sheet_id: string
+          version_number: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+          notes?: string | null
+          owner_id?: string
+          snapshot?: Json
+          tech_sheet_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tech_sheet_versions_tech_sheet_id_fkey"
+            columns: ["tech_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "tech_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tech_sheets: {
         Row: {
           code: string
