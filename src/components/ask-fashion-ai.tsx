@@ -195,3 +195,123 @@ export function AskFashionAI() {
     </section>
   );
 }
+
+function ActionEditor({
+  action,
+  pending,
+  onConfirm,
+  onDiscard,
+}: {
+  action: AIAction;
+  pending: boolean;
+  onConfirm: (a: AIAction) => void;
+  onDiscard: () => void;
+}) {
+  const [draft, setDraft] = useState<AIAction>(action);
+  useEffect(() => setDraft(action), [action]);
+
+  const lookup = useServerFn(lookupCommandRefs);
+  const refs = useQuery({
+    queryKey: ["ai-cmd-refs"],
+    queryFn: () => lookup({ data: { q: "" } }),
+    staleTime: 60_000,
+  });
+
+  const set = (patch: Partial<AIAction>) => setDraft((d) => ({ ...d, ...patch } as AIAction));
+
+  return (
+    <div className="rounded-md border border-primary/30 bg-primary/5 p-3 space-y-3">
+      <div className="text-xs font-semibold inline-flex items-center gap-1.5">
+        <PlayCircle className="size-3.5 text-primary" />
+        Ação proposta: {ACTION_LABEL[draft.kind]} — revise antes de confirmar
+      </div>
+
+      <datalist id="ai-cmd-products">
+        {refs.data?.products.map((p) => (
+          <option key={p.sku} value={p.sku}>{p.name}</option>
+        ))}
+      </datalist>
+      <datalist id="ai-cmd-suppliers">
+        {refs.data?.suppliers.map((s) => (
+          <option key={s} value={s} />
+        ))}
+      </datalist>
+
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        {draft.kind === "create_rfq" && (
+          <>
+            <Field label="Título" className="col-span-2">
+              <input value={draft.title} onChange={(e) => set({ title: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="Quantidade">
+              <input type="number" min={1} value={draft.quantity} onChange={(e) => set({ quantity: Number(e.target.value) })} className={inputCls} />
+            </Field>
+            <Field label="Unidade">
+              <input value={draft.unit ?? ""} onChange={(e) => set({ unit: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="Necessário até">
+              <input type="date" value={draft.needed_by ?? ""} onChange={(e) => set({ needed_by: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="Notas" className="col-span-2">
+              <input value={draft.notes ?? ""} onChange={(e) => set({ notes: e.target.value })} className={inputCls} />
+            </Field>
+          </>
+        )}
+        {draft.kind === "create_op" && (
+          <>
+            <Field label="SKU do produto">
+              <input list="ai-cmd-products" value={draft.sku} onChange={(e) => set({ sku: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="Quantidade">
+              <input type="number" min={1} value={draft.quantity} onChange={(e) => set({ quantity: Number(e.target.value) })} className={inputCls} />
+            </Field>
+            <Field label="Fornecedor">
+              <input list="ai-cmd-suppliers" value={draft.supplier_name ?? ""} onChange={(e) => set({ supplier_name: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="Entrega">
+              <input type="date" value={draft.due_date ?? ""} onChange={(e) => set({ due_date: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="Notas" className="col-span-2">
+              <input value={draft.notes ?? ""} onChange={(e) => set({ notes: e.target.value })} className={inputCls} />
+            </Field>
+          </>
+        )}
+        {draft.kind === "block_supplier" && (
+          <>
+            <Field label="Fornecedor" className="col-span-2">
+              <input list="ai-cmd-suppliers" value={draft.supplier_name} onChange={(e) => set({ supplier_name: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="Motivo" className="col-span-2">
+              <input value={draft.reason ?? ""} onChange={(e) => set({ reason: e.target.value })} className={inputCls} />
+            </Field>
+          </>
+        )}
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => onConfirm(draft)}
+          disabled={pending}
+          className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs inline-flex items-center gap-1.5 disabled:opacity-50"
+        >
+          {pending ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+          Confirmar e executar
+        </button>
+        <button onClick={onDiscard} className="px-3 py-1.5 rounded-md border border-border text-xs">
+          Descartar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const inputCls = "w-full px-2 py-1 rounded border border-border bg-background text-xs";
+
+function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <label className={`flex flex-col gap-1 ${className ?? ""}`}>
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      {children}
+    </label>
+  );
+}
