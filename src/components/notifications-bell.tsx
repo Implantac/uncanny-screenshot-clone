@@ -159,7 +159,7 @@ export function NotificationsBell() {
               </div>
             </Link>
           ))}
-          {data?.overdue.map((o) => (
+          {show("atraso") && data?.overdue.map((o) => (
             <Link key={`op-${o.id}`} to="/pcp" className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0">
               <Clock className="size-4 text-destructive shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
