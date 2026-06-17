@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { TechSheetDrawerTrigger } from "@/components/tech-sheet-drawer";
+import { LoteQrButton } from "@/components/lote-qr-button";
 
 const OCC_KIND_LABEL: Record<string, string> = {
   positiva: "Positiva (+)", negativa: "Negativa (−)", neutra: "Neutra",
