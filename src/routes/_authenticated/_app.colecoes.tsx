@@ -37,6 +37,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionIntelligencePanel } from "@/components/collection-intelligence-panel";
+import { CollectionCompareDialog } from "@/components/collection-compare-dialog";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
 const SORT_KEYS = ["recent", "name", "progress", "launch", "year"] as const;
