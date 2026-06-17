@@ -31,6 +31,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { MaterialsPanel, OperationsPanel, MeasurementsPanel, CostsPanel } from "@/components/tech-pack/panels";
+import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer";
+import { Camera } from "lucide-react";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -144,6 +146,7 @@ function FichaTecnicaPage() {
   const [initialProductId, setInitialProductId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [diffOpen, setDiffOpen] = useState(false);
+  const [snapshotsOpen, setSnapshotsOpen] = useState(false);
 
   const { data: sheets = [], isLoading } = useQuery({
     queryKey: ["tech_sheets"],
@@ -390,6 +393,9 @@ function FichaTecnicaPage() {
                   <Button variant="outline" onClick={() => openEdit(selected)} className="gap-2">
                     <Pencil className="size-4" /> Editar ficha
                   </Button>
+                  <Button variant="outline" onClick={() => setSnapshotsOpen(true)} className="gap-2">
+                    <Camera className="size-4" /> Snapshots
+                  </Button>
                   <Button
                     variant="outline"
                     onClick={() => newVersion.mutate(selected)}
@@ -422,6 +428,9 @@ function FichaTecnicaPage() {
         products={products}
       />
       <VersionDiffDialog open={diffOpen} onOpenChange={setDiffOpen} versions={versionHistory} />
+      {selectedId && (
+        <TechSheetVersionsDrawer techSheetId={selectedId} open={snapshotsOpen} onOpenChange={setSnapshotsOpen} />
+      )}
     </div>
   );
 }
