@@ -59,7 +59,22 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
           .update({ last_used_at: new Date().toISOString() })
           .eq("id", tok.id);
 
-        return Response.json({ supplier, rfqs: rfqs ?? [], quotes: myQuotes ?? [], production_orders: pos ?? [] });
+        const { data: attachments } = await supabaseAdmin
+          .from("supplier_portal_attachments")
+          .select("id, file_name, file_path, mime, size, rfq_id, production_order_id, created_at")
+          .eq("owner_id", tok.owner_id)
+          .eq("supplier_id", tok.supplier_id)
+          .order("created_at", { ascending: false })
+          .limit(100);
+
+        const { data: acks } = await supabaseAdmin
+          .from("supplier_portal_acks")
+          .select("id, production_order_id, decision, counter_due_date, notes, created_at")
+          .eq("owner_id", tok.owner_id)
+          .eq("supplier_id", tok.supplier_id)
+          .order("created_at", { ascending: false });
+
+        return Response.json({ supplier, rfqs: rfqs ?? [], quotes: myQuotes ?? [], production_orders: pos ?? [], attachments: attachments ?? [], acks: acks ?? [] });
       },
       // POST: submit/update a quote
       POST: async ({ request, params }) => {
