@@ -179,7 +179,7 @@ function Almoxarifado() {
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div className="flex items-center gap-2 font-medium">
               <Zap className="size-4 text-primary" /> Reposição inteligente sugerida
-              <span className="text-xs text-muted-foreground font-normal">cruza saldo, mínimo, máximo e giro 30d</span>
+              <span className="text-xs text-muted-foreground font-normal">ponto de pedido = giro diário × {LEAD_TIME_DAYS}d + segurança</span>
             </div>
             <Link to="/pedidos-compra" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
               Criar pedidos <ArrowRight className="size-3" />
