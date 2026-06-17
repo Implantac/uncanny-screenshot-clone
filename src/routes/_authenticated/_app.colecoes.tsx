@@ -36,6 +36,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
+import { CollectionIntelligencePanel } from "@/components/collection-intelligence-panel";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
 const SORT_KEYS = ["recent", "name", "progress", "launch", "year"] as const;
@@ -603,6 +604,8 @@ function ColecoesPage() {
           <Plus className="size-4" /> Nova coleção
         </Button>
       </div>
+
+      <CollectionIntelligencePanel />
 
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>

@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ShieldCheck, AlertTriangle, Clock, Truck } from "lucide-react";
+import { QualityIntelligencePanel } from "@/components/quality-intelligence-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/quality")({
   head: () => ({
@@ -84,6 +85,8 @@ function Quality() {
         <Card><CardHeader className="pb-2"><CardDescription>OPs atrasadas</CardDescription><CardTitle className="text-2xl text-red-600">{data?.overdueOps ?? 0}</CardTitle></CardHeader></Card>
         <Card><CardHeader className="pb-2"><CardDescription>Inspeções pendentes</CardDescription><CardTitle className="text-2xl text-amber-600">{data?.inspections.length ?? 0}</CardTitle></CardHeader></Card>
       </div>
+
+      <QualityIntelligencePanel />
 
       <Tabs defaultValue="suppliers">
         <TabsList>
