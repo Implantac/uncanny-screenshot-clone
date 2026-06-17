@@ -75,7 +75,7 @@ function MovimentacoesPage() {
         </TabsList>
 
         <TabsContent value="passagem" className="mt-4">
-          <PassagemPanel op={op} lote={lote} onFilter={(p) => navigate({ search: (prev) => ({ ...prev, ...p }) })} />
+          <PassagemPanel op={op} lote={lote} onFilter={(p) => navigate({ search: (prev: any) => ({ ...prev, ...p }) })} />
         </TabsContent>
 
         <TabsContent value="estoque" className="mt-4">
