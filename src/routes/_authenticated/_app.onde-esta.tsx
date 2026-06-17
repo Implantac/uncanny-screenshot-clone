@@ -105,7 +105,7 @@ function OndeEsta() {
     },
   });
 
-  const { data: batch } = useQuery({
+  const { data: batch, isLoading: loadingBatch } = useQuery({
     enabled: !!submitted && !loadingOrder && !order,
     queryKey: ["traceability-batch", submitted],
     queryFn: async () => {
@@ -185,7 +185,7 @@ function OndeEsta() {
         <p className="text-muted-foreground text-sm">Procurando…</p>
       )}
 
-      {submitted && !loadingOrder && !order && !batch && (
+      {submitted && !loadingOrder && !loadingBatch && !order && !batch && (
         <div className="rounded-xl border border-border bg-card/50 p-8 text-center">
           <Package className="size-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">
