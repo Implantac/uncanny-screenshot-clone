@@ -168,7 +168,7 @@ export function NotificationsBell() {
               </div>
             </Link>
           ))}
-          {data?.stuck.map((o: any) => {
+          {show("parado") && data?.stuck.map((o: any) => {
             const days = Math.floor((Date.now() - new Date(o.stage_updated_at).getTime()) / 86_400_000);
             return (
               <Link key={`stuck-${o.id}`} to="/pcp-kanban" className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0">
