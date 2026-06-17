@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
-import { QuickPassButton } from "@/components/quick-pass";
 
 const OCC_KIND_LABEL: Record<string, string> = {
   falta_material: "Falta de material", erro_corte: "Erro de corte", erro_costura: "Erro de costura",
