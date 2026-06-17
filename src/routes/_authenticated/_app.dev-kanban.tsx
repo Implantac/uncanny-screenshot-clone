@@ -106,6 +106,39 @@ function DevKanban() {
         <KPI label="Aprovados" value={summary.approved} icon={<CheckCircle2 className="size-4" />} tone="success" />
       </div>
 
+      {stuck.length > 0 && (
+        <div className="rounded-xl border border-warning/40 bg-warning/5 p-4">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-warning">
+              <AlertTriangle className="size-4 animate-pulse" />
+              {stuck.length} produto{stuck.length > 1 ? "s" : ""} parado{stuck.length > 1 ? "s" : ""} em desenvolvimento há mais de 7 dias
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Decida agora: avançar para Aprovado, voltar para Briefing ou descontinuar. Cada dia parado segura a coleção.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {stuck.map((p) => {
+              const days = Math.floor((Date.now() - new Date(p.updated_at!).getTime()) / 86400_000);
+              return (
+                <div key={p.id} className="rounded-lg border border-warning/30 bg-card p-2.5">
+                  <div className="flex items-center gap-2">
+                    <Clock className="size-3.5 text-warning shrink-0" />
+                    <div className="font-medium text-sm truncate">{p.name}</div>
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-1 tabular-nums">
+                    {p.sku} · parado há {days}d
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <AICoordinatorPanel persona="development" title="Coordenador de Desenvolvimento — leitura do pipeline" />
+
+
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {COLUMNS.map((col) => {
           const items = grouped.get(col.key) ?? [];
