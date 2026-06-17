@@ -191,7 +191,7 @@ function Almoxarifado() {
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{r.name}</div>
                   <div className="text-[11px] text-muted-foreground">
-                    {r.sku} · saldo {Number(r.balance)} {r.unit}
+                    {r.sku} · saldo {Number(r.balance)} {r.unit} · PP {r.pp} {r.unit}
                     {r.diasCobertura !== null && ` · cobre ${r.diasCobertura}d`}
                   </div>
                 </div>
