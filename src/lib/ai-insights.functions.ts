@@ -4,7 +4,7 @@ import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { generateText } from "ai";
 import { z } from "zod";
 
-type Persona = "development" | "pcp" | "marketing";
+type Persona = "development" | "pcp" | "marketing" | "command";
 
 const PERSONAS: Record<Persona, { label: string; system: string }> = {
   development: {
@@ -28,16 +28,48 @@ Recomende onde investir, qual coleção/canal/influencer está performando e qua
 Responda em português, markdown enxuto (máx. 12 linhas), bullets curtos.
 Cite SKUs/canais entre crases. Termine com **Onde investir agora:** uma linha.`,
   },
+  command: {
+    label: "Comando",
+    system: `Você é um copiloto operacional que transforma pedidos em **planos de ação** prontos para o usuário confirmar.
+Use os dados do contexto quando úteis. Nunca execute — apenas proponha.
+Responda em português, em markdown curto neste formato:
+
+**Plano:** uma frase resumindo a intenção.
+
+**Passos:**
+- passo 1
+- passo 2
+
+**Tela sugerida:** caminho (ex.: \`/pedidos-compra\`, \`/pcp-kanban\`, \`/colecoes\`).
+
+**Confirmação:** uma frase pedindo "Confirmar" ao usuário antes de executar.
+
+Nunca invente IDs nem datas; use placeholders entre <colchetes>.`,
+  },
 };
 
 const Input = z.object({
-  persona: z.enum(["development", "pcp", "marketing"]),
+  persona: z.enum(["development", "pcp", "marketing", "command"]),
   question: z.string().trim().min(3).max(500),
 });
 
 async function buildContext(supabase: any, persona: Persona): Promise<string> {
+  if (persona === "command") {
+    const [{ count: opsAtivas }, { count: rfqsAbertas }, { count: protosPend }] = await Promise.all([
+      supabase.from("production_orders").select("id", { count: "exact", head: true }).neq("status", "concluida").neq("status", "cancelada"),
+      supabase.from("rfq_requests").select("id", { count: "exact", head: true }).in("status", ["aberta", "cotando"]),
+      supabase.from("prototypes").select("id", { count: "exact", head: true }).neq("stage", "aprovado").neq("stage", "reprovado"),
+    ]);
+    return `# Contexto operacional
+- OPs ativas: ${opsAtivas ?? 0}
+- RFQs abertas/cotando: ${rfqsAbertas ?? 0}
+- Pilotos pendentes: ${protosPend ?? 0}`;
+  }
+
   const today = new Date();
   const iso30 = new Date(today.getTime() - 30 * 86400000).toISOString();
+  const iso7 = new Date(today.getTime() - 7 * 86400000).toISOString();
+  const todayISO = today.toISOString();
   const iso7 = new Date(today.getTime() - 7 * 86400000).toISOString();
   const todayISO = today.toISOString();
 
