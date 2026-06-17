@@ -70,8 +70,6 @@ async function buildContext(supabase: any, persona: Persona): Promise<string> {
   const iso30 = new Date(today.getTime() - 30 * 86400000).toISOString();
   const iso7 = new Date(today.getTime() - 7 * 86400000).toISOString();
   const todayISO = today.toISOString();
-  const iso7 = new Date(today.getTime() - 7 * 86400000).toISOString();
-  const todayISO = today.toISOString();
 
   if (persona === "development") {
     const [{ data: protos }, { data: products }, { data: sheets }] = await Promise.all([
