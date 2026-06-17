@@ -159,6 +159,39 @@ function Almoxarifado() {
         </div>
       )}
 
+      {reposicao.length > 0 && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div className="flex items-center gap-2 font-medium">
+              <Zap className="size-4 text-primary" /> Reposição inteligente sugerida
+              <span className="text-xs text-muted-foreground font-normal">cruza saldo, mínimo, máximo e giro 30d</span>
+            </div>
+            <Link to="/pedidos-compra" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+              Criar pedidos <ArrowRight className="size-3" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {reposicao.map((r) => (
+              <div key={r.id} className="rounded-lg border border-border bg-card/60 p-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">{r.name}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {r.sku} · saldo {Number(r.balance)} {r.unit}
+                    {r.diasCobertura !== null && ` · cobre ${r.diasCobertura}d`}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className={`text-sm font-semibold tabular-nums ${r.urgencia === "alta" ? "text-destructive" : "text-amber-500"}`}>
+                    +{r.sugerido} {r.unit}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{r.urgencia === "alta" ? "Urgente" : "Planejar"}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
       ) : items.length === 0 ? (
