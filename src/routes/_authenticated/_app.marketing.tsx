@@ -177,9 +177,11 @@ function Marketing() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
+          <ReadyToLaunchCard campaigns={rows} onCreate={(name) => { setEditing(null); setPrefillName(name); setOpen(true); }} />
           <InsightsBar rows={filtered} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
           <ChartsSection rows={filtered} />
         </TabsContent>
+
 
         <TabsContent value="intelligence" className="space-y-4">
           <MarketingIntelligence />
