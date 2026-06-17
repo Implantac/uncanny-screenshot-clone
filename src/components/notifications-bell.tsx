@@ -6,12 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { useRealtime } from "@/hooks/use-realtime";
 import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
-
-type Cat = "all" | "estoque" | "atraso" | "parado" | "proto" | "comentario" | "marketing";
-const CAT_LABEL: Record<Cat, string> = {
-  all: "Tudo", estoque: "Estoque", atraso: "Atraso", parado: "Parado",
-  proto: "Protótipo", comentario: "Comentários", marketing: "Marketing",
-};
+import { show as showSection, CAT_LABEL, type Cat } from "./notifications-filter";
 
 export function NotificationsBell() {
   const { user } = useAuth();
@@ -96,7 +91,7 @@ export function NotificationsBell() {
     comentario: data?.comments.length ?? 0,
     marketing: data?.marketing.length ?? 0,
   };
-  const show = (k: Exclude<Cat, "all">) => cat === "all" || cat === k;
+  const show = (k: Exclude<Cat, "all">) => showSection(cat, k);
 
   return (
     <DropdownMenu>
