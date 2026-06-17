@@ -128,12 +128,12 @@ function Colecao360() {
         protoApproved: cProtos.filter((p) => p.stage === "aprovado").length,
         opsActive, opsDone, producedQty,
         revenue, unitsSold, margin, sellThrough,
-        investment, profit, roi,
+        investment, productionCost, marketingCost, profit, roi,
         semPiloto, protoPendentes, opsAguardando, liberadosPCP, avanco,
         semFicha, champions, criticos,
       };
     });
-  }, [collections, products, prototypes, orders, sales, sheets]);
+  }, [collections, products, prototypes, orders, sales, sheets, campaigns]);
 
   const current = summary.find((s) => s.collection.id === currentId) ?? summary[0];
 
