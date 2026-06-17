@@ -293,7 +293,7 @@ function LotePage() {
                   <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
                 </span>
                 <span id={`occ-retrabalho-${o.id}`}>
-                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} defaultKind="retrabalho" />
+                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
                 </span>
               </div>
             </div>
