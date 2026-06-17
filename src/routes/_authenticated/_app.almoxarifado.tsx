@@ -270,6 +270,10 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
         sku, name, category, deposit: deposit || null, unit,
         balance: Number(balance), minimum: Number(minimum), maximum: Number(maximum),
         notes: notes || null,
+        photo_url: photoUrl || null,
+        supplier_color: supplierColor || null,
+        internal_color: internalColor || null,
+        tech_sheet_pdf_url: techSheetPdfUrl || null,
       };
       if (editing) {
         const { error } = await supabase.from("inventory_items").update(payload).eq("id", editing.id);
