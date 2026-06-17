@@ -9,6 +9,7 @@ import { ProductionOrderCommentsButton } from "@/components/production-order-com
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { QuickPassButton } from "@/components/quick-pass";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { DelayPredictionPanel } from "@/components/delay-prediction-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
@@ -187,6 +188,9 @@ function PcpKanban() {
       </div>
 
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
+
+      <DelayPredictionPanel />
+
 
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-medium"><Sparkles className="size-4 text-primary" /> Próxima melhor ação</div>
