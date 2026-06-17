@@ -48,6 +48,14 @@ const CAT_LABEL: Record<Category, string> = {
   tecido: "Tecido", aviamento: "Aviamento", acabado: "Acabado", outros: "Outros",
 };
 
+const LEAD_TIME_DAYS = 14; // padrão; futuramente por fornecedor
+
+/** Ponto de pedido = consumo diário (giro 30d / 30) × lead time + estoque de segurança (mínimo). */
+function reorderPoint(turnover30d: number, minimum: number, leadDays = LEAD_TIME_DAYS): number {
+  const daily = (Number(turnover30d) || 0) / 30;
+  return Math.ceil(daily * leadDays + (Number(minimum) || 0));
+}
+
 function Almoxarifado() {
   const { user } = useAuth();
   const qc = useQueryClient();
