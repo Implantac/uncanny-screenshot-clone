@@ -1,10 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Boxes, AlertTriangle, Search, Plus, Trash2, Pencil, Sparkles, Download } from "lucide-react";
+import { Boxes, AlertTriangle, Search, Plus, Trash2, Pencil, Sparkles, Download, Zap, ArrowRight } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -88,6 +88,21 @@ function Almoxarifado() {
   }));
   const criticosList = items.filter((i) => Number(i.balance) < Number(i.minimum)).slice(0, 5);
 
+  // Reposição inteligente: cruza saldo, mínimo, máximo e giro 30d para sugerir compra
+  const reposicao = useMemo(() => {
+    return items
+      .map((i) => {
+        const bal = Number(i.balance), min = Number(i.minimum), max = Number(i.maximum), giro = Number(i.turnover_30d || 0);
+        const sugerido = max > 0 ? Math.max(0, max - bal) : Math.max(0, min * 2 - bal);
+        const diasCobertura = giro > 0 ? Math.round((bal / giro) * 30) : null;
+        const urgencia = bal < min ? "alta" : diasCobertura !== null && diasCobertura < 15 ? "media" : null;
+        return { ...i, sugerido, diasCobertura, urgencia };
+      })
+      .filter((i) => i.urgencia && i.sugerido > 0)
+      .sort((a, b) => (a.urgencia === "alta" ? -1 : 1) - (b.urgencia === "alta" ? -1 : 1) || Number(b.turnover_30d || 0) - Number(a.turnover_30d || 0))
+      .slice(0, 6);
+  }, [items]);
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -139,6 +154,39 @@ function Almoxarifado() {
               <span key={i.id} className="text-xs px-2 py-1 rounded bg-destructive/10 text-destructive">
                 {i.sku} · {i.name} ({i.balance}/{i.minimum} {i.unit})
               </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {reposicao.length > 0 && (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div className="flex items-center gap-2 font-medium">
+              <Zap className="size-4 text-primary" /> Reposição inteligente sugerida
+              <span className="text-xs text-muted-foreground font-normal">cruza saldo, mínimo, máximo e giro 30d</span>
+            </div>
+            <Link to="/pedidos-compra" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+              Criar pedidos <ArrowRight className="size-3" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {reposicao.map((r) => (
+              <div key={r.id} className="rounded-lg border border-border bg-card/60 p-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">{r.name}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {r.sku} · saldo {Number(r.balance)} {r.unit}
+                    {r.diasCobertura !== null && ` · cobre ${r.diasCobertura}d`}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className={`text-sm font-semibold tabular-nums ${r.urgencia === "alta" ? "text-destructive" : "text-amber-500"}`}>
+                    +{r.sugerido} {r.unit}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{r.urgencia === "alta" ? "Urgente" : "Planejar"}</div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
