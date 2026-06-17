@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/_app/war-room-producao")({
 function WarRoomProducao() {
   const { productId } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["war-room-producao"],
     queryFn: async () => {
       const [ordersR, stagesR, suppliersR] = await Promise.all([
@@ -42,6 +42,8 @@ function WarRoomProducao() {
           .in("status", ["enviada", "em_andamento"])
           .limit(200),
       ]);
+      const firstError = [ordersR, stagesR, suppliersR].find((r) => r.error)?.error;
+      if (firstError) throw new Error(firstError.message);
       return {
         orders: ordersR.data ?? [],
         stages: stagesR.data ?? [],
@@ -51,28 +53,31 @@ function WarRoomProducao() {
   });
 
   // Alerta proativo: lotes ativos sem passagem nas últimas 24h
-  const { data: staleBatches = [] } = useQuery({
+  const { data: staleBatches = [], isError: staleError } = useQuery({
     queryKey: ["war-room-stale-batches"],
     queryFn: async () => {
       const since24h = new Date(Date.now() - 24 * 3600_000).toISOString();
-      const { data: batches } = await supabase
+      const { data: batches, error: bErr } = await supabase
         .from("production_batches")
         .select("id, code, status, produced_qty, planned_qty, updated_at")
         .eq("status", "em_producao")
         .limit(100);
+      if (bErr) throw new Error(bErr.message);
       if (!batches || batches.length === 0) return [];
       const codes = batches.map((b: any) => b.code);
-      const { data: recentOrders } = await supabase
+      const { data: recentOrders, error: oErr } = await supabase
         .from("production_orders")
         .select("id, batch_code")
         .in("batch_code", codes);
+      if (oErr) throw new Error(oErr.message);
       const orderIds = (recentOrders ?? []).map((o: any) => o.id);
       if (orderIds.length === 0) return batches.map((b: any) => ({ ...b, lastMove: null }));
-      const { data: recentLogs } = await supabase
+      const { data: recentLogs, error: lErr } = await supabase
         .from("production_stage_log")
         .select("order_id, created_at")
         .in("order_id", orderIds)
         .gte("created_at", since24h);
+      if (lErr) throw new Error(lErr.message);
       const movedCodes = new Set<string>();
       (recentLogs ?? []).forEach((l: any) => {
         const order = (recentOrders ?? []).find((o: any) => o.id === l.order_id);
