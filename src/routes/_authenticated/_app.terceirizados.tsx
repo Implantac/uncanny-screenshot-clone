@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { listOutsourcedWip } from "@/lib/pcp-ops.functions";
-import { Truck, Package, Tags, Boxes, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Truck, Package, Tags, Boxes, ChevronDown, ChevronRight, AlertTriangle, PackageCheck, Minus } from "lucide-react";
+import { toast } from "sonner";
 
 const lineLabel = (line?: string | null) => line === "segunda_linha" ? "2ª linha" : "1ª linha";
 
@@ -113,6 +115,7 @@ function OutsourcedPage() {
                         <th className="text-right py-2">Qtd / Recebida</th>
                         <th className="text-left py-2">Enviado em</th>
                         <th className="text-left py-2">Status</th>
+                        <th className="text-right py-2">Ação</th>
                       </tr>
                     </thead>
                     <tbody>
