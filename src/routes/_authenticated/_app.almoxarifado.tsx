@@ -324,6 +324,32 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
             <div className="space-y-2"><Label>Máximo</Label><Input type="number" step="0.01" value={maximum} onChange={(e) => setMaximum(e.target.value)} /></div>
           </div>
           <div className="space-y-2"><Label>Observações</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
+
+          <div className="pt-2 border-t border-border space-y-3">
+            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Material · ficha</div>
+            <div className="grid grid-cols-[120px_1fr] gap-3 items-start">
+              {photoUrl ? (
+                <img src={photoUrl} alt={name || "Material"} className="size-[120px] rounded-lg border border-border object-cover" />
+              ) : (
+                <div className="size-[120px] rounded-lg border border-dashed border-border flex items-center justify-center text-[10px] text-muted-foreground text-center px-2">
+                  Cole URL ao lado para visualizar
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label>Foto do material (URL)</Label>
+                <Input value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://…" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2"><Label>Cor fornecedor</Label><Input value={supplierColor} onChange={(e) => setSupplierColor(e.target.value)} placeholder="Ex: Azul Marinho 4521" /></div>
+              <div className="space-y-2"><Label>Cor interna</Label><Input value={internalColor} onChange={(e) => setInternalColor(e.target.value)} placeholder="Ex: AZ-MAR" /></div>
+            </div>
+            <div className="space-y-2">
+              <Label>PDF da ficha técnica (URL)</Label>
+              <Input value={techSheetPdfUrl} onChange={(e) => setTechSheetPdfUrl(e.target.value)} placeholder="https://…/ficha.pdf" />
+            </div>
+          </div>
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={saveMut.isPending}>{saveMut.isPending ? "Salvando…" : editing ? "Atualizar" : "Criar"}</Button>
