@@ -52,6 +52,7 @@ function Marketing() {
   useRealtime("marketing_campaigns", ["marketing_campaigns"]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Campaign | null>(null);
+  const [prefillName, setPrefillName] = useState<string | null>(null);
   const [channelFilter, setChannelFilter] = useState<string>("todos");
   const [periodFilter, setPeriodFilter] = useState<"30" | "90" | "365" | "todos">("todos");
 
@@ -177,9 +178,11 @@ function Marketing() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
+          <ReadyToLaunchCard campaigns={rows} onCreate={(name) => { setEditing(null); setPrefillName(name); setOpen(true); }} />
           <InsightsBar rows={filtered} invTotal={invTotal} receitaEst={receitaEst} roasAvg={roasAvg} />
           <ChartsSection rows={filtered} />
         </TabsContent>
+
 
         <TabsContent value="intelligence" className="space-y-4">
           <MarketingIntelligence />
@@ -249,13 +252,13 @@ function Marketing() {
         </TabsContent>
       </Tabs>
 
-      <CampaignDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} />
+      <CampaignDialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setPrefillName(null); }} editing={editing} userId={user?.id} prefillName={prefillName} />
     </div>
   );
 }
 
-function CampaignDialog({ open, onOpenChange, editing, userId }: {
-  open: boolean; onOpenChange: (v: boolean) => void; editing: Campaign | null; userId?: string;
+function CampaignDialog({ open, onOpenChange, editing, userId, prefillName }: {
+  open: boolean; onOpenChange: (v: boolean) => void; editing: Campaign | null; userId?: string; prefillName?: string | null;
 }) {
   const qc = useQueryClient();
   const [name, setName] = useState("");
@@ -275,10 +278,11 @@ function CampaignDialog({ open, onOpenChange, editing, userId }: {
       setInvestment(String(editing.investment)); setRoas(String(editing.roas));
       setStatus(editing.status); setNotes(editing.notes || "");
     } else if (open) {
-      setName(""); setChannel(""); setStartDate(""); setEndDate("");
+      setName(prefillName || ""); setChannel(""); setStartDate(""); setEndDate("");
       setInvestment("0"); setRoas("0"); setStatus("programada"); setNotes("");
     }
-  }, [open, editing]);
+  }, [open, editing, prefillName]);
+
 
   const saveMut = useMutation({
     mutationFn: async () => {
@@ -812,3 +816,70 @@ function AdvancedSection({ rows }: { rows: Campaign[] }) {
 }
 
 
+
+function channelSuggestion(category: string | null) {
+  const c = (category || "").toLowerCase();
+  if (c.includes("acess")) return "Instagram Stories + Influencer";
+  if (c.includes("masc")) return "Meta Ads + B2B Direct";
+  if (c.includes("infant")) return "Meta Ads + WhatsApp";
+  if (c.includes("fem") || c.includes("vest") || c.includes("saia")) return "Instagram + Influencer";
+  return "Instagram + Meta Ads";
+}
+
+function ReadyToLaunchCard({ campaigns, onCreate }: { campaigns: Campaign[]; onCreate: (name: string) => void }) {
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["ready-to-launch"],
+    queryFn: async () => {
+      const { data: protos } = await supabase
+        .from("prototypes")
+        .select("id, code, stage, product_id, products(id, name, category, image_url)")
+        .eq("stage", "aprovado")
+        .not("product_id", "is", null)
+        .order("updated_at", { ascending: false })
+        .limit(40);
+      return (protos ?? []) as Array<{ id: string; code: string; product_id: string; products: { id: string; name: string; category: string | null; image_url: string | null } | null }>;
+    },
+  });
+
+  const pending = useMemo(() => {
+    const hay = campaigns.map((c) => `${c.name} ${c.notes ?? ""}`.toLowerCase());
+    return data.filter((p) => {
+      const n = (p.products?.name ?? "").toLowerCase();
+      if (!n) return false;
+      return !hay.some((h) => h.includes(n));
+    }).slice(0, 6);
+  }, [data, campaigns]);
+
+  if (isLoading || pending.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary font-semibold">
+        <Sparkles className="size-3.5" /> Pronto pra lançar · Marketing Intelligence
+      </div>
+      <p className="text-sm">
+        <span className="font-semibold">{pending.length}</span> protótipo{pending.length > 1 ? "s" : ""} aprovado{pending.length > 1 ? "s" : ""} sem campanha vinculada — sugestão de canal por categoria abaixo.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        {pending.map((p) => {
+          const prod = p.products!;
+          const sug = channelSuggestion(prod.category);
+          return (
+            <div key={p.id} className="rounded-lg border border-border bg-background/60 p-3 flex items-center gap-3">
+              <div className="size-10 rounded bg-muted overflow-hidden shrink-0 grid place-items-center">
+                {prod.image_url ? <img src={prod.image_url} alt="" className="size-full object-cover" /> : <Megaphone className="size-4 text-muted-foreground" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium truncate">{prod.name}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{prod.category ?? "—"} · <span className="text-primary">{sug}</span></div>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => onCreate(`Lançamento ${prod.name}`)} className="h-7 px-2 text-xs gap-1">
+                <Plus className="size-3" /> Campanha
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

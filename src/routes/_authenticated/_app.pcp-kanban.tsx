@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
-import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History, Package, X } from "lucide-react";
+import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History, Package, X, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
@@ -117,6 +117,26 @@ function PcpKanban() {
     return { wip, late, urgent, total: orders.length };
   }, [orders]);
 
+  const bottleneck = useMemo(() => {
+    const now = Date.now();
+    let worst: { stage: Stage; label: string; count: number; avgDays: number; oldest: number } | null = null;
+    for (const col of STAGES) {
+      if (col.key === "entregue" || col.key === "cad") continue;
+      const items = orders.filter((o) => o.stage === col.key);
+      if (items.length < 2) continue;
+      const days = items.map((o) => (now - new Date(o.stage_updated_at).getTime()) / 86400000);
+      const avg = days.reduce((a, b) => a + b, 0) / days.length;
+      const oldest = Math.max(...days);
+      const score = avg * items.length;
+      if (!worst || score > worst.avgDays * worst.count) {
+        worst = { stage: col.key, label: col.label, count: items.length, avgDays: avg, oldest };
+      }
+    }
+    if (!worst || worst.avgDays < 2) return null;
+    return worst;
+  }, [orders]);
+
+
   const move = (id: string, stage: Stage) => {
     const o = orders.find((x) => x.id === id);
     if (!o || o.stage === stage) return;
@@ -168,6 +188,29 @@ function PcpKanban() {
 
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
 
+      {bottleneck && (
+        <div className="rounded-xl border border-warning/40 bg-warning/5 p-4 flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-warning font-semibold">
+            <Sparkles className="size-3.5" /> Gargalo detectado
+          </div>
+          <div className="flex-1 min-w-[220px] text-sm">
+            <span className="font-semibold">{bottleneck.label}</span> · {bottleneck.count} OPs paradas há média de{" "}
+            <span className="font-semibold tabular-nums">{bottleneck.avgDays.toFixed(1)}d</span>
+            {bottleneck.oldest > bottleneck.avgDays + 1 && ` (mais antiga: ${bottleneck.oldest.toFixed(0)}d)`}.
+            <div className="text-xs text-muted-foreground mt-0.5">
+              Realoque capacidade para {bottleneck.label.toLowerCase()} ou cobre o setor — segura toda a esteira a partir daqui.
+            </div>
+          </div>
+          <button
+            onClick={() => { setMode("ordens"); const el = document.querySelector(`[data-stage="${bottleneck.stage}"]`); el?.scrollIntoView({ behavior: "smooth", block: "center" }); }}
+            className="text-xs px-3 py-1.5 rounded-md bg-warning text-warning-foreground font-medium hover:bg-warning/90"
+          >
+            Ver coluna
+          </button>
+        </div>
+      )}
+
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         {STAGES.map((col) => {
           const items = grouped.get(col.key) ?? [];
@@ -176,6 +219,7 @@ function PcpKanban() {
           return (
             <div
               key={col.key}
+              data-stage={col.key}
               className={`rounded-xl border bg-card flex flex-col min-h-[420px] transition ${isOver ? "border-primary ring-2 ring-primary/30" : "border-border"}`}
               onDragOver={(e) => { e.preventDefault(); setOver(col.key); }}
               onDragLeave={() => setOver((v) => (v === col.key ? null : v))}
