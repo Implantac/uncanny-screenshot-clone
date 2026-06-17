@@ -278,6 +278,37 @@ function ColecoesPage() {
     },
   });
 
+  const { data: protosByProduct = {} } = useQuery({
+    queryKey: ["collections-prototypes"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("prototypes").select("product_id, stage").not("product_id", "is", null);
+      if (error) throw error;
+      const map: Record<string, { any: boolean; approved: boolean }> = {};
+      (data ?? []).forEach((p: any) => {
+        const e = (map[p.product_id] ??= { any: false, approved: false });
+        e.any = true;
+        if (p.stage === "aprovado") e.approved = true;
+      });
+      return map;
+    },
+  });
+
+  const pulseByCollection = useMemo(() => {
+    const map: Record<string, { total: number; croqui: number; piloto: number; ficha: number }> = {};
+    const sheetSet = new Set(techSheets.filter((t) => t.status === "aprovada" && t.product_id).map((t) => t.product_id!));
+    products.forEach((p) => {
+      if (!p.collection_id) return;
+      const a = (map[p.collection_id] ??= { total: 0, croqui: 0, piloto: 0, ficha: 0 });
+      a.total += 1;
+      if (p.image_url) a.croqui += 1;
+      const proto = (protosByProduct as Record<string, { any: boolean; approved: boolean }>)[p.id];
+      if (proto?.any) a.piloto += 1;
+      if (sheetSet.has(p.id)) a.ficha += 1;
+    });
+    return map;
+  }, [products, protosByProduct, techSheets]);
+
+
   const { data: bom = [] } = useQuery({
     queryKey: ["collections-bom"],
     queryFn: async () => {
