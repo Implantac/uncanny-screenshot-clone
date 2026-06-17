@@ -21,13 +21,14 @@ function useDashboard() {
   return useQuery({
     queryKey: ["plm-dashboard"],
     queryFn: async () => {
-      const [prod, cols, inv, prods, protos, tech] = await Promise.all([
+      const [prod, cols, inv, prods, protos, tech, camps] = await Promise.all([
         supabase.from("production_orders").select("id, code, quantity, progress, status, stage, stage_updated_at, created_at, due_date, product_id"),
-        supabase.from("collections").select("name, status, progress, year, created_at").order("created_at", { ascending: false }).limit(6),
+        supabase.from("collections").select("id, name, status, progress, year, created_at").order("created_at", { ascending: false }).limit(6),
         supabase.from("inventory_items").select("name, balance, minimum, unit"),
         supabase.from("products").select("id, name, category, colors, status, created_at").order("created_at", { ascending: false }).limit(200),
         supabase.from("prototypes").select("id, code, stage, product_id, created_at").order("created_at", { ascending: false }).limit(50),
         supabase.from("tech_sheets").select("id, product_id, status, created_at").order("created_at", { ascending: false }).limit(500),
+        supabase.from("marketing_campaigns").select("name, investment, roas, status").order("created_at", { ascending: false }).limit(100),
       ]);
       const p = prod.data ?? [];
       const c = cols.data ?? [];
