@@ -86,7 +86,7 @@ function ApontarPage() {
       if (!isPartial) {
         const { error: e2 } = await supabase
           .from("production_orders")
-          .update({ stage: to, stage_updated_at: new Date().toISOString() })
+          .update({ stage: to as any, stage_updated_at: new Date().toISOString() })
           .eq("id", order.id);
         if (e2) throw e2;
       }
