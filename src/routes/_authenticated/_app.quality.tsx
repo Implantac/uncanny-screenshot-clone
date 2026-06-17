@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ShieldCheck, AlertTriangle, Clock, Truck } from "lucide-react";
 import { QualityIntelligencePanel } from "@/components/quality-intelligence-panel";
+import { CapaPanel } from "@/components/capa-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/quality")({
   head: () => ({
@@ -92,6 +93,7 @@ function Quality() {
         <TabsList>
           <TabsTrigger value="suppliers">SLA por fornecedor</TabsTrigger>
           <TabsTrigger value="inspections">Inspeções</TabsTrigger>
+          <TabsTrigger value="capa">CAPA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="suppliers">
@@ -146,6 +148,10 @@ function Quality() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="capa">
+          <CapaPanel />
         </TabsContent>
       </Tabs>
     </div>
