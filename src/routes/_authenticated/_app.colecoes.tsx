@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { CollectionMoodboard } from "@/components/collection-moodboard";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
 const SORT_KEYS = ["recent", "name", "progress", "launch", "year"] as const;
