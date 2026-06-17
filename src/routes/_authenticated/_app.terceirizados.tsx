@@ -136,6 +136,9 @@ function OutsourcedPage() {
                           <td className="py-2 text-right font-mono">{o.quantity} / {o.qty_received ?? 0}</td>
                           <td className="py-2">{o.sent_at ? new Date(o.sent_at).toLocaleDateString("pt-BR") : "—"}</td>
                           <td className="py-2">{o.status}</td>
+                          <td className="py-2 text-right">
+                            <ReturnButton os={{ ...o, owner_id: s.owner_id }} />
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -150,6 +153,129 @@ function OutsourcedPage() {
       <div className="text-xs text-muted-foreground">
         <Link to="/fornecedores" className="hover:underline">Gerenciar facções →</Link>
       </div>
+    </div>
+  );
+}
+
+function ReturnButton({ os }: { os: any }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const sent = Number(os.quantity ?? 0);
+  const received = Number(os.qty_received ?? 0);
+  const pending = Math.max(0, sent - received);
+  const [qty, setQty] = useState<number>(pending);
+  const [loss, setLoss] = useState<number>(0);
+  const [notes, setNotes] = useState("");
+
+  const submit = useMutation({
+    mutationFn: async () => {
+      if (qty <= 0) throw new Error("Quantidade a receber deve ser maior que zero");
+      if (qty > pending) throw new Error("Quantidade maior que o saldo pendente");
+      const totalReceived = received + qty;
+      const kind = totalReceived >= sent ? "integral" : "parcial";
+      const { data: u } = await supabase.auth.getUser();
+
+      const { error } = await supabase
+        .from("service_orders")
+        .update({
+          qty_received: totalReceived,
+          status: "recebida",
+          received_at: new Date().toISOString(),
+          kind,
+          notes: notes ? `${os.notes ? os.notes + "\n" : ""}Retorno: ${notes}` : os.notes,
+        })
+        .eq("id", os.id);
+      if (error) throw error;
+
+      if (loss > 0 && os.production_order_id && os.owner_id) {
+        await supabase.from("production_occurrences").insert({
+          owner_id: os.owner_id,
+          order_id: os.production_order_id,
+          kind: "negativa",
+          sector: os.to_stage,
+          responsible_id: u.user?.id ?? null,
+          affected_qty: loss,
+          status: "aberta",
+          description: `Perda no retorno do terceirizado (OS ${os.code})${notes ? " — " + notes : ""}`,
+        });
+      }
+      return { kind };
+    },
+    onSuccess: ({ kind }) => {
+      toast.success(`Retorno ${kind} registrado`);
+      qc.invalidateQueries({ queryKey: ["outsourced-wip"] });
+      qc.invalidateQueries({ queryKey: ["pcp-kanban"] });
+      qc.invalidateQueries({ queryKey: ["lote-occ"] });
+      setOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  if (pending <= 0) return <span className="text-[10px] text-muted-foreground">recebido</span>;
+
+  return (
+    <div className="relative inline-block">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        className="text-[10px] inline-flex items-center gap-1 px-2 py-1 rounded border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition"
+      >
+        <PackageCheck className="size-3" /> Registrar retorno
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            className="absolute right-0 top-full mt-1 z-50 w-72 rounded-lg border border-border bg-popover shadow-lg p-3 space-y-2 text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-[11px] font-semibold">Retorno do terceirizado</div>
+            <div className="text-[10px] text-muted-foreground">
+              Enviado {sent} · Recebido {received} · Pendente <strong>{pending}</strong>
+            </div>
+            <div className="flex gap-1">
+              <button type="button" onClick={() => setQty(pending)}
+                className={`flex-1 text-[10px] py-1 rounded border ${qty === pending ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted"}`}>
+                Integral ({pending})
+              </button>
+              <button type="button" onClick={() => setQty(Math.max(1, Math.floor(pending / 2)))}
+                className={`flex-1 text-[10px] py-1 rounded border ${qty !== pending && qty > 0 ? "border-amber-500/40 bg-amber-500/10 text-amber-600" : "border-border hover:bg-muted"}`}>
+                Parcial
+              </button>
+            </div>
+            <label className="block text-[10px] text-muted-foreground">
+              Quantidade recebida agora
+              <input type="number" min={1} max={pending} value={qty}
+                onChange={(e) => setQty(Math.max(1, Math.min(pending, Number(e.target.value) || 0)))}
+                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1" />
+            </label>
+            <label className="block text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1"><Minus className="size-3" />Perda no retorno (opcional)</span>
+              <input type="number" min={0} value={loss}
+                onChange={(e) => setLoss(Math.max(0, Number(e.target.value) || 0))}
+                placeholder="0"
+                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1" />
+              <span className="text-[9px] text-muted-foreground">Gera ocorrência negativa na OP.</span>
+            </label>
+            <label className="block text-[10px] text-muted-foreground">
+              Observação
+              <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)}
+                placeholder="Ex: 5 peças manchadas…"
+                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1" />
+            </label>
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => submit.mutate()} disabled={submit.isPending}
+                className="flex-1 text-xs px-2 py-1.5 rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50">
+                {submit.isPending ? "Salvando…" : "Confirmar retorno"}
+              </button>
+              <button onClick={() => setOpen(false)}
+                className="text-xs px-2 py-1.5 rounded border border-border hover:bg-muted">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
