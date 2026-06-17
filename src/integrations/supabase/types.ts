@@ -164,6 +164,50 @@ export type Database = {
           },
         ]
       }
+      collection_moodboard: {
+        Row: {
+          caption: string | null
+          collection_id: string
+          created_at: string
+          id: string
+          image_url: string
+          kind: string | null
+          owner_id: string
+          position: number | null
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          collection_id: string
+          created_at?: string
+          id?: string
+          image_url: string
+          kind?: string | null
+          owner_id: string
+          position?: number | null
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          collection_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          kind?: string | null
+          owner_id?: string
+          position?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_moodboard_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collection_versions: {
         Row: {
           collection_id: string
@@ -938,6 +982,7 @@ export type Database = {
           created_at: string
           deposit: string | null
           id: string
+          internal_color: string | null
           last_entry_at: string | null
           last_exit_at: string | null
           maximum: number
@@ -945,8 +990,11 @@ export type Database = {
           name: string
           notes: string | null
           owner_id: string
+          photo_url: string | null
           product_id: string | null
           sku: string
+          supplier_color: string | null
+          tech_sheet_pdf_url: string | null
           turnover_30d: number
           unit: string
           updated_at: string
@@ -957,6 +1005,7 @@ export type Database = {
           created_at?: string
           deposit?: string | null
           id?: string
+          internal_color?: string | null
           last_entry_at?: string | null
           last_exit_at?: string | null
           maximum?: number
@@ -964,8 +1013,11 @@ export type Database = {
           name: string
           notes?: string | null
           owner_id: string
+          photo_url?: string | null
           product_id?: string | null
           sku: string
+          supplier_color?: string | null
+          tech_sheet_pdf_url?: string | null
           turnover_30d?: number
           unit?: string
           updated_at?: string
@@ -976,6 +1028,7 @@ export type Database = {
           created_at?: string
           deposit?: string | null
           id?: string
+          internal_color?: string | null
           last_entry_at?: string | null
           last_exit_at?: string | null
           maximum?: number
@@ -983,8 +1036,11 @@ export type Database = {
           name?: string
           notes?: string | null
           owner_id?: string
+          photo_url?: string | null
           product_id?: string | null
           sku?: string
+          supplier_color?: string | null
+          tech_sheet_pdf_url?: string | null
           turnover_30d?: number
           unit?: string
           updated_at?: string
@@ -1002,6 +1058,10 @@ export type Database = {
       marketing_campaigns: {
         Row: {
           channel: string | null
+          collection_id: string | null
+          cost_photos: number | null
+          cost_shoot: number | null
+          cost_traffic: number | null
           created_at: string
           end_date: string | null
           id: string
@@ -1009,6 +1069,8 @@ export type Database = {
           name: string
           notes: string | null
           owner_id: string
+          product_id: string | null
+          revenue: number | null
           roas: number
           start_date: string | null
           status: Database["public"]["Enums"]["campaign_status"]
@@ -1016,6 +1078,10 @@ export type Database = {
         }
         Insert: {
           channel?: string | null
+          collection_id?: string | null
+          cost_photos?: number | null
+          cost_shoot?: number | null
+          cost_traffic?: number | null
           created_at?: string
           end_date?: string | null
           id?: string
@@ -1023,6 +1089,8 @@ export type Database = {
           name: string
           notes?: string | null
           owner_id: string
+          product_id?: string | null
+          revenue?: number | null
           roas?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["campaign_status"]
@@ -1030,6 +1098,10 @@ export type Database = {
         }
         Update: {
           channel?: string | null
+          collection_id?: string | null
+          cost_photos?: number | null
+          cost_shoot?: number | null
+          cost_traffic?: number | null
           created_at?: string
           end_date?: string | null
           id?: string
@@ -1037,12 +1109,29 @@ export type Database = {
           name?: string
           notes?: string | null
           owner_id?: string
+          product_id?: string | null
+          revenue?: number | null
           roas?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["campaign_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "marketing_campaigns_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_campaigns_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       marketing_notifications: {
         Row: {
@@ -1466,12 +1555,14 @@ export type Database = {
       production_batches: {
         Row: {
           code: string
+          cover_url: string | null
           created_at: string
           end_date: string | null
           id: string
           notes: string | null
           owner_id: string
           planned_qty: number
+          process: string | null
           produced_qty: number
           start_date: string | null
           status: Database["public"]["Enums"]["production_batch_status"]
@@ -1479,12 +1570,14 @@ export type Database = {
         }
         Insert: {
           code: string
+          cover_url?: string | null
           created_at?: string
           end_date?: string | null
           id?: string
           notes?: string | null
           owner_id: string
           planned_qty?: number
+          process?: string | null
           produced_qty?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["production_batch_status"]
@@ -1492,18 +1585,83 @@ export type Database = {
         }
         Update: {
           code?: string
+          cover_url?: string | null
           created_at?: string
           end_date?: string | null
           id?: string
           notes?: string | null
           owner_id?: string
           planned_qty?: number
+          process?: string | null
           produced_qty?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["production_batch_status"]
           updated_at?: string
         }
         Relationships: []
+      }
+      production_occurrences: {
+        Row: {
+          affected_qty: number | null
+          batch_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          kind: string
+          order_id: string | null
+          owner_id: string
+          resolved_at: string | null
+          responsible_id: string | null
+          sector: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affected_qty?: number | null
+          batch_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind: string
+          order_id?: string | null
+          owner_id: string
+          resolved_at?: string | null
+          responsible_id?: string | null
+          sector?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affected_qty?: number | null
+          batch_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string
+          order_id?: string | null
+          owner_id?: string
+          resolved_at?: string | null
+          responsible_id?: string | null
+          sector?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_occurrences_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "production_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_occurrences_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       production_order_comments: {
         Row: {

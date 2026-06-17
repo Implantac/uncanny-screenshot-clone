@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { CollectionMoodboard } from "@/components/collection-moodboard";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
 const SORT_KEYS = ["recent", "name", "progress", "launch", "year"] as const;
@@ -913,37 +914,40 @@ function ColecoesPage() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="moodboard" className="mt-0 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
-                  <div className="glass rounded-xl overflow-hidden min-h-[320px]">
-                    <CollectionCover path={selected.cover_path} alt={`Imagem da coleção ${selected.name}`} className="size-full min-h-[320px] object-cover" />
-                  </div>
-                  <div className="glass rounded-xl p-5 space-y-5">
-                    <div>
-                      <div className="text-sm font-semibold flex items-center gap-2"><Palette className="size-4 text-primary" /> Direção visual</div>
-                      <div className="text-xs text-muted-foreground mt-1">Base criativa montada com os sinais já disponíveis no catálogo.</div>
+                <TabsContent value="moodboard" className="mt-0 space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
+                    <div className="glass rounded-xl overflow-hidden min-h-[320px]">
+                      <CollectionCover path={selected.cover_path} alt={`Imagem da coleção ${selected.name}`} className="size-full min-h-[320px] object-cover" />
                     </div>
-                    <div className="space-y-3">
+                    <div className="glass rounded-xl p-5 space-y-5">
                       <div>
-                        <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">Paleta-chave</div>
-                        <div className="flex flex-wrap gap-2">
-                          {(selected.palette.length ? selected.palette : derived.colors.map(([color]) => color)).slice(0, 8).map((color) => (
-                            <div key={color} className="w-14">
-                              <div className="h-10 rounded-lg border border-border" style={{ background: color }} />
-                              <div className="text-[10px] text-muted-foreground truncate mt-1">{color}</div>
-                            </div>
-                          ))}
+                        <div className="text-sm font-semibold flex items-center gap-2"><Palette className="size-4 text-primary" /> Direção visual</div>
+                        <div className="text-xs text-muted-foreground mt-1">Base criativa montada com os sinais já disponíveis no catálogo.</div>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">Paleta-chave</div>
+                          <div className="flex flex-wrap gap-2">
+                            {(selected.palette.length ? selected.palette : derived.colors.map(([color]) => color)).slice(0, 8).map((color) => (
+                              <div key={color} className="w-14">
+                                <div className="h-10 rounded-lg border border-border" style={{ background: color }} />
+                                <div className="text-[10px] text-muted-foreground truncate mt-1">{color}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">Categorias em foco</div>
+                          <div className="flex flex-wrap gap-2">
+                            {(derived.categories.length ? derived.categories : [["Sem dados", 0]]).slice(0, 6).map(([label, total]) => (
+                              <Badge key={label} variant="secondary">{label} · {total}</Badge>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">Categorias em foco</div>
-                        <div className="flex flex-wrap gap-2">
-                          {(derived.categories.length ? derived.categories : [["Sem dados", 0]]).slice(0, 6).map(([label, total]) => (
-                            <Badge key={label} variant="secondary">{label} · {total}</Badge>
-                          ))}
-                        </div>
-                      </div>
                     </div>
                   </div>
+                  <CollectionMoodboard collectionId={selected.id} />
                 </TabsContent>
 
                 <TabsContent value="tendencias" className="mt-0 grid grid-cols-1 lg:grid-cols-2 gap-4">

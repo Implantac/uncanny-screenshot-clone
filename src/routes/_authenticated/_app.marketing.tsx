@@ -269,17 +269,25 @@ function CampaignDialog({ open, onOpenChange, editing, userId, prefillName }: {
   const [roas, setRoas] = useState("0");
   const [status, setStatus] = useState<CStatus>("programada");
   const [notes, setNotes] = useState("");
+  const [costShoot, setCostShoot] = useState("0");
+  const [costPhotos, setCostPhotos] = useState("0");
+  const [costTraffic, setCostTraffic] = useState("0");
+  const [revenue, setRevenue] = useState("0");
 
   useEffect(() => {
     if (open && editing) {
-      setName(editing.name); setChannel(editing.channel || "");
-      setStartDate(editing.start_date?.slice(0, 10) || "");
-      setEndDate(editing.end_date?.slice(0, 10) || "");
-      setInvestment(String(editing.investment)); setRoas(String(editing.roas));
-      setStatus(editing.status); setNotes(editing.notes || "");
+      const e = editing as Campaign & { cost_shoot?: number | null; cost_photos?: number | null; cost_traffic?: number | null; revenue?: number | null };
+      setName(e.name); setChannel(e.channel || "");
+      setStartDate(e.start_date?.slice(0, 10) || "");
+      setEndDate(e.end_date?.slice(0, 10) || "");
+      setInvestment(String(e.investment)); setRoas(String(e.roas));
+      setStatus(e.status); setNotes(e.notes || "");
+      setCostShoot(String(e.cost_shoot ?? 0)); setCostPhotos(String(e.cost_photos ?? 0));
+      setCostTraffic(String(e.cost_traffic ?? 0)); setRevenue(String(e.revenue ?? 0));
     } else if (open) {
       setName(prefillName || ""); setChannel(""); setStartDate(""); setEndDate("");
       setInvestment("0"); setRoas("0"); setStatus("programada"); setNotes("");
+      setCostShoot("0"); setCostPhotos("0"); setCostTraffic("0"); setRevenue("0");
     }
   }, [open, editing, prefillName]);
 
@@ -292,6 +300,10 @@ function CampaignDialog({ open, onOpenChange, editing, userId, prefillName }: {
         start_date: startDate || null, end_date: endDate || null,
         investment: Number(investment), roas: Number(roas),
         status, notes: notes || null,
+        cost_shoot: Number(costShoot),
+        cost_photos: Number(costPhotos),
+        cost_traffic: Number(costTraffic),
+        revenue: Number(revenue),
       };
       if (editing) {
         const { error } = await supabase.from("marketing_campaigns").update(payload).eq("id", editing.id);
@@ -339,6 +351,31 @@ function CampaignDialog({ open, onOpenChange, editing, userId, prefillName }: {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2"><Label>Investimento (R$)</Label><Input type="number" step="0.01" value={investment} onChange={(e) => setInvestment(e.target.value)} /></div>
             <div className="space-y-2"><Label>ROAS</Label><Input type="number" step="0.1" value={roas} onChange={(e) => setRoas(e.target.value)} /></div>
+          </div>
+          <div className="pt-2 border-t border-border space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Custo detalhado · por peça/coleção</div>
+              {(() => {
+                const totalCost = Number(costShoot) + Number(costPhotos) + Number(costTraffic) + Number(investment);
+                const rev = Number(revenue);
+                const lucro = rev - totalCost;
+                const roi = totalCost > 0 ? (lucro / totalCost) * 100 : 0;
+                return (
+                  <div className="text-[10px] tabular-nums text-muted-foreground">
+                    Lucro: <span className={lucro >= 0 ? "text-emerald-500" : "text-destructive"}>R$ {lucro.toFixed(0)}</span> · ROI {roi.toFixed(0)}%
+                  </div>
+                );
+              })()}
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2"><Label>Ensaio (R$)</Label><Input type="number" step="0.01" value={costShoot} onChange={(e) => setCostShoot(e.target.value)} /></div>
+              <div className="space-y-2"><Label>Fotos (R$)</Label><Input type="number" step="0.01" value={costPhotos} onChange={(e) => setCostPhotos(e.target.value)} /></div>
+              <div className="space-y-2"><Label>Tráfego (R$)</Label><Input type="number" step="0.01" value={costTraffic} onChange={(e) => setCostTraffic(e.target.value)} /></div>
+            </div>
+            <div className="space-y-2">
+              <Label>Faturamento gerado (R$)</Label>
+              <Input type="number" step="0.01" value={revenue} onChange={(e) => setRevenue(e.target.value)} placeholder="Vindo do ERP ou registrado manualmente" />
+            </div>
           </div>
           <div className="space-y-2"><Label>Observações</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
           <DialogFooter>
