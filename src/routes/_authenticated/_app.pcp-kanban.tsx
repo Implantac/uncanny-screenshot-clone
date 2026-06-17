@@ -189,6 +189,9 @@ function PcpKanban() {
 
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
 
+      <DelayPredictionPanel />
+
+
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-medium"><Sparkles className="size-4 text-primary" /> Próxima melhor ação</div>
         <div className="mt-1 text-sm text-muted-foreground">
