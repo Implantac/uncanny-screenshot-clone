@@ -91,6 +91,78 @@ function LotePage() {
     },
   });
 
+  useRealtime("production_occurrences", ["lote-occ", id]);
+  const { data: occurrences = [] } = useQuery({
+    enabled: orderIds.length > 0 || !!batch?.id,
+    queryKey: ["lote-occ", batch?.id, orderIds.join(",")],
+    queryFn: async () => {
+      let q = supabase.from("production_occurrences")
+        .select("id, kind, sector, status, affected_qty, description, created_at, resolved_at, order_id, batch_id")
+        .order("created_at", { ascending: false });
+      if (orderIds.length > 0 && batch?.id) {
+        q = q.or(`batch_id.eq.${batch.id},order_id.in.(${orderIds.join(",")})`);
+      } else if (batch?.id) {
+        q = q.eq("batch_id", batch.id);
+      } else {
+        q = q.in("order_id", orderIds);
+      }
+      const { data, error } = await q;
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const productIds = Array.from(new Set(orders.map((o) => o.product_id).filter(Boolean)));
+  const { data: materialsNeeded = [] } = useQuery({
+    enabled: productIds.length > 0,
+    queryKey: ["lote-materials", productIds.join(",")],
+    queryFn: async () => {
+      const { data: sheets, error: e1 } = await supabase.from("tech_sheets")
+        .select("id, product_id, status")
+        .in("product_id", productIds as string[])
+        .eq("status", "aprovada");
+      if (e1) throw e1;
+      const sheetIds = (sheets ?? []).map((s) => s.id);
+      if (sheetIds.length === 0) return [] as any[];
+      const sheetToProduct = new Map((sheets ?? []).map((s) => [s.id, s.product_id]));
+      const { data: mats, error: e2 } = await supabase.from("tech_sheet_materials")
+        .select("tech_sheet_id, inventory_item_id, name, consumption, loss_pct, unit, unit_cost")
+        .in("tech_sheet_id", sheetIds);
+      if (e2) throw e2;
+      const invIds = Array.from(new Set((mats ?? []).map((m) => m.inventory_item_id).filter(Boolean)));
+      const { data: inv } = invIds.length
+        ? await supabase.from("inventory_items").select("id, name, sku, unit, balance, minimum, photo_url").in("id", invIds as string[])
+        : { data: [] as any[] };
+      const invMap = new Map((inv ?? []).map((i: any) => [i.id, i]));
+      // aggregate per inventory_item_id (or name when no link)
+      const agg = new Map<string, any>();
+      for (const m of mats ?? []) {
+        const productId = sheetToProduct.get(m.tech_sheet_id);
+        const totalQty = orders.filter((o) => o.product_id === productId).reduce((s, o) => s + Number(o.quantity || 0), 0);
+        if (totalQty === 0) continue;
+        const need = Number(m.consumption || 0) * (1 + Number(m.loss_pct || 0) / 100) * totalQty;
+        const key = m.inventory_item_id ?? `name:${m.name}`;
+        const inv = m.inventory_item_id ? invMap.get(m.inventory_item_id) : null;
+        const cur = agg.get(key) ?? {
+          key,
+          inventory_item_id: m.inventory_item_id,
+          name: inv?.name ?? m.name,
+          sku: inv?.sku ?? null,
+          unit: m.unit || inv?.unit || "un",
+          photo_url: inv?.photo_url ?? null,
+          balance: inv ? Number(inv.balance || 0) : null,
+          minimum: inv ? Number(inv.minimum || 0) : null,
+          needed: 0,
+          cost: 0,
+        };
+        cur.needed += need;
+        cur.cost += need * Number(m.unit_cost || 0);
+        agg.set(key, cur);
+      }
+      return Array.from(agg.values()).sort((a, b) => b.needed - a.needed);
+    },
+  });
+
   const summary = useMemo(() => {
     const total = orders.reduce((s, o) => s + (o.quantity ?? 0), 0);
     const done = orders.filter((o) => o.stage === "concluido").length;
@@ -98,8 +170,10 @@ function LotePage() {
     const late = orders.filter((o) => o.due_date && new Date(o.due_date).getTime() < Date.now() && o.stage !== "concluido");
     const byStage = new Map<string, number>();
     orders.forEach((o) => byStage.set(o.stage, (byStage.get(o.stage) ?? 0) + 1));
-    return { total, done, pct, late: late.length, byStage: [...byStage.entries()] };
-  }, [orders]);
+    const occOpen = occurrences.filter((o) => o.status !== "resolvida").length;
+    const matMissing = materialsNeeded.filter((m) => m.balance !== null && m.needed > m.balance).length;
+    return { total, done, pct, late: late.length, byStage: [...byStage.entries()], occOpen, matMissing };
+  }, [orders, occurrences, materialsNeeded]);
 
   if (isLoading) return <div className="p-6 text-muted-foreground">Carregando…</div>;
   if (!batch) {
