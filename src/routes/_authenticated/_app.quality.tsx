@@ -149,6 +149,10 @@ function Quality() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="capa">
+          <CapaPanel />
+        </TabsContent>
       </Tabs>
     </div>
   );
