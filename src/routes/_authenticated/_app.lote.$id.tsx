@@ -10,8 +10,14 @@ import { Button } from "@/components/ui/button";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 
 const OCC_KIND_LABEL: Record<string, string> = {
+  positiva: "Positiva (+)", negativa: "Negativa (−)", neutra: "Neutra",
   falta_material: "Falta de material", erro_corte: "Erro de corte", erro_costura: "Erro de costura",
   defeito: "Defeito", retrabalho: "Retrabalho", atraso: "Atraso", outro: "Outro",
+};
+const OCC_KIND_TONE: Record<string, string> = {
+  positiva: "bg-success/15 text-success border-success/30",
+  negativa: "bg-destructive/15 text-destructive border-destructive/30",
+  neutra:   "bg-amber-500/15 text-amber-600 border-amber-500/30",
 };
 const OCC_STATUS_TONE: Record<string, string> = {
   aberta: "bg-destructive/15 text-destructive border-destructive/30",
