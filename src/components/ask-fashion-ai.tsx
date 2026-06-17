@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Brain, Loader2, Sparkles, Send, PenTool, Factory, Megaphone, Wand2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Brain, Loader2, Sparkles, Send, PenTool, Factory, Megaphone, Wand2, CheckCircle2, PlayCircle } from "lucide-react";
 import { Markdown } from "@/components/markdown";
 import { askInsight } from "@/lib/ai-insights.functions";
+import { executeAICommand } from "@/lib/ai-commands.functions";
 import { toast } from "sonner";
 
 type Persona = "development" | "pcp" | "marketing" | "command";
@@ -55,15 +57,45 @@ const PERSONAS: { id: Persona; label: string; icon: React.ReactNode; suggestions
   },
 ];
 
+type AIAction =
+  | { kind: "create_rfq"; title: string; quantity: number; unit?: string | null; needed_by?: string | null; notes?: string | null }
+  | { kind: "create_op"; sku: string; quantity: number; supplier_name?: string | null; due_date?: string | null; notes?: string | null }
+  | { kind: "block_supplier"; supplier_name: string; reason?: string | null };
+
+function parseAction(text: string): { action: AIAction | null; cleaned: string } {
+  const re = /```json\s*([\s\S]*?)```/i;
+  const match = text.match(re);
+  if (!match) return { action: null, cleaned: text };
+  try {
+    const parsed = JSON.parse(match[1].trim());
+    if (parsed?.action?.kind) return { action: parsed.action as AIAction, cleaned: text.replace(re, "").trim() };
+  } catch {}
+  return { action: null, cleaned: text };
+}
+
+const ACTION_LABEL: Record<AIAction["kind"], string> = {
+  create_rfq: "Criar RFQ",
+  create_op: "Criar Ordem de Produção",
+  block_supplier: "Bloquear fornecedor",
+};
+
 export function AskFashionAI() {
   const [persona, setPersona] = useState<Persona>("development");
   const [question, setQuestion] = useState("");
   const fn = useServerFn(askInsight);
+  const execFn = useServerFn(executeAICommand);
   const m = useMutation({
     mutationFn: (q: string) => fn({ data: { persona, question: q } }),
     onError: (e: any) => toast.error(e?.message ?? "Falha ao consultar IA"),
   });
+  const exec = useMutation({
+    mutationFn: (a: AIAction) => execFn({ data: a as any }),
+    onSuccess: (r: any) => toast.success(`Pronto — ${r.code ?? r.name ?? "ação"} criada`),
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao executar"),
+  });
   const active = PERSONAS.find((p) => p.id === persona)!;
+
+  const parsed = useMemo(() => (m.data?.text ? parseAction(m.data.text) : { action: null, cleaned: "" }), [m.data?.text]);
 
   function ask(q: string) {
     if (!q.trim() || m.isPending) return;
@@ -137,11 +169,49 @@ export function AskFashionAI() {
         )}
 
         {m.data && !m.isPending && (
-          <div className="rounded-lg border border-border bg-muted/20 p-3">
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5">{m.data.persona}</div>
+          <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-3">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{m.data.persona}</div>
             <div className="prose prose-sm dark:prose-invert max-w-none">
-              <Markdown content={m.data.text} />
+              <Markdown content={parsed.action ? parsed.cleaned : m.data.text} />
             </div>
+
+            {parsed.action && !exec.data && (
+              <div className="rounded-md border border-primary/30 bg-primary/5 p-3 space-y-2">
+                <div className="text-xs font-semibold inline-flex items-center gap-1.5">
+                  <PlayCircle className="size-3.5 text-primary" />
+                  Ação proposta: {ACTION_LABEL[parsed.action.kind]}
+                </div>
+                <pre className="text-[11px] bg-background/60 rounded p-2 overflow-x-auto">
+{JSON.stringify(parsed.action, null, 2)}
+                </pre>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => exec.mutate(parsed.action!)}
+                    disabled={exec.isPending}
+                    className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs inline-flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {exec.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+                    Confirmar e executar
+                  </button>
+                  <button
+                    onClick={() => exec.reset()}
+                    className="px-3 py-1.5 rounded-md border border-border text-xs"
+                  >
+                    Descartar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {exec.data && (
+              <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs inline-flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-emerald-500" />
+                Executado com sucesso.
+                {(exec.data as any).link && (
+                  <Link to={(exec.data as any).link} className="underline">Abrir tela</Link>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
