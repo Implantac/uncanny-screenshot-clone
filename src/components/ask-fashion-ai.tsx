@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Brain, Loader2, Sparkles, Send, PenTool, Factory, Megaphone } from "lucide-react";
+import { Brain, Loader2, Sparkles, Send, PenTool, Factory, Megaphone, Wand2 } from "lucide-react";
 import { Markdown } from "@/components/markdown";
 import { askInsight } from "@/lib/ai-insights.functions";
 import { toast } from "sonner";
 
-type Persona = "development" | "pcp" | "marketing";
+type Persona = "development" | "pcp" | "marketing" | "command";
 
 const PERSONAS: { id: Persona; label: string; icon: React.ReactNode; suggestions: string[] }[] = [
   {
@@ -40,6 +40,17 @@ const PERSONAS: { id: Persona; label: string; icon: React.ReactNode; suggestions
       "Qual coleção teve melhor desempenho nos últimos 30 dias?",
       "Qual influenciador trouxe maior retorno?",
       "Qual canal gera maior ROI agora?",
+    ],
+  },
+  {
+    id: "command",
+    label: "Comando",
+    icon: <Wand2 className="size-4" />,
+    suggestions: [
+      "Criar OP de 200 peças do SKU <X> para o fornecedor <Y> com entrega dia <DD/MM>",
+      "Abrir RFQ de malha algodão branca, 500m, entrega em 15 dias",
+      "Acelerar a coleção em maior risco — me mostre o plano",
+      "Bloquear fornecedor com mais ocorrências nos últimos 60 dias",
     ],
   },
 ];

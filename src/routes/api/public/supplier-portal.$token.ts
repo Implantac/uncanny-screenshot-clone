@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
         if (tok.expires_at && new Date(tok.expires_at) < new Date())
           return new Response("Expired", { status: 410 });
 
-        const [{ data: supplier }, { data: rfqs }] = await Promise.all([
+        const [{ data: supplier }, { data: rfqs }, { data: pos }] = await Promise.all([
           supabaseAdmin.from("suppliers").select("id, name").eq("id", tok.supplier_id).single(),
           supabaseAdmin
             .from("rfq_requests")
@@ -36,6 +36,15 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
             .eq("owner_id", tok.owner_id)
             .in("status", ["aberta", "cotando"])
             .order("created_at", { ascending: false })
+            .limit(50),
+          supabaseAdmin
+            .from("production_orders")
+            .select("id, code, quantity, due_date, stage, status, products(name, sku)")
+            .eq("owner_id", tok.owner_id)
+            .eq("supplier_id", tok.supplier_id)
+            .neq("status", "cancelada")
+            .neq("status", "concluida")
+            .order("due_date", { ascending: true })
             .limit(50),
         ]);
 
@@ -50,7 +59,7 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
           .update({ last_used_at: new Date().toISOString() })
           .eq("id", tok.id);
 
-        return Response.json({ supplier, rfqs: rfqs ?? [], quotes: myQuotes ?? [] });
+        return Response.json({ supplier, rfqs: rfqs ?? [], quotes: myQuotes ?? [], production_orders: pos ?? [] });
       },
       // POST: submit/update a quote
       POST: async ({ request, params }) => {
