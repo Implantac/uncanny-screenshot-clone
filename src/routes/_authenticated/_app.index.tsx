@@ -36,6 +36,7 @@ function useDashboard() {
       const pr = prods.data ?? [];
       const pt = protos.data ?? [];
       const ts = tech.data ?? [];
+      const cmp = camps.data ?? [];
 
       const activeCollections = c.filter((r: any) => r.status && !/finaliz|conclu/i.test(r.status)).length;
       const productsInDev = pr.filter((r: any) => !r.status || /dev|brief|model|piloto|prot/i.test(r.status)).length;
