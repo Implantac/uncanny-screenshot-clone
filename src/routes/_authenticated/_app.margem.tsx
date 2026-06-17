@@ -160,6 +160,12 @@ function MargemPage() {
           </table>
         </div>
       </div>
+        </TabsContent>
+
+        <TabsContent value="variance">
+          <CostVariancePanel />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
