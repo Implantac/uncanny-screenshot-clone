@@ -100,6 +100,7 @@ import { Route as AuthenticatedAppWarRoomColecaoIdRouteImport } from './routes/_
 import { Route as AuthenticatedAppPrototipoIdRouteImport } from './routes/_authenticated/_app.prototipo.$id'
 import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes/_authenticated/_app.producao-do-dia.$stage'
 import { Route as AuthenticatedAppLoteIdRouteImport } from './routes/_authenticated/_app.lote.$id'
+import { Route as AuthenticatedAppApontarIdRouteImport } from './routes/_authenticated/_app.apontar.$id'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -621,6 +622,12 @@ const AuthenticatedAppLoteIdRoute = AuthenticatedAppLoteIdRouteImport.update({
   path: '/lote/$id',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppApontarIdRoute =
+  AuthenticatedAppApontarIdRouteImport.update({
+    id: '/apontar/$id',
+    path: '/apontar/$id',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedAppIndexRoute
@@ -705,6 +712,7 @@ export interface FileRoutesByFullPath {
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
+  '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
@@ -796,6 +804,7 @@ export interface FileRoutesByTo {
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
+  '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
@@ -890,6 +899,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
+  '/_authenticated/_app/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/_authenticated/_app/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/_authenticated/_app/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/_authenticated/_app/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
@@ -983,6 +993,7 @@ export interface FileRouteTypes {
     | '/variantes'
     | '/war-room-producao'
     | '/portal/fornecedor/$token'
+    | '/apontar/$id'
     | '/lote/$id'
     | '/producao-do-dia/$stage'
     | '/prototipo/$id'
@@ -1074,6 +1085,7 @@ export interface FileRouteTypes {
     | '/variantes'
     | '/war-room-producao'
     | '/portal/fornecedor/$token'
+    | '/apontar/$id'
     | '/lote/$id'
     | '/producao-do-dia/$stage'
     | '/prototipo/$id'
@@ -1167,6 +1179,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/war-room-producao'
     | '/portal/fornecedor/$token'
     | '/_authenticated/_app/'
+    | '/_authenticated/_app/apontar/$id'
     | '/_authenticated/_app/lote/$id'
     | '/_authenticated/_app/producao-do-dia/$stage'
     | '/_authenticated/_app/prototipo/$id'
@@ -1826,6 +1839,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppLoteIdRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/apontar/$id': {
+      id: '/_authenticated/_app/apontar/$id'
+      path: '/apontar/$id'
+      fullPath: '/apontar/$id'
+      preLoaderRoute: typeof AuthenticatedAppApontarIdRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
   }
 }
 
@@ -1908,6 +1928,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppVariantesRoute: typeof AuthenticatedAppVariantesRoute
   AuthenticatedAppWarRoomProducaoRoute: typeof AuthenticatedAppWarRoomProducaoRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+  AuthenticatedAppApontarIdRoute: typeof AuthenticatedAppApontarIdRoute
   AuthenticatedAppLoteIdRoute: typeof AuthenticatedAppLoteIdRoute
   AuthenticatedAppProducaoDoDiaStageRoute: typeof AuthenticatedAppProducaoDoDiaStageRoute
   AuthenticatedAppPrototipoIdRoute: typeof AuthenticatedAppPrototipoIdRoute
@@ -1995,6 +2016,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppVariantesRoute: AuthenticatedAppVariantesRoute,
   AuthenticatedAppWarRoomProducaoRoute: AuthenticatedAppWarRoomProducaoRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+  AuthenticatedAppApontarIdRoute: AuthenticatedAppApontarIdRoute,
   AuthenticatedAppLoteIdRoute: AuthenticatedAppLoteIdRoute,
   AuthenticatedAppProducaoDoDiaStageRoute:
     AuthenticatedAppProducaoDoDiaStageRoute,
