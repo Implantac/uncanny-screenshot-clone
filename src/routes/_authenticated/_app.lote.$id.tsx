@@ -1,13 +1,23 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks } from "lucide-react";
+import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks, ShieldAlert, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
+
+const OCC_KIND_LABEL: Record<string, string> = {
+  falta_material: "Falta de material", erro_corte: "Erro de corte", erro_costura: "Erro de costura",
+  defeito: "Defeito", retrabalho: "Retrabalho", atraso: "Atraso", outro: "Outro",
+};
+const OCC_STATUS_TONE: Record<string, string> = {
+  aberta: "bg-destructive/15 text-destructive border-destructive/30",
+  em_andamento: "bg-amber-500/15 text-amber-600 border-amber-500/30",
+  resolvida: "bg-success/15 text-success border-success/30",
+};
 
 export const Route = createFileRoute("/_authenticated/_app/lote/$id")({
   head: () => ({
