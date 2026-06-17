@@ -13,10 +13,16 @@ import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 
 type Persona = "development" | "pcp" | "marketing";
 const CHIPS: { label: string; persona: Persona; question: string }[] = [
+  // Perguntas-chave do prompt mestre (análise, não chat genérico)
+  { label: "Qual coleção vendeu mais?", persona: "marketing", question: "Qual coleção vendeu mais nos últimos 90 dias? Mostre faturamento, ticket médio e top 3 produtos dela." },
+  { label: "Qual produto tem maior margem?", persona: "marketing", question: "Quais são os 5 produtos com maior margem de contribuição hoje? Inclua categoria e coleção de origem." },
+  { label: "Qual lote está atrasado?", persona: "pcp", question: "Quais lotes de produção estão atrasados ou com risco real de atraso? Para cada um, indique o setor que está segurando e a ação imediata." },
+  { label: "Qual produto repetir?", persona: "marketing", question: "Quais produtos do meu histórico devo repetir na próxima coleção? Use sell-through, margem e velocidade de giro como critério." },
+  { label: "Qual coleção deu prejuízo?", persona: "marketing", question: "Alguma coleção encerrou no vermelho (custo > faturamento)? Liste, com investimento, faturamento e o que aprender para a próxima." },
+  // Perguntas operacionais
   { label: "Top 3 gargalos do PCP hoje", persona: "pcp", question: "Quais são os 3 maiores gargalos do PCP hoje, por setor, e a ação imediata para cada um?" },
   { label: "Quais protótipos estão travando coleção?", persona: "development", question: "Quais protótipos estão travados há mais tempo e como destravar cada um?" },
   { label: "Onde investir em marketing nesta semana?", persona: "marketing", question: "Onde devo investir em marketing nesta semana? Liste 3 ações com retorno esperado." },
-  { label: "Quais lotes vão atrasar a entrega?", persona: "pcp", question: "Quais lotes têm risco real de atraso e qual o plano para acelerar?" },
   { label: "Top produtos sub-aproveitados", persona: "marketing", question: "Quais produtos do meu acervo estão sub-aproveitados (vendas vs estoque) e como impulsionar?" },
   { label: "O que aprovar primeiro hoje?", persona: "development", question: "Liste em ordem o que devo aprovar/decidir primeiro hoje no desenvolvimento, com justificativa." },
   { label: "Influenciadores com melhor ROI", persona: "marketing", question: "Quais influenciadores trouxeram melhor ROI e quais devo repetir/cortar?" },
