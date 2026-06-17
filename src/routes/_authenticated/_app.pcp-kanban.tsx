@@ -219,6 +219,7 @@ function PcpKanban() {
           return (
             <div
               key={col.key}
+              data-stage={col.key}
               className={`rounded-xl border bg-card flex flex-col min-h-[420px] transition ${isOver ? "border-primary ring-2 ring-primary/30" : "border-border"}`}
               onDragOver={(e) => { e.preventDefault(); setOver(col.key); }}
               onDragLeave={() => setOver((v) => (v === col.key ? null : v))}
