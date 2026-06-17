@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { listOutsourcedWip } from "@/lib/pcp-ops.functions";
 import { Truck, Package, Tags, Boxes, ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 
@@ -30,6 +30,10 @@ function OutsourcedPage() {
     }),
     { pieces: 0, lots: 0, refs: 0, suppliers: 0 },
   );
+  const criticalSuppliers = useMemo(
+    () => (data ?? []).filter((s: any) => (s.max_days_at_supplier ?? 0) > 15 || (s.second_line_count ?? 0) > 0).slice(0, 3),
+    [data],
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -48,6 +52,15 @@ function OutsourcedPage() {
         <Kpi icon={Package} label="Peças em terceiros" value={totals.pieces.toLocaleString("pt-BR")} />
         <Kpi icon={Boxes} label="Lotes abertos" value={totals.lots} />
         <Kpi icon={Tags} label="Referências distintas" value={totals.refs} />
+      </div>
+
+      <div className={`rounded-xl border p-4 ${criticalSuppliers.length ? "border-warning/50 bg-warning/5" : "border-border bg-card"}`}>
+        <div className="text-sm font-medium">Plano de cobrança</div>
+        <div className="mt-1 text-sm text-muted-foreground">
+          {criticalSuppliers.length
+            ? `Cobrar ${criticalSuppliers.map((s: any) => s.supplier_name ?? String(s.supplier_id).slice(0, 8)).join(", ")}: há peças antigas ou 2ª linha em campo.`
+            : "Nenhuma facção crítica agora. Continue acompanhando dias em casa e recebimentos parciais."}
+        </div>
       </div>
 
       <div className="glass rounded-2xl overflow-hidden">
