@@ -275,16 +275,19 @@ function Almoxarifado() {
                           : <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/15 text-emerald-400">Ok</span>}
                       </td>
                       <td className="px-5 py-3 text-right">
-                        {mine && (
-                          <div className="flex justify-end gap-1">
-                            <button onClick={() => { setEditing(i); setOpen(true); }} className="size-7 grid place-items-center rounded hover:bg-muted">
-                              <Pencil className="size-3.5" />
-                            </button>
-                            <button onClick={() => confirm("Remover este item?") && deleteMut.mutate(i.id)} className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive">
-                              <Trash2 className="size-3.5" />
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex justify-end gap-1">
+                          <InventoryLotBreakdownButton itemId={i.id} itemName={i.name} unit={i.unit} />
+                          {mine && (
+                            <>
+                              <button onClick={() => { setEditing(i); setOpen(true); }} className="size-7 grid place-items-center rounded hover:bg-muted">
+                                <Pencil className="size-3.5" />
+                              </button>
+                              <button onClick={() => confirm("Remover este item?") && deleteMut.mutate(i.id)} className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive">
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
