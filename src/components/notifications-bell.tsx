@@ -130,10 +130,10 @@ export function NotificationsBell() {
           ))}
         </div>
         <div className="max-h-96 overflow-y-auto">
-          {total === 0 && (
+          {(cat === "all" ? total === 0 : counts[cat] === 0) && (
             <div className="px-4 py-8 text-center text-sm text-muted-foreground">
               <CheckCircle2 className="size-8 text-success mx-auto mb-2" />
-              Tudo sob controle
+              {cat === "all" ? "Tudo sob controle" : `Sem alertas em ${CAT_LABEL[cat]}`}
             </div>
           )}
           {show("estoque") && data?.critical.map((i) => (
