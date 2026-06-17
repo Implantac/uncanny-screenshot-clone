@@ -269,17 +269,25 @@ function CampaignDialog({ open, onOpenChange, editing, userId, prefillName }: {
   const [roas, setRoas] = useState("0");
   const [status, setStatus] = useState<CStatus>("programada");
   const [notes, setNotes] = useState("");
+  const [costShoot, setCostShoot] = useState("0");
+  const [costPhotos, setCostPhotos] = useState("0");
+  const [costTraffic, setCostTraffic] = useState("0");
+  const [revenue, setRevenue] = useState("0");
 
   useEffect(() => {
     if (open && editing) {
-      setName(editing.name); setChannel(editing.channel || "");
-      setStartDate(editing.start_date?.slice(0, 10) || "");
-      setEndDate(editing.end_date?.slice(0, 10) || "");
-      setInvestment(String(editing.investment)); setRoas(String(editing.roas));
-      setStatus(editing.status); setNotes(editing.notes || "");
+      const e = editing as Campaign & { cost_shoot?: number | null; cost_photos?: number | null; cost_traffic?: number | null; revenue?: number | null };
+      setName(e.name); setChannel(e.channel || "");
+      setStartDate(e.start_date?.slice(0, 10) || "");
+      setEndDate(e.end_date?.slice(0, 10) || "");
+      setInvestment(String(e.investment)); setRoas(String(e.roas));
+      setStatus(e.status); setNotes(e.notes || "");
+      setCostShoot(String(e.cost_shoot ?? 0)); setCostPhotos(String(e.cost_photos ?? 0));
+      setCostTraffic(String(e.cost_traffic ?? 0)); setRevenue(String(e.revenue ?? 0));
     } else if (open) {
       setName(prefillName || ""); setChannel(""); setStartDate(""); setEndDate("");
       setInvestment("0"); setRoas("0"); setStatus("programada"); setNotes("");
+      setCostShoot("0"); setCostPhotos("0"); setCostTraffic("0"); setRevenue("0");
     }
   }, [open, editing, prefillName]);
 
