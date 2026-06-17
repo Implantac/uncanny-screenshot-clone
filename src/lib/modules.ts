@@ -86,7 +86,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "lotes", path: "/lotes", title: "Lotes & Rastreabilidade", short: "Batch tracking", description: "Lotes de produção, vínculo com OPs e histórico completo de estágios.", icon: Boxes, group: "PCP & Produção" },
   { slug: "twin-factory", path: "/twin-factory", title: "Torre de Controle", short: "Twin Factory", description: "Visão em tempo real de lotes, setores e gargalos.", icon: Activity, group: "PCP & Produção" },
   { slug: "capacity", path: "/capacity", title: "Capacidade de Produção", short: "OEE e carga", description: "OEE, WIP, atrasos e carga por fornecedor / facção.", icon: Gauge, group: "PCP & Produção" },
-  { slug: "pcp-stages", path: "/pcp-stages", title: "Etapas do PCP", short: "Configurar estágios", description: "Configure as etapas (setores) do seu fluxo de produção, ordem e cores.", icon: KanbanSquare, group: "PCP & Produção" },
+  { slug: "pcp-stages", path: "/pcp-stages", title: "Etapas do PCP", short: "Configurar estágios", description: "Configure as etapas (setores) do seu fluxo de produção, ordem e cores.", icon: KanbanSquare, group: "Plataforma" },
   { slug: "terceirizados", path: "/terceirizados", title: "Terceirizados", short: "Peças em facções", description: "Quantas peças, lotes e referências estão em poder de cada facção, em tempo real.", icon: Truck, group: "PCP & Produção" },
 
   // === Cadeia (PLM) — insumos / fornecedores ===
@@ -119,7 +119,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "grade-needs", path: "/grade-needs", title: "Necessidade por Grade", short: "Quebra PP/P/M/G/GG", description: "Distribuição sugerida por tamanho.", icon: Ruler, group: "Inteligência" },
   { slug: "replenishment", path: "/replenishment", title: "Sugestão de Reposição", short: "Sinal p/ produção", description: "Sinal técnico de reposição p/ PCP (sem compras financeiras).", icon: Zap, group: "Inteligência", status: "parcial" },
   { slug: "war-room-producao", path: "/war-room-producao", title: "Sala de Guerra · Produção", short: "Visão única do dia", description: "Heatmap de etapas, OPs críticas, terceirizados e IA do PCP.", icon: Factory, group: "PCP & Produção" },
-  { slug: "onde-esta", path: "/onde-esta", title: "Onde está?", short: "Rastreabilidade visual", description: "Timeline de passagens de qualquer OP ou lote.", icon: MapPin, group: "PCP & Produção" },
+  { slug: "onde-esta", path: "/onde-esta", title: "Onde está?", short: "Rastreabilidade visual", description: "Timeline de passagens de qualquer OP ou lote.", icon: MapPin, group: "Operação" },
 
   // === ERP (Integração) — leitura/espelho ===
   { slug: "erp-integration", path: "/erp-integration", title: "Integração ERP", short: "Webhook + releases", description: "Endpoint HMAC para receber vendas/compras/estoque do ERP e enviar releases do PLM.", icon: Workflow, group: "ERP (Integração)" },
