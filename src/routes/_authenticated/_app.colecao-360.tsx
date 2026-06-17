@@ -60,7 +60,7 @@ async function loadAll() {
 
 function Colecao360() {
   useRealtime("production_orders", ["colecao-360"]);
-  const { data, isLoading } = useQuery({ queryKey: ["colecao-360"], queryFn: loadAll });
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({ queryKey: ["colecao-360"], queryFn: loadAll });
   const collections = data?.collections ?? [];
   const products = data?.products ?? [];
   const prototypes = data?.prototypes ?? [];
