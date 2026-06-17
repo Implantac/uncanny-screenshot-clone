@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks, ShieldAlert, Layers } from "lucide-react";
+import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks, ShieldAlert, Layers, FileText, ImageIcon, RefreshCcw, ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { Badge } from "@/components/ui/badge";
@@ -264,8 +264,36 @@ function LotePage() {
                   <Clock className="size-3" /> nesta etapa há {relTime(o.stage_updated_at)}
                 </div>
               )}
-              <div className="flex gap-1">
-                <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
+              <div className="grid grid-cols-5 gap-1 pt-1 border-t border-border/60">
+                <RefMenuLink to="/movimentacoes" search={{ op: o.code } as any} icon={ArrowRight} label="Passagem 1ª" title="Passagem 1ª linha (entrada/saída entre setores)" />
+                <RefMenuLink to="/ficha-tecnica" search={{ product: o.product_id } as any} icon={FileText} label="Ficha" title="Ficha técnica completa" />
+                <RefMenuLink to="/produtos" search={{ q: o.products?.sku ?? o.code } as any} icon={ImageIcon} label="Layout" title="Arte / layout visual" />
+                <button
+                  type="button"
+                  onClick={() => document.getElementById(`occ-retrabalho-${o.id}`)?.click()}
+                  className="flex flex-col items-center gap-0.5 py-1.5 rounded-md hover:bg-muted/60 text-[10px] text-muted-foreground hover:text-foreground"
+                  title="Passagem 2ª linha (retrabalho)"
+                >
+                  <RefreshCcw className="size-3.5" />
+                  <span>2ª linha</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => document.getElementById(`occ-default-${o.id}`)?.click()}
+                  className="flex flex-col items-center gap-0.5 py-1.5 rounded-md hover:bg-muted/60 text-[10px] text-muted-foreground hover:text-foreground"
+                  title="Registrar ocorrência"
+                >
+                  <ClipboardList className="size-3.5" />
+                  <span>Ocorrência</span>
+                </button>
+              </div>
+              <div className="hidden">
+                <span id={`occ-default-${o.id}`}>
+                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
+                </span>
+                <span id={`occ-retrabalho-${o.id}`}>
+                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
+                </span>
               </div>
             </div>
           ))}
@@ -396,5 +424,19 @@ function Card({ icon: Icon, label, value, tone }: { icon: any; label: string; va
       <div className="text-xs text-muted-foreground flex items-center gap-1.5"><Icon className="size-3.5" /> {label}</div>
       <div className={`text-2xl font-semibold tabular-nums mt-1 ${tone ?? ""}`}>{value}</div>
     </div>
+  );
+}
+
+function RefMenuLink({ to, search, icon: Icon, label, title }: { to: string; search?: Record<string, unknown>; icon: any; label: string; title: string }) {
+  return (
+    <Link
+      to={to as any}
+      search={search as any}
+      className="flex flex-col items-center gap-0.5 py-1.5 rounded-md hover:bg-muted/60 text-[10px] text-muted-foreground hover:text-foreground"
+      title={title}
+    >
+      <Icon className="size-3.5" />
+      <span>{label}</span>
+    </Link>
   );
 }
