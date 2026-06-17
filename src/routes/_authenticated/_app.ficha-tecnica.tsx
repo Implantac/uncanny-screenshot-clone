@@ -393,6 +393,9 @@ function FichaTecnicaPage() {
                   <Button variant="outline" onClick={() => openEdit(selected)} className="gap-2">
                     <Pencil className="size-4" /> Editar ficha
                   </Button>
+                  <Button variant="outline" onClick={() => setSnapshotsOpen(true)} className="gap-2">
+                    <Camera className="size-4" /> Snapshots
+                  </Button>
                   <Button
                     variant="outline"
                     onClick={() => newVersion.mutate(selected)}
