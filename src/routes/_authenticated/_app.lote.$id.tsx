@@ -177,8 +177,11 @@ function LotePage() {
     const byStage = new Map<string, number>();
     orders.forEach((o) => byStage.set(o.stage, (byStage.get(o.stage) ?? 0) + 1));
     const occOpen = occurrences.filter((o) => o.status !== "resolvida").length;
+    const occPos = occurrences.filter((o) => o.kind === "positiva").reduce((s, o) => s + Number(o.affected_qty || 0), 0);
+    const occNeg = occurrences.filter((o) => o.kind === "negativa").reduce((s, o) => s + Number(o.affected_qty || 0), 0);
+    const finalForecast = Math.max(0, total + occPos - occNeg);
     const matMissing = materialsNeeded.filter((m) => m.balance !== null && m.needed > m.balance).length;
-    return { total, done, pct, late: late.length, byStage: [...byStage.entries()], occOpen, matMissing };
+    return { total, done, pct, late: late.length, byStage: [...byStage.entries()], occOpen, occPos, occNeg, finalForecast, matMissing };
   }, [orders, occurrences, materialsNeeded]);
 
   if (isLoading) return <div className="p-6 text-muted-foreground">Carregando…</div>;
@@ -371,13 +374,13 @@ function LotePage() {
                 return (
                   <li key={o.id} className="rounded-lg border border-border bg-card/50 p-2.5">
                     <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className={OCC_KIND_TONE[o.kind] ?? "bg-muted/40"}>{OCC_KIND_LABEL[o.kind] ?? o.kind}</Badge>
                       <Badge variant="outline" className={OCC_STATUS_TONE[o.status] ?? "bg-muted/40"}>{o.status}</Badge>
-                      <span className="text-xs font-medium">{OCC_KIND_LABEL[o.kind] ?? o.kind}</span>
                       {o.sector && <span className="text-[10px] text-muted-foreground">· {STAGE_LABEL[o.sector] ?? o.sector}</span>}
                       <span className="text-[10px] text-muted-foreground ml-auto">há {relTime(o.created_at)}</span>
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-1">
-                      {op?.code ?? "—"} · {o.affected_qty ?? 0} pç afetada(s)
+                      {op?.code ?? "—"} · {o.kind === "positiva" ? "+" : o.kind === "negativa" ? "−" : ""}{o.affected_qty ?? 0} pç
                     </div>
                     {o.description && <div className="text-xs mt-1 italic">"{o.description}"</div>}
                   </li>
