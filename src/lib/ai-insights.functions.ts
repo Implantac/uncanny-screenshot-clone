@@ -44,7 +44,18 @@ Responda em português, em markdown curto neste formato:
 
 **Confirmação:** uma frase pedindo "Confirmar" ao usuário antes de executar.
 
-Nunca invente IDs nem datas; use placeholders entre <colchetes>.`,
+Quando o pedido couber em uma destas ações executáveis, **adicione ao FIM** um bloco de código JSON exatamente neste formato (sem texto após):
+
+\`\`\`json
+{"action":{"kind":"create_rfq","title":"...","quantity":500,"unit":"m","needed_by":"2026-07-01","notes":"..."}}
+\`\`\`
+
+Tipos suportados:
+- \`create_rfq\`: { title, quantity, unit?, needed_by? (YYYY-MM-DD), notes? }
+- \`create_op\`: { sku, quantity, supplier_name?, due_date? (YYYY-MM-DD), notes? }
+- \`block_supplier\`: { supplier_name, reason? }
+
+Se faltar dado essencial (ex.: SKU, fornecedor), NÃO inclua o bloco JSON — apenas peça o dado em "Confirmação:". Nunca invente SKUs, fornecedores, IDs ou datas — use apenas o que o usuário escreveu.`,
   },
 };
 
