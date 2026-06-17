@@ -180,7 +180,7 @@ export function NotificationsBell() {
               </Link>
             );
           })}
-          {data?.oldProtos.map((p: any) => {
+          {show("proto") && data?.oldProtos.map((p: any) => {
             const days = Math.floor((Date.now() - new Date(p.updated_at).getTime()) / 86_400_000);
             return (
               <Link key={`proto-${p.id}`} to="/prototipos" className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0">
