@@ -299,10 +299,10 @@ function LotePage() {
               </div>
               <div className="hidden">
                 <span id={`occ-default-${o.id}`}>
-                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
+                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} batchId={batch?.id} />
                 </span>
                 <span id={`occ-retrabalho-${o.id}`}>
-                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
+                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} batchId={batch?.id} />
                 </span>
               </div>
             </div>
