@@ -210,11 +210,13 @@ function LotePage() {
 
       <Progress value={summary.pct} className="h-2" />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <Card icon={Package} label="Peças no lote" value={summary.total} />
         <Card icon={Factory} label="OPs ativas" value={orders.length - summary.done} />
         <Card icon={CheckCircle2} label="Concluídas" value={summary.done} tone="text-success" />
         <Card icon={AlertTriangle} label="Atrasadas" value={summary.late} tone={summary.late > 0 ? "text-destructive" : "text-success"} />
+        <Card icon={ShieldAlert} label="Ocorrências abertas" value={summary.occOpen} tone={summary.occOpen > 0 ? "text-destructive" : "text-success"} />
+        <Card icon={Layers} label="Materiais em falta" value={summary.matMissing} tone={summary.matMissing > 0 ? "text-destructive" : "text-success"} />
       </div>
 
       {summary.byStage.length > 0 && (
