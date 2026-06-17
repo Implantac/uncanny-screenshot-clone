@@ -9,6 +9,7 @@ import { ProductionOrderCommentsButton } from "@/components/production-order-com
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { QuickPassButton } from "@/components/quick-pass";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { DelayPredictionPanel } from "@/components/delay-prediction-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
