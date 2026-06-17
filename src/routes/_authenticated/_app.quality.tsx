@@ -93,6 +93,7 @@ function Quality() {
         <TabsList>
           <TabsTrigger value="suppliers">SLA por fornecedor</TabsTrigger>
           <TabsTrigger value="inspections">Inspeções</TabsTrigger>
+          <TabsTrigger value="capa">CAPA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="suppliers">
