@@ -35,7 +35,7 @@ type Campaign = {
 };
 
 async function loadAll() {
-  const [collections, products, prototypes, orders, sales, sheets, campaigns] = await Promise.all([
+  const results = await Promise.all([
     supabase.from("collections").select("id, name, season, year, status").order("year", { ascending: false }).limit(50),
     supabase.from("products").select("id, collection_id, name, sku, status, cost_price, sell_price").limit(1000),
     supabase.from("prototypes").select("id, product_id, stage").limit(1000),
@@ -44,6 +44,9 @@ async function loadAll() {
     supabase.from("tech_sheets").select("product_id, status").limit(2000),
     supabase.from("marketing_campaigns").select("collection_id, cost_shoot, cost_photos, cost_traffic").limit(1000),
   ]);
+  const firstError = results.find((r) => r.error)?.error;
+  if (firstError) throw new Error(firstError.message);
+  const [collections, products, prototypes, orders, sales, sheets, campaigns] = results;
   return {
     collections: (collections.data ?? []) as Collection[],
     products: (products.data ?? []) as Product[],
