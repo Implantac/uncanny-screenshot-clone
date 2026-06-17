@@ -48,6 +48,14 @@ const CAT_LABEL: Record<Category, string> = {
   tecido: "Tecido", aviamento: "Aviamento", acabado: "Acabado", outros: "Outros",
 };
 
+const LEAD_TIME_DAYS = 14; // padrão; futuramente por fornecedor
+
+/** Ponto de pedido = consumo diário (giro 30d / 30) × lead time + estoque de segurança (mínimo). */
+function reorderPoint(turnover30d: number, minimum: number, leadDays = LEAD_TIME_DAYS): number {
+  const daily = (Number(turnover30d) || 0) / 30;
+  return Math.ceil(daily * leadDays + (Number(minimum) || 0));
+}
+
 function Almoxarifado() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -80,6 +88,11 @@ function Almoxarifado() {
     i.name.toLowerCase().includes(q.toLowerCase()) || i.sku.toLowerCase().includes(q.toLowerCase())
   );
   const criticos = items.filter((i) => Number(i.balance) < Number(i.minimum)).length;
+  const noPontoPedido = items.filter((i) => {
+    const bal = Number(i.balance), min = Number(i.minimum);
+    const pp = reorderPoint(Number(i.turnover_30d || 0), min);
+    return bal >= min && bal <= pp && pp > min;
+  }).length;
   const totalSaldo = items.reduce((s, i) => s + Number(i.balance || 0), 0);
   const byCat = (Object.keys(CAT_LABEL) as Category[]).map((c) => ({
     cat: c,
@@ -88,15 +101,17 @@ function Almoxarifado() {
   }));
   const criticosList = items.filter((i) => Number(i.balance) < Number(i.minimum)).slice(0, 5);
 
-  // Reposição inteligente: cruza saldo, mínimo, máximo e giro 30d para sugerir compra
+  // Reposição inteligente: usa ponto de pedido (lead-time + segurança) e giro 30d
   const reposicao = useMemo(() => {
     return items
       .map((i) => {
         const bal = Number(i.balance), min = Number(i.minimum), max = Number(i.maximum), giro = Number(i.turnover_30d || 0);
-        const sugerido = max > 0 ? Math.max(0, max - bal) : Math.max(0, min * 2 - bal);
+        const pp = reorderPoint(giro, min);
+        const sugerido = max > 0 ? Math.max(0, max - bal) : Math.max(0, pp * 2 - bal);
         const diasCobertura = giro > 0 ? Math.round((bal / giro) * 30) : null;
-        const urgencia = bal < min ? "alta" : diasCobertura !== null && diasCobertura < 15 ? "media" : null;
-        return { ...i, sugerido, diasCobertura, urgencia };
+        const urgencia: "alta" | "media" | null =
+          bal < min ? "alta" : bal <= pp && pp > min ? "media" : null;
+        return { ...i, sugerido, diasCobertura, urgencia, pp };
       })
       .filter((i) => i.urgencia && i.sugerido > 0)
       .sort((a, b) => (a.urgencia === "alta" ? -1 : 1) - (b.urgencia === "alta" ? -1 : 1) || Number(b.turnover_30d || 0) - Number(a.turnover_30d || 0))
@@ -112,7 +127,7 @@ function Almoxarifado() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Almoxarifado</h1>
-            <p className="text-sm text-muted-foreground">{items.length} SKUs · {criticos} em nível crítico</p>
+            <p className="text-sm text-muted-foreground">{items.length} SKUs · {criticos} críticos · {noPontoPedido} no ponto de pedido</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -164,7 +179,7 @@ function Almoxarifado() {
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div className="flex items-center gap-2 font-medium">
               <Zap className="size-4 text-primary" /> Reposição inteligente sugerida
-              <span className="text-xs text-muted-foreground font-normal">cruza saldo, mínimo, máximo e giro 30d</span>
+              <span className="text-xs text-muted-foreground font-normal">ponto de pedido = giro diário × {LEAD_TIME_DAYS}d + segurança</span>
             </div>
             <Link to="/pedidos-compra" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
               Criar pedidos <ArrowRight className="size-3" />
@@ -176,7 +191,7 @@ function Almoxarifado() {
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{r.name}</div>
                   <div className="text-[11px] text-muted-foreground">
-                    {r.sku} · saldo {Number(r.balance)} {r.unit}
+                    {r.sku} · saldo {Number(r.balance)} {r.unit} · PP {r.pp} {r.unit}
                     {r.diasCobertura !== null && ` · cobre ${r.diasCobertura}d`}
                   </div>
                 </div>
@@ -221,6 +236,7 @@ function Almoxarifado() {
                   <th className="text-right font-medium px-5 py-2.5">Saldo</th>
                   <th className="text-right font-medium px-5 py-2.5">Mín / Máx</th>
                   <th className="text-right font-medium px-5 py-2.5" title="Saídas últimos 30 dias">Giro 30d</th>
+                  <th className="text-right font-medium px-5 py-2.5" title="Ponto de pedido = consumo diário × lead time + segurança">PP</th>
                   <th className="text-right font-medium px-5 py-2.5">Últ. entrada</th>
                   <th className="text-left font-medium px-5 py-2.5">Status</th>
                   <th className="px-5 py-2.5"></th>
@@ -231,8 +247,11 @@ function Almoxarifado() {
                   const bal = Number(i.balance);
                   const min = Number(i.minimum);
                   const max = Number(i.maximum);
+                  const giro = Number(i.turnover_30d || 0);
+                  const pp = reorderPoint(giro, min);
                   const critico = bal < min;
                   const excesso = max > 0 && bal > max;
+                  const repor = !critico && bal <= pp && pp > min;
                   const mine = i.owner_id === user?.id;
                   return (
                     <tr key={i.id} className="border-t border-border hover:bg-muted/30">
@@ -241,11 +260,14 @@ function Almoxarifado() {
                       <td className="px-5 py-3 text-muted-foreground">{CAT_LABEL[i.category]}</td>
                       <td className={`px-5 py-3 text-right tabular-nums ${critico ? "text-destructive font-medium" : excesso ? "text-amber-500" : ""}`}>{bal} {i.unit}</td>
                       <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{min} / {max || "—"}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{Number(i.turnover_30d || 0)} {i.unit}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{giro} {i.unit}</td>
+                      <td className={`px-5 py-3 text-right tabular-nums ${repor ? "text-amber-500 font-medium" : "text-muted-foreground"}`}>{pp} {i.unit}</td>
                       <td className="px-5 py-3 text-right text-muted-foreground text-xs">{fmtDate(i.last_entry_at)}</td>
                       <td className="px-5 py-3">
                         {critico
                           ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-destructive/15 text-destructive"><AlertTriangle className="size-3" /> Crítico</span>
+                          : repor
+                          ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-500"><Zap className="size-3" /> Repor</span>
                           : excesso
                           ? <span className="px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-500">Excesso</span>
                           : <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/15 text-emerald-400">Ok</span>}
