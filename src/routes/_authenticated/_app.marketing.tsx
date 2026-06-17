@@ -352,6 +352,31 @@ function CampaignDialog({ open, onOpenChange, editing, userId, prefillName }: {
             <div className="space-y-2"><Label>Investimento (R$)</Label><Input type="number" step="0.01" value={investment} onChange={(e) => setInvestment(e.target.value)} /></div>
             <div className="space-y-2"><Label>ROAS</Label><Input type="number" step="0.1" value={roas} onChange={(e) => setRoas(e.target.value)} /></div>
           </div>
+          <div className="pt-2 border-t border-border space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Custo detalhado · por peça/coleção</div>
+              {(() => {
+                const totalCost = Number(costShoot) + Number(costPhotos) + Number(costTraffic) + Number(investment);
+                const rev = Number(revenue);
+                const lucro = rev - totalCost;
+                const roi = totalCost > 0 ? (lucro / totalCost) * 100 : 0;
+                return (
+                  <div className="text-[10px] tabular-nums text-muted-foreground">
+                    Lucro: <span className={lucro >= 0 ? "text-emerald-500" : "text-destructive"}>R$ {lucro.toFixed(0)}</span> · ROI {roi.toFixed(0)}%
+                  </div>
+                );
+              })()}
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2"><Label>Ensaio (R$)</Label><Input type="number" step="0.01" value={costShoot} onChange={(e) => setCostShoot(e.target.value)} /></div>
+              <div className="space-y-2"><Label>Fotos (R$)</Label><Input type="number" step="0.01" value={costPhotos} onChange={(e) => setCostPhotos(e.target.value)} /></div>
+              <div className="space-y-2"><Label>Tráfego (R$)</Label><Input type="number" step="0.01" value={costTraffic} onChange={(e) => setCostTraffic(e.target.value)} /></div>
+            </div>
+            <div className="space-y-2">
+              <Label>Faturamento gerado (R$)</Label>
+              <Input type="number" step="0.01" value={revenue} onChange={(e) => setRevenue(e.target.value)} placeholder="Vindo do ERP ou registrado manualmente" />
+            </div>
+          </div>
           <div className="space-y-2"><Label>Observações</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
