@@ -127,6 +127,13 @@ async function resolveCoverUrl(path: string | null) {
   return data.signedUrl;
 }
 
+async function resolveProductImageUrl(path: string | null): Promise<string | null> {
+  if (!path) return null;
+  if (path.startsWith("http") || path.startsWith("/")) return path;
+  const { data } = await supabase.storage.from("product-images").createSignedUrl(path, 60 * 60);
+  return data?.signedUrl ?? null;
+}
+
 function CollectionCover({ path, alt, className }: { path: string | null; alt: string; className?: string }) {
   const { data: url } = useQuery({
     queryKey: ["collection-cover", path],
@@ -144,6 +151,23 @@ function CollectionCover({ path, alt, className }: { path: string | null; alt: s
   }
 
   return <img src={url} alt={alt} className={className} loading="lazy" />;
+}
+
+function ProductThumb({ path, alt, className }: { path: string | null; alt: string; className?: string }) {
+  const { data: url } = useQuery({
+    queryKey: ["product-thumb", path],
+    queryFn: () => resolveProductImageUrl(path),
+    enabled: Boolean(path),
+    staleTime: 50 * 60 * 1000,
+  });
+  if (!path || !url) {
+    return (
+      <div className={`${className ?? ""} grid place-items-center bg-muted/40 rounded-lg shrink-0`}>
+        <Sparkles className="size-4 text-muted-foreground/60" />
+      </div>
+    );
+  }
+  return <img src={url} alt={alt} className={`${className ?? ""} object-cover rounded-lg shrink-0`} loading="lazy" />;
 }
 
 function ColecoesPage() {
