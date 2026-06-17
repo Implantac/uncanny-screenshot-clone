@@ -277,6 +277,84 @@ function LotePage() {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="glass rounded-xl p-4">
+          <div className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Layers className="size-4 text-primary" /> Materiais necessários
+            <span className="text-[11px] font-normal text-muted-foreground ml-auto">
+              {materialsNeeded.length} item(s) · de fichas aprovadas
+            </span>
+          </div>
+          {materialsNeeded.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Sem materiais vinculados (cadastre ficha técnica aprovada para os produtos).</p>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+              {materialsNeeded.map((m: any) => {
+                const linked = m.balance !== null;
+                const missing = linked && m.needed > m.balance;
+                const cobertura = linked && m.needed > 0 ? Math.min(100, Math.round((m.balance / m.needed) * 100)) : null;
+                return (
+                  <div key={m.key} className="flex items-center gap-3 rounded-lg border border-border bg-card/50 p-2.5">
+                    <div className="size-10 rounded bg-muted/40 overflow-hidden shrink-0">
+                      {m.photo_url ? <img src={m.photo_url} alt={m.name} loading="lazy" className="size-full object-cover" /> : null}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium truncate">{m.name}</div>
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        {m.sku ? `${m.sku} · ` : ""}precisa {m.needed.toFixed(2)} {m.unit}
+                        {linked ? ` · tem ${m.balance.toFixed(2)} ${m.unit}` : " · não vinculado ao estoque"}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {linked ? (
+                        <Badge variant="outline" className={missing ? "bg-destructive/15 text-destructive border-destructive/30" : "bg-success/15 text-success border-success/30"}>
+                          {missing ? `faltam ${(m.needed - m.balance).toFixed(1)} ${m.unit}` : `${cobertura}% coberto`}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-muted/40 text-muted-foreground">sem vínculo</Badge>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="glass rounded-xl p-4">
+          <div className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <ShieldAlert className="size-4 text-primary" /> Ocorrências do lote
+            <span className="text-[11px] font-normal text-muted-foreground ml-auto">
+              {occurrences.length} total · {summary.occOpen} aberta(s)
+            </span>
+          </div>
+          {occurrences.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Sem ocorrências registradas.</p>
+          ) : (
+            <ul className="space-y-2 max-h-80 overflow-y-auto pr-1">
+              {occurrences.map((o: any) => {
+                const op = orders.find((x) => x.id === o.order_id);
+                return (
+                  <li key={o.id} className="rounded-lg border border-border bg-card/50 p-2.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className={OCC_STATUS_TONE[o.status] ?? "bg-muted/40"}>{o.status}</Badge>
+                      <span className="text-xs font-medium">{OCC_KIND_LABEL[o.kind] ?? o.kind}</span>
+                      {o.sector && <span className="text-[10px] text-muted-foreground">· {STAGE_LABEL[o.sector] ?? o.sector}</span>}
+                      <span className="text-[10px] text-muted-foreground ml-auto">há {relTime(o.created_at)}</span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1">
+                      {op?.code ?? "—"} · {o.affected_qty ?? 0} pç afetada(s)
+                    </div>
+                    {o.description && <div className="text-xs mt-1 italic">"{o.description}"</div>}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
+
+
       <div className="glass rounded-xl p-4">
         <div className="text-sm font-semibold mb-3">Linha do tempo do lote</div>
         {logs.length === 0 ? (
