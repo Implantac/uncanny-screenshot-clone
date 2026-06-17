@@ -18,6 +18,7 @@ type Product = {
   status: Status;
   image_url: string | null;
   sell_price: number | null;
+  updated_at: string | null;
 };
 
 const COLUMNS: { key: Status; label: string; tone: string }[] = [
@@ -31,7 +32,7 @@ const COLUMNS: { key: Status; label: string; tone: string }[] = [
 async function load(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
-    .select("id, sku, name, category, status, image_url, sell_price")
+    .select("id, sku, name, category, status, image_url, sell_price, updated_at")
     .order("updated_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as Product[];
