@@ -248,6 +248,8 @@ function ProactiveSuggestions({
         supabase.from("prototypes").select("id", { count: "exact", head: true }).in("stage", ["solicitado", "em_confeccao", "em_prova"]),
         supabase.from("sales").select("total", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 7 * 86400_000).toISOString()),
       ]);
+      const firstError = [ordersLate, protosPending, salesRecent].find((r) => r.error)?.error;
+      if (firstError) throw new Error(firstError.message);
       return {
         lateOrders: ordersLate.count ?? 0,
         pendingProtos: protosPending.count ?? 0,
