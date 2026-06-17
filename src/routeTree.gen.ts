@@ -30,6 +30,7 @@ import { Route as AuthenticatedAppStockHealthRouteImport } from './routes/_authe
 import { Route as AuthenticatedAppSourcingRouteImport } from './routes/_authenticated/_app.sourcing'
 import { Route as AuthenticatedAppShowroomRouteImport } from './routes/_authenticated/_app.showroom'
 import { Route as AuthenticatedAppSecurityCenterRouteImport } from './routes/_authenticated/_app.security-center'
+import { Route as AuthenticatedAppScanRouteImport } from './routes/_authenticated/_app.scan'
 import { Route as AuthenticatedAppSalesPerformanceRouteImport } from './routes/_authenticated/_app.sales-performance'
 import { Route as AuthenticatedAppRepresentantesRouteImport } from './routes/_authenticated/_app.representantes'
 import { Route as AuthenticatedAppReplenishmentRouteImport } from './routes/_authenticated/_app.replenishment'
@@ -217,6 +218,11 @@ const AuthenticatedAppSecurityCenterRoute =
     path: '/security-center',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppScanRoute = AuthenticatedAppScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppSalesPerformanceRoute =
   AuthenticatedAppSalesPerformanceRouteImport.update({
     id: '/sales-performance',
@@ -697,6 +703,7 @@ export interface FileRoutesByFullPath {
   '/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
+  '/scan': typeof AuthenticatedAppScanRoute
   '/security-center': typeof AuthenticatedAppSecurityCenterRoute
   '/showroom': typeof AuthenticatedAppShowroomRoute
   '/sourcing': typeof AuthenticatedAppSourcingRoute
@@ -789,6 +796,7 @@ export interface FileRoutesByTo {
   '/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
+  '/scan': typeof AuthenticatedAppScanRoute
   '/security-center': typeof AuthenticatedAppSecurityCenterRoute
   '/showroom': typeof AuthenticatedAppShowroomRoute
   '/sourcing': typeof AuthenticatedAppSourcingRoute
@@ -883,6 +891,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/_authenticated/_app/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/_authenticated/_app/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
+  '/_authenticated/_app/scan': typeof AuthenticatedAppScanRoute
   '/_authenticated/_app/security-center': typeof AuthenticatedAppSecurityCenterRoute
   '/_authenticated/_app/showroom': typeof AuthenticatedAppShowroomRoute
   '/_authenticated/_app/sourcing': typeof AuthenticatedAppSourcingRoute
@@ -978,6 +987,7 @@ export interface FileRouteTypes {
     | '/replenishment'
     | '/representantes'
     | '/sales-performance'
+    | '/scan'
     | '/security-center'
     | '/showroom'
     | '/sourcing'
@@ -1070,6 +1080,7 @@ export interface FileRouteTypes {
     | '/replenishment'
     | '/representantes'
     | '/sales-performance'
+    | '/scan'
     | '/security-center'
     | '/showroom'
     | '/sourcing'
@@ -1163,6 +1174,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/replenishment'
     | '/_authenticated/_app/representantes'
     | '/_authenticated/_app/sales-performance'
+    | '/_authenticated/_app/scan'
     | '/_authenticated/_app/security-center'
     | '/_authenticated/_app/showroom'
     | '/_authenticated/_app/sourcing'
@@ -1347,6 +1359,13 @@ declare module '@tanstack/react-router' {
       path: '/security-center'
       fullPath: '/security-center'
       preLoaderRoute: typeof AuthenticatedAppSecurityCenterRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/scan': {
+      id: '/_authenticated/_app/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof AuthenticatedAppScanRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/sales-performance': {
@@ -1913,6 +1932,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppReplenishmentRoute: typeof AuthenticatedAppReplenishmentRoute
   AuthenticatedAppRepresentantesRoute: typeof AuthenticatedAppRepresentantesRoute
   AuthenticatedAppSalesPerformanceRoute: typeof AuthenticatedAppSalesPerformanceRoute
+  AuthenticatedAppScanRoute: typeof AuthenticatedAppScanRoute
   AuthenticatedAppSecurityCenterRoute: typeof AuthenticatedAppSecurityCenterRoute
   AuthenticatedAppShowroomRoute: typeof AuthenticatedAppShowroomRoute
   AuthenticatedAppSourcingRoute: typeof AuthenticatedAppSourcingRoute
@@ -2000,6 +2020,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppReplenishmentRoute: AuthenticatedAppReplenishmentRoute,
   AuthenticatedAppRepresentantesRoute: AuthenticatedAppRepresentantesRoute,
   AuthenticatedAppSalesPerformanceRoute: AuthenticatedAppSalesPerformanceRoute,
+  AuthenticatedAppScanRoute: AuthenticatedAppScanRoute,
   AuthenticatedAppSecurityCenterRoute: AuthenticatedAppSecurityCenterRoute,
   AuthenticatedAppShowroomRoute: AuthenticatedAppShowroomRoute,
   AuthenticatedAppSourcingRoute: AuthenticatedAppSourcingRoute,
