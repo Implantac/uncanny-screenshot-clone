@@ -21,13 +21,14 @@ function useDashboard() {
   return useQuery({
     queryKey: ["plm-dashboard"],
     queryFn: async () => {
-      const [prod, cols, inv, prods, protos, tech] = await Promise.all([
+      const [prod, cols, inv, prods, protos, tech, camps] = await Promise.all([
         supabase.from("production_orders").select("id, code, quantity, progress, status, stage, stage_updated_at, created_at, due_date, product_id"),
-        supabase.from("collections").select("name, status, progress, year, created_at").order("created_at", { ascending: false }).limit(6),
+        supabase.from("collections").select("id, name, status, progress, year, created_at").order("created_at", { ascending: false }).limit(6),
         supabase.from("inventory_items").select("name, balance, minimum, unit"),
         supabase.from("products").select("id, name, category, colors, status, created_at").order("created_at", { ascending: false }).limit(200),
         supabase.from("prototypes").select("id, code, stage, product_id, created_at").order("created_at", { ascending: false }).limit(50),
         supabase.from("tech_sheets").select("id, product_id, status, created_at").order("created_at", { ascending: false }).limit(500),
+        supabase.from("marketing_campaigns").select("name, investment, roas, status").order("created_at", { ascending: false }).limit(100),
       ]);
       const p = prod.data ?? [];
       const c = cols.data ?? [];
@@ -35,6 +36,7 @@ function useDashboard() {
       const pr = prods.data ?? [];
       const pt = protos.data ?? [];
       const ts = tech.data ?? [];
+      const cmp = camps.data ?? [];
 
       const activeCollections = c.filter((r: any) => r.status && !/finaliz|conclu/i.test(r.status)).length;
       const productsInDev = pr.filter((r: any) => !r.status || /dev|brief|model|piloto|prot/i.test(r.status)).length;
@@ -118,11 +120,32 @@ function useDashboard() {
         collections: count(c.map((r: any) => r.name)),
       };
 
+      // === Coleção em destaque (mais "quente": maior progresso entre ativas) ===
+      const activeCols = c.filter((r: any) => r.status && !/finaliz|conclu/i.test(r.status));
+      const hotCollection = [...activeCols].sort((a: any, b: any) => (b.progress ?? 0) - (a.progress ?? 0))[0] ?? c[0] ?? null;
+
+      // === Marketing ROI consolidado ===
+      const activeCamps = cmp.filter((r: any) => r.status === "ativa" || r.status === "active");
+      const baseCamps = (activeCamps.length ? activeCamps : cmp).filter((r: any) => Number(r.roas) > 0);
+      const invTotal = baseCamps.reduce((a: number, b: any) => a + Number(b.investment ?? 0), 0);
+      const recTotal = baseCamps.reduce((a: number, b: any) => a + Number(b.investment ?? 0) * Number(b.roas ?? 0), 0);
+      const roasAvg = baseCamps.length ? baseCamps.reduce((a: number, b: any) => a + Number(b.roas ?? 0), 0) / baseCamps.length : 0;
+      const sorted = [...baseCamps].sort((a, b) => Number(b.roas) - Number(a.roas));
+      const bestCampaign = sorted[0] ?? null;
+      const worstCampaign = sorted[sorted.length - 1] ?? null;
+      const marketing = {
+        invTotal, recTotal, roasAvg, count: baseCamps.length,
+        best: bestCampaign ? { name: bestCampaign.name, roas: Number(bestCampaign.roas) } : null,
+        worst: worstCampaign && worstCampaign !== bestCampaign ? { name: worstCampaign.name, roas: Number(worstCampaign.roas) } : null,
+      };
+
       return {
         kpis: { activeCollections, productsInDev, piecesInProd, protosOpen },
         critical,
         alerts,
         collections: c,
+        hotCollection,
+        marketing,
         productionData,
         devPipeline,
         feed: feed.slice(0, 12),
@@ -259,6 +282,69 @@ function CommandCenter() {
           );
         })}
       </div>
+
+      {/* === Coleção em destaque + Marketing ROI consolidado === */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {data?.hotCollection ? (
+          <Link
+            to="/colecao-360"
+            className="glass rounded-xl p-5 hover:border-primary/40 transition-colors group"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <div className="text-[11px] uppercase tracking-widest text-muted-foreground">Coleção em destaque</div>
+                <div className="text-lg font-semibold mt-1 flex items-center gap-2">
+                  <Sparkles className="size-4 text-primary" />
+                  {(data.hotCollection as any).name}
+                  <span className="text-xs text-muted-foreground font-normal">· {(data.hotCollection as any).year}</span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">{(data.hotCollection as any).status}</div>
+              </div>
+              <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="text-muted-foreground">Progresso</span>
+              <span className="tabular-nums font-medium">{(data.hotCollection as any).progress ?? 0}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <div className="h-full bg-[image:var(--gradient-primary)] transition-all" style={{ width: `${(data.hotCollection as any).progress ?? 0}%` }} />
+            </div>
+            <div className="text-[11px] text-primary mt-3 opacity-0 group-hover:opacity-100 transition-opacity">Abrir Coleção 360 →</div>
+          </Link>
+        ) : (
+          <div className="glass rounded-xl p-5 text-sm text-muted-foreground">Nenhuma coleção ativa</div>
+        )}
+
+        <Link to="/marketing" className="glass rounded-xl p-5 hover:border-primary/40 transition-colors group">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <div className="text-[11px] uppercase tracking-widest text-muted-foreground">Marketing · ROI consolidado</div>
+              <div className="text-lg font-semibold mt-1 flex items-center gap-2">
+                <TrendingUp className="size-4 text-primary" />
+                {data?.marketing ? `${data.marketing.roasAvg.toFixed(2)}x ROAS médio` : "—"}
+                <span className="text-xs text-muted-foreground font-normal">· {data?.marketing.count ?? 0} campanhas</span>
+              </div>
+              <div className="text-xs text-muted-foreground mt-0.5 tabular-nums">
+                Inv R$ {(data?.marketing.invTotal ?? 0).toLocaleString("pt-BR", { maximumFractionDigits: 0 })} → Receita est. R$ {(data?.marketing.recTotal ?? 0).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}
+              </div>
+            </div>
+            <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-lg bg-success/10 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-success">Melhor</div>
+              <div className="font-medium truncate">{data?.marketing.best?.name ?? "—"}</div>
+              <div className="text-muted-foreground tabular-nums">{data?.marketing.best ? `${data.marketing.best.roas.toFixed(1)}x` : ""}</div>
+            </div>
+            <div className="rounded-lg bg-destructive/10 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-destructive">Pior</div>
+              <div className="font-medium truncate">{data?.marketing.worst?.name ?? "—"}</div>
+              <div className="text-muted-foreground tabular-nums">{data?.marketing.worst ? `${data.marketing.worst.roas.toFixed(1)}x` : ""}</div>
+            </div>
+          </div>
+        </Link>
+      </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <AICoordinatorPanel persona="development" title="Desenvolvimento · prioridades" />
