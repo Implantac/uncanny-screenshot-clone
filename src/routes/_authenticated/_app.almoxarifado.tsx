@@ -88,6 +88,11 @@ function Almoxarifado() {
     i.name.toLowerCase().includes(q.toLowerCase()) || i.sku.toLowerCase().includes(q.toLowerCase())
   );
   const criticos = items.filter((i) => Number(i.balance) < Number(i.minimum)).length;
+  const noPontoPedido = items.filter((i) => {
+    const bal = Number(i.balance), min = Number(i.minimum);
+    const pp = reorderPoint(Number(i.turnover_30d || 0), min);
+    return bal >= min && bal <= pp && pp > min;
+  }).length;
   const totalSaldo = items.reduce((s, i) => s + Number(i.balance || 0), 0);
   const byCat = (Object.keys(CAT_LABEL) as Category[]).map((c) => ({
     cat: c,
