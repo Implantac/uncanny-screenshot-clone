@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
+import { InventoryLotBreakdownButton } from "@/components/inventory-lot-breakdown";
 
 export const Route = createFileRoute("/_authenticated/_app/almoxarifado")({
   validateSearch: zodValidator(z.object({ q: fallback(z.string().trim().max(80), "").default("") })),
