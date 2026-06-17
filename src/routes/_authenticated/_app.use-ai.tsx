@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Cpu, Play, Pause, Plus, Activity, Loader2, Sparkles, MessageCircleQuestion } from "lucide-react";
+import { Cpu, Play, Pause, Plus, Activity, Loader2, Sparkles, MessageCircleQuestion, AlertTriangle, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
