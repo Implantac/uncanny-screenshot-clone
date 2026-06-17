@@ -86,6 +86,9 @@ function Capacity() {
         </div>
       </div>
 
+      <CapacitySimulator orders={orders} />
+
+
       <div className="rounded-xl border border-border bg-card">
         <div className="px-4 py-3 border-b border-border font-medium">Carga por fornecedor / facção</div>
         {isLoading ? <div className="p-8 text-center text-muted-foreground">Carregando…</div> : bySupplier.length === 0 ? (
