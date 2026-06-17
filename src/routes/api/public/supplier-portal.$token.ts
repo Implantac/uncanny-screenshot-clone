@@ -76,23 +76,85 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
 
         return Response.json({ supplier, rfqs: rfqs ?? [], quotes: myQuotes ?? [], production_orders: pos ?? [], attachments: attachments ?? [], acks: acks ?? [] });
       },
-      // POST: submit/update a quote
+      // POST: submit/update a quote OR ?action=ack | ?action=upload (multipart)
       POST: async ({ request, params }) => {
         const token = params.token;
         if (!token || token.length < 16) return new Response("Invalid token", { status: 400 });
-        const body = await request.json().catch(() => null);
-        const parsed = Submit.safeParse(body);
-        if (!parsed.success) return Response.json({ error: parsed.error.flatten() }, { status: 400 });
+        const url = new URL(request.url);
+        const action = url.searchParams.get("action");
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: tok } = await supabaseAdmin
+        const { data: tokRow } = await supabaseAdmin
           .from("supplier_portal_tokens")
           .select("owner_id, supplier_id, expires_at")
           .eq("token", token)
           .maybeSingle();
-        if (!tok) return new Response("Not found", { status: 404 });
-        if (tok.expires_at && new Date(tok.expires_at) < new Date())
+        if (!tokRow) return new Response("Not found", { status: 404 });
+        if (tokRow.expires_at && new Date(tokRow.expires_at) < new Date())
           return new Response("Expired", { status: 410 });
+
+        // === ACK: aceitar/recusar/contraproposta de OP ===
+        if (action === "ack") {
+          const body = await request.json().catch(() => null);
+          const Ack = z.object({
+            production_order_id: z.string().uuid(),
+            decision: z.enum(["accepted", "declined", "counter"]),
+            counter_due_date: z.string().optional().nullable(),
+            notes: z.string().max(2000).optional().nullable(),
+          });
+          const p = Ack.safeParse(body);
+          if (!p.success) return Response.json({ error: p.error.flatten() }, { status: 400 });
+          const { data: po } = await supabaseAdmin
+            .from("production_orders").select("id, owner_id, supplier_id").eq("id", p.data.production_order_id).single();
+          if (!po || po.owner_id !== tokRow.owner_id || po.supplier_id !== tokRow.supplier_id)
+            return new Response("Forbidden", { status: 403 });
+          await supabaseAdmin.from("supplier_portal_acks").insert({
+            owner_id: tokRow.owner_id,
+            supplier_id: tokRow.supplier_id,
+            production_order_id: p.data.production_order_id,
+            decision: p.data.decision,
+            counter_due_date: p.data.counter_due_date || null,
+            notes: p.data.notes || null,
+          });
+          log("info", "supplier_portal.ack", { production_order_id: p.data.production_order_id, decision: p.data.decision });
+          return Response.json({ ok: true });
+        }
+
+        // === UPLOAD multipart ===
+        if (action === "upload") {
+          const form = await request.formData().catch(() => null);
+          if (!form) return new Response("Invalid form", { status: 400 });
+          const file = form.get("file");
+          const rfqId = (form.get("rfq_id") as string) || null;
+          const orderId = (form.get("production_order_id") as string) || null;
+          if (!(file instanceof File)) return new Response("file missing", { status: 400 });
+          if (file.size > 20 * 1024 * 1024) return new Response("Max 20MB", { status: 413 });
+          const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
+          const path = `${tokRow.owner_id}/${tokRow.supplier_id}/${Date.now()}_${safe}`;
+          const buf = new Uint8Array(await file.arrayBuffer());
+          const { error: upErr } = await supabaseAdmin.storage.from("supplier-uploads")
+            .upload(path, buf, { contentType: file.type || "application/octet-stream", upsert: false });
+          if (upErr) return new Response(upErr.message, { status: 500 });
+          await supabaseAdmin.from("supplier_portal_attachments").insert({
+            owner_id: tokRow.owner_id,
+            supplier_id: tokRow.supplier_id,
+            rfq_id: rfqId,
+            production_order_id: orderId,
+            file_path: path,
+            file_name: file.name,
+            mime: file.type || null,
+            size: file.size,
+            uploaded_via: "portal",
+          });
+          log("info", "supplier_portal.upload", { supplier_id: tokRow.supplier_id, size: file.size });
+          return Response.json({ ok: true, path });
+        }
+
+        // === QUOTE (default) ===
+        const body = await request.json().catch(() => null);
+        const parsed = Submit.safeParse(body);
+        if (!parsed.success) return Response.json({ error: parsed.error.flatten() }, { status: 400 });
+        const tok = tokRow;
 
         // Ensure the RFQ belongs to this owner
         const { data: rfq } = await supabaseAdmin
