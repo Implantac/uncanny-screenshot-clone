@@ -318,14 +318,14 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
 
   useEffect(() => {
     if (open && editing) {
-      const e = editing as Item & { photo_url?: string | null; supplier_color?: string | null; internal_color?: string | null; tech_sheet_pdf_url?: string | null };
+      const e = editing as Item & { image_url?: string | null; color_supplier?: string | null; color_internal?: string | null; tech_sheet_pdf_url?: string | null };
       setSku(e.sku); setName(e.name); setCategory(e.category);
       setDeposit(e.deposit || ""); setUnit(e.unit);
       setBalance(String(e.balance)); setMinimum(String(e.minimum));
       setMaximum(String(e.maximum || 0));
       setNotes(e.notes || "");
-      setPhotoUrl(e.photo_url || ""); setSupplierColor(e.supplier_color || "");
-      setInternalColor(e.internal_color || ""); setTechSheetPdfUrl(e.tech_sheet_pdf_url || "");
+      setPhotoUrl(e.image_url || ""); setSupplierColor(e.color_supplier || "");
+      setInternalColor(e.color_internal || ""); setTechSheetPdfUrl(e.tech_sheet_pdf_url || "");
     } else if (open) {
       setSku(""); setName(""); setCategory("tecido"); setDeposit(""); setUnit("un");
       setBalance("0"); setMinimum("0"); setMaximum("0"); setNotes("");
@@ -340,9 +340,9 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
         sku, name, category, deposit: deposit || null, unit,
         balance: Number(balance), minimum: Number(minimum), maximum: Number(maximum),
         notes: notes || null,
-        photo_url: photoUrl || null,
-        supplier_color: supplierColor || null,
-        internal_color: internalColor || null,
+        image_url: photoUrl || null,
+        color_supplier: supplierColor || null,
+        color_internal: internalColor || null,
         tech_sheet_pdf_url: techSheetPdfUrl || null,
       };
       if (editing) {
