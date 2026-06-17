@@ -1,11 +1,12 @@
-import { useState, useMemo } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useMemo, useEffect } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { Brain, Loader2, Sparkles, Send, PenTool, Factory, Megaphone, Wand2, CheckCircle2, PlayCircle } from "lucide-react";
 import { Markdown } from "@/components/markdown";
 import { askInsight } from "@/lib/ai-insights.functions";
 import { executeAICommand } from "@/lib/ai-commands.functions";
+import { lookupCommandRefs } from "@/lib/ai-commands-lookup.functions";
 import { toast } from "sonner";
 
 type Persona = "development" | "pcp" | "marketing" | "command";
