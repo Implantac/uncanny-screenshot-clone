@@ -79,6 +79,14 @@ function DevKanban() {
     approved: products.filter((p) => p.status === "aprovado").length,
   }), [products]);
 
+  const stuck = useMemo(() => {
+    const cutoff = Date.now() - 7 * 86400_000;
+    return products
+      .filter((p) => p.status === "desenvolvimento" && p.updated_at && new Date(p.updated_at).getTime() < cutoff)
+      .sort((a, b) => new Date(a.updated_at!).getTime() - new Date(b.updated_at!).getTime())
+      .slice(0, 6);
+  }, [products]);
+
   const moveTo = (id: string, status: Status) => {
     const p = products.find((x) => x.id === id);
     if (!p || p.status === status) return;
