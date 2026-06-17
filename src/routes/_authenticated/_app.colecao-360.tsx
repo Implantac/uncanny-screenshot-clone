@@ -27,15 +27,22 @@ type Order = { id: string; product_id: string | null; stage: string; status: str
 type Sale = { product_id: string | null; quantity: number; total: number | null };
 
 type Sheet = { product_id: string | null; status: string };
+type Campaign = {
+  collection_id: string | null;
+  cost_shoot: number | null;
+  cost_photos: number | null;
+  cost_traffic: number | null;
+};
 
 async function loadAll() {
-  const [collections, products, prototypes, orders, sales, sheets] = await Promise.all([
+  const [collections, products, prototypes, orders, sales, sheets, campaigns] = await Promise.all([
     supabase.from("collections").select("id, name, season, year, status").order("year", { ascending: false }).limit(50),
     supabase.from("products").select("id, collection_id, name, sku, status, cost_price, sell_price").limit(1000),
     supabase.from("prototypes").select("id, product_id, stage").limit(1000),
     supabase.from("production_orders").select("id, product_id, stage, status, quantity").neq("status", "cancelada").limit(1000),
     supabase.from("sales").select("product_id, quantity, total").limit(5000),
     supabase.from("tech_sheets").select("product_id, status").limit(2000),
+    supabase.from("marketing_campaigns").select("collection_id, cost_shoot, cost_photos, cost_traffic").limit(1000),
   ]);
   return {
     collections: (collections.data ?? []) as Collection[],
@@ -44,6 +51,7 @@ async function loadAll() {
     orders: (orders.data ?? []) as Order[],
     sales: (sales.data ?? []) as Sale[],
     sheets: (sheets.data ?? []) as Sheet[],
+    campaigns: (campaigns.data ?? []) as Campaign[],
   };
 }
 
@@ -56,6 +64,7 @@ function Colecao360() {
   const orders = data?.orders ?? [];
   const sales = data?.sales ?? [];
   const sheets = data?.sheets ?? [];
+  const campaigns = data?.campaigns ?? [];
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const currentId = selectedId ?? collections[0]?.id ?? null;
@@ -79,11 +88,15 @@ function Colecao360() {
       const margin = avgPrice > 0 ? ((avgPrice - avgCost) / avgPrice) * 100 : 0;
       const sellThrough = producedQty > 0 ? (unitsSold / producedQty) * 100 : 0;
 
-      // Investimento × Resultado (espelho ERP)
-      const investment = cOrders.reduce((a, o) => {
+      // Investimento × Resultado (produção + marketing × receita ERP)
+      const productionCost = cOrders.reduce((a, o) => {
         const p = cProducts.find((pr) => pr.id === o.product_id);
         return a + Number(p?.cost_price ?? avgCost) * o.quantity;
       }, 0);
+      const marketingCost = campaigns
+        .filter((cp) => cp.collection_id === c.id)
+        .reduce((a, cp) => a + Number(cp.cost_shoot ?? 0) + Number(cp.cost_photos ?? 0) + Number(cp.cost_traffic ?? 0), 0);
+      const investment = productionCost + marketingCost;
       const profit = revenue - investment;
       const roi = investment > 0 ? (profit / investment) * 100 : 0;
 
@@ -115,12 +128,12 @@ function Colecao360() {
         protoApproved: cProtos.filter((p) => p.stage === "aprovado").length,
         opsActive, opsDone, producedQty,
         revenue, unitsSold, margin, sellThrough,
-        investment, profit, roi,
+        investment, productionCost, marketingCost, profit, roi,
         semPiloto, protoPendentes, opsAguardando, liberadosPCP, avanco,
         semFicha, champions, criticos,
       };
     });
-  }, [collections, products, prototypes, orders, sales, sheets]);
+  }, [collections, products, prototypes, orders, sales, sheets, campaigns]);
 
   const current = summary.find((s) => s.collection.id === currentId) ?? summary[0];
 
@@ -397,36 +410,53 @@ function fmt(v: number) {
 
 function InvestmentResult({ c }: { c: any }) {
   const investment: number = c.investment;
+  const productionCost: number = c.productionCost ?? 0;
+  const marketingCost: number = c.marketingCost ?? 0;
   const revenue: number = c.revenue;
   const profit: number = c.profit;
   const roi: number = c.roi;
   const recovered = investment > 0 ? Math.min(100, (revenue / investment) * 100) : 0;
   const positive = profit >= 0;
+  const prodPct = investment > 0 ? (productionCost / investment) * 100 : 0;
+  const mktPct = investment > 0 ? (marketingCost / investment) * 100 : 0;
 
   const verdict = investment === 0
-    ? "Sem OPs com custo registrado — preencha custo dos produtos para calcular ROI."
+    ? "Sem custos registrados — preencha custo dos produtos e campanhas de marketing para calcular ROI."
     : revenue === 0
-    ? `Investido ${fmt(investment)} em produção, ainda sem receita registrada. Acompanhe sell-through nas próximas semanas.`
+    ? `Investido ${fmt(investment)} (${fmt(productionCost)} produção + ${fmt(marketingCost)} marketing), ainda sem receita. Acompanhe sell-through.`
     : positive
-    ? `Cada R$ 1 investido retornou R$ ${(revenue / investment).toFixed(2)}. Lucro de ${fmt(profit)} (ROI ${roi.toFixed(0)}%).`
-    : `Coleção ainda no vermelho: faltam ${fmt(-profit)} para cobrir o investimento. Recuperado ${recovered.toFixed(0)}% até agora.`;
+    ? `Cada R$ 1 investido (produção + marketing) retornou R$ ${(revenue / investment).toFixed(2)}. Lucro consolidado ${fmt(profit)} · ROI ${roi.toFixed(0)}%.`
+    : `Coleção ainda no vermelho: faltam ${fmt(-profit)} para cobrir produção (${fmt(productionCost)}) + marketing (${fmt(marketingCost)}). Recuperado ${recovered.toFixed(0)}%.`;
 
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-          <Wallet className="size-3.5 text-primary" /> Investimento × Resultado
+          <Wallet className="size-3.5 text-primary" /> ROI consolidado · produção + marketing × receita
         </div>
         <div className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
-          <Database className="size-3" /> espelho ERP
+          <Database className="size-3" /> receita espelho ERP
         </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Metric label="Investido (produção)" value={fmt(investment)} tone="neutral" />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <Metric label="Produção" value={fmt(productionCost)} tone="neutral" />
+        <Metric label="Marketing" value={fmt(marketingCost)} tone="neutral" />
         <Metric label="Receita realizada" value={fmt(revenue)} tone="primary" />
         <Metric label={positive ? "Lucro" : "A recuperar"} value={fmt(Math.abs(profit))} tone={positive ? "green" : "red"} />
         <Metric label="ROI" value={investment > 0 ? `${roi.toFixed(0)}%` : "—"} tone={roi >= 30 ? "green" : roi >= 0 ? "yellow" : "red"} />
       </div>
+      {investment > 0 && (
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+            <span>Composição do investimento</span>
+            <span className="tabular-nums">{prodPct.toFixed(0)}% prod · {mktPct.toFixed(0)}% mkt</span>
+          </div>
+          <div className="flex h-1.5 rounded-full overflow-hidden bg-muted">
+            <div className="h-full bg-primary" style={{ width: `${prodPct}%` }} />
+            <div className="h-full bg-amber-500" style={{ width: `${mktPct}%` }} />
+          </div>
+        </div>
+      )}
       <div className="mt-3">
         <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
           <span>Recuperação do investimento</span>

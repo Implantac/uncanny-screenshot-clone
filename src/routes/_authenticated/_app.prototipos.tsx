@@ -1,9 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Scissors, Plus, Trash2, Pencil, Search, X, Download, GitCompare, FileText, Check } from "lucide-react";
+import { Scissors, Plus, Trash2, Pencil, Search, X, Download, GitCompare, FileText, Check, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -325,6 +325,11 @@ function Prototipos() {
                             <FileText className="size-4 text-emerald-500" />
                           </Button>
                         )}
+                        <Link to="/prototipo/$id" params={{ id: p.id }} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                          <Button size="icon" variant="ghost" title="Abrir página do protótipo">
+                            <Sparkles className="size-4 text-primary" />
+                          </Button>
+                        </Link>
                         <PrototypeTimelineButton prototypeId={p.id} prototypeCode={p.code} />
                         <PrototypeAdjustmentsButton
                           prototypeId={p.id}

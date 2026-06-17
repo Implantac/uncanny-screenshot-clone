@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Cpu, Play, Pause, Plus, Activity, Loader2, Sparkles, MessageCircleQuestion } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { useAuth } from "@/hooks/use-auth";
@@ -123,6 +123,7 @@ function UseAI() {
         <div className="flex items-center gap-2 text-sm font-semibold">
           <MessageCircleQuestion className="size-4 text-primary" /> Pergunte ao USE AI
         </div>
+        <ProactiveSuggestions onAsk={(q) => setAsk(q)} active={ask?.question} all={CHIPS} />
         <div className="flex flex-wrap gap-2">
           {CHIPS.map((c) => (
             <button
@@ -216,6 +217,75 @@ function UseAI() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ProactiveSuggestions({
+  onAsk,
+  active,
+  all,
+}: {
+  onAsk: (q: { persona: Persona; question: string }) => void;
+  active: string | undefined;
+  all: typeof CHIPS;
+}) {
+  const { data } = useQuery({
+    queryKey: ["use-ai-context"],
+    queryFn: async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const [ordersLate, protosPending, salesRecent] = await Promise.all([
+        supabase.from("production_orders").select("id", { count: "exact", head: true }).lt("due_date", today).neq("status", "concluida").neq("status", "cancelada"),
+        supabase.from("prototypes").select("id", { count: "exact", head: true }).in("stage", ["solicitado", "em_confeccao", "em_prova"]),
+        supabase.from("sales").select("total", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 7 * 86400_000).toISOString()),
+      ]);
+      return {
+        lateOrders: ordersLate.count ?? 0,
+        pendingProtos: protosPending.count ?? 0,
+        recentSales: salesRecent.count ?? 0,
+      };
+    },
+    staleTime: 60_000,
+  });
+
+  const suggestions = useMemo(() => {
+    if (!data) return [] as typeof CHIPS;
+    const picks: { label: string; weight: number }[] = [];
+    if (data.lateOrders > 0) picks.push({ label: "Qual lote está atrasado?", weight: 100 + data.lateOrders });
+    if (data.lateOrders > 0) picks.push({ label: "Top 3 gargalos do PCP hoje", weight: 80 });
+    if (data.pendingProtos > 5) picks.push({ label: "Quais protótipos estão travando coleção?", weight: 70 + data.pendingProtos });
+    if (data.pendingProtos > 0) picks.push({ label: "O que aprovar primeiro hoje?", weight: 50 });
+    if (data.recentSales > 0) picks.push({ label: "Qual coleção vendeu mais?", weight: 60 });
+    if (data.recentSales > 0) picks.push({ label: "Qual produto repetir?", weight: 40 });
+    picks.push({ label: "Onde investir em marketing nesta semana?", weight: 20 });
+    const ordered = picks.sort((a, b) => b.weight - a.weight).slice(0, 3);
+    return ordered
+      .map((p) => all.find((c) => c.label === p.label))
+      .filter((c): c is (typeof CHIPS)[number] => !!c);
+  }, [data, all]);
+
+  if (suggestions.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-primary/30 bg-primary/5 p-3">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-primary mb-2">
+        <Sparkles className="size-3" /> Sugerido agora · baseado no momento da operação
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {suggestions.map((c: (typeof CHIPS)[number]) => (
+          <button
+            key={c.label}
+            onClick={() => onAsk({ persona: c.persona, question: c.question })}
+            className={`text-xs px-3 py-1.5 rounded-full border transition inline-flex items-center gap-1 ${
+              active === c.question
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-primary/40 bg-card hover:bg-primary/10 text-primary"
+            }`}
+          >
+            <Sparkles className="size-3" /> {c.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
