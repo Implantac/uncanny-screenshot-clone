@@ -325,7 +325,7 @@ function Prototipos() {
                             <FileText className="size-4 text-emerald-500" />
                           </Button>
                         )}
-                        <Link to="/prototipo/$id" params={{ id: p.id }} onClick={(e) => e.stopPropagation()}>
+                        <Link to="/prototipo/$id" params={{ id: p.id }} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                           <Button size="icon" variant="ghost" title="Abrir página do protótipo">
                             <Sparkles className="size-4 text-primary" />
                           </Button>
