@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { StorageUploader } from "@/components/storage-uploader";
 
 type MoodKind = "inspiracao" | "tendencia" | "referencia";
 const KIND_LABEL: Record<MoodKind, string> = {
