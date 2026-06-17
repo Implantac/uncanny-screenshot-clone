@@ -403,12 +403,18 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
                 <img src={photoUrl} alt={name || "Material"} className="size-[120px] rounded-lg border border-border object-cover" />
               ) : (
                 <div className="size-[120px] rounded-lg border border-dashed border-border flex items-center justify-center text-[10px] text-muted-foreground text-center px-2">
-                  Cole URL ao lado para visualizar
+                  Envie a foto do material
                 </div>
               )}
               <div className="space-y-2">
-                <Label>Foto do material (URL)</Label>
-                <Input value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://…" />
+                <Label>Foto do material</Label>
+                <StorageUploader
+                  bucket="inventory-attachments"
+                  value={photoUrl}
+                  onChange={(url) => setPhotoUrl(url ?? "")}
+                  kind="image"
+                  label="Enviar foto"
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -416,8 +422,15 @@ function ItemDialog({ open, onOpenChange, editing, userId }: {
               <div className="space-y-2"><Label>Cor interna</Label><Input value={internalColor} onChange={(e) => setInternalColor(e.target.value)} placeholder="Ex: AZ-MAR" /></div>
             </div>
             <div className="space-y-2">
-              <Label>PDF da ficha técnica (URL)</Label>
-              <Input value={techSheetPdfUrl} onChange={(e) => setTechSheetPdfUrl(e.target.value)} placeholder="https://…/ficha.pdf" />
+              <Label>PDF da ficha técnica</Label>
+              <StorageUploader
+                bucket="inventory-attachments"
+                value={techSheetPdfUrl}
+                onChange={(url) => setTechSheetPdfUrl(url ?? "")}
+                accept="application/pdf"
+                kind="file"
+                label="Enviar PDF"
+              />
             </div>
           </div>
 
