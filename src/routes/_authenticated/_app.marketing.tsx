@@ -257,8 +257,8 @@ function Marketing() {
   );
 }
 
-function CampaignDialog({ open, onOpenChange, editing, userId }: {
-  open: boolean; onOpenChange: (v: boolean) => void; editing: Campaign | null; userId?: string;
+function CampaignDialog({ open, onOpenChange, editing, userId, prefillName }: {
+  open: boolean; onOpenChange: (v: boolean) => void; editing: Campaign | null; userId?: string; prefillName?: string | null;
 }) {
   const qc = useQueryClient();
   const [name, setName] = useState("");
@@ -278,10 +278,11 @@ function CampaignDialog({ open, onOpenChange, editing, userId }: {
       setInvestment(String(editing.investment)); setRoas(String(editing.roas));
       setStatus(editing.status); setNotes(editing.notes || "");
     } else if (open) {
-      setName(""); setChannel(""); setStartDate(""); setEndDate("");
+      setName(prefillName || ""); setChannel(""); setStartDate(""); setEndDate("");
       setInvestment("0"); setRoas("0"); setStatus("programada"); setNotes("");
     }
-  }, [open, editing]);
+  }, [open, editing, prefillName]);
+
 
   const saveMut = useMutation({
     mutationFn: async () => {
