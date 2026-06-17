@@ -3003,6 +3003,118 @@ export type Database = {
           },
         ]
       }
+      supplier_portal_acks: {
+        Row: {
+          counter_due_date: string | null
+          created_at: string
+          decision: string
+          id: string
+          notes: string | null
+          owner_id: string
+          production_order_id: string
+          supplier_id: string
+        }
+        Insert: {
+          counter_due_date?: string | null
+          created_at?: string
+          decision: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          production_order_id: string
+          supplier_id: string
+        }
+        Update: {
+          counter_due_date?: string | null
+          created_at?: string
+          decision?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          production_order_id?: string
+          supplier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_portal_acks_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_portal_acks_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_portal_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          mime: string | null
+          owner_id: string
+          production_order_id: string | null
+          rfq_id: string | null
+          size: number | null
+          supplier_id: string
+          uploaded_via: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          mime?: string | null
+          owner_id: string
+          production_order_id?: string | null
+          rfq_id?: string | null
+          size?: number | null
+          supplier_id: string
+          uploaded_via?: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          mime?: string | null
+          owner_id?: string
+          production_order_id?: string | null
+          rfq_id?: string | null
+          size?: number | null
+          supplier_id?: string
+          uploaded_via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_portal_attachments_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_portal_attachments_rfq_id_fkey"
+            columns: ["rfq_id"]
+            isOneToOne: false
+            referencedRelation: "rfq_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_portal_attachments_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_portal_tokens: {
         Row: {
           created_at: string
