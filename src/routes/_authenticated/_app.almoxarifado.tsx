@@ -127,7 +127,7 @@ function Almoxarifado() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Almoxarifado</h1>
-            <p className="text-sm text-muted-foreground">{items.length} SKUs · {criticos} em nível crítico</p>
+            <p className="text-sm text-muted-foreground">{items.length} SKUs · {criticos} críticos · {noPontoPedido} no ponto de pedido</p>
           </div>
         </div>
         <div className="flex gap-2">
