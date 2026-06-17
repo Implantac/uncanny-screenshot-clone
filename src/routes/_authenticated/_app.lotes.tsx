@@ -137,6 +137,15 @@ function LotesPage() {
     return { total, active, planned, produced, eff: planned > 0 ? Math.round((produced / planned) * 100) : 0 };
   }, [batches]);
 
+  const selectedHealth = useMemo(() => {
+    if (!selected) return null;
+    const late = linkedOrders.filter((o) => o.due_date && new Date(o.due_date).getTime() < Date.now() && o.status !== "concluida").length;
+    const avgProgress = linkedOrders.length ? Math.round(linkedOrders.reduce((s, o) => s + o.progress, 0) / linkedOrders.length) : 0;
+    const lastMove = logs[0]?.created_at ? new Date(logs[0].created_at).toLocaleDateString("pt-BR") : "sem passagem";
+    const risk = late > 0 ? "alto" : avgProgress < 40 && selected.status === "em_producao" ? "atenção" : "controlado";
+    return { late, avgProgress, lastMove, risk };
+  }, [selected, linkedOrders, logs]);
+
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("production_batches").delete().eq("id", id);
@@ -232,10 +241,17 @@ function LotesPage() {
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <Metric label="Planejado" value={`${selected.planned_qty} pç`} />
-                  <Metric label="Produzido" value={`${selected.produced_qty} pç`} />
-                  <Metric label="Início" value={selected.start_date ? new Date(selected.start_date).toLocaleDateString("pt-BR") : "—"} />
-                  <Metric label="Fim" value={selected.end_date ? new Date(selected.end_date).toLocaleDateString("pt-BR") : "—"} />
+                  <Metric label="Completo pelas OPs" value={`${selectedHealth?.avgProgress ?? 0}%`} />
+                  <Metric label="Risco" value={selectedHealth?.risk ?? "—"} />
+                  <Metric label="Última passagem" value={selectedHealth?.lastMove ?? "—"} />
                 </div>
+                {selectedHealth && (
+                  <div className={`mt-4 rounded-lg border p-3 text-sm ${selectedHealth.late ? "border-destructive/40 bg-destructive/5" : "border-border bg-background/30"}`}>
+                    {selectedHealth.late
+                      ? `${selectedHealth.late} OP(s) do lote estão atrasadas. Abra o lote e faça a passagem das etapas críticas primeiro.`
+                      : "Lote sem atraso crítico. Continue acompanhando a última passagem para evitar fila invisível."}
+                  </div>
+                )}
               </div>
 
               <div className="glass rounded-xl p-5">
