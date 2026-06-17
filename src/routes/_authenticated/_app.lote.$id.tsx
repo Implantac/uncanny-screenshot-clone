@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks, ShieldAlert, Layers, FileText, ImageIcon, RefreshCcw, ClipboardList } from "lucide-react";
+import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks, ShieldAlert, Layers, FileText, ImageIcon, RefreshCcw, ClipboardList, Plus, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { Badge } from "@/components/ui/badge";
@@ -219,12 +219,13 @@ function LotePage() {
 
       <Progress value={summary.pct} className="h-2" />
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <Card icon={Package} label="Peças no lote" value={summary.total} />
-        <Card icon={Factory} label="OPs ativas" value={orders.length - summary.done} />
-        <Card icon={CheckCircle2} label="Concluídas" value={summary.done} tone="text-success" />
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <Card icon={Package} label="Peças programadas" value={summary.total} />
+        <Card icon={Plus} label="Positivas (+)" value={summary.occPos} tone={summary.occPos > 0 ? "text-success" : "text-muted-foreground"} />
+        <Card icon={Minus} label="Negativas (−)" value={summary.occNeg} tone={summary.occNeg > 0 ? "text-destructive" : "text-muted-foreground"} />
+        <Card icon={CheckCircle2} label="Saldo final previsto" value={summary.finalForecast} tone="text-primary" />
         <Card icon={AlertTriangle} label="Atrasadas" value={summary.late} tone={summary.late > 0 ? "text-destructive" : "text-success"} />
-        <Card icon={ShieldAlert} label="Ocorrências abertas" value={summary.occOpen} tone={summary.occOpen > 0 ? "text-destructive" : "text-success"} />
+        <Card icon={ShieldAlert} label="Ocorr. abertas" value={summary.occOpen} tone={summary.occOpen > 0 ? "text-destructive" : "text-success"} />
         <Card icon={Layers} label="Materiais em falta" value={summary.matMissing} tone={summary.matMissing > 0 ? "text-destructive" : "text-success"} />
       </div>
 
