@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ShieldCheck, AlertTriangle, Clock, Truck } from "lucide-react";
 import { QualityIntelligencePanel } from "@/components/quality-intelligence-panel";
+import { CapaPanel } from "@/components/capa-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/quality")({
   head: () => ({
