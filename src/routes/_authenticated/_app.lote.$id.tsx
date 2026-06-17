@@ -427,3 +427,17 @@ function Card({ icon: Icon, label, value, tone }: { icon: any; label: string; va
     </div>
   );
 }
+
+function RefMenuLink({ to, search, icon: Icon, label, title }: { to: string; search?: Record<string, unknown>; icon: any; label: string; title: string }) {
+  return (
+    <Link
+      to={to as any}
+      search={search as any}
+      className="flex flex-col items-center gap-0.5 py-1.5 rounded-md hover:bg-muted/60 text-[10px] text-muted-foreground hover:text-foreground"
+      title={title}
+    >
+      <Icon className="size-3.5" />
+      <span>{label}</span>
+    </Link>
+  );
+}
