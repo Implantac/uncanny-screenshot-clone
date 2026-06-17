@@ -201,6 +201,7 @@ function LotePage() {
       <div className="flex items-center gap-3">
         <Link to="/lotes"><Button variant="ghost" size="sm"><ArrowLeft className="size-4 mr-1" />Lotes</Button></Link>
         <Badge variant="outline" className={STATUS_TONE[batch.status] ?? ""}>{batch.status}</Badge>
+        <div className="ml-auto"><LoteQrButton batchCode={batch.code} batchId={batch.id} /></div>
       </div>
 
       <div className="flex items-start gap-3">
