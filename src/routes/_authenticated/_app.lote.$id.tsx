@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { TechSheetDrawerTrigger } from "@/components/tech-sheet-drawer";
+import { LoteQrButton } from "@/components/lote-qr-button";
 
 const OCC_KIND_LABEL: Record<string, string> = {
   positiva: "Positiva (+)", negativa: "Negativa (−)", neutra: "Neutra",
@@ -200,6 +201,7 @@ function LotePage() {
       <div className="flex items-center gap-3">
         <Link to="/lotes"><Button variant="ghost" size="sm"><ArrowLeft className="size-4 mr-1" />Lotes</Button></Link>
         <Badge variant="outline" className={STATUS_TONE[batch.status] ?? ""}>{batch.status}</Badge>
+        <div className="ml-auto"><LoteQrButton batchCode={batch.code} batchId={batch.id} /></div>
       </div>
 
       <div className="flex items-start gap-3">
