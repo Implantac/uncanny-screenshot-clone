@@ -57,15 +57,45 @@ const PERSONAS: { id: Persona; label: string; icon: React.ReactNode; suggestions
   },
 ];
 
+type AIAction =
+  | { kind: "create_rfq"; title: string; quantity: number; unit?: string | null; needed_by?: string | null; notes?: string | null }
+  | { kind: "create_op"; sku: string; quantity: number; supplier_name?: string | null; due_date?: string | null; notes?: string | null }
+  | { kind: "block_supplier"; supplier_name: string; reason?: string | null };
+
+function parseAction(text: string): { action: AIAction | null; cleaned: string } {
+  const re = /```json\s*([\s\S]*?)```/i;
+  const match = text.match(re);
+  if (!match) return { action: null, cleaned: text };
+  try {
+    const parsed = JSON.parse(match[1].trim());
+    if (parsed?.action?.kind) return { action: parsed.action as AIAction, cleaned: text.replace(re, "").trim() };
+  } catch {}
+  return { action: null, cleaned: text };
+}
+
+const ACTION_LABEL: Record<AIAction["kind"], string> = {
+  create_rfq: "Criar RFQ",
+  create_op: "Criar Ordem de Produção",
+  block_supplier: "Bloquear fornecedor",
+};
+
 export function AskFashionAI() {
   const [persona, setPersona] = useState<Persona>("development");
   const [question, setQuestion] = useState("");
   const fn = useServerFn(askInsight);
+  const execFn = useServerFn(executeAICommand);
   const m = useMutation({
     mutationFn: (q: string) => fn({ data: { persona, question: q } }),
     onError: (e: any) => toast.error(e?.message ?? "Falha ao consultar IA"),
   });
+  const exec = useMutation({
+    mutationFn: (a: AIAction) => execFn({ data: a as any }),
+    onSuccess: (r: any) => toast.success(`Pronto — ${r.code ?? r.name ?? "ação"} criada`),
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao executar"),
+  });
   const active = PERSONAS.find((p) => p.id === persona)!;
+
+  const parsed = useMemo(() => (m.data?.text ? parseAction(m.data.text) : { action: null, cleaned: "" }), [m.data?.text]);
 
   function ask(q: string) {
     if (!q.trim() || m.isPending) return;
