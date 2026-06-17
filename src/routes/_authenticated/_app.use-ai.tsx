@@ -272,7 +272,7 @@ function ProactiveSuggestions({
         <Sparkles className="size-3" /> Sugerido agora · baseado no momento da operação
       </div>
       <div className="flex flex-wrap gap-2">
-        {suggestions.map((c) => (
+        {suggestions.map((c: (typeof CHIPS)[number]) => (
           <button
             key={c.label}
             onClick={() => onAsk({ persona: c.persona, question: c.question })}
