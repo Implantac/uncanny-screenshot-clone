@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { StorageUploader } from "@/components/storage-uploader";
 
 type MoodKind = "inspiracao" | "tendencia" | "referencia";
 const KIND_LABEL: Record<MoodKind, string> = {
@@ -129,8 +130,14 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="space-y-3">
             <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground">URL da imagem</label>
-              <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" autoFocus required />
+              <label className="text-xs text-muted-foreground">Imagem</label>
+              <StorageUploader
+                bucket="collection-covers"
+                value={url || null}
+                onChange={(u) => setUrl(u ?? "")}
+                kind="image"
+                label="Enviar imagem"
+              />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs text-muted-foreground">Legenda (opcional)</label>
