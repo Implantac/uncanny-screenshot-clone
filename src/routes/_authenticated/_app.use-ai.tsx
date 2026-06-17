@@ -123,6 +123,7 @@ function UseAI() {
         <div className="flex items-center gap-2 text-sm font-semibold">
           <MessageCircleQuestion className="size-4 text-primary" /> Pergunte ao USE AI
         </div>
+        <ProactiveSuggestions onAsk={(q) => setAsk(q)} active={ask?.question} all={CHIPS} />
         <div className="flex flex-wrap gap-2">
           {CHIPS.map((c) => (
             <button
