@@ -300,6 +300,10 @@ function CampaignDialog({ open, onOpenChange, editing, userId, prefillName }: {
         start_date: startDate || null, end_date: endDate || null,
         investment: Number(investment), roas: Number(roas),
         status, notes: notes || null,
+        cost_shoot: Number(costShoot),
+        cost_photos: Number(costPhotos),
+        cost_traffic: Number(costTraffic),
+        revenue: Number(revenue),
       };
       if (editing) {
         const { error } = await supabase.from("marketing_campaigns").update(payload).eq("id", editing.id);
