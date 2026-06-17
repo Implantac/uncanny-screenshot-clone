@@ -177,31 +177,7 @@ export function AskFashionAI() {
             </div>
 
             {parsed.action && !exec.data && (
-              <div className="rounded-md border border-primary/30 bg-primary/5 p-3 space-y-2">
-                <div className="text-xs font-semibold inline-flex items-center gap-1.5">
-                  <PlayCircle className="size-3.5 text-primary" />
-                  Ação proposta: {ACTION_LABEL[parsed.action.kind]}
-                </div>
-                <pre className="text-[11px] bg-background/60 rounded p-2 overflow-x-auto">
-{JSON.stringify(parsed.action, null, 2)}
-                </pre>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => exec.mutate(parsed.action!)}
-                    disabled={exec.isPending}
-                    className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs inline-flex items-center gap-1.5 disabled:opacity-50"
-                  >
-                    {exec.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
-                    Confirmar e executar
-                  </button>
-                  <button
-                    onClick={() => exec.reset()}
-                    className="px-3 py-1.5 rounded-md border border-border text-xs"
-                  >
-                    Descartar
-                  </button>
-                </div>
-              </div>
+              <ActionEditor action={parsed.action} pending={exec.isPending} onConfirm={(a) => exec.mutate(a)} onDiscard={() => exec.reset()} />
             )}
 
             {exec.data && (
