@@ -1,13 +1,23 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks } from "lucide-react";
+import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks, ShieldAlert, Layers } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
+
+const OCC_KIND_LABEL: Record<string, string> = {
+  falta_material: "Falta de material", erro_corte: "Erro de corte", erro_costura: "Erro de costura",
+  defeito: "Defeito", retrabalho: "Retrabalho", atraso: "Atraso", outro: "Outro",
+};
+const OCC_STATUS_TONE: Record<string, string> = {
+  aberta: "bg-destructive/15 text-destructive border-destructive/30",
+  em_andamento: "bg-amber-500/15 text-amber-600 border-amber-500/30",
+  resolvida: "bg-success/15 text-success border-success/30",
+};
 
 export const Route = createFileRoute("/_authenticated/_app/lote/$id")({
   head: () => ({
@@ -81,6 +91,78 @@ function LotePage() {
     },
   });
 
+  useRealtime("production_occurrences", ["lote-occ", id]);
+  const { data: occurrences = [] } = useQuery({
+    enabled: orderIds.length > 0 || !!batch?.id,
+    queryKey: ["lote-occ", batch?.id, orderIds.join(",")],
+    queryFn: async () => {
+      let q = supabase.from("production_occurrences")
+        .select("id, kind, sector, status, affected_qty, description, created_at, resolved_at, order_id, batch_id")
+        .order("created_at", { ascending: false });
+      if (orderIds.length > 0 && batch?.id) {
+        q = q.or(`batch_id.eq.${batch.id},order_id.in.(${orderIds.join(",")})`);
+      } else if (batch?.id) {
+        q = q.eq("batch_id", batch.id);
+      } else {
+        q = q.in("order_id", orderIds);
+      }
+      const { data, error } = await q;
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const productIds = Array.from(new Set(orders.map((o) => o.product_id).filter(Boolean)));
+  const { data: materialsNeeded = [] } = useQuery({
+    enabled: productIds.length > 0,
+    queryKey: ["lote-materials", productIds.join(",")],
+    queryFn: async () => {
+      const { data: sheets, error: e1 } = await supabase.from("tech_sheets")
+        .select("id, product_id, status")
+        .in("product_id", productIds as string[])
+        .eq("status", "aprovada");
+      if (e1) throw e1;
+      const sheetIds = (sheets ?? []).map((s) => s.id);
+      if (sheetIds.length === 0) return [] as any[];
+      const sheetToProduct = new Map((sheets ?? []).map((s) => [s.id, s.product_id]));
+      const { data: mats, error: e2 } = await supabase.from("tech_sheet_materials")
+        .select("tech_sheet_id, inventory_item_id, name, consumption, loss_pct, unit, unit_cost")
+        .in("tech_sheet_id", sheetIds);
+      if (e2) throw e2;
+      const invIds = Array.from(new Set((mats ?? []).map((m) => m.inventory_item_id).filter(Boolean)));
+      const { data: inv } = invIds.length
+        ? await supabase.from("inventory_items").select("id, name, sku, unit, balance, minimum, photo_url").in("id", invIds as string[])
+        : { data: [] as any[] };
+      const invMap = new Map((inv ?? []).map((i: any) => [i.id, i]));
+      // aggregate per inventory_item_id (or name when no link)
+      const agg = new Map<string, any>();
+      for (const m of mats ?? []) {
+        const productId = sheetToProduct.get(m.tech_sheet_id);
+        const totalQty = orders.filter((o) => o.product_id === productId).reduce((s, o) => s + Number(o.quantity || 0), 0);
+        if (totalQty === 0) continue;
+        const need = Number(m.consumption || 0) * (1 + Number(m.loss_pct || 0) / 100) * totalQty;
+        const key = m.inventory_item_id ?? `name:${m.name}`;
+        const inv = m.inventory_item_id ? invMap.get(m.inventory_item_id) : null;
+        const cur = agg.get(key) ?? {
+          key,
+          inventory_item_id: m.inventory_item_id,
+          name: inv?.name ?? m.name,
+          sku: inv?.sku ?? null,
+          unit: m.unit || inv?.unit || "un",
+          photo_url: inv?.photo_url ?? null,
+          balance: inv ? Number(inv.balance || 0) : null,
+          minimum: inv ? Number(inv.minimum || 0) : null,
+          needed: 0,
+          cost: 0,
+        };
+        cur.needed += need;
+        cur.cost += need * Number(m.unit_cost || 0);
+        agg.set(key, cur);
+      }
+      return Array.from(agg.values()).sort((a, b) => b.needed - a.needed);
+    },
+  });
+
   const summary = useMemo(() => {
     const total = orders.reduce((s, o) => s + (o.quantity ?? 0), 0);
     const done = orders.filter((o) => o.stage === "concluido").length;
@@ -88,8 +170,10 @@ function LotePage() {
     const late = orders.filter((o) => o.due_date && new Date(o.due_date).getTime() < Date.now() && o.stage !== "concluido");
     const byStage = new Map<string, number>();
     orders.forEach((o) => byStage.set(o.stage, (byStage.get(o.stage) ?? 0) + 1));
-    return { total, done, pct, late: late.length, byStage: [...byStage.entries()] };
-  }, [orders]);
+    const occOpen = occurrences.filter((o) => o.status !== "resolvida").length;
+    const matMissing = materialsNeeded.filter((m) => m.balance !== null && m.needed > m.balance).length;
+    return { total, done, pct, late: late.length, byStage: [...byStage.entries()], occOpen, matMissing };
+  }, [orders, occurrences, materialsNeeded]);
 
   if (isLoading) return <div className="p-6 text-muted-foreground">Carregando…</div>;
   if (!batch) {
@@ -126,11 +210,13 @@ function LotePage() {
 
       <Progress value={summary.pct} className="h-2" />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <Card icon={Package} label="Peças no lote" value={summary.total} />
         <Card icon={Factory} label="OPs ativas" value={orders.length - summary.done} />
         <Card icon={CheckCircle2} label="Concluídas" value={summary.done} tone="text-success" />
         <Card icon={AlertTriangle} label="Atrasadas" value={summary.late} tone={summary.late > 0 ? "text-destructive" : "text-success"} />
+        <Card icon={ShieldAlert} label="Ocorrências abertas" value={summary.occOpen} tone={summary.occOpen > 0 ? "text-destructive" : "text-success"} />
+        <Card icon={Layers} label="Materiais em falta" value={summary.matMissing} tone={summary.matMissing > 0 ? "text-destructive" : "text-success"} />
       </div>
 
       {summary.byStage.length > 0 && (
@@ -190,6 +276,84 @@ function LotePage() {
           )}
         </div>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="glass rounded-xl p-4">
+          <div className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Layers className="size-4 text-primary" /> Materiais necessários
+            <span className="text-[11px] font-normal text-muted-foreground ml-auto">
+              {materialsNeeded.length} item(s) · de fichas aprovadas
+            </span>
+          </div>
+          {materialsNeeded.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Sem materiais vinculados (cadastre ficha técnica aprovada para os produtos).</p>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+              {materialsNeeded.map((m: any) => {
+                const linked = m.balance !== null;
+                const missing = linked && m.needed > m.balance;
+                const cobertura = linked && m.needed > 0 ? Math.min(100, Math.round((m.balance / m.needed) * 100)) : null;
+                return (
+                  <div key={m.key} className="flex items-center gap-3 rounded-lg border border-border bg-card/50 p-2.5">
+                    <div className="size-10 rounded bg-muted/40 overflow-hidden shrink-0">
+                      {m.photo_url ? <img src={m.photo_url} alt={m.name} loading="lazy" className="size-full object-cover" /> : null}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium truncate">{m.name}</div>
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        {m.sku ? `${m.sku} · ` : ""}precisa {m.needed.toFixed(2)} {m.unit}
+                        {linked ? ` · tem ${m.balance.toFixed(2)} ${m.unit}` : " · não vinculado ao estoque"}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {linked ? (
+                        <Badge variant="outline" className={missing ? "bg-destructive/15 text-destructive border-destructive/30" : "bg-success/15 text-success border-success/30"}>
+                          {missing ? `faltam ${(m.needed - m.balance).toFixed(1)} ${m.unit}` : `${cobertura}% coberto`}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-muted/40 text-muted-foreground">sem vínculo</Badge>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="glass rounded-xl p-4">
+          <div className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <ShieldAlert className="size-4 text-primary" /> Ocorrências do lote
+            <span className="text-[11px] font-normal text-muted-foreground ml-auto">
+              {occurrences.length} total · {summary.occOpen} aberta(s)
+            </span>
+          </div>
+          {occurrences.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Sem ocorrências registradas.</p>
+          ) : (
+            <ul className="space-y-2 max-h-80 overflow-y-auto pr-1">
+              {occurrences.map((o: any) => {
+                const op = orders.find((x) => x.id === o.order_id);
+                return (
+                  <li key={o.id} className="rounded-lg border border-border bg-card/50 p-2.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className={OCC_STATUS_TONE[o.status] ?? "bg-muted/40"}>{o.status}</Badge>
+                      <span className="text-xs font-medium">{OCC_KIND_LABEL[o.kind] ?? o.kind}</span>
+                      {o.sector && <span className="text-[10px] text-muted-foreground">· {STAGE_LABEL[o.sector] ?? o.sector}</span>}
+                      <span className="text-[10px] text-muted-foreground ml-auto">há {relTime(o.created_at)}</span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-1">
+                      {op?.code ?? "—"} · {o.affected_qty ?? 0} pç afetada(s)
+                    </div>
+                    {o.description && <div className="text-xs mt-1 italic">"{o.description}"</div>}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
+
 
       <div className="glass rounded-xl p-4">
         <div className="text-sm font-semibold mb-3">Linha do tempo do lote</div>
