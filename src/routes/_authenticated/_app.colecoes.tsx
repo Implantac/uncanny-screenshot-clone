@@ -601,9 +601,12 @@ function ColecoesPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Planejamento, direção criativa, mix, cronograma, performance e ROI em uma única visão.</p>
         </div>
-        <Button onClick={openCreate} className="gap-2">
-          <Plus className="size-4" /> Nova coleção
-        </Button>
+        <div className="flex gap-2">
+          <CollectionCompareDialog collections={collections as any} />
+          <Button onClick={openCreate} className="gap-2">
+            <Plus className="size-4" /> Nova coleção
+          </Button>
+        </div>
       </div>
 
       <CollectionIntelligencePanel />
