@@ -45,7 +45,7 @@ export const listCostVariance = createServerFn({ method: "POST" })
 
     const { data: orders, error } = await supabase
       .from("production_orders")
-      .select("id, code, product_id, quantity, stage, status, started_at, created_at, products(name, sku, collection_id), production_batches!batch_code(produced_qty)")
+      .select("id, code, product_id, quantity, stage, status, started_at, created_at, progress, products(name, sku, collection_id)")
       .gte("created_at", since)
       .order("created_at", { ascending: false })
       .limit(500);
