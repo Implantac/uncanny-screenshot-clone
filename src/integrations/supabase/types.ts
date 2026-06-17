@@ -997,6 +997,7 @@ export type Database = {
           product_id: string | null
           sku: string
           supplier_color: string | null
+          supplier_lot: string | null
           tech_sheet_pdf_url: string | null
           turnover_30d: number
           unit: string
@@ -1023,6 +1024,7 @@ export type Database = {
           product_id?: string | null
           sku: string
           supplier_color?: string | null
+          supplier_lot?: string | null
           tech_sheet_pdf_url?: string | null
           turnover_30d?: number
           unit?: string
@@ -1049,6 +1051,7 @@ export type Database = {
           product_id?: string | null
           sku?: string
           supplier_color?: string | null
+          supplier_lot?: string | null
           tech_sheet_pdf_url?: string | null
           turnover_30d?: number
           unit?: string
@@ -2866,6 +2869,8 @@ export type Database = {
           quantity: number
           reference_id: string | null
           reference_kind: string | null
+          supplier_color: string | null
+          supplier_lot: string | null
           type: Database["public"]["Enums"]["stock_movement_type"]
         }
         Insert: {
@@ -2878,6 +2883,8 @@ export type Database = {
           quantity: number
           reference_id?: string | null
           reference_kind?: string | null
+          supplier_color?: string | null
+          supplier_lot?: string | null
           type: Database["public"]["Enums"]["stock_movement_type"]
         }
         Update: {
@@ -2890,6 +2897,8 @@ export type Database = {
           quantity?: number
           reference_id?: string | null
           reference_kind?: string | null
+          supplier_color?: string | null
+          supplier_lot?: string | null
           type?: Database["public"]["Enums"]["stock_movement_type"]
         }
         Relationships: [

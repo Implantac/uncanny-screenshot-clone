@@ -402,6 +402,8 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
   const [itemId, setItemId] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [notes, setNotes] = useState("");
+  const [supplierLot, setSupplierLot] = useState("");
+  const [supplierColor, setSupplierColor] = useState("");
 
   const saveMut = useMutation({
     mutationFn: async () => {
@@ -410,6 +412,8 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
       if (quantity <= 0 && type !== "ajuste") throw new Error("Quantidade deve ser maior que zero");
       const { error } = await supabase.from("stock_movements").insert({
         owner_id: userId, inventory_item_id: itemId, type, quantity, notes: notes || null,
+        supplier_lot: supplierLot || null,
+        supplier_color: supplierColor || null,
       });
       if (error) throw error;
     },
@@ -417,9 +421,11 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
       qc.invalidateQueries({ queryKey: ["stock_movements"] });
       qc.invalidateQueries({ queryKey: ["inventory_items_slim"] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
+      qc.invalidateQueries({ queryKey: ["inventory_lot_breakdown"] });
       toast.success("Movimentação registrada");
       onOpenChange(false);
       setItemId(""); setQuantity(0); setNotes(""); setType("entrada");
+      setSupplierLot(""); setSupplierColor("");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -460,6 +466,18 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
             <Label>{type === "ajuste" ? "Novo saldo absoluto" : "Quantidade"}</Label>
             <Input type="number" min="0" step="0.01" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} required />
           </div>
+          {type === "entrada" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Lote do fornecedor</Label>
+                <Input value={supplierLot} onChange={(e) => setSupplierLot(e.target.value)} placeholder="ex: LOTE-2026-A" />
+              </div>
+              <div className="space-y-2">
+                <Label>Cor recebida</Label>
+                <Input value={supplierColor} onChange={(e) => setSupplierColor(e.target.value)} placeholder="ex: Azul Marinho 4521" />
+              </div>
+            </div>
+          )}
           <div className="space-y-2"><Label>Notas</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
