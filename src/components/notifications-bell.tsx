@@ -5,6 +5,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/compon
 import { Link } from "@tanstack/react-router";
 import { useRealtime } from "@/hooks/use-realtime";
 import { useAuth } from "@/hooks/use-auth";
+import { useState } from "react";
+
+type Cat = "all" | "estoque" | "atraso" | "parado" | "proto" | "comentario" | "marketing";
+const CAT_LABEL: Record<Cat, string> = {
+  all: "Tudo", estoque: "Estoque", atraso: "Atraso", parado: "Parado",
+  proto: "Protótipo", comentario: "Comentários", marketing: "Marketing",
+};
 
 export function NotificationsBell() {
   const { user } = useAuth();
@@ -79,6 +86,18 @@ export function NotificationsBell() {
 
   const total = (data?.critical.length ?? 0) + (data?.overdue.length ?? 0) + (data?.stuck.length ?? 0) + (data?.oldProtos.length ?? 0) + (data?.comments.length ?? 0) + (data?.marketing.length ?? 0);
 
+  const [cat, setCat] = useState<Cat>("all");
+  const counts: Record<Cat, number> = {
+    all: total,
+    estoque: data?.critical.length ?? 0,
+    atraso: data?.overdue.length ?? 0,
+    parado: data?.stuck.length ?? 0,
+    proto: data?.oldProtos.length ?? 0,
+    comentario: data?.comments.length ?? 0,
+    marketing: data?.marketing.length ?? 0,
+  };
+  const show = (k: Exclude<Cat, "all">) => cat === "all" || cat === k;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -91,10 +110,24 @@ export function NotificationsBell() {
           )}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 p-0">
+      <DropdownMenuContent align="end" className="w-96 p-0">
         <div className="px-4 py-3 border-b border-border">
-          <div className="text-sm font-semibold">Notificações</div>
-          <div className="text-xs text-muted-foreground">{total} alerta{total === 1 ? "" : "s"}</div>
+          <div className="text-sm font-semibold">Central de alertas</div>
+          <div className="text-xs text-muted-foreground">{total} alerta{total === 1 ? "" : "s"} no total</div>
+        </div>
+        <div className="px-2 py-2 border-b border-border flex flex-wrap gap-1">
+          {(Object.keys(CAT_LABEL) as Cat[]).map((k) => (
+            <button
+              key={k}
+              onClick={() => setCat(k)}
+              className={`text-[11px] px-2 py-1 rounded-md inline-flex items-center gap-1 ${
+                cat === k ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"
+              }`}
+            >
+              {CAT_LABEL[k]}
+              {counts[k] > 0 && <span className="tabular-nums opacity-80">{counts[k]}</span>}
+            </button>
+          ))}
         </div>
         <div className="max-h-96 overflow-y-auto">
           {total === 0 && (
@@ -103,7 +136,7 @@ export function NotificationsBell() {
               Tudo sob controle
             </div>
           )}
-          {data?.critical.map((i) => (
+          {show("estoque") && data?.critical.map((i) => (
             <Link key={`inv-${i.id}`} to="/almoxarifado" className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0">
               <AlertTriangle className="size-4 text-warning shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
@@ -112,7 +145,7 @@ export function NotificationsBell() {
               </div>
             </Link>
           ))}
-          {data?.marketing.map((m) => (
+          {show("marketing") && data?.marketing.map((m) => (
             <Link
               key={`mkt-${m.id}`}
               to={m.link || "/marketing"}
@@ -126,7 +159,7 @@ export function NotificationsBell() {
               </div>
             </Link>
           ))}
-          {data?.overdue.map((o) => (
+          {show("atraso") && data?.overdue.map((o) => (
             <Link key={`op-${o.id}`} to="/pcp" className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0">
               <Clock className="size-4 text-destructive shrink-0 mt-0.5" />
               <div className="min-w-0 flex-1">
@@ -135,7 +168,7 @@ export function NotificationsBell() {
               </div>
             </Link>
           ))}
-          {data?.stuck.map((o: any) => {
+          {show("parado") && data?.stuck.map((o: any) => {
             const days = Math.floor((Date.now() - new Date(o.stage_updated_at).getTime()) / 86_400_000);
             return (
               <Link key={`stuck-${o.id}`} to="/pcp-kanban" className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0">
@@ -147,7 +180,7 @@ export function NotificationsBell() {
               </Link>
             );
           })}
-          {data?.oldProtos.map((p: any) => {
+          {show("proto") && data?.oldProtos.map((p: any) => {
             const days = Math.floor((Date.now() - new Date(p.updated_at).getTime()) / 86_400_000);
             return (
               <Link key={`proto-${p.id}`} to="/prototipos" className="flex gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-0">
@@ -159,7 +192,7 @@ export function NotificationsBell() {
               </Link>
             );
           })}
-          {data?.comments.map((c) => (
+          {show("comentario") && data?.comments.map((c) => (
             <Link
               key={`cm-${c.id}`}
               to={c.kind === "proto" ? "/prototipos" : "/pcp-kanban"}
