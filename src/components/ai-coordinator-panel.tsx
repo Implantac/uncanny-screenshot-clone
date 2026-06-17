@@ -4,6 +4,7 @@ import { Sparkles, Loader2, RefreshCw } from "lucide-react";
 import { useEffect } from "react";
 import { askInsight } from "@/lib/ai-insights.functions";
 import { Markdown } from "@/components/markdown";
+import { InlineChart } from "@/components/inline-chart";
 
 type Persona = "development" | "pcp" | "marketing";
 
