@@ -428,6 +428,9 @@ function FichaTecnicaPage() {
         products={products}
       />
       <VersionDiffDialog open={diffOpen} onOpenChange={setDiffOpen} versions={versionHistory} />
+      {selectedId && (
+        <TechSheetVersionsDrawer techSheetId={selectedId} open={snapshotsOpen} onOpenChange={setSnapshotsOpen} />
+      )}
     </div>
   );
 }
