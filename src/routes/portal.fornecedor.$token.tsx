@@ -18,7 +18,8 @@ export const Route = createFileRoute("/portal/fornecedor/$token")({
 
 type Rfq = { id: string; code: string; title: string; quantity: number; unit: string | null; needed_by: string | null; status: string };
 type Quote = { id: string; rfq_id: string; unit_price: number; lead_time_days: number | null; moq: number | null; payment_terms: string | null; awarded: boolean };
-type Data = { supplier: { id: string; name: string } | null; rfqs: Rfq[]; quotes: Quote[] };
+type ProductionOrder = { id: string; code: string; quantity: number; due_date: string | null; stage: string | null; status: string; products: { name: string | null; sku: string | null } | null };
+type Data = { supplier: { id: string; name: string } | null; rfqs: Rfq[]; quotes: Quote[]; production_orders: ProductionOrder[] };
 
 function SupplierPortalPage() {
   const { token } = Route.useParams();
@@ -49,16 +50,40 @@ function SupplierPortalPage() {
           <p className="text-sm text-muted-foreground">Olá, <strong>{data.supplier?.name ?? "fornecedor"}</strong> — envie ou atualize cotações abaixo.</p>
         </header>
 
-        {data.rfqs.length === 0 ? (
-          <div className="glass rounded-xl p-8 text-center text-muted-foreground">Nenhuma RFQ aberta no momento.</div>
-        ) : (
-          <div className="space-y-4">
-            {data.rfqs.map((rfq) => {
-              const my = data.quotes.find((q) => q.rfq_id === rfq.id);
-              return <RfqCard key={rfq.id} rfq={rfq} myQuote={my} token={token} onSaved={reload} />;
-            })}
-          </div>
+        {(data.production_orders?.length ?? 0) > 0 && (
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold">Suas ordens de produção ativas</h2>
+            <div className="grid gap-2">
+              {data.production_orders.map((po) => (
+                <div key={po.id} className="glass rounded-lg p-4 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs text-muted-foreground">{po.code}</div>
+                    <div className="font-medium">{po.products?.name ?? po.products?.sku ?? "Produto"}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {po.quantity} un · estágio <strong>{po.stage ?? "—"}</strong>
+                      {po.due_date ? <> · entrega <strong>{new Date(po.due_date).toLocaleDateString("pt-BR")}</strong></> : null}
+                    </div>
+                  </div>
+                  <Badge variant="outline">{po.status}</Badge>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">Cotações abertas (RFQ)</h2>
+          {data.rfqs.length === 0 ? (
+            <div className="glass rounded-xl p-8 text-center text-muted-foreground">Nenhuma RFQ aberta no momento.</div>
+          ) : (
+            <div className="space-y-4">
+              {data.rfqs.map((rfq) => {
+                const my = data.quotes.find((q) => q.rfq_id === rfq.id);
+                return <RfqCard key={rfq.id} rfq={rfq} myQuote={my} token={token} onSaved={reload} />;
+              })}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );
