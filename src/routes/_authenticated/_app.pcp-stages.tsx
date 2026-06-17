@@ -32,11 +32,13 @@ type Stage = {
 };
 
 const DEFAULT_SEEDS = [
-  { key: "cad", label: "Modelagem", color: "#a78bfa" },
+  { key: "cad", label: "CAD / Modelagem", color: "#a78bfa" },
   { key: "corte", label: "Corte", color: "#f59e0b" },
   { key: "costura", label: "Costura", color: "#22d3ee" },
   { key: "acabamento", label: "Acabamento", color: "#34d399" },
+  { key: "qualidade", label: "Qualidade", color: "#60a5fa" },
   { key: "expedicao", label: "Expedição", color: "#60a5fa" },
+  { key: "entregue", label: "Entregue", color: "#22c55e" },
 ];
 
 function PcpStagesPage() {
@@ -129,7 +131,18 @@ function PcpStagesPage() {
           <p className="text-sm text-muted-foreground mb-4">Use as etapas padrão ou crie do zero o fluxo da sua fábrica.</p>
         </div>
       ) : (
-        <div className="glass rounded-xl p-3 sm:p-4 space-y-2">
+        <div className="glass rounded-xl p-3 sm:p-4 space-y-4">
+          <div className="rounded-lg border border-border bg-background/30 p-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">Fluxo ativo</div>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+              {stages.filter((s) => s.active).map((s, i, arr) => (
+                <div key={s.id} className="flex items-center gap-2">
+                  <span className="rounded-md border border-border px-2 py-1" style={{ borderColor: s.color ?? undefined }}>{s.label}</span>
+                  {i < arr.length - 1 && <span className="text-muted-foreground">→</span>}
+                </div>
+              ))}
+            </div>
+          </div>
           {stages.map((s, i) => (
             <div key={s.id} className="flex items-center gap-3 rounded-lg border border-border bg-background/30 p-3">
               <div className="size-6 rounded border border-border" style={{ background: s.color ?? "transparent" }} />
