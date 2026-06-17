@@ -28,8 +28,8 @@ type Order = {
 };
 
 type Batch = {
-  id: string; code: string; name: string | null; status: string;
-  planned_quantity: number | null; produced_quantity: number | null;
+  id: string; code: string; notes: string | null; status: string;
+  planned_qty: number | null; produced_qty: number | null;
 };
 
 type StageLog = { to_stage: string; quantity: number | null; created_at: string };
@@ -42,7 +42,7 @@ async function loadAll(): Promise<{ orders: Order[]; batches: Batch[]; logs: Sta
       .order("due_date", { ascending: true, nullsFirst: false })
       .limit(300),
     supabase.from("production_batches")
-      .select("id, code, name, status, planned_quantity, produced_quantity")
+      .select("id, code, notes, status, planned_qty, produced_qty")
       .in("status", ["planejado", "em_producao"])
       .order("created_at", { ascending: false })
       .limit(20),
@@ -104,8 +104,8 @@ function TwinFactory() {
       return { stage: s.label, hoursIdle, count: itemsHere.length };
     }).filter(Boolean).filter((x) => x!.hoursIdle >= 48) as { stage: string; hoursIdle: number; count: number }[];
 
-    const planned = batches.reduce((s, b) => s + Number(b.planned_quantity ?? 0), 0);
-    const produced = batches.reduce((s, b) => s + Number(b.produced_quantity ?? 0), 0);
+    const planned = batches.reduce((s, b) => s + Number(b.planned_qty ?? 0), 0);
+    const produced = batches.reduce((s, b) => s + Number(b.produced_qty ?? 0), 0);
     const efficiency = planned > 0 ? Math.round((produced / planned) * 100) : 0;
 
     return { qtyToday, qtyWeek, stalled, efficiency, passCountToday: passToday.length };
@@ -169,13 +169,13 @@ function TwinFactory() {
           <div className="text-sm font-medium mb-3 flex items-center gap-2"><Boxes className="size-4 text-primary" />Lotes ativos</div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {batches.map((b) => {
-              const planned = Number(b.planned_quantity ?? 0);
-              const produced = Number(b.produced_quantity ?? 0);
+              const planned = Number(b.planned_qty ?? 0);
+              const produced = Number(b.produced_qty ?? 0);
               const pct = planned > 0 ? Math.min(100, Math.round((produced / planned) * 100)) : 0;
               return (
                 <Link key={b.id} to="/lotes" className="block rounded-lg border border-border bg-muted/30 p-3 hover:border-primary transition-colors">
                   <div className="text-xs font-mono text-muted-foreground">{b.code}</div>
-                  <div className="text-sm font-medium truncate">{b.name ?? "—"}</div>
+                  <div className="text-sm font-medium truncate">{b.notes ?? "Lote ativo"}</div>
                   <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                   </div>

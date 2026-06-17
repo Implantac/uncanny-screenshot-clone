@@ -38,7 +38,7 @@ export const PRIMARY_SLUGS = new Set<string>([
   "command-center", "fashion-calendar", "approvals",
   "colecoes", "colecao-360",
   "dev-kanban", "produtos", "ficha-tecnica", "prototipos", "materiais",
-  "produzir-hoje", "pcp-kanban", "produtividade", "lotes", "terceirizados", "twin-factory", "capacity",
+  "produzir-hoje", "produtividade", "pcp-kanban", "centro-de-corte", "lotes", "twin-factory", "capacity", "pcp-stages", "terceirizados", "war-room-producao", "onde-esta",
   "fornecedores", "almoxarifado", "compras", "stock-health",
   "marketing", "campaigns", "influencer-roi", "geo-sales",
   "intel-hub", "closed-loop", "control-tower", "product-success",
@@ -79,15 +79,15 @@ export const MODULES: ModuleDef[] = [
 
   // === PCP & Produção ===
   { slug: "pcp", path: "/pcp", title: "PCP e Produção", short: "Ordens e capacidade", description: "Planejamento, ordens de produção e apontamento.", icon: Factory, group: "PCP & Produção", hidden: true },
-  { slug: "produzir-hoje", path: "/produzir-hoje", title: "Produzir Hoje", short: "Operação sem filtros", description: "Top 3 OPs por setor, ordenadas por prioridade e prazo. Operador abre e trabalha.", icon: Flame, group: "PCP & Produção" },
-  { slug: "produtividade", path: "/produtividade", title: "Produtividade", short: "Ranking 7 dias", description: "Quem mais passou peças hoje e na semana, por setor.", icon: Activity, group: "PCP & Produção" },
-  { slug: "pcp-kanban", path: "/pcp-kanban", title: "PCP Kanban", short: "Board drag-and-drop", description: "Mova ordens entre setores arrastando os cards.", icon: KanbanSquare, group: "PCP & Produção", status: "parcial" },
-  { slug: "centro-de-corte", path: "/centro-de-corte", title: "Centro de Corte", short: "Plano de corte", description: "Plano de corte, enfesto e peças cortadas.", icon: Scissors, group: "PCP & Produção" },
-  { slug: "lotes", path: "/lotes", title: "Lotes & Rastreabilidade", short: "Batch tracking", description: "Lotes de produção, vínculo com OPs e histórico completo de estágios.", icon: Boxes, group: "PCP & Produção" },
-  { slug: "twin-factory", path: "/twin-factory", title: "Torre de Controle", short: "Twin Factory", description: "Visão em tempo real de lotes, setores e gargalos.", icon: Activity, group: "PCP & Produção" },
-  { slug: "capacity", path: "/capacity", title: "Capacidade de Produção", short: "OEE e carga", description: "OEE, WIP, atrasos e carga por fornecedor / facção.", icon: Gauge, group: "PCP & Produção" },
-  { slug: "pcp-stages", path: "/pcp-stages", title: "Etapas do PCP", short: "Configurar estágios", description: "Configure as etapas (setores) do seu fluxo de produção, ordem e cores.", icon: KanbanSquare, group: "Plataforma" },
-  { slug: "terceirizados", path: "/terceirizados", title: "Terceirizados", short: "Peças em facções", description: "Quantas peças, lotes e referências estão em poder de cada facção, em tempo real.", icon: Truck, group: "PCP & Produção" },
+  { slug: "produzir-hoje", path: "/produzir-hoje", title: "Produzir Hoje", short: "Operação sem filtros", description: "Top 3 OPs por setor, ordenadas por prioridade e prazo. Operador abre e trabalha.", icon: Flame, group: "Operação" },
+  { slug: "produtividade", path: "/produtividade", title: "Produtividade", short: "Ranking 7 dias", description: "Quem mais passou peças hoje e na semana, por setor.", icon: Activity, group: "Operação" },
+  { slug: "pcp-kanban", path: "/pcp-kanban", title: "PCP Kanban", short: "Board por OP ou lote", description: "Mova OPs entre setores, agrupe por lote e veja gargalos antes de atrasarem a entrega.", icon: KanbanSquare, group: "PCP & Produção", status: "parcial" },
+  { slug: "centro-de-corte", path: "/centro-de-corte", title: "Centro de Corte", short: "Corte, enfesto e liberação", description: "Priorize enfestos, acompanhe peças cortadas e libere OPs para costura com menos retrabalho.", icon: Scissors, group: "PCP & Produção" },
+  { slug: "lotes", path: "/lotes", title: "Lotes & Rastreabilidade", short: "Batch tracking", description: "Lotes com OPs vinculadas, % completo, passagens, ocorrências e histórico por estágio.", icon: Boxes, group: "PCP & Produção" },
+  { slug: "twin-factory", path: "/twin-factory", title: "Torre de Controle", short: "Twin Factory", description: "Visão em tempo real de setores, lotes ativos, passagens do dia e gargalos por fila.", icon: Activity, group: "PCP & Produção" },
+  { slug: "capacity", path: "/capacity", title: "Capacidade de Produção", short: "OEE, carga e risco", description: "Carga por fornecedor/facção, WIP, atrasos, OEE e indicação de sobrecarga.", icon: Gauge, group: "PCP & Produção" },
+  { slug: "pcp-stages", path: "/pcp-stages", title: "Etapas do PCP", short: "Configurar estágios", description: "Configure os setores que alimentam Kanban, Torre de Controle e rastreabilidade.", icon: KanbanSquare, group: "PCP & Produção" },
+  { slug: "terceirizados", path: "/terceirizados", title: "Terceirizados", short: "Peças em facções", description: "Peças, lotes, referências, 2ª linha e tempo em poder de cada facção, em tempo real.", icon: Truck, group: "PCP & Produção" },
 
   // === Cadeia (PLM) — insumos / fornecedores ===
   { slug: "almoxarifado", path: "/almoxarifado", title: "Almoxarifado (Insumos)", short: "Tecidos e aviamentos", description: "Controle técnico de insumos da produção.", icon: Boxes, group: "Cadeia (PLM)" },
@@ -118,8 +118,8 @@ export const MODULES: ModuleDef[] = [
   { slug: "product-success", path: "/product-success", title: "Product Success", short: "Score preditivo", description: "Probabilidade de sucesso por produto.", icon: Rocket, group: "Inteligência" },
   { slug: "grade-needs", path: "/grade-needs", title: "Necessidade por Grade", short: "Quebra PP/P/M/G/GG", description: "Distribuição sugerida por tamanho.", icon: Ruler, group: "Inteligência" },
   { slug: "replenishment", path: "/replenishment", title: "Sugestão de Reposição", short: "Sinal p/ produção", description: "Sinal técnico de reposição p/ PCP (sem compras financeiras).", icon: Zap, group: "Inteligência", status: "parcial" },
-  { slug: "war-room-producao", path: "/war-room-producao", title: "Sala de Guerra · Produção", short: "Visão única do dia", description: "Heatmap de etapas, OPs críticas, terceirizados e IA do PCP.", icon: Factory, group: "PCP & Produção" },
-  { slug: "onde-esta", path: "/onde-esta", title: "Onde está?", short: "Rastreabilidade visual", description: "Timeline de passagens de qualquer OP ou lote.", icon: MapPin, group: "Operação" },
+  { slug: "war-room-producao", path: "/war-room-producao", title: "Sala de Guerra · Produção", short: "Visão única do dia", description: "Heatmap de etapas, OPs críticas, terceirizados e plano de ação do Coordenador PCP.", icon: Factory, group: "PCP & Produção" },
+  { slug: "onde-esta", path: "/onde-esta", title: "Onde está?", short: "Rastreabilidade visual", description: "Busque uma OP ou lote e veja etapa atual, tempo parado, facção e timeline de passagens.", icon: MapPin, group: "PCP & Produção" },
 
   // === ERP (Integração) — leitura/espelho ===
   { slug: "erp-integration", path: "/erp-integration", title: "Integração ERP", short: "Webhook + releases", description: "Endpoint HMAC para receber vendas/compras/estoque do ERP e enviar releases do PLM.", icon: Workflow, group: "ERP (Integração)" },
@@ -142,7 +142,7 @@ export const MODULES: ModuleDef[] = [
   { slug: "sustentabilidade-360", path: "/sustentabilidade-360", title: "Sustentabilidade 360º", short: "ESG por coleção", description: "Pegada CO₂, materiais sustentáveis, certificações e rastreabilidade DPP.", icon: Leaf, group: "Plataforma", hidden: true },
   { slug: "designer-workspace", path: "/designer-workspace", title: "Workspace do Designer", short: "Tudo no seu nome", description: "Protótipos abertos, aprovações pendentes e atalhos de criação.", icon: PenTool, group: "Desenvolvimento" },
   { slug: "approvals", path: "/approvals", title: "Workflow de Aprovações", short: "Gates do PLM", description: "Coleção → ficha técnica → piloto → liberação para produção.", icon: Workflow, group: "Operação" },
-  { slug: "showroom", path: "/showroom", title: "Showroom Digital", short: "Vitrine 3D", description: "Showroom virtual com lookbooks interativos.", icon: MonitorPlay, group: "Operação", status: "wip" },
+  { slug: "showroom", path: "/showroom", title: "Showroom Digital", short: "Vitrine 3D", description: "Showroom virtual com lookbooks interativos.", icon: MonitorPlay, group: "Plataforma", status: "wip" },
   { slug: "mobile", path: "/mobile", title: "Aplicativo Mobile", short: "App para times", description: "App nativo para campo, fábrica e vendedores.", icon: Smartphone, group: "Plataforma", status: "wip", hidden: true },
   { slug: "bi", path: "/bi", title: "BI e Analytics", short: "Insights e KPIs", description: "Dashboards customizáveis.", icon: BarChart3, group: "Operação" },
   { slug: "fashion-gpt", path: "/fashion-gpt", title: "Fashion GPT", short: "Copiloto de moda", description: "Assistente especialista no seu negócio de moda.", icon: Bot, group: "Operação" },
@@ -176,7 +176,6 @@ export const SECTOR_LABEL: Record<AppSector, string> = {
 /** Mapa grupo → setor exigido. Grupos ausentes são livres (visíveis a todos). */
 export const GROUP_SECTOR: Partial<Record<ModuleGroup, AppSector>> = {
   Marketing: "marketing",
-  "PCP & Produção": "pcp",
   Desenvolvimento: "desenvolvimento",
 };
 

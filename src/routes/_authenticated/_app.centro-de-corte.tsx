@@ -74,6 +74,8 @@ function CentroCorte() {
   const totalPecas = filtered.reduce((a, b) => a + b.quantity, 0);
   const pecasCortadas = filtered.reduce((a, b) => a + Math.round((b.quantity * Math.min(b.progress, 30)) / 30), 0);
   const opsConcluidas = filtered.filter((r) => phaseOf(r.progress) === "concluido").length;
+  const atrasadasNoCorte = cutting.filter((r) => r.due_date && new Date(r.due_date).getTime() < Date.now()).length;
+  const pecasPendentesCorte = cutting.reduce((a, b) => a + Math.max(0, b.quantity - Math.round((b.quantity * Math.min(b.progress, 30)) / 30)), 0);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
@@ -95,6 +97,15 @@ function CentroCorte() {
         <Kpi icon={<Scissors className="size-4" />} label="Peças no plano" value={totalPecas.toLocaleString("pt-BR")} />
         <Kpi icon={<Sparkles className="size-4" />} label="Peças cortadas (est.)" value={pecasCortadas.toLocaleString("pt-BR")} />
         <Kpi icon={<CheckCircle2 className="size-4" />} label="OPs concluídas" value={String(opsConcluidas)} />
+      </div>
+
+      <div className={`rounded-xl border p-4 ${atrasadasNoCorte ? "border-destructive/40 bg-destructive/5" : "border-border bg-card"}`}>
+        <div className="text-sm font-medium">Fila inteligente do corte</div>
+        <div className="mt-1 text-sm text-muted-foreground">
+          {atrasadasNoCorte
+            ? `${atrasadasNoCorte} OP(s) em corte já estão atrasadas. Priorize esses enfestos antes de iniciar novos riscos.`
+            : `${pecasPendentesCorte.toLocaleString("pt-BR")} peça(s) ainda precisam ser cortadas. Libere primeiro as OPs com menor prazo para não represar costura.`}
+        </div>
       </div>
 
       {isLoading ? (

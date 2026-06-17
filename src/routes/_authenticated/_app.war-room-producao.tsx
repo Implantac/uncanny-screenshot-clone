@@ -172,6 +172,15 @@ function WarRoomProducao() {
         <AICoordinatorPanel persona="pcp" title="Análise do PCP" />
       </div>
 
+      <div className="glass rounded-xl p-5">
+        <div className="text-sm font-semibold mb-3">Plano de ação do dia</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+          <ActionCard title="1. Destravar gargalo" value={analysis.bottleneck ? `${analysis.bottleneck.label} · ${analysis.bottleneck.qty} pç` : "Sem gargalo"} />
+          <ActionCard title="2. Salvar prazos" value={analysis.late.length ? `${analysis.late.length} OPs atrasadas` : "Sem atraso"} />
+          <ActionCard title="3. Cobrar terceiros" value={analysis.suppliers.length ? `${analysis.suppliers[0].name} · ${analysis.suppliers[0].pieces} pç` : "Sem WIP externo"} />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="glass rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
@@ -244,6 +253,15 @@ function WarRoomProducao() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function ActionCard({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border bg-background/30 p-3">
+      <div className="text-xs text-muted-foreground">{title}</div>
+      <div className="mt-1 font-medium">{value}</div>
     </div>
   );
 }

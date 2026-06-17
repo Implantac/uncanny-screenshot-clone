@@ -188,6 +188,17 @@ function PcpKanban() {
 
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
 
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="flex items-center gap-2 text-sm font-medium"><Sparkles className="size-4 text-primary" /> Próxima melhor ação</div>
+        <div className="mt-1 text-sm text-muted-foreground">
+          {bottleneck
+            ? `${bottleneck.label} concentra ${bottleneck.count} OPs por ${bottleneck.avgDays.toFixed(1)} dias em média. Trate essa coluna antes de abrir novas liberações.`
+            : summary.late > 0
+              ? `${summary.late} OPs já passaram do prazo. Filtre por prioridade alta e avance as passagens críticas primeiro.`
+              : "Fluxo sem gargalo relevante agora. Use o modo Lotes para liberar blocos completos e reduzir passagens manuais."}
+        </div>
+      </div>
+
       {bottleneck && (
         <div className="rounded-xl border border-warning/40 bg-warning/5 p-4 flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-warning font-semibold">

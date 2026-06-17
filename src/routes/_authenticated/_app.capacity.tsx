@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
-import { Factory, Clock, CheckCircle2, AlertTriangle, Gauge } from "lucide-react";
+import { Factory, Clock, CheckCircle2, AlertTriangle, Gauge, Activity } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/capacity")({
   component: Capacity,
@@ -59,10 +59,12 @@ function Capacity() {
     return Array.from(m.values()).map((s) => ({ ...s, avgProgress: s.orders > 0 ? s.progress / s.orders : 0 })).sort((a, b) => b.qty - a.qty);
   }, [orders, today]);
 
+  const overloaded = bySupplier.filter((s) => s.late > 0 || s.avgProgress < 45).slice(0, 3);
+
   return (
     <div className="p-6 space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Production Capacity</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Capacidade de Produção</h1>
         <p className="text-sm text-muted-foreground">OEE, WIP, atrasos e carga por fornecedor.</p>
       </header>
 
@@ -72,6 +74,15 @@ function Capacity() {
         <KPI label="Produzidas" value={summary.produced.toLocaleString("pt-BR")} icon={<CheckCircle2 className="size-4" />} tone="success" />
         <KPI label="OEE médio" value={`${summary.oee.toFixed(0)}%`} icon={<Gauge className="size-4" />} tone={summary.oee >= 70 ? "success" : summary.oee >= 40 ? "warning" : "destructive"} />
         <KPI label="Atrasadas" value={summary.late} icon={<AlertTriangle className="size-4" />} tone="destructive" />
+      </div>
+
+      <div className={`rounded-xl border p-4 ${overloaded.length ? "border-warning/50 bg-warning/5" : "border-border bg-card"}`}>
+        <div className="flex items-center gap-2 text-sm font-medium"><Activity className="size-4 text-primary" /> Leitura do PCP</div>
+        <div className="mt-1 text-sm text-muted-foreground">
+          {overloaded.length
+            ? `Atenção em ${overloaded.map((s) => s.name).join(", ")}: há atraso ou baixa evolução média. Rebalanceie novas OPs antes de liberar mais carga.`
+            : "Carga distribuída sem fornecedor crítico no momento. Mantenha a fila atual e acompanhe vencimentos próximos."}
+        </div>
       </div>
 
       <div className="rounded-xl border border-border bg-card">

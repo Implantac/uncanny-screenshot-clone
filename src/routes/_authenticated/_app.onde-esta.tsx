@@ -36,6 +36,7 @@ type OrderRow = {
   product_id: string | null;
   supplier_id: string | null;
 };
+type BatchRow = { id: string; code: string; status: string; planned_qty: number; produced_qty: number };
 
 const STAGE_LABEL: Record<string, string> = {
   cad: "CAD",
@@ -103,6 +104,33 @@ function OndeEsta() {
       return data;
     },
   });
+
+  const { data: batch, isLoading: loadingBatch } = useQuery({
+    enabled: !!submitted && !loadingOrder && !order,
+    queryKey: ["traceability-batch", submitted],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("production_batches")
+        .select("id,code,status,planned_qty,produced_qty")
+        .ilike("code", `%${submitted}%`)
+        .limit(1)
+        .maybeSingle();
+      return data as BatchRow | null;
+    },
+  });
+
+  const { data: batchOrders = [] } = useQuery({
+    enabled: !!batch?.code,
+    queryKey: ["traceability-batch-orders", batch?.code],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("production_orders")
+        .select("id,code,stage,quantity,stage_updated_at,product_id,supplier_id")
+        .eq("batch_code", batch!.code)
+        .limit(50);
+      return (data ?? []) as OrderRow[];
+    },
+  });
   const { data: supplier } = useQuery({
     enabled: !!order?.supplier_id,
     queryKey: ["traceability-supplier", order?.supplier_id],
@@ -157,12 +185,37 @@ function OndeEsta() {
         <p className="text-muted-foreground text-sm">Procurando…</p>
       )}
 
-      {submitted && !loadingOrder && !order && (
+      {submitted && !loadingOrder && !loadingBatch && !order && !batch && (
         <div className="rounded-xl border border-border bg-card/50 p-8 text-center">
           <Package className="size-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">
             Nenhuma OP encontrada para "{submitted}".
           </p>
+        </div>
+      )}
+
+      {batch && !order && (
+        <div className="rounded-xl border border-border bg-card/50 p-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <div className="font-mono text-xs text-muted-foreground">{batch.code}</div>
+              <div className="text-lg font-semibold mt-1">Lote encontrado</div>
+              <div className="text-xs text-muted-foreground">
+                {batchOrders.length} OPs vinculadas · {batch.produced_qty}/{batch.planned_qty} pç · status {batch.status}
+              </div>
+            </div>
+            <Link to="/lotes">
+              <Button size="sm" variant="outline">Abrir rastreabilidade do lote</Button>
+            </Link>
+          </div>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {batchOrders.slice(0, 6).map((o) => (
+              <div key={o.id} className="rounded-lg border border-border bg-background/30 p-3 text-sm">
+                <div className="font-mono text-xs">{o.code}</div>
+                <div className="text-xs text-muted-foreground">Agora em {STAGE_LABEL[o.stage] ?? o.stage} · {o.quantity} pç</div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
