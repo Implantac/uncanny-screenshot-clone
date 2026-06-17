@@ -979,9 +979,12 @@ export type Database = {
         Row: {
           balance: number
           category: Database["public"]["Enums"]["inventory_category"]
+          color_internal: string | null
+          color_supplier: string | null
           created_at: string
           deposit: string | null
           id: string
+          image_url: string | null
           internal_color: string | null
           last_entry_at: string | null
           last_exit_at: string | null
@@ -1002,9 +1005,12 @@ export type Database = {
         Insert: {
           balance?: number
           category?: Database["public"]["Enums"]["inventory_category"]
+          color_internal?: string | null
+          color_supplier?: string | null
           created_at?: string
           deposit?: string | null
           id?: string
+          image_url?: string | null
           internal_color?: string | null
           last_entry_at?: string | null
           last_exit_at?: string | null
@@ -1025,9 +1031,12 @@ export type Database = {
         Update: {
           balance?: number
           category?: Database["public"]["Enums"]["inventory_category"]
+          color_internal?: string | null
+          color_supplier?: string | null
           created_at?: string
           deposit?: string | null
           id?: string
+          image_url?: string | null
           internal_color?: string | null
           last_entry_at?: string | null
           last_exit_at?: string | null
