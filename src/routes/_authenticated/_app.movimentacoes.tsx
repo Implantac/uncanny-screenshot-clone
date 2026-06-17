@@ -402,6 +402,8 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
   const [itemId, setItemId] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [notes, setNotes] = useState("");
+  const [supplierLot, setSupplierLot] = useState("");
+  const [supplierColor, setSupplierColor] = useState("");
 
   const saveMut = useMutation({
     mutationFn: async () => {
@@ -410,6 +412,8 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
       if (quantity <= 0 && type !== "ajuste") throw new Error("Quantidade deve ser maior que zero");
       const { error } = await supabase.from("stock_movements").insert({
         owner_id: userId, inventory_item_id: itemId, type, quantity, notes: notes || null,
+        supplier_lot: supplierLot || null,
+        supplier_color: supplierColor || null,
       });
       if (error) throw error;
     },
@@ -417,9 +421,11 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
       qc.invalidateQueries({ queryKey: ["stock_movements"] });
       qc.invalidateQueries({ queryKey: ["inventory_items_slim"] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
+      qc.invalidateQueries({ queryKey: ["inventory_lot_breakdown"] });
       toast.success("Movimentação registrada");
       onOpenChange(false);
       setItemId(""); setQuantity(0); setNotes(""); setType("entrada");
+      setSupplierLot(""); setSupplierColor("");
     },
     onError: (e: Error) => toast.error(e.message),
   });
