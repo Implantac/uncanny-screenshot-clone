@@ -88,6 +88,21 @@ function Almoxarifado() {
   }));
   const criticosList = items.filter((i) => Number(i.balance) < Number(i.minimum)).slice(0, 5);
 
+  // Reposição inteligente: cruza saldo, mínimo, máximo e giro 30d para sugerir compra
+  const reposicao = useMemo(() => {
+    return items
+      .map((i) => {
+        const bal = Number(i.balance), min = Number(i.minimum), max = Number(i.maximum), giro = Number(i.turnover_30d || 0);
+        const sugerido = max > 0 ? Math.max(0, max - bal) : Math.max(0, min * 2 - bal);
+        const diasCobertura = giro > 0 ? Math.round((bal / giro) * 30) : null;
+        const urgencia = bal < min ? "alta" : diasCobertura !== null && diasCobertura < 15 ? "media" : null;
+        return { ...i, sugerido, diasCobertura, urgencia };
+      })
+      .filter((i) => i.urgencia && i.sugerido > 0)
+      .sort((a, b) => (a.urgencia === "alta" ? -1 : 1) - (b.urgencia === "alta" ? -1 : 1) || Number(b.turnover_30d || 0) - Number(a.turnover_30d || 0))
+      .slice(0, 6);
+  }, [items]);
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex items-start justify-between gap-3 flex-wrap">
