@@ -64,6 +64,7 @@ function Colecao360() {
   const orders = data?.orders ?? [];
   const sales = data?.sales ?? [];
   const sheets = data?.sheets ?? [];
+  const campaigns = data?.campaigns ?? [];
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const currentId = selectedId ?? collections[0]?.id ?? null;
