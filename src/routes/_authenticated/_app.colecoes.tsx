@@ -87,6 +87,7 @@ type ProductRef = {
   sell_price: number;
   cost_price: number;
   colors: string[];
+  image_url: string | null;
   created_at: string;
 };
 
