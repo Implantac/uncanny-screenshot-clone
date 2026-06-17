@@ -226,7 +226,7 @@ function WarRoomProducao() {
             )}
           </div>
           {isLoading ? (
-            <div className="text-xs text-muted-foreground">Carregando…</div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="size-3.5 animate-spin" /> Carregando heatmap…</div>
           ) : (
             <div className="space-y-2.5">
               {analysis.stageRows.map((s) => {
