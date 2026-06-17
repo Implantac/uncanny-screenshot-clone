@@ -466,6 +466,18 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
             <Label>{type === "ajuste" ? "Novo saldo absoluto" : "Quantidade"}</Label>
             <Input type="number" min="0" step="0.01" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} required />
           </div>
+          {type === "entrada" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Lote do fornecedor</Label>
+                <Input value={supplierLot} onChange={(e) => setSupplierLot(e.target.value)} placeholder="ex: LOTE-2026-A" />
+              </div>
+              <div className="space-y-2">
+                <Label>Cor recebida</Label>
+                <Input value={supplierColor} onChange={(e) => setSupplierColor(e.target.value)} placeholder="ex: Azul Marinho 4521" />
+              </div>
+            </div>
+          )}
           <div className="space-y-2"><Label>Notas</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
