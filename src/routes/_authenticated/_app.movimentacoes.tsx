@@ -67,7 +67,7 @@ function MovimentacoesPage() {
 
       <Tabs
         value={tab}
-        onValueChange={(v) => navigate({ search: (prev) => ({ ...prev, tab: v as "passagem" | "estoque" }) })}
+        onValueChange={(v) => navigate({ search: (prev: any) => ({ ...prev, tab: v as "passagem" | "estoque" }) })}
       >
         <TabsList>
           <TabsTrigger value="passagem" className="gap-1.5"><Factory className="size-3.5" /> Passagem entre setores</TabsTrigger>
