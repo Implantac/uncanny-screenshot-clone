@@ -145,7 +145,7 @@ export function NotificationsBell() {
               </div>
             </Link>
           ))}
-          {data?.marketing.map((m) => (
+          {show("marketing") && data?.marketing.map((m) => (
             <Link
               key={`mkt-${m.id}`}
               to={m.link || "/marketing"}
