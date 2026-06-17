@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Factory, Clock, CheckCircle2, AlertTriangle, Gauge, Activity } from "lucide-react";
+import { CapacitySimulator } from "@/components/capacity-simulator";
 
 export const Route = createFileRoute("/_authenticated/_app/capacity")({
   component: Capacity,
@@ -84,6 +85,9 @@ function Capacity() {
             : "Carga distribuída sem fornecedor crítico no momento. Mantenha a fila atual e acompanhe vencimentos próximos."}
         </div>
       </div>
+
+      <CapacitySimulator orders={orders} />
+
 
       <div className="rounded-xl border border-border bg-card">
         <div className="px-4 py-3 border-b border-border font-medium">Carga por fornecedor / facção</div>
