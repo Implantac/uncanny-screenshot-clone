@@ -185,7 +185,7 @@ function ColecoesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, collection_id, name, category, status, sell_price, cost_price, colors, created_at")
+        .select("id, collection_id, name, category, status, sell_price, cost_price, colors, image_url, created_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as ProductRef[];
