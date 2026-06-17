@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { StorageUploader } from "@/components/storage-uploader";
 
 export const Route = createFileRoute("/_authenticated/_app/almoxarifado")({
   validateSearch: zodValidator(z.object({ q: fallback(z.string().trim().max(80), "").default("") })),
