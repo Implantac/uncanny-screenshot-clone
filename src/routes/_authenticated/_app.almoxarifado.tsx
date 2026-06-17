@@ -236,6 +236,7 @@ function Almoxarifado() {
                   <th className="text-right font-medium px-5 py-2.5">Saldo</th>
                   <th className="text-right font-medium px-5 py-2.5">Mín / Máx</th>
                   <th className="text-right font-medium px-5 py-2.5" title="Saídas últimos 30 dias">Giro 30d</th>
+                  <th className="text-right font-medium px-5 py-2.5" title="Ponto de pedido = consumo diário × lead time + segurança">PP</th>
                   <th className="text-right font-medium px-5 py-2.5">Últ. entrada</th>
                   <th className="text-left font-medium px-5 py-2.5">Status</th>
                   <th className="px-5 py-2.5"></th>
