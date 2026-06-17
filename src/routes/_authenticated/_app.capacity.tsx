@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Factory, Clock, CheckCircle2, AlertTriangle, Gauge, Activity } from "lucide-react";
+import { CapacitySimulator } from "@/components/capacity-simulator";
 
 export const Route = createFileRoute("/_authenticated/_app/capacity")({
   component: Capacity,
