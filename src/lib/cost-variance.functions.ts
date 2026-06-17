@@ -107,7 +107,7 @@ export const listCostVariance = createServerFn({ method: "POST" })
     const rows: CostVarianceRow[] = ops.map((o: any) => {
       const sheet = o.product_id ? sheetByProduct.get(o.product_id) : null;
       const qty = Number(o.quantity ?? 0);
-      const produced = Number(o.production_batches?.produced_qty ?? 0);
+      const produced = Math.round((Number(o.progress ?? 0) / 100) * qty);
       const matU = Number(sheet?.materials_cost ?? 0);
       const labU = Number(sheet?.labor_cost ?? 0);
       const costU = Number(sheet?.cost_price ?? matU + labU);
