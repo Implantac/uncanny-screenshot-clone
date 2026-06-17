@@ -749,6 +749,47 @@ function ColecoesPage() {
                     })}
 
                     {(() => {
+                      const p = pulseByCollection[selected.id];
+                      if (!p || p.total === 0) return null;
+                      const pct = (n: number) => Math.round((n / p.total) * 100);
+                      const faltas: string[] = [];
+                      if (p.croqui < p.total) faltas.push(`${p.total - p.croqui} croqui${p.total - p.croqui > 1 ? "s" : ""}`);
+                      if (p.piloto < p.total) faltas.push(`${p.total - p.piloto} piloto${p.total - p.piloto > 1 ? "s" : ""}`);
+                      if (p.ficha < p.total) faltas.push(`${p.total - p.ficha} ficha${p.total - p.ficha > 1 ? "s" : ""}`);
+                      return (
+                        <div className="col-span-2 rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="size-4 text-primary" />
+                            <div className="text-sm font-semibold">Pulso da coleção · Coordenador</div>
+                          </div>
+                          <div className="grid grid-cols-3 gap-3 text-xs">
+                            {([
+                              ["Croqui", p.croqui, "bg-pink-500"],
+                              ["Piloto", p.piloto, "bg-amber-500"],
+                              ["Ficha aprovada", p.ficha, "bg-emerald-500"],
+                            ] as const).map(([label, n, color]) => (
+                              <div key={label}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-muted-foreground">{label}</span>
+                                  <span className="font-semibold tabular-nums">{pct(n)}%</span>
+                                </div>
+                                <div className="h-1.5 rounded bg-muted overflow-hidden">
+                                  <div className={`h-full ${color}`} style={{ width: `${pct(n)}%` }} />
+                                </div>
+                                <div className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{n} de {p.total}</div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {faltas.length === 0
+                              ? "Todos os produtos com croqui, piloto e ficha aprovada — coleção pronta tecnicamente."
+                              : `Falta: ${faltas.join(", ")} para fechar a coleção.`}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {(() => {
                       const r = readinessByCollection[selected.id];
                       if (!r || r.planned <= 0) return null;
                       return (
