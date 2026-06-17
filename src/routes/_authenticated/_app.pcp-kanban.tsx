@@ -188,6 +188,29 @@ function PcpKanban() {
 
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
 
+      {bottleneck && (
+        <div className="rounded-xl border border-warning/40 bg-warning/5 p-4 flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-warning font-semibold">
+            <Sparkles className="size-3.5" /> Gargalo detectado
+          </div>
+          <div className="flex-1 min-w-[220px] text-sm">
+            <span className="font-semibold">{bottleneck.label}</span> · {bottleneck.count} OPs paradas há média de{" "}
+            <span className="font-semibold tabular-nums">{bottleneck.avgDays.toFixed(1)}d</span>
+            {bottleneck.oldest > bottleneck.avgDays + 1 && ` (mais antiga: ${bottleneck.oldest.toFixed(0)}d)`}.
+            <div className="text-xs text-muted-foreground mt-0.5">
+              Realoque capacidade para {bottleneck.label.toLowerCase()} ou cobre o setor — segura toda a esteira a partir daqui.
+            </div>
+          </div>
+          <button
+            onClick={() => { setMode("cards"); const el = document.querySelector(`[data-stage="${bottleneck.stage}"]`); el?.scrollIntoView({ behavior: "smooth", block: "center" }); }}
+            className="text-xs px-3 py-1.5 rounded-md bg-warning text-warning-foreground font-medium hover:bg-warning/90"
+          >
+            Ver coluna
+          </button>
+        </div>
+      )}
+
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         {STAGES.map((col) => {
           const items = grouped.get(col.key) ?? [];
