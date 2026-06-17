@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertOctagon, Send } from "lucide-react";
+import { AlertOctagon, Send, Plus, Minus, Equal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -9,36 +9,36 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-type Severity = "baixa" | "media" | "critica";
+type Kind = "positiva" | "negativa" | "neutra";
 
-const SEVERITY: Record<Severity, { label: string; tone: string; defects: { minor: number; major: number; critical: number } }> = {
-  baixa:   { label: "Baixa",   tone: "bg-muted text-muted-foreground border-border",                       defects: { minor: 1, major: 0, critical: 0 } },
-  media:   { label: "Média",   tone: "bg-orange-500/15 text-orange-500 border-orange-500/30",              defects: { minor: 0, major: 1, critical: 0 } },
-  critica: { label: "Crítica", tone: "bg-destructive/15 text-destructive border-destructive/30",           defects: { minor: 0, major: 0, critical: 1 } },
+const KIND_META: Record<Kind, { label: string; hint: string; tone: string; icon: typeof Plus }> = {
+  positiva: { label: "Positiva", hint: "produziu além do programado", tone: "bg-success/15 text-success border-success/30", icon: Plus },
+  negativa: { label: "Negativa", hint: "perda não recuperável", tone: "bg-destructive/15 text-destructive border-destructive/30", icon: Minus },
+  neutra:   { label: "Neutra",   hint: "evento sem impacto no saldo", tone: "bg-amber-500/15 text-amber-600 border-amber-500/30", icon: Equal },
 };
-
-const TAG_PREFIX = "[ocorrência:";
 
 export function ProductionOccurrenceButton({
   orderId,
   orderCode,
   ownerId,
   stage,
+  batchId,
 }: {
   orderId: string;
   orderCode: string;
   ownerId: string;
   stage: string;
+  batchId?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const { data: count = 0 } = useQuery({
     queryKey: ["po-occurrences-count", orderId],
     queryFn: async () => {
       const { count, error } = await supabase
-        .from("production_order_comments")
+        .from("production_occurrences")
         .select("id", { count: "exact", head: true })
-        .eq("production_order_id", orderId)
-        .ilike("body", `${TAG_PREFIX}%`);
+        .eq("order_id", orderId)
+        .neq("status", "resolvida");
       if (error) throw error;
       return count ?? 0;
     },
@@ -66,6 +66,7 @@ export function ProductionOccurrenceButton({
             orderId={orderId}
             ownerId={ownerId}
             stage={stage}
+            batchId={batchId}
             onDone={() => setOpen(false)}
           />
         </DialogContent>
@@ -74,11 +75,11 @@ export function ProductionOccurrenceButton({
   );
 }
 
-function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: string; stage: string; onDone: () => void }) {
+function Form({ orderId, ownerId, stage, batchId, onDone }: { orderId: string; ownerId: string; stage: string; batchId?: string | null; onDone: () => void }) {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const [severity, setSeverity] = useState<Severity>("media");
-  const [linha, setLinha] = useState<1 | 2>(1);
+  const [kind, setKind] = useState<Kind>("negativa");
+  const [qty, setQty] = useState<string>("");
   const [body, setBody] = useState("");
   const [photo, setPhoto] = useState("");
 
@@ -87,35 +88,38 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
       if (!user) throw new Error("Não autenticado");
       const text = body.trim();
       if (!text) throw new Error("Descreva a ocorrência");
-      const linhaTag = linha === 2 ? ":2L" : "";
-      const tagged = `${TAG_PREFIX}${severity}${linhaTag}] ${text}${photo.trim() ? `\nFoto: ${photo.trim()}` : ""}`;
+      const n = Number(qty);
+      if (kind !== "neutra" && (!Number.isFinite(n) || n <= 0)) {
+        throw new Error("Informe a quantidade afetada");
+      }
+      const affected = kind === "neutra" ? Number(qty) || 0 : n;
 
-      const { error: cErr } = await supabase.from("production_order_comments").insert({
+      const { error: occErr } = await supabase.from("production_occurrences").insert({
+        owner_id: ownerId,
+        order_id: orderId,
+        batch_id: batchId ?? null,
+        kind,
+        sector: stage,
+        responsible_id: user.id,
+        affected_qty: affected,
+        status: "aberta",
+        description: text + (photo.trim() ? `\nFoto: ${photo.trim()}` : ""),
+      });
+      if (occErr) throw occErr;
+
+      // also leave a short trace on the OP comments timeline
+      const sign = kind === "positiva" ? "+" : kind === "negativa" ? "−" : "·";
+      await supabase.from("production_order_comments").insert({
         production_order_id: orderId,
         owner_id: ownerId,
         author_id: user.id,
-        body: tagged,
+        body: `[ocorrência:${kind}] ${sign}${affected} pç · ${stage} — ${text}`,
       });
-      if (cErr) throw cErr;
-
-      const d = SEVERITY[severity].defects;
-      const { error: qErr } = await supabase.from("quality_inspections").insert({
-        owner_id: ownerId,
-        production_order_id: orderId,
-        inspection_type: `ocorrencia:${stage}${linha === 2 ? ":2a-linha" : ""}`,
-        inspector: user.email ?? null,
-        result: severity === "critica" ? "reprovada" : "condicional",
-        minor_defects: d.minor,
-        major_defects: d.major,
-        critical_defects: d.critical,
-        notes: text,
-        attachments: photo.trim() ? [{ url: photo.trim() }] : [],
-      });
-      if (qErr) throw qErr;
     },
     onSuccess: () => {
       toast.success("Ocorrência registrada");
       qc.invalidateQueries({ queryKey: ["po-occurrences-count", orderId] });
+      qc.invalidateQueries({ queryKey: ["lote-occ"] });
       qc.invalidateQueries({ queryKey: ["po-comments", orderId] });
       qc.invalidateQueries({ queryKey: ["po-comments-count", orderId] });
       onDone();
@@ -126,39 +130,44 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
   return (
     <form onSubmit={(e) => { e.preventDefault(); submit.mutate(); }} className="space-y-3">
       <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Severidade</label>
-        <div className="flex gap-1.5">
-          {(Object.keys(SEVERITY) as Severity[]).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setSeverity(s)}
-              className={`flex-1 text-xs px-2 py-1.5 rounded border transition ${severity === s ? SEVERITY[s].tone : "border-border text-muted-foreground hover:bg-muted"}`}
-            >
-              {SEVERITY[s].label}
-            </button>
-          ))}
+        <label className="text-xs text-muted-foreground mb-1 block">Tipo</label>
+        <div className="grid grid-cols-3 gap-1.5">
+          {(Object.keys(KIND_META) as Kind[]).map((k) => {
+            const Icon = KIND_META[k].icon;
+            return (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setKind(k)}
+                className={`text-xs px-2 py-1.5 rounded border transition flex flex-col items-center gap-0.5 ${kind === k ? KIND_META[k].tone : "border-border text-muted-foreground hover:bg-muted"}`}
+              >
+                <Icon className="size-3.5" />
+                {KIND_META[k].label}
+              </button>
+            );
+          })}
         </div>
+        <p className="text-[10px] text-muted-foreground mt-1">{KIND_META[kind].hint}</p>
       </div>
       <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Destino da peça</label>
-        <div className="flex gap-1.5">
-          <button type="button" onClick={() => setLinha(1)}
-            className={`flex-1 text-xs px-2 py-1.5 rounded border transition ${linha === 1 ? "bg-primary/15 text-primary border-primary/30" : "border-border text-muted-foreground hover:bg-muted"}`}>
-            1ª linha (recupera)
-          </button>
-          <button type="button" onClick={() => setLinha(2)}
-            className={`flex-1 text-xs px-2 py-1.5 rounded border transition ${linha === 2 ? "bg-amber-500/15 text-amber-500 border-amber-500/30" : "border-border text-muted-foreground hover:bg-muted"}`}>
-            2ª linha (outlet)
-          </button>
-        </div>
+        <label className="text-xs text-muted-foreground mb-1 block">
+          Quantidade afetada {kind === "neutra" ? "(opcional)" : "(peças)"}
+        </label>
+        <Input
+          type="number"
+          min={0}
+          inputMode="numeric"
+          value={qty}
+          onChange={(e) => setQty(e.target.value)}
+          placeholder={kind === "positiva" ? "+20" : kind === "negativa" ? "15" : "0"}
+        />
       </div>
       <div>
         <label className="text-xs text-muted-foreground mb-1 block">O que aconteceu? · setor {stage}</label>
         <Textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Ex: lote parado por falha de máquina, defeito na costura, falta de aviamento…"
+          placeholder="Ex: produzimos a mais por aproveitamento de retalho / 15 peças perdidas por falha de máquina / silk torto será refeito…"
           className="min-h-[80px] resize-none"
           autoFocus
         />
@@ -173,7 +182,7 @@ function Form({ orderId, ownerId, stage, onDone }: { orderId: string; ownerId: s
         </Button>
       </div>
       <p className="text-[10px] text-muted-foreground">
-        Salva uma observação na OP e abre uma inspeção de qualidade vinculada — sem criar tela nova.
+        Positiva aumenta produção final · Negativa reduz · Neutra só registra evento (não altera saldo).
       </p>
     </form>
   );

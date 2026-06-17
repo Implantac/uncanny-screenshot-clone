@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks, ShieldAlert, Layers, FileText, ImageIcon, RefreshCcw, ClipboardList } from "lucide-react";
+import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks, ShieldAlert, Layers, FileText, ImageIcon, RefreshCcw, ClipboardList, Plus, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +10,14 @@ import { Button } from "@/components/ui/button";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 
 const OCC_KIND_LABEL: Record<string, string> = {
+  positiva: "Positiva (+)", negativa: "Negativa (−)", neutra: "Neutra",
   falta_material: "Falta de material", erro_corte: "Erro de corte", erro_costura: "Erro de costura",
   defeito: "Defeito", retrabalho: "Retrabalho", atraso: "Atraso", outro: "Outro",
+};
+const OCC_KIND_TONE: Record<string, string> = {
+  positiva: "bg-success/15 text-success border-success/30",
+  negativa: "bg-destructive/15 text-destructive border-destructive/30",
+  neutra:   "bg-amber-500/15 text-amber-600 border-amber-500/30",
 };
 const OCC_STATUS_TONE: Record<string, string> = {
   aberta: "bg-destructive/15 text-destructive border-destructive/30",
@@ -171,8 +177,11 @@ function LotePage() {
     const byStage = new Map<string, number>();
     orders.forEach((o) => byStage.set(o.stage, (byStage.get(o.stage) ?? 0) + 1));
     const occOpen = occurrences.filter((o) => o.status !== "resolvida").length;
+    const occPos = occurrences.filter((o) => o.kind === "positiva").reduce((s, o) => s + Number(o.affected_qty || 0), 0);
+    const occNeg = occurrences.filter((o) => o.kind === "negativa").reduce((s, o) => s + Number(o.affected_qty || 0), 0);
+    const finalForecast = Math.max(0, total + occPos - occNeg);
     const matMissing = materialsNeeded.filter((m) => m.balance !== null && m.needed > m.balance).length;
-    return { total, done, pct, late: late.length, byStage: [...byStage.entries()], occOpen, matMissing };
+    return { total, done, pct, late: late.length, byStage: [...byStage.entries()], occOpen, occPos, occNeg, finalForecast, matMissing };
   }, [orders, occurrences, materialsNeeded]);
 
   if (isLoading) return <div className="p-6 text-muted-foreground">Carregando…</div>;
@@ -210,12 +219,13 @@ function LotePage() {
 
       <Progress value={summary.pct} className="h-2" />
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <Card icon={Package} label="Peças no lote" value={summary.total} />
-        <Card icon={Factory} label="OPs ativas" value={orders.length - summary.done} />
-        <Card icon={CheckCircle2} label="Concluídas" value={summary.done} tone="text-success" />
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <Card icon={Package} label="Peças programadas" value={summary.total} />
+        <Card icon={Plus} label="Positivas (+)" value={summary.occPos} tone={summary.occPos > 0 ? "text-success" : "text-muted-foreground"} />
+        <Card icon={Minus} label="Negativas (−)" value={summary.occNeg} tone={summary.occNeg > 0 ? "text-destructive" : "text-muted-foreground"} />
+        <Card icon={CheckCircle2} label="Saldo final previsto" value={summary.finalForecast} tone="text-primary" />
         <Card icon={AlertTriangle} label="Atrasadas" value={summary.late} tone={summary.late > 0 ? "text-destructive" : "text-success"} />
-        <Card icon={ShieldAlert} label="Ocorrências abertas" value={summary.occOpen} tone={summary.occOpen > 0 ? "text-destructive" : "text-success"} />
+        <Card icon={ShieldAlert} label="Ocorr. abertas" value={summary.occOpen} tone={summary.occOpen > 0 ? "text-destructive" : "text-success"} />
         <Card icon={Layers} label="Materiais em falta" value={summary.matMissing} tone={summary.matMissing > 0 ? "text-destructive" : "text-success"} />
       </div>
 
@@ -289,10 +299,10 @@ function LotePage() {
               </div>
               <div className="hidden">
                 <span id={`occ-default-${o.id}`}>
-                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
+                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} batchId={batch?.id} />
                 </span>
                 <span id={`occ-retrabalho-${o.id}`}>
-                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} />
+                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} batchId={batch?.id} />
                 </span>
               </div>
             </div>
@@ -365,13 +375,13 @@ function LotePage() {
                 return (
                   <li key={o.id} className="rounded-lg border border-border bg-card/50 p-2.5">
                     <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className={OCC_KIND_TONE[o.kind] ?? "bg-muted/40"}>{OCC_KIND_LABEL[o.kind] ?? o.kind}</Badge>
                       <Badge variant="outline" className={OCC_STATUS_TONE[o.status] ?? "bg-muted/40"}>{o.status}</Badge>
-                      <span className="text-xs font-medium">{OCC_KIND_LABEL[o.kind] ?? o.kind}</span>
                       {o.sector && <span className="text-[10px] text-muted-foreground">· {STAGE_LABEL[o.sector] ?? o.sector}</span>}
                       <span className="text-[10px] text-muted-foreground ml-auto">há {relTime(o.created_at)}</span>
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-1">
-                      {op?.code ?? "—"} · {o.affected_qty ?? 0} pç afetada(s)
+                      {op?.code ?? "—"} · {o.kind === "positiva" ? "+" : o.kind === "negativa" ? "−" : ""}{o.affected_qty ?? 0} pç
                     </div>
                     {o.description && <div className="text-xs mt-1 italic">"{o.description}"</div>}
                   </li>
