@@ -153,9 +153,25 @@ function PcpStagesPage() {
                   <Badge variant="outline" className="text-[10px]">{s.key}</Badge>
                   {!s.active && <Badge variant="outline" className="bg-muted text-muted-foreground text-[10px]">inativa</Badge>}
                 </div>
-                <div className="text-xs text-muted-foreground tabular-nums">Posição #{s.position}</div>
+                <div className="text-xs text-muted-foreground tabular-nums">Posição #{s.position} · alerta após {s.sla_stuck_days ?? 3}d parado</div>
               </div>
-              <div className="flex gap-1">
+              <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 mr-1">
+                  <Label className="text-[10px] text-muted-foreground">SLA</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    className="h-8 w-14 text-xs"
+                    defaultValue={s.sla_stuck_days ?? 3}
+                    onBlur={async (e) => {
+                      const v = Math.max(1, Number(e.target.value) || 3);
+                      if (v === s.sla_stuck_days) return;
+                      await supabase.from("pcp_stages").update({ sla_stuck_days: v }).eq("id", s.id);
+                      qc.invalidateQueries({ queryKey: ["pcp-stages"] });
+                      qc.invalidateQueries({ queryKey: ["notifications"] });
+                    }}
+                  />
+                </div>
                 <Button size="icon" variant="outline" className="size-8" disabled={i === 0} onClick={() => moveMut.mutate({ id: s.id, delta: -1 })}><ArrowUp className="size-3.5" /></Button>
                 <Button size="icon" variant="outline" className="size-8" disabled={i === stages.length - 1} onClick={() => moveMut.mutate({ id: s.id, delta: 1 })}><ArrowDown className="size-3.5" /></Button>
                 <Button size="icon" variant="outline" className="size-8" onClick={() => toggleMut.mutate(s)}>{s.active ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}</Button>
