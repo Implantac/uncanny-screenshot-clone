@@ -27,6 +27,7 @@ type Order = {
   priority: number;
   stage_updated_at: string;
   batch_code: string | null;
+  product_id: string | null;
   supplier?: string | null;
   product?: string | null;
 };
