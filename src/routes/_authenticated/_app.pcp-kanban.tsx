@@ -400,6 +400,19 @@ function PcpKanban() {
           );
         })}
       </div>
+
+      <LoteReferencesDrawer
+        batchCode={loteDrawer}
+        open={!!loteDrawer}
+        onOpenChange={(v) => !v && setLoteDrawer(null)}
+      />
+      <ProductionTechSheetDrawer
+        productId={fichaDrawer?.productId}
+        productionOrderId={fichaDrawer?.orderId}
+        orderCode={fichaDrawer?.orderCode}
+        open={!!fichaDrawer}
+        onOpenChange={(v) => !v && setFichaDrawer(null)}
+      />
     </div>
   );
 }
