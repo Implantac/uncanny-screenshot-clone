@@ -171,10 +171,15 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tech_sheet_attachments")
-        .select("id, name, url, kind")
+        .select("id, file_name, file_url, kind")
         .eq("tech_sheet_id", sheetId as string);
       if (error) throw error;
-      return (data ?? []) as { id: string; name: string; url: string; kind: string | null }[];
+      return (data ?? []).map((a) => ({
+        id: a.id,
+        name: a.file_name,
+        url: a.file_url,
+        kind: a.kind,
+      })) as { id: string; name: string; url: string; kind: string | null }[];
     },
   });
 
