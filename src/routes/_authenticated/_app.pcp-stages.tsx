@@ -29,6 +29,7 @@ type Stage = {
   position: number;
   color: string | null;
   active: boolean;
+  sla_stuck_days: number;
 };
 
 const DEFAULT_SEEDS = [
