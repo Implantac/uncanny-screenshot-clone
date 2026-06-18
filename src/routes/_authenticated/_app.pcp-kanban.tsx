@@ -53,7 +53,7 @@ const PRIORITY: Record<number, { label: string; tone: string }> = {
 async function load(): Promise<Order[]> {
   const { data, error } = await supabase
     .from("production_orders")
-    .select("id, owner_id, code, stage, quantity, progress, due_date, priority, stage_updated_at, batch_code, suppliers(name), products(name)")
+    .select("id, owner_id, code, stage, quantity, progress, due_date, priority, stage_updated_at, batch_code, product_id, suppliers(name), products(name)")
     .order("priority", { ascending: true })
     .order("due_date", { ascending: true, nullsFirst: false });
   if (error) throw error;
