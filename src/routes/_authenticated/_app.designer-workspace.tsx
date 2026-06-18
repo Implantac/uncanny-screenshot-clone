@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PenTool, Sparkles, Scissors, Compass, Palette } from "lucide-react";
+import { DesignerAIAssistant } from "@/components/designer-ai-assistant";
 
 export const Route = createFileRoute("/_authenticated/_app/designer-workspace")({
   head: () => ({
@@ -92,6 +93,8 @@ function DesignerWorkspace() {
           </CardContent>
         </Card>
       </div>
+      <DesignerAIAssistant />
+
 
       <Card>
         <CardHeader>
