@@ -3,6 +3,7 @@ import { LogOut, Menu, Sun, Moon, ChevronDown, ChevronRight } from "lucide-react
 import logoAsset from "@/assets/logo.png.asset.json";
 import { CommandPalette } from "./command-palette";
 import { NotificationsBell } from "./notifications-bell";
+import { SectorChatButton } from "./sector-chat";
 import { MODULES, MODULE_GROUPS, moduleAllowed, type ModuleDef, type ModuleGroup } from "@/lib/modules";
 import { useSectors } from "@/hooks/use-sectors";
 import { cn } from "@/lib/utils";
