@@ -62,6 +62,36 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_dismissals: {
+        Row: {
+          alert_key: string
+          created_at: string
+          dismissed_until: string | null
+          id: string
+          owner_id: string
+          resolved: boolean
+          user_id: string
+        }
+        Insert: {
+          alert_key: string
+          created_at?: string
+          dismissed_until?: string | null
+          id?: string
+          owner_id: string
+          resolved?: boolean
+          user_id: string
+        }
+        Update: {
+          alert_key?: string
+          created_at?: string
+          dismissed_until?: string | null
+          id?: string
+          owner_id?: string
+          resolved?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -1292,6 +1322,7 @@ export type Database = {
           label: string
           owner_id: string
           position: number
+          sla_stuck_days: number
           updated_at: string
         }
         Insert: {
@@ -1303,6 +1334,7 @@ export type Database = {
           label: string
           owner_id: string
           position?: number
+          sla_stuck_days?: number
           updated_at?: string
         }
         Update: {
@@ -1314,6 +1346,7 @@ export type Database = {
           label?: string
           owner_id?: string
           position?: number
+          sla_stuck_days?: number
           updated_at?: string
         }
         Relationships: []
