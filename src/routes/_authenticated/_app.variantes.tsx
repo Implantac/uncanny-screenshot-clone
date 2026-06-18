@@ -220,6 +220,13 @@ function VariantsPage() {
               </table>
             </div>
           </div>
+
+          <SkuPerformancePanel
+            productId={productId}
+            variants={variants.data ?? []}
+            colors={colors.data ?? []}
+            sizes={sizes.data ?? []}
+          />
         </div>
       )}
     </div>
