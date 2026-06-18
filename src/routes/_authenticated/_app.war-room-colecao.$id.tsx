@@ -103,6 +103,16 @@ function WarRoomColecao() {
         <Link to="/colecao-360" className="text-xs text-primary hover:underline">Ver Coleção 360º →</Link>
       </div>
 
+      <LaunchCountdown launchDate={c.launch_date} progress={c.progress ?? 0} />
+
+      <Blockers
+        atrasadas={atrasadas.length}
+        semFicha={semFicha.length}
+        pilotosPend={pilotosPend.length}
+      />
+
+
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {cards.map((card) => {
           const Icon = card.icon;
