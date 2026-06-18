@@ -6,6 +6,7 @@ import { useMemo, useRef, useState } from "react";
 import { Palette, Sparkles, Upload, Loader2, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { analyzeTrendImage } from "@/lib/trends.functions";
+import { TrendRadarPanel } from "@/components/trend-radar-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/trends")({ component: Trends });
 
@@ -130,6 +131,9 @@ function Trends() {
           </div>
         </div>
       </div>
+
+      <TrendRadarPanel />
+
 
       <div className="flex flex-wrap gap-2">
         {categories.map((c) => (
