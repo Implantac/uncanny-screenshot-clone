@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/_app/war-room-colecao/$id"
   notFoundComponent: () => <div className="p-8 text-sm">Coleção não encontrada</div>,
 });
 
-type Collection = { id: string; name: string; season: string | null; year: number | null; status: string; progress: number | null };
+type Collection = { id: string; name: string; season: string | null; year: number | null; status: string; progress: number | null; launch_date: string | null };
 type Product = { id: string; name: string; sku: string; status: string };
 type Prototype = { id: string; product_id: string | null; stage: string; code: string };
 type Order = { id: string; product_id: string | null; stage: string; status: string; quantity: number; due_date: string | null };
