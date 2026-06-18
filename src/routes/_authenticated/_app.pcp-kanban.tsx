@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
-import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History, Package, X, Sparkles } from "lucide-react";
+import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History, Package, X, Sparkles, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
@@ -10,6 +10,8 @@ import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { QuickPassButton } from "@/components/quick-pass";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { DelayPredictionPanel } from "@/components/delay-prediction-panel";
+import { LoteReferencesDrawer } from "@/components/lote-references-drawer";
+import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-drawer";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
@@ -25,6 +27,7 @@ type Order = {
   priority: number;
   stage_updated_at: string;
   batch_code: string | null;
+  product_id: string | null;
   supplier?: string | null;
   product?: string | null;
 };
@@ -50,7 +53,7 @@ const PRIORITY: Record<number, { label: string; tone: string }> = {
 async function load(): Promise<Order[]> {
   const { data, error } = await supabase
     .from("production_orders")
-    .select("id, owner_id, code, stage, quantity, progress, due_date, priority, stage_updated_at, batch_code, suppliers(name), products(name)")
+    .select("id, owner_id, code, stage, quantity, progress, due_date, priority, stage_updated_at, batch_code, product_id, suppliers(name), products(name)")
     .order("priority", { ascending: true })
     .order("due_date", { ascending: true, nullsFirst: false });
   if (error) throw error;
@@ -74,6 +77,8 @@ function PcpKanban() {
   const [over, setOver] = useState<Stage | null>(null);
   const [mode, setMode] = useState<"ordens" | "lotes">("ordens");
   const [batchFilter, setBatchFilter] = useState<string | null>(null);
+  const [loteDrawer, setLoteDrawer] = useState<string | null>(null);
+  const [fichaDrawer, setFichaDrawer] = useState<{ productId: string; orderId: string; orderCode: string } | null>(null);
 
   const update = useMutation({
     mutationFn: async (patch: { id: string } & Partial<Pick<Order, "stage" | "priority" | "due_date" | "progress">>) => {
@@ -263,29 +268,37 @@ function PcpKanban() {
                     if (d !== null && d < 0 && col.key !== "entregue") v.late += 1;
                     m.set(k, v); return m;
                   }, new Map<string, { code: string; qty: number; count: number; urgent: number; late: number; progressSum: number }>()).values()).map((b) => (
-                    <button
+                    <div
                       key={b.code}
-                      onClick={() => setBatchFilter(b.code)}
-                      className="w-full text-left rounded-lg border border-border bg-background p-2.5 text-xs space-y-1 hover:border-primary/50 transition"
+                      className="w-full rounded-lg border border-border bg-background p-2.5 text-xs space-y-1 hover:border-primary/50 transition"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold inline-flex items-center gap-1"><Package className="size-3" />{b.code}</span>
-                        <span className="text-[10px] text-muted-foreground tabular-nums">{b.count} OPs</span>
-                      </div>
-                      <div className="flex items-center justify-between text-muted-foreground tabular-nums">
-                        <span>{b.qty} pç</span>
-                        <span>{Math.round(b.progressSum / b.count)}%</span>
-                      </div>
-                      <div className="h-1 bg-muted rounded overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${Math.round(b.progressSum / b.count)}%` }} />
-                      </div>
-                      {(b.urgent > 0 || b.late > 0) && (
-                        <div className="flex gap-1 pt-0.5">
-                          {b.urgent > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">{b.urgent} urg</span>}
-                          {b.late > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">{b.late} atras</span>}
+                      <button onClick={() => setBatchFilter(b.code)} className="w-full text-left">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold inline-flex items-center gap-1"><Package className="size-3" />{b.code}</span>
+                          <span className="text-[10px] text-muted-foreground tabular-nums">{b.count} OPs</span>
                         </div>
-                      )}
-                    </button>
+                        <div className="flex items-center justify-between text-muted-foreground tabular-nums">
+                          <span>{b.qty} pç</span>
+                          <span>{Math.round(b.progressSum / b.count)}%</span>
+                        </div>
+                        <div className="h-1 bg-muted rounded overflow-hidden">
+                          <div className="h-full bg-primary" style={{ width: `${Math.round(b.progressSum / b.count)}%` }} />
+                        </div>
+                        {(b.urgent > 0 || b.late > 0) && (
+                          <div className="flex gap-1 pt-0.5">
+                            {b.urgent > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">{b.urgent} urg</span>}
+                            {b.late > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">{b.late} atras</span>}
+                          </div>
+                        )}
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setLoteDrawer(b.code); }}
+                        className="w-full mt-1 text-[10px] inline-flex items-center justify-center gap-1 px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground hover:text-foreground"
+                        title="Ver referências e fichas de produção do lote"
+                      >
+                        <FileText className="size-3" /> Ver fichas do lote
+                      </button>
+                    </div>
                   ))
                 ) : items.map((o) => {
                   const d = daysTo(o.due_date);
@@ -305,6 +318,15 @@ function PcpKanban() {
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-semibold tabular-nums">{o.code}</span>
                         <div className="flex items-center gap-1">
+                          {o.product_id && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setFichaDrawer({ productId: o.product_id!, orderId: o.id, orderCode: o.code }); }}
+                              className="size-5 grid place-items-center rounded hover:bg-muted text-muted-foreground hover:text-primary"
+                              title="Abrir ficha de produção (sem valores)"
+                            >
+                              <FileText className="size-3.5" />
+                            </button>
+                          )}
                           <ProductionOrderCommentsButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} />
                           <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={col.key} />
                           <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>{pri.label}</span>
@@ -378,6 +400,19 @@ function PcpKanban() {
           );
         })}
       </div>
+
+      <LoteReferencesDrawer
+        batchCode={loteDrawer}
+        open={!!loteDrawer}
+        onOpenChange={(v) => !v && setLoteDrawer(null)}
+      />
+      <ProductionTechSheetDrawer
+        productId={fichaDrawer?.productId}
+        productionOrderId={fichaDrawer?.orderId}
+        orderCode={fichaDrawer?.orderCode}
+        open={!!fichaDrawer}
+        onOpenChange={(v) => !v && setFichaDrawer(null)}
+      />
     </div>
   );
 }

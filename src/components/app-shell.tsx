@@ -3,6 +3,7 @@ import { LogOut, Menu, Sun, Moon, ChevronDown, ChevronRight } from "lucide-react
 import logoAsset from "@/assets/logo.png.asset.json";
 import { CommandPalette } from "./command-palette";
 import { NotificationsBell } from "./notifications-bell";
+import { SectorChatButton } from "./sector-chat";
 import { MODULES, MODULE_GROUPS, moduleAllowed, type ModuleDef, type ModuleGroup } from "@/lib/modules";
 import { useSectors } from "@/hooks/use-sectors";
 import { cn } from "@/lib/utils";
@@ -160,6 +161,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
+          <SectorChatButton />
           <NotificationsBell />
           <div className="flex items-center gap-2 pl-2 sm:pl-3 sm:ml-1 sm:border-l border-border">
             <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">{initials || "U"}</div>

@@ -2786,6 +2786,56 @@ export type Database = {
           },
         ]
       }
+      sector_messages: {
+        Row: {
+          author_name: string | null
+          body: string
+          created_at: string
+          id: string
+          owner_id: string
+          ref_id: string | null
+          ref_kind: string | null
+          reply_to: string | null
+          sector: Database["public"]["Enums"]["app_sector"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          ref_id?: string | null
+          ref_kind?: string | null
+          reply_to?: string | null
+          sector: Database["public"]["Enums"]["app_sector"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          ref_id?: string | null
+          ref_kind?: string | null
+          reply_to?: string | null
+          sector?: Database["public"]["Enums"]["app_sector"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sector_messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "sector_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_order_grid: {
         Row: {
           created_at: string
