@@ -31,7 +31,7 @@ type Sheet = { product_id: string | null; status: string };
 
 async function loadCollection(id: string) {
   const [col, prods, protos, orders, sales, sheets] = await Promise.all([
-    supabase.from("collections").select("id, name, season, year, status, progress").eq("id", id).maybeSingle(),
+    supabase.from("collections").select("id, name, season, year, status, progress, launch_date").eq("id", id).maybeSingle(),
     supabase.from("products").select("id, name, sku, status").eq("collection_id", id).limit(500),
     supabase.from("prototypes").select("id, product_id, stage, code").limit(2000),
     supabase.from("production_orders").select("id, product_id, stage, status, quantity, due_date").neq("status", "cancelada").limit(2000),
