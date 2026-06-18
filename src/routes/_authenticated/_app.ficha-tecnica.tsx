@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { MaterialsPanel, OperationsPanel, MeasurementsPanel, CostsPanel } from "@/components/tech-pack/panels";
+import { BomTemplatesButton } from "@/components/bom-templates-button";
 import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer";
 import { Camera } from "lucide-react";
 
@@ -309,6 +310,9 @@ function FichaTecnicaPage() {
                 <ProductPreviewCard product={selectedProduct} code={selected.code} version={selected.version} status={selected.status} />
 
                 <div className="glass rounded-xl p-5">
+                  <div className="flex justify-end mb-3">
+                    <BomTemplatesButton sheetId={selected.id} ownerId={selected.owner_id} />
+                  </div>
                   <Tabs defaultValue="materiais" className="space-y-4">
                     <TabsList className="w-full flex flex-wrap h-auto justify-start bg-transparent p-0 gap-2">
                       {[

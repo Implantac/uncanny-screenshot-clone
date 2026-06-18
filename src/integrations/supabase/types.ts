@@ -194,6 +194,50 @@ export type Database = {
           },
         ]
       }
+      bom_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          materials: Json
+          name: string
+          operations: Json
+          owner_id: string
+          source_sheet_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          materials?: Json
+          name: string
+          operations?: Json
+          owner_id: string
+          source_sheet_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          materials?: Json
+          name?: string
+          operations?: Json
+          owner_id?: string
+          source_sheet_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bom_templates_source_sheet_id_fkey"
+            columns: ["source_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "tech_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collection_moodboard: {
         Row: {
           caption: string | null
