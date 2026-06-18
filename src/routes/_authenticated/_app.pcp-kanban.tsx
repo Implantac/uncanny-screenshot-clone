@@ -318,6 +318,15 @@ function PcpKanban() {
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-semibold tabular-nums">{o.code}</span>
                         <div className="flex items-center gap-1">
+                          {o.product_id && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setFichaDrawer({ productId: o.product_id!, orderId: o.id, orderCode: o.code }); }}
+                              className="size-5 grid place-items-center rounded hover:bg-muted text-muted-foreground hover:text-primary"
+                              title="Abrir ficha de produção (sem valores)"
+                            >
+                              <FileText className="size-3.5" />
+                            </button>
+                          )}
                           <ProductionOrderCommentsButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} />
                           <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={col.key} />
                           <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>{pri.label}</span>
