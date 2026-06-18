@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
-import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History, Package, X, Sparkles } from "lucide-react";
+import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History, Package, X, Sparkles, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
@@ -10,6 +10,8 @@ import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { QuickPassButton } from "@/components/quick-pass";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { DelayPredictionPanel } from "@/components/delay-prediction-panel";
+import { LoteReferencesDrawer } from "@/components/lote-references-drawer";
+import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-drawer";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
