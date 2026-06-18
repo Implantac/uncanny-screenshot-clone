@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import {
-  Radio, Layers, Scissors, FileWarning, CheckCircle2, Factory, TrendingUp, AlertTriangle, ArrowLeft,
+  Radio, Layers, Scissors, FileWarning, CheckCircle2, Factory, TrendingUp, AlertTriangle, ArrowLeft, Timer, ShieldAlert,
 } from "lucide-react";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/_app/war-room-colecao/$id"
   notFoundComponent: () => <div className="p-8 text-sm">Coleção não encontrada</div>,
 });
 
-type Collection = { id: string; name: string; season: string | null; year: number | null; status: string; progress: number | null };
+type Collection = { id: string; name: string; season: string | null; year: number | null; status: string; progress: number | null; launch_date: string | null };
 type Product = { id: string; name: string; sku: string; status: string };
 type Prototype = { id: string; product_id: string | null; stage: string; code: string };
 type Order = { id: string; product_id: string | null; stage: string; status: string; quantity: number; due_date: string | null };
@@ -31,7 +31,7 @@ type Sheet = { product_id: string | null; status: string };
 
 async function loadCollection(id: string) {
   const [col, prods, protos, orders, sales, sheets] = await Promise.all([
-    supabase.from("collections").select("id, name, season, year, status, progress").eq("id", id).maybeSingle(),
+    supabase.from("collections").select("id, name, season, year, status, progress, launch_date").eq("id", id).maybeSingle(),
     supabase.from("products").select("id, name, sku, status").eq("collection_id", id).limit(500),
     supabase.from("prototypes").select("id, product_id, stage, code").limit(2000),
     supabase.from("production_orders").select("id, product_id, stage, status, quantity, due_date").neq("status", "cancelada").limit(2000),
@@ -103,6 +103,16 @@ function WarRoomColecao() {
         <Link to="/colecao-360" className="text-xs text-primary hover:underline">Ver Coleção 360º →</Link>
       </div>
 
+      <LaunchCountdown launchDate={c.launch_date} progress={c.progress ?? 0} />
+
+      <Blockers
+        atrasadas={atrasadas.length}
+        semFicha={semFicha.length}
+        pilotosPend={pilotosPend.length}
+      />
+
+
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {cards.map((card) => {
           const Icon = card.icon;
@@ -158,6 +168,72 @@ function WarRoomColecao() {
           title="Coordenador · sala de guerra"
           question={`Coleção "${c.name}" (${c.year ?? ""}). ${inDev.length} produtos em dev, ${semFicha.length} sem ficha, ${pilotosPend.length} pilotos pendentes, ${opsAtivas.length} OPs ativas, ${atrasadas.length} atrasadas. Quais 3 ações priorizar AGORA e por quê?`}
         />
+      </div>
+    </div>
+  );
+}
+
+function LaunchCountdown({ launchDate, progress }: { launchDate: string | null; progress: number }) {
+  if (!launchDate) {
+    return (
+      <div className="glass rounded-xl p-4 flex items-center gap-3 text-sm text-muted-foreground">
+        <Timer className="size-4" /> Defina uma data de lançamento na coleção para ativar o countdown.
+      </div>
+    );
+  }
+  const days = Math.ceil((new Date(launchDate).getTime() - Date.now()) / 86_400_000);
+  const tone =
+    days < 0 ? "text-destructive border-destructive/40 bg-destructive/5" :
+    days <= 7 ? "text-destructive border-destructive/40 bg-destructive/5" :
+    days <= 30 ? "text-warning border-warning/40 bg-warning/5" :
+    "text-success border-success/40 bg-success/5";
+  const label =
+    days < 0 ? `${Math.abs(days)} dias em atraso` :
+    days === 0 ? "Lança hoje" :
+    `${days} dias para o lançamento`;
+  return (
+    <div className={`rounded-xl border p-4 flex items-center justify-between gap-4 ${tone}`}>
+      <div className="flex items-center gap-3">
+        <Timer className="size-5" />
+        <div>
+          <div className="text-lg font-semibold tabular-nums">{label}</div>
+          <div className="text-xs opacity-80">Lançamento previsto: {new Date(launchDate).toLocaleDateString("pt-BR")}</div>
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="text-2xl font-semibold tabular-nums">{progress}%</div>
+        <div className="text-[11px] opacity-80">concluído</div>
+      </div>
+    </div>
+  );
+}
+
+function Blockers({ atrasadas, semFicha, pilotosPend }: { atrasadas: number; semFicha: number; pilotosPend: number }) {
+  const items = [
+    { n: atrasadas, label: "OPs atrasadas", to: "/pcp" as const },
+    { n: semFicha, label: "Produtos sem ficha aprovada", to: "/ficha-tecnica" as const },
+    { n: pilotosPend, label: "Pilotos pendentes", to: "/pilots" as const },
+  ].filter((i) => i.n > 0);
+
+  if (items.length === 0) {
+    return (
+      <div className="glass rounded-xl p-4 flex items-center gap-2 text-sm text-success">
+        <CheckCircle2 className="size-4" /> Sem bloqueadores ativos. Coleção fluindo.
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4">
+      <div className="flex items-center gap-2 text-sm font-semibold text-destructive mb-3">
+        <ShieldAlert className="size-4" /> Bloqueadores ativos
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {items.map((i) => (
+          <Link key={i.label} to={i.to} className="rounded-lg bg-background/60 border border-destructive/20 px-3 py-2 hover:border-destructive/50 transition-colors">
+            <div className="text-2xl font-semibold tabular-nums text-destructive">{i.n}</div>
+            <div className="text-xs text-muted-foreground">{i.label}</div>
+          </Link>
+        ))}
       </div>
     </div>
   );
