@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { MaterialsPanel, OperationsPanel, MeasurementsPanel, CostsPanel } from "@/components/tech-pack/panels";
+import { BomTemplatesButton } from "@/components/bom-templates-button";
 import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer";
 import { Camera } from "lucide-react";
 
