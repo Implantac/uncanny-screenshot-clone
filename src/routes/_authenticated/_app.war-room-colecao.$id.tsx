@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import {
-  Radio, Layers, Scissors, FileWarning, CheckCircle2, Factory, TrendingUp, AlertTriangle, ArrowLeft,
+  Radio, Layers, Scissors, FileWarning, CheckCircle2, Factory, TrendingUp, AlertTriangle, ArrowLeft, Timer, ShieldAlert,
 } from "lucide-react";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { useRealtime } from "@/hooks/use-realtime";
