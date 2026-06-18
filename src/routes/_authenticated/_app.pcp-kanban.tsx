@@ -77,6 +77,8 @@ function PcpKanban() {
   const [over, setOver] = useState<Stage | null>(null);
   const [mode, setMode] = useState<"ordens" | "lotes">("ordens");
   const [batchFilter, setBatchFilter] = useState<string | null>(null);
+  const [loteDrawer, setLoteDrawer] = useState<string | null>(null);
+  const [fichaDrawer, setFichaDrawer] = useState<{ productId: string; orderId: string; orderCode: string } | null>(null);
 
   const update = useMutation({
     mutationFn: async (patch: { id: string } & Partial<Pick<Order, "stage" | "priority" | "due_date" | "progress">>) => {
