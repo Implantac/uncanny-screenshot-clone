@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Sparkles, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { SkuPerformancePanel } from "@/components/sku-performance-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/variantes")({
   head: () => ({
@@ -219,6 +220,13 @@ function VariantsPage() {
               </table>
             </div>
           </div>
+
+          <SkuPerformancePanel
+            productId={productId}
+            variants={variants.data ?? []}
+            colors={colors.data ?? []}
+            sizes={sizes.data ?? []}
+          />
         </div>
       )}
     </div>
