@@ -225,6 +225,7 @@ function AcompanhamentoProducao() {
   const [zoomCol, setZoomCol] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+  const [listFilter, setListFilter] = useState<"" | "no_prazo" | "atrasado" | "finalizado">("");
 
   const move = useMutation({
     mutationFn: (vars: { orderId: string; toColumn: string }) =>
