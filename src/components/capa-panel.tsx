@@ -11,6 +11,17 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import {
+  listCapas,
+  upsertCapa,
+  deleteCapa,
+  listReinspectionsForCapa,
+  createReinspectionFromCapa,
+  verifyCapaFromReinspection,
+  type CapaRow,
+} from "@/lib/quality-capa.functions";
+import { RefreshCw, ShieldCheck, ArrowRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -30,7 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { listCapas, upsertCapa, deleteCapa, type CapaRow } from "@/lib/quality-capa.functions";
+
 import { toast } from "sonner";
 
 const sevTone: Record<string, string> = {
@@ -346,6 +357,7 @@ function CapaDialog({
               onChange={(e) => setForm({ ...form, effectiveness_check: e.target.value })}
             />
           )}
+          {capa && <ReinspectionLoop capaId={capa.id} capaStatus={capa.status} onChanged={onSaved} />}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>
@@ -360,5 +372,115 @@ function CapaDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ReinspectionLoop({
+  capaId,
+  capaStatus,
+  onChanged,
+}: {
+  capaId: string;
+  capaStatus: CapaRow["status"];
+  onChanged: () => void;
+}) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listReinspectionsForCapa);
+  const createFn = useServerFn(createReinspectionFromCapa);
+  const verifyFn = useServerFn(verifyCapaFromReinspection);
+  const { data: rows = [], isLoading } = useQuery({
+    queryKey: ["capa-reinsp", capaId],
+    queryFn: () => listFn({ data: { capaId } }),
+  });
+  const createMut = useMutation({
+    mutationFn: () => createFn({ data: { capaId } }),
+    onSuccess: () => {
+      toast.success("Reinspeção criada — preencha o resultado em Inspeções");
+      qc.invalidateQueries({ queryKey: ["capa-reinsp", capaId] });
+      qc.invalidateQueries({ queryKey: ["capas"] });
+      qc.invalidateQueries({ queryKey: ["quality_inspections"] });
+      onChanged();
+    },
+    onError: (e: Error) => toast.error(e.message || "Falha ao criar reinspeção"),
+  });
+  const verifyMut = useMutation({
+    mutationFn: (reinspectionId: string) => verifyFn({ data: { capaId, reinspectionId } }),
+    onSuccess: () => {
+      toast.success("CAPA verificada — ciclo fechado");
+      qc.invalidateQueries({ queryKey: ["capas"] });
+      onChanged();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const canClose = capaStatus !== "verificada" && capaStatus !== "cancelada";
+  return (
+    <div className="border-t border-border pt-3 mt-2 space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <ShieldCheck className="size-3.5" /> Ciclo de reinspeção
+        </div>
+        {canClose && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => createMut.mutate()}
+            disabled={createMut.isPending}
+          >
+            <RefreshCw className="size-3.5 mr-1" /> Nova reinspeção
+          </Button>
+        )}
+      </div>
+      {isLoading ? (
+        <p className="text-xs text-muted-foreground">Carregando…</p>
+      ) : rows.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          Sem reinspeção registrada. Crie uma para fechar o ciclo desta CAPA.
+        </p>
+      ) : (
+        <div className="space-y-1.5">
+          {rows.map((r) => {
+            const tone =
+              r.result === "aprovado"
+                ? "bg-success/15 text-success"
+                : r.result === "reprovado"
+                  ? "bg-destructive/15 text-destructive"
+                  : "bg-muted text-muted-foreground";
+            return (
+              <div
+                key={r.id}
+                className="flex items-center justify-between text-xs border border-border rounded-md px-2 py-1.5"
+              >
+                <div className="flex items-center gap-2">
+                  <Badge className={tone}>{r.result}</Badge>
+                  <span className="text-muted-foreground">
+                    {new Date(r.inspected_at).toLocaleDateString("pt-BR")}
+                  </span>
+                  <span className="text-muted-foreground">
+                    · C{r.critical_defects} M{r.major_defects} m{r.minor_defects}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {r.result === "aprovado" && canClose && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2"
+                      onClick={() => verifyMut.mutate(r.id)}
+                      disabled={verifyMut.isPending}
+                    >
+                      Fechar CAPA
+                    </Button>
+                  )}
+                  <Link to="/inspecoes" className="text-primary hover:underline inline-flex items-center">
+                    abrir <ArrowRight className="size-3 ml-0.5" />
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
