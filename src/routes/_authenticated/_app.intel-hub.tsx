@@ -74,7 +74,8 @@ type Supplier = {
 
 async function loadAll() {
   const today = new Date().toISOString().slice(0, 10);
-  const [orders, batches, products, suppliers] = await Promise.all([
+  const since30 = new Date(Date.now() - 30 * 86400000).toISOString();
+  const [orders, batches, products, suppliers, campaigns, shipments, briefs] = await Promise.all([
     supabase
       .from("production_orders")
       .select(
@@ -93,12 +94,29 @@ async function loadAll() {
       .eq("status", "aprovado")
       .limit(200),
     supabase.from("suppliers").select("id, name, rating, on_time_delivery_rate").limit(100),
+    supabase
+      .from("marketing_campaigns")
+      .select("id, name, channel, status, investment, revenue, roas, start_date, end_date")
+      .limit(100),
+    supabase
+      .from("influencer_shipments")
+      .select("id, status, posted_at, sales_before, sales_after, influencers(nome, seguidores, engajamento)")
+      .gte("created_at", since30)
+      .limit(200),
+    supabase
+      .from("marketing_briefs")
+      .select("id, title, status, kpi_target, budget, updated_at")
+      .neq("status", "arquivado")
+      .limit(50),
   ]);
   return {
     orders: (orders.data ?? []) as unknown as Order[],
     batches: (batches.data ?? []) as unknown as Batch[],
     products: (products.data ?? []) as unknown as Product[],
     suppliers: (suppliers.data ?? []) as unknown as Supplier[],
+    campaigns: (campaigns.data ?? []) as any[],
+    shipments: (shipments.data ?? []) as any[],
+    briefs: (briefs.data ?? []) as any[],
     today,
   };
 }
