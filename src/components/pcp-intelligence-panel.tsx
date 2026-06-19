@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getPcpIntelligence } from "@/lib/pcp-intelligence.functions";
-import { Activity, AlertTriangle, ArrowRight, Gauge, Sparkles, TrendingUp } from "lucide-react";
+import { getPcpIntelligence, applyRebalanceSuggestion } from "@/lib/pcp-intelligence.functions";
+import { Activity, AlertTriangle, ArrowRight, Gauge, Sparkles, TrendingUp, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export function PcpIntelligencePanel() {
   const fn = useServerFn(getPcpIntelligence);
