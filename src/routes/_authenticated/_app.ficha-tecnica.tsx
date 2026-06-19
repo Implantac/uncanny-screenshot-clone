@@ -50,6 +50,7 @@ import {
 } from "@/components/tech-pack/panels";
 import { BomTemplatesButton } from "@/components/bom-templates-button";
 import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer";
+import { TechSheetCostAlertsPanel } from "@/components/tech-sheet-cost-alerts-panel";
 import { Camera } from "lucide-react";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -310,6 +311,9 @@ function FichaTecnicaPage() {
           <p className="text-sm text-muted-foreground mt-1">
             Visualização de produto, conteúdo estruturado por área e histórico versionado.
           </p>
+        </div>
+        <div className="w-full">
+          <TechSheetCostAlertsPanel />
         </div>
         <Button onClick={openCreate} className="gap-2">
           <Plus className="size-4" /> Nova ficha
