@@ -1347,6 +1347,91 @@ export type Database = {
           },
         ]
       }
+      marketing_briefs: {
+        Row: {
+          ai_plan: Json | null
+          budget: number | null
+          campaign_id: string | null
+          channels: string[] | null
+          collection_id: string | null
+          created_at: string
+          id: string
+          key_message: string | null
+          kpi_target: string | null
+          lifecycle_trigger: string | null
+          objective: string
+          owner_id: string
+          product_id: string | null
+          status: string
+          target_audience: string | null
+          title: string
+          tone: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_plan?: Json | null
+          budget?: number | null
+          campaign_id?: string | null
+          channels?: string[] | null
+          collection_id?: string | null
+          created_at?: string
+          id?: string
+          key_message?: string | null
+          kpi_target?: string | null
+          lifecycle_trigger?: string | null
+          objective: string
+          owner_id: string
+          product_id?: string | null
+          status?: string
+          target_audience?: string | null
+          title: string
+          tone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_plan?: Json | null
+          budget?: number | null
+          campaign_id?: string | null
+          channels?: string[] | null
+          collection_id?: string | null
+          created_at?: string
+          id?: string
+          key_message?: string | null
+          kpi_target?: string | null
+          lifecycle_trigger?: string | null
+          objective?: string
+          owner_id?: string
+          product_id?: string | null
+          status?: string
+          target_audience?: string | null
+          title?: string
+          tone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_briefs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_briefs_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketing_briefs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_campaigns: {
         Row: {
           channel: string | null
