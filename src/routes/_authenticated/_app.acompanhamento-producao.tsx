@@ -879,6 +879,7 @@ function AcompanhamentoProducao() {
           </div>
         )}
       </div>
+      )}
 
       {/* CHIPS DE STATUS — filtragem em 1 clique */}
       <div className="flex flex-wrap items-center gap-1.5">
