@@ -130,15 +130,16 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
 /** Cria uma OP a partir da sugestão do motor de necessidade (1 clique). */
 export const createOpFromSuggestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { productId: string; quantity: number; reason?: string; priority?: number }) =>
-    z
-      .object({
-        productId: z.string().uuid(),
-        quantity: z.number().int().positive(),
-        reason: z.string().optional(),
-        priority: z.number().int().min(0).max(3).optional(),
-      })
-      .parse(i),
+  .inputValidator(
+    (i: { productId: string; quantity: number; reason?: string; priority?: number }) =>
+      z
+        .object({
+          productId: z.string().uuid(),
+          quantity: z.number().int().positive(),
+          reason: z.string().optional(),
+          priority: z.number().int().min(0).max(3).optional(),
+        })
+        .parse(i),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;

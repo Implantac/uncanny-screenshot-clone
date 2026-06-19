@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Check, X, MessageCircle, Paperclip, Upload, FileText } from "lucide-react";
+import { Check, X, MessageCircle, Paperclip, Upload, FileText, ClipboardCheck } from "lucide-react";
 
 export const Route = createFileRoute("/portal/fornecedor/$token")({
   head: () => ({
@@ -61,6 +61,10 @@ type Attachment = {
   size: number | null;
   rfq_id: string | null;
   production_order_id: string | null;
+  attachment_kind: AttachmentKind;
+  sample_status: SampleStatus;
+  checklist: SampleChecklist;
+  notes: string | null;
   created_at: string;
 };
 type Data = {
@@ -70,6 +74,40 @@ type Data = {
   production_orders: ProductionOrder[];
   acks: Ack[];
   attachments: Attachment[];
+};
+
+type AttachmentKind = "document" | "sample" | "photo" | "invoice" | "other";
+type SampleStatus = "received" | "pending_review" | "approved" | "rejected" | "needs_adjustment";
+type SampleChecklist = Partial<{
+  measurements: boolean;
+  finishing: boolean;
+  color: boolean;
+  fabric: boolean;
+  packaging: boolean;
+}>;
+
+const KIND_LABEL: Record<AttachmentKind, string> = {
+  document: "Documento",
+  sample: "Amostra",
+  photo: "Foto",
+  invoice: "Nota",
+  other: "Outro",
+};
+
+const STATUS_LABEL: Record<SampleStatus, string> = {
+  received: "recebida",
+  pending_review: "em análise",
+  approved: "aprovada",
+  rejected: "reprovada",
+  needs_adjustment: "ajustar",
+};
+
+const CHECKLIST_LABEL: Record<keyof SampleChecklist, string> = {
+  measurements: "medidas",
+  finishing: "acabamento",
+  color: "cor",
+  fabric: "tecido",
+  packaging: "embalagem",
 };
 
 function SupplierPortalPage() {
@@ -293,19 +331,7 @@ function OrderCard({
         <FileUploader token={token} orderId={po.id} onUploaded={onChanged} />
       </div>
 
-      {attachments.length > 0 && (
-        <div className="text-xs text-muted-foreground pt-1 flex flex-wrap gap-2">
-          {attachments.map((a) => (
-            <span
-              key={a.id}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted"
-            >
-              <FileText className="size-3" />
-              {a.file_name}
-            </span>
-          ))}
-        </div>
-      )}
+      <AttachmentList attachments={attachments} />
 
       {open && (
         <div className="border border-border rounded-lg p-3 mt-2 space-y-2 bg-muted/20">
@@ -359,6 +385,10 @@ function FileUploader({
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [kind, setKind] = useState<AttachmentKind>(orderId ? "sample" : "document");
+  const [notes, setNotes] = useState("");
+  const [checklist, setChecklist] = useState<SampleChecklist>({});
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -369,12 +399,23 @@ function FileUploader({
       fd.append("file", f);
       if (rfqId) fd.append("rfq_id", rfqId);
       if (orderId) fd.append("production_order_id", orderId);
+      fd.append("attachment_kind", kind);
+      fd.append("sample_status", kind === "sample" ? "pending_review" : "received");
+      fd.append("notes", notes);
+      fd.append("check_measurements", String(Boolean(checklist.measurements)));
+      fd.append("check_finishing", String(Boolean(checklist.finishing)));
+      fd.append("check_color", String(Boolean(checklist.color)));
+      fd.append("check_fabric", String(Boolean(checklist.fabric)));
+      fd.append("check_packaging", String(Boolean(checklist.packaging)));
       const res = await fetch(`/api/public/supplier-portal/${token}?action=upload`, {
         method: "POST",
         body: fd,
       });
       if (!res.ok) throw new Error(await res.text());
-      toast.success("Arquivo enviado");
+      toast.success(kind === "sample" ? "Amostra enviada" : "Arquivo enviado");
+      setExpanded(false);
+      setNotes("");
+      setChecklist({});
       onUploaded();
     } catch (e: any) {
       toast.error(e?.message ?? "Falha no upload");
@@ -385,7 +426,7 @@ function FileUploader({
   }
 
   return (
-    <>
+    <div className="space-y-2">
       <input
         ref={ref}
         type="file"
@@ -393,15 +434,75 @@ function FileUploader({
         onChange={onPick}
         accept="image/*,application/pdf,.xlsx,.csv,.doc,.docx"
       />
-      <Button size="sm" variant="outline" disabled={busy} onClick={() => ref.current?.click()}>
+      <Button size="sm" variant="outline" disabled={busy} onClick={() => setExpanded(!expanded)}>
         {busy ? (
           <Upload className="size-3.5 mr-1 animate-pulse" />
         ) : (
           <Paperclip className="size-3.5 mr-1" />
         )}
-        Anexar
+        {orderId ? "Enviar amostra" : "Anexar"}
       </Button>
-    </>
+      {expanded && (
+        <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs">Tipo</Label>
+              <select
+                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={kind}
+                onChange={(event) => setKind(event.target.value as AttachmentKind)}
+              >
+                {Object.entries(KIND_LABEL).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Observação</Label>
+              <Input
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+                placeholder="Ex.: amostra P aprovada pelo fornecedor"
+              />
+            </div>
+          </div>
+
+          {kind === "sample" && (
+            <div className="space-y-2">
+              <div className="text-xs font-medium flex items-center gap-1.5">
+                <ClipboardCheck className="size-3.5" />
+                Checklist declarado
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                {(Object.keys(CHECKLIST_LABEL) as Array<keyof SampleChecklist>).map((key) => (
+                  <label key={key} className="inline-flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(checklist[key])}
+                      onChange={(event) =>
+                        setChecklist((current) => ({ ...current, [key]: event.target.checked }))
+                      }
+                    />
+                    {CHECKLIST_LABEL[key]}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setExpanded(false)}>
+              Cancelar
+            </Button>
+            <Button size="sm" disabled={busy} onClick={() => ref.current?.click()}>
+              Selecionar arquivo
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -504,25 +605,45 @@ function RfqCard({
           />
         </div>
       </div>
-      {attachments.length > 0 && (
-        <div className="text-xs text-muted-foreground flex flex-wrap gap-2">
-          {attachments.map((a) => (
-            <span
-              key={a.id}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted"
-            >
-              <FileText className="size-3" />
-              {a.file_name}
-            </span>
-          ))}
-        </div>
-      )}
+      <AttachmentList attachments={attachments} />
       <div className="flex justify-end gap-2">
         <FileUploader token={token} rfqId={rfq.id} onUploaded={onSaved} />
         <Button onClick={save} disabled={saving || !unitPrice}>
           {saving ? "Enviando…" : myQuote ? "Atualizar cotação" : "Enviar cotação"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function AttachmentList({ attachments }: { attachments: Attachment[] }) {
+  if (attachments.length === 0) return null;
+  return (
+    <div className="text-xs text-muted-foreground flex flex-wrap gap-2">
+      {attachments.map((attachment) => {
+        const checked = (Object.keys(CHECKLIST_LABEL) as Array<keyof SampleChecklist>).filter(
+          (key) => attachment.checklist?.[key],
+        );
+        return (
+          <span
+            key={attachment.id}
+            className="inline-flex max-w-full items-center gap-1 rounded bg-muted px-2 py-1"
+            title={attachment.notes ?? attachment.file_name}
+          >
+            <FileText className="size-3 shrink-0" />
+            <span className="truncate">{attachment.file_name}</span>
+            <Badge variant="outline" className="h-5 text-[10px]">
+              {KIND_LABEL[attachment.attachment_kind] ?? "Arquivo"}
+            </Badge>
+            {attachment.attachment_kind === "sample" && (
+              <Badge variant="secondary" className="h-5 text-[10px]">
+                {STATUS_LABEL[attachment.sample_status] ?? "recebida"}
+                {checked.length ? ` · ${checked.length}/5` : ""}
+              </Badge>
+            )}
+          </span>
+        );
+      })}
     </div>
   );
 }

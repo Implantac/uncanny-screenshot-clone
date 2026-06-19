@@ -11,6 +11,23 @@ const Submit = z.object({
   notes: z.string().max(2000).optional(),
 });
 
+const UploadMeta = z.object({
+  attachment_kind: z.enum(["document", "sample", "photo", "invoice", "other"]).default("document"),
+  sample_status: z
+    .enum(["received", "pending_review", "approved", "rejected", "needs_adjustment"])
+    .default("received"),
+  notes: z.string().max(2000).optional().nullable(),
+  checklist: z
+    .object({
+      measurements: z.boolean().optional(),
+      finishing: z.boolean().optional(),
+      color: z.boolean().optional(),
+      fabric: z.boolean().optional(),
+      packaging: z.boolean().optional(),
+    })
+    .default({}),
+});
+
 export const Route = createFileRoute("/api/public/supplier-portal/$token")({
   server: {
     handlers: {
@@ -61,7 +78,9 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
 
         const { data: attachments } = await supabaseAdmin
           .from("supplier_portal_attachments")
-          .select("id, file_name, file_path, mime, size, rfq_id, production_order_id, created_at")
+          .select(
+            "id, file_name, file_path, mime, size, rfq_id, production_order_id, attachment_kind, sample_status, checklist, notes, created_at",
+          )
           .eq("owner_id", tok.owner_id)
           .eq("supplier_id", tok.supplier_id)
           .order("created_at", { ascending: false })
@@ -141,7 +160,41 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
           const rfqId = (form.get("rfq_id") as string) || null;
           const orderId = (form.get("production_order_id") as string) || null;
           if (!(file instanceof File)) return new Response("file missing", { status: 400 });
+          const meta = UploadMeta.safeParse({
+            attachment_kind: (form.get("attachment_kind") as string) || "document",
+            sample_status: (form.get("sample_status") as string) || "received",
+            notes: (form.get("notes") as string) || null,
+            checklist: {
+              measurements: form.get("check_measurements") === "true",
+              finishing: form.get("check_finishing") === "true",
+              color: form.get("check_color") === "true",
+              fabric: form.get("check_fabric") === "true",
+              packaging: form.get("check_packaging") === "true",
+            },
+          });
+          if (!meta.success) return Response.json({ error: meta.error.flatten() }, { status: 400 });
           if (file.size > 20 * 1024 * 1024) return new Response("Max 20MB", { status: 413 });
+          if (!rfqId && !orderId) return new Response("target missing", { status: 400 });
+          if (rfqId) {
+            const { data: rfq } = await supabaseAdmin
+              .from("rfq_requests")
+              .select("id, owner_id, status")
+              .eq("id", rfqId)
+              .single();
+            if (!rfq || rfq.owner_id !== tokRow.owner_id)
+              return new Response("Forbidden", { status: 403 });
+            if (!["aberta", "cotando"].includes(rfq.status))
+              return new Response("RFQ closed", { status: 409 });
+          }
+          if (orderId) {
+            const { data: po } = await supabaseAdmin
+              .from("production_orders")
+              .select("id, owner_id, supplier_id")
+              .eq("id", orderId)
+              .single();
+            if (!po || po.owner_id !== tokRow.owner_id || po.supplier_id !== tokRow.supplier_id)
+              return new Response("Forbidden", { status: 403 });
+          }
           const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
           const path = `${tokRow.owner_id}/${tokRow.supplier_id}/${Date.now()}_${safe}`;
           const buf = new Uint8Array(await file.arrayBuffer());
@@ -162,10 +215,15 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
             mime: file.type || null,
             size: file.size,
             uploaded_via: "portal",
+            attachment_kind: meta.data.attachment_kind,
+            sample_status: meta.data.sample_status,
+            checklist: meta.data.checklist,
+            notes: meta.data.notes || null,
           });
           log("info", "supplier_portal.upload", {
             supplier_id: tokRow.supplier_id,
             size: file.size,
+            attachment_kind: meta.data.attachment_kind,
           });
           return Response.json({ ok: true, path });
         }

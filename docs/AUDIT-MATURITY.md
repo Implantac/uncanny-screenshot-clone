@@ -109,14 +109,14 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## 11. Fornecedores
 
-| Capacidade                           | Status | Onde                                           | Evolução                       |
-| ------------------------------------ | ------ | ---------------------------------------------- | ------------------------------ |
-| Cadastro                             | ✅     | `suppliers`                                    | —                              |
-| Capabilities & compliance            | ✅     | `supplier_capabilities`, `supplier_compliance` | —                              |
-| Scorecard                            | ✅     | `/supplier-score`                              | —                              |
-| **Portal Fornecedor (visualização)** | ✅     | `/portal.fornecedor.$token` (Onda 19)          | —                              |
-| **Portal: enviar amostra/responder** | ⚪     | só leitura hoje                                | Upload + status na API pública |
-| RFQ                                  | ✅     | `rfq_requests`, `rfq_quotes`                   | —                              |
+| Capacidade                           | Status | Onde                                           | Evolução |
+| ------------------------------------ | ------ | ---------------------------------------------- | -------- |
+| Cadastro                             | ✅     | `suppliers`                                    | —        |
+| Capabilities & compliance            | ✅     | `supplier_capabilities`, `supplier_compliance` | —        |
+| Scorecard                            | ✅     | `/supplier-score`                              | —        |
+| **Portal Fornecedor (visualização)** | ✅     | `/portal.fornecedor.$token` (Onda 19)          | —        |
+| **Portal: enviar amostra/responder** | ✅     | portal público + anexos/checklist              | —        |
+| RFQ                                  | ✅     | `rfq_requests`, `rfq_quotes`                   | —        |
 
 ## 12. Almoxarifado
 
@@ -163,15 +163,15 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## Top 10 lacunas priorizadas (ordem sugerida)
 
-1. **Portal Fornecedor 2.0 — upload de amostra** (§11).
-2. **Digital Twin agregado da coleção** (§15).
-3. **Portal Fornecedor 2.0 — checklist/validação de amostra** (§11).
-4. **Subcoleções / cápsulas** (§2) — `parent_id` em `collections`.
-5. **BOP responsável por etapa** (§7) — campo `responsible_role`.
-6. **Curva ABC por coleção** (§2).
-7. **Biblioteca global de referências** (§1).
-8. **Automação de alertas de ROI e margem** (§13/15).
-9. **Custo por facção/terceirizado no real × teórico** (§8/9).
-10. **Governança de metas por coleção/canal** (§13/15).
+1. **Digital Twin agregado da coleção** (§15).
+2. **Portal Fornecedor 2.0 — painel interno de validação de amostra** (§11).
+3. **Subcoleções / cápsulas** (§2) — `parent_id` em `collections`.
+4. **BOP responsável por etapa** (§7) — campo `responsible_role`.
+5. **Curva ABC por coleção** (§2).
+6. **Biblioteca global de referências** (§1).
+7. **Automação de alertas de ROI e margem** (§13/15).
+8. **Custo por facção/terceirizado no real × teórico** (§8/9).
+9. **Governança de metas por coleção/canal** (§13/15).
+10. **Assinatura/termo aceite no portal fornecedor** (§11).
 
 Nenhum item acima cria tela nova desnecessária — todos estendem módulo/tabela existente.

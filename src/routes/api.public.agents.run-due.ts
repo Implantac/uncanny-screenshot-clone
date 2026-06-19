@@ -25,8 +25,7 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
         if (!expected) return new Response("Server misconfigured", { status: 503 });
         const a = Buffer.from(provided);
         const b = Buffer.from(expected);
-        const authed =
-          a.length === b.length && (await import("crypto")).timingSafeEqual(a, b);
+        const authed = a.length === b.length && (await import("crypto")).timingSafeEqual(a, b);
         if (!authed) return new Response("Unauthorized", { status: 401 });
 
         const apiKey = process.env.LOVABLE_API_KEY;

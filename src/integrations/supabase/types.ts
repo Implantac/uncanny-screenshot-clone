@@ -3189,40 +3189,52 @@ export type Database = {
       }
       supplier_portal_attachments: {
         Row: {
+          attachment_kind: string
+          checklist: Json
           created_at: string
           file_name: string
           file_path: string
           id: string
           mime: string | null
+          notes: string | null
           owner_id: string
           production_order_id: string | null
           rfq_id: string | null
+          sample_status: string
           size: number | null
           supplier_id: string
           uploaded_via: string
         }
         Insert: {
+          attachment_kind?: string
+          checklist?: Json
           created_at?: string
           file_name: string
           file_path: string
           id?: string
           mime?: string | null
+          notes?: string | null
           owner_id: string
           production_order_id?: string | null
           rfq_id?: string | null
+          sample_status?: string
           size?: number | null
           supplier_id: string
           uploaded_via?: string
         }
         Update: {
+          attachment_kind?: string
+          checklist?: Json
           created_at?: string
           file_name?: string
           file_path?: string
           id?: string
           mime?: string | null
+          notes?: string | null
           owner_id?: string
           production_order_id?: string | null
           rfq_id?: string | null
+          sample_status?: string
           size?: number | null
           supplier_id?: string
           uploaded_via?: string
