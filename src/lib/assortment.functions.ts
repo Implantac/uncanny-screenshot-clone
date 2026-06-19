@@ -47,11 +47,20 @@ export type AssortmentInsight = {
   message: string;
 };
 
+export type OtbRow = {
+  familyId: string | null;
+  familyName: string;
+  targetUnits: number;
+  committedUnits: number;
+  openToBuy: number;
+};
+
 export type AssortmentContext = {
   families: FamilyRow[];
   channels: Channel[];
   cells: AssortmentCell[];
   insights: AssortmentInsight[];
+  otb: OtbRow[];
 };
 
 const ChannelEnum = z.enum(CHANNELS);
@@ -70,6 +79,7 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
       { data: planRows },
       { data: cpRows },
       { data: products },
+      { data: poRows },
     ] = await Promise.all([
       sb
         .from("product_families")
@@ -87,6 +97,7 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
         .select("product_id, family_id, channel_exclusive")
         .eq("collection_id", data.collectionId),
       sb.from("products").select("id, sku"),
+      sb.from("production_orders").select("product_id, quantity").not("product_id", "is", null),
     ]);
 
     const families: FamilyRow[] = (famRows ?? []).map((f: any) => ({
@@ -182,7 +193,42 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
       });
     }
 
-    return { families, channels: [...CHANNELS], cells, insights };
+    // OTB (Open-To-Buy) per family: target units (across all channels) − committed via production_orders
+    const familyByProduct = new Map<string, string | null>(
+      (cpRows ?? []).map((cp: any) => [cp.product_id, cp.family_id]),
+    );
+    const committedByFamily = new Map<string | null, number>();
+    for (const po of poRows ?? []) {
+      if (!familyByProduct.has(po.product_id)) continue; // outside this collection
+      const fid = familyByProduct.get(po.product_id) ?? null;
+      committedByFamily.set(fid, (committedByFamily.get(fid) ?? 0) + Number(po.quantity ?? 0));
+    }
+    const targetByFamily = new Map<string | null, number>();
+    for (const c of cells) {
+      targetByFamily.set(c.familyId, (targetByFamily.get(c.familyId) ?? 0) + c.targetUnits);
+    }
+    const otb: OtbRow[] = [...families.map((f) => f.id), null].map((fid) => {
+      const t = targetByFamily.get(fid) ?? 0;
+      const c = committedByFamily.get(fid) ?? 0;
+      return {
+        familyId: fid,
+        familyName: fid ? families.find((f) => f.id === fid)?.name ?? "—" : "Sem família",
+        targetUnits: t,
+        committedUnits: c,
+        openToBuy: t - c,
+      };
+    });
+
+    for (const o of otb) {
+      if (o.targetUnits > 0 && o.openToBuy < 0) {
+        insights.push({
+          severity: "warn",
+          message: `${o.familyName}: produção comprometida (${o.committedUnits}) excede meta (${o.targetUnits}) em ${Math.abs(o.openToBuy)} un — risco de over-buy.`,
+        });
+      }
+    }
+
+    return { families, channels: [...CHANNELS], cells, insights, otb };
   });
 
 export const upsertFamily = createServerFn({ method: "POST" })
