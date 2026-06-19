@@ -16,6 +16,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { WarRoomDecisions } from "@/components/war-room-decisions";
 import { useRealtime } from "@/hooks/use-realtime";
 
 export const Route = createFileRoute("/_authenticated/_app/war-room-colecao/$id")({
