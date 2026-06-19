@@ -22,6 +22,8 @@ import {
   Database,
   Loader2,
   RefreshCw,
+  Boxes,
+  Gauge,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
@@ -65,6 +67,14 @@ type Order = {
   quantity: number;
 };
 type Sale = { product_id: string | null; quantity: number; total: number | null };
+type ErpSale = {
+  sku: string | null;
+  product_ref: string | null;
+  quantity: number | null;
+  total_value: number | null;
+  sold_at: string | null;
+};
+type InventoryRow = { sku: string | null; balance: number | null };
 
 type Sheet = { product_id: string | null; status: string };
 type Campaign = {
@@ -92,6 +102,12 @@ async function loadAll() {
       .neq("status", "cancelada")
       .limit(1000),
     supabase.from("sales").select("product_id, quantity, total").limit(5000),
+    supabase
+      .from("erp_sales_mirror")
+      .select("sku, product_ref, quantity, total_value, sold_at")
+      .limit(20000),
+    supabase.from("erp_inventory_mirror").select("sku, balance").limit(5000),
+    supabase.from("inventory_items").select("sku, balance").limit(5000),
     supabase.from("tech_sheets").select("product_id, status").limit(2000),
     supabase
       .from("marketing_campaigns")
@@ -100,13 +116,27 @@ async function loadAll() {
   ]);
   const firstError = results.find((r) => r.error)?.error;
   if (firstError) throw new Error(firstError.message);
-  const [collections, products, prototypes, orders, sales, sheets, campaigns] = results;
+  const [
+    collections,
+    products,
+    prototypes,
+    orders,
+    sales,
+    erpSales,
+    erpInventory,
+    inventory,
+    sheets,
+    campaigns,
+  ] = results;
   return {
     collections: (collections.data ?? []) as Collection[],
     products: (products.data ?? []) as Product[],
     prototypes: (prototypes.data ?? []) as Prototype[],
     orders: (orders.data ?? []) as Order[],
     sales: (sales.data ?? []) as Sale[],
+    erpSales: (erpSales.data ?? []) as ErpSale[],
+    erpInventory: (erpInventory.data ?? []) as InventoryRow[],
+    inventory: (inventory.data ?? []) as InventoryRow[],
     sheets: (sheets.data ?? []) as Sheet[],
     campaigns: (campaigns.data ?? []) as Campaign[],
   };
@@ -123,6 +153,9 @@ function Colecao360() {
   const prototypes = useMemo(() => data?.prototypes ?? [], [data?.prototypes]);
   const orders = useMemo(() => data?.orders ?? [], [data?.orders]);
   const sales = useMemo(() => data?.sales ?? [], [data?.sales]);
+  const erpSales = useMemo(() => data?.erpSales ?? [], [data?.erpSales]);
+  const erpInventory = useMemo(() => data?.erpInventory ?? [], [data?.erpInventory]);
+  const inventory = useMemo(() => data?.inventory ?? [], [data?.inventory]);
   const sheets = useMemo(() => data?.sheets ?? [], [data?.sheets]);
   const campaigns = useMemo(() => data?.campaigns ?? [], [data?.campaigns]);
 
@@ -135,10 +168,22 @@ function Colecao360() {
       const productIds = new Set(cProducts.map((p) => p.id));
       const cProtos = prototypes.filter((p) => p.product_id && productIds.has(p.product_id));
       const cOrders = orders.filter((o) => o.product_id && productIds.has(o.product_id));
-      const cSales = sales.filter((s) => s.product_id && productIds.has(s.product_id));
+      const productBySku = new Map(cProducts.map((p) => [p.sku.trim().toLowerCase(), p]));
+      const productByName = new Map(cProducts.map((p) => [p.name.trim().toLowerCase(), p]));
+      const cLegacySales = sales.filter((s) => s.product_id && productIds.has(s.product_id));
+      const cErpSales = erpSales.filter((s) => {
+        const sku = s.sku?.trim().toLowerCase();
+        const ref = s.product_ref?.trim().toLowerCase();
+        return Boolean((sku && productBySku.has(sku)) || (ref && productByName.has(ref)));
+      });
+      const useErpSales = cErpSales.length > 0;
 
-      const revenue = cSales.reduce((a, s) => a + Number(s.total ?? 0), 0);
-      const unitsSold = cSales.reduce((a, s) => a + s.quantity, 0);
+      const revenue = useErpSales
+        ? cErpSales.reduce((a, s) => a + Number(s.total_value ?? 0), 0)
+        : cLegacySales.reduce((a, s) => a + Number(s.total ?? 0), 0);
+      const unitsSold = useErpSales
+        ? cErpSales.reduce((a, s) => a + Number(s.quantity ?? 0), 0)
+        : cLegacySales.reduce((a, s) => a + s.quantity, 0);
       const opsActive = cOrders.filter((o) => o.stage !== "entregue").length;
       const opsDone = cOrders.filter((o) => o.stage === "entregue").length;
       const producedQty = cOrders
@@ -153,6 +198,69 @@ function Colecao360() {
         : 0;
       const margin = avgPrice > 0 ? ((avgPrice - avgCost) / avgPrice) * 100 : 0;
       const sellThrough = producedQty > 0 ? (unitsSold / producedQty) * 100 : 0;
+
+      const stockBySku = new Map<string, number>();
+      erpInventory.forEach((row) => {
+        const sku = row.sku?.trim();
+        if (!sku) return;
+        stockBySku.set(sku, (stockBySku.get(sku) ?? 0) + Number(row.balance ?? 0));
+      });
+      inventory.forEach((row) => {
+        const sku = row.sku?.trim();
+        if (!sku || stockBySku.has(sku)) return;
+        stockBySku.set(sku, Number(row.balance ?? 0));
+      });
+      const stockUnits = cProducts.reduce((sum, p) => sum + (stockBySku.get(p.sku) ?? 0), 0);
+      const stockValue = cProducts.reduce(
+        (sum, p) => sum + (stockBySku.get(p.sku) ?? 0) * Number(p.cost_price ?? 0),
+        0,
+      );
+      const salesByProduct = new Map<
+        string,
+        { units: number; revenue: number; recent30: number }
+      >();
+      const since30 = Date.now() - 30 * 86400000;
+      if (useErpSales) {
+        cErpSales.forEach((s) => {
+          const sku = s.sku?.trim().toLowerCase();
+          const ref = s.product_ref?.trim().toLowerCase();
+          const product = (sku && productBySku.get(sku)) || (ref && productByName.get(ref));
+          if (!product) return;
+          const cur = salesByProduct.get(product.id) ?? { units: 0, revenue: 0, recent30: 0 };
+          const qty = Number(s.quantity ?? 0);
+          cur.units += qty;
+          cur.revenue += Number(s.total_value ?? 0);
+          if (s.sold_at && new Date(s.sold_at).getTime() >= since30) cur.recent30 += qty;
+          salesByProduct.set(product.id, cur);
+        });
+      } else {
+        cLegacySales.forEach((s) => {
+          if (!s.product_id) return;
+          const cur = salesByProduct.get(s.product_id) ?? { units: 0, revenue: 0, recent30: 0 };
+          cur.units += s.quantity;
+          cur.revenue += Number(s.total ?? 0);
+          cur.recent30 += s.quantity;
+          salesByProduct.set(s.product_id, cur);
+        });
+      }
+      const dailyVelocity =
+        [...salesByProduct.values()].reduce((sum, s) => sum + s.recent30, 0) / 30;
+      const coverageDays = dailyVelocity > 0 ? Math.round(stockUnits / dailyVelocity) : null;
+      const ruptureSkus = cProducts
+        .filter(
+          (p) => (stockBySku.get(p.sku) ?? 0) <= 0 && (salesByProduct.get(p.id)?.units ?? 0) > 0,
+        )
+        .slice(0, 5);
+      const excessSkus = cProducts
+        .map((p) => {
+          const stock = stockBySku.get(p.sku) ?? 0;
+          const recent = salesByProduct.get(p.id)?.recent30 ?? 0;
+          const days = recent > 0 ? Math.round(stock / (recent / 30)) : stock > 0 ? 999 : 0;
+          return { p, stock, days };
+        })
+        .filter((row) => row.stock > 0 && row.days > 120)
+        .sort((a, b) => b.stock - a.stock)
+        .slice(0, 5);
 
       // Investimento × Resultado (produção + marketing × receita ERP)
       const productionCost = cOrders.reduce((a, o) => {
@@ -195,12 +303,8 @@ function Colecao360() {
 
       // Champions e críticos por receita
       const revenuePerProduct = new Map<string, number>();
-      cSales.forEach((s) => {
-        if (s.product_id)
-          revenuePerProduct.set(
-            s.product_id,
-            (revenuePerProduct.get(s.product_id) ?? 0) + Number(s.total ?? 0),
-          );
+      salesByProduct.forEach((value, productId) => {
+        revenuePerProduct.set(productId, value.revenue);
       });
       const ranked = cProducts
         .map((p) => ({ p, rev: revenuePerProduct.get(p.id) ?? 0 }))
@@ -231,11 +335,29 @@ function Colecao360() {
         liberadosPCP,
         avanco,
         semFicha,
+        stockUnits,
+        stockValue,
+        coverageDays,
+        dailyVelocity,
+        ruptureSkus,
+        excessSkus,
+        dataSource: useErpSales ? "ERP" : "PLM",
         champions,
         criticos,
       };
     });
-  }, [collections, products, prototypes, orders, sales, sheets, campaigns]);
+  }, [
+    collections,
+    products,
+    prototypes,
+    orders,
+    sales,
+    erpSales,
+    erpInventory,
+    inventory,
+    sheets,
+    campaigns,
+  ]);
 
   const current = summary.find((s) => s.collection.id === currentId) ?? summary[0];
 
@@ -367,6 +489,8 @@ function Colecao360() {
 
               {/* IA Coordenador — diagnóstico em linguagem natural */}
               <InvestmentResult c={current} />
+
+              <DigitalTwinAggregate c={current} />
 
               <MetaMood c={current} />
 
@@ -733,6 +857,134 @@ function CoordinatorBriefing({ c }: { c: any }) {
 function fmt(v: number) {
   if (Math.abs(v) >= 1000) return `R$ ${(v / 1000).toFixed(1)}k`;
   return `R$ ${v.toFixed(0)}`;
+}
+
+function DigitalTwinAggregate({ c }: { c: any }) {
+  const coverage = c.coverageDays as number | null;
+  const coverageLabel = coverage === null ? "—" : coverage > 365 ? "365+d" : `${coverage}d`;
+  const coverageTone =
+    coverage === null ? "neutral" : coverage < 14 ? "red" : coverage < 45 ? "yellow" : "green";
+  const twinAlerts: string[] = [];
+  if (c.ruptureSkus.length > 0)
+    twinAlerts.push(`${c.ruptureSkus.length} SKU(s) vendendo sem estoque`);
+  if (c.excessSkus.length > 0)
+    twinAlerts.push(`${c.excessSkus.length} SKU(s) com cobertura acima de 120d`);
+  if (coverage !== null && coverage < 14)
+    twinAlerts.push(`cobertura agregada crítica (${coverage}d)`);
+  if (c.sellThrough < 30 && c.stockUnits > 0)
+    twinAlerts.push("sell-through baixo com estoque disponível");
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <Gauge className="size-3.5 text-primary" /> Digital Twin agregado · vendas + estoque +
+          produção
+        </div>
+        <div className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
+          <Database className="size-3" /> fonte {c.dataSource}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <Metric label="Estoque SKUs" value={`${Math.round(c.stockUnits)}`} tone="primary" />
+        <Metric label="Valor parado" value={fmt(c.stockValue)} tone="neutral" />
+        <Metric label="Cobertura" value={coverageLabel} tone={coverageTone} />
+        <Metric label="Velocidade/dia" value={c.dailyVelocity.toFixed(1)} tone="neutral" />
+        <Metric
+          label="Risco twin"
+          value={twinAlerts.length ? `${twinAlerts.length}` : "0"}
+          tone={twinAlerts.length ? "yellow" : "green"}
+        />
+      </div>
+
+      {twinAlerts.length > 0 && (
+        <div className="mt-3 rounded-lg border border-warning/30 bg-warning/5 p-3">
+          <div className="text-xs font-medium text-warning flex items-center gap-1.5">
+            <AlertTriangle className="size-3.5" />
+            Sinais do twin
+          </div>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {twinAlerts.map((alert) => (
+              <span
+                key={alert}
+                className="rounded bg-warning/10 px-2 py-0.5 text-[11px] text-warning"
+              >
+                {alert}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {(c.ruptureSkus.length > 0 || c.excessSkus.length > 0) && (
+        <div className="mt-3 grid md:grid-cols-2 gap-3">
+          <TwinSkuList
+            title="Ruptura com venda"
+            icon={<Package className="size-3.5" />}
+            rows={c.ruptureSkus.map((p: any) => ({
+              id: p.id,
+              sku: p.sku,
+              name: p.name,
+              meta: "sem estoque",
+            }))}
+            tone="red"
+          />
+          <TwinSkuList
+            title="Possível excesso"
+            icon={<Boxes className="size-3.5" />}
+            rows={c.excessSkus.map((row: any) => ({
+              id: row.p.id,
+              sku: row.p.sku,
+              name: row.p.name,
+              meta: `${Math.round(row.stock)} un · ${row.days > 365 ? "365+d" : `${row.days}d`}`,
+            }))}
+            tone="yellow"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TwinSkuList({
+  title,
+  icon,
+  rows,
+  tone,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  rows: Array<{ id: string; sku: string; name: string; meta: string }>;
+  tone: "red" | "yellow";
+}) {
+  const toneClass =
+    tone === "red" ? "text-destructive border-destructive/30" : "text-warning border-warning/30";
+  return (
+    <div className={`rounded-lg border bg-muted/10 p-3 ${toneClass}`}>
+      <div className="text-xs uppercase tracking-wider flex items-center gap-1.5 mb-2">
+        {icon}
+        {title}
+      </div>
+      {rows.length === 0 ? (
+        <div className="text-xs text-muted-foreground">Sem SKUs nesta condição.</div>
+      ) : (
+        <ul className="space-y-1.5">
+          {rows.map((row) => (
+            <li
+              key={row.id}
+              className="flex items-center justify-between gap-2 text-sm text-foreground"
+            >
+              <span className="truncate">
+                <span className="text-xs text-muted-foreground">{row.sku}</span> · {row.name}
+              </span>
+              <span className="shrink-0 text-xs text-muted-foreground">{row.meta}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 function InvestmentResult({ c }: { c: any }) {

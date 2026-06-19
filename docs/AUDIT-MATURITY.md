@@ -146,12 +146,12 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## 15. BI & IA
 
-| Capacidade                         | Status | Onde                                     | Evolução                                              |
-| ---------------------------------- | ------ | ---------------------------------------- | ----------------------------------------------------- |
-| Indicadores por área               | ✅     | `/bi`, `/intelligence`, `/control-tower` | —                                                     |
-| IA por persona (Dev/PCP/Marketing) | ✅     | `ask-fashion-ai` + `ai-insights`         | —                                                     |
-| IA Comando (plano + execução)      | ✅     | Ondas 20–22                              | —                                                     |
-| **Digital Twin da coleção**        | 🟡     | `/colecao-360` + Collection Intelligence | Agregar prod+estoque+vendas+margem em uma visão única |
+| Capacidade                         | Status | Onde                                        | Evolução |
+| ---------------------------------- | ------ | ------------------------------------------- | -------- |
+| Indicadores por área               | ✅     | `/bi`, `/intelligence`, `/control-tower`    | —        |
+| IA por persona (Dev/PCP/Marketing) | ✅     | `ask-fashion-ai` + `ai-insights`            | —        |
+| IA Comando (plano + execução)      | ✅     | Ondas 20–22                                 | —        |
+| **Digital Twin da coleção**        | ✅     | `/colecao-360` com ERP + estoque + produção | —        |
 
 ## 16. UX/UI
 
@@ -163,15 +163,15 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## Top 10 lacunas priorizadas (ordem sugerida)
 
-1. **Digital Twin agregado da coleção** (§15).
-2. **Portal Fornecedor 2.0 — painel interno de validação de amostra** (§11).
-3. **Subcoleções / cápsulas** (§2) — `parent_id` em `collections`.
-4. **BOP responsável por etapa** (§7) — campo `responsible_role`.
-5. **Curva ABC por coleção** (§2).
-6. **Biblioteca global de referências** (§1).
-7. **Automação de alertas de ROI e margem** (§13/15).
-8. **Custo por facção/terceirizado no real × teórico** (§8/9).
-9. **Governança de metas por coleção/canal** (§13/15).
-10. **Assinatura/termo aceite no portal fornecedor** (§11).
+1. **Portal Fornecedor 2.0 — painel interno de validação de amostra** (§11).
+2. **Subcoleções / cápsulas** (§2) — `parent_id` em `collections`.
+3. **BOP responsável por etapa** (§7) — campo `responsible_role`.
+4. **Curva ABC por coleção** (§2).
+5. **Biblioteca global de referências** (§1).
+6. **Automação de alertas de ROI e margem** (§13/15).
+7. **Custo por facção/terceirizado no real × teórico** (§8/9).
+8. **Governança de metas por coleção/canal** (§13/15).
+9. **Assinatura/termo aceite no portal fornecedor** (§11).
+10. **Metas completas por coleção** (§2/15).
 
 Nenhum item acima cria tela nova desnecessária — todos estendem módulo/tabela existente.
