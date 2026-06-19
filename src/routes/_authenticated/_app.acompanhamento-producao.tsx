@@ -34,8 +34,6 @@ import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionCardActions } from "@/components/production-card-actions";
 import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";
 
-export const Route = createFileRoute("/_authenticated/_app/acompanhamento-producao")({
-  component: AcompanhamentoProducao,
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
   colKey: fallback(z.string(), "").default(""),
@@ -58,6 +56,7 @@ export const Route = createFileRoute("/_authenticated/_app/acompanhamento-produc
   component: AcompanhamentoProducao,
 });
 
+type Stage =
   | "cad"
   | "corte"
   | "costura"
