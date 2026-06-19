@@ -30,6 +30,7 @@ import { moveOrderToColumn } from "@/lib/production-tracking.functions";
 import { predictDelays, type DelayPrediction } from "@/lib/delay-prediction.functions";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionCardActions } from "@/components/production-card-actions";
+import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";
 
 export const Route = createFileRoute("/_authenticated/_app/acompanhamento-producao")({
   component: AcompanhamentoProducao,
@@ -710,6 +711,39 @@ function AcompanhamentoProducao() {
             {tvMode ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
             Modo painel
           </button>
+          <ViewPresetsDropdown
+            module="acompanhamento_producao"
+            current={{
+              q, colKey, supplierId, statusF, origin, collection, category,
+              productGroup, productLine, supplierCat, dueFrom, dueTo,
+              listFilter, groupBy,
+            }}
+            onClear={() => {
+              setQ(""); setColKey(""); setSupplierId(""); setStatusF("");
+              setOrigin(""); setCollection(""); setCategory(""); setProductGroup("");
+              setProductLine(""); setSupplierCat(""); setDueFrom(""); setDueTo("");
+              setListFilter(""); setGroupBy("none");
+            }}
+            onApply={(f: ViewPresetFilters) => {
+              const s = (k: string) => (typeof f[k] === "string" ? (f[k] as string) : undefined);
+              if (s("q") !== undefined) setQ(s("q")!);
+              if (s("colKey") !== undefined) setColKey(s("colKey")!);
+              if (s("supplierId") !== undefined) setSupplierId(s("supplierId")!);
+              if (s("statusF") !== undefined) setStatusF(s("statusF") as StatusKey | "");
+              if (s("origin") !== undefined) setOrigin(s("origin") as "" | "interna" | "externa");
+              if (s("collection") !== undefined) setCollection(s("collection")!);
+              if (s("category") !== undefined) setCategory(s("category")!);
+              if (s("productGroup") !== undefined) setProductGroup(s("productGroup")!);
+              if (s("productLine") !== undefined) setProductLine(s("productLine")!);
+              if (s("supplierCat") !== undefined) setSupplierCat(s("supplierCat")!);
+              if (s("dueFrom") !== undefined) setDueFrom(s("dueFrom")!);
+              if (s("dueTo") !== undefined) setDueTo(s("dueTo")!);
+              if (s("listFilter") !== undefined)
+                setListFilter(s("listFilter") as "" | "no_prazo" | "atrasado" | "finalizado");
+              if (s("groupBy") !== undefined)
+                setGroupBy(s("groupBy") as "none" | "collection" | "supplier" | "line");
+            }}
+          />
           <button
             onClick={exportRows}
             className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-md border border-border bg-card hover:bg-muted"
