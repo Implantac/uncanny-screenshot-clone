@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Target, TrendingDown, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { CostWatchPanel } from "@/components/cost-watch-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/target-costing")({
   head: () => ({
@@ -93,6 +94,8 @@ function Page() {
           </p>
         </div>
       </div>
+
+      <CostWatchPanel />
 
       <div className="glass rounded-xl overflow-hidden">
         <table className="w-full text-sm">
