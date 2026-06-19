@@ -343,6 +343,7 @@ function Prototipos() {
         <p className="text-muted-foreground">Carregando…</p>
       ) : (
         <>
+          <DevIntelligencePanel />
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {(Object.keys(STAGE_LABEL) as Stage[]).map((st) => {
               const n = items.filter((i) => i.stage === st).length;
