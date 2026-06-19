@@ -168,7 +168,9 @@ export const getPcpIntelligence = createServerFn({ method: "GET" })
 
     const suggestions: Array<{
       from_supplier: string;
+      from_supplier_id: string;
       to_supplier: string;
+      to_supplier_id: string;
       order_code: string | null;
       order_id: string;
       pieces: number;
@@ -181,7 +183,9 @@ export const getPcpIntelligence = createServerFn({ method: "GET" })
       if (lateOrder && target) {
         suggestions.push({
           from_supplier: over.supplier_name,
+          from_supplier_id: over.supplier_id,
           to_supplier: target.supplier_name,
+          to_supplier_id: target.supplier_id,
           order_code: lateOrder.code,
           order_id: lateOrder.id,
           pieces: lateOrder.quantity_remaining,
@@ -232,4 +236,39 @@ export const upsertSupplierCapacity = createServerFn({ method: "POST" })
       );
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+export const applyRebalanceSuggestion = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        orderId: z.string().uuid(),
+        toSupplierId: z.string().uuid(),
+        fromSupplier: z.string().optional(),
+        toSupplier: z.string().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: existing, error: e1 } = await supabase
+      .from("production_orders")
+      .select("id, code, supplier_id, notes")
+      .eq("id", data.orderId)
+      .eq("owner_id", userId)
+      .single();
+    if (e1) throw new Error(e1.message);
+
+    const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+    const trail = `[rebalance ${stamp}] ${data.fromSupplier ?? existing.supplier_id ?? "—"} → ${data.toSupplier ?? data.toSupplierId.slice(0, 6)}`;
+    const newNotes = existing.notes ? `${existing.notes}\n${trail}` : trail;
+
+    const { error } = await supabase
+      .from("production_orders")
+      .update({ supplier_id: data.toSupplierId, notes: newNotes })
+      .eq("id", data.orderId)
+      .eq("owner_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true, code: existing.code };
   });
