@@ -34,6 +34,42 @@ type Props = {
   onOpenChange: (v: boolean) => void;
 };
 
+type TechSheetVersion = {
+  id: string;
+  version_number: number;
+  label: string | null;
+  notes: string | null;
+  created_at: string;
+  created_by: string | null;
+};
+
+type DiffChange = {
+  field: string;
+  from: unknown;
+  to: unknown;
+};
+
+type DiffItem = {
+  id?: string | null;
+  name?: string | null;
+  point?: string | null;
+};
+
+type DiffSection = {
+  added: DiffItem[];
+  removed: DiffItem[];
+  changed: { key: string; row: DiffItem; changes: DiffChange[] }[];
+};
+
+type VersionDiff = {
+  from: Pick<TechSheetVersion, "id" | "version_number" | "label" | "created_at">;
+  to: Pick<TechSheetVersion, "id" | "version_number" | "label" | "created_at">;
+  header: DiffChange[];
+  materials: DiffSection;
+  operations: DiffSection;
+  measurements: DiffSection;
+};
+
 export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Props) {
   const qc = useQueryClient();
   const listFn = useServerFn(listTechSheetVersions);
@@ -44,7 +80,7 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
 
   const { data: versions = [], isLoading } = useQuery({
     queryKey: versionsKey,
-    queryFn: () => listFn({ data: { techSheetId } }),
+    queryFn: () => listFn({ data: { techSheetId } }) as Promise<TechSheetVersion[]>,
     enabled: open,
   });
 
@@ -54,13 +90,13 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
   const create = useMutation({
     mutationFn: () =>
       createFn({ data: { techSheetId, label: label || undefined, notes: notes || undefined } }),
-    onSuccess: (v: any) => {
+    onSuccess: (v: { version_number: number }) => {
       toast.success(`Snapshot v${v.version_number} criado`);
       setLabel("");
       setNotes("");
       qc.invalidateQueries({ queryKey: versionsKey });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erro ao criar snapshot"),
+    onError: (e: Error) => toast.error(e.message || "Erro ao criar snapshot"),
   });
 
   const [fromId, setFromId] = useState<string>("");
@@ -68,14 +104,14 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
 
   useMemo(() => {
     if (versions.length >= 2) {
-      setFromId((id) => id || (versions[1] as any).id);
-      setToId((id) => id || (versions[0] as any).id);
+      setFromId((id) => id || versions[1].id);
+      setToId((id) => id || versions[0].id);
     }
   }, [versions]);
 
   const diff = useMutation({
-    mutationFn: () => diffFn({ data: { fromId, toId } }),
-    onError: (e: any) => toast.error(e?.message ?? "Erro ao comparar"),
+    mutationFn: () => diffFn({ data: { fromId, toId } }) as Promise<VersionDiff>,
+    onError: (e: Error) => toast.error(e.message || "Erro ao comparar"),
   });
 
   return (
@@ -134,7 +170,7 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
             </div>
           ) : (
             <div className="space-y-2">
-              {versions.map((v: any) => (
+              {versions.map((v) => (
                 <div
                   key={v.id}
                   className="rounded-lg border border-border bg-background/40 p-3 text-sm flex items-center justify-between"
@@ -169,7 +205,7 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {versions.map((v: any) => (
+                    {versions.map((v) => (
                       <SelectItem key={v.id} value={v.id}>
                         v{v.version_number} {v.label ? `· ${v.label}` : ""}
                       </SelectItem>
@@ -184,7 +220,7 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    {versions.map((v: any) => (
+                    {versions.map((v) => (
                       <SelectItem key={v.id} value={v.id}>
                         v{v.version_number} {v.label ? `· ${v.label}` : ""}
                       </SelectItem>
@@ -215,8 +251,8 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
   );
 }
 
-function DiffView({ diff }: { diff: any }) {
-  const sections: { title: string; data: { added: any[]; removed: any[]; changed: any[] } }[] = [
+function DiffView({ diff }: { diff: VersionDiff }) {
+  const sections: { title: string; data: DiffSection }[] = [
     { title: "Materiais", data: diff.materials },
     { title: "Operações", data: diff.operations },
     { title: "Medidas", data: diff.measurements },
@@ -240,7 +276,7 @@ function DiffView({ diff }: { diff: any }) {
         <div className="rounded-lg border border-border p-3">
           <div className="text-xs font-semibold mb-2">Cabeçalho</div>
           <ul className="space-y-1 text-xs">
-            {diff.header.map((c: any) => (
+            {diff.header.map((c) => (
               <li key={c.field}>
                 <span className="font-mono">{c.field}</span>:{" "}
                 <span className="text-destructive line-through">{format(c.from)}</span> →{" "}
@@ -258,21 +294,21 @@ function DiffView({ diff }: { diff: any }) {
           <div key={s.title} className="rounded-lg border border-border p-3">
             <div className="text-xs font-semibold mb-2">{s.title}</div>
             <div className="space-y-1 text-xs">
-              {added.map((r: any, i: number) => (
+              {added.map((r, i) => (
                 <div key={`a-${i}`} className="text-emerald-500">
                   + {summarize(r)}
                 </div>
               ))}
-              {removed.map((r: any, i: number) => (
+              {removed.map((r, i) => (
                 <div key={`r-${i}`} className="text-destructive">
                   − {summarize(r)}
                 </div>
               ))}
-              {changed.map((c: any, i: number) => (
+              {changed.map((c, i) => (
                 <div key={`c-${i}`}>
                   <div className="font-medium">~ {summarize(c.row)}</div>
                   <ul className="ml-4 list-disc">
-                    {c.changes.map((ch: any) => (
+                    {c.changes.map((ch) => (
                       <li key={ch.field}>
                         <span className="font-mono">{ch.field}</span>:{" "}
                         <span className="text-destructive line-through">{format(ch.from)}</span> →{" "}
@@ -290,12 +326,12 @@ function DiffView({ diff }: { diff: any }) {
   );
 }
 
-function format(v: any) {
+function format(v: unknown) {
   if (v === null || v === undefined || v === "") return "—";
   if (typeof v === "object") return JSON.stringify(v);
   return String(v);
 }
 
-function summarize(r: any) {
+function summarize(r: DiffItem) {
   return r.name ?? r.point ?? r.id ?? "(item)";
 }

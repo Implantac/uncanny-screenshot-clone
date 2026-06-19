@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ShieldAlert, Plus, CheckCircle2, Clock, AlertOctagon, Trash2 } from "lucide-react";
+import {
+  ShieldAlert,
+  Plus,
+  CheckCircle2,
+  Clock,
+  AlertOctagon,
+  Trash2,
+  type LucideIcon,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +45,18 @@ const statusTone: Record<string, string> = {
   concluida: "bg-success/15 text-success",
   verificada: "bg-success text-success-foreground",
   cancelada: "bg-muted text-muted-foreground",
+};
+
+type CapaForm = {
+  title: string;
+  problem: string;
+  root_cause: string;
+  corrective_action: string;
+  preventive_action: string;
+  severity: CapaRow["severity"];
+  status: CapaRow["status"];
+  due_date: string;
+  effectiveness_check: string;
 };
 
 export function CapaPanel() {
@@ -136,7 +156,7 @@ function MiniCard({
   value,
   tone,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: number;
   tone: string;
@@ -229,7 +249,7 @@ function CapaDialog({
   onSaved: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<any>(() => ({
+  const [form, setForm] = useState<CapaForm>(() => ({
     title: capa?.title ?? "",
     problem: capa?.problem ?? "",
     root_cause: capa?.root_cause ?? "",
@@ -248,7 +268,7 @@ function CapaDialog({
       setOpen(false);
       onSaved();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Falha ao salvar"),
+    onError: (e: Error) => toast.error(e.message || "Falha ao salvar"),
   });
 
   return (

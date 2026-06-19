@@ -115,3 +115,7 @@ Critério de remoção definitiva: quando os módulos equivalentes do ERP (Marke
 - **Onda 10** ✅ — Grade/Cor/SKU: `product_color_options`, `product_size_options`, `product_variants`, `production_order_grid`, `service_order_grid`. UI `/variantes` com gerador de combinações.
 - **Onda 11** ✅ — Cadeia & Qualidade: `supplier_capabilities`, `supplier_compliance`, `quality_inspections` (AQL) em `/inspecoes`.
 - **Onda 12** ✅ — DPP versionado: `dpp_records` + `dpp_views`, publicação com hash SHA-256, QR público em `/dpp/:id` lê última versão publicada.
+- **Onda 13** ✅ — Ficha técnica versionada: `tech_sheet_versions`, snapshots e diff visual em drawer.
+- **Onda 14** ✅ — Qualidade CAPA: `quality_capa`, painel de ações corretivas/preventivas, eficácia e status.
+- **Onda 15** ✅ — Almoxarifado técnico: cores interna/fornecedor e lote do fornecedor em itens/movimentações.
+- **Onda 16** ✅ — PCP Enterprise: modo Kanban por lote, drawer de referências do lote e simulador de capacidade.

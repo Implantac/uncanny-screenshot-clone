@@ -1,8 +1,25 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database, Json } from "@/integrations/supabase/types";
 import { z } from "zod";
 
-async function buildSnapshot(supabase: any, sheetId: string) {
+type TechSheetVersionRow = Database["public"]["Tables"]["tech_sheet_versions"]["Row"];
+type SnapshotRow = { [key: string]: Json | undefined; id?: string | null };
+
+type TechSheetSnapshot = {
+  sheet: SnapshotRow | null;
+  materials: SnapshotRow[];
+  operations: SnapshotRow[];
+  measurements: SnapshotRow[];
+};
+
+type DiffChange = { field: string; from: Json; to: Json };
+
+async function buildSnapshot(
+  supabase: SupabaseClient<Database>,
+  sheetId: string,
+): Promise<TechSheetSnapshot> {
   const [{ data: sheet }, { data: materials }, { data: operations }, { data: measurements }] =
     await Promise.all([
       supabase.from("tech_sheets").select("*").eq("id", sheetId).maybeSingle(),
@@ -11,10 +28,10 @@ async function buildSnapshot(supabase: any, sheetId: string) {
       supabase.from("tech_sheet_measurements").select("*").eq("tech_sheet_id", sheetId),
     ]);
   return {
-    sheet,
-    materials: materials ?? [],
-    operations: operations ?? [],
-    measurements: measurements ?? [],
+    sheet: (sheet as SnapshotRow | null) ?? null,
+    materials: (materials ?? []) as SnapshotRow[],
+    operations: (operations ?? []) as SnapshotRow[],
+    measurements: (measurements ?? []) as SnapshotRow[],
   };
 }
 
@@ -53,7 +70,7 @@ export const createTechSheetVersion = createServerFn({ method: "POST" })
     if (sErr) throw sErr;
     if (!sheet) throw new Error("Ficha não encontrada");
 
-    const snapshot = await buildSnapshot(supabase, data.techSheetId);
+    const snapshot = await buildSnapshot(supabase as SupabaseClient<Database>, data.techSheetId);
 
     const { data: last } = await supabase
       .from("tech_sheet_versions")
@@ -72,7 +89,7 @@ export const createTechSheetVersion = createServerFn({ method: "POST" })
         version_number: nextNum,
         label: data.label ?? null,
         notes: data.notes ?? null,
-        snapshot,
+        snapshot: snapshot as Json,
         created_by: userId,
       })
       .select("id, version_number")
@@ -96,7 +113,7 @@ export const getTechSheetVersion = createServerFn({ method: "POST" })
 
 type Snap = Awaited<ReturnType<typeof buildSnapshot>>;
 
-function diffHeader(a: any, b: any) {
+function diffHeader(a: SnapshotRow | null, b: SnapshotRow | null) {
   const fields = [
     "status",
     "size_range",
@@ -107,7 +124,7 @@ function diffHeader(a: any, b: any) {
     "overhead_pct",
     "notes",
   ];
-  const changes: { field: string; from: any; to: any }[] = [];
+  const changes: DiffChange[] = [];
   for (const f of fields) {
     if ((a?.[f] ?? null) !== (b?.[f] ?? null))
       changes.push({ field: f, from: a?.[f] ?? null, to: b?.[f] ?? null });
@@ -115,7 +132,7 @@ function diffHeader(a: any, b: any) {
   return changes;
 }
 
-function diffList<T extends Record<string, any>>(
+function diffList<T extends SnapshotRow>(
   a: T[],
   b: T[],
   keyOf: (r: T) => string,
@@ -125,7 +142,7 @@ function diffList<T extends Record<string, any>>(
   const mb = new Map(b.map((r) => [keyOf(r), r]));
   const added: T[] = [];
   const removed: T[] = [];
-  const changed: { key: string; row: T; changes: { field: string; from: any; to: any }[] }[] = [];
+  const changed: { key: string; row: T; changes: DiffChange[] }[] = [];
   for (const [k, rowB] of mb) {
     const rowA = ma.get(k);
     if (!rowA) {
@@ -150,12 +167,13 @@ export const diffTechSheetVersions = createServerFn({ method: "POST" })
       .select("id, version_number, label, snapshot, created_at")
       .in("id", [data.fromId, data.toId]);
     if (error) throw error;
-    const from = rows?.find((r: any) => r.id === data.fromId);
-    const to = rows?.find((r: any) => r.id === data.toId);
+    const typedRows = (rows ?? []) as TechSheetVersionRow[];
+    const from = typedRows.find((r) => r.id === data.fromId);
+    const to = typedRows.find((r) => r.id === data.toId);
     if (!from || !to) throw new Error("Versões não encontradas");
 
-    const sa = from.snapshot as Snap;
-    const sb = to.snapshot as Snap;
+    const sa = from.snapshot as unknown as Snap;
+    const sb = to.snapshot as unknown as Snap;
 
     return {
       from: {
@@ -174,19 +192,19 @@ export const diffTechSheetVersions = createServerFn({ method: "POST" })
       materials: diffList(
         sa.materials,
         sb.materials,
-        (r: any) => r.id ?? `${r.name}-${r.color ?? ""}`,
+        (r) => String(r.id ?? `${r.name ?? ""}-${r.color ?? ""}`),
         ["name", "supplier", "color", "consumption", "unit", "unit_cost", "total_cost", "notes"],
       ),
       operations: diffList(
         sa.operations,
         sb.operations,
-        (r: any) => r.id ?? `${r.name}-${r.position ?? 0}`,
+        (r) => String(r.id ?? `${r.name ?? ""}-${r.position ?? 0}`),
         ["name", "position", "sam", "unit_cost", "total_cost", "notes"],
       ),
       measurements: diffList(
         sa.measurements,
         sb.measurements,
-        (r: any) => r.id ?? `${r.point}-${r.size ?? ""}`,
+        (r) => String(r.id ?? `${r.point ?? ""}-${r.size ?? ""}`),
         ["point", "size", "value", "tolerance", "notes"],
       ),
     };

@@ -1,28 +1,20 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 import { z } from "zod";
 
-export type CapaRow = {
-  id: string;
-  title: string;
-  problem: string;
-  root_cause: string | null;
-  corrective_action: string | null;
-  preventive_action: string | null;
-  severity: string;
-  status: string;
-  due_date: string | null;
-  closed_at: string | null;
-  verified_at: string | null;
-  effectiveness_check: string | null;
-  supplier_id: string | null;
+type QualityCapaRow = Database["public"]["Tables"]["quality_capa"]["Row"];
+type QualityCapaInsert = Database["public"]["Tables"]["quality_capa"]["Insert"];
+type QualityCapaUpdate = Database["public"]["Tables"]["quality_capa"]["Update"];
+
+type CapaJoinedRow = QualityCapaRow & {
+  suppliers?: { name: string | null } | null;
+  production_orders?: { code: string | null } | null;
+};
+
+export type CapaRow = QualityCapaRow & {
   supplier_name?: string | null;
-  inspection_id: string | null;
-  occurrence_id: string | null;
-  order_id: string | null;
   order_code?: string | null;
-  created_at: string;
-  updated_at: string;
 };
 
 export const listCapas = createServerFn({ method: "POST" })
@@ -46,7 +38,7 @@ export const listCapas = createServerFn({ method: "POST" })
     if (data.supplierId) q = q.eq("supplier_id", data.supplierId);
     const { data: rows, error } = await q;
     if (error) throw error;
-    return (rows ?? []).map((r: any) => ({
+    return ((rows ?? []) as CapaJoinedRow[]).map((r) => ({
       ...r,
       supplier_name: r.suppliers?.name ?? null,
       order_code: r.production_orders?.code ?? null,
@@ -79,7 +71,7 @@ export const upsertCapa = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const payload: any = { ...data, owner_id: userId };
+    const payload: QualityCapaInsert = { ...data, owner_id: userId };
     if (data.status === "concluida" && !payload.closed_at)
       payload.closed_at = new Date().toISOString();
     if (data.status === "verificada") {
@@ -88,10 +80,15 @@ export const upsertCapa = createServerFn({ method: "POST" })
       if (!payload.closed_at) payload.closed_at = new Date().toISOString();
     }
     const { data: row, error } = data.id
-      ? await supabase.from("quality_capa").update(payload).eq("id", data.id).select().single()
+      ? await supabase
+          .from("quality_capa")
+          .update(payload as QualityCapaUpdate)
+          .eq("id", data.id)
+          .select()
+          .single()
       : await supabase.from("quality_capa").insert(payload).select().single();
     if (error) throw error;
-    return row as any;
+    return row as QualityCapaRow;
   });
 
 export const deleteCapa = createServerFn({ method: "POST" })

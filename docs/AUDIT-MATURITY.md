@@ -48,16 +48,16 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## 5. Ficha Técnica
 
-| Capacidade                              | Status | Onde                            | Evolução                                |
-| --------------------------------------- | ------ | ------------------------------- | --------------------------------------- |
-| Tecidos/aviamentos/etiquetas/embalagens | ✅     | `tech_sheet_materials` (Onda 9) | —                                       |
-| Bordado/silk                            | 🟡     | tipo livre em materials         | Tipos padronizados + área aplicação     |
-| Medidas (POM)                           | ✅     | `tech_sheet_measurements`       | —                                       |
-| Composição                              | ✅     | `tech_sheets`                   | —                                       |
-| Imagens / anexos                        | ✅     | `tech_sheet_attachments`        | —                                       |
-| **Versionamento de ficha**              | ⚪     | —                               | Tabela `tech_sheet_versions` (snapshot) |
-| **Diff entre versões**                  | ⚪     | —                               | UI lado-a-lado                          |
-| Aprovações                              | ✅     | `tech_sheets.status`            | —                                       |
+| Capacidade                              | Status | Onde                            | Evolução                            |
+| --------------------------------------- | ------ | ------------------------------- | ----------------------------------- |
+| Tecidos/aviamentos/etiquetas/embalagens | ✅     | `tech_sheet_materials` (Onda 9) | —                                   |
+| Bordado/silk                            | 🟡     | tipo livre em materials         | Tipos padronizados + área aplicação |
+| Medidas (POM)                           | ✅     | `tech_sheet_measurements`       | —                                   |
+| Composição                              | ✅     | `tech_sheets`                   | —                                   |
+| Imagens / anexos                        | ✅     | `tech_sheet_attachments`        | —                                   |
+| **Versionamento de ficha**              | ✅     | `tech_sheet_versions` + drawer  | —                                   |
+| **Diff entre versões**                  | ✅     | `tech-sheet-versions-drawer`    | —                                   |
+| Aprovações                              | ✅     | `tech_sheets.status`            | —                                   |
 
 ## 6. BOM (Bill of Materials)
 
@@ -88,24 +88,24 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## 9. PCP & Capacidade
 
-| Capacidade                                | Status | Onde                               | Evolução                           |
-| ----------------------------------------- | ------ | ---------------------------------- | ---------------------------------- |
-| Kanban OPs                                | ✅     | `/pcp-kanban` (Ondas 5, 16)        | —                                  |
-| Stages configuráveis                      | ✅     | `pcp_stages`                       | —                                  |
-| Capacidade por setor/linha/facção         | 🟡     | `/capacity`                        | Adicionar dimensão facção          |
-| **Simulador "consigo entregar X até Y?"** | ⚪     | —                                  | Server fn usando capacidade + fila |
-| **Kanban modo Lote**                      | ⚪     | só modo referência                 | Toggle no header do `/pcp-kanban`  |
-| Predição de atraso IA                     | ✅     | `delay-prediction` (Onda anterior) | —                                  |
+| Capacidade                                | Status | Onde                                | Evolução                  |
+| ----------------------------------------- | ------ | ----------------------------------- | ------------------------- |
+| Kanban OPs                                | ✅     | `/pcp-kanban` (Ondas 5, 16)         | —                         |
+| Stages configuráveis                      | ✅     | `pcp_stages`                        | —                         |
+| Capacidade por setor/linha/facção         | 🟡     | `/capacity`                         | Adicionar dimensão facção |
+| **Simulador "consigo entregar X até Y?"** | ✅     | `capacity-simulator`                | —                         |
+| **Kanban modo Lote**                      | ✅     | `/pcp-kanban` toggle `ordens/lotes` | —                         |
+| Predição de atraso IA                     | ✅     | `delay-prediction` (Onda anterior)  | —                         |
 
 ## 10. Qualidade
 
-| Capacidade                      | Status | Onde                                        | Evolução                                     |
-| ------------------------------- | ------ | ------------------------------------------- | -------------------------------------------- |
-| Não conformidades               | ✅     | `production_occurrences`                    | —                                            |
-| Inspeções AQL                   | ✅     | `quality_inspections` (Onda 11)             | —                                            |
-| Indicadores / ranking           | ✅     | `/quality` + Quality Intelligence (Onda 18) | —                                            |
-| **CAPA (Corretiva/Preventiva)** | ⚪     | —                                           | Tabela `quality_actions` ligada a ocorrência |
-| Ranking por fornecedor          | ✅     | Quality Intelligence                        | —                                            |
+| Capacidade                      | Status | Onde                                        | Evolução |
+| ------------------------------- | ------ | ------------------------------------------- | -------- |
+| Não conformidades               | ✅     | `production_occurrences`                    | —        |
+| Inspeções AQL                   | ✅     | `quality_inspections` (Onda 11)             | —        |
+| Indicadores / ranking           | ✅     | `/quality` + Quality Intelligence (Onda 18) | —        |
+| **CAPA (Corretiva/Preventiva)** | ✅     | `quality_capa` + `CapaPanel`                | —        |
+| Ranking por fornecedor          | ✅     | Quality Intelligence                        | —        |
 
 ## 11. Fornecedores
 
@@ -120,13 +120,13 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## 12. Almoxarifado
 
-| Capacidade                       | Status | Onde                                         | Evolução                                  |
-| -------------------------------- | ------ | -------------------------------------------- | ----------------------------------------- |
-| Itens, saldo, movimentações      | ✅     | `inventory_items`, `stock_movements`         | —                                         |
-| Foto do material                 | 🟡     | `storage-uploader` integrado (onda anterior) | Garantir em todos os itens                |
-| **Cor interna × cor fornecedor** | ⚪     | —                                            | Campos `internal_color`, `supplier_color` |
-| **Lote do fornecedor**           | ⚪     | —                                            | Campo `supplier_lot` em movimentação      |
-| Rastreabilidade                  | 🟡     | `/cadeia-360`                                | Vincular lote→OP→produto                  |
+| Capacidade                       | Status | Onde                                         | Evolução                   |
+| -------------------------------- | ------ | -------------------------------------------- | -------------------------- |
+| Itens, saldo, movimentações      | ✅     | `inventory_items`, `stock_movements`         | —                          |
+| Foto do material                 | 🟡     | `storage-uploader` integrado (onda anterior) | Garantir em todos os itens |
+| **Cor interna × cor fornecedor** | ✅     | `inventory_items`, `stock_movements`         | —                          |
+| **Lote do fornecedor**           | ✅     | `stock_movements.supplier_lot`               | —                          |
+| Rastreabilidade                  | 🟡     | `/cadeia-360`                                | Vincular lote→OP→produto   |
 
 ## 13. Marketing de Moda
 
@@ -163,15 +163,15 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## Top 10 lacunas priorizadas (ordem sugerida)
 
-1. **Versionamento de ficha técnica + diff** (§5) — base PLM Enterprise, hoje ausente.
-2. **Custo real × teórico** (§8) — dados já existem, falta consolidar.
-3. **CAPA na Qualidade** (§10) — fecha o ciclo de não-conformidade.
-4. **Kanban modo Lote** (§9) — toggle, sem nova tela.
-5. **Simulador de capacidade** (§9) — "entrego X até Y?".
-6. **Portal Fornecedor 2.0 — upload de amostra** (§11).
-7. **Almoxarifado: cor interna/fornecedor + lote** (§12).
-8. **ROI marketing por produto/coleção** (§13).
-9. **BOM reutilizável / templates** (§6).
-10. **Digital Twin agregado da coleção** (§15).
+1. **Custo real × teórico** (§8) — dados já existem, falta consolidar.
+2. **Portal Fornecedor 2.0 — upload de amostra** (§11).
+3. **ROI marketing por produto/coleção** (§13).
+4. **BOM reutilizável / templates** (§6).
+5. **Digital Twin agregado da coleção** (§15).
+6. **Subcoleções / cápsulas** (§2) — `parent_id` em `collections`.
+7. **BOP responsável por etapa** (§7) — campo `responsible_role`.
+8. **Custo ensaio/foto/vídeo/tráfego por produto** (§13).
+9. **Biblioteca global de referências** (§1).
+10. **Curva ABC por coleção** (§2).
 
 Nenhum item acima cria tela nova desnecessária — todos estendem módulo/tabela existente.
