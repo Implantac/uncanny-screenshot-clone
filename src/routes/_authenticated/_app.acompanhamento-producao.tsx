@@ -341,8 +341,6 @@ function AcompanhamentoProducao() {
     return Array.from(m.values()).sort((a, b) => b.pecas - a.pecas);
   }, [filtered]);
 
-  }, [filtered]);
-
   // INSIGHTS — Coordenador PCP: gargalos, riscos e sugestões com motivo
   const insights = useMemo(() => {
     const cards: Array<{
