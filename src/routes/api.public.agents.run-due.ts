@@ -19,15 +19,15 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const cronSecret = request.headers.get("x-cron-secret") ?? "";
-        const expectedSecret = process.env.CRON_SECRET ?? "";
-        // SUPABASE_PUBLISHABLE_KEY is a public key and must NOT be accepted as auth.
-        if (!expectedSecret) return new Response("CRON_SECRET not configured", { status: 503 });
-        // timingSafeEqual-style length+compare via Buffer
-        const a = Buffer.from(cronSecret);
-        const b = Buffer.from(expectedSecret);
-        const ok = a.length === b.length && (await import("crypto")).timingSafeEqual(a, b);
-        if (!ok) return new Response("Unauthorized", { status: 401 });
+        // Canonical pg_cron auth: validate `apikey` header against the project publishable key.
+        const provided = request.headers.get("apikey") ?? "";
+        const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
+        if (!expected) return new Response("Server misconfigured", { status: 503 });
+        const a = Buffer.from(provided);
+        const b = Buffer.from(expected);
+        const authed =
+          a.length === b.length && (await import("crypto")).timingSafeEqual(a, b);
+        if (!authed) return new Response("Unauthorized", { status: 401 });
 
         const apiKey = process.env.LOVABLE_API_KEY;
         if (!apiKey) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
