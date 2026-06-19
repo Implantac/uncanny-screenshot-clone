@@ -357,6 +357,7 @@ function CapaDialog({
               onChange={(e) => setForm({ ...form, effectiveness_check: e.target.value })}
             />
           )}
+          {capa && <ReinspectionLoop capaId={capa.id} capaStatus={capa.status} onChanged={onSaved} />}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>
