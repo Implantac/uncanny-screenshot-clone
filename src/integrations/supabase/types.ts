@@ -1620,6 +1620,9 @@ export type Database = {
           last_seen_at: string
           owner_id: string
           platform: string
+          push_enabled: boolean
+          push_provider: string | null
+          push_token: string | null
           updated_at: string
           user_name: string
         }
@@ -1631,6 +1634,9 @@ export type Database = {
           last_seen_at?: string
           owner_id: string
           platform: string
+          push_enabled?: boolean
+          push_provider?: string | null
+          push_token?: string | null
           updated_at?: string
           user_name: string
         }
@@ -1642,6 +1648,9 @@ export type Database = {
           last_seen_at?: string
           owner_id?: string
           platform?: string
+          push_enabled?: boolean
+          push_provider?: string | null
+          push_token?: string | null
           updated_at?: string
           user_name?: string
         }
@@ -2797,6 +2806,65 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          delivered_at: string | null
+          device_id: string | null
+          error: string | null
+          id: string
+          kind: string
+          link: string | null
+          owner_id: string
+          payload: Json | null
+          sent_at: string
+          severity: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          device_id?: string | null
+          error?: string | null
+          id?: string
+          kind?: string
+          link?: string | null
+          owner_id: string
+          payload?: Json | null
+          sent_at?: string
+          severity?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          device_id?: string | null
+          error?: string | null
+          id?: string
+          kind?: string
+          link?: string | null
+          owner_id?: string
+          payload?: Json | null
+          sent_at?: string
+          severity?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_notifications_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "mobile_devices"
             referencedColumns: ["id"]
           },
         ]

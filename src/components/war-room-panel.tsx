@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   AlertOctagon,
   ShieldCheck,
@@ -13,8 +14,10 @@ import {
   DollarSign,
   Megaphone,
   ArrowRight,
+  Bell,
 } from "lucide-react";
 import { getWarRoomBottlenecks, type Bottleneck } from "@/lib/war-room.functions";
+import { enqueuePushForCurrentUser } from "@/lib/push-notifications.functions";
 
 const MODULE_META: Record<
   Bottleneck["module"],
@@ -35,10 +38,33 @@ const SEV_BADGE: Record<Bottleneck["severity"], string> = {
 
 export function WarRoomPanel() {
   const fn = useServerFn(getWarRoomBottlenecks);
+  const pushFn = useServerFn(enqueuePushForCurrentUser);
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["war-room-bottlenecks"],
     queryFn: () => fn(),
     refetchInterval: 60_000,
+  });
+
+  const pushMutation = useMutation({
+    mutationFn: (b: Bottleneck) =>
+      pushFn({
+        data: {
+          title: `[${b.severity.toUpperCase()}] ${b.title}`,
+          body: b.detail,
+          link: b.action.route ?? undefined,
+          kind: "war_room",
+          severity: b.severity,
+          payload: { bottleneck_id: b.id, module: b.module },
+        },
+      }),
+    onSuccess: (res) => {
+      if (res.enqueued > 0) {
+        toast.success(`Push enviado para ${res.enqueued} dispositivo(s)`);
+      } else {
+        toast.warning("Nenhum dispositivo mobile ativo — registre um em /mobile");
+      }
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   if (isLoading) {
@@ -116,6 +142,16 @@ export function WarRoomPanel() {
                   {b.metric}
                 </div>
               )}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="shrink-0"
+                title="Enviar push para meu mobile"
+                disabled={pushMutation.isPending}
+                onClick={() => pushMutation.mutate(b)}
+              >
+                <Bell className="size-3.5" />
+              </Button>
               {b.action.route && (
                 <Button asChild size="sm" variant="ghost" className="shrink-0">
                   <Link to={b.action.route as string}>
