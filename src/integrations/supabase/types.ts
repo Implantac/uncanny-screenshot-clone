@@ -3442,6 +3442,47 @@ export type Database = {
           },
         ]
       }
+      supplier_capacity: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          pieces_per_day: number
+          supplier_id: string
+          updated_at: string
+          working_days_per_week: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          pieces_per_day?: number
+          supplier_id: string
+          updated_at?: string
+          working_days_per_week?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          pieces_per_day?: number
+          supplier_id?: string
+          updated_at?: string
+          working_days_per_week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_capacity_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_compliance: {
         Row: {
           attachment_url: string | null
