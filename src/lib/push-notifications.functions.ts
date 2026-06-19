@@ -8,7 +8,7 @@ const EnqueueInput = z.object({
   link: z.string().max(500).optional(),
   kind: z.string().max(40).default("control_tower"),
   severity: z.enum(["critica", "alta", "media", "baixa"]).default("media"),
-  payload: z.record(z.unknown()).optional(),
+  payload: z.any().optional(),
 });
 
 export const enqueuePushForCurrentUser = createServerFn({ method: "POST" })
