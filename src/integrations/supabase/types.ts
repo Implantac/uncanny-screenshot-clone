@@ -92,6 +92,69 @@ export type Database = {
         }
         Relationships: []
       }
+      assortment_plan: {
+        Row: {
+          channel: Database["public"]["Enums"]["sales_channel"]
+          collection_id: string
+          created_at: string
+          family_id: string | null
+          id: string
+          notes: string | null
+          owner_id: string
+          price_tier: string | null
+          target_margin_pct: number | null
+          target_revenue: number
+          target_skus: number
+          target_units: number
+          updated_at: string
+        }
+        Insert: {
+          channel: Database["public"]["Enums"]["sales_channel"]
+          collection_id: string
+          created_at?: string
+          family_id?: string | null
+          id?: string
+          notes?: string | null
+          owner_id: string
+          price_tier?: string | null
+          target_margin_pct?: number | null
+          target_revenue?: number
+          target_skus?: number
+          target_units?: number
+          updated_at?: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["sales_channel"]
+          collection_id?: string
+          created_at?: string
+          family_id?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          price_tier?: string | null
+          target_margin_pct?: number | null
+          target_revenue?: number
+          target_skus?: number
+          target_units?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assortment_plan_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assortment_plan_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "product_families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -288,6 +351,7 @@ export type Database = {
           collection_id: string
           created_at: string
           display_order: number
+          family_id: string | null
           id: string
           intro_season: string | null
           notes: string | null
@@ -302,6 +366,7 @@ export type Database = {
           collection_id: string
           created_at?: string
           display_order?: number
+          family_id?: string | null
           id?: string
           intro_season?: string | null
           notes?: string | null
@@ -316,6 +381,7 @@ export type Database = {
           collection_id?: string
           created_at?: string
           display_order?: number
+          family_id?: string | null
           id?: string
           intro_season?: string | null
           notes?: string | null
@@ -331,6 +397,13 @@ export type Database = {
             columns: ["collection_id"]
             isOneToOne: false
             referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_products_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "product_families"
             referencedColumns: ["id"]
           },
           {
@@ -1502,6 +1575,53 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_families: {
+        Row: {
+          collection_id: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          name: string
+          owner_id: string
+          price_tier: string | null
+          target_margin_pct: number | null
+          updated_at: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name: string
+          owner_id: string
+          price_tier?: string | null
+          target_margin_pct?: number | null
+          updated_at?: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name?: string
+          owner_id?: string
+          price_tier?: string | null
+          target_margin_pct?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_families_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
             referencedColumns: ["id"]
           },
         ]
@@ -4003,6 +4123,12 @@ export type Database = {
         | "aprovado"
         | "recebido"
         | "cancelado"
+      sales_channel:
+        | "ecommerce"
+        | "varejo_proprio"
+        | "multimarcas"
+        | "franquia"
+        | "outlet"
       sample_review_status:
         | "pending_review"
         | "approved"
@@ -4223,6 +4349,13 @@ export const Constants = {
         "aprovado",
         "recebido",
         "cancelado",
+      ],
+      sales_channel: [
+        "ecommerce",
+        "varejo_proprio",
+        "multimarcas",
+        "franquia",
+        "outlet",
       ],
       sample_review_status: [
         "pending_review",
