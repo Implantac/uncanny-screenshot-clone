@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   Factory,
   AlertTriangle,
@@ -14,8 +15,12 @@ import {
   History,
   CheckCircle2,
   CircleSlash,
+  Sparkles,
+  TrendingDown,
+  ArrowRight,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
+import { moveOrderToColumn } from "@/lib/production-tracking.functions";
 
 export const Route = createFileRoute("/_authenticated/_app/acompanhamento-producao")({
   component: AcompanhamentoProducao,
@@ -189,6 +194,7 @@ async function load(): Promise<Order[]> {
 }
 
 function AcompanhamentoProducao() {
+  const qc = useQueryClient();
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["acompanhamento-producao"],
     queryFn: load,
@@ -206,6 +212,18 @@ function AcompanhamentoProducao() {
   const [dueTo, setDueTo] = useState<string>("");
   const [drawer, setDrawer] = useState<Order | null>(null);
   const [zoomCol, setZoomCol] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+
+  const move = useMutation({
+    mutationFn: (vars: { orderId: string; toColumn: string }) =>
+      moveOrderToColumn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Lote movido");
+      qc.invalidateQueries({ queryKey: ["acompanhamento-producao"] });
+    },
+    onError: (e: Error) => toast.error(e.message ?? "Falha ao mover"),
+  });
 
   const suppliers = useMemo(() => {
     const m = new Map<string, string>();
@@ -322,6 +340,86 @@ function AcompanhamentoProducao() {
       });
     return Array.from(m.values()).sort((a, b) => b.pecas - a.pecas);
   }, [filtered]);
+
+  // INSIGHTS — Coordenador PCP: gargalos, riscos e sugestões com motivo
+  const insights = useMemo(() => {
+    const cards: Array<{
+      tone: "warn" | "danger" | "ok" | "info";
+      title: string;
+      reason: string;
+      action?: { label: string; onClick: () => void };
+    }> = [];
+
+    // 1) Coluna com mais atrasados
+    const colLate = sectorSummary
+      .filter((s) => s.atrasado > 0)
+      .sort((a, b) => b.atrasado - a.atrasado)[0];
+    if (colLate) {
+      cards.push({
+        tone: "danger",
+        title: `${colLate.setor}: ${colLate.atrasado} lote(s) atrasado(s)`,
+        reason: `Este setor concentra o maior volume de atrasos no recorte atual (${colLate.pecas.toLocaleString("pt-BR")} peças, ${colLate.lotes} lote(s)). Priorize para destravar o fluxo a jusante.`,
+        action: { label: "Filtrar setor", onClick: () => setColKey(colLate.key) },
+      });
+    }
+
+    // 2) Lotes parados há muito tempo no mesmo setor (top 1)
+    const stalled = filtered
+      .filter((o) => o.stage !== "entregue")
+      .map((o) => ({ o, d: daysSince(o.stage_updated_at) }))
+      .sort((a, b) => b.d - a.d)[0];
+    if (stalled && stalled.d >= 5) {
+      cards.push({
+        tone: "warn",
+        title: `Lote ${stalled.o.batch_code ?? stalled.o.code} parado há ${stalled.d} dias`,
+        reason: `Está em "${COLUMNS.find((c) => c.match(stalled.o))?.label ?? stalled.o.stage}"${stalled.o.supplier_name ? ` com ${stalled.o.supplier_name}` : ""}. Bata na porta do responsável ou abra uma ocorrência.`,
+        action: { label: "Abrir histórico", onClick: () => setDrawer(stalled.o) },
+      });
+    }
+
+    // 3) Terceiro com risco
+    const riskySup = supplierSummary
+      .filter((s) => s.atrasado > 0)
+      .sort((a, b) => b.atrasado - a.atrasado)[0];
+    if (riskySup) {
+      cards.push({
+        tone: "warn",
+        title: `${riskySup.terceiro} com ${riskySup.atrasado} atraso(s) em ${riskySup.processo}`,
+        reason: `${riskySup.pecas.toLocaleString("pt-BR")} peças neste fornecedor. Considere renegociar prazo ou redistribuir parte do lote para outro parceiro com folga.`,
+      });
+    }
+
+    // 4) Sucesso: setores 100% no prazo
+    const allGreen = sectorSummary.filter(
+      (s) => s.lotes > 0 && s.atrasado === 0 && s.atencao === 0,
+    );
+    if (cards.length === 0 && allGreen.length > 0) {
+      cards.push({
+        tone: "ok",
+        title: "Fluxo saudável",
+        reason: `${allGreen.length} setor(es) com 100% no prazo. Aproveite para puxar OPs da fila de "Aguardando".`,
+      });
+    }
+
+    // 5) Recomendação tática: muitos lotes em "Aguardando" vs setor seguinte vazio
+    const pairs: Array<[string, string]> = [
+      ["aguardando_costura", "costura_interna"],
+      ["aguardando_acabamento", "acabamento_interno"],
+    ];
+    pairs.forEach(([waitKey, nextKey]) => {
+      const wait = sectorSummary.find((s) => s.key === waitKey);
+      const next = sectorSummary.find((s) => s.key === nextKey);
+      if (wait && next && wait.lotes >= 3 && next.lotes <= 1) {
+        cards.push({
+          tone: "info",
+          title: `Fila em "${wait.setor}" vs "${next.setor}" ocioso`,
+          reason: `Há ${wait.lotes} lote(s) parado(s) aguardando enquanto a célula seguinte está com ${next.lotes}. Puxe os próximos lotes (arraste no kanban) para nivelar a carga.`,
+        });
+      }
+    });
+
+    return cards.slice(0, 4);
+  }, [sectorSummary, supplierSummary, filtered]);
 
   const clearFilters = () => {
     setQ("");
@@ -510,6 +608,53 @@ function AcompanhamentoProducao() {
         />
       </div>
 
+      {/* INSIGHTS — Coordenador PCP */}
+      {insights.length > 0 && (
+        <section className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-2">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+            <Sparkles className="size-3.5" /> Coordenador PCP — insights do recorte atual
+          </div>
+          <div className="grid gap-2 md:grid-cols-2">
+            {insights.map((c, i) => {
+              const tones: Record<string, string> = {
+                danger: "border-red-500/40 bg-red-500/5",
+                warn: "border-amber-500/40 bg-amber-500/5",
+                ok: "border-emerald-500/40 bg-emerald-500/5",
+                info: "border-sky-500/40 bg-sky-500/5",
+              };
+              const iconTones: Record<string, string> = {
+                danger: "text-red-600",
+                warn: "text-amber-600",
+                ok: "text-emerald-600",
+                info: "text-sky-600",
+              };
+              return (
+                <div key={i} className={`rounded-lg border p-3 ${tones[c.tone]}`}>
+                  <div
+                    className={`flex items-start gap-2 text-sm font-semibold ${iconTones[c.tone]}`}
+                  >
+                    <TrendingDown className="size-4 mt-0.5 shrink-0" />
+                    <span>{c.title}</span>
+                  </div>
+                  <div className="text-xs text-foreground/80 mt-1">{c.reason}</div>
+                  {c.action && (
+                    <button
+                      onClick={c.action.onClick}
+                      className="mt-2 text-[11px] inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      {c.action.label} <ArrowRight className="size-3" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            Dica: arraste um lote entre colunas do kanban para registrar a passagem de etapa.
+          </div>
+        </section>
+      )}
+
       {/* KANBAN */}
       <div className="overflow-x-auto">
         <div className="flex gap-3 min-w-max pb-2">
@@ -517,10 +662,31 @@ function AcompanhamentoProducao() {
             const items = grouped.get(col.key) ?? [];
             const qty = items.reduce((s, o) => s + o.quantity, 0);
             const opened = zoomCol === col.key;
+            const isOver = dragOverCol === col.key;
             return (
               <div
                 key={col.key}
-                className="w-[260px] flex-shrink-0 rounded-xl border border-border bg-card flex flex-col"
+                onDragOver={(e) => {
+                  if (draggingId) {
+                    e.preventDefault();
+                    setDragOverCol(col.key);
+                  }
+                }}
+                onDragLeave={() => setDragOverCol((c) => (c === col.key ? null : c))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOverCol(null);
+                  const id = e.dataTransfer.getData("text/plain") || draggingId;
+                  if (!id) return;
+                  const order = orders.find((o) => o.id === id);
+                  if (!order) return;
+                  const curCol = COLUMNS.find((c) => c.match(order));
+                  if (curCol?.key === col.key) return;
+                  move.mutate({ orderId: id, toColumn: col.key });
+                }}
+                className={`w-[260px] flex-shrink-0 rounded-xl border bg-card flex flex-col transition ${
+                  isOver ? "border-primary ring-2 ring-primary/30" : "border-border"
+                }`}
               >
                 <button
                   onClick={() => setZoomCol(opened ? null : col.key)}
@@ -538,10 +704,26 @@ function AcompanhamentoProducao() {
                     <div className="text-xs text-muted-foreground p-2">Carregando…</div>
                   ) : items.length === 0 ? (
                     <div className="text-[11px] text-muted-foreground p-3 border border-dashed border-border rounded-lg text-center">
-                      Vazio
+                      {isOver ? "Solte aqui" : "Vazio"}
                     </div>
                   ) : (
-                    items.map((o) => <CardLote key={o.id} o={o} onOpen={() => setDrawer(o)} />)
+                    items.map((o) => (
+                      <CardLote
+                        key={o.id}
+                        o={o}
+                        onOpen={() => setDrawer(o)}
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/plain", o.id);
+                          e.dataTransfer.effectAllowed = "move";
+                          setDraggingId(o.id);
+                        }}
+                        onDragEnd={() => {
+                          setDraggingId(null);
+                          setDragOverCol(null);
+                        }}
+                        dragging={draggingId === o.id}
+                      />
+                    ))
                   )}
                 </div>
               </div>
@@ -713,14 +895,31 @@ function AcompanhamentoProducao() {
   );
 }
 
-function CardLote({ o, onOpen }: { o: Order; onOpen: () => void }) {
+function CardLote({
+  o,
+  onOpen,
+  onDragStart,
+  onDragEnd,
+  dragging,
+}: {
+  o: Order;
+  onOpen: () => void;
+  onDragStart?: (e: React.DragEvent<HTMLButtonElement>) => void;
+  onDragEnd?: () => void;
+  dragging?: boolean;
+}) {
   const st = statusOf(o);
   const dias = daysSince(o.stage_updated_at);
   const produced = Math.round((o.progress / 100) * o.quantity);
   return (
     <button
       onClick={onOpen}
-      className="w-full text-left rounded-lg border border-border bg-background hover:border-primary/50 transition p-2 space-y-1"
+      draggable={!!onDragStart}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      className={`w-full text-left rounded-lg border bg-background hover:border-primary/50 transition p-2 space-y-1 cursor-grab active:cursor-grabbing ${
+        dragging ? "opacity-40 border-primary" : "border-border"
+      }`}
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold inline-flex items-center gap-1">
