@@ -252,6 +252,18 @@ function AcompanhamentoProducao() {
     () => Array.from(new Set(orders.map((o) => o.product_category).filter(Boolean))) as string[],
     [orders],
   );
+  const productGroups = useMemo(
+    () => Array.from(new Set(orders.map((o) => o.product_group).filter(Boolean))) as string[],
+    [orders],
+  );
+  const productLines = useMemo(
+    () => Array.from(new Set(orders.map((o) => o.product_line).filter(Boolean))) as string[],
+    [orders],
+  );
+  const supplierCats = useMemo(
+    () => Array.from(new Set(orders.map((o) => o.supplier_category).filter(Boolean))) as string[],
+    [orders],
+  );
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
