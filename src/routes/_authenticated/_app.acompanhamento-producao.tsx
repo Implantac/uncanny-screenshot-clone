@@ -1042,7 +1042,7 @@ function AcompanhamentoProducao() {
                 <td className="px-3 py-2 text-right tabular-nums">{r.lotes}</td>
                 <td className="px-3 py-2 text-right tabular-nums">{r.pecas.toLocaleString("pt-BR")}</td>
                 <td className="px-3 py-2 text-right tabular-nums text-emerald-600">{r.noPrazo}</td>
-                <td className="px-3 py-2 text-right tabular-nums text-yellow-500">{r.atencao}</td>
+                <td className="px-3 py-2 text-right tabular-nums text-yellow-400 font-semibold">{r.atencao}</td>
                 <td className="px-3 py-2 text-right tabular-nums text-red-600">{r.atrasado}</td>
               </tr>
             ))}
