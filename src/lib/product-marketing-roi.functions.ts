@@ -192,10 +192,15 @@ export const listProductMarketingRoi = createServerFn({ method: "POST" })
       .map<ProductMarketingRoiRow>((product) => {
         const salesAgg = salesByProduct.get(product.id) ?? { units: 0, revenue: 0 };
         const marketingCost = costsByProduct.get(product.id) ?? 0;
+        const attributedRev = attributedRevenueByProduct.get(product.id) ?? 0;
         const estimatedUnitCost = Number(product.cost_price ?? 0);
         const fallbackUnitRevenue = Number(product.sell_price ?? 0);
         const revenue =
-          salesAgg.revenue > 0 ? salesAgg.revenue : salesAgg.units * fallbackUnitRevenue;
+          salesAgg.revenue > 0
+            ? salesAgg.revenue
+            : attributedRev > 0
+              ? attributedRev
+              : salesAgg.units * fallbackUnitRevenue;
         const estimatedCogs = estimatedUnitCost * salesAgg.units;
         const grossProfit = revenue - estimatedCogs;
         const netProfit = grossProfit - marketingCost;
