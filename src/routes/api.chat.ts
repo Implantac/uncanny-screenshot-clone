@@ -29,6 +29,11 @@ const MAX_MESSAGES = 50;
 const MAX_MESSAGE_CHARS = 8000;
 const MAX_CONTEXT_CHARS = 50000;
 
+type TextMessagePart = {
+  type?: string;
+  text?: string;
+};
+
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
@@ -66,7 +71,7 @@ export const Route = createFileRoute("/api/chat")({
         for (const m of messages) {
           const parts = (m as UIMessage).parts;
           const text = Array.isArray(parts)
-            ? parts.map((p: any) => (p?.type === "text" ? (p.text ?? "") : "")).join("")
+            ? parts.map((p: TextMessagePart) => (p?.type === "text" ? (p.text ?? "") : "")).join("")
             : "";
           if (text.length > MAX_MESSAGE_CHARS) {
             return new Response("Message too large", { status: 413 });
