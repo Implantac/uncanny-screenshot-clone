@@ -46,6 +46,7 @@ import {
   type AdjustmentSector,
 } from "@/components/prototype-adjustments";
 import { PrototypeTimelineButton } from "@/components/prototype-timeline";
+import { DevIntelligencePanel } from "@/components/dev-intelligence-panel";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
