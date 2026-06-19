@@ -1219,9 +1219,48 @@ function AcompanhamentoProducao() {
       {/* LISTA DETALHADA */}
 
       <section className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="px-4 py-2 border-b border-border text-sm font-semibold flex items-center justify-between">
-          <span>Lista detalhada ({filtered.length})</span>
-        </div>
+        {(() => {
+          const listRows = listFilter
+            ? filtered.filter((o) => statusOf(o) === listFilter)
+            : filtered;
+          const counts = {
+            no_prazo: filtered.filter((o) => statusOf(o) === "no_prazo").length,
+            atrasado: filtered.filter((o) => statusOf(o) === "atrasado").length,
+            finalizado: filtered.filter((o) => statusOf(o) === "finalizado").length,
+          };
+          const chip = (
+            key: "" | "no_prazo" | "atrasado" | "finalizado",
+            label: string,
+            count: number,
+            activeCls: string,
+          ) => {
+            const active = listFilter === key;
+            return (
+              <button
+                key={key || "all"}
+                onClick={() => setListFilter(key)}
+                className={`px-2 py-0.5 rounded-full border text-[11px] font-medium transition-colors ${
+                  active
+                    ? activeCls
+                    : "border-border bg-muted/40 text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {label}
+                <span className="ml-1 tabular-nums opacity-80">{count}</span>
+              </button>
+            );
+          };
+          return (
+            <>
+              <div className="px-4 py-2 border-b border-border text-sm font-semibold flex flex-wrap items-center justify-between gap-2">
+                <span>Lista detalhada ({listRows.length})</span>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {chip("", "Todos", filtered.length, "border-primary/40 bg-primary/10 text-primary")}
+                  {chip("no_prazo", "No prazo", counts.no_prazo, STATUS_META.no_prazo.cls)}
+                  {chip("atrasado", "Atrasado", counts.atrasado, STATUS_META.atrasado.cls)}
+                  {chip("finalizado", "Finalizado", counts.finalizado, STATUS_META.finalizado.cls)}
+                </div>
+              </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead className="bg-muted/40">
