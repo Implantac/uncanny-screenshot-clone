@@ -142,6 +142,16 @@ export function WarRoomPanel() {
                   {b.metric}
                 </div>
               )}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="shrink-0"
+                title="Enviar push para meu mobile"
+                disabled={pushMutation.isPending}
+                onClick={() => pushMutation.mutate(b)}
+              >
+                <Bell className="size-3.5" />
+              </Button>
               {b.action.route && (
                 <Button asChild size="sm" variant="ghost" className="shrink-0">
                   <Link to={b.action.route as string}>
