@@ -51,6 +51,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionIntelligencePanel } from "@/components/collection-intelligence-panel";
+import { CarryOverPanel } from "@/components/carry-over-panel";
 import { CollectionCompareDialog } from "@/components/collection-compare-dialog";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
@@ -786,6 +787,10 @@ function ColecoesPage() {
       </div>
 
       <CollectionIntelligencePanel />
+
+      {selected && (
+        <CarryOverPanel collectionId={selected.id} collectionName={selected.name} />
+      )}
 
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
