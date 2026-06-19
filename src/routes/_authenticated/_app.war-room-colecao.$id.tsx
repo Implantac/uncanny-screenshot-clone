@@ -16,6 +16,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { WarRoomDecisions } from "@/components/war-room-decisions";
 import { useRealtime } from "@/hooks/use-realtime";
 
 export const Route = createFileRoute("/_authenticated/_app/war-room-colecao/$id")({
@@ -268,6 +269,8 @@ function WarRoomColecao() {
           question={`Coleção "${c.name}" (${c.year ?? ""}). ${inDev.length} produtos em dev, ${semFicha.length} sem ficha, ${pilotosPend.length} pilotos pendentes, ${opsAtivas.length} OPs ativas, ${atrasadas.length} atrasadas. Quais 3 ações priorizar AGORA e por quê?`}
         />
       </div>
+
+      <WarRoomDecisions collectionId={c.id} />
     </div>
   );
 }
