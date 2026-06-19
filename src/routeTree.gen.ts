@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrustRouteImport } from './routes/trust'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as DppIdRouteImport } from './routes/dpp.$id'
@@ -103,6 +104,11 @@ import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes
 import { Route as AuthenticatedAppLoteIdRouteImport } from './routes/_authenticated/_app.lote.$id'
 import { Route as AuthenticatedAppApontarIdRouteImport } from './routes/_authenticated/_app.apontar.$id'
 
+const TrustRoute = TrustRouteImport.update({
+  id: '/trust',
+  path: '/trust',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -638,6 +644,7 @@ const AuthenticatedAppApontarIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedAppIndexRoute
   '/auth': typeof AuthRoute
+  '/trust': typeof TrustRoute
   '/api/chat': typeof ApiChatRoute
   '/dpp/$id': typeof DppIdRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
@@ -731,6 +738,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedAppIndexRoute
   '/auth': typeof AuthRoute
+  '/trust': typeof TrustRoute
   '/api/chat': typeof ApiChatRoute
   '/dpp/$id': typeof DppIdRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
@@ -825,6 +833,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/trust': typeof TrustRoute
   '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/dpp/$id': typeof DppIdRoute
@@ -922,6 +931,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/trust'
     | '/api/chat'
     | '/dpp/$id'
     | '/almoxarifado'
@@ -1015,6 +1025,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/trust'
     | '/api/chat'
     | '/dpp/$id'
     | '/almoxarifado'
@@ -1108,6 +1119,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/auth'
+    | '/trust'
     | '/_authenticated/_app'
     | '/api/chat'
     | '/dpp/$id'
@@ -1204,6 +1216,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  TrustRoute: typeof TrustRoute
   ApiChatRoute: typeof ApiChatRoute
   DppIdRoute: typeof DppIdRoute
   PortalFornecedorTokenRoute: typeof PortalFornecedorTokenRoute
@@ -1214,6 +1227,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trust': {
+      id: '/trust'
+      path: '/trust'
+      fullPath: '/trust'
+      preLoaderRoute: typeof TrustRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -2062,6 +2082,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  TrustRoute: TrustRoute,
   ApiChatRoute: ApiChatRoute,
   DppIdRoute: DppIdRoute,
   PortalFornecedorTokenRoute: PortalFornecedorTokenRoute,
