@@ -10,12 +10,27 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 
+type BomMaterialTemplate = {
+  name?: string | null;
+  unit?: string | null;
+  consumption?: number | null;
+  loss_pct?: number | null;
+  unit_cost?: number | null;
+};
+
+type BomOperationTemplate = {
+  name?: string | null;
+  machine?: string | null;
+  sam?: number | null;
+  rate_per_min?: number | null;
+};
+
 type Template = {
   id: string;
   name: string;
   category: string | null;
-  materials: any[];
-  operations: any[];
+  materials: BomMaterialTemplate[];
+  operations: BomOperationTemplate[];
   updated_at: string;
 };
 
@@ -85,21 +100,21 @@ export function BomTemplatesButton({ sheetId, ownerId, disabled }: Props) {
 
   const applyTpl = useMutation({
     mutationFn: async (tpl: Template) => {
-      const matRows = (tpl.materials ?? []).map((m: any, i: number) => ({
+      const matRows = (tpl.materials ?? []).map((m, i) => ({
         owner_id: ownerId,
         tech_sheet_id: sheetId,
-        name: m.name,
-        unit: m.unit,
+        name: m.name ?? "Material",
+        unit: m.unit ?? "un",
         consumption: m.consumption ?? 0,
         loss_pct: m.loss_pct ?? 0,
         unit_cost: m.unit_cost ?? 0,
         position: i,
       }));
-      const opRows = (tpl.operations ?? []).map((o: any, i: number) => ({
+      const opRows = (tpl.operations ?? []).map((o, i) => ({
         owner_id: ownerId,
         tech_sheet_id: sheetId,
-        name: o.name,
-        machine: o.machine,
+        name: o.name ?? "Operação",
+        machine: o.machine ?? null,
         sam: o.sam ?? 0,
         rate_per_min: o.rate_per_min ?? 0,
         position: i,

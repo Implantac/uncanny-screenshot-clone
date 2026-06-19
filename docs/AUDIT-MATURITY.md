@@ -61,12 +61,12 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## 6. BOM (Bill of Materials)
 
-| Capacidade                          | Status | Onde                   | Evolução                          |
-| ----------------------------------- | ------ | ---------------------- | --------------------------------- |
-| Lista de materiais por produto      | ✅     | `tech_sheet_materials` | —                                 |
-| Fornecedor, consumo, custo, unidade | ✅     | mesma tabela           | —                                 |
-| **BOM reutilizável entre produtos** | ⚪     | —                      | "Copiar BOM de…" + templates      |
-| Integração com almoxarifado         | 🟡     | `inventory_items`      | Linkar `inventory_item_id` na BOM |
+| Capacidade                          | Status | Onde                           | Evolução                          |
+| ----------------------------------- | ------ | ------------------------------ | --------------------------------- |
+| Lista de materiais por produto      | ✅     | `tech_sheet_materials`         | —                                 |
+| Fornecedor, consumo, custo, unidade | ✅     | mesma tabela                   | —                                 |
+| **BOM reutilizável entre produtos** | ✅     | `bom_templates`, ficha técnica | —                                 |
+| Integração com almoxarifado         | 🟡     | `inventory_items`              | Linkar `inventory_item_id` na BOM |
 
 ## 7. BOP (Bill of Process)
 
@@ -79,12 +79,12 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## 8. Engenharia de Custos
 
-| Capacidade                  | Status | Onde                       | Evolução                             |
-| --------------------------- | ------ | -------------------------- | ------------------------------------ |
-| Custo teórico (ficha)       | ✅     | `tech_sheets.cost_price`   | —                                    |
-| **Custo real (produção)**   | ⚪     | dados existem em OPs/lotes | Função `compute_real_cost(order_id)` |
-| **Variação teórico × real** | ⚪     | —                          | Painel em `/margem` reaproveitado    |
-| Target costing              | ✅     | `product_target_costs`     | —                                    |
+| Capacidade                  | Status | Onde                             | Evolução |
+| --------------------------- | ------ | -------------------------------- | -------- |
+| Custo teórico (ficha)       | ✅     | `tech_sheets.cost_price`         | —        |
+| **Custo real (produção)**   | ✅     | `CostVariancePanel` em `/margem` | —        |
+| **Variação teórico × real** | ✅     | `cost-variance.functions`        | —        |
+| Target costing              | ✅     | `product_target_costs`           | —        |
 
 ## 9. PCP & Capacidade
 
@@ -130,13 +130,13 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## 13. Marketing de Moda
 
-| Capacidade                                      | Status | Onde                                       | Evolução                         |
-| ----------------------------------------------- | ------ | ------------------------------------------ | -------------------------------- |
-| Campanhas                                       | ✅     | `marketing_campaigns`                      | —                                |
-| Influencers + ROI                               | ✅     | `/influencers`, `/influencer-roi` (Onda 6) | —                                |
-| Geo / atribuição                                | ✅     | `/geo-sales`, `/attribution`               | —                                |
-| **Custo ensaio/foto/vídeo/tráfego por produto** | ⚪     | só nível campanha                          | Tabela `product_marketing_costs` |
-| **ROI por produto e por coleção**               | 🟡     | parcial em campanhas                       | Cruzar com `erp_sales_mirror`    |
+| Capacidade                                      | Status | Onde                                       | Evolução |
+| ----------------------------------------------- | ------ | ------------------------------------------ | -------- |
+| Campanhas                                       | ✅     | `marketing_campaigns`                      | —        |
+| Influencers + ROI                               | ✅     | `/influencers`, `/influencer-roi` (Onda 6) | —        |
+| Geo / atribuição                                | ✅     | `/geo-sales`, `/attribution`               | —        |
+| **Custo ensaio/foto/vídeo/tráfego por produto** | ✅     | `product_marketing_costs`, `/marketing`    | —        |
+| **ROI por produto e por coleção**               | ✅     | `/marketing` aba ROI Produto + ERP mirror  | —        |
 
 ## 14. Comercial (ERP-mirror — só leitura)
 
@@ -163,15 +163,15 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## Top 10 lacunas priorizadas (ordem sugerida)
 
-1. **Custo real × teórico** (§8) — dados já existem, falta consolidar.
-2. **Portal Fornecedor 2.0 — upload de amostra** (§11).
-3. **ROI marketing por produto/coleção** (§13).
-4. **BOM reutilizável / templates** (§6).
-5. **Digital Twin agregado da coleção** (§15).
-6. **Subcoleções / cápsulas** (§2) — `parent_id` em `collections`.
-7. **BOP responsável por etapa** (§7) — campo `responsible_role`.
-8. **Custo ensaio/foto/vídeo/tráfego por produto** (§13).
-9. **Biblioteca global de referências** (§1).
-10. **Curva ABC por coleção** (§2).
+1. **Portal Fornecedor 2.0 — upload de amostra** (§11).
+2. **Digital Twin agregado da coleção** (§15).
+3. **Portal Fornecedor 2.0 — checklist/validação de amostra** (§11).
+4. **Subcoleções / cápsulas** (§2) — `parent_id` em `collections`.
+5. **BOP responsável por etapa** (§7) — campo `responsible_role`.
+6. **Curva ABC por coleção** (§2).
+7. **Biblioteca global de referências** (§1).
+8. **Automação de alertas de ROI e margem** (§13/15).
+9. **Custo por facção/terceirizado no real × teórico** (§8/9).
+10. **Governança de metas por coleção/canal** (§13/15).
 
 Nenhum item acima cria tela nova desnecessária — todos estendem módulo/tabela existente.

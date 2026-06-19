@@ -66,6 +66,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { MarketingIntelligence } from "@/components/marketing-intelligence";
+import { ProductMarketingRoiPanel } from "@/components/product-marketing-roi-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/marketing")({
   head: () => ({
@@ -345,6 +346,7 @@ function Marketing() {
         <TabsList>
           <TabsTrigger value="overview">Visão geral</TabsTrigger>
           <TabsTrigger value="intelligence">Inteligência</TabsTrigger>
+          <TabsTrigger value="product-roi">ROI Produto</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="campaigns">Campanhas</TabsTrigger>
         </TabsList>
@@ -369,6 +371,10 @@ function Marketing() {
 
         <TabsContent value="intelligence" className="space-y-4">
           <MarketingIntelligence />
+        </TabsContent>
+
+        <TabsContent value="product-roi" className="space-y-4">
+          <ProductMarketingRoiPanel />
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-4">
