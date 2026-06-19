@@ -20,6 +20,7 @@ import {
 import { MODULES } from "@/lib/modules";
 import { supabase } from "@/integrations/supabase/client";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { ExecutiveKpisPanel } from "@/components/executive-kpis-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/")({
   head: () => ({
@@ -400,6 +401,10 @@ function CommandCenter() {
           </p>
         </div>
       </div>
+
+      <ExecutiveKpisPanel />
+
+
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => {
