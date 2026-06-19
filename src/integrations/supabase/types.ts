@@ -3778,6 +3778,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_audit: {
+        Args: {
+          _action: string
+          _entity: string
+          _entity_id: string
+          _payload?: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
       account_status: "pendente" | "pago" | "atrasado" | "cancelado"
