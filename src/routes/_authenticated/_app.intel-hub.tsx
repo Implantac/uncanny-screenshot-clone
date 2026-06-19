@@ -190,6 +190,82 @@ function IntelHub() {
       .slice(0, 5);
   }, [suppliers]);
 
+  // Marketing Intelligence — cruza campanhas + influenciadores + briefs
+  const marketing = useMemo(() => {
+    const activeCampaigns = campaigns.filter((c) => c.status === "ativa" || c.status === "ativo");
+    const totalInvest = campaigns.reduce((s, c) => s + Number(c.investment ?? 0), 0);
+    const totalRevenue = campaigns.reduce((s, c) => s + Number(c.revenue ?? 0), 0);
+    const blendedRoas = totalInvest > 0 ? totalRevenue / totalInvest : 0;
+    const topRoas = [...campaigns]
+      .filter((c) => Number(c.roas ?? 0) > 0)
+      .sort((a, b) => Number(b.roas ?? 0) - Number(a.roas ?? 0))[0];
+    const worstRoas = [...campaigns]
+      .filter((c) => Number(c.investment ?? 0) > 0 && Number(c.roas ?? 0) > 0)
+      .sort((a, b) => Number(a.roas ?? 0) - Number(b.roas ?? 0))[0];
+
+    // ROI por influenciador via vendas_antes/depois nos envios
+    const infRoi = shipments
+      .filter((s) => s.posted_at && (s.sales_after ?? 0) > (s.sales_before ?? 0))
+      .map((s) => ({
+        nome: s.influencers?.nome ?? "—",
+        delta: (s.sales_after ?? 0) - (s.sales_before ?? 0),
+        seguidores: s.influencers?.seguidores ?? 0,
+      }))
+      .sort((a, b) => b.delta - a.delta)
+      .slice(0, 4);
+
+    const draftBriefs = briefs.filter((b) => b.status === "rascunho" || b.status === "draft").length;
+
+    // insights acionáveis
+    const insights: Array<{ tone: "ok" | "warn" | "info" | "danger"; title: string; reason: string }> = [];
+    if (blendedRoas >= 3) {
+      insights.push({
+        tone: "ok",
+        title: `ROAS blended ${blendedRoas.toFixed(2)}x — verba performando`,
+        reason: `Receita ${totalRevenue.toLocaleString("pt-BR")} sobre investimento ${totalInvest.toLocaleString("pt-BR")}. Considere escalar a campanha com maior retorno.`,
+      });
+    } else if (blendedRoas > 0 && blendedRoas < 1.5) {
+      insights.push({
+        tone: "danger",
+        title: `ROAS blended ${blendedRoas.toFixed(2)}x abaixo do limite saudável`,
+        reason: `Pause campanhas com ROAS < 1.5 e realoque para o canal vencedor. Investimento atual: ${totalInvest.toLocaleString("pt-BR")}.`,
+      });
+    }
+    if (worstRoas && Number(worstRoas.roas ?? 0) < 1.5) {
+      insights.push({
+        tone: "warn",
+        title: `"${worstRoas.name}" com ROAS ${Number(worstRoas.roas).toFixed(2)}x`,
+        reason: `Canal ${worstRoas.channel ?? "—"} consumiu ${Number(worstRoas.investment ?? 0).toLocaleString("pt-BR")} sem retorno proporcional. Reduza ou redirecione verba.`,
+      });
+    }
+    if (topRoas) {
+      insights.push({
+        tone: "info",
+        title: `Vencedor: "${topRoas.name}" (${Number(topRoas.roas).toFixed(2)}x)`,
+        reason: `Replique criativo/segmentação nas próximas campanhas do canal ${topRoas.channel ?? "—"}.`,
+      });
+    }
+    if (draftBriefs >= 3) {
+      insights.push({
+        tone: "warn",
+        title: `${draftBriefs} brief(s) em rascunho`,
+        reason: `Briefs parados atrasam lançamentos. Revise e aprove para destravar produção de conteúdo.`,
+      });
+    }
+
+    return {
+      activeCampaigns: activeCampaigns.length,
+      totalInvest,
+      totalRevenue,
+      blendedRoas,
+      topRoas,
+      worstRoas,
+      infRoi,
+      draftBriefs,
+      insights: insights.slice(0, 4),
+    };
+  }, [campaigns, shipments, briefs]);
+
   return (
     <div className="p-6 space-y-6">
       <header className="flex items-start justify-between flex-wrap gap-3">
