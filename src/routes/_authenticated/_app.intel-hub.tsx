@@ -13,7 +13,11 @@ import {
   Boxes,
   ArrowRight,
   TrendingUp,
+  TrendingDown,
   PackageSearch,
+  Megaphone,
+  Users,
+  DollarSign,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AskFashionAI } from "@/components/ask-fashion-ai";
