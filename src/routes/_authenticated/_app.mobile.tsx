@@ -3,6 +3,7 @@ import { Smartphone, Apple, Download, Star, Bell, ScanLine, MapPin, Wifi } from 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
+import { PushHistoryPanel } from "@/components/push-history-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/mobile")({
   head: () => ({
