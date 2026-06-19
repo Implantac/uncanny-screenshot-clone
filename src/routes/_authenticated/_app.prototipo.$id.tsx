@@ -23,6 +23,7 @@ import {
   type AdjustmentSector,
 } from "@/components/prototype-adjustments";
 import { toast } from "sonner";
+import { PrototypeApprovalGate } from "@/components/prototype-approval-gate";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipo/$id")({
   head: () => ({
@@ -249,6 +250,8 @@ function PrototipoPage() {
             needsAdjustment={proto.needs_adjustment}
           />
         </div>
+
+        <PrototypeApprovalGate prototypeId={proto.id} currentStage={proto.stage} />
 
         {/* Timeline full-page */}
         <div className="space-y-4">
