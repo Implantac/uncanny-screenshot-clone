@@ -87,7 +87,7 @@ export function PcpIntelligencePanel() {
             {suggestions.map((s, i) => (
               <li key={i} className="flex items-start gap-2">
                 <ArrowRight className="size-4 mt-0.5 shrink-0 text-warning" />
-                <div>
+                <div className="flex-1">
                   <div>
                     Mover <span className="font-mono text-xs">{s.order_code ?? s.order_id.slice(0, 6)}</span>{" "}
                     ({s.pieces} pç) de <strong>{s.from_supplier}</strong> para{" "}
@@ -95,6 +95,22 @@ export function PcpIntelligencePanel() {
                   </div>
                   <div className="text-xs text-muted-foreground">{s.reason}</div>
                 </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 shrink-0"
+                  disabled={apply.isPending}
+                  onClick={() =>
+                    apply.mutate({
+                      orderId: s.order_id,
+                      toSupplierId: s.to_supplier_id,
+                      fromSupplier: s.from_supplier,
+                      toSupplier: s.to_supplier,
+                    })
+                  }
+                >
+                  <Check className="size-3 mr-1" /> Aplicar
+                </Button>
               </li>
             ))}
           </ul>
