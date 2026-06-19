@@ -11,6 +11,17 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import {
+  listCapas,
+  upsertCapa,
+  deleteCapa,
+  listReinspectionsForCapa,
+  createReinspectionFromCapa,
+  verifyCapaFromReinspection,
+  type CapaRow,
+} from "@/lib/quality-capa.functions";
+import { RefreshCw, ShieldCheck, ArrowRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
