@@ -257,28 +257,36 @@ function AcompanhamentoProducao() {
     return m;
   }, [prediction]);
 
-  // Filtros
-  const [q, setQ] = useState("");
-  const [colKey, setColKey] = useState<string>("");
-  const [supplierId, setSupplierId] = useState<string>("");
-  const [statusF, setStatusF] = useState<StatusKey | "">("");
-  const [origin, setOrigin] = useState<"" | "interna" | "externa">("");
-  const [collection, setCollection] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
-  const [productGroup, setProductGroup] = useState<string>("");
-  const [productLine, setProductLine] = useState<string>("");
-  const [supplierCat, setSupplierCat] = useState<string>("");
-  const [dueFrom, setDueFrom] = useState<string>("");
-  const [dueTo, setDueTo] = useState<string>("");
+  // Filtros sincronizados com URL (link compartilhável)
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const updateSearch = (patch: Partial<typeof search>) =>
+    navigate({ search: (prev: typeof search) => ({ ...prev, ...patch }), replace: true });
+  const { q, colKey, supplierId, collection, category, productGroup, productLine, supplierCat, dueFrom, dueTo, groupBy } = search;
+  const statusF = search.statusF as StatusKey | "";
+  const origin = search.origin;
+  const listFilter = search.listFilter;
+  const setQ = (v: string) => updateSearch({ q: v });
+  const setColKey = (v: string) => updateSearch({ colKey: v });
+  const setSupplierId = (v: string) => updateSearch({ supplierId: v });
+  const setStatusF = (v: StatusKey | "") => updateSearch({ statusF: v });
+  const setOrigin = (v: "" | "interna" | "externa") => updateSearch({ origin: v });
+  const setCollection = (v: string) => updateSearch({ collection: v });
+  const setCategory = (v: string) => updateSearch({ category: v });
+  const setProductGroup = (v: string) => updateSearch({ productGroup: v });
+  const setProductLine = (v: string) => updateSearch({ productLine: v });
+  const setSupplierCat = (v: string) => updateSearch({ supplierCat: v });
+  const setDueFrom = (v: string) => updateSearch({ dueFrom: v });
+  const setDueTo = (v: string) => updateSearch({ dueTo: v });
+  const setListFilter = (v: "" | "no_prazo" | "atrasado" | "finalizado") => updateSearch({ listFilter: v });
+  const setGroupBy = (v: "none" | "collection" | "supplier" | "line") => updateSearch({ groupBy: v });
+
+  // UI state local (não vai pra URL)
   const [drawer, setDrawer] = useState<Order | null>(null);
   const [zoomCol, setZoomCol] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
-  const [listFilter, setListFilter] = useState<"" | "no_prazo" | "atrasado" | "finalizado">("");
-
-  // UX: modo painel (TV) e agrupamento (swimlanes)
   const [tvMode, setTvMode] = useState(false);
-  const [groupBy, setGroupBy] = useState<"none" | "collection" | "supplier" | "line">("none");
 
   // Auto-refresh periódico no modo TV (além do realtime, garante UI viva)
   useEffect(() => {
