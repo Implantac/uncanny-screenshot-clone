@@ -881,6 +881,7 @@ function AcompanhamentoProducao() {
       </div>
       )}
 
+      {!tvMode && (<>
       {/* CHIPS DE STATUS — filtragem em 1 clique */}
       <div className="flex flex-wrap items-center gap-1.5">
         {(["no_prazo", "atencao", "atrasado", "sem_previsao", "finalizado"] as StatusKey[]).map(
@@ -1043,6 +1044,8 @@ function AcompanhamentoProducao() {
           </div>
         </section>
       )}
+
+      </>)}
 
       {/* KANBAN */}
       <div className="overflow-x-auto">
