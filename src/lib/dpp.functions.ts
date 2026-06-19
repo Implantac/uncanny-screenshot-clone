@@ -34,6 +34,7 @@ export const getPublicPassport = createServerFn({ method: "GET" })
         )
         .eq("product_id", data.id)
         .eq("status", "publicado")
+        .is("revoked_at", null)
         .order("version", { ascending: false })
         .limit(1)
         .maybeSingle();
