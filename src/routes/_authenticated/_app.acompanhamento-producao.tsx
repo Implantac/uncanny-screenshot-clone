@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Factory,
@@ -20,9 +20,16 @@ import {
   ArrowRight,
   MessageSquareWarning,
   Timer,
+  Maximize2,
+  Minimize2,
+  Zap,
+  Radio,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { moveOrderToColumn } from "@/lib/production-tracking.functions";
+import { predictDelays, type DelayPrediction } from "@/lib/delay-prediction.functions";
+import { useRealtime } from "@/hooks/use-realtime";
+import { ProductionCardActions } from "@/components/production-card-actions";
 
 export const Route = createFileRoute("/_authenticated/_app/acompanhamento-producao")({
   component: AcompanhamentoProducao,
@@ -50,10 +57,12 @@ type Order = {
   notes: string | null;
   product_id: string | null;
   supplier_id: string | null;
+  owner_id: string;
   supplier_name: string | null;
   supplier_category: string | null;
   product_name: string | null;
   product_sku: string | null;
+  product_image_url: string | null;
   product_category: string | null;
   product_group: string | null;
   product_line: string | null;
@@ -171,9 +180,9 @@ async function load(): Promise<Order[]> {
     .from("production_orders")
     .select(
       `id, code, stage, quantity, progress, due_date, stage_updated_at, batch_code, outsourced, notes,
-       product_id, supplier_id,
+       product_id, supplier_id, owner_id,
        suppliers(name, category),
-       products(name, sku, category, product_group, collections(name), product_lines(name))`,
+       products(name, sku, image_url, category, product_group, collections(name), product_lines(name))`,
     )
     .order("due_date", { ascending: true, nullsFirst: false });
   if (error) throw error;
@@ -190,10 +199,12 @@ async function load(): Promise<Order[]> {
     notes: o.notes,
     product_id: o.product_id,
     supplier_id: o.supplier_id,
+    owner_id: o.owner_id,
     supplier_name: o.suppliers?.name ?? null,
     supplier_category: o.suppliers?.category ?? null,
     product_name: o.products?.name ?? null,
     product_sku: o.products?.sku ?? null,
+    product_image_url: o.products?.image_url ?? null,
     product_category: o.products?.category ?? null,
     product_group: o.products?.product_group ?? null,
     product_line: o.products?.product_lines?.name ?? null,
@@ -207,6 +218,23 @@ function AcompanhamentoProducao() {
     queryKey: ["acompanhamento-producao"],
     queryFn: load,
   });
+
+  // Realtime: invalida quando OPs ou passagens mudam (apontamentos de outros usuários, ERP, etc.)
+  useRealtime("production_orders", ["acompanhamento-producao"]);
+  useRealtime("production_stage_log", ["acompanhamento-producao"]);
+
+  // Predição de atrasos por OP — cache 5 min, indexado por orderId
+  const { data: prediction } = useQuery({
+    queryKey: ["acompanhamento-producao", "predict"],
+    queryFn: () => predictDelays(),
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+  });
+  const predByOrder = useMemo(() => {
+    const m = new Map<string, DelayPrediction>();
+    (prediction?.items ?? []).forEach((p) => m.set(p.orderId, p));
+    return m;
+  }, [prediction]);
 
   // Filtros
   const [q, setQ] = useState("");
@@ -226,6 +254,19 @@ function AcompanhamentoProducao() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
   const [listFilter, setListFilter] = useState<"" | "no_prazo" | "atrasado" | "finalizado">("");
+
+  // UX: modo painel (TV) e agrupamento (swimlanes)
+  const [tvMode, setTvMode] = useState(false);
+  const [groupBy, setGroupBy] = useState<"none" | "collection" | "supplier" | "line">("none");
+
+  // Auto-refresh periódico no modo TV (além do realtime, garante UI viva)
+  useEffect(() => {
+    if (!tvMode) return;
+    const id = setInterval(() => {
+      qc.invalidateQueries({ queryKey: ["acompanhamento-producao"] });
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [tvMode, qc]);
 
   const move = useMutation({
     mutationFn: (vars: { orderId: string; toColumn: string }) =>
@@ -618,25 +659,68 @@ function AcompanhamentoProducao() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className={`p-4 md:p-6 space-y-4 ${tvMode ? "text-base" : ""}`}>
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight inline-flex items-center gap-2">
             Acompanhamento de Produção
+            <span
+              title="Atualização em tempo real ativa"
+              className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 border border-emerald-500/30"
+            >
+              <Radio className="size-2.5 animate-pulse" /> live
+            </span>
           </h1>
           <p className="text-sm text-muted-foreground">
             Onde está cada lote agora — interno, externo, prazo e gargalo, em uma única tela.
           </p>
         </div>
-        <button
-          onClick={exportRows}
-          className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-md border border-border bg-card hover:bg-muted"
-        >
-          <Download className="size-3.5" /> Exportar Excel/CSV
-        </button>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {/* Agrupar por (swimlanes) */}
+          <div className="inline-flex items-center gap-1 text-[11px] text-muted-foreground border border-border rounded-md bg-card px-2 py-1">
+            <span>Agrupar:</span>
+            {(
+              [
+                ["none", "—"],
+                ["collection", "Coleção"],
+                ["supplier", "Terceiro"],
+                ["line", "Linha"],
+              ] as const
+            ).map(([k, label]) => (
+              <button
+                key={k}
+                onClick={() => setGroupBy(k)}
+                className={`px-1.5 py-0.5 rounded ${
+                  groupBy === k ? "bg-primary/15 text-primary font-semibold" : "hover:bg-muted"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setTvMode((v) => !v)}
+            title={tvMode ? "Sair do modo painel" : "Modo painel (TV chão de fábrica)"}
+            className={`inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-md border ${
+              tvMode
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-card hover:bg-muted"
+            }`}
+          >
+            {tvMode ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
+            Modo painel
+          </button>
+          <button
+            onClick={exportRows}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-md border border-border bg-card hover:bg-muted"
+          >
+            <Download className="size-3.5" /> Exportar Excel/CSV
+          </button>
+        </div>
       </header>
 
       {/* FILTROS */}
+      {!tvMode && (
       <div className="rounded-xl border border-border bg-card p-3 space-y-2">
         <div className="flex items-center justify-between">
           <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -795,7 +879,9 @@ function AcompanhamentoProducao() {
           </div>
         )}
       </div>
+      )}
 
+      {!tvMode && (<>
       {/* CHIPS DE STATUS — filtragem em 1 clique */}
       <div className="flex flex-wrap items-center gap-1.5">
         {(["no_prazo", "atencao", "atrasado", "sem_previsao", "finalizado"] as StatusKey[]).map(
@@ -959,14 +1045,39 @@ function AcompanhamentoProducao() {
         </section>
       )}
 
+      </>)}
+
       {/* KANBAN */}
       <div className="overflow-x-auto">
         <div className="flex gap-3 min-w-max pb-2">
-          {COLUMNS.map((col) => {
+          {COLUMNS.filter((c) => !tvMode || (grouped.get(c.key) ?? []).length > 0).map((col) => {
             const items = grouped.get(col.key) ?? [];
             const qty = items.reduce((s, o) => s + o.quantity, 0);
+            const lateInCol = items.filter((o) => statusOf(o) === "atrasado").length;
             const opened = zoomCol === col.key;
             const isOver = dragOverCol === col.key;
+            // Próxima coluna válida para a ação "Avançar" (apenas em colunas de stages avançáveis)
+            const colIdx = COLUMNS.findIndex((c) => c.key === col.key);
+            const nextCol = colIdx >= 0 && colIdx < COLUMNS.length - 1 ? COLUMNS[colIdx + 1] : null;
+            // Swimlanes
+            const lanes = (() => {
+              if (groupBy === "none") return [{ key: "__all", label: "", items }];
+              const m = new Map<string, Order[]>();
+              items.forEach((o) => {
+                const k =
+                  groupBy === "collection"
+                    ? o.collection_name ?? "Sem coleção"
+                    : groupBy === "supplier"
+                      ? o.outsourced
+                        ? o.supplier_name ?? "Terceiro s/ nome"
+                        : "Interna"
+                      : o.product_line ?? "Sem linha";
+                m.set(k, [...(m.get(k) ?? []), o]);
+              });
+              return Array.from(m, ([key, lItems]) => ({ key, label: key, items: lItems })).sort(
+                (a, b) => b.items.length - a.items.length,
+              );
+            })();
             return (
               <div
                 key={col.key}
@@ -988,7 +1099,7 @@ function AcompanhamentoProducao() {
                   if (curCol?.key === col.key) return;
                   move.mutate({ orderId: id, toColumn: col.key });
                 }}
-                className={`w-[260px] flex-shrink-0 rounded-xl border bg-card flex flex-col transition ${
+                className={`${tvMode ? "w-[320px]" : "w-[280px]"} flex-shrink-0 rounded-xl border bg-card flex flex-col transition ${
                   isOver ? "border-primary ring-2 ring-primary/30" : "border-border"
                 }`}
               >
@@ -997,13 +1108,20 @@ function AcompanhamentoProducao() {
                   className="px-3 py-2 border-b border-border text-left hover:bg-muted/50 rounded-t-xl"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">{col.label}</span>
+                    <span className={`font-semibold ${tvMode ? "text-base" : "text-sm"}`}>
+                      {col.label}
+                    </span>
                     <span className="text-[10px] tabular-nums text-muted-foreground">
                       {items.length} · {qty} pç
                     </span>
                   </div>
+                  {lateInCol > 0 && (
+                    <div className="mt-0.5 text-[10px] font-semibold text-red-600 inline-flex items-center gap-1">
+                      <AlertTriangle className="size-2.5" /> {lateInCol} atrasado(s)
+                    </div>
+                  )}
                 </button>
-                <div className="p-2 space-y-2 max-h-[520px] overflow-y-auto">
+                <div className={`p-2 space-y-2 overflow-y-auto ${tvMode ? "max-h-[78vh]" : "max-h-[520px]"}`}>
                   {isLoading ? (
                     <div className="text-xs text-muted-foreground p-2">Carregando…</div>
                   ) : items.length === 0 ? (
@@ -1011,22 +1129,37 @@ function AcompanhamentoProducao() {
                       {isOver ? "Solte aqui" : "Vazio"}
                     </div>
                   ) : (
-                    items.map((o) => (
-                      <CardLote
-                        key={o.id}
-                        o={o}
-                        onOpen={() => setDrawer(o)}
-                        onDragStart={(e) => {
-                          e.dataTransfer.setData("text/plain", o.id);
-                          e.dataTransfer.effectAllowed = "move";
-                          setDraggingId(o.id);
-                        }}
-                        onDragEnd={() => {
-                          setDraggingId(null);
-                          setDragOverCol(null);
-                        }}
-                        dragging={draggingId === o.id}
-                      />
+                    lanes.map((lane) => (
+                      <div key={lane.key} className="space-y-2">
+                        {groupBy !== "none" && (
+                          <div className="sticky top-0 z-[1] bg-card/95 backdrop-blur text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1 py-0.5 border-b border-border/60 flex items-center justify-between">
+                            <span className="truncate">{lane.label}</span>
+                            <span className="tabular-nums">{lane.items.length}</span>
+                          </div>
+                        )}
+                        {lane.items.map((o) => (
+                          <CardLote
+                            key={o.id}
+                            o={o}
+                            tvMode={tvMode}
+                            prediction={predByOrder.get(o.id) ?? null}
+                            slaTargetH={SLA_HOURS[col.key]}
+                            nextColumnKey={nextCol?.key ?? null}
+                            nextColumnLabel={nextCol?.label ?? null}
+                            onOpen={() => setDrawer(o)}
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData("text/plain", o.id);
+                              e.dataTransfer.effectAllowed = "move";
+                              setDraggingId(o.id);
+                            }}
+                            onDragEnd={() => {
+                              setDraggingId(null);
+                              setDragOverCol(null);
+                            }}
+                            dragging={draggingId === o.id}
+                          />
+                        ))}
+                      </div>
                     ))
                   )}
                 </div>
@@ -1036,6 +1169,7 @@ function AcompanhamentoProducao() {
         </div>
       </div>
 
+      {!tvMode && (<>
       {/* RESUMO POR SETOR */}
       <section className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-2 border-b border-border flex items-center justify-between">
@@ -1336,6 +1470,7 @@ function AcompanhamentoProducao() {
           );
         })()}
       </section>
+      </>)}
 
       {drawer && <HistoryDrawer order={drawer} onClose={() => setDrawer(null)} />}
     </div>
@@ -1344,12 +1479,22 @@ function AcompanhamentoProducao() {
 
 function CardLote({
   o,
+  tvMode,
+  prediction,
+  slaTargetH,
+  nextColumnKey,
+  nextColumnLabel,
   onOpen,
   onDragStart,
   onDragEnd,
   dragging,
 }: {
   o: Order;
+  tvMode?: boolean;
+  prediction?: DelayPrediction | null;
+  slaTargetH?: number;
+  nextColumnKey?: string | null;
+  nextColumnLabel?: string | null;
   onOpen: () => void;
   onDragStart?: (e: React.DragEvent<HTMLButtonElement>) => void;
   onDragEnd?: () => void;
@@ -1358,61 +1503,113 @@ function CardLote({
   const st = statusOf(o);
   const dias = daysSince(o.stage_updated_at);
   const produced = Math.round((o.progress / 100) * o.quantity);
+  const elapsedH = (Date.now() - new Date(o.stage_updated_at).getTime()) / 36e5;
+  const slaBreached = slaTargetH != null && elapsedH > slaTargetH;
+  const risk = prediction?.risk;
+  const riskCls =
+    risk === "high"
+      ? "bg-red-500"
+      : risk === "medium"
+        ? "bg-amber-500"
+        : risk === "low"
+          ? "bg-emerald-500"
+          : "";
+  const borderCls = slaBreached
+    ? "border-red-500/70 ring-2 ring-red-500/20 animate-pulse"
+    : dragging
+      ? "border-primary opacity-40"
+      : "border-border";
   return (
-    <button
-      onClick={onOpen}
-      draggable={!!onDragStart}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      className={`w-full text-left rounded-lg border bg-background hover:border-primary/50 transition p-2 space-y-1 cursor-grab active:cursor-grabbing ${
-        dragging ? "opacity-40 border-primary" : "border-border"
-      }`}
+    <div
+      className={`group relative rounded-lg border bg-background hover:border-primary/50 transition ${borderCls}`}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold inline-flex items-center gap-1">
-          <Package className="size-3" />
-          {o.batch_code ?? o.code}
-        </span>
+      {/* Badge de risco (predição) — canto superior esquerdo */}
+      {risk && (
         <span
-          className={`text-[9px] px-1.5 py-0.5 rounded border ${STATUS_META[st].cls}`}
-        >
-          {STATUS_META[st].label}
-        </span>
-      </div>
-      <div className="text-[11px] text-foreground/90 line-clamp-1">{o.product_name ?? "—"}</div>
-      <div className="text-[10px] text-muted-foreground line-clamp-1">
-        Ref. {o.product_sku ?? "—"}
-      </div>
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground tabular-nums">
-        <span>
-          {produced}/{o.quantity} pç
-        </span>
-        <span>{dias}d no setor</span>
-      </div>
-      <div className="h-1 bg-muted rounded overflow-hidden">
-        <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
-      </div>
-      <div className="flex items-center justify-between text-[10px]">
-        <span
-          className={`inline-flex items-center gap-1 ${o.outsourced ? "text-amber-600" : "text-emerald-600"}`}
-        >
-          {o.outsourced ? <Truck className="size-3" /> : <Factory className="size-3" />}
-          {o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}
-        </span>
-        {o.due_date && (
-          <span className="text-muted-foreground tabular-nums">
-            prev {new Date(o.due_date).toLocaleDateString("pt-BR")}
+          title={prediction?.reason ?? ""}
+          className={`absolute -left-1 top-2 size-2.5 rounded-full ring-2 ring-background ${riskCls}`}
+        />
+      )}
+      <button
+        onClick={onOpen}
+        draggable={!!onDragStart}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        className={`w-full text-left p-2 space-y-1 cursor-grab active:cursor-grabbing ${tvMode ? "text-sm" : ""}`}
+      >
+        <div className="flex items-center justify-between gap-1">
+          <span className={`font-semibold inline-flex items-center gap-1 ${tvMode ? "text-sm" : "text-xs"}`}>
+            <Package className="size-3" />
+            {o.batch_code ?? o.code}
           </span>
+          <span className={`text-[9px] px-1.5 py-0.5 rounded border ${STATUS_META[st].cls}`}>
+            {STATUS_META[st].label}
+          </span>
+        </div>
+        <div className={`text-foreground/90 line-clamp-1 ${tvMode ? "text-sm" : "text-[11px]"}`}>
+          {o.product_name ?? "—"}
+        </div>
+        <div className="text-[10px] text-muted-foreground line-clamp-1">Ref. {o.product_sku ?? "—"}</div>
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground tabular-nums">
+          <span>
+            {produced}/{o.quantity} pç
+          </span>
+          <span className={slaBreached ? "text-red-600 font-semibold" : ""}>
+            {dias}d no setor{slaTargetH ? ` / ${Math.round(slaTargetH / 24)}d` : ""}
+          </span>
+        </div>
+        <div className="h-1.5 bg-muted rounded overflow-hidden">
+          <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
+        </div>
+        <div className="flex items-center justify-between text-[10px]">
+          <span
+            className={`inline-flex items-center gap-1 ${o.outsourced ? "text-amber-600" : "text-emerald-600"}`}
+          >
+            {o.outsourced ? <Truck className="size-3" /> : <Factory className="size-3" />}
+            {o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}
+          </span>
+          {o.due_date && (
+            <span className="text-muted-foreground tabular-nums">
+              prev {new Date(o.due_date).toLocaleDateString("pt-BR")}
+            </span>
+          )}
+        </div>
+        {prediction && prediction.predictedDelayHours >= 8 && (
+          <div className="flex items-start gap-1 text-[10px] text-red-600 border-t border-red-500/20 pt-1 mt-1">
+            <Zap className="size-3 shrink-0 mt-px" />
+            <span className="line-clamp-2">
+              Previsão: +{prediction.predictedDelayHours}h após o prazo
+            </span>
+          </div>
         )}
-      </div>
-      {o.notes && (
-        <div className="flex items-start gap-1 text-[10px] text-muted-foreground border-t border-border/60 pt-1 mt-1">
-          <MessageSquareWarning className="size-3 shrink-0 mt-px text-amber-600" />
-          <span className="line-clamp-1 italic">{o.notes}</span>
+        {o.notes && !prediction && (
+          <div className="flex items-start gap-1 text-[10px] text-muted-foreground border-t border-border/60 pt-1 mt-1">
+            <MessageSquareWarning className="size-3 shrink-0 mt-px text-amber-600" />
+            <span className="line-clamp-1 italic">{o.notes}</span>
+          </div>
+        )}
+      </button>
+      {/* Ações rápidas — não no modo TV (somente leitura) */}
+      {!tvMode && (
+        <div className="absolute right-1 top-1 opacity-60 group-hover:opacity-100 transition-opacity">
+          <ProductionCardActions
+            order={{
+              id: o.id,
+              code: o.code,
+              batch_code: o.batch_code,
+              owner_id: o.owner_id,
+              quantity: o.quantity,
+              progress: o.progress,
+              stage: o.stage,
+            }}
+            nextColumnKey={nextColumnKey ?? null}
+            nextColumnLabel={nextColumnLabel ?? null}
+            onOpenHistory={onOpen}
+            invalidateKey={["acompanhamento-producao"]}
+          />
         </div>
       )}
-
-    </button>
+    </div>
   );
 }
 
