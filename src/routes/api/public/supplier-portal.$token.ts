@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { createHash } from "crypto";
 import { log } from "@/lib/observability";
+
+function hashToken(t: string): string {
+  return createHash("sha256").update(t).digest("hex");
+}
 
 const Submit = z.object({
   rfq_id: z.string().uuid(),
@@ -36,10 +41,11 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
         const token = params.token;
         if (!token || token.length < 16) return new Response("Invalid token", { status: 400 });
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const tokenHash = hashToken(token);
         const { data: tok } = await supabaseAdmin
           .from("supplier_portal_tokens")
           .select("id, owner_id, supplier_id, expires_at")
-          .eq("token", token)
+          .eq("token_hash", tokenHash)
           .maybeSingle();
         if (!tok) return new Response("Not found", { status: 404 });
         if (tok.expires_at && new Date(tok.expires_at) < new Date())
@@ -110,10 +116,11 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
         const action = url.searchParams.get("action");
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const tokenHash = hashToken(token);
         const { data: tokRow } = await supabaseAdmin
           .from("supplier_portal_tokens")
           .select("owner_id, supplier_id, expires_at")
-          .eq("token", token)
+          .eq("token_hash", tokenHash)
           .maybeSingle();
         if (!tokRow) return new Response("Not found", { status: 404 });
         if (tokRow.expires_at && new Date(tokRow.expires_at) < new Date())

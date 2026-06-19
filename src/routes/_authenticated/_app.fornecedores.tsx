@@ -197,12 +197,21 @@ function FornecedoresPage() {
 
   async function generatePortalLink(supplierId: string) {
     if (!user) return;
+    // Generate token in the browser; persist only its SHA-256 hash.
+    // The plaintext token is shown to the user ONCE here and never stored.
     const token =
       (crypto as any).randomUUID().replace(/-/g, "") + Math.random().toString(36).slice(2, 10);
+    const hashBuf = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(token),
+    );
+    const tokenHash = Array.from(new Uint8Array(hashBuf))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
     const { error } = await supabase.from("supplier_portal_tokens").insert({
       owner_id: user.id,
       supplier_id: supplierId,
-      token,
+      token_hash: tokenHash,
       expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24 * 90).toISOString(),
     });
     if (error) {
@@ -212,7 +221,7 @@ function FornecedoresPage() {
     const url = `${window.location.origin}/portal/fornecedor/${token}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Link copiado: " + url);
+      toast.success("Link copiado (mostrado só uma vez): " + url);
     } catch {
       toast.success(url);
     }
