@@ -298,6 +298,9 @@ function AcompanhamentoProducao() {
     const internos = wip.filter((o) => !o.outsourced);
     const externos = wip.filter((o) => o.outsourced);
     const atrasados = wip.filter((o) => statusOf(o) === "atrasado");
+    const avgDays = wip.length
+      ? wip.reduce((s, o) => s + daysSince(o.stage_updated_at), 0) / wip.length
+      : 0;
     return {
       lotesProd: lotes.size,
       pcsProd: wip.reduce((s, o) => s + o.quantity, 0),
@@ -305,6 +308,7 @@ function AcompanhamentoProducao() {
       lotesExt: new Set(externos.map((o) => o.batch_code ?? o.id)).size,
       lotesAtr: new Set(atrasados.map((o) => o.batch_code ?? o.id)).size,
       pcsAtr: atrasados.reduce((s, o) => s + o.quantity, 0),
+      avgDays: Math.round(avgDays * 10) / 10,
     };
   }, [filtered]);
 
