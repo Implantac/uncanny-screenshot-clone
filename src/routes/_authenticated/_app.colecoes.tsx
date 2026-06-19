@@ -894,6 +894,23 @@ function ColecoesPage() {
               </SelectContent>
             </Select>
 
+            <div className="flex items-center justify-end">
+              <ViewPresetsDropdown
+                module="colecoes"
+                current={{ q, status: statusFilter, season: seasonFilter, sort: sortBy }}
+                onClear={() => updateSearch({ q: "", status: "all", season: "all", sort: "recent", page: 1 })}
+                onApply={(f: ViewPresetFilters) => {
+                  const patch: Partial<typeof search> = { page: 1 };
+                  if (typeof f.q === "string") patch.q = f.q;
+                  if (typeof f.status === "string") patch.status = f.status as typeof statusFilter;
+                  if (typeof f.season === "string") patch.season = f.season;
+                  if (typeof f.sort === "string") patch.sort = f.sort as typeof sortBy;
+                  updateSearch(patch);
+                }}
+              />
+            </div>
+
+
             <div className="space-y-2">
               {filteredCollections.length === 0 ? (
                 <div className="text-xs text-muted-foreground text-center py-6">
