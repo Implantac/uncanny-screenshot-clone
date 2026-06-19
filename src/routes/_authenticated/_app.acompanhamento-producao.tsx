@@ -1279,7 +1279,7 @@ function AcompanhamentoProducao() {
               </tr>
             </thead>
             <tbody>
-              {filtered.slice(0, 200).map((o) => {
+              {listRows.slice(0, 200).map((o) => {
                 const st = statusOf(o);
                 const col = COLUMNS.find((c) => c.match(o));
                 return (
@@ -1326,12 +1326,15 @@ function AcompanhamentoProducao() {
               })}
             </tbody>
           </table>
-          {filtered.length > 200 && (
+          {listRows.length > 200 && (
             <div className="px-3 py-2 text-[11px] text-muted-foreground">
-              Mostrando 200 de {filtered.length} — refine os filtros ou exporte.
+              Mostrando 200 de {listRows.length} — refine os filtros ou exporte.
             </div>
           )}
         </div>
+            </>
+          );
+        })()}
       </section>
 
       {drawer && <HistoryDrawer order={drawer} onClose={() => setDrawer(null)} />}
