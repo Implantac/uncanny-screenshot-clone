@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Boxes,
@@ -658,14 +658,14 @@ function PassageDialog({
   const [qty, setQty] = useState(0);
   const [note, setNote] = useState("");
 
-  useMemo(() => {
+  useEffect(() => {
     if (!order) return;
     setKind("parcial");
     setLineType("primeira");
     setToStage("");
     setQty(order.quantity);
     setNote("");
-  }, [order?.id]);
+  }, [order]);
 
   const saveMut = useMutation({
     mutationFn: async () => {

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KanbanSquare, Plus, Trash2, ArrowUp, ArrowDown, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -312,7 +312,7 @@ function StageDialog({
   const [label, setLabel] = useState("");
   const [color, setColor] = useState("#a78bfa");
 
-  useMemo(() => {
+  useEffect(() => {
     if (!open) return;
     if (editing) {
       setKey(editing.key);
@@ -323,7 +323,7 @@ function StageDialog({
       setLabel("");
       setColor("#a78bfa");
     }
-  }, [open, editing?.id]);
+  }, [open, editing]);
 
   const saveMut = useMutation({
     mutationFn: async () => {

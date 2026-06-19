@@ -32,10 +32,10 @@ async function load() {
 
 function ProductSuccess() {
   const { data, isLoading } = useQuery({ queryKey: ["product-success"], queryFn: load });
-  const products = data?.products ?? [];
-  const sales = data?.sales ?? [];
 
   const scored = useMemo(() => {
+    const products = data?.products ?? [];
+    const sales = data?.sales ?? [];
     const now = Date.now();
     return products
       .map((p) => {
@@ -55,7 +55,7 @@ function ProductSuccess() {
         return { ...p, units, revenue, margin, velocity, score };
       })
       .sort((a, b) => b.score - a.score);
-  }, [products, sales]);
+  }, [data]);
 
   const stars = scored.filter((p) => p.score >= 70);
   const risk = scored.filter((p) => p.score < 30);

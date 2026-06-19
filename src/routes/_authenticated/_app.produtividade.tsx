@@ -93,11 +93,14 @@ function Produtividade() {
     },
   });
 
-  const rows = ordersQ.data ?? [];
-  const profMap = new Map((profilesQ.data ?? []).map((p) => [p.id, p]));
+  const profMap = useMemo(
+    () => new Map((profilesQ.data ?? []).map((p) => [p.id, p])),
+    [profilesQ.data],
+  );
   const today = new Date().toISOString().slice(0, 10);
 
   const agg = useMemo(() => {
+    const rows = ordersQ.data ?? [];
     const m = new Map<
       string,
       {
@@ -125,7 +128,7 @@ function Produtividade() {
     return [...m.entries()]
       .map(([uid, v]) => ({ uid, ...v, stages: [...v.stages] }))
       .sort((a, b) => b.pcs - a.pcs);
-  }, [rows, today]);
+  }, [ordersQ.data, today]);
 
   const totaisHoje = agg.reduce((s, x) => ({ p: s.p + x.passagensHoje, pc: s.pc + x.pcsHoje }), {
     p: 0,

@@ -87,11 +87,11 @@ function TwinFactory() {
   useRealtime("production_orders", ["twin-factory"]);
   useRealtime("production_batches", ["twin-factory"]);
   const { data, isLoading } = useQuery({ queryKey: ["twin-factory"], queryFn: loadAll });
-  const orders = data?.orders ?? [];
-  const batches = data?.batches ?? [];
-  const logs = data?.logs ?? [];
+  const orders = useMemo(() => data?.orders ?? [], [data?.orders]);
+  const batches = useMemo(() => data?.batches ?? [], [data?.batches]);
+  const logs = useMemo(() => data?.logs ?? [], [data?.logs]);
 
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const stats = useMemo(() => {
     const inProgress = orders.filter((o) => o.stage !== "entregue" && o.status !== "cancelada");
     const delayed = inProgress.filter((o) => o.due_date && new Date(o.due_date) < today);

@@ -166,7 +166,7 @@ function PCP() {
   const [historyOrder, setHistoryOrder] = useState<Order | null>(null);
   const [batchView, setBatchView] = useState<{ code: string; stage: Stage | null } | null>(null);
 
-  const { data: items = [], isLoading } = useQuery({
+  const { data: itemsData, isLoading } = useQuery({
     queryKey: ["production_orders"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -178,7 +178,7 @@ function PCP() {
     },
   });
 
-  const { data: products = [] } = useQuery({
+  const { data: productsData } = useQuery({
     queryKey: ["products-ref"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -190,7 +190,7 @@ function PCP() {
     },
   });
 
-  const { data: suppliers = [] } = useQuery({
+  const { data: suppliersData } = useQuery({
     queryKey: ["suppliers-ref"],
     queryFn: async () => {
       const { data, error } = await supabase.from("suppliers").select("id,name").order("name");
@@ -303,9 +303,14 @@ function PCP() {
     setOpen(true);
   }
 
-  const productName = (id: string | null) => products.find((p) => p.id === id)?.name ?? "—";
-  const productInfo = (id: string | null) => products.find((p) => p.id === id) ?? null;
-  const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "—";
+  const items = useMemo(() => itemsData ?? [], [itemsData]);
+  const products = useMemo(() => productsData ?? [], [productsData]);
+  const suppliers = useMemo(() => suppliersData ?? [], [suppliersData]);
+  const productById = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
+  const supplierById = useMemo(() => new Map(suppliers.map((s) => [s.id, s])), [suppliers]);
+  const productName = (id: string | null) => productById.get(id ?? "")?.name ?? "—";
+  const productInfo = (id: string | null) => productById.get(id ?? "") ?? null;
+  const supplierName = (id: string | null) => supplierById.get(id ?? "")?.name ?? "—";
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -314,14 +319,14 @@ function PCP() {
       if (filterPriority !== "all" && String(o.priority ?? 3) !== filterPriority) return false;
       if (filterSupplier !== "all" && o.supplier_id !== filterSupplier) return false;
       if (q) {
-        const p = productInfo(o.product_id);
+        const p = productById.get(o.product_id ?? "");
         const hay =
-          `${o.code} ${p?.name ?? ""} ${p?.sku ?? ""} ${supplierName(o.supplier_id)} ${o.notes ?? ""} ${o.batch_code ?? ""}`.toLowerCase();
+          `${o.code} ${p?.name ?? ""} ${p?.sku ?? ""} ${supplierById.get(o.supplier_id ?? "")?.name ?? "—"} ${o.notes ?? ""} ${o.batch_code ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [items, search, filterStatus, filterPriority, filterSupplier, products, suppliers]);
+  }, [items, search, filterStatus, filterPriority, filterSupplier, productById, supplierById]);
 
   const kpis = useMemo(() => {
     const total = filtered.length;
@@ -1185,7 +1190,7 @@ function ServiceOrdersPanel({
     notes: "",
   });
 
-  const { data: items = [], isLoading } = useQuery({
+  const { data: itemsData, isLoading } = useQuery({
     queryKey: ["service_orders"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -1258,12 +1263,16 @@ function ServiceOrdersPanel({
     },
   });
 
-  const opName = (id: string) => orders.find((o) => o.id === id)?.code ?? "—";
+  const items = useMemo(() => itemsData ?? [], [itemsData]);
+  const orderById = useMemo(() => new Map(orders.map((o) => [o.id, o])), [orders]);
+  const productById = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
+  const supplierById = useMemo(() => new Map(suppliers.map((s) => [s.id, s])), [suppliers]);
+  const opName = (id: string) => orderById.get(id)?.code ?? "—";
   const opProduct = (id: string) => {
-    const op = orders.find((o) => o.id === id);
-    return op ? (products.find((p) => p.id === op.product_id)?.name ?? "—") : "—";
+    const op = orderById.get(id);
+    return op ? (productById.get(op.product_id ?? "")?.name ?? "—") : "—";
   };
-  const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "—";
+  const supplierName = (id: string | null) => supplierById.get(id ?? "")?.name ?? "—";
 
   const kpis = useMemo(
     () => ({
@@ -1755,6 +1764,9 @@ function BatchDialog({
   suppliers: Ref[];
   onClose: () => void;
 }) {
+  const productById = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
+  const supplierById = useMemo(() => new Map(suppliers.map((s) => [s.id, s])), [suppliers]);
+
   const rows = useMemo(() => {
     if (!batch) return [];
     return orders.filter((o) => o.batch_code === batch.code);
@@ -1783,8 +1795,8 @@ function BatchDialog({
             <p className="text-sm text-muted-foreground">Nenhuma referência neste lote.</p>
           )}
           {rows.map((o) => {
-            const p = products.find((x) => x.id === o.product_id);
-            const s = suppliers.find((x) => x.id === o.supplier_id);
+            const p = productById.get(o.product_id ?? "");
+            const s = supplierById.get(o.supplier_id ?? "");
             return (
               <div
                 key={o.id}

@@ -28,10 +28,10 @@ async function load() {
 
 function ProductScore() {
   const { data, isLoading } = useQuery({ queryKey: ["product-score"], queryFn: load });
-  const products = data?.products ?? [];
-  const sales = data?.sales ?? [];
 
   const rows = useMemo(() => {
+    const products = data?.products ?? [];
+    const sales = data?.sales ?? [];
     const maxUnits = Math.max(
       1,
       ...products.map((p) =>
@@ -59,7 +59,7 @@ function ProductScore() {
         return { ...p, units, revenue, profit, margin, roi, score };
       })
       .sort((a, b) => b.score - a.score);
-  }, [products, sales]);
+  }, [data]);
 
   const summary = useMemo(
     () => ({

@@ -19,11 +19,14 @@ type Order = {
  */
 export function CapacitySimulator({ orders }: { orders: Order[] }) {
   const [target, setTarget] = useState<number>(500);
-  const today = new Date();
-  const defaultDate = new Date(today.getTime() + 14 * 86400000).toISOString().slice(0, 10);
+  const defaultDate = useMemo(
+    () => new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
+    [],
+  );
   const [until, setUntil] = useState<string>(defaultDate);
 
   const calc = useMemo(() => {
+    const today = new Date();
     const active = orders.filter((o) => o.status !== "concluida" && o.status !== "cancelada");
     const wipRemaining = active.reduce(
       (s, o) => s + Math.round(o.quantity * (1 - (o.progress ?? 0) / 100)),
@@ -88,7 +91,7 @@ export function CapacitySimulator({ orders }: { orders: Order[] }) {
           <input
             type="date"
             value={until}
-            min={today.toISOString().slice(0, 10)}
+            min={new Date().toISOString().slice(0, 10)}
             onChange={(e) => setUntil(e.target.value)}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
           />

@@ -38,12 +38,12 @@ async function load() {
 
 function Profitability() {
   const { data, isLoading } = useQuery({ queryKey: ["profitability"], queryFn: load });
-  const products = data?.products ?? [];
-  const collections = data?.collections ?? [];
-  const sales = data?.sales ?? [];
-  const campaigns = data?.campaigns ?? [];
 
   const byCollection = useMemo(() => {
+    const products = data?.products ?? [];
+    const collections = data?.collections ?? [];
+    const sales = data?.sales ?? [];
+    const campaigns = data?.campaigns ?? [];
     const totalMkt = campaigns.reduce((s, k) => s + Number(k.investment ?? 0), 0);
     const mktPerCol = collections.length > 0 ? totalMkt / collections.length : 0;
     return collections
@@ -64,7 +64,7 @@ function Profitability() {
         return { ...c, revenue, cogs, mkt, grossProfit, netProfit, roi, margin, skus: cps.length };
       })
       .sort((a, b) => b.netProfit - a.netProfit);
-  }, [collections, products, sales, campaigns]);
+  }, [data]);
 
   const summary = useMemo(() => {
     const revenue = byCollection.reduce((s, c) => s + c.revenue, 0);
