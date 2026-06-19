@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
@@ -32,7 +34,25 @@ import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionCardActions } from "@/components/production-card-actions";
 import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";
 
+const searchSchema = z.object({
+  q: fallback(z.string(), "").default(""),
+  colKey: fallback(z.string(), "").default(""),
+  supplierId: fallback(z.string(), "").default(""),
+  statusF: fallback(z.string(), "").default(""),
+  origin: fallback(z.enum(["", "interna", "externa"]), "").default(""),
+  collection: fallback(z.string(), "").default(""),
+  category: fallback(z.string(), "").default(""),
+  productGroup: fallback(z.string(), "").default(""),
+  productLine: fallback(z.string(), "").default(""),
+  supplierCat: fallback(z.string(), "").default(""),
+  dueFrom: fallback(z.string(), "").default(""),
+  dueTo: fallback(z.string(), "").default(""),
+  listFilter: fallback(z.enum(["", "no_prazo", "atrasado", "finalizado"]), "").default(""),
+  groupBy: fallback(z.enum(["none", "collection", "supplier", "line"]), "none").default("none"),
+});
+
 export const Route = createFileRoute("/_authenticated/_app/acompanhamento-producao")({
+  validateSearch: zodValidator(searchSchema),
   component: AcompanhamentoProducao,
 });
 
@@ -237,28 +257,36 @@ function AcompanhamentoProducao() {
     return m;
   }, [prediction]);
 
-  // Filtros
-  const [q, setQ] = useState("");
-  const [colKey, setColKey] = useState<string>("");
-  const [supplierId, setSupplierId] = useState<string>("");
-  const [statusF, setStatusF] = useState<StatusKey | "">("");
-  const [origin, setOrigin] = useState<"" | "interna" | "externa">("");
-  const [collection, setCollection] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
-  const [productGroup, setProductGroup] = useState<string>("");
-  const [productLine, setProductLine] = useState<string>("");
-  const [supplierCat, setSupplierCat] = useState<string>("");
-  const [dueFrom, setDueFrom] = useState<string>("");
-  const [dueTo, setDueTo] = useState<string>("");
+  // Filtros sincronizados com URL (link compartilhável)
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const updateSearch = (patch: Partial<typeof search>) =>
+    navigate({ search: (prev: typeof search) => ({ ...prev, ...patch }), replace: true });
+  const { q, colKey, supplierId, collection, category, productGroup, productLine, supplierCat, dueFrom, dueTo, groupBy } = search;
+  const statusF = search.statusF as StatusKey | "";
+  const origin = search.origin;
+  const listFilter = search.listFilter;
+  const setQ = (v: string) => updateSearch({ q: v });
+  const setColKey = (v: string) => updateSearch({ colKey: v });
+  const setSupplierId = (v: string) => updateSearch({ supplierId: v });
+  const setStatusF = (v: StatusKey | "") => updateSearch({ statusF: v });
+  const setOrigin = (v: "" | "interna" | "externa") => updateSearch({ origin: v });
+  const setCollection = (v: string) => updateSearch({ collection: v });
+  const setCategory = (v: string) => updateSearch({ category: v });
+  const setProductGroup = (v: string) => updateSearch({ productGroup: v });
+  const setProductLine = (v: string) => updateSearch({ productLine: v });
+  const setSupplierCat = (v: string) => updateSearch({ supplierCat: v });
+  const setDueFrom = (v: string) => updateSearch({ dueFrom: v });
+  const setDueTo = (v: string) => updateSearch({ dueTo: v });
+  const setListFilter = (v: "" | "no_prazo" | "atrasado" | "finalizado") => updateSearch({ listFilter: v });
+  const setGroupBy = (v: "none" | "collection" | "supplier" | "line") => updateSearch({ groupBy: v });
+
+  // UI state local (não vai pra URL)
   const [drawer, setDrawer] = useState<Order | null>(null);
   const [zoomCol, setZoomCol] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
-  const [listFilter, setListFilter] = useState<"" | "no_prazo" | "atrasado" | "finalizado">("");
-
-  // UX: modo painel (TV) e agrupamento (swimlanes)
   const [tvMode, setTvMode] = useState(false);
-  const [groupBy, setGroupBy] = useState<"none" | "collection" | "supplier" | "line">("none");
 
   // Auto-refresh periódico no modo TV (além do realtime, garante UI viva)
   useEffect(() => {
