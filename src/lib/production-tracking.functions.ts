@@ -56,7 +56,7 @@ export const moveOrderToColumn = createServerFn({ method: "POST" })
 
     const { error } = await supabase
       .from("production_orders")
-      .update(update)
+      .update(update as never)
       .eq("id", data.orderId)
       .eq("owner_id", userId);
     if (error) throw new Error(error.message);
