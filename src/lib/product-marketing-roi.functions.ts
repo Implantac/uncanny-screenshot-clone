@@ -96,7 +96,7 @@ function verdictFor(
 
 export const listProductMarketingRoi = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d) => inputSchema.parse(d ?? {}))
+  .inputValidator((d) => inputSchema.parse(d ?? {}))
   .handler(async ({ data, context }): Promise<ProductMarketingRoiResult> => {
     const { supabase } = context;
     const since = new Date(Date.now() - data.days * 86400000).toISOString();
