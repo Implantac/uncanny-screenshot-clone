@@ -329,7 +329,9 @@ export const assignProductFamily = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const update: Record<string, unknown> = { family_id: data.familyId };
+    const update: { family_id: string | null; channel_exclusive?: Channel[] | null } = {
+      family_id: data.familyId,
+    };
     if (data.channels !== undefined) update.channel_exclusive = data.channels;
     const { error } = await context.supabase
       .from("collection_products")
