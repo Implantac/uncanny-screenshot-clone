@@ -56,6 +56,8 @@ import { AssortmentPanel } from "@/components/assortment-panel";
 import { LifecyclePanel } from "@/components/lifecycle-panel";
 import type { CollectionState } from "@/lib/lifecycle.functions";
 import { CollectionCompareDialog } from "@/components/collection-compare-dialog";
+import { ThemesPanel, LinesDialogButton } from "@/components/themes-lines-panel";
+import { ChannelMixPanel } from "@/components/channel-mix-panel";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
 const SORT_KEYS = ["recent", "name", "progress", "launch", "year"] as const;
