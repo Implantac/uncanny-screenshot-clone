@@ -109,14 +109,15 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## 11. Fornecedores
 
-| Capacidade                           | Status | Onde                                           | Evolução |
-| ------------------------------------ | ------ | ---------------------------------------------- | -------- |
-| Cadastro                             | ✅     | `suppliers`                                    | —        |
-| Capabilities & compliance            | ✅     | `supplier_capabilities`, `supplier_compliance` | —        |
-| Scorecard                            | ✅     | `/supplier-score`                              | —        |
-| **Portal Fornecedor (visualização)** | ✅     | `/portal.fornecedor.$token` (Onda 19)          | —        |
-| **Portal: enviar amostra/responder** | ✅     | portal público + anexos/checklist              | —        |
-| RFQ                                  | ✅     | `rfq_requests`, `rfq_quotes`                   | —        |
+| Capacidade                               | Status | Onde                                            | Evolução |
+| ---------------------------------------- | ------ | ----------------------------------------------- | -------- |
+| Cadastro                                 | ✅     | `suppliers`                                     | —        |
+| Capabilities & compliance                | ✅     | `supplier_capabilities`, `supplier_compliance`  | —        |
+| Scorecard                                | ✅     | `/supplier-score`                               | —        |
+| **Portal Fornecedor (visualização)**     | ✅     | `/portal.fornecedor.$token` (Onda 19)           | —        |
+| **Portal: enviar amostra/responder**     | ✅     | portal público + anexos/checklist               | —        |
+| **Portal: validação interna de amostra** | ✅     | `/fornecedores` + `supplier_portal_attachments` | —        |
+| RFQ                                      | ✅     | `rfq_requests`, `rfq_quotes`                    | —        |
 
 ## 12. Almoxarifado
 
@@ -163,15 +164,15 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## Top 10 lacunas priorizadas (ordem sugerida)
 
-1. **Portal Fornecedor 2.0 — painel interno de validação de amostra** (§11).
-2. **Subcoleções / cápsulas** (§2) — `parent_id` em `collections`.
-3. **BOP responsável por etapa** (§7) — campo `responsible_role`.
-4. **Curva ABC por coleção** (§2).
-5. **Biblioteca global de referências** (§1).
-6. **Automação de alertas de ROI e margem** (§13/15).
-7. **Custo por facção/terceirizado no real × teórico** (§8/9).
-8. **Governança de metas por coleção/canal** (§13/15).
-9. **Assinatura/termo aceite no portal fornecedor** (§11).
-10. **Metas completas por coleção** (§2/15).
+1. **Subcoleções / cápsulas** (§2) — `parent_id` em `collections`.
+2. **BOP responsável por etapa** (§7) — campo `responsible_role`.
+3. **Curva ABC por coleção** (§2).
+4. **Biblioteca global de referências** (§1).
+5. **Automação de alertas de ROI e margem** (§13/15).
+6. **Custo por facção/terceirizado no real × teórico** (§8/9).
+7. **Governança de metas por coleção/canal** (§13/15).
+8. **Assinatura/termo aceite no portal fornecedor** (§11).
+9. **Metas completas por coleção** (§2/15).
+10. **Foto do material em todos os itens** (§12).
 
 Nenhum item acima cria tela nova desnecessária — todos estendem módulo/tabela existente.

@@ -1,7 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Truck, Plus, Trash2, Pencil, Sparkles, Mail, Phone, MapPin, Star } from "lucide-react";
+import {
+  Truck,
+  Plus,
+  Trash2,
+  Pencil,
+  Sparkles,
+  Mail,
+  Phone,
+  MapPin,
+  Star,
+  ClipboardCheck,
+  ExternalLink,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  FileText,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -46,11 +62,43 @@ type Supplier = {
   created_at: string;
 };
 
+type SampleStatus = "received" | "pending_review" | "approved" | "rejected" | "needs_adjustment";
+type ReviewAction = Extract<SampleStatus, "approved" | "rejected" | "needs_adjustment">;
+type SupplierSample = {
+  id: string;
+  supplier_id: string;
+  production_order_id: string | null;
+  rfq_id: string | null;
+  file_name: string;
+  file_path: string;
+  mime: string | null;
+  size: number | null;
+  sample_status: SampleStatus;
+  checklist: Record<string, unknown>;
+  notes: string | null;
+  created_at: string;
+  suppliers: { name: string } | null;
+  production_orders: { code: string } | null;
+  rfq_requests: { code: string; title: string } | null;
+};
+
+const SAMPLE_STATUS_LABEL: Record<SampleStatus, string> = {
+  received: "Recebida",
+  pending_review: "Pendente",
+  approved: "Aprovada",
+  rejected: "Reprovada",
+  needs_adjustment: "Ajuste",
+};
+
 function FornecedoresPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Supplier | null>(null);
+  const [reviewing, setReviewing] = useState<{
+    sample: SupplierSample;
+    action: ReviewAction;
+  } | null>(null);
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
@@ -61,6 +109,23 @@ function FornecedoresPage() {
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Supplier[];
+    },
+  });
+
+  const { data: samples = [], isLoading: isLoadingSamples } = useQuery({
+    queryKey: ["supplier-samples"],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("supplier_portal_attachments")
+        .select(
+          "id, supplier_id, production_order_id, rfq_id, file_name, file_path, mime, size, sample_status, checklist, notes, created_at, suppliers(name), production_orders(code), rfq_requests(code, title)",
+        )
+        .eq("attachment_kind", "sample")
+        .order("created_at", { ascending: false })
+        .limit(60);
+      if (error) throw error;
+      return (data ?? []) as unknown as SupplierSample[];
     },
   });
 
@@ -76,8 +141,47 @@ function FornecedoresPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const reviewMut = useMutation({
+    mutationFn: async ({
+      sample,
+      action,
+      notes,
+    }: {
+      sample: SupplierSample;
+      action: ReviewAction;
+      notes: string;
+    }) => {
+      const checklist = {
+        ...(sample.checklist ?? {}),
+        internal_review: {
+          status: action,
+          reviewed_at: new Date().toISOString(),
+          reviewer_id: user?.id ?? null,
+        },
+      };
+      const { error } = await supabase
+        .from("supplier_portal_attachments")
+        .update({
+          sample_status: action,
+          notes: notes.trim() || sample.notes,
+          checklist,
+        })
+        .eq("id", sample.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["supplier-samples"] });
+      toast.success("Amostra validada");
+      setReviewing(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const total = suppliers.length;
   const ativos = suppliers.filter((s) => s.active).length;
+  const pendingSamples = samples.filter((s) =>
+    ["received", "pending_review", "needs_adjustment"].includes(s.sample_status),
+  );
   const avgRating = total
     ? (suppliers.reduce((a, s) => a + (s.rating || 0), 0) / total).toFixed(1)
     : "—";
@@ -114,6 +218,17 @@ function FornecedoresPage() {
     }
   }
 
+  async function openSampleFile(sample: SupplierSample) {
+    const { data, error } = await supabase.storage
+      .from("supplier-uploads")
+      .createSignedUrl(sample.file_path, 60 * 60);
+    if (error || !data?.signedUrl) {
+      toast.error(error?.message ?? "Não foi possível abrir o arquivo");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -147,6 +262,10 @@ function FornecedoresPage() {
             <div className="text-2xl font-semibold text-emerald-400">{ativos}</div>
           </div>
           <div className="rounded-xl border border-border bg-card/50 p-4">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Amostras</div>
+            <div className="text-2xl font-semibold text-primary">{pendingSamples.length}</div>
+          </div>
+          <div className="rounded-xl border border-border bg-card/50 p-4">
             <div className="text-xs uppercase tracking-wide text-muted-foreground">
               Avaliação média
             </div>
@@ -170,6 +289,91 @@ function FornecedoresPage() {
           </div>
         </div>
       )}
+
+      <section className="rounded-xl border border-border bg-card/50 p-4">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <h2 className="text-sm font-semibold flex items-center gap-2">
+              <ClipboardCheck className="size-4 text-primary" />
+              Validação interna de amostras
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Arquivos enviados pelo portal do fornecedor para aprovação, ajuste ou reprovação.
+            </p>
+          </div>
+          <Badge variant="outline">{pendingSamples.length} pendente(s)</Badge>
+        </div>
+        {isLoadingSamples ? (
+          <div className="text-sm text-muted-foreground">Carregando amostras…</div>
+        ) : samples.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+            Nenhuma amostra enviada pelo portal ainda.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {samples.map((sample) => (
+              <div
+                key={sample.id}
+                className="rounded-lg border border-border bg-background/60 p-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <FileText className="size-4 text-muted-foreground" />
+                    <span className="font-medium truncate">{sample.file_name}</span>
+                    <SampleStatusBadge status={sample.sample_status} />
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-1">
+                    <span>{sample.suppliers?.name ?? "Fornecedor"}</span>
+                    <span>
+                      {sample.production_orders?.code
+                        ? `OP ${sample.production_orders.code}`
+                        : sample.rfq_requests?.code
+                          ? `RFQ ${sample.rfq_requests.code}`
+                          : "Sem vínculo operacional"}
+                    </span>
+                    <span>{new Date(sample.created_at).toLocaleDateString("pt-BR")}</span>
+                    {sample.size ? <span>{Math.round(sample.size / 1024)} KB</span> : null}
+                  </div>
+                  {sample.notes && (
+                    <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
+                      Obs.: {sample.notes}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                  <Button variant="outline" size="sm" onClick={() => openSampleFile(sample)}>
+                    <ExternalLink className="size-3.5" /> Abrir
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-emerald-500 border-emerald-500/30"
+                    onClick={() => setReviewing({ sample, action: "approved" })}
+                  >
+                    <CheckCircle2 className="size-3.5" /> Aprovar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-amber-500 border-amber-500/30"
+                    onClick={() => setReviewing({ sample, action: "needs_adjustment" })}
+                  >
+                    <AlertTriangle className="size-3.5" /> Ajustar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-destructive border-destructive/30"
+                    onClick={() => setReviewing({ sample, action: "rejected" })}
+                  >
+                    <XCircle className="size-3.5" /> Reprovar
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
@@ -276,7 +480,87 @@ function FornecedoresPage() {
       )}
 
       <SupplierDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} />
+      <ReviewSampleDialog
+        review={reviewing}
+        onOpenChange={(v) => !v && setReviewing(null)}
+        onConfirm={(notes) => {
+          if (!reviewing) return;
+          reviewMut.mutate({ ...reviewing, notes });
+        }}
+        pending={reviewMut.isPending}
+      />
     </div>
+  );
+}
+
+function SampleStatusBadge({ status }: { status: SampleStatus }) {
+  const cls =
+    status === "approved"
+      ? "bg-emerald-500/15 text-emerald-500 border-emerald-500/30"
+      : status === "rejected"
+        ? "bg-destructive/15 text-destructive border-destructive/30"
+        : status === "needs_adjustment"
+          ? "bg-amber-500/15 text-amber-500 border-amber-500/30"
+          : "bg-primary/10 text-primary border-primary/30";
+  return (
+    <Badge variant="outline" className={cls}>
+      {SAMPLE_STATUS_LABEL[status] ?? status}
+    </Badge>
+  );
+}
+
+function ReviewSampleDialog({
+  review,
+  onOpenChange,
+  onConfirm,
+  pending,
+}: {
+  review: { sample: SupplierSample; action: ReviewAction } | null;
+  onOpenChange: (v: boolean) => void;
+  onConfirm: (notes: string) => void;
+  pending: boolean;
+}) {
+  const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    if (review) setNotes(review.sample.notes ?? "");
+  }, [review]);
+
+  const title =
+    review?.action === "approved"
+      ? "Aprovar amostra"
+      : review?.action === "needs_adjustment"
+        ? "Solicitar ajuste"
+        : "Reprovar amostra";
+
+  return (
+    <Dialog open={!!review} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            Registre a decisão interna para {review?.sample.file_name ?? "a amostra"}.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-2">
+          <Label>Observação da validação</Label>
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={4}
+            placeholder="Ex.: aprovada para piloto, ajustar medida P, reprovar acabamento..."
+          />
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button type="button" onClick={() => onConfirm(notes)} disabled={pending}>
+            {pending ? "Salvando…" : "Confirmar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
