@@ -359,6 +359,7 @@ export type Database = {
           product_id: string
           role: Database["public"]["Enums"]["collection_product_role"]
           source_collection_id: string | null
+          theme_id: string | null
           updated_at: string
         }
         Insert: {
@@ -374,6 +375,7 @@ export type Database = {
           product_id: string
           role?: Database["public"]["Enums"]["collection_product_role"]
           source_collection_id?: string | null
+          theme_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -389,6 +391,7 @@ export type Database = {
           product_id?: string
           role?: Database["public"]["Enums"]["collection_product_role"]
           source_collection_id?: string | null
+          theme_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -416,6 +419,60 @@ export type Database = {
           {
             foreignKeyName: "collection_products_source_collection_id_fkey"
             columns: ["source_collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_products_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "collection_themes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_themes: {
+        Row: {
+          collection_id: string
+          color: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          name: string
+          owner_id: string
+          palette: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          collection_id: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name: string
+          owner_id: string
+          palette?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          collection_id?: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name?: string
+          owner_id?: string
+          palette?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_themes_collection_id_fkey"
+            columns: ["collection_id"]
             isOneToOne: false
             referencedRelation: "collections"
             referencedColumns: ["id"]
@@ -1692,6 +1749,42 @@ export type Database = {
           },
         ]
       }
+      product_lines: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          name: string
+          owner_id: string
+          season: string | null
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name: string
+          owner_id: string
+          season?: string | null
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name?: string
+          owner_id?: string
+          season?: string | null
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
       product_size_options: {
         Row: {
           active: boolean
@@ -2262,6 +2355,7 @@ export type Database = {
           grade: string | null
           id: string
           image_url: string | null
+          line_id: string | null
           name: string
           owner_id: string
           product_class: string | null
@@ -2283,6 +2377,7 @@ export type Database = {
           grade?: string | null
           id?: string
           image_url?: string | null
+          line_id?: string | null
           name: string
           owner_id: string
           product_class?: string | null
@@ -2304,6 +2399,7 @@ export type Database = {
           grade?: string | null
           id?: string
           image_url?: string | null
+          line_id?: string | null
           name?: string
           owner_id?: string
           product_class?: string | null
@@ -2321,6 +2417,13 @@ export type Database = {
             columns: ["collection_id"]
             isOneToOne: false
             referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "product_lines"
             referencedColumns: ["id"]
           },
         ]

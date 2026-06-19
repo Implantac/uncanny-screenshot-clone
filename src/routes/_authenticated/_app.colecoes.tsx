@@ -56,6 +56,8 @@ import { AssortmentPanel } from "@/components/assortment-panel";
 import { LifecyclePanel } from "@/components/lifecycle-panel";
 import type { CollectionState } from "@/lib/lifecycle.functions";
 import { CollectionCompareDialog } from "@/components/collection-compare-dialog";
+import { ThemesPanel, LinesDialogButton } from "@/components/themes-lines-panel";
+import { ChannelMixPanel } from "@/components/channel-mix-panel";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
 const SORT_KEYS = ["recent", "name", "progress", "launch", "year"] as const;
@@ -782,6 +784,7 @@ function ColecoesPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <LinesDialogButton />
           <CollectionCompareDialog collections={collections as any} />
           <Button onClick={openCreate} className="gap-2">
             <Plus className="size-4" /> Nova coleção
@@ -798,7 +801,9 @@ function ColecoesPage() {
             collectionName={selected.name}
             currentState={(selected.status ?? "briefing") as CollectionState}
           />
+          <ThemesPanel collectionId={selected.id} collectionName={selected.name} />
           <CarryOverPanel collectionId={selected.id} collectionName={selected.name} />
+          <ChannelMixPanel collectionId={selected.id} collectionName={selected.name} />
           <AssortmentPanel collectionId={selected.id} collectionName={selected.name} />
         </>
       )}

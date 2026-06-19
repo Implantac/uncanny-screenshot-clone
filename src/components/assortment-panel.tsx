@@ -128,6 +128,7 @@ export function AssortmentPanel({
   const families = data?.families ?? [];
   const cells = data?.cells ?? [];
   const insights = data?.insights ?? [];
+  const otb = data?.otb ?? [];
 
   const cellMap = useMemo(() => {
     const m = new Map<string, (typeof cells)[number]>();
@@ -278,6 +279,50 @@ export function AssortmentPanel({
           </tbody>
         </table>
       </div>
+
+      {otb.some((o) => o.targetUnits > 0 || o.committedUnits > 0) && (
+        <div className="border border-border rounded-md overflow-hidden">
+          <div className="text-[11px] font-medium px-2.5 py-1.5 bg-muted/40 flex items-center gap-1.5">
+            <Target className="size-3" /> Open-To-Buy (unidades por família)
+          </div>
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-muted-foreground border-b border-border/60 text-[10px]">
+                <th className="text-left px-2 py-1 font-medium">Família</th>
+                <th className="text-right px-2 py-1 font-medium">Meta</th>
+                <th className="text-right px-2 py-1 font-medium">Em produção</th>
+                <th className="text-right px-2 py-1 font-medium">OTB</th>
+              </tr>
+            </thead>
+            <tbody>
+              {otb.map((o) => {
+                const over = o.openToBuy < 0;
+                const tight = !over && o.targetUnits > 0 && o.openToBuy < o.targetUnits * 0.1;
+                return (
+                  <tr key={o.familyId ?? "_none"} className="border-b border-border/30 last:border-0">
+                    <td className="px-2 py-1">{o.familyName}</td>
+                    <td className="px-2 py-1 text-right">{fmt(o.targetUnits)}</td>
+                    <td className="px-2 py-1 text-right">{fmt(o.committedUnits)}</td>
+                    <td
+                      className={`px-2 py-1 text-right font-medium ${
+                        over
+                          ? "text-rose-600"
+                          : tight
+                            ? "text-amber-600"
+                            : "text-emerald-600"
+                      }`}
+                    >
+                      {over ? "−" : ""}
+                      {fmt(Math.abs(o.openToBuy))}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <div className="text-[10px] text-muted-foreground">
         Clique em uma célula para definir meta de SKUs, unidades e receita. Verde = na meta · Âmbar = atenção · Vermelho = abaixo.
       </div>
