@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2, AlertCircle, Activity, Radio, Factory } fr
 import { useMemo, useState } from "react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { WarRoomPanel } from "@/components/war-room-panel";
+import { AutoPushSentinel } from "@/components/auto-push-sentinel";
 
 export const Route = createFileRoute("/_authenticated/_app/control-tower")({
   component: ControlTower,
@@ -186,6 +187,10 @@ function ControlTower() {
           </button>
         </div>
       </header>
+
+      <div className="flex justify-end">
+        <AutoPushSentinel />
+      </div>
 
       <WarRoomPanel />
 
