@@ -491,9 +491,22 @@ function AcompanhamentoProducao() {
     setOrigin("");
     setCollection("");
     setCategory("");
+    setProductGroup("");
+    setProductLine("");
+    setSupplierCat("");
     setDueFrom("");
     setDueTo("");
   };
+
+  // KPIs gerenciais derivados (gargalo / risco)
+  const topBottleneck = useMemo(
+    () => [...sectorSummary].sort((a, b) => b.lotes - a.lotes)[0],
+    [sectorSummary],
+  );
+  const topRiskySupplier = useMemo(
+    () => [...supplierSummary].sort((a, b) => b.atrasado - a.atrasado)[0],
+    [supplierSummary],
+  );
 
   const exportRows = () => {
     exportToCsv(
