@@ -1050,11 +1050,34 @@ function AcompanhamentoProducao() {
       {/* KANBAN */}
       <div className="overflow-x-auto">
         <div className="flex gap-3 min-w-max pb-2">
-          {COLUMNS.map((col) => {
+          {COLUMNS.filter((c) => !tvMode || (grouped.get(c.key) ?? []).length > 0).map((col) => {
             const items = grouped.get(col.key) ?? [];
             const qty = items.reduce((s, o) => s + o.quantity, 0);
+            const lateInCol = items.filter((o) => statusOf(o) === "atrasado").length;
             const opened = zoomCol === col.key;
             const isOver = dragOverCol === col.key;
+            // Próxima coluna válida para a ação "Avançar" (apenas em colunas de stages avançáveis)
+            const colIdx = COLUMNS.findIndex((c) => c.key === col.key);
+            const nextCol = colIdx >= 0 && colIdx < COLUMNS.length - 1 ? COLUMNS[colIdx + 1] : null;
+            // Swimlanes
+            const lanes = (() => {
+              if (groupBy === "none") return [{ key: "__all", label: "", items }];
+              const m = new Map<string, Order[]>();
+              items.forEach((o) => {
+                const k =
+                  groupBy === "collection"
+                    ? o.collection_name ?? "Sem coleção"
+                    : groupBy === "supplier"
+                      ? o.outsourced
+                        ? o.supplier_name ?? "Terceiro s/ nome"
+                        : "Interna"
+                      : o.product_line ?? "Sem linha";
+                m.set(k, [...(m.get(k) ?? []), o]);
+              });
+              return Array.from(m, ([key, lItems]) => ({ key, label: key, items: lItems })).sort(
+                (a, b) => b.items.length - a.items.length,
+              );
+            })();
             return (
               <div
                 key={col.key}
@@ -1076,7 +1099,7 @@ function AcompanhamentoProducao() {
                   if (curCol?.key === col.key) return;
                   move.mutate({ orderId: id, toColumn: col.key });
                 }}
-                className={`w-[260px] flex-shrink-0 rounded-xl border bg-card flex flex-col transition ${
+                className={`${tvMode ? "w-[320px]" : "w-[280px]"} flex-shrink-0 rounded-xl border bg-card flex flex-col transition ${
                   isOver ? "border-primary ring-2 ring-primary/30" : "border-border"
                 }`}
               >
@@ -1085,13 +1108,20 @@ function AcompanhamentoProducao() {
                   className="px-3 py-2 border-b border-border text-left hover:bg-muted/50 rounded-t-xl"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">{col.label}</span>
+                    <span className={`font-semibold ${tvMode ? "text-base" : "text-sm"}`}>
+                      {col.label}
+                    </span>
                     <span className="text-[10px] tabular-nums text-muted-foreground">
                       {items.length} · {qty} pç
                     </span>
                   </div>
+                  {lateInCol > 0 && (
+                    <div className="mt-0.5 text-[10px] font-semibold text-red-600 inline-flex items-center gap-1">
+                      <AlertTriangle className="size-2.5" /> {lateInCol} atrasado(s)
+                    </div>
+                  )}
                 </button>
-                <div className="p-2 space-y-2 max-h-[520px] overflow-y-auto">
+                <div className={`p-2 space-y-2 overflow-y-auto ${tvMode ? "max-h-[78vh]" : "max-h-[520px]"}`}>
                   {isLoading ? (
                     <div className="text-xs text-muted-foreground p-2">Carregando…</div>
                   ) : items.length === 0 ? (
@@ -1099,22 +1129,37 @@ function AcompanhamentoProducao() {
                       {isOver ? "Solte aqui" : "Vazio"}
                     </div>
                   ) : (
-                    items.map((o) => (
-                      <CardLote
-                        key={o.id}
-                        o={o}
-                        onOpen={() => setDrawer(o)}
-                        onDragStart={(e) => {
-                          e.dataTransfer.setData("text/plain", o.id);
-                          e.dataTransfer.effectAllowed = "move";
-                          setDraggingId(o.id);
-                        }}
-                        onDragEnd={() => {
-                          setDraggingId(null);
-                          setDragOverCol(null);
-                        }}
-                        dragging={draggingId === o.id}
-                      />
+                    lanes.map((lane) => (
+                      <div key={lane.key} className="space-y-2">
+                        {groupBy !== "none" && (
+                          <div className="sticky top-0 z-[1] bg-card/95 backdrop-blur text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1 py-0.5 border-b border-border/60 flex items-center justify-between">
+                            <span className="truncate">{lane.label}</span>
+                            <span className="tabular-nums">{lane.items.length}</span>
+                          </div>
+                        )}
+                        {lane.items.map((o) => (
+                          <CardLote
+                            key={o.id}
+                            o={o}
+                            tvMode={tvMode}
+                            prediction={predByOrder.get(o.id) ?? null}
+                            slaTargetH={SLA_HOURS[col.key]}
+                            nextColumnKey={nextCol?.key ?? null}
+                            nextColumnLabel={nextCol?.label ?? null}
+                            onOpen={() => setDrawer(o)}
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData("text/plain", o.id);
+                              e.dataTransfer.effectAllowed = "move";
+                              setDraggingId(o.id);
+                            }}
+                            onDragEnd={() => {
+                              setDraggingId(null);
+                              setDragOverCol(null);
+                            }}
+                            dragging={draggingId === o.id}
+                          />
+                        ))}
+                      </div>
                     ))
                   )}
                 </div>
