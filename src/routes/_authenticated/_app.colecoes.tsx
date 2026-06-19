@@ -10,6 +10,7 @@ import {
   Copy,
   Download,
   Flag,
+  GitBranch,
   ImagePlus,
   Layers,
   Palette,
@@ -97,6 +98,8 @@ type Collection = {
   palette: string[];
   launch_date: string | null;
   progress: number;
+  parent_id: string | null;
+  parent?: { id: string; name: string } | null;
   cover_path: string | null;
   created_at: string;
 };
@@ -262,16 +265,17 @@ function ColecoesPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
+  const [defaultParentId, setDefaultParentId] = useState<string | null>(null);
 
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["collections"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("collections")
-        .select("*")
+        .select("*, parent:collections!collections_parent_id_fkey(id, name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Collection[];
+      return (data ?? []) as unknown as Collection[];
     },
   });
 
@@ -308,6 +312,30 @@ function ColecoesPage() {
     () => products.filter((item) => item.collection_id === selected?.id),
     [products, selected?.id],
   );
+
+  const childCollections = useMemo(
+    () => collections.filter((item) => item.parent_id === selected?.id),
+    [collections, selected?.id],
+  );
+
+  const parentCollection = useMemo(
+    () =>
+      selected?.parent_id
+        ? (collections.find((item) => item.id === selected.parent_id) ?? selected.parent ?? null)
+        : null,
+    [collections, selected],
+  );
+
+  const childrenByCollection = useMemo(() => {
+    const map = new Map<string, Collection[]>();
+    collections.forEach((collection) => {
+      if (!collection.parent_id) return;
+      const list = map.get(collection.parent_id) ?? [];
+      list.push(collection);
+      map.set(collection.parent_id, list);
+    });
+    return map;
+  }, [collections]);
 
   const selectedProductIds = useMemo(() => selectedProducts.map((p) => p.id), [selectedProducts]);
 
@@ -549,8 +577,9 @@ function ColecoesPage() {
         palette: c.palette,
         launch_date: c.launch_date,
         progress: 0,
+        parent_id: c.parent_id,
         cover_path: c.cover_path,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -718,11 +747,19 @@ function ColecoesPage() {
 
   function openCreate() {
     setEditing(null);
+    setDefaultParentId(null);
+    setOpen(true);
+  }
+
+  function openCreateCapsule(parentId: string) {
+    setEditing(null);
+    setDefaultParentId(parentId);
     setOpen(true);
   }
 
   function openEdit(collection: Collection) {
     setEditing(collection);
+    setDefaultParentId(null);
     setOpen(true);
   }
 
@@ -860,6 +897,20 @@ function ColecoesPage() {
                           <div className="text-xs text-muted-foreground mt-1">
                             {collection.season} {collection.year}
                           </div>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {collection.parent_id && (
+                              <Badge variant="outline" className="text-[10px] gap-1">
+                                <GitBranch className="size-3" />
+                                Cápsula
+                              </Badge>
+                            )}
+                            {childrenByCollection.get(collection.id)?.length ? (
+                              <Badge variant="outline" className="text-[10px] gap-1">
+                                <Layers className="size-3" />
+                                {childrenByCollection.get(collection.id)?.length} drop(s)
+                              </Badge>
+                            ) : null}
+                          </div>
                         </div>
                         <Badge variant="outline" className={STATUS_COLORS[collection.status]}>
                           {STATUS_LABELS[collection.status]}
@@ -935,6 +986,18 @@ function ColecoesPage() {
                         <Badge variant="outline">
                           {selected.season} {selected.year}
                         </Badge>
+                        {parentCollection && (
+                          <Badge variant="outline" className="gap-1">
+                            <GitBranch className="size-3" />
+                            Cápsula de {parentCollection.name}
+                          </Badge>
+                        )}
+                        {childCollections.length > 0 && (
+                          <Badge variant="outline" className="gap-1">
+                            <Layers className="size-3" />
+                            {childCollections.length} cápsula(s)
+                          </Badge>
+                        )}
                         <Badge variant="outline">{selectedProducts.length} SKUs</Badge>
                       </div>
                       <h2 className="text-2xl font-semibold tracking-tight">{selected.name}</h2>
@@ -974,6 +1037,66 @@ function ColecoesPage() {
                         </div>
                       );
                     })}
+
+                    {(parentCollection || childCollections.length > 0) && (
+                      <div className="col-span-2 rounded-xl border border-border bg-background/30 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-medium flex items-center gap-2">
+                              <GitBranch className="size-4 text-primary" />
+                              Arquitetura da coleção
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Coleção principal, cápsulas e drops vinculados.
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openCreateCapsule(selected.id)}
+                          >
+                            <Plus className="size-3.5" /> Cápsula
+                          </Button>
+                        </div>
+                        {parentCollection && (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedId(parentCollection.id)}
+                            className="mt-3 w-full rounded-lg border border-border bg-muted/20 p-3 text-left hover:bg-muted/40"
+                          >
+                            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                              Coleção-mãe
+                            </div>
+                            <div className="mt-1 font-medium">{parentCollection.name}</div>
+                          </button>
+                        )}
+                        {childCollections.length > 0 && (
+                          <div className="mt-3 grid sm:grid-cols-2 gap-2">
+                            {childCollections.map((capsule) => (
+                              <button
+                                key={capsule.id}
+                                type="button"
+                                onClick={() => setSelectedId(capsule.id)}
+                                className="rounded-lg border border-border bg-muted/20 p-3 text-left hover:bg-muted/40"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="font-medium truncate">{capsule.name}</span>
+                                  <Badge
+                                    variant="outline"
+                                    className={STATUS_COLORS[capsule.status]}
+                                  >
+                                    {STATUS_LABELS[capsule.status]}
+                                  </Badge>
+                                </div>
+                                <div className="mt-1 text-xs text-muted-foreground">
+                                  {capsule.season} {capsule.year} · {capsule.progress}%
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {(() => {
                       const p = pulseByCollection[selected.id];
@@ -1674,6 +1797,13 @@ function ColecoesPage() {
                   <>
                     <Button
                       variant="outline"
+                      onClick={() => openCreateCapsule(selected.id)}
+                      className="gap-2"
+                    >
+                      <GitBranch className="size-4" /> Nova cápsula
+                    </Button>
+                    <Button
+                      variant="outline"
                       onClick={() => duplicateMut.mutate(selected)}
                       disabled={duplicateMut.isPending}
                       className="gap-2"
@@ -1700,7 +1830,14 @@ function ColecoesPage() {
         </div>
       )}
 
-      <CollectionDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} />
+      <CollectionDialog
+        open={open}
+        onOpenChange={setOpen}
+        editing={editing}
+        userId={user?.id}
+        collections={collections}
+        defaultParentId={defaultParentId}
+      />
     </div>
   );
 }
@@ -1728,22 +1865,40 @@ function CollectionDialog({
   onOpenChange,
   editing,
   userId,
+  collections,
+  defaultParentId,
 }: {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   editing: Collection | null;
   userId?: string;
+  collections: Collection[];
+  defaultParentId: string | null;
 }) {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [season, setSeason] = useState("Verão");
   const [year, setYear] = useState(new Date().getFullYear() + 1);
   const [status, setStatus] = useState<Collection["status"]>("briefing");
+  const [parentId, setParentId] = useState("none");
   const [description, setDescription] = useState("");
   const [paletteStr, setPaletteStr] = useState("");
   const [launchDate, setLaunchDate] = useState("");
   const [progress, setProgress] = useState(0);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+
+  const resetForm = useCallback(() => {
+    setName("");
+    setSeason("Verão");
+    setYear(new Date().getFullYear() + 1);
+    setStatus("briefing");
+    setParentId(defaultParentId ?? "none");
+    setDescription("");
+    setPaletteStr("");
+    setLaunchDate("");
+    setProgress(0);
+    setCoverFile(null);
+  }, [defaultParentId]);
 
   useEffect(() => {
     if (!open) return;
@@ -1752,6 +1907,7 @@ function CollectionDialog({
       setSeason(editing.season);
       setYear(editing.year);
       setStatus(editing.status);
+      setParentId(editing.parent_id ?? "none");
       setDescription(editing.description || "");
       setPaletteStr(editing.palette.join(", "));
       setLaunchDate(editing.launch_date || "");
@@ -1760,19 +1916,15 @@ function CollectionDialog({
       return;
     }
     resetForm();
-  }, [editing, open]);
+  }, [editing, open, resetForm]);
 
-  function resetForm() {
-    setName("");
-    setSeason("Verão");
-    setYear(new Date().getFullYear() + 1);
-    setStatus("briefing");
-    setDescription("");
-    setPaletteStr("");
-    setLaunchDate("");
-    setProgress(0);
-    setCoverFile(null);
-  }
+  const parentOptions = useMemo(
+    () =>
+      collections
+        .filter((collection) => collection.id !== editing?.id)
+        .sort((a, b) => a.name.localeCompare(b.name, "pt-BR")),
+    [collections, editing?.id],
+  );
 
   const saveMut = useMutation({
     mutationFn: async () => {
@@ -1802,11 +1954,15 @@ function CollectionDialog({
           .filter(Boolean),
         launch_date: launchDate || null,
         progress,
+        parent_id: parentId === "none" ? null : parentId,
         ...(coverPath !== undefined ? { cover_path: coverPath } : {}),
       };
 
       if (editing) {
-        const { error } = await supabase.from("collections").update(payload).eq("id", editing.id);
+        const { error } = await supabase
+          .from("collections")
+          .update(payload as any)
+          .eq("id", editing.id);
         if (error) throw error;
         if (coverPath && editing.cover_path) {
           await supabase.storage.from("collection-covers").remove([editing.cover_path]);
@@ -1814,7 +1970,7 @@ function CollectionDialog({
       } else {
         const { error } = await supabase
           .from("collections")
-          .insert({ ...payload, owner_id: userId });
+          .insert({ ...payload, owner_id: userId } as any);
         if (error) throw error;
       }
     },
@@ -1903,6 +2059,25 @@ function CollectionDialog({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Coleção-mãe / cápsula</Label>
+            <Select value={parentId} onValueChange={setParentId}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Coleção principal</SelectItem>
+                {parentOptions.map((collection) => (
+                  <SelectItem key={collection.id} value={collection.id}>
+                    {collection.name} · {collection.season} {collection.year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Use para organizar cápsulas, drops ou subcoleções dentro de uma coleção maior.
+            </p>
           </div>
           <div className="space-y-2">
             <Label>Descrição</Label>

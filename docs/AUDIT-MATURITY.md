@@ -18,14 +18,14 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## 2. Gestão de Coleções
 
-| Capacidade                     | Status | Onde                              | Evolução                                              |
-| ------------------------------ | ------ | --------------------------------- | ----------------------------------------------------- |
-| Coleções / temporadas          | ✅     | `collections` + `/colecoes`       | —                                                     |
-| Subcoleções / cápsulas         | ⚪     | —                                 | Campo `parent_id` em `collections`                    |
-| Metas (peças, receita, margem) | 🟡     | `collections.target_*` parcial    | Completar tela de metas em `/colecao-360`             |
-| Mix planejado vs realizado     | ⚪     | —                                 | View consumindo `erp_sales_mirror`                    |
-| Curva ABC                      | ⚪     | —                                 | Card em Collection Intelligence (Onda 17)             |
-| ROI da coleção                 | 🟡     | `collection-intelligence` (risco) | Adicionar ROI = receita ERP − custo ficha − marketing |
+| Capacidade                     | Status | Onde                                  | Evolução                                              |
+| ------------------------------ | ------ | ------------------------------------- | ----------------------------------------------------- |
+| Coleções / temporadas          | ✅     | `collections` + `/colecoes`           | —                                                     |
+| Subcoleções / cápsulas         | ✅     | `collections.parent_id` + `/colecoes` | —                                                     |
+| Metas (peças, receita, margem) | 🟡     | `collections.target_*` parcial        | Completar tela de metas em `/colecao-360`             |
+| Mix planejado vs realizado     | ⚪     | —                                     | View consumindo `erp_sales_mirror`                    |
+| Curva ABC                      | ⚪     | —                                     | Card em Collection Intelligence (Onda 17)             |
+| ROI da coleção                 | 🟡     | `collection-intelligence` (risco)     | Adicionar ROI = receita ERP − custo ficha − marketing |
 
 ## 3. Desenvolvimento de Produto
 
@@ -164,15 +164,15 @@ Legenda: ✅ Completo · 🟡 Parcial (evoluir) · ⚪ Ausente (implementar)
 
 ## Top 10 lacunas priorizadas (ordem sugerida)
 
-1. **Subcoleções / cápsulas** (§2) — `parent_id` em `collections`.
-2. **BOP responsável por etapa** (§7) — campo `responsible_role`.
-3. **Curva ABC por coleção** (§2).
-4. **Biblioteca global de referências** (§1).
-5. **Automação de alertas de ROI e margem** (§13/15).
-6. **Custo por facção/terceirizado no real × teórico** (§8/9).
-7. **Governança de metas por coleção/canal** (§13/15).
-8. **Assinatura/termo aceite no portal fornecedor** (§11).
-9. **Metas completas por coleção** (§2/15).
-10. **Foto do material em todos os itens** (§12).
+1. **BOP responsável por etapa** (§7) — campo `responsible_role`.
+2. **Curva ABC por coleção** (§2).
+3. **Biblioteca global de referências** (§1).
+4. **Automação de alertas de ROI e margem** (§13/15).
+5. **Custo por facção/terceirizado no real × teórico** (§8/9).
+6. **Governança de metas por coleção/canal** (§13/15).
+7. **Assinatura/termo aceite no portal fornecedor** (§11).
+8. **Metas completas por coleção** (§2/15).
+9. **Foto do material em todos os itens** (§12).
+10. **Rastreabilidade lote→OP→produto** (§12).
 
 Nenhum item acima cria tela nova desnecessária — todos estendem módulo/tabela existente.
