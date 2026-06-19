@@ -895,14 +895,31 @@ function AcompanhamentoProducao() {
   );
 }
 
-function CardLote({ o, onOpen }: { o: Order; onOpen: () => void }) {
+function CardLote({
+  o,
+  onOpen,
+  onDragStart,
+  onDragEnd,
+  dragging,
+}: {
+  o: Order;
+  onOpen: () => void;
+  onDragStart?: (e: React.DragEvent<HTMLButtonElement>) => void;
+  onDragEnd?: () => void;
+  dragging?: boolean;
+}) {
   const st = statusOf(o);
   const dias = daysSince(o.stage_updated_at);
   const produced = Math.round((o.progress / 100) * o.quantity);
   return (
     <button
       onClick={onOpen}
-      className="w-full text-left rounded-lg border border-border bg-background hover:border-primary/50 transition p-2 space-y-1"
+      draggable={!!onDragStart}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      className={`w-full text-left rounded-lg border bg-background hover:border-primary/50 transition p-2 space-y-1 cursor-grab active:cursor-grabbing ${
+        dragging ? "opacity-40 border-primary" : "border-border"
+      }`}
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold inline-flex items-center gap-1">
