@@ -282,6 +282,73 @@ export type Database = {
           },
         ]
       }
+      collection_products: {
+        Row: {
+          channel_exclusive: string[] | null
+          collection_id: string
+          created_at: string
+          display_order: number
+          id: string
+          intro_season: string | null
+          notes: string | null
+          owner_id: string
+          product_id: string
+          role: Database["public"]["Enums"]["collection_product_role"]
+          source_collection_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          channel_exclusive?: string[] | null
+          collection_id: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          intro_season?: string | null
+          notes?: string | null
+          owner_id: string
+          product_id: string
+          role?: Database["public"]["Enums"]["collection_product_role"]
+          source_collection_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          channel_exclusive?: string[] | null
+          collection_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          intro_season?: string | null
+          notes?: string | null
+          owner_id?: string
+          product_id?: string
+          role?: Database["public"]["Enums"]["collection_product_role"]
+          source_collection_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_products_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_products_source_collection_id_fkey"
+            columns: ["source_collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collection_versions: {
         Row: {
           collection_id: string
@@ -1432,6 +1499,63 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "product_color_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_lifecycle: {
+        Row: {
+          collection_id: string
+          created_at: string
+          id: string
+          markdown_pct: number | null
+          notes: string | null
+          owner_id: string
+          product_id: string
+          replenishment_policy: Json | null
+          state: Database["public"]["Enums"]["product_lifecycle_state"]
+          state_changed_at: string
+          updated_at: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          id?: string
+          markdown_pct?: number | null
+          notes?: string | null
+          owner_id: string
+          product_id: string
+          replenishment_policy?: Json | null
+          state?: Database["public"]["Enums"]["product_lifecycle_state"]
+          state_changed_at?: string
+          updated_at?: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          id?: string
+          markdown_pct?: number | null
+          notes?: string | null
+          owner_id?: string
+          product_id?: string
+          replenishment_policy?: Json | null
+          state?: Database["public"]["Enums"]["product_lifecycle_state"]
+          state_changed_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_lifecycle_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_lifecycle_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
@@ -3801,6 +3925,12 @@ export type Database = {
         | "faturado"
         | "cancelado"
       campaign_status: "programada" | "ativa" | "pausada" | "concluida"
+      collection_product_role:
+        | "hero"
+        | "carry_over"
+        | "nos"
+        | "capsule"
+        | "regular"
       collection_status:
         | "briefing"
         | "design"
@@ -3808,6 +3938,12 @@ export type Database = {
         | "producao"
         | "entregue"
       inventory_category: "tecido" | "aviamento" | "acabado" | "outros"
+      product_lifecycle_state:
+        | "planned"
+        | "active"
+        | "markdown"
+        | "discontinued"
+        | "nos_permanent"
       product_status:
         | "rascunho"
         | "desenvolvimento"
@@ -3994,6 +4130,13 @@ export const Constants = {
         "cancelado",
       ],
       campaign_status: ["programada", "ativa", "pausada", "concluida"],
+      collection_product_role: [
+        "hero",
+        "carry_over",
+        "nos",
+        "capsule",
+        "regular",
+      ],
       collection_status: [
         "briefing",
         "design",
@@ -4002,6 +4145,13 @@ export const Constants = {
         "entregue",
       ],
       inventory_category: ["tecido", "aviamento", "acabado", "outros"],
+      product_lifecycle_state: [
+        "planned",
+        "active",
+        "markdown",
+        "discontinued",
+        "nos_permanent",
+      ],
       product_status: [
         "rascunho",
         "desenvolvimento",
