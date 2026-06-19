@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Factory,
@@ -20,9 +20,16 @@ import {
   ArrowRight,
   MessageSquareWarning,
   Timer,
+  Maximize2,
+  Minimize2,
+  Zap,
+  Radio,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { moveOrderToColumn } from "@/lib/production-tracking.functions";
+import { predictDelays, type DelayPrediction } from "@/lib/delay-prediction.functions";
+import { useRealtime } from "@/hooks/use-realtime";
+import { ProductionCardActions } from "@/components/production-card-actions";
 
 export const Route = createFileRoute("/_authenticated/_app/acompanhamento-producao")({
   component: AcompanhamentoProducao,
@@ -50,10 +57,12 @@ type Order = {
   notes: string | null;
   product_id: string | null;
   supplier_id: string | null;
+  owner_id: string;
   supplier_name: string | null;
   supplier_category: string | null;
   product_name: string | null;
   product_sku: string | null;
+  product_image_url: string | null;
   product_category: string | null;
   product_group: string | null;
   product_line: string | null;
@@ -171,9 +180,9 @@ async function load(): Promise<Order[]> {
     .from("production_orders")
     .select(
       `id, code, stage, quantity, progress, due_date, stage_updated_at, batch_code, outsourced, notes,
-       product_id, supplier_id,
+       product_id, supplier_id, owner_id,
        suppliers(name, category),
-       products(name, sku, category, product_group, collections(name), product_lines(name))`,
+       products(name, sku, image_url, category, product_group, collections(name), product_lines(name))`,
     )
     .order("due_date", { ascending: true, nullsFirst: false });
   if (error) throw error;
@@ -190,10 +199,12 @@ async function load(): Promise<Order[]> {
     notes: o.notes,
     product_id: o.product_id,
     supplier_id: o.supplier_id,
+    owner_id: o.owner_id,
     supplier_name: o.suppliers?.name ?? null,
     supplier_category: o.suppliers?.category ?? null,
     product_name: o.products?.name ?? null,
     product_sku: o.products?.sku ?? null,
+    product_image_url: o.products?.image_url ?? null,
     product_category: o.products?.category ?? null,
     product_group: o.products?.product_group ?? null,
     product_line: o.products?.product_lines?.name ?? null,
