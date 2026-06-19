@@ -251,6 +251,8 @@ function PrototipoPage() {
           />
         </div>
 
+        <PrototypeApprovalGate prototypeId={proto.id} currentStage={proto.stage} />
+
         {/* Timeline full-page */}
         <div className="space-y-4">
           {stats.photos.length > 0 && (
