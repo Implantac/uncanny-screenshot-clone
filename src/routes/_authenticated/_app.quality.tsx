@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ShieldCheck, AlertTriangle, Clock, Truck } from "lucide-react";
 import { QualityIntelligencePanel } from "@/components/quality-intelligence-panel";
 import { CapaPanel } from "@/components/capa-panel";
+import { CellEfficiencyPanel } from "@/components/cell-efficiency-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/quality")({
   head: () => ({
@@ -157,6 +158,9 @@ function Quality() {
       </div>
 
       <QualityIntelligencePanel />
+
+      <CellEfficiencyPanel />
+
 
       <Tabs defaultValue="suppliers">
         <TabsList>
