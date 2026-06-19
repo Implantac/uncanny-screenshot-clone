@@ -788,6 +788,10 @@ function ColecoesPage() {
 
       <CollectionIntelligencePanel />
 
+      {selected && (
+        <CarryOverPanel collectionId={selected.id} collectionName={selected.name} />
+      )}
+
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
       ) : collections.length === 0 ? (
