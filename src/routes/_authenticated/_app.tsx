@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, useRouterState, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
+import { GlobalPushListener } from "@/components/global-push-listener";
 import { MODULES, moduleAllowed, moduleSector, SECTOR_LABEL } from "@/lib/modules";
 import { useSectors } from "@/hooks/use-sectors";
 import { Lock } from "lucide-react";
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/_app")({
 function AppLayout() {
   return (
     <AppShell>
+      <GlobalPushListener />
       <SectorGuard>
         <Outlet />
       </SectorGuard>
