@@ -99,3 +99,117 @@ export const deleteCapa = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+// ===== Closed-loop reinspeção =====
+
+export type ReinspectionRow = {
+  id: string;
+  inspected_at: string;
+  result: string;
+  inspection_type: string;
+  critical_defects: number;
+  major_defects: number;
+  minor_defects: number;
+  notes: string | null;
+};
+
+export const listReinspectionsForCapa = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ capaId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const marker = `[capa:${data.capaId}]`;
+    const { data: rows, error } = await context.supabase
+      .from("quality_inspections")
+      .select(
+        "id, inspected_at, result, inspection_type, critical_defects, major_defects, minor_defects, notes",
+      )
+      .ilike("notes", `%${marker}%`)
+      .order("inspected_at", { ascending: false });
+    if (error) throw error;
+    return (rows ?? []) as ReinspectionRow[];
+  });
+
+export const createReinspectionFromCapa = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ capaId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: capa, error: capaErr } = await supabase
+      .from("quality_capa")
+      .select("id, supplier_id, order_id, inspection_id, status")
+      .eq("id", data.capaId)
+      .single();
+    if (capaErr) throw capaErr;
+
+    let origType = "final";
+    let aql: string | null = null;
+    let lot: number | null = null;
+    if (capa.inspection_id) {
+      const { data: orig } = await supabase
+        .from("quality_inspections")
+        .select("inspection_type, aql_level, lot_size")
+        .eq("id", capa.inspection_id)
+        .maybeSingle();
+      if (orig) {
+        origType = orig.inspection_type ?? origType;
+        aql = orig.aql_level;
+        lot = orig.lot_size;
+      }
+    }
+
+    const marker = `[capa:${capa.id}]${capa.inspection_id ? ` [reinsp-of:${capa.inspection_id}]` : ""}`;
+    const { data: insp, error } = await supabase
+      .from("quality_inspections")
+      .insert({
+        owner_id: userId,
+        inspection_type: "reinspecao",
+        result: "pendente",
+        supplier_id: capa.supplier_id,
+        production_order_id: capa.order_id,
+        aql_level: aql,
+        lot_size: lot,
+        notes: `Reinspeção pós-CAPA (${origType}). ${marker}`,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+
+    if (capa.status === "aberta") {
+      await supabase
+        .from("quality_capa")
+        .update({ status: "em_andamento" })
+        .eq("id", capa.id);
+    }
+    return { id: insp.id };
+  });
+
+export const verifyCapaFromReinspection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ capaId: z.string().uuid(), reinspectionId: z.string().uuid() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: insp, error: e1 } = await supabase
+      .from("quality_inspections")
+      .select("result")
+      .eq("id", data.reinspectionId)
+      .single();
+    if (e1) throw e1;
+    if (insp.result !== "aprovado") {
+      throw new Error("Só é possível verificar a CAPA com uma reinspeção aprovada.");
+    }
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from("quality_capa")
+      .update({
+        status: "verificada",
+        verified_at: now,
+        verified_by: userId,
+        closed_at: now,
+        effectiveness_check: `Verificada via reinspeção ${data.reinspectionId} em ${now}`,
+      })
+      .eq("id", data.capaId);
+    if (error) throw error;
+    return { ok: true };
+  });
