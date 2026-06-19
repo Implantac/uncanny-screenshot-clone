@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.supplier_portal_tokens_protect_immutable() FROM PUBLIC, anon, authenticated;
