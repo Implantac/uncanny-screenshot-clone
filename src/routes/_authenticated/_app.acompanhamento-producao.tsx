@@ -1479,12 +1479,22 @@ function AcompanhamentoProducao() {
 
 function CardLote({
   o,
+  tvMode,
+  prediction,
+  slaTargetH,
+  nextColumnKey,
+  nextColumnLabel,
   onOpen,
   onDragStart,
   onDragEnd,
   dragging,
 }: {
   o: Order;
+  tvMode?: boolean;
+  prediction?: DelayPrediction | null;
+  slaTargetH?: number;
+  nextColumnKey?: string | null;
+  nextColumnLabel?: string | null;
   onOpen: () => void;
   onDragStart?: (e: React.DragEvent<HTMLButtonElement>) => void;
   onDragEnd?: () => void;
@@ -1493,61 +1503,113 @@ function CardLote({
   const st = statusOf(o);
   const dias = daysSince(o.stage_updated_at);
   const produced = Math.round((o.progress / 100) * o.quantity);
+  const elapsedH = (Date.now() - new Date(o.stage_updated_at).getTime()) / 36e5;
+  const slaBreached = slaTargetH != null && elapsedH > slaTargetH;
+  const risk = prediction?.risk;
+  const riskCls =
+    risk === "high"
+      ? "bg-red-500"
+      : risk === "medium"
+        ? "bg-amber-500"
+        : risk === "low"
+          ? "bg-emerald-500"
+          : "";
+  const borderCls = slaBreached
+    ? "border-red-500/70 ring-2 ring-red-500/20 animate-pulse"
+    : dragging
+      ? "border-primary opacity-40"
+      : "border-border";
   return (
-    <button
-      onClick={onOpen}
-      draggable={!!onDragStart}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      className={`w-full text-left rounded-lg border bg-background hover:border-primary/50 transition p-2 space-y-1 cursor-grab active:cursor-grabbing ${
-        dragging ? "opacity-40 border-primary" : "border-border"
-      }`}
+    <div
+      className={`group relative rounded-lg border bg-background hover:border-primary/50 transition ${borderCls}`}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold inline-flex items-center gap-1">
-          <Package className="size-3" />
-          {o.batch_code ?? o.code}
-        </span>
+      {/* Badge de risco (predição) — canto superior esquerdo */}
+      {risk && (
         <span
-          className={`text-[9px] px-1.5 py-0.5 rounded border ${STATUS_META[st].cls}`}
-        >
-          {STATUS_META[st].label}
-        </span>
-      </div>
-      <div className="text-[11px] text-foreground/90 line-clamp-1">{o.product_name ?? "—"}</div>
-      <div className="text-[10px] text-muted-foreground line-clamp-1">
-        Ref. {o.product_sku ?? "—"}
-      </div>
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground tabular-nums">
-        <span>
-          {produced}/{o.quantity} pç
-        </span>
-        <span>{dias}d no setor</span>
-      </div>
-      <div className="h-1 bg-muted rounded overflow-hidden">
-        <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
-      </div>
-      <div className="flex items-center justify-between text-[10px]">
-        <span
-          className={`inline-flex items-center gap-1 ${o.outsourced ? "text-amber-600" : "text-emerald-600"}`}
-        >
-          {o.outsourced ? <Truck className="size-3" /> : <Factory className="size-3" />}
-          {o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}
-        </span>
-        {o.due_date && (
-          <span className="text-muted-foreground tabular-nums">
-            prev {new Date(o.due_date).toLocaleDateString("pt-BR")}
+          title={prediction?.reason ?? ""}
+          className={`absolute -left-1 top-2 size-2.5 rounded-full ring-2 ring-background ${riskCls}`}
+        />
+      )}
+      <button
+        onClick={onOpen}
+        draggable={!!onDragStart}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        className={`w-full text-left p-2 space-y-1 cursor-grab active:cursor-grabbing ${tvMode ? "text-sm" : ""}`}
+      >
+        <div className="flex items-center justify-between gap-1">
+          <span className={`font-semibold inline-flex items-center gap-1 ${tvMode ? "text-sm" : "text-xs"}`}>
+            <Package className="size-3" />
+            {o.batch_code ?? o.code}
           </span>
+          <span className={`text-[9px] px-1.5 py-0.5 rounded border ${STATUS_META[st].cls}`}>
+            {STATUS_META[st].label}
+          </span>
+        </div>
+        <div className={`text-foreground/90 line-clamp-1 ${tvMode ? "text-sm" : "text-[11px]"}`}>
+          {o.product_name ?? "—"}
+        </div>
+        <div className="text-[10px] text-muted-foreground line-clamp-1">Ref. {o.product_sku ?? "—"}</div>
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground tabular-nums">
+          <span>
+            {produced}/{o.quantity} pç
+          </span>
+          <span className={slaBreached ? "text-red-600 font-semibold" : ""}>
+            {dias}d no setor{slaTargetH ? ` / ${Math.round(slaTargetH / 24)}d` : ""}
+          </span>
+        </div>
+        <div className="h-1.5 bg-muted rounded overflow-hidden">
+          <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
+        </div>
+        <div className="flex items-center justify-between text-[10px]">
+          <span
+            className={`inline-flex items-center gap-1 ${o.outsourced ? "text-amber-600" : "text-emerald-600"}`}
+          >
+            {o.outsourced ? <Truck className="size-3" /> : <Factory className="size-3" />}
+            {o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}
+          </span>
+          {o.due_date && (
+            <span className="text-muted-foreground tabular-nums">
+              prev {new Date(o.due_date).toLocaleDateString("pt-BR")}
+            </span>
+          )}
+        </div>
+        {prediction && prediction.predictedDelayHours >= 8 && (
+          <div className="flex items-start gap-1 text-[10px] text-red-600 border-t border-red-500/20 pt-1 mt-1">
+            <Zap className="size-3 shrink-0 mt-px" />
+            <span className="line-clamp-2">
+              Previsão: +{prediction.predictedDelayHours}h após o prazo
+            </span>
+          </div>
         )}
-      </div>
-      {o.notes && (
-        <div className="flex items-start gap-1 text-[10px] text-muted-foreground border-t border-border/60 pt-1 mt-1">
-          <MessageSquareWarning className="size-3 shrink-0 mt-px text-amber-600" />
-          <span className="line-clamp-1 italic">{o.notes}</span>
+        {o.notes && !prediction && (
+          <div className="flex items-start gap-1 text-[10px] text-muted-foreground border-t border-border/60 pt-1 mt-1">
+            <MessageSquareWarning className="size-3 shrink-0 mt-px text-amber-600" />
+            <span className="line-clamp-1 italic">{o.notes}</span>
+          </div>
+        )}
+      </button>
+      {/* Ações rápidas — não no modo TV (somente leitura) */}
+      {!tvMode && (
+        <div className="absolute right-1 top-1 opacity-60 group-hover:opacity-100 transition-opacity">
+          <ProductionCardActions
+            order={{
+              id: o.id,
+              code: o.code,
+              batch_code: o.batch_code,
+              owner_id: o.owner_id,
+              quantity: o.quantity,
+              progress: o.progress,
+              stage: o.stage,
+            }}
+            nextColumnKey={nextColumnKey ?? null}
+            nextColumnLabel={nextColumnLabel ?? null}
+            onOpenHistory={onOpen}
+            invalidateKey={["acompanhamento-producao"]}
+          />
         </div>
       )}
-
-    </button>
+    </div>
   );
 }
 
