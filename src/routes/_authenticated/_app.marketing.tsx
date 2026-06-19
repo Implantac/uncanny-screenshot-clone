@@ -68,6 +68,7 @@ import { toast } from "sonner";
 import { MarketingIntelligence } from "@/components/marketing-intelligence";
 import { ProductMarketingRoiPanel } from "@/components/product-marketing-roi-panel";
 import { MarketingBriefStudio } from "@/components/marketing-brief-studio";
+import { LaunchingWeekPanel } from "@/components/launching-week-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/marketing")({
   head: () => ({
@@ -372,6 +373,7 @@ function Marketing() {
         </TabsContent>
 
         <TabsContent value="brief" className="space-y-4">
+          <LaunchingWeekPanel />
           <MarketingBriefStudio />
         </TabsContent>
 
