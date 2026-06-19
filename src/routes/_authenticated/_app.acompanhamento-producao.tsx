@@ -525,14 +525,40 @@ function AcompanhamentoProducao() {
     return acc;
   }, [filtered]);
 
-  // Top lotes parados há mais tempo — "Qual produto está parado há mais tempo?"
+  // Top lotes parados — score combina dias no setor + atraso vs entrega + volume
+  // Threshold mínimo: 3 dias no mesmo setor (evita ruído de lotes recém-movidos)
+  const STALLED_MIN_DAYS = 3;
   const stalledTop = useMemo(() => {
-    return filtered
+    const enriched = filtered
       .filter((o) => o.stage !== "entregue")
-      .map((o) => ({ o, dias: daysSince(o.stage_updated_at) }))
-      .sort((a, b) => b.dias - a.dias)
-      .slice(0, 5);
+      .map((o) => {
+        const dias = daysSince(o.stage_updated_at);
+        const diasAteEntrega = o.due_date
+          ? Math.ceil((new Date(o.due_date).getTime() - Date.now()) / 86400000)
+          : null;
+        const atrasoEntrega = diasAteEntrega !== null && diasAteEntrega < 0 ? -diasAteEntrega : 0;
+        // Score: dias parado pesa 1x, atraso de entrega pesa 2x (impacto no cliente),
+        // bônus por urgência (entrega <=1d) e por volume (acima de 100 peças).
+        const urgenciaBonus = diasAteEntrega !== null && diasAteEntrega <= 1 && diasAteEntrega >= 0 ? 4 : 0;
+        const volumeBonus = (o.quantity ?? 0) >= 100 ? 2 : 0;
+        const score = dias + atrasoEntrega * 2 + urgenciaBonus + volumeBonus;
+        const severity: "critico" | "alto" | "medio" =
+          score >= 15 || atrasoEntrega >= 3 ? "critico" : score >= 8 ? "alto" : "medio";
+        return { o, dias, diasAteEntrega, atrasoEntrega, score, severity };
+      })
+      .filter((x) => x.dias >= STALLED_MIN_DAYS)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
+    const totalPecas = enriched.reduce((s, x) => s + (x.o.quantity ?? 0), 0);
+    const totalDias = enriched.reduce((s, x) => s + x.dias, 0);
+    return { rows: enriched, totalPecas, totalDias };
   }, [filtered]);
+
+  const SEVERITY_META: Record<"critico" | "alto" | "medio", { label: string; cls: string; dot: string }> = {
+    critico: { label: "Crítico", cls: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/40", dot: "bg-red-500" },
+    alto: { label: "Alto", cls: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40", dot: "bg-amber-500" },
+    medio: { label: "Médio", cls: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/40", dot: "bg-yellow-400" },
+  };
 
   // Chips de filtros ativos
   const activeChips = useMemo(() => {
