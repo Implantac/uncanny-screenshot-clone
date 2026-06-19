@@ -689,6 +689,54 @@ function AcompanhamentoProducao() {
         </section>
       )}
 
+      {/* SLA por setor */}
+      {slaBySetor.length > 0 && (
+        <section className="rounded-xl border border-border bg-card p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-2">
+              <Clock className="size-3.5" /> SLA por setor — % de lotes dentro do tempo-alvo
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              meta = horas-alvo por etapa · vermelho &lt;60% · âmbar 60–84% · verde ≥85%
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            {slaBySetor.map((s) => {
+              const tone = s.pct >= 85 ? "emerald" : s.pct >= 60 ? "amber" : "red";
+              const colorMap: Record<string, string> = {
+                emerald: "bg-emerald-500",
+                amber: "bg-amber-500",
+                red: "bg-red-500",
+              };
+              const textMap: Record<string, string> = {
+                emerald: "text-emerald-600",
+                amber: "text-amber-600",
+                red: "text-red-600",
+              };
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => setColKey(s.key)}
+                  className="text-left rounded-lg border border-border bg-background p-2 hover:border-primary transition"
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium truncate">{s.setor}</span>
+                    <span className={`font-semibold tabular-nums ${textMap[tone]}`}>{s.pct}%</span>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded mt-1.5 overflow-hidden">
+                    <div className={`h-full ${colorMap[tone]}`} style={{ width: `${s.pct}%` }} />
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1 tabular-nums">
+                    <span>{s.lotes} lote(s) · média {s.avgH}h</span>
+                    <span>meta {s.target}h</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* KANBAN */}
       <div className="overflow-x-auto">
         <div className="flex gap-3 min-w-max pb-2">
