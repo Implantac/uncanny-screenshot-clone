@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type Bottleneck = {
@@ -154,20 +153,3 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
     return out.slice(0, 30);
   });
 
-const AdvanceInput = z.object({
-  order_id: z.string().uuid(),
-  to_stage: z.string().min(1).max(40),
-});
-
-export const advanceProductionStage = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => AdvanceInput.parse(i))
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("production_orders")
-      .update({ stage: data.to_stage })
-      .eq("id", data.order_id)
-      .eq("owner_id", context.userId);
-    if (error) throw new Error(error.message);
-    return { ok: true };
-  });
