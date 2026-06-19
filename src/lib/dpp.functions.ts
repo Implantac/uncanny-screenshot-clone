@@ -18,6 +18,7 @@ export const getPublicPassport = createServerFn({ method: "GET" })
       )
       .eq("id", data.id)
       .eq("status", "publicado")
+      .is("revoked_at", null)
       .maybeSingle();
 
     let recordId = rec?.id ?? null;
