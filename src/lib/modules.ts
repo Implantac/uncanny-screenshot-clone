@@ -642,6 +642,17 @@ export const MODULES: ModuleDef[] = [
     group: "PCP & Produção",
   },
   {
+    slug: "acompanhamento-producao",
+    path: "/acompanhamento-producao",
+    title: "Acompanhamento de Produção",
+    short: "Kanban macro + micro",
+    description:
+      "Onde está cada lote agora — kanban por setor (interno/externo), KPIs, resumo por terceiro, histórico de passagens e exportação.",
+    icon: Factory,
+    group: "PCP & Produção",
+  },
+
+  {
     slug: "onde-esta",
     path: "/onde-esta",
     title: "Onde está?",
