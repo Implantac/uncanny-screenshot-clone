@@ -3830,7 +3830,7 @@ export type Database = {
           last_used_at: string | null
           owner_id: string
           supplier_id: string
-          token: string
+          token_hash: string
           updated_at: string
         }
         Insert: {
@@ -3840,7 +3840,7 @@ export type Database = {
           last_used_at?: string | null
           owner_id: string
           supplier_id: string
-          token: string
+          token_hash: string
           updated_at?: string
         }
         Update: {
@@ -3850,7 +3850,7 @@ export type Database = {
           last_used_at?: string | null
           owner_id?: string
           supplier_id?: string
-          token?: string
+          token_hash?: string
           updated_at?: string
         }
         Relationships: [
