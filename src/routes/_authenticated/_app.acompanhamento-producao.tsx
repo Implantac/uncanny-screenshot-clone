@@ -1294,6 +1294,13 @@ function CardLote({
           </span>
         )}
       </div>
+      {o.notes && (
+        <div className="flex items-start gap-1 text-[10px] text-muted-foreground border-t border-border/60 pt-1 mt-1">
+          <MessageSquareWarning className="size-3 shrink-0 mt-px text-amber-600" />
+          <span className="line-clamp-1 italic">{o.notes}</span>
+        </div>
+      )}
+
     </button>
   );
 }
