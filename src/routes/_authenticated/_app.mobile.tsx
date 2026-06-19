@@ -132,6 +132,8 @@ function Mobile() {
           </div>
         </div>
       </div>
+
+      <PushHistoryPanel />
     </div>
   );
 }
