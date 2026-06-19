@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { PushHistoryPanel } from "@/components/push-history-panel";
+import { DeviceRegistrationPanel } from "@/components/device-registration-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/mobile")({
   head: () => ({
@@ -133,6 +134,7 @@ function Mobile() {
         </div>
       </div>
 
+      <DeviceRegistrationPanel />
       <PushHistoryPanel />
     </div>
   );
