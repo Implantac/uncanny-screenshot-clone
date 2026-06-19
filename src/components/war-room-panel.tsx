@@ -38,10 +38,33 @@ const SEV_BADGE: Record<Bottleneck["severity"], string> = {
 
 export function WarRoomPanel() {
   const fn = useServerFn(getWarRoomBottlenecks);
+  const pushFn = useServerFn(enqueuePushForCurrentUser);
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["war-room-bottlenecks"],
     queryFn: () => fn(),
     refetchInterval: 60_000,
+  });
+
+  const pushMutation = useMutation({
+    mutationFn: (b: Bottleneck) =>
+      pushFn({
+        data: {
+          title: `[${b.severity.toUpperCase()}] ${b.title}`,
+          body: b.detail,
+          link: b.action.route ?? undefined,
+          kind: "war_room",
+          severity: b.severity,
+          payload: { bottleneck_id: b.id, module: b.module },
+        },
+      }),
+    onSuccess: (res) => {
+      if (res.enqueued > 0) {
+        toast.success(`Push enviado para ${res.enqueued} dispositivo(s)`);
+      } else {
+        toast.warning("Nenhum dispositivo mobile ativo — registre um em /mobile");
+      }
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   if (isLoading) {
