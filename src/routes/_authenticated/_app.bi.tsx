@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useSectors } from "@/hooks/use-sectors";
+import { PlmEnterpriseReadiness } from "@/components/plm-enterprise-readiness";
 
 export const Route = createFileRoute("/_authenticated/_app/bi")({
   head: () => ({
@@ -114,7 +115,7 @@ function BI() {
         ? "dev"
         : persona === "marketing"
           ? "marketing"
-          : "comercial";
+          : "plm";
   const personaInfo: Record<string, { title: string; subtitle: string }> = {
     admin: { title: "Visão geral", subtitle: "Você vê todos os módulos. Comece pelo comercial." },
     pcp: {
@@ -299,12 +300,17 @@ function BI() {
 
       <Tabs defaultValue={defaultTab} className="space-y-4">
         <TabsList>
+          <TabsTrigger value="plm">PLM Enterprise</TabsTrigger>
           <TabsTrigger value="comercial">Comercial</TabsTrigger>
           <TabsTrigger value="dev">Desenvolvimento</TabsTrigger>
           <TabsTrigger value="prod">Produção</TabsTrigger>
           <TabsTrigger value="qualidade">Qualidade</TabsTrigger>
           <TabsTrigger value="marketing">Marketing</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="plm" className="space-y-4">
+          <PlmEnterpriseReadiness />
+        </TabsContent>
 
         <TabsContent value="comercial" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
