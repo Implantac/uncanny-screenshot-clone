@@ -70,13 +70,13 @@ Execute a tarefa do agente agora.`;
       })
       .eq("id", agent.id);
 
-    await supabase.from("audit_logs").insert({
-      user_id: userId,
-      entity: "ai_agents",
-      entity_id: agent.id,
-      action: ok ? "run" : "run_failed",
-      payload: { name: agent.name },
+    await supabase.rpc("log_audit", {
+      _entity: "ai_agents",
+      _entity_id: agent.id,
+      _action: ok ? "run" : "run_failed",
+      _payload: { name: agent.name },
     });
+    void userId;
 
     return { ok, output };
   });
