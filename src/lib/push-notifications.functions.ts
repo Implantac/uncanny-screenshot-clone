@@ -54,7 +54,7 @@ export const enqueuePushForCurrentUser = createServerFn({ method: "POST" })
       link: data.link ?? null,
       kind: data.kind,
       severity: data.severity,
-      payload: data.payload ?? null,
+      payload: (data.payload ?? null) as never,
       // simulação de entrega imediata (até plugar provedor externo)
       delivered_at: d.push_token ? new Date().toISOString() : null,
       error: d.push_token ? null : "Sem push_token registrado",
