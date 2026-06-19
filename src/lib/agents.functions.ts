@@ -49,9 +49,9 @@ Execute a tarefa do agente agora.`;
     try {
       const res = await generateText({ model, system: SYSTEM, prompt, temperature: 0.4 });
       output = res.text;
-    } catch (e: any) {
+    } catch (e) {
       ok = false;
-      output = `Falha na execução: ${e?.message ?? "erro desconhecido"}`;
+      output = `Falha na execução: ${e instanceof Error ? e.message : "erro desconhecido"}`;
     }
 
     const prevExec = agent.executions ?? 0;

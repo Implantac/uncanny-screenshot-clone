@@ -26,6 +26,10 @@ type Ref = {
   product: { id: string; name: string; sku: string; image_url: string | null } | null;
 };
 
+type ProductionOrderRow = Omit<Ref, "product"> & {
+  products: Ref["product"];
+};
+
 export function LoteReferencesDrawer({ batchCode, open, onOpenChange }: Props) {
   const [picked, setPicked] = useState<{
     productId: string;
@@ -43,7 +47,7 @@ export function LoteReferencesDrawer({ batchCode, open, onOpenChange }: Props) {
         .eq("batch_code", batchCode as string)
         .order("code");
       if (error) throw error;
-      return (data ?? []).map((r: any) => ({
+      return ((data ?? []) as ProductionOrderRow[]).map((r) => ({
         ...r,
         product: r.products ?? null,
       })) as Ref[];

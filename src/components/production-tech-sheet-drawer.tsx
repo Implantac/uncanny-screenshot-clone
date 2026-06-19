@@ -71,6 +71,16 @@ type GridRow = {
   } | null;
 };
 
+type ProductionOrderGridRow = {
+  variant_id: string;
+  quantity: number;
+  product_variants: {
+    sku: string;
+    product_color_options: { name: string; hex: string | null } | null;
+    product_size_options: { label: string } | null;
+  } | null;
+};
+
 /** Ficha técnica para produção — SEM valores, só receita de bolo. */
 export function ProductionTechSheetDrawer({
   productId,
@@ -165,7 +175,7 @@ export function ProductionTechSheetDrawer({
         )
         .eq("production_order_id", productionOrderId as string);
       if (error) throw error;
-      return (data ?? []).map((r: any) => ({
+      return ((data ?? []) as ProductionOrderGridRow[]).map((r) => ({
         variant_id: r.variant_id,
         quantity: r.quantity,
         variant: r.product_variants

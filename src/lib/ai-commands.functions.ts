@@ -28,6 +28,32 @@ const BlockSupplier = z.object({
 
 const Input = z.discriminatedUnion("kind", [CreateRFQ, CreateOP, BlockSupplier]);
 
+type RfqInsert = {
+  owner_id: string;
+  code: string;
+  title: string;
+  quantity: number;
+  unit: string | null;
+  needed_by: string | null;
+  notes: string | null;
+  status: string;
+};
+
+type RfqRow = {
+  id: string;
+  code: string;
+};
+
+type RfqClient = {
+  from: (table: "rfq_requests") => {
+    insert: (payload: RfqInsert) => {
+      select: (columns: "id, code") => {
+        single: () => Promise<{ data: RfqRow | null; error: { message: string } | null }>;
+      };
+    };
+  };
+};
+
 export const executeAICommand = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((data) => Input.parse(data))
@@ -40,7 +66,7 @@ export const executeAICommand = createServerFn({ method: "POST" })
         new Date().toISOString().slice(0, 10).replace(/-/g, "") +
         "-" +
         Math.random().toString(36).slice(2, 6).toUpperCase();
-      const { data: row, error } = await (supabase as any)
+      const { data: row, error } = await (supabase as unknown as RfqClient)
         .from("rfq_requests")
         .insert({
           owner_id: userId,
@@ -55,6 +81,7 @@ export const executeAICommand = createServerFn({ method: "POST" })
         .select("id, code")
         .single();
       if (error) throw new Error(error.message);
+      if (!row) throw new Error("RFQ não criada");
       return {
         ok: true,
         kind: "create_rfq" as const,

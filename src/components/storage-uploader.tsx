@@ -42,8 +42,8 @@ export function StorageUploader({ bucket, value, onChange, accept, kind = "file"
       if (sErr) throw sErr;
       onChange(signed.signedUrl, path);
       toast.success("Arquivo enviado");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Falha no upload");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha no upload");
     } finally {
       setBusy(false);
     }

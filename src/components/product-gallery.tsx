@@ -76,8 +76,8 @@ export function ProductGallery({ productId, canEdit }: { productId: string; canE
       }
       toast.success(`${files.length} arquivo(s) enviado(s)`);
       qc.invalidateQueries({ queryKey: ["product-gallery", productId] });
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao enviar arquivo");
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";

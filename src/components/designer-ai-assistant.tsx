@@ -18,7 +18,7 @@ export function DesignerAIAssistant() {
   const m = useMutation({
     mutationFn: (vars: { brief: string; season?: string; category?: string }) =>
       fn({ data: vars }) as Promise<DesignerSuggestion>,
-    onError: (e: any) => toast.error(e?.message ?? "Falha ao gerar sugestão"),
+    onError: (e: Error) => toast.error(e.message || "Falha ao gerar sugestão"),
   });
 
   const data = m.data;

@@ -50,6 +50,12 @@ const PALETTE = [
   "#84cc16",
 ];
 
+type TooltipItem = {
+  payload?: {
+    raw?: string;
+  };
+};
+
 export function InlineChart({ text }: { text: string }) {
   const data = useMemo(() => parseSeries(text), [text]);
   if (data.length < 2) return null;
@@ -79,7 +85,7 @@ export function InlineChart({ text }: { text: string }) {
                 borderRadius: 8,
                 fontSize: 12,
               }}
-              formatter={(v: number, _n, item: any) => [item?.payload?.raw ?? v, "valor"]}
+              formatter={(v: number, _n, item: TooltipItem) => [item?.payload?.raw ?? v, "valor"]}
             />
             <Bar dataKey="value" radius={[4, 4, 0, 0]}>
               {data.map((_, i) => (
