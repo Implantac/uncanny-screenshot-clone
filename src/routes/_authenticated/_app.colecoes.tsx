@@ -52,6 +52,7 @@ import { toast } from "sonner";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionIntelligencePanel } from "@/components/collection-intelligence-panel";
 import { CarryOverPanel } from "@/components/carry-over-panel";
+import { AssortmentPanel } from "@/components/assortment-panel";
 import { CollectionCompareDialog } from "@/components/collection-compare-dialog";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
@@ -789,7 +790,10 @@ function ColecoesPage() {
       <CollectionIntelligencePanel />
 
       {selected && (
-        <CarryOverPanel collectionId={selected.id} collectionName={selected.name} />
+        <>
+          <CarryOverPanel collectionId={selected.id} collectionName={selected.name} />
+          <AssortmentPanel collectionId={selected.id} collectionName={selected.name} />
+        </>
       )}
 
       {isLoading ? (
