@@ -22,24 +22,41 @@ import {
 
 export type ViewPresetFilters = Record<string, unknown>;
 
-const BUILTIN: { name: string; filters: ViewPresetFilters }[] = [
-  { name: "Meus atrasados", filters: { listFilter: "atrasado" } },
-  { name: "Costura externa em risco", filters: { origin: "externa", listFilter: "atrasado" } },
-  { name: "Finalizados hoje", filters: { listFilter: "finalizado" } },
-  { name: "Aguardando corte", filters: { colKey: "aguardando_corte" } },
-];
+const DEFAULT_BUILTIN: Record<string, { name: string; filters: ViewPresetFilters }[]> = {
+  acompanhamento_producao: [
+    { name: "Meus atrasados", filters: { listFilter: "atrasado" } },
+    { name: "Costura externa em risco", filters: { origin: "externa", listFilter: "atrasado" } },
+    { name: "Finalizados hoje", filters: { listFilter: "finalizado" } },
+    { name: "Aguardando corte", filters: { colKey: "aguardando_corte" } },
+  ],
+  colecoes: [
+    { name: "Em desenvolvimento", filters: { status: "desenvolvimento" } },
+    { name: "Em produção", filters: { status: "producao" } },
+    { name: "Em lançamento", filters: { status: "lancamento" } },
+    { name: "Markdown", filters: { status: "markdown" } },
+  ],
+  prototipos: [
+    { name: "Em prova", filters: { stage: "em_prova" } },
+    { name: "Em confecção", filters: { stage: "em_confeccao" } },
+    { name: "Aprovados", filters: { stage: "aprovado" } },
+    { name: "Reprovados", filters: { stage: "reprovado" } },
+  ],
+};
 
 export function ViewPresetsDropdown({
   module,
   current,
   onApply,
   onClear,
+  builtin,
 }: {
   module: string;
   current: ViewPresetFilters;
   onApply: (filters: ViewPresetFilters) => void;
   onClear: () => void;
+  builtin?: { name: string; filters: ViewPresetFilters }[];
 }) {
+  const builtins = builtin ?? DEFAULT_BUILTIN[module] ?? [];
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
@@ -93,7 +110,7 @@ export function ViewPresetsDropdown({
           <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">
             Rápidas
           </DropdownMenuLabel>
-          {BUILTIN.map((p) => (
+          {builtins.map((p) => (
             <DropdownMenuItem
               key={p.name}
               onSelect={(e) => {

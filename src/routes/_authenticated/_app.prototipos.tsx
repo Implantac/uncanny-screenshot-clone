@@ -47,6 +47,7 @@ import {
 } from "@/components/prototype-adjustments";
 import { PrototypeTimelineButton } from "@/components/prototype-timeline";
 import { DevIntelligencePanel } from "@/components/dev-intelligence-panel";
+import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -395,7 +396,20 @@ function Prototipos() {
                 ))}
               </SelectContent>
             </Select>
+            <ViewPresetsDropdown
+              module="prototipos"
+              current={{ q, stage: stageFilter }}
+              onClear={() => {
+                setQ("");
+                setStageFilter("all");
+              }}
+              onApply={(f: ViewPresetFilters) => {
+                if (typeof f.q === "string") setQ(f.q);
+                if (typeof f.stage === "string") setStageFilter(f.stage);
+              }}
+            />
           </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {(Object.keys(STAGE_LABEL) as Stage[]).map((st) => {

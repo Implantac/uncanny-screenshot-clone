@@ -58,6 +58,7 @@ import type { CollectionState } from "@/lib/lifecycle.functions";
 import { CollectionCompareDialog } from "@/components/collection-compare-dialog";
 import { ThemesPanel, LinesDialogButton } from "@/components/themes-lines-panel";
 import { ChannelMixPanel } from "@/components/channel-mix-panel";
+import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
 const SORT_KEYS = ["recent", "name", "progress", "launch", "year"] as const;
@@ -892,6 +893,23 @@ function ColecoesPage() {
                 <SelectItem value="year">Ano (desc)</SelectItem>
               </SelectContent>
             </Select>
+
+            <div className="flex items-center justify-end">
+              <ViewPresetsDropdown
+                module="colecoes"
+                current={{ q, status: statusFilter, season: seasonFilter, sort: sortBy }}
+                onClear={() => updateSearch({ q: "", status: "all", season: "all", sort: "recent", page: 1 })}
+                onApply={(f: ViewPresetFilters) => {
+                  const patch: Partial<typeof search> = { page: 1 };
+                  if (typeof f.q === "string") patch.q = f.q;
+                  if (typeof f.status === "string") patch.status = f.status as typeof statusFilter;
+                  if (typeof f.season === "string") patch.season = f.season;
+                  if (typeof f.sort === "string") patch.sort = f.sort as typeof sortBy;
+                  updateSearch(patch);
+                }}
+              />
+            </div>
+
 
             <div className="space-y-2">
               {filteredCollections.length === 0 ? (
