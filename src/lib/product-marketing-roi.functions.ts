@@ -113,7 +113,7 @@ export const listProductMarketingRoi = createServerFn({ method: "POST" })
 
     if (data.collectionId) productsQuery.eq("collection_id", data.collectionId);
 
-    const [productsRes, salesRes, costsRes] = await Promise.all([
+    const [productsRes, salesRes, campaignsRes] = await Promise.all([
       productsQuery,
       supabase
         .from("erp_sales_mirror")
@@ -121,18 +121,20 @@ export const listProductMarketingRoi = createServerFn({ method: "POST" })
         .gte("sold_at", since)
         .limit(10000),
       supabase
-        .from("product_marketing_costs" as "products")
-        .select("product_id, collection_id, amount")
-        .gte("spent_at", since.slice(0, 10)),
+        .from("marketing_campaigns")
+        .select(
+          "product_id, collection_id, investment, cost_shoot, cost_photos, cost_traffic, revenue, channel",
+        )
+        .gte("start_date", since.slice(0, 10)),
     ]);
 
     if (productsRes.error) throw productsRes.error;
     if (salesRes.error) throw salesRes.error;
-    if (costsRes.error) throw costsRes.error;
+    if (campaignsRes.error) throw campaignsRes.error;
 
     const products = (productsRes.data ?? []) as ProductRow[];
     const sales = (salesRes.data ?? []) as SaleRow[];
-    const costs = (costsRes.data ?? []) as unknown as MarketingCostRow[];
+    const campaigns = (campaignsRes.data ?? []) as MarketingCampaignRow[];
     const productBySku = new Map(products.map((p) => [p.sku?.trim().toLowerCase(), p]));
     const productByName = new Map(products.map((p) => [p.name?.trim().toLowerCase(), p]));
 
@@ -148,13 +150,42 @@ export const listProductMarketingRoi = createServerFn({ method: "POST" })
       salesByProduct.set(product.id, cur);
     });
 
+    // Custo de marketing = investimento total da(s) campanha(s) atrelada(s) ao produto.
+    // Coleção é rateada igualmente entre produtos da coleção.
     const costsByProduct = new Map<string, number>();
-    costs.forEach((cost) => {
-      if (data.collectionId && cost.collection_id !== data.collectionId) return;
-      costsByProduct.set(
-        cost.product_id,
-        (costsByProduct.get(cost.product_id) ?? 0) + Number(cost.amount ?? 0),
-      );
+    const attributedRevenueByProduct = new Map<string, number>();
+    const productsByCollection = new Map<string, string[]>();
+    products.forEach((p) => {
+      if (!p.collection_id) return;
+      const arr = productsByCollection.get(p.collection_id) ?? [];
+      arr.push(p.id);
+      productsByCollection.set(p.collection_id, arr);
+    });
+
+    campaigns.forEach((c) => {
+      if (data.collectionId && c.collection_id !== data.collectionId) return;
+      const totalCost =
+        Number(c.investment ?? 0) +
+        Number(c.cost_shoot ?? 0) +
+        Number(c.cost_photos ?? 0) +
+        Number(c.cost_traffic ?? 0);
+      const totalRev = Number(c.revenue ?? 0);
+      const targets: string[] = c.product_id
+        ? [c.product_id]
+        : c.collection_id
+          ? productsByCollection.get(c.collection_id) ?? []
+          : [];
+      if (targets.length === 0) return;
+      const share = 1 / targets.length;
+      targets.forEach((pid) => {
+        costsByProduct.set(pid, (costsByProduct.get(pid) ?? 0) + totalCost * share);
+        if (totalRev > 0) {
+          attributedRevenueByProduct.set(
+            pid,
+            (attributedRevenueByProduct.get(pid) ?? 0) + totalRev * share,
+          );
+        }
+      });
     });
 
     const rows = products
