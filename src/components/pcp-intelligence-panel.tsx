@@ -7,10 +7,27 @@ import { toast } from "sonner";
 
 export function PcpIntelligencePanel() {
   const fn = useServerFn(getPcpIntelligence);
+  const applyFn = useServerFn(applyRebalanceSuggestion);
+  const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["pcp-intelligence"],
     queryFn: () => fn({ data: {} }),
     refetchOnWindowFocus: false,
+  });
+  const apply = useMutation({
+    mutationFn: (vars: {
+      orderId: string;
+      toSupplierId: string;
+      fromSupplier: string;
+      toSupplier: string;
+    }) => applyFn({ data: vars }),
+    onSuccess: (res) => {
+      toast.success(`OP ${res.code ?? ""} realocada`);
+      qc.invalidateQueries({ queryKey: ["pcp-intelligence"] });
+      qc.invalidateQueries({ queryKey: ["capacity"] });
+      qc.invalidateQueries({ queryKey: ["production-orders"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Falha ao realocar"),
   });
 
   if (isLoading || !data) {
