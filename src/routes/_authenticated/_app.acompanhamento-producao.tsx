@@ -170,8 +170,8 @@ async function load(): Promise<Order[]> {
     .select(
       `id, code, stage, quantity, progress, due_date, stage_updated_at, batch_code, outsourced, notes,
        product_id, supplier_id,
-       suppliers(name),
-       products(name, sku, category, collections(name))`,
+       suppliers(name, category),
+       products(name, sku, category, product_group, collections(name), product_lines(name))`,
     )
     .order("due_date", { ascending: true, nullsFirst: false });
   if (error) throw error;
@@ -189,9 +189,12 @@ async function load(): Promise<Order[]> {
     product_id: o.product_id,
     supplier_id: o.supplier_id,
     supplier_name: o.suppliers?.name ?? null,
+    supplier_category: o.suppliers?.category ?? null,
     product_name: o.products?.name ?? null,
     product_sku: o.products?.sku ?? null,
     product_category: o.products?.category ?? null,
+    product_group: o.products?.product_group ?? null,
+    product_line: o.products?.product_lines?.name ?? null,
     collection_name: o.products?.collections?.name ?? null,
   })) as Order[];
 }
