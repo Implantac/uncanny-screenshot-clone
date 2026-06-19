@@ -66,11 +66,24 @@ const Input = z.object({
 
 async function buildContext(supabase: any, persona: Persona): Promise<string> {
   if (persona === "command") {
-    const [{ count: opsAtivas }, { count: rfqsAbertas }, { count: protosPend }] = await Promise.all([
-      supabase.from("production_orders").select("id", { count: "exact", head: true }).neq("status", "concluida").neq("status", "cancelada"),
-      supabase.from("rfq_requests").select("id", { count: "exact", head: true }).in("status", ["aberta", "cotando"]),
-      supabase.from("prototypes").select("id", { count: "exact", head: true }).neq("stage", "aprovado").neq("stage", "reprovado"),
-    ]);
+    const [{ count: opsAtivas }, { count: rfqsAbertas }, { count: protosPend }] = await Promise.all(
+      [
+        supabase
+          .from("production_orders")
+          .select("id", { count: "exact", head: true })
+          .neq("status", "concluida")
+          .neq("status", "cancelada"),
+        supabase
+          .from("rfq_requests")
+          .select("id", { count: "exact", head: true })
+          .in("status", ["aberta", "cotando"]),
+        supabase
+          .from("prototypes")
+          .select("id", { count: "exact", head: true })
+          .neq("stage", "aprovado")
+          .neq("stage", "reprovado"),
+      ],
+    );
     return `# Contexto operacional
 - OPs ativas: ${opsAtivas ?? 0}
 - RFQs abertas/cotando: ${rfqsAbertas ?? 0}
@@ -88,10 +101,18 @@ async function buildContext(supabase: any, persona: Persona): Promise<string> {
       supabase.from("products").select("id, name, sku, status, created_at").limit(120),
       supabase.from("tech_sheets").select("product_id, status").limit(200),
     ]);
-    const productsWithSheet = new Set((sheets ?? []).filter((s: any) => s.status === "aprovada").map((s: any) => s.product_id));
-    const semFicha = (products ?? []).filter((p: any) => p.status === "aprovado" && !productsWithSheet.has(p.id));
-    const pilotosPendentes = (protos ?? []).filter((p: any) => p.stage !== "aprovado" && p.stage !== "reprovado");
-    const aprovadosRecentes = (protos ?? []).filter((p: any) => p.stage === "aprovado" && p.updated_at > iso30);
+    const productsWithSheet = new Set(
+      (sheets ?? []).filter((s: any) => s.status === "aprovada").map((s: any) => s.product_id),
+    );
+    const semFicha = (products ?? []).filter(
+      (p: any) => p.status === "aprovado" && !productsWithSheet.has(p.id),
+    );
+    const pilotosPendentes = (protos ?? []).filter(
+      (p: any) => p.stage !== "aprovado" && p.stage !== "reprovado",
+    );
+    const aprovadosRecentes = (protos ?? []).filter(
+      (p: any) => p.stage === "aprovado" && p.updated_at > iso30,
+    );
     return `# Contexto · Desenvolvimento (atualizado ${todayISO})
 - Total de protótipos: ${(protos ?? []).length}
 - Pilotos pendentes (não aprovados/reprovados): ${pilotosPendentes.length}
@@ -99,10 +120,22 @@ async function buildContext(supabase: any, persona: Persona): Promise<string> {
 - Produtos aprovados SEM ficha técnica aprovada: ${semFicha.length}
 
 ## Top 10 pilotos pendentes (código · nome · etapa · atualizado)
-${pilotosPendentes.slice(0, 10).map((p: any) => `- \`${p.code}\` · ${p.name ?? "—"} · ${p.stage} · ${p.updated_at?.slice(0, 10)}`).join("\n") || "- nenhum"}
+${
+  pilotosPendentes
+    .slice(0, 10)
+    .map(
+      (p: any) => `- \`${p.code}\` · ${p.name ?? "—"} · ${p.stage} · ${p.updated_at?.slice(0, 10)}`,
+    )
+    .join("\n") || "- nenhum"
+}
 
 ## Top 10 produtos sem ficha
-${semFicha.slice(0, 10).map((p: any) => `- \`${p.sku}\` · ${p.name}`).join("\n") || "- nenhum"}`;
+${
+  semFicha
+    .slice(0, 10)
+    .map((p: any) => `- \`${p.sku}\` · ${p.name}`)
+    .join("\n") || "- nenhum"
+}`;
   }
 
   if (persona === "pcp") {
@@ -112,13 +145,23 @@ ${semFicha.slice(0, 10).map((p: any) => `- \`${p.sku}\` · ${p.name}`).join("\n"
         .select("code, stage, status, quantity, due_date, stage_updated_at, products(name, sku)")
         .neq("status", "cancelada")
         .limit(300),
-      supabase.from("production_batches").select("code, status, planned_quantity, produced_quantity, updated_at").limit(80),
+      supabase
+        .from("production_batches")
+        .select("code, status, planned_quantity, produced_quantity, updated_at")
+        .limit(80),
     ]);
     const now = Date.now();
-    const atrasadas = (orders ?? []).filter((o: any) => o.stage !== "entregue" && o.due_date && new Date(o.due_date).getTime() < now);
-    const paradas = (orders ?? []).filter((o: any) => o.stage !== "entregue" && now - new Date(o.stage_updated_at).getTime() > 5 * 86400000);
+    const atrasadas = (orders ?? []).filter(
+      (o: any) => o.stage !== "entregue" && o.due_date && new Date(o.due_date).getTime() < now,
+    );
+    const paradas = (orders ?? []).filter(
+      (o: any) =>
+        o.stage !== "entregue" && now - new Date(o.stage_updated_at).getTime() > 5 * 86400000,
+    );
     const stageMap = new Map<string, number>();
-    (orders ?? []).filter((o: any) => o.stage !== "entregue").forEach((o: any) => stageMap.set(o.stage, (stageMap.get(o.stage) ?? 0) + (o.quantity ?? 0)));
+    (orders ?? [])
+      .filter((o: any) => o.stage !== "entregue")
+      .forEach((o: any) => stageMap.set(o.stage, (stageMap.get(o.stage) ?? 0) + (o.quantity ?? 0)));
     const filas = [...stageMap.entries()].sort((a, b) => b[1] - a[1]);
 
     return `# Contexto · PCP (atualizado ${todayISO})
@@ -131,16 +174,42 @@ ${semFicha.slice(0, 10).map((p: any) => `- \`${p.sku}\` · ${p.name}`).join("\n"
 ${filas.map(([s, q]) => `- ${s}: ${q}`).join("\n") || "- sem dados"}
 
 ## Top OPs atrasadas
-${atrasadas.slice(0, 10).map((o: any) => `- \`${o.code}\` · ${o.products?.name ?? "—"} · setor ${o.stage} · vence ${o.due_date}`).join("\n") || "- nenhuma"}
+${
+  atrasadas
+    .slice(0, 10)
+    .map(
+      (o: any) =>
+        `- \`${o.code}\` · ${o.products?.name ?? "—"} · setor ${o.stage} · vence ${o.due_date}`,
+    )
+    .join("\n") || "- nenhuma"
+}
 
 ## Top OPs paradas
-${paradas.slice(0, 10).map((o: any) => `- \`${o.code}\` · ${o.products?.name ?? "—"} · ${o.stage} · sem mover desde ${o.stage_updated_at?.slice(0, 10)}`).join("\n") || "- nenhuma"}`;
+${
+  paradas
+    .slice(0, 10)
+    .map(
+      (o: any) =>
+        `- \`${o.code}\` · ${o.products?.name ?? "—"} · ${o.stage} · sem mover desde ${o.stage_updated_at?.slice(0, 10)}`,
+    )
+    .join("\n") || "- nenhuma"
+}`;
   }
 
   // marketing
   const [{ data: sales30 }, { data: sales7 }] = await Promise.all([
-    supabase.from("erp_sales_mirror").select("sku, product_ref, channel, region, quantity, total_value, influencer_code, campaign_code, sold_at").gte("sold_at", iso30).limit(2000),
-    supabase.from("erp_sales_mirror").select("sku, quantity, total_value, channel").gte("sold_at", iso7).limit(2000),
+    supabase
+      .from("erp_sales_mirror")
+      .select(
+        "sku, product_ref, channel, region, quantity, total_value, influencer_code, campaign_code, sold_at",
+      )
+      .gte("sold_at", iso30)
+      .limit(2000),
+    supabase
+      .from("erp_sales_mirror")
+      .select("sku, quantity, total_value, channel")
+      .gte("sold_at", iso7)
+      .limit(2000),
   ]);
 
   const byProduct = new Map<string, { units: number; revenue: number; name: string }>();
@@ -151,14 +220,33 @@ ${paradas.slice(0, 10).map((o: any) => `- \`${o.code}\` · ${o.products?.name ??
     prev.revenue += Number(s.total_value ?? 0);
     byProduct.set(k, prev);
   });
-  const topProducts = [...byProduct.entries()].sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 10);
+  const topProducts = [...byProduct.entries()]
+    .sort((a, b) => b[1].revenue - a[1].revenue)
+    .slice(0, 10);
 
   const byChannel = new Map<string, number>();
-  (sales30 ?? []).forEach((s: any) => byChannel.set(s.channel ?? "—", (byChannel.get(s.channel ?? "—") ?? 0) + Number(s.total_value ?? 0)));
+  (sales30 ?? []).forEach((s: any) =>
+    byChannel.set(
+      s.channel ?? "—",
+      (byChannel.get(s.channel ?? "—") ?? 0) + Number(s.total_value ?? 0),
+    ),
+  );
   const byInfluencer = new Map<string, number>();
-  (sales30 ?? []).filter((s: any) => s.influencer_code).forEach((s: any) => byInfluencer.set(s.influencer_code, (byInfluencer.get(s.influencer_code) ?? 0) + Number(s.total_value ?? 0)));
+  (sales30 ?? [])
+    .filter((s: any) => s.influencer_code)
+    .forEach((s: any) =>
+      byInfluencer.set(
+        s.influencer_code,
+        (byInfluencer.get(s.influencer_code) ?? 0) + Number(s.total_value ?? 0),
+      ),
+    );
   const byRegion = new Map<string, number>();
-  (sales30 ?? []).forEach((s: any) => byRegion.set(s.region ?? "—", (byRegion.get(s.region ?? "—") ?? 0) + Number(s.total_value ?? 0)));
+  (sales30 ?? []).forEach((s: any) =>
+    byRegion.set(
+      s.region ?? "—",
+      (byRegion.get(s.region ?? "—") ?? 0) + Number(s.total_value ?? 0),
+    ),
+  );
 
   const rev30 = (sales30 ?? []).reduce((s: number, x: any) => s + Number(x.total_value ?? 0), 0);
   const rev7 = (sales7 ?? []).reduce((s: number, x: any) => s + Number(x.total_value ?? 0), 0);
@@ -174,18 +262,36 @@ ${paradas.slice(0, 10).map((o: any) => `- \`${o.code}\` · ${o.products?.name ??
 ${topProducts.map(([sku, v]) => `- \`${sku}\` · ${v.units} un · ${fmt(v.revenue)}`).join("\n") || "- sem vendas"}
 
 ## Canais (30d)
-${[...byChannel.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([c, v]) => `- \`${c}\`: ${fmt(v)}`).join("\n") || "- sem dados"}
+${
+  [...byChannel.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([c, v]) => `- \`${c}\`: ${fmt(v)}`)
+    .join("\n") || "- sem dados"
+}
 
 ## Influencers (30d)
-${[...byInfluencer.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([i, v]) => `- \`${i}\`: ${fmt(v)}`).join("\n") || "- sem dados"}
+${
+  [...byInfluencer.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([i, v]) => `- \`${i}\`: ${fmt(v)}`)
+    .join("\n") || "- sem dados"
+}
 
 ## Regiões (30d)
-${[...byRegion.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([r, v]) => `- ${r}: ${fmt(v)}`).join("\n") || "- sem dados"}`;
+${
+  [...byRegion.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([r, v]) => `- ${r}: ${fmt(v)}`)
+    .join("\n") || "- sem dados"
+}`;
 }
 
 export const askInsight = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => Input.parse(data))
+  .validator((data) => Input.parse(data))
   .handler(async ({ data, context }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");

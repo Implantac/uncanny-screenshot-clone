@@ -26,13 +26,25 @@ export function DesignerAIAssistant() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Assistente de moodboard · IA</CardTitle>
-        <CardDescription>Descreva o briefing e receba paleta de cores e sugestões de tecido.</CardDescription>
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" /> Assistente de moodboard · IA
+        </CardTitle>
+        <CardDescription>
+          Descreva o briefing e receba paleta de cores e sugestões de tecido.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <Input placeholder="Estação (ex.: Verão 2027)" value={season} onChange={(e) => setSeason(e.target.value)} />
-          <Input placeholder="Categoria (ex.: Vestidos)" value={category} onChange={(e) => setCategory(e.target.value)} />
+          <Input
+            placeholder="Estação (ex.: Verão 2027)"
+            value={season}
+            onChange={(e) => setSeason(e.target.value)}
+          />
+          <Input
+            placeholder="Categoria (ex.: Vestidos)"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          />
         </div>
         <Textarea
           placeholder="Ex.: cápsula resort minimalista, inspiração mediterrânea, alfaiataria fluida para clima quente…"
@@ -41,19 +53,27 @@ export function DesignerAIAssistant() {
           rows={3}
         />
         <Button
-          onClick={() => m.mutate({ brief: brief.trim(), season: season.trim() || undefined, category: category.trim() || undefined })}
+          onClick={() =>
+            m.mutate({
+              brief: brief.trim(),
+              season: season.trim() || undefined,
+              category: category.trim() || undefined,
+            })
+          }
           disabled={brief.trim().length < 3 || m.isPending}
           className="gap-2"
         >
-          {m.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+          {m.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Sparkles className="size-4" />
+          )}
           Gerar paleta + tecidos
         </Button>
 
         {data && (
           <div className="space-y-4 pt-2">
-            {data.mood && (
-              <div className="text-sm text-muted-foreground italic">"{data.mood}"</div>
-            )}
+            {data.mood && <div className="text-sm text-muted-foreground italic">"{data.mood}"</div>}
 
             {data.palette.length > 0 && (
               <div>
@@ -64,7 +84,10 @@ export function DesignerAIAssistant() {
                   {data.palette.map((c, i) => (
                     <button
                       key={i}
-                      onClick={() => { navigator.clipboard.writeText(c.hex); toast.success(`${c.hex} copiado`); }}
+                      onClick={() => {
+                        navigator.clipboard.writeText(c.hex);
+                        toast.success(`${c.hex} copiado`);
+                      }}
                       className="rounded-lg overflow-hidden border border-border text-left hover:border-primary/40 transition-colors"
                       title="Clique para copiar"
                     >
@@ -74,7 +97,9 @@ export function DesignerAIAssistant() {
                         <div className="text-[10px] font-mono text-muted-foreground flex items-center gap-1">
                           {c.hex} <Copy className="size-2.5" />
                         </div>
-                        <div className="text-[10px] text-muted-foreground capitalize">{c.usage}</div>
+                        <div className="text-[10px] text-muted-foreground capitalize">
+                          {c.usage}
+                        </div>
                       </div>
                     </button>
                   ))}
@@ -84,13 +109,17 @@ export function DesignerAIAssistant() {
 
             {data.fabrics.length > 0 && (
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Tecidos sugeridos</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Tecidos sugeridos
+                </div>
                 <div className="space-y-2">
                   {data.fabrics.map((f, i) => (
                     <div key={i} className="rounded-lg border border-border p-3">
                       <div className="flex items-baseline justify-between gap-2">
                         <div className="text-sm font-medium">{f.name}</div>
-                        <div className="text-xs font-mono text-muted-foreground">{f.composition}</div>
+                        <div className="text-xs font-mono text-muted-foreground">
+                          {f.composition}
+                        </div>
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">{f.why}</div>
                     </div>
@@ -102,7 +131,12 @@ export function DesignerAIAssistant() {
             {data.refs.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {data.refs.map((r, i) => (
-                  <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">#{r}</span>
+                  <span
+                    key={i}
+                    className="text-[11px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground"
+                  >
+                    #{r}
+                  </span>
                 ))}
               </div>
             )}

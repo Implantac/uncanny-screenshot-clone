@@ -27,7 +27,12 @@ export function Markdown({ content }: { content: string }) {
             </pre>
           ),
           a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noreferrer" className="text-primary underline underline-offset-2">
+            <a
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary underline underline-offset-2"
+            >
               {children}
             </a>
           ),
@@ -36,7 +41,9 @@ export function Markdown({ content }: { content: string }) {
               <table className="w-full text-xs border-collapse">{children}</table>
             </div>
           ),
-          th: ({ children }) => <th className="border border-border px-2 py-1 text-left font-semibold">{children}</th>,
+          th: ({ children }) => (
+            <th className="border border-border px-2 py-1 text-left font-semibold">{children}</th>
+          ),
           td: ({ children }) => <td className="border border-border px-2 py-1">{children}</td>,
         }}
       >

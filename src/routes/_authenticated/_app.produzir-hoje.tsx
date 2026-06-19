@@ -9,7 +9,10 @@ export const Route = createFileRoute("/_authenticated/_app/produzir-hoje")({
   head: () => ({
     meta: [
       { title: "Produzir Hoje · USE MODA PLM" },
-      { name: "description", content: "O que o operador precisa fazer hoje. Sem filtros, sem busca." },
+      {
+        name: "description",
+        content: "O que o operador precisa fazer hoje. Sem filtros, sem busca.",
+      },
     ],
   }),
   component: ProduzirHoje,
@@ -35,10 +38,16 @@ function ProduzirHoje() {
     queryKey: ["produzir-hoje"],
     queryFn: async () => {
       const [stagesR, opsR] = await Promise.all([
-        supabase.from("pcp_stages").select("key,label,color,position").eq("active", true).order("position"),
+        supabase
+          .from("pcp_stages")
+          .select("key,label,color,position")
+          .eq("active", true)
+          .order("position"),
         supabase
           .from("production_orders")
-          .select("id, code, stage, status, priority, due_date, quantity, stage_updated_at, batch_code, products(name, sku, image_url), suppliers(name)")
+          .select(
+            "id, code, stage, status, priority, due_date, quantity, stage_updated_at, batch_code, products(name, sku, image_url), suppliers(name)",
+          )
           .neq("status", "cancelada")
           .neq("status", "concluida")
           .neq("stage", "entregue")
@@ -62,9 +71,7 @@ function ProduzirHoje() {
     };
 
     return stages.map((s) => {
-      const list = ops
-        .filter((o) => o.stage === s.key)
-        .sort((a, b) => score(a) - score(b));
+      const list = ops.filter((o) => o.stage === s.key).sort((a, b) => score(a) - score(b));
       return { stage: s, ops: list };
     });
   }, [data]);
@@ -73,17 +80,18 @@ function ProduzirHoje() {
     () =>
       (data?.ops ?? []).filter(
         (o) =>
-          (o.priority ?? 3) <= 2 ||
-          (o.due_date && new Date(o.due_date).getTime() < Date.now())
+          (o.priority ?? 3) <= 2 || (o.due_date && new Date(o.due_date).getTime() < Date.now()),
       ).length,
-    [data]
+    [data],
   );
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
       <header className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Operação · Produzir Hoje</div>
+          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
+            Operação · Produzir Hoje
+          </div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
             <Factory className="size-7 text-primary" /> O que produzir agora
           </h1>
@@ -106,7 +114,10 @@ function ProduzirHoje() {
         <div className="text-sm text-muted-foreground">Carregando…</div>
       ) : grouped.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
-          Nenhuma etapa ativa configurada. <Link to="/pcp-stages" className="text-primary hover:underline ml-1">Configurar etapas →</Link>
+          Nenhuma etapa ativa configurada.{" "}
+          <Link to="/pcp-stages" className="text-primary hover:underline ml-1">
+            Configurar etapas →
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -119,7 +130,9 @@ function ProduzirHoje() {
                     style={{ background: stage.color ?? "oklch(0.72 0.18 295)" }}
                   />
                   <div className="text-sm font-semibold">{stage.label}</div>
-                  <span className="text-[10px] text-muted-foreground tabular-nums">({ops.length})</span>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">
+                    ({ops.length})
+                  </span>
                 </div>
                 <Link
                   to="/producao-do-dia/$stage"
@@ -139,7 +152,9 @@ function ProduzirHoje() {
                     const overdue = dueMs !== null && dueMs < Date.now();
                     const urgent = (o.priority ?? 3) <= 2;
                     const stuckDays = o.stage_updated_at
-                      ? Math.floor((Date.now() - new Date(o.stage_updated_at).getTime()) / 86_400_000)
+                      ? Math.floor(
+                          (Date.now() - new Date(o.stage_updated_at).getTime()) / 86_400_000,
+                        )
                       : 0;
                     return (
                       <li
@@ -148,17 +163,26 @@ function ProduzirHoje() {
                       >
                         <div className="size-12 rounded-md border border-border bg-muted/40 overflow-hidden shrink-0 grid place-items-center">
                           {o.products?.image_url ? (
-                            <img src={o.products.image_url} alt="" className="size-full object-cover" loading="lazy" />
+                            <img
+                              src={o.products.image_url}
+                              alt=""
+                              className="size-full object-cover"
+                              loading="lazy"
+                            />
                           ) : (
                             <ImageIcon className="size-4 text-muted-foreground/60" />
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2">
-                            <div className="font-mono text-[11px] text-muted-foreground">{o.code}</div>
+                            <div className="font-mono text-[11px] text-muted-foreground">
+                              {o.code}
+                            </div>
                             <div className="flex items-center gap-1">
                               {urgent && (
-                                <span className="text-[9px] px-1.5 py-0.5 rounded border border-destructive/30 bg-destructive/10 text-destructive">P{o.priority ?? 3}</span>
+                                <span className="text-[9px] px-1.5 py-0.5 rounded border border-destructive/30 bg-destructive/10 text-destructive">
+                                  P{o.priority ?? 3}
+                                </span>
                               )}
                               {o.batch_code && (
                                 <span className="text-[9px] px-1.5 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary">
@@ -167,17 +191,29 @@ function ProduzirHoje() {
                               )}
                             </div>
                           </div>
-                          <div className="text-sm font-medium truncate">{o.products?.name ?? "—"}</div>
+                          <div className="text-sm font-medium truncate">
+                            {o.products?.name ?? "—"}
+                          </div>
                           <div className="text-[11px] text-muted-foreground truncate">
                             {o.quantity} pç · {o.suppliers?.name ?? "interno"}
                           </div>
                           <div className="flex items-center justify-between mt-1.5 text-[10px]">
                             {o.due_date ? (
-                              <span className={overdue ? "text-destructive font-medium inline-flex items-center gap-1" : "text-muted-foreground inline-flex items-center gap-1"}>
+                              <span
+                                className={
+                                  overdue
+                                    ? "text-destructive font-medium inline-flex items-center gap-1"
+                                    : "text-muted-foreground inline-flex items-center gap-1"
+                                }
+                              >
                                 <Clock className="size-3" />
-                                {overdue ? `venceu ${new Date(o.due_date).toLocaleDateString("pt-BR")}` : `prazo ${new Date(o.due_date).toLocaleDateString("pt-BR")}`}
+                                {overdue
+                                  ? `venceu ${new Date(o.due_date).toLocaleDateString("pt-BR")}`
+                                  : `prazo ${new Date(o.due_date).toLocaleDateString("pt-BR")}`}
                               </span>
-                            ) : <span className="text-muted-foreground">sem prazo</span>}
+                            ) : (
+                              <span className="text-muted-foreground">sem prazo</span>
+                            )}
                             {stuckDays >= 3 && (
                               <span className="text-warning inline-flex items-center gap-1">
                                 <AlertTriangle className="size-3" /> parada {stuckDays}d

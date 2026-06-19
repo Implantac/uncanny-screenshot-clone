@@ -19,13 +19,15 @@ export function exportToPdf<T extends Record<string, unknown>>(
   autoTable(doc, {
     startY: 72,
     head: [columns.map((c) => c.label)],
-    body: rows.map((r) => columns.map((c) => {
-      const v = r[c.key];
-      if (v === null || v === undefined) return "";
-      if (Array.isArray(v)) return v.join(", ");
-      if (typeof v === "object") return JSON.stringify(v);
-      return String(v);
-    })),
+    body: rows.map((r) =>
+      columns.map((c) => {
+        const v = r[c.key];
+        if (v === null || v === undefined) return "";
+        if (Array.isArray(v)) return v.join(", ");
+        if (typeof v === "object") return JSON.stringify(v);
+        return String(v);
+      }),
+    ),
     styles: { fontSize: 9, cellPadding: 6 },
     headStyles: { fillColor: [120, 70, 200], textColor: 255 },
     alternateRowStyles: { fillColor: [245, 243, 250] },

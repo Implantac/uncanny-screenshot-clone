@@ -5,9 +5,24 @@ import { Brain, AlertTriangle, CheckCircle2, Clock, ArrowRight, Loader2 } from "
 import { predictDelays } from "@/lib/delay-prediction.functions";
 
 const RISK_STYLES = {
-  high: { ring: "border-destructive/40 bg-destructive/5", chip: "bg-destructive/15 text-destructive border-destructive/30", icon: AlertTriangle, label: "Alto risco" },
-  medium: { ring: "border-amber-500/40 bg-amber-500/5", chip: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30", icon: Clock, label: "Atenção" },
-  low: { ring: "border-success/30 bg-success/5", chip: "bg-success/15 text-success border-success/30", icon: CheckCircle2, label: "No prazo" },
+  high: {
+    ring: "border-destructive/40 bg-destructive/5",
+    chip: "bg-destructive/15 text-destructive border-destructive/30",
+    icon: AlertTriangle,
+    label: "Alto risco",
+  },
+  medium: {
+    ring: "border-amber-500/40 bg-amber-500/5",
+    chip: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
+    icon: Clock,
+    label: "Atenção",
+  },
+  low: {
+    ring: "border-success/30 bg-success/5",
+    chip: "bg-success/15 text-success border-success/30",
+    icon: CheckCircle2,
+    label: "No prazo",
+  },
 } as const;
 
 export function DelayPredictionPanel({ limit = 8 }: { limit?: number }) {
@@ -26,7 +41,11 @@ export function DelayPredictionPanel({ limit = 8 }: { limit?: number }) {
     );
   }
   if (error) {
-    return <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive">Não foi possível gerar a previsão.</div>;
+    return (
+      <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive">
+        Não foi possível gerar a previsão.
+      </div>
+    );
   }
 
   const items = (data?.items ?? []).slice(0, limit);
@@ -40,12 +59,18 @@ export function DelayPredictionPanel({ limit = 8 }: { limit?: number }) {
           <Brain className="size-4" />
         </div>
         <div className="flex-1">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">PCP Sênior · IA preditiva</div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
+            PCP Sênior · IA preditiva
+          </div>
           <h3 className="font-semibold leading-tight">Previsão de atrasos por OP</h3>
         </div>
         <div className="flex items-center gap-2 text-xs">
-          <span className="px-2 py-1 rounded-full bg-destructive/15 text-destructive border border-destructive/30">{highCount} alto</span>
-          <span className="px-2 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30">{mediumCount} atenção</span>
+          <span className="px-2 py-1 rounded-full bg-destructive/15 text-destructive border border-destructive/30">
+            {highCount} alto
+          </span>
+          <span className="px-2 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+            {mediumCount} atenção
+          </span>
         </div>
       </header>
 
@@ -61,12 +86,20 @@ export function DelayPredictionPanel({ limit = 8 }: { limit?: number }) {
             const Icon = s.icon;
             return (
               <li key={i.orderId} className={`px-5 py-3 flex items-start gap-3 ${s.ring}`}>
-                <Icon className={`size-4 mt-0.5 ${i.risk === "high" ? "text-destructive" : i.risk === "medium" ? "text-amber-600 dark:text-amber-400" : "text-success"}`} />
+                <Icon
+                  className={`size-4 mt-0.5 ${i.risk === "high" ? "text-destructive" : i.risk === "medium" ? "text-amber-600 dark:text-amber-400" : "text-success"}`}
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <code className="text-sm font-medium">{i.code}</code>
-                    {i.productName && <span className="text-sm text-muted-foreground truncate">· {i.productName}</span>}
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${s.chip}`}>{s.label}</span>
+                    {i.productName && (
+                      <span className="text-sm text-muted-foreground truncate">
+                        · {i.productName}
+                      </span>
+                    )}
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${s.chip}`}>
+                      {s.label}
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{i.reason}</p>
                 </div>

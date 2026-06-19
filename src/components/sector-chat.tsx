@@ -4,7 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useSectors } from "@/hooks/use-sectors";
 import { useRealtime } from "@/hooks/use-realtime";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { MessageCircle, Send, Hash } from "lucide-react";
 import { APP_SECTORS, type AppSector } from "@/lib/modules";
 import { toast } from "sonner";
@@ -28,12 +35,13 @@ export function SectorChatButton() {
   const { user } = useAuth();
   const { sectors, isAdmin } = useSectors();
   const available = isAdmin ? APP_SECTORS : sectors;
+
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<AppSector | null>(null);
 
   useEffect(() => {
-    if (open && !active && available.length) setActive(available[0]);
-  }, [open, active, available]);
+    if (open && !active) setActive("marketing");
+  }, [open, active]);
 
   if (!user || available.length === 0) return null;
 
@@ -53,22 +61,18 @@ export function SectorChatButton() {
             <MessageCircle className="size-4 text-primary" /> Chat dos setores
           </SheetTitle>
           <SheetDescription className="text-xs">
-            Conversa interna por setor. Cada um vê apenas os canais que participa.
+            Comunidade interna. Todos veem as mensagens relacionadas ao
+            desenvolvimento/marketing/PCP.
           </SheetDescription>
         </SheetHeader>
 
         <div className="flex gap-1 px-3 pb-2 border-b border-border overflow-x-auto">
-          {available.map((s) => (
-            <button
-              key={s}
-              onClick={() => setActive(s)}
-              className={`text-xs px-2.5 py-1 rounded-md inline-flex items-center gap-1 whitespace-nowrap ${
-                active === s ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"
-              }`}
-            >
-              <Hash className="size-3" /> {LABEL[s]}
-            </button>
-          ))}
+          <button
+            onClick={() => setActive("marketing")}
+            className={`text-xs px-2.5 py-1 rounded-md inline-flex items-center gap-1 whitespace-nowrap ${"bg-primary text-primary-foreground"}`}
+          >
+            <Hash className="size-3" /> Comunidade (todos)
+          </button>
         </div>
 
         {active && <ChannelView sector={active} />}
@@ -80,17 +84,17 @@ export function SectorChatButton() {
 function ChannelView({ sector }: { sector: AppSector }) {
   const qc = useQueryClient();
   const { user } = useAuth();
-  useRealtime("sector_messages", ["sector-messages", sector]);
+  useRealtime("sector_messages", ["sector-messages", "community"]);
 
   const { data: messages = [], isLoading } = useQuery({
-    queryKey: ["sector-messages", sector],
+    queryKey: ["sector-messages", "community"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sector_messages")
         .select("id, user_id, author_name, body, created_at, sector")
-        .eq("sector", sector)
         .order("created_at", { ascending: true })
         .limit(200);
+
       if (error) throw error;
       return (data ?? []) as Msg[];
     },
@@ -112,6 +116,7 @@ function ChannelView({ sector }: { sector: AppSector }) {
         sector,
         body: trimmed,
       });
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -144,7 +149,7 @@ function ChannelView({ sector }: { sector: AppSector }) {
           <div className="text-xs text-muted-foreground">Carregando…</div>
         ) : messages.length === 0 ? (
           <div className="text-xs text-muted-foreground text-center py-12 border border-dashed border-border rounded-lg">
-            Sem mensagens ainda. Seja o primeiro a escrever em <strong>#{LABEL[sector]}</strong>.
+            Sem mensagens ainda na comunidade. Seja o primeiro a escrever.
           </div>
         ) : (
           grouped.map((g) => (
@@ -154,13 +159,22 @@ function ChannelView({ sector }: { sector: AppSector }) {
                 const mine = m.user_id === user?.id;
                 return (
                   <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                    <div
+                      className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${mine ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+                    >
                       {!mine && (
-                        <div className="text-[10px] font-medium opacity-80 mb-0.5">{m.author_name ?? "Usuário"}</div>
+                        <div className="text-[10px] font-medium opacity-80 mb-0.5">
+                          {m.author_name ?? "Usuário"}
+                        </div>
                       )}
-                      <div className="whitespace-pre-wrap break-words">{m.body}</div>
-                      <div className={`text-[10px] mt-1 ${mine ? "opacity-70" : "text-muted-foreground"}`}>
-                        {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                      <div className="whitespace-pre-wrap wrap-break-word">{m.body}</div>
+                      <div
+                        className={`text-[10px] mt-1 ${mine ? "opacity-70" : "text-muted-foreground"}`}
+                      >
+                        {new Date(m.created_at).toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </div>
                     </div>
                   </div>
@@ -181,9 +195,10 @@ function ChannelView({ sector }: { sector: AppSector }) {
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder={`Mensagem para #${LABEL[sector]}`}
+          placeholder="Mensagem para a comunidade"
           className="flex-1 bg-muted/40 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary"
         />
+
         <button
           type="submit"
           disabled={!text.trim() || send.isPending}

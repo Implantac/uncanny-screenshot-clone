@@ -48,15 +48,34 @@ export function CostVariancePanel() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <SummaryCard label="Custo teórico" value={fmt(summary.theoretical)} />
-        <SummaryCard label="Custo real estimado" value={fmt(summary.real)} tone={summary.real > summary.theoretical ? "warning" : "success"} />
-        <SummaryCard label="Variação" value={`${summary.variancePct >= 0 ? "+" : ""}${summary.variancePct.toFixed(1)}%`} tone={summary.variancePct > 5 ? "destructive" : summary.variancePct < -2 ? "success" : "default"} />
-        <SummaryCard label="Perdas (refugo)" value={fmt(summary.loss)} tone={summary.loss > 0 ? "destructive" : "default"} />
+        <SummaryCard
+          label="Custo real estimado"
+          value={fmt(summary.real)}
+          tone={summary.real > summary.theoretical ? "warning" : "success"}
+        />
+        <SummaryCard
+          label="Variação"
+          value={`${summary.variancePct >= 0 ? "+" : ""}${summary.variancePct.toFixed(1)}%`}
+          tone={
+            summary.variancePct > 5
+              ? "destructive"
+              : summary.variancePct < -2
+                ? "success"
+                : "default"
+          }
+        />
+        <SummaryCard
+          label="Perdas (refugo)"
+          value={fmt(summary.loss)}
+          tone={summary.loss > 0 ? "destructive" : "default"}
+        />
       </div>
 
       {summary.noSheet > 0 && (
         <div className="flex items-center gap-2 text-xs text-warning bg-warning/10 border border-warning/20 rounded-lg px-3 py-2">
           <FileWarning className="size-3.5" />
-          {summary.noSheet} de {summary.total} OPs sem ficha técnica aprovada — custos teóricos zerados nestas linhas.
+          {summary.noSheet} de {summary.total} OPs sem ficha técnica aprovada — custos teóricos
+          zerados nestas linhas.
         </div>
       )}
 
@@ -77,9 +96,23 @@ export function CostVariancePanel() {
               </tr>
             </thead>
             <tbody>
-              {isLoading && <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">Carregando…</td></tr>}
-              {!isLoading && sorted.length === 0 && <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">Sem OPs na janela.</td></tr>}
-              {sorted.slice(0, 150).map((r) => <Row key={r.order_id} r={r} />)}
+              {isLoading && (
+                <tr>
+                  <td colSpan={9} className="p-8 text-center text-muted-foreground">
+                    Carregando…
+                  </td>
+                </tr>
+              )}
+              {!isLoading && sorted.length === 0 && (
+                <tr>
+                  <td colSpan={9} className="p-8 text-center text-muted-foreground">
+                    Sem OPs na janela.
+                  </td>
+                </tr>
+              )}
+              {sorted.slice(0, 150).map((r) => (
+                <Row key={r.order_id} r={r} />
+              ))}
             </tbody>
           </table>
         </div>
@@ -96,32 +129,74 @@ function Row({ r }: { r: CostVarianceRow }) {
       <td className="px-3 py-2 font-mono text-xs">{r.code}</td>
       <td className="px-3 py-2 truncate max-w-[220px]">
         {r.product_name ?? <span className="text-muted-foreground">(sem produto)</span>}
-        <div className="text-[10px] text-muted-foreground">{r.product_sku ?? "—"} · {r.stage}</div>
+        <div className="text-[10px] text-muted-foreground">
+          {r.product_sku ?? "—"} · {r.stage}
+        </div>
       </td>
       <td className="px-3 py-2 text-right">{r.quantity}</td>
       <td className="px-3 py-2 text-right text-muted-foreground">{fmt(r.theoretical_total)}</td>
       <td className="px-3 py-2 text-right font-medium">{fmt(r.real_total)}</td>
-      <td className={`px-3 py-2 text-right ${r.real_loss > 0 ? "text-destructive" : "text-muted-foreground"}`}>{fmt(r.real_loss)}</td>
-      <td className={`px-3 py-2 text-right font-semibold ${danger ? "text-destructive" : good ? "text-success" : ""}`}>{fmt(r.variance)}</td>
-      <td className={`px-3 py-2 text-right ${danger ? "text-destructive" : good ? "text-success" : "text-muted-foreground"}`}>
-        {r.variance_pct >= 0 ? "+" : ""}{r.variance_pct.toFixed(1)}%
+      <td
+        className={`px-3 py-2 text-right ${r.real_loss > 0 ? "text-destructive" : "text-muted-foreground"}`}
+      >
+        {fmt(r.real_loss)}
+      </td>
+      <td
+        className={`px-3 py-2 text-right font-semibold ${danger ? "text-destructive" : good ? "text-success" : ""}`}
+      >
+        {fmt(r.variance)}
+      </td>
+      <td
+        className={`px-3 py-2 text-right ${danger ? "text-destructive" : good ? "text-success" : "text-muted-foreground"}`}
+      >
+        {r.variance_pct >= 0 ? "+" : ""}
+        {r.variance_pct.toFixed(1)}%
       </td>
       <td className="px-3 py-2">
         <div className="flex flex-wrap gap-1 text-[10px]">
-          {!r.has_tech_sheet && <span className="px-1.5 py-0.5 rounded bg-warning/15 text-warning">sem ficha</span>}
-          {!r.has_real_consumption && r.has_tech_sheet && <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground">sem consumo</span>}
-          {r.occurrences.refugo > 0 && <span className="px-1.5 py-0.5 rounded bg-destructive/15 text-destructive flex items-center gap-1"><AlertTriangle className="size-2.5" />refugo {r.occurrences.refugo}</span>}
-          {r.occurrences.retrabalho > 0 && <span className="px-1.5 py-0.5 rounded bg-warning/15 text-warning">retrab. {r.occurrences.retrabalho}</span>}
-          {r.has_tech_sheet && r.has_real_consumption && r.occurrences.total === 0 && Math.abs(r.variance_pct) <= 2 && (
-            <span className="px-1.5 py-0.5 rounded bg-success/15 text-success flex items-center gap-1"><CheckCircle2 className="size-2.5" />no alvo</span>
+          {!r.has_tech_sheet && (
+            <span className="px-1.5 py-0.5 rounded bg-warning/15 text-warning">sem ficha</span>
           )}
+          {!r.has_real_consumption && r.has_tech_sheet && (
+            <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+              sem consumo
+            </span>
+          )}
+          {r.occurrences.refugo > 0 && (
+            <span className="px-1.5 py-0.5 rounded bg-destructive/15 text-destructive flex items-center gap-1">
+              <AlertTriangle className="size-2.5" />
+              refugo {r.occurrences.refugo}
+            </span>
+          )}
+          {r.occurrences.retrabalho > 0 && (
+            <span className="px-1.5 py-0.5 rounded bg-warning/15 text-warning">
+              retrab. {r.occurrences.retrabalho}
+            </span>
+          )}
+          {r.has_tech_sheet &&
+            r.has_real_consumption &&
+            r.occurrences.total === 0 &&
+            Math.abs(r.variance_pct) <= 2 && (
+              <span className="px-1.5 py-0.5 rounded bg-success/15 text-success flex items-center gap-1">
+                <CheckCircle2 className="size-2.5" />
+                no alvo
+              </span>
+            )}
         </div>
       </td>
     </tr>
   );
 }
 
-function SummaryCard({ label, value, tone = "default" }: { label: string; value: string; tone?: "default" | "success" | "warning" | "destructive" }) {
+function SummaryCard({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  tone?: "default" | "success" | "warning" | "destructive";
+}) {
   const tones = {
     default: "",
     success: "text-success",

@@ -11,7 +11,9 @@ export const listDayProduction = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: rows, error } = await supabase
       .from("production_orders")
-      .select("id, code, owner_id, quantity, priority, due_date, stage, stage_updated_at, batch_code, outsourced, product_id, supplier_id, products(name, sku, image_url, cost_price, sell_price), suppliers(name)")
+      .select(
+        "id, code, owner_id, quantity, priority, due_date, stage, stage_updated_at, batch_code, outsourced, product_id, supplier_id, products(name, sku, image_url, cost_price, sell_price), suppliers(name)",
+      )
       .eq("owner_id", userId)
       .eq("stage", data.stage as any)
       .neq("status", "concluida")
@@ -20,7 +22,9 @@ export const listDayProduction = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const list = rows ?? [];
 
-    const skus = Array.from(new Set(list.map((r: any) => r.products?.sku).filter(Boolean))) as string[];
+    const skus = Array.from(
+      new Set(list.map((r: any) => r.products?.sku).filter(Boolean)),
+    ) as string[];
     if (skus.length === 0) return list;
 
     const since30 = new Date(Date.now() - 30 * 86400000).toISOString();
@@ -28,16 +32,39 @@ export const listDayProduction = createServerFn({ method: "POST" })
     const since90 = new Date(Date.now() - 90 * 86400000).toISOString();
 
     const [s30, s7, s90, inv] = await Promise.all([
-      supabase.from("erp_sales_mirror").select("sku, quantity").eq("owner_id", userId).in("sku", skus).gte("sold_at", since30),
-      supabase.from("erp_sales_mirror").select("sku, quantity").eq("owner_id", userId).in("sku", skus).gte("sold_at", since7),
-      supabase.from("erp_sales_mirror").select("sku, quantity").eq("owner_id", userId).in("sku", skus).gte("sold_at", since90),
-      supabase.from("erp_inventory_mirror").select("sku, balance").eq("owner_id", userId).in("sku", skus),
+      supabase
+        .from("erp_sales_mirror")
+        .select("sku, quantity")
+        .eq("owner_id", userId)
+        .in("sku", skus)
+        .gte("sold_at", since30),
+      supabase
+        .from("erp_sales_mirror")
+        .select("sku, quantity")
+        .eq("owner_id", userId)
+        .in("sku", skus)
+        .gte("sold_at", since7),
+      supabase
+        .from("erp_sales_mirror")
+        .select("sku, quantity")
+        .eq("owner_id", userId)
+        .in("sku", skus)
+        .gte("sold_at", since90),
+      supabase
+        .from("erp_inventory_mirror")
+        .select("sku, balance")
+        .eq("owner_id", userId)
+        .in("sku", skus),
     ]);
 
     const sum = (rs: any[] | null | undefined, sku: string) =>
-      (rs ?? []).filter((r: any) => r.sku === sku).reduce((a: number, r: any) => a + Number(r.quantity ?? 0), 0);
+      (rs ?? [])
+        .filter((r: any) => r.sku === sku)
+        .reduce((a: number, r: any) => a + Number(r.quantity ?? 0), 0);
     const stockOf = (sku: string) =>
-      (inv.data ?? []).filter((r: any) => r.sku === sku).reduce((a: number, r: any) => a + Number(r.balance ?? 0), 0);
+      (inv.data ?? [])
+        .filter((r: any) => r.sku === sku)
+        .reduce((a: number, r: any) => a + Number(r.balance ?? 0), 0);
 
     const scored = list.map((r: any) => {
       const sku = r.products?.sku;
@@ -68,7 +95,9 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
       supabase.from("v_supplier_wip").select("*").eq("owner_id", userId),
       supabase
         .from("service_orders")
-        .select("id, code, supplier_id, production_order_id, quantity, qty_received, sent_at, due_at, status, from_stage, to_stage, line_type, variant_id, package_id, suppliers(name), production_orders(code, batch_code), product_variants(sku, color, size), production_packages(code)")
+        .select(
+          "id, code, supplier_id, production_order_id, quantity, qty_received, sent_at, due_at, status, from_stage, to_stage, line_type, variant_id, package_id, suppliers(name), production_orders(code, batch_code), product_variants(sku, color, size), production_packages(code)",
+        )
         .eq("owner_id", userId)
         .in("status", ["enviada", "em_andamento"])
         .order("sent_at", { ascending: true, nullsFirst: false }),
@@ -78,28 +107,39 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
 
     const suppliersById: Record<string, any> = {};
     for (const w of wip ?? []) {
-      suppliersById[w.supplier_id!] = { ...w, supplier_name: null as string | null, orders: [] as any[] };
+      suppliersById[w.supplier_id!] = {
+        ...w,
+        supplier_name: null as string | null,
+        orders: [] as any[],
+      };
     }
     for (const o of open ?? []) {
       const sid = o.supplier_id!;
       if (!suppliersById[sid]) continue;
       suppliersById[sid].supplier_name = (o as any).suppliers?.name ?? null;
-      suppliersById[sid].second_line_count = (suppliersById[sid].second_line_count ?? 0) + ((o as any).line_type === "segunda_linha" ? 1 : 0);
+      suppliersById[sid].second_line_count =
+        (suppliersById[sid].second_line_count ?? 0) +
+        ((o as any).line_type === "segunda_linha" ? 1 : 0);
       suppliersById[sid].orders.push(o);
     }
-    return Object.values(suppliersById).sort((a: any, b: any) => b.pieces_at_supplier - a.pieces_at_supplier);
+    return Object.values(suppliersById).sort(
+      (a: any, b: any) => b.pieces_at_supplier - a.pieces_at_supplier,
+    );
   });
 
 /** Cria uma OP a partir da sugestão do motor de necessidade (1 clique). */
 export const createOpFromSuggestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { productId: string; quantity: number; reason?: string; priority?: number }) =>
-    z.object({
-      productId: z.string().uuid(),
-      quantity: z.number().int().positive(),
-      reason: z.string().optional(),
-      priority: z.number().int().min(0).max(3).optional(),
-    }).parse(i),
+  .inputValidator(
+    (i: { productId: string; quantity: number; reason?: string; priority?: number }) =>
+      z
+        .object({
+          productId: z.string().uuid(),
+          quantity: z.number().int().positive(),
+          reason: z.string().optional(),
+          priority: z.number().int().min(0).max(3).optional(),
+        })
+        .parse(i),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -123,7 +163,9 @@ export const createOpFromSuggestion = createServerFn({ method: "POST" })
         status: "aguardando",
         stage: "cad",
         priority: data.priority ?? 2,
-        notes: data.reason ? `Sugerida pelo motor: ${data.reason}` : "Sugerida pelo motor de necessidade",
+        notes: data.reason
+          ? `Sugerida pelo motor: ${data.reason}`
+          : "Sugerida pelo motor de necessidade",
       } as any)
       .select("id, code")
       .single();

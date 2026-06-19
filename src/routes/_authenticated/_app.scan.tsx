@@ -86,7 +86,9 @@ function ScanPage() {
           <ArrowLeft className="size-5" />
         </Link>
         <div className="flex-1">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Chão de fábrica</div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Chão de fábrica
+          </div>
           <div className="text-base font-semibold">Escanear lote</div>
         </div>
         <ScanLine className="size-5 text-muted-foreground" />

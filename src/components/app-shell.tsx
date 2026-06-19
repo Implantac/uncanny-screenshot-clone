@@ -4,7 +4,13 @@ import logoAsset from "@/assets/logo.png.asset.json";
 import { CommandPalette } from "./command-palette";
 import { NotificationsBell } from "./notifications-bell";
 import { SectorChatButton } from "./sector-chat";
-import { MODULES, MODULE_GROUPS, moduleAllowed, type ModuleDef, type ModuleGroup } from "@/lib/modules";
+import {
+  MODULES,
+  MODULE_GROUPS,
+  moduleAllowed,
+  type ModuleDef,
+  type ModuleGroup,
+} from "@/lib/modules";
 import { useSectors } from "@/hooks/use-sectors";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,7 +21,11 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { useState, useEffect, useMemo, type ReactNode } from "react";
 
 const ROLE_LABEL: Record<string, string> = {
-  admin: "Admin", gerente: "Gerente", designer: "Designer", comprador: "Comprador", vendedor: "Vendedor",
+  admin: "Admin",
+  gerente: "Gerente",
+  designer: "Designer",
+  comprador: "Comprador",
+  vendedor: "Vendedor",
 };
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -28,7 +38,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
-  useEffect(() => { setMobileOpen(false); }, [active]);
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [active]);
 
   // Group → modules e qual grupo contém a rota ativa
   const grouped = useMemo(() => {
@@ -65,7 +77,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <div className="leading-tight">
           <div className="text-sm font-semibold tracking-tight">USE MODA</div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Fashion OS</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            Fashion OS
+          </div>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1 text-sm">
@@ -109,13 +123,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               >
                 {isOpen ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
                 <span className="flex-1 text-left">{group}</span>
-                <span className="text-[10px] font-normal text-muted-foreground/70">{totalCount}</span>
+                <span className="text-[10px] font-normal text-muted-foreground/70">
+                  {totalCount}
+                </span>
               </button>
-              {isOpen && (
-                <ul className="space-y-0.5 mt-1 mb-2">
-                  {bucket.items.map(renderItem)}
-                </ul>
-              )}
+              {isOpen && <ul className="space-y-0.5 mt-1 mb-2">{bucket.items.map(renderItem)}</ul>}
             </div>
           );
         })}
@@ -125,9 +137,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="size-2 rounded-full bg-success animate-pulse" />
           Sistema operacional
         </div>
-        <div className="mt-1 text-[11px] text-muted-foreground">
-          18 módulos · 99.98% uptime
-        </div>
+        <div className="mt-1 text-[11px] text-muted-foreground">18 módulos · 99.98% uptime</div>
       </div>
     </>
   );
@@ -139,7 +149,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 h-screen">
-
         <header className="h-16 shrink-0 border-b border-border flex items-center gap-2 sm:gap-3 px-3 sm:px-5 bg-background/80 backdrop-blur z-10">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
@@ -147,7 +156,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Menu className="size-5" />
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-72 bg-sidebar border-sidebar-border flex flex-col">
+            <SheetContent
+              side="left"
+              className="p-0 w-72 bg-sidebar border-sidebar-border flex flex-col"
+            >
               <SheetTitle className="sr-only">Menu</SheetTitle>
               {sidebarContent}
             </SheetContent>
@@ -164,9 +176,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           <SectorChatButton />
           <NotificationsBell />
           <div className="flex items-center gap-2 pl-2 sm:pl-3 sm:ml-1 sm:border-l border-border">
-            <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">{initials || "U"}</div>
+            <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">
+              {initials || "U"}
+            </div>
             <div className="text-xs leading-tight hidden md:block">
-              <div className="font-medium truncate max-w-[120px]">{user?.user_metadata?.full_name || user?.email}</div>
+              <div className="font-medium truncate max-w-[120px]">
+                {user?.user_metadata?.full_name || user?.email}
+              </div>
               <div className="text-muted-foreground">{ROLE_LABEL[primary] ?? "Designer"}</div>
             </div>
             <button
@@ -183,4 +199,3 @@ export function AppShell({ children }: { children: ReactNode }) {
     </div>
   );
 }
-

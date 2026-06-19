@@ -6,7 +6,7 @@ const Input = z.object({ q: z.string().trim().max(80).optional().default("") });
 
 export const lookupCommandRefs = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => Input.parse(data))
+  .validator((data) => Input.parse(data))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const q = data.q;
@@ -32,7 +32,10 @@ export const lookupCommandRefs = createServerFn({ method: "POST" })
     ]);
 
     return {
-      products: (products ?? []).map((p: any) => ({ sku: p.sku as string, name: p.name as string })),
+      products: (products ?? []).map((p: any) => ({
+        sku: p.sku as string,
+        name: p.name as string,
+      })),
       suppliers: (suppliers ?? []).map((s: any) => s.name as string),
     };
   });

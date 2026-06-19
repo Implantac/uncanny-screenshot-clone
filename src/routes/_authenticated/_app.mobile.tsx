@@ -15,10 +15,14 @@ export const Route = createFileRoute("/_authenticated/_app/mobile")({
 });
 
 const features = [
-  { icon: ScanLine, t: "Leitura de QR/Barcode", d: "Apontamento instantâneo em produção e estoque" },
-  { icon: Wifi,     t: "Modo offline",          d: "Funciona sem conexão e sincroniza ao reconectar" },
-  { icon: Bell,     t: "Push em tempo real",    d: "Notificações de pedidos, aprovações e alertas" },
-  { icon: MapPin,   t: "Geolocalização",        d: "Check-in de visitas e roteiros de vendedores" },
+  {
+    icon: ScanLine,
+    t: "Leitura de QR/Barcode",
+    d: "Apontamento instantâneo em produção e estoque",
+  },
+  { icon: Wifi, t: "Modo offline", d: "Funciona sem conexão e sincroniza ao reconectar" },
+  { icon: Bell, t: "Push em tempo real", d: "Notificações de pedidos, aprovações e alertas" },
+  { icon: MapPin, t: "Geolocalização", d: "Check-in de visitas e roteiros de vendedores" },
 ];
 
 function Mobile() {
@@ -42,7 +46,9 @@ function Mobile() {
         </div>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Aplicativo Mobile</h1>
-          <p className="text-sm text-muted-foreground">App nativo iOS e Android para times em movimento</p>
+          <p className="text-sm text-muted-foreground">
+            App nativo iOS e Android para times em movimento
+          </p>
         </div>
       </div>
 
@@ -91,7 +97,6 @@ function Mobile() {
 
         <div className="mx-auto w-full max-w-[280px]">
           <div className="w-full aspect-[280/560] rounded-[40px] bg-gradient-to-b from-zinc-800 to-zinc-950 p-2.5 shadow-[var(--shadow-elevated)] border border-white/10">
-
             <div className="w-full h-full rounded-[32px] bg-gradient-to-br from-background to-card overflow-hidden relative">
               <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-5 bg-black rounded-full" />
               <div className="pt-12 px-5">
@@ -107,14 +112,18 @@ function Mobile() {
                 <div className="mt-5 space-y-2">
                   {["Apontar produção", "Conferir estoque", "Novo pedido B2B"].map((t, i) => (
                     <div key={t} className="flex items-center gap-3 p-3 rounded-xl bg-muted/60">
-                      <div className="size-8 rounded-lg bg-primary/15 text-primary grid place-items-center text-xs font-bold">{i+1}</div>
+                      <div className="size-8 rounded-lg bg-primary/15 text-primary grid place-items-center text-xs font-bold">
+                        {i + 1}
+                      </div>
                       <div className="text-sm font-medium">{t}</div>
                     </div>
                   ))}
                 </div>
 
                 <div className="mt-5 flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1"><Star className="size-3.5 text-warning fill-warning" /> 4.8</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Star className="size-3.5 text-warning fill-warning" /> 4.8
+                  </span>
                   <span>v2.4.1</span>
                 </div>
               </div>

@@ -50,10 +50,12 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
 
         let okCount = 0;
         for (const agent of due) {
-          let output = ""; let ok = true;
+          let output = "";
+          let ok = true;
           try {
             const res = await generateText({
-              model, system: SYSTEM,
+              model,
+              system: SYSTEM,
               prompt: `## Agente\nNome: ${agent.name}\nTarefa: ${agent.description ?? "(sem descrição)"}\n\nExecute agora.`,
               temperature: 0.4,
             });
@@ -65,7 +67,10 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
           }
 
           const { data: full } = await supabaseAdmin
-            .from("ai_agents").select("executions, success_rate, schedule_cron").eq("id", agent.id).single();
+            .from("ai_agents")
+            .select("executions, success_rate, schedule_cron")
+            .eq("id", agent.id)
+            .single();
           const prevExec = full?.executions ?? 0;
           const prevRate = Number(full?.success_rate ?? 0);
           const nextExec = prevExec + 1;
@@ -73,17 +78,23 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
           const nextRate = Math.round((successes / nextExec) * 1000) / 10;
           const next = nextRunFromCron(full?.schedule_cron ?? null);
 
-          await supabaseAdmin.from("ai_agents").update({
-            last_output: output,
-            last_run_at: new Date().toISOString(),
-            executions: nextExec,
-            success_rate: nextRate,
-            next_run_at: next?.toISOString() ?? null,
-          }).eq("id", agent.id);
+          await supabaseAdmin
+            .from("ai_agents")
+            .update({
+              last_output: output,
+              last_run_at: new Date().toISOString(),
+              executions: nextExec,
+              success_rate: nextRate,
+              next_run_at: next?.toISOString() ?? null,
+            })
+            .eq("id", agent.id);
 
           await supabaseAdmin.from("audit_logs").insert({
-            user_id: agent.owner_id, entity: "ai_agents", entity_id: agent.id,
-            action: ok ? "scheduled_run" : "scheduled_run_failed", payload: { name: agent.name },
+            user_id: agent.owner_id,
+            entity: "ai_agents",
+            entity_id: agent.id,
+            action: ok ? "scheduled_run" : "scheduled_run_failed",
+            payload: { name: agent.name },
           });
         }
 

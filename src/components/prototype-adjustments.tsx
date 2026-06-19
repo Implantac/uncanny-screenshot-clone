@@ -2,18 +2,37 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { AlertTriangle, Plus, CheckCircle2, X, Image as ImageIcon, Video } from "lucide-react";
 
 export type AdjustmentSector =
-  | "modelagem" | "corte" | "silk" | "bordado" | "costura" | "lavanderia" | "acabamento" | "aprovacao";
+  | "modelagem"
+  | "corte"
+  | "silk"
+  | "bordado"
+  | "costura"
+  | "lavanderia"
+  | "acabamento"
+  | "aprovacao";
 
 export const SECTORS: { key: AdjustmentSector; label: string }[] = [
   { key: "modelagem", label: "Modelagem" },
@@ -72,7 +91,9 @@ export function PrototypeAdjustmentsButton({
       <Button
         size="sm"
         variant={needsAdjustment ? "default" : "ghost"}
-        className={needsAdjustment ? "h-7 px-2 bg-amber-500 hover:bg-amber-500/90 text-white" : "h-7 px-2"}
+        className={
+          needsAdjustment ? "h-7 px-2 bg-amber-500 hover:bg-amber-500/90 text-white" : "h-7 px-2"
+        }
         onClick={() => setOpen(true)}
         title="Ajustes"
       >
@@ -93,7 +114,11 @@ export function PrototypeAdjustmentsButton({
 }
 
 function AdjustmentsDialog({
-  open, onOpenChange, prototypeId, prototypeCode, defaultSector,
+  open,
+  onOpenChange,
+  prototypeId,
+  prototypeCode,
+  defaultSector,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -137,7 +162,9 @@ function AdjustmentsDialog({
         notes: notes.trim() || null,
         attachments,
       };
-      const { error } = await supabase.from("prototype_adjustments" as never).insert(payload as never);
+      const { error } = await supabase
+        .from("prototype_adjustments" as never)
+        .insert(payload as never);
       if (error) throw error;
 
       // sinaliza no protótipo (último ajuste em aberto)
@@ -153,7 +180,9 @@ function AdjustmentsDialog({
         .eq("id", prototypeId);
     },
     onSuccess: () => {
-      setReason(""); setNotes(""); setAttachments([]);
+      setReason("");
+      setNotes("");
+      setAttachments([]);
       qc.invalidateQueries({ queryKey: ["prototype-adjustments", prototypeId] });
       qc.invalidateQueries({ queryKey: ["prototypes"] });
       toast.success("Ajuste registrado");
@@ -204,7 +233,8 @@ function AdjustmentsDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="size-5 text-amber-500" />
-            Ajustes do protótipo <span className="font-mono text-sm text-muted-foreground">{prototypeCode}</span>
+            Ajustes do protótipo{" "}
+            <span className="font-mono text-sm text-muted-foreground">{prototypeCode}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -213,23 +243,39 @@ function AdjustmentsDialog({
             <div>
               <Label className="text-xs">Setor</Label>
               <Select value={sector} onValueChange={(v) => setSector(v as AdjustmentSector)}>
-                <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar" />
+                </SelectTrigger>
                 <SelectContent>
-                  {SECTORS.map((s) => <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>)}
+                  {SECTORS.map((s) => (
+                    <SelectItem key={s.key} value={s.key}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label className="text-xs">Anexo (URL foto/vídeo)</Label>
               <div className="flex gap-1">
-                <Input value={attachInput} onChange={(e) => setAttachInput(e.target.value)} placeholder="https://…" />
-                <Button type="button" variant="outline" onClick={addAttachment}><Plus className="size-4" /></Button>
+                <Input
+                  value={attachInput}
+                  onChange={(e) => setAttachInput(e.target.value)}
+                  placeholder="https://…"
+                />
+                <Button type="button" variant="outline" onClick={addAttachment}>
+                  <Plus className="size-4" />
+                </Button>
               </div>
             </div>
           </div>
           <div>
             <Label className="text-xs">Motivo do ajuste *</Label>
-            <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Ex.: barra torta, cor fora do padrão…" />
+            <Input
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Ex.: barra torta, cor fora do padrão…"
+            />
           </div>
           <div>
             <Label className="text-xs">Observações</Label>
@@ -239,9 +285,16 @@ function AdjustmentsDialog({
             <div className="flex flex-wrap gap-2">
               {attachments.map((a, i) => (
                 <Badge key={i} variant="outline" className="gap-1">
-                  {a.kind === "video" ? <Video className="size-3" /> : <ImageIcon className="size-3" />}
+                  {a.kind === "video" ? (
+                    <Video className="size-3" />
+                  ) : (
+                    <ImageIcon className="size-3" />
+                  )}
                   <span className="max-w-[200px] truncate">{a.url}</span>
-                  <button onClick={() => setAttachments((arr) => arr.filter((_, j) => j !== i))} aria-label="remover">
+                  <button
+                    onClick={() => setAttachments((arr) => arr.filter((_, j) => j !== i))}
+                    aria-label="remover"
+                  >
                     <X className="size-3" />
                   </button>
                 </Badge>
@@ -257,9 +310,14 @@ function AdjustmentsDialog({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <div className="text-xs font-semibold text-muted-foreground uppercase">Timeline do protótipo</div>
+            <div className="text-xs font-semibold text-muted-foreground uppercase">
+              Timeline do protótipo
+            </div>
             {defaultSector && (
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px]">
+              <Badge
+                variant="outline"
+                className="bg-primary/10 text-primary border-primary/30 text-[10px]"
+              >
                 Setor atual: {SECTORS.find((s) => s.key === defaultSector)?.label ?? defaultSector}
               </Badge>
             )}
@@ -277,24 +335,37 @@ function AdjustmentsDialog({
                   a.status === "concluido"
                     ? "bg-emerald-500 border-emerald-500"
                     : a.status === "em_andamento"
-                    ? "bg-blue-500 border-blue-500 animate-pulse"
-                    : a.status === "cancelado"
-                    ? "bg-muted-foreground border-muted-foreground"
-                    : "bg-amber-500 border-amber-500";
+                      ? "bg-blue-500 border-blue-500 animate-pulse"
+                      : a.status === "cancelado"
+                        ? "bg-muted-foreground border-muted-foreground"
+                        : "bg-amber-500 border-amber-500";
                 return (
                   <li key={a.id} className="pl-5 relative">
-                    <span className={`absolute -left-[7px] top-2 size-3 rounded-full border-2 ${dot}`} />
+                    <span
+                      className={`absolute -left-[7px] top-2 size-3 rounded-full border-2 ${dot}`}
+                    />
                     <div className="rounded-lg border border-border p-3 space-y-1.5 bg-card">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline" className={STATUS_TONE[a.status]}>{STATUS_LABEL[a.status]}</Badge>
-                          {a.sector && <Badge variant="outline">{SECTORS.find((s) => s.key === a.sector)?.label ?? a.sector}</Badge>}
+                          <Badge variant="outline" className={STATUS_TONE[a.status]}>
+                            {STATUS_LABEL[a.status]}
+                          </Badge>
+                          {a.sector && (
+                            <Badge variant="outline">
+                              {SECTORS.find((s) => s.key === a.sector)?.label ?? a.sector}
+                            </Badge>
+                          )}
                           <span className="text-[10px] text-muted-foreground font-mono">
                             {new Date(a.created_at).toLocaleString("pt-BR")}
                           </span>
                         </div>
                         {(a.status === "aberto" || a.status === "em_andamento") && (
-                          <Button size="sm" variant="ghost" className="h-7" onClick={() => resolve.mutate(a.id)}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7"
+                            onClick={() => resolve.mutate(a.id)}
+                          >
                             <CheckCircle2 className="size-3.5 mr-1" /> Concluir
                           </Button>
                         )}
@@ -316,7 +387,11 @@ function AdjustmentsDialog({
                               rel="noreferrer"
                               className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border border-border hover:bg-muted/40"
                             >
-                              {att.kind === "video" ? <Video className="size-3" /> : <ImageIcon className="size-3" />}
+                              {att.kind === "video" ? (
+                                <Video className="size-3" />
+                              ) : (
+                                <ImageIcon className="size-3" />
+                              )}
                               <span className="max-w-[160px] truncate">{att.name ?? att.url}</span>
                             </a>
                           ))}

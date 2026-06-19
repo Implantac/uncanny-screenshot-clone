@@ -1,7 +1,14 @@
 // CSV export helper — client-side, no deps.
 function escape(v: unknown): string {
   if (v === null || v === undefined) return "";
-  const s = typeof v === "string" ? v : Array.isArray(v) ? v.join("|") : typeof v === "object" ? JSON.stringify(v) : String(v);
+  const s =
+    typeof v === "string"
+      ? v
+      : Array.isArray(v)
+        ? v.join("|")
+        : typeof v === "object"
+          ? JSON.stringify(v)
+          : String(v);
   return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
@@ -13,7 +20,8 @@ export function exportToCsv<T extends Record<string, unknown>>(
   columns?: CsvColumn<T>[],
 ) {
   if (!rows.length) return;
-  const cols: CsvColumn<T>[] = columns ?? (Object.keys(rows[0]) as (keyof T)[]).map((k) => ({ key: k }));
+  const cols: CsvColumn<T>[] =
+    columns ?? (Object.keys(rows[0]) as (keyof T)[]).map((k) => ({ key: k }));
   const header = cols.map((c) => escape(c.label ?? String(c.key))).join(",");
   const body = rows.map((r) => cols.map((c) => escape(r[c.key])).join(",")).join("\n");
   const csv = "\uFEFF" + header + "\n" + body;

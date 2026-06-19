@@ -1,5 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Cpu, Play, Pause, Plus, Activity, Loader2, Sparkles, MessageCircleQuestion, AlertTriangle, RefreshCw } from "lucide-react";
+import {
+  Cpu,
+  Play,
+  Pause,
+  Plus,
+  Activity,
+  Loader2,
+  Sparkles,
+  MessageCircleQuestion,
+  AlertTriangle,
+  RefreshCw,
+} from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -14,22 +25,76 @@ import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 type Persona = "development" | "pcp" | "marketing";
 const CHIPS: { label: string; persona: Persona; question: string }[] = [
   // Perguntas-chave do prompt mestre (análise, não chat genérico)
-  { label: "Qual coleção vendeu mais?", persona: "marketing", question: "Qual coleção vendeu mais nos últimos 90 dias? Mostre faturamento, ticket médio e top 3 produtos dela." },
-  { label: "Qual produto tem maior margem?", persona: "marketing", question: "Quais são os 5 produtos com maior margem de contribuição hoje? Inclua categoria e coleção de origem." },
-  { label: "Qual lote está atrasado?", persona: "pcp", question: "Quais lotes de produção estão atrasados ou com risco real de atraso? Para cada um, indique o setor que está segurando e a ação imediata." },
-  { label: "Qual produto repetir?", persona: "marketing", question: "Quais produtos do meu histórico devo repetir na próxima coleção? Use sell-through, margem e velocidade de giro como critério." },
-  { label: "Qual coleção deu prejuízo?", persona: "marketing", question: "Alguma coleção encerrou no vermelho (custo > faturamento)? Liste, com investimento, faturamento e o que aprender para a próxima." },
+  {
+    label: "Qual coleção vendeu mais?",
+    persona: "marketing",
+    question:
+      "Qual coleção vendeu mais nos últimos 90 dias? Mostre faturamento, ticket médio e top 3 produtos dela.",
+  },
+  {
+    label: "Qual produto tem maior margem?",
+    persona: "marketing",
+    question:
+      "Quais são os 5 produtos com maior margem de contribuição hoje? Inclua categoria e coleção de origem.",
+  },
+  {
+    label: "Qual lote está atrasado?",
+    persona: "pcp",
+    question:
+      "Quais lotes de produção estão atrasados ou com risco real de atraso? Para cada um, indique o setor que está segurando e a ação imediata.",
+  },
+  {
+    label: "Qual produto repetir?",
+    persona: "marketing",
+    question:
+      "Quais produtos do meu histórico devo repetir na próxima coleção? Use sell-through, margem e velocidade de giro como critério.",
+  },
+  {
+    label: "Qual coleção deu prejuízo?",
+    persona: "marketing",
+    question:
+      "Alguma coleção encerrou no vermelho (custo > faturamento)? Liste, com investimento, faturamento e o que aprender para a próxima.",
+  },
   // Perguntas operacionais
-  { label: "Top 3 gargalos do PCP hoje", persona: "pcp", question: "Quais são os 3 maiores gargalos do PCP hoje, por setor, e a ação imediata para cada um?" },
-  { label: "Quais protótipos estão travando coleção?", persona: "development", question: "Quais protótipos estão travados há mais tempo e como destravar cada um?" },
-  { label: "Onde investir em marketing nesta semana?", persona: "marketing", question: "Onde devo investir em marketing nesta semana? Liste 3 ações com retorno esperado." },
-  { label: "Top produtos sub-aproveitados", persona: "marketing", question: "Quais produtos do meu acervo estão sub-aproveitados (vendas vs estoque) e como impulsionar?" },
-  { label: "O que aprovar primeiro hoje?", persona: "development", question: "Liste em ordem o que devo aprovar/decidir primeiro hoje no desenvolvimento, com justificativa." },
-  { label: "Influenciadores com melhor ROI", persona: "marketing", question: "Quais influenciadores trouxeram melhor ROI e quais devo repetir/cortar?" },
-  { label: "Risco de não bater a meta do mês", persona: "pcp", question: "Vou bater a meta de produção do mês? Onde estão os riscos e como mitigar?" },
+  {
+    label: "Top 3 gargalos do PCP hoje",
+    persona: "pcp",
+    question:
+      "Quais são os 3 maiores gargalos do PCP hoje, por setor, e a ação imediata para cada um?",
+  },
+  {
+    label: "Quais protótipos estão travando coleção?",
+    persona: "development",
+    question: "Quais protótipos estão travados há mais tempo e como destravar cada um?",
+  },
+  {
+    label: "Onde investir em marketing nesta semana?",
+    persona: "marketing",
+    question: "Onde devo investir em marketing nesta semana? Liste 3 ações com retorno esperado.",
+  },
+  {
+    label: "Top produtos sub-aproveitados",
+    persona: "marketing",
+    question:
+      "Quais produtos do meu acervo estão sub-aproveitados (vendas vs estoque) e como impulsionar?",
+  },
+  {
+    label: "O que aprovar primeiro hoje?",
+    persona: "development",
+    question:
+      "Liste em ordem o que devo aprovar/decidir primeiro hoje no desenvolvimento, com justificativa.",
+  },
+  {
+    label: "Influenciadores com melhor ROI",
+    persona: "marketing",
+    question: "Quais influenciadores trouxeram melhor ROI e quais devo repetir/cortar?",
+  },
+  {
+    label: "Risco de não bater a meta do mês",
+    persona: "pcp",
+    question: "Vou bater a meta de produção do mês? Onde estão os riscos e como mitigar?",
+  },
 ];
-
-
 
 export const Route = createFileRoute("/_authenticated/_app/use-ai")({
   head: () => ({
@@ -58,7 +123,10 @@ function UseAI() {
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["ai-agents"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("ai_agents").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("ai_agents")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
@@ -67,7 +135,13 @@ function UseAI() {
   const toggle = useMutation({
     mutationFn: async (a: { id: string; status: string }) => {
       const next = a.status === "ativo" ? "pausado" : "ativo";
-      const { error } = await supabase.from("ai_agents").update({ status: next, last_run_at: next === "ativo" ? new Date().toISOString() : undefined }).eq("id", a.id);
+      const { error } = await supabase
+        .from("ai_agents")
+        .update({
+          status: next,
+          last_run_at: next === "ativo" ? new Date().toISOString() : undefined,
+        })
+        .eq("id", a.id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["ai-agents"] }),
@@ -80,10 +154,20 @@ function UseAI() {
       const name = window.prompt("Nome do agente:");
       if (!name) return;
       const description = window.prompt("Descrição:") ?? "";
-      const { error } = await supabase.from("ai_agents").insert({ owner_id: user.id, name, description, status: "ativo", executions: 0, success_rate: 0 });
+      const { error } = await supabase.from("ai_agents").insert({
+        owner_id: user.id,
+        name,
+        description,
+        status: "ativo",
+        executions: 0,
+        success_rate: 0,
+      });
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai-agents"] }); toast.success("Agente criado"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ai-agents"] });
+      toast.success("Agente criado");
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -110,10 +194,16 @@ function UseAI() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">USE AI</h1>
-            <p className="text-sm text-muted-foreground">{ativos} agentes ativos · {totalExec.toLocaleString("pt-BR")} execuções</p>
+            <p className="text-sm text-muted-foreground">
+              {ativos} agentes ativos · {totalExec.toLocaleString("pt-BR")} execuções
+            </p>
           </div>
         </div>
-        <button onClick={() => create.mutate()} disabled={create.isPending} className="h-9 px-4 rounded-md text-sm font-medium bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)] inline-flex items-center gap-2 disabled:opacity-60">
+        <button
+          onClick={() => create.mutate()}
+          disabled={create.isPending}
+          className="h-9 px-4 rounded-md text-sm font-medium bg-[image:var(--gradient-primary)] text-primary-foreground shadow-[var(--shadow-glow)] inline-flex items-center gap-2 disabled:opacity-60"
+        >
           <Plus className="size-4" /> Novo agente
         </button>
       </div>
@@ -144,48 +234,78 @@ function UseAI() {
         )}
       </div>
 
-
-
       {isLoading ? (
-        <div className="glass rounded-xl p-12 grid place-items-center text-muted-foreground"><Loader2 className="size-5 animate-spin" /></div>
+        <div className="glass rounded-xl p-12 grid place-items-center text-muted-foreground">
+          <Loader2 className="size-5 animate-spin" />
+        </div>
       ) : isError ? (
         <div className="glass rounded-xl p-6 text-sm space-y-3 border-destructive/40">
           <div className="flex items-center gap-2 text-destructive font-medium">
             <AlertTriangle className="size-4" /> Não foi possível carregar os agentes
           </div>
-          <div className="text-xs text-muted-foreground break-words">{(error as Error)?.message ?? "Erro desconhecido"}</div>
-          <button onClick={() => refetch()} disabled={isFetching} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-60">
+          <div className="text-xs text-muted-foreground wrap-break-word">
+            {(error as Error)?.message ?? "Erro desconhecido"}
+          </div>
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-60"
+          >
             <RefreshCw className={`size-3 ${isFetching ? "animate-spin" : ""}`} /> Tentar novamente
           </button>
         </div>
       ) : agentes.length === 0 ? (
-        <div className="glass rounded-xl p-12 text-center text-sm text-muted-foreground">Nenhum agente cadastrado. Crie o primeiro.</div>
+        <div className="glass rounded-xl p-12 text-center text-sm text-muted-foreground">
+          Nenhum agente cadastrado. Crie o primeiro.
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {agentes.map((a) => (
-            <div key={a.id} className="glass rounded-xl p-5 hover:border-primary/40 transition-colors">
+            <div
+              key={a.id}
+              className="glass rounded-xl p-5 hover:border-primary/40 transition-colors"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className={`size-10 rounded-lg grid place-items-center shrink-0 ${a.status === "ativo" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>
-                    {a.status === "ativo" ? <Activity className="size-5" /> : <Pause className="size-5" />}
+                  <div
+                    className={`size-10 rounded-lg grid place-items-center shrink-0 ${a.status === "ativo" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}
+                  >
+                    {a.status === "ativo" ? (
+                      <Activity className="size-5" />
+                    ) : (
+                      <Pause className="size-5" />
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="font-medium truncate">{a.name}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{a.description}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      {a.description}
+                    </div>
                   </div>
                 </div>
-                <button onClick={() => toggle.mutate({ id: a.id, status: a.status })} className="size-8 rounded-md bg-muted hover:bg-muted/70 grid place-items-center text-muted-foreground shrink-0">
-                  {a.status === "ativo" ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
+                <button
+                  onClick={() => toggle.mutate({ id: a.id, status: a.status })}
+                  className="size-8 rounded-md bg-muted hover:bg-muted/70 grid place-items-center text-muted-foreground shrink-0"
+                >
+                  {a.status === "ativo" ? (
+                    <Pause className="size-3.5" />
+                  ) : (
+                    <Play className="size-3.5" />
+                  )}
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-border text-xs">
                 <div>
                   <div className="text-muted-foreground">Execuções</div>
-                  <div className="font-medium tabular-nums mt-0.5">{(a.executions ?? 0).toLocaleString("pt-BR")}</div>
+                  <div className="font-medium tabular-nums mt-0.5">
+                    {(a.executions ?? 0).toLocaleString("pt-BR")}
+                  </div>
                 </div>
                 <div>
                   <div className="text-muted-foreground">Sucesso</div>
-                  <div className="font-medium tabular-nums mt-0.5">{a.status === "ativo" ? `${Number(a.success_rate ?? 0).toFixed(0)}%` : "—"}</div>
+                  <div className="font-medium tabular-nums mt-0.5">
+                    {a.status === "ativo" ? `${Number(a.success_rate ?? 0).toFixed(0)}%` : "—"}
+                  </div>
                 </div>
                 <div>
                   <div className="text-muted-foreground">Última</div>
@@ -196,13 +316,22 @@ function UseAI() {
                 <button
                   onClick={async () => {
                     const cur = a.schedule_cron ?? "";
-                    const v = window.prompt("Expressão cron (ex: */30 * * * *) — vazio para desativar:", cur);
+                    const v = window.prompt(
+                      "Expressão cron (ex: */30 * * * *) — vazio para desativar:",
+                      cur,
+                    );
                     if (v === null) return;
                     const cron = v.trim() || null;
                     const next = cron ? new Date(Date.now() + 60_000).toISOString() : null;
-                    const { error } = await supabase.from("ai_agents").update({ schedule_cron: cron, next_run_at: next }).eq("id", a.id);
+                    const { error } = await supabase
+                      .from("ai_agents")
+                      .update({ schedule_cron: cron, next_run_at: next })
+                      .eq("id", a.id);
                     if (error) toast.error(error.message);
-                    else { toast.success(cron ? "Agendado" : "Agendamento removido"); qc.invalidateQueries({ queryKey: ["ai-agents"] }); }
+                    else {
+                      toast.success(cron ? "Agendado" : "Agendamento removido");
+                      qc.invalidateQueries({ queryKey: ["ai-agents"] });
+                    }
                   }}
                   className="h-8 px-3 rounded-md text-xs border border-border hover:bg-accent inline-flex items-center gap-1.5"
                 >
@@ -213,7 +342,11 @@ function UseAI() {
                   disabled={run.isPending && run.variables === a.id}
                   className="h-8 px-3 rounded-md text-xs font-medium bg-[image:var(--gradient-primary)] text-primary-foreground inline-flex items-center gap-1.5 disabled:opacity-60"
                 >
-                  {run.isPending && run.variables === a.id ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+                  {run.isPending && run.variables === a.id ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="size-3.5" />
+                  )}
                   Executar agora
                 </button>
               </div>
@@ -244,9 +377,20 @@ function ProactiveSuggestions({
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
       const [ordersLate, protosPending, salesRecent] = await Promise.all([
-        supabase.from("production_orders").select("id", { count: "exact", head: true }).lt("due_date", today).neq("status", "concluida").neq("status", "cancelada"),
-        supabase.from("prototypes").select("id", { count: "exact", head: true }).in("stage", ["solicitado", "em_confeccao", "em_prova"]),
-        supabase.from("sales").select("total", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 7 * 86400_000).toISOString()),
+        supabase
+          .from("production_orders")
+          .select("id", { count: "exact", head: true })
+          .lt("due_date", today)
+          .neq("status", "concluida")
+          .neq("status", "cancelada"),
+        supabase
+          .from("prototypes")
+          .select("id", { count: "exact", head: true })
+          .in("stage", ["solicitado", "em_confeccao", "em_prova"]),
+        supabase
+          .from("sales")
+          .select("total", { count: "exact", head: true })
+          .gte("created_at", new Date(Date.now() - 7 * 86400_000).toISOString()),
       ]);
       const firstError = [ordersLate, protosPending, salesRecent].find((r) => r.error)?.error;
       if (firstError) throw new Error(firstError.message);
@@ -262,9 +406,14 @@ function ProactiveSuggestions({
   const suggestions = useMemo(() => {
     if (!data) return [] as typeof CHIPS;
     const picks: { label: string; weight: number }[] = [];
-    if (data.lateOrders > 0) picks.push({ label: "Qual lote está atrasado?", weight: 100 + data.lateOrders });
+    if (data.lateOrders > 0)
+      picks.push({ label: "Qual lote está atrasado?", weight: 100 + data.lateOrders });
     if (data.lateOrders > 0) picks.push({ label: "Top 3 gargalos do PCP hoje", weight: 80 });
-    if (data.pendingProtos > 5) picks.push({ label: "Quais protótipos estão travando coleção?", weight: 70 + data.pendingProtos });
+    if (data.pendingProtos > 5)
+      picks.push({
+        label: "Quais protótipos estão travando coleção?",
+        weight: 70 + data.pendingProtos,
+      });
     if (data.pendingProtos > 0) picks.push({ label: "O que aprovar primeiro hoje?", weight: 50 });
     if (data.recentSales > 0) picks.push({ label: "Qual coleção vendeu mais?", weight: 60 });
     if (data.recentSales > 0) picks.push({ label: "Qual produto repetir?", weight: 40 });

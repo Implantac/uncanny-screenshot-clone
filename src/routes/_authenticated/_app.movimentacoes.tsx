@@ -1,7 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeftRight, Plus, ArrowDownToLine, ArrowUpFromLine, Settings2, Factory, Search, X, ArrowRight } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Plus,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Settings2,
+  Factory,
+  Search,
+  X,
+  ArrowRight,
+} from "lucide-react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,10 +21,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 const searchSchema = z.object({
@@ -30,17 +53,29 @@ export const Route = createFileRoute("/_authenticated/_app/movimentacoes")({
 });
 
 type Mov = {
-  id: string; owner_id: string; inventory_item_id: string;
+  id: string;
+  owner_id: string;
+  inventory_item_id: string;
   type: "entrada" | "saida" | "ajuste" | "transferencia";
-  quantity: number; reference_kind: string | null; reference_id: string | null;
-  notes: string | null; created_at: string;
+  quantity: number;
+  reference_kind: string | null;
+  reference_id: string | null;
+  notes: string | null;
+  created_at: string;
 };
 type Item = { id: string; sku: string; name: string; unit: string; balance: number };
 
 const STAGE_LABEL: Record<string, string> = {
-  cad: "CAD", modelagem: "Modelagem", corte: "Corte", silk: "Silk",
-  costura: "Costura", acabamento: "Acabamento", qualidade: "Qualidade",
-  expedicao: "Expedição", entregue: "Entregue", concluido: "Concluído",
+  cad: "CAD",
+  modelagem: "Modelagem",
+  corte: "Corte",
+  silk: "Silk",
+  costura: "Costura",
+  acabamento: "Acabamento",
+  qualidade: "Qualidade",
+  expedicao: "Expedição",
+  entregue: "Entregue",
+  concluido: "Concluído",
 };
 
 function MovimentacoesPage() {
@@ -57,25 +92,38 @@ function MovimentacoesPage() {
             <ArrowLeftRight className="size-6 text-primary" /> Movimentações
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Passagem entre setores (1ª linha) e estoque — entradas e saídas atualizadas em tempo real.
+            Passagem entre setores (1ª linha) e estoque — entradas e saídas atualizadas em tempo
+            real.
           </p>
         </div>
         {tab === "estoque" && (
-          <Button onClick={() => setOpen(true)} className="gap-2"><Plus className="size-4" /> Nova movimentação</Button>
+          <Button onClick={() => setOpen(true)} className="gap-2">
+            <Plus className="size-4" /> Nova movimentação
+          </Button>
         )}
       </div>
 
       <Tabs
         value={tab}
-        onValueChange={(v) => navigate({ search: (prev: any) => ({ ...prev, tab: v as "passagem" | "estoque" }) })}
+        onValueChange={(v) =>
+          navigate({ search: (prev: any) => ({ ...prev, tab: v as "passagem" | "estoque" }) })
+        }
       >
         <TabsList>
-          <TabsTrigger value="passagem" className="gap-1.5"><Factory className="size-3.5" /> Passagem entre setores</TabsTrigger>
-          <TabsTrigger value="estoque" className="gap-1.5"><ArrowLeftRight className="size-3.5" /> Estoque</TabsTrigger>
+          <TabsTrigger value="passagem" className="gap-1.5">
+            <Factory className="size-3.5" /> Passagem entre setores
+          </TabsTrigger>
+          <TabsTrigger value="estoque" className="gap-1.5">
+            <ArrowLeftRight className="size-3.5" /> Estoque
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="passagem" className="mt-4">
-          <PassagemPanel op={op} lote={lote} onFilter={(p) => navigate({ search: (prev: any) => ({ ...prev, ...p }) })} />
+          <PassagemPanel
+            op={op}
+            lote={lote}
+            onFilter={(p) => navigate({ search: (prev: any) => ({ ...prev, ...p }) })}
+          />
         </TabsContent>
 
         <TabsContent value="estoque" className="mt-4">
@@ -89,8 +137,14 @@ function MovimentacoesPage() {
 /* ===================== PASSAGEM ENTRE SETORES (1ª LINHA) ===================== */
 
 function PassagemPanel({
-  op, lote, onFilter,
-}: { op: string; lote: string; onFilter: (p: { op?: string; lote?: string }) => void }) {
+  op,
+  lote,
+  onFilter,
+}: {
+  op: string;
+  lote: string;
+  onFilter: (p: { op?: string; lote?: string }) => void;
+}) {
   useRealtime("production_stage_log", ["stage_log"]);
   useRealtime("service_orders", ["service_orders"]);
 
@@ -112,8 +166,12 @@ function PassagemPanel({
     const loteU = lote.trim().toUpperCase();
     return orders.filter((o) => {
       if (loteU && (o.batch_code ?? "").toUpperCase() !== loteU) return false;
-      if (opU && !(o.code ?? "").toUpperCase().includes(opU)
-              && !(o.products?.sku ?? "").toUpperCase().includes(opU)) return false;
+      if (
+        opU &&
+        !(o.code ?? "").toUpperCase().includes(opU) &&
+        !(o.products?.sku ?? "").toUpperCase().includes(opU)
+      )
+        return false;
       return true;
     });
   }, [orders, op, lote]);
@@ -139,7 +197,10 @@ function PassagemPanel({
 
   // Agregado por OP × etapa destino (entrada/saída acumuladas)
   const aggregate = useMemo(() => {
-    const m = new Map<string, { order: any; perStage: Map<string, { entrada: number; saida: number; last: string }> }>();
+    const m = new Map<
+      string,
+      { order: any; perStage: Map<string, { entrada: number; saida: number; last: string }> }
+    >();
     for (const o of filteredOrders) {
       m.set(o.id, { order: o, perStage: new Map() });
     }
@@ -192,12 +253,18 @@ function PassagemPanel({
           </div>
         </div>
         {(op || lote) && (
-          <Button variant="ghost" size="sm" className="h-8 gap-1" onClick={() => onFilter({ op: "", lote: "" })}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1"
+            onClick={() => onFilter({ op: "", lote: "" })}
+          >
             <X className="size-3.5" /> Limpar
           </Button>
         )}
         <div className="ml-auto text-xs text-muted-foreground tabular-nums">
-          {totals.passes} passagens · {totals.pecas.toFixed(0)} pç{totals.parciais > 0 ? ` · ${totals.parciais} parciais` : ""}
+          {totals.passes} passagens · {totals.pecas.toFixed(0)} pç
+          {totals.parciais > 0 ? ` · ${totals.parciais} parciais` : ""}
         </div>
       </div>
 
@@ -216,10 +283,14 @@ function PassagemPanel({
               <table className="w-full text-sm">
                 <thead className="bg-muted/20 text-muted-foreground text-xs">
                   <tr>
-                    <th className="text-left px-3 py-2 sticky left-0 bg-muted/20">OP / Referência</th>
+                    <th className="text-left px-3 py-2 sticky left-0 bg-muted/20">
+                      OP / Referência
+                    </th>
                     <th className="text-right px-3 py-2">Total</th>
                     {Object.entries(STAGE_LABEL).map(([k, lbl]) => (
-                      <th key={k} className="text-right px-3 py-2 whitespace-nowrap">{lbl}</th>
+                      <th key={k} className="text-right px-3 py-2 whitespace-nowrap">
+                        {lbl}
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -229,14 +300,20 @@ function PassagemPanel({
                       <td className="px-3 py-2 sticky left-0 bg-card">
                         <div className="font-mono text-xs">{order.code}</div>
                         <div className="text-[11px] text-muted-foreground truncate max-w-[200px]">
-                          {order.products?.sku ? `${order.products.sku} · ` : ""}{order.products?.name ?? "—"}
+                          {order.products?.sku ? `${order.products.sku} · ` : ""}
+                          {order.products?.name ?? "—"}
                           {order.batch_code ? ` · lote ${order.batch_code}` : ""}
                         </div>
                       </td>
                       <td className="px-3 py-2 text-right tabular-nums">{order.quantity}</td>
                       {Object.keys(STAGE_LABEL).map((k) => {
                         const v = perStage.get(k);
-                        if (!v) return <td key={k} className="px-3 py-2 text-right text-muted-foreground/40">·</td>;
+                        if (!v)
+                          return (
+                            <td key={k} className="px-3 py-2 text-right text-muted-foreground/40">
+                              ·
+                            </td>
+                          );
                         const saldo = v.entrada - v.saida;
                         return (
                           <td key={k} className="px-3 py-2 text-right tabular-nums">
@@ -244,8 +321,14 @@ function PassagemPanel({
                               <span className="text-emerald-500">↓{v.entrada.toFixed(0)}</span>
                               <span className="text-destructive">↑{v.saida.toFixed(0)}</span>
                             </div>
-                            <div className={`text-[10px] ${saldo > 0 ? "text-emerald-500" : saldo < 0 ? "text-destructive" : "text-muted-foreground"}`}>
-                              {saldo > 0 ? `+${saldo.toFixed(0)} no setor` : saldo < 0 ? `${saldo.toFixed(0)}` : "0"}
+                            <div
+                              className={`text-[10px] ${saldo > 0 ? "text-emerald-500" : saldo < 0 ? "text-destructive" : "text-muted-foreground"}`}
+                            >
+                              {saldo > 0
+                                ? `+${saldo.toFixed(0)} no setor`
+                                : saldo < 0
+                                  ? `${saldo.toFixed(0)}`
+                                  : "0"}
                             </div>
                           </td>
                         );
@@ -274,41 +357,67 @@ function PassagemPanel({
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">Carregando…</td></tr>
+                  <tr>
+                    <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                      Carregando…
+                    </td>
+                  </tr>
                 ) : logs.length === 0 ? (
-                  <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">Sem passagens registradas para os filtros atuais.</td></tr>
-                ) : logs.map((l) => {
-                  const o = orderMap.get(l.order_id);
-                  return (
-                    <tr key={l.id} className="border-t border-border">
-                      <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        {new Date(l.created_at).toLocaleString("pt-BR")}
-                      </td>
-                      <td className="px-3 py-2 text-xs">
-                        <div className="font-mono">{o?.code ?? "—"}</div>
-                        <div className="text-[10px] text-muted-foreground truncate max-w-[180px]">{o?.products?.name ?? ""}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <div className="inline-flex items-center gap-1.5 text-xs">
-                          {l.from_stage && (
-                            <>
-                              <span className="text-muted-foreground">{STAGE_LABEL[l.from_stage] ?? l.from_stage}</span>
-                              <ArrowRight className="size-3 text-muted-foreground" />
-                            </>
-                          )}
-                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                            {STAGE_LABEL[l.to_stage] ?? l.to_stage}
-                          </Badge>
-                          {l.is_partial && (
-                            <Badge variant="outline" className="bg-amber-500/15 text-amber-600 border-amber-500/30 text-[10px]">parcial</Badge>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 text-right tabular-nums font-semibold">{Number(l.quantity || 0).toFixed(0)}</td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-xs italic">{l.note ?? "—"}</td>
-                    </tr>
-                  );
-                })}
+                  <tr>
+                    <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                      Sem passagens registradas para os filtros atuais.
+                    </td>
+                  </tr>
+                ) : (
+                  logs.map((l) => {
+                    const o = orderMap.get(l.order_id);
+                    return (
+                      <tr key={l.id} className="border-t border-border">
+                        <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(l.created_at).toLocaleString("pt-BR")}
+                        </td>
+                        <td className="px-3 py-2 text-xs">
+                          <div className="font-mono">{o?.code ?? "—"}</div>
+                          <div className="text-[10px] text-muted-foreground truncate max-w-[180px]">
+                            {o?.products?.name ?? ""}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="inline-flex items-center gap-1.5 text-xs">
+                            {l.from_stage && (
+                              <>
+                                <span className="text-muted-foreground">
+                                  {STAGE_LABEL[l.from_stage] ?? l.from_stage}
+                                </span>
+                                <ArrowRight className="size-3 text-muted-foreground" />
+                              </>
+                            )}
+                            <Badge
+                              variant="outline"
+                              className="bg-primary/10 text-primary border-primary/30"
+                            >
+                              {STAGE_LABEL[l.to_stage] ?? l.to_stage}
+                            </Badge>
+                            {l.is_partial && (
+                              <Badge
+                                variant="outline"
+                                className="bg-amber-500/15 text-amber-600 border-amber-500/30 text-[10px]"
+                              >
+                                parcial
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums font-semibold">
+                          {Number(l.quantity || 0).toFixed(0)}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-xs italic">
+                          {l.note ?? "—"}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -320,13 +429,25 @@ function PassagemPanel({
 
 /* ===================== ESTOQUE (mantém comportamento atual) ===================== */
 
-function EstoquePanel({ userId, open, setOpen }: { userId?: string; open: boolean; setOpen: (v: boolean) => void }) {
+function EstoquePanel({
+  userId,
+  open,
+  setOpen,
+}: {
+  userId?: string;
+  open: boolean;
+  setOpen: (v: boolean) => void;
+}) {
   useRealtime("stock_movements", ["stock_movements"]);
 
   const { data: moves = [], isLoading } = useQuery({
     queryKey: ["stock_movements"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("stock_movements").select("*").order("created_at", { ascending: false }).limit(200);
+      const { data, error } = await supabase
+        .from("stock_movements")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200);
       if (error) throw error;
       return data as Mov[];
     },
@@ -335,7 +456,10 @@ function EstoquePanel({ userId, open, setOpen }: { userId?: string; open: boolea
   const { data: items = [] } = useQuery({
     queryKey: ["inventory_items_slim"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("inventory_items").select("id, sku, name, unit, balance").order("name");
+      const { data, error } = await supabase
+        .from("inventory_items")
+        .select("id, sku, name, unit, balance")
+        .order("name");
       if (error) throw error;
       return data as Item[];
     },
@@ -358,24 +482,51 @@ function EstoquePanel({ userId, open, setOpen }: { userId?: string; open: boolea
         </thead>
         <tbody>
           {isLoading ? (
-            <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">Carregando…</td></tr>
+            <tr>
+              <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                Carregando…
+              </td>
+            </tr>
           ) : moves.length === 0 ? (
-            <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">Nenhuma movimentação registrada.</td></tr>
-          ) : moves.map((m) => {
-            const it = itemMap.get(m.inventory_item_id);
-            return (
-              <tr key={m.id} className="border-t border-border">
-                <td className="px-3 py-2 text-xs text-muted-foreground">{new Date(m.created_at).toLocaleString("pt-BR")}</td>
-                <td className="px-3 py-2">{typeBadge(m.type)}</td>
-                <td className="px-3 py-2">{it ? <><span className="font-mono text-xs">{it.sku}</span> · {it.name}</> : <span className="text-muted-foreground">—</span>}</td>
-                <td className={`px-3 py-2 text-right tabular-nums font-semibold ${m.type === "entrada" ? "text-emerald-400" : m.type === "saida" ? "text-destructive" : ""}`}>
-                  {m.type === "entrada" ? "+" : m.type === "saida" ? "−" : ""}{Number(m.quantity).toFixed(0)} {it?.unit ?? ""}
-                </td>
-                <td className="px-3 py-2 text-xs text-muted-foreground">{m.reference_kind ?? "manual"}</td>
-                <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-xs">{m.notes ?? "—"}</td>
-              </tr>
-            );
-          })}
+            <tr>
+              <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                Nenhuma movimentação registrada.
+              </td>
+            </tr>
+          ) : (
+            moves.map((m) => {
+              const it = itemMap.get(m.inventory_item_id);
+              return (
+                <tr key={m.id} className="border-t border-border">
+                  <td className="px-3 py-2 text-xs text-muted-foreground">
+                    {new Date(m.created_at).toLocaleString("pt-BR")}
+                  </td>
+                  <td className="px-3 py-2">{typeBadge(m.type)}</td>
+                  <td className="px-3 py-2">
+                    {it ? (
+                      <>
+                        <span className="font-mono text-xs">{it.sku}</span> · {it.name}
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </td>
+                  <td
+                    className={`px-3 py-2 text-right tabular-nums font-semibold ${m.type === "entrada" ? "text-emerald-400" : m.type === "saida" ? "text-destructive" : ""}`}
+                  >
+                    {m.type === "entrada" ? "+" : m.type === "saida" ? "−" : ""}
+                    {Number(m.quantity).toFixed(0)} {it?.unit ?? ""}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">
+                    {m.reference_kind ?? "manual"}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-xs">
+                    {m.notes ?? "—"}
+                  </td>
+                </tr>
+              );
+            })
+          )}
         </tbody>
       </table>
 
@@ -386,17 +537,47 @@ function EstoquePanel({ userId, open, setOpen }: { userId?: string; open: boolea
 
 function typeBadge(t: Mov["type"]) {
   const cfg: Record<string, { label: string; cls: string; Icon: typeof Plus }> = {
-    entrada: { label: "Entrada", cls: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", Icon: ArrowDownToLine },
-    saida: { label: "Saída", cls: "bg-destructive/20 text-destructive border-destructive/30", Icon: ArrowUpFromLine },
-    ajuste: { label: "Ajuste", cls: "bg-amber-500/20 text-amber-400 border-amber-500/30", Icon: Settings2 },
-    transferencia: { label: "Transferência", cls: "bg-sky-500/20 text-sky-400 border-sky-500/30", Icon: ArrowLeftRight },
+    entrada: {
+      label: "Entrada",
+      cls: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+      Icon: ArrowDownToLine,
+    },
+    saida: {
+      label: "Saída",
+      cls: "bg-destructive/20 text-destructive border-destructive/30",
+      Icon: ArrowUpFromLine,
+    },
+    ajuste: {
+      label: "Ajuste",
+      cls: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+      Icon: Settings2,
+    },
+    transferencia: {
+      label: "Transferência",
+      cls: "bg-sky-500/20 text-sky-400 border-sky-500/30",
+      Icon: ArrowLeftRight,
+    },
   };
   const c = cfg[t];
   const Ic = c.Icon;
-  return <Badge variant="outline" className={`${c.cls} gap-1`}><Ic className="size-3" /> {c.label}</Badge>;
+  return (
+    <Badge variant="outline" className={`${c.cls} gap-1`}>
+      <Ic className="size-3" /> {c.label}
+    </Badge>
+  );
 }
 
-function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpenChange: (v: boolean) => void; items: Item[]; userId?: string }) {
+function MovDialog({
+  open,
+  onOpenChange,
+  items,
+  userId,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  items: Item[];
+  userId?: string;
+}) {
   const qc = useQueryClient();
   const [type, setType] = useState<Mov["type"]>("entrada");
   const [itemId, setItemId] = useState("");
@@ -411,7 +592,11 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
       if (!itemId) throw new Error("Selecione um item");
       if (quantity <= 0 && type !== "ajuste") throw new Error("Quantidade deve ser maior que zero");
       const { error } = await supabase.from("stock_movements").insert({
-        owner_id: userId, inventory_item_id: itemId, type, quantity, notes: notes || null,
+        owner_id: userId,
+        inventory_item_id: itemId,
+        type,
+        quantity,
+        notes: notes || null,
         supplier_lot: supplierLot || null,
         supplier_color: supplierColor || null,
       });
@@ -424,8 +609,12 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
       qc.invalidateQueries({ queryKey: ["inventory_lot_breakdown"] });
       toast.success("Movimentação registrada");
       onOpenChange(false);
-      setItemId(""); setQuantity(0); setNotes(""); setType("entrada");
-      setSupplierLot(""); setSupplierColor("");
+      setItemId("");
+      setQuantity(0);
+      setNotes("");
+      setType("entrada");
+      setSupplierLot("");
+      setSupplierColor("");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -439,11 +628,19 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
           <DialogTitle>Nova movimentação</DialogTitle>
           <DialogDescription>O saldo do item será atualizado automaticamente.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={(e) => { e.preventDefault(); saveMut.mutate(); }} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            saveMut.mutate();
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label>Tipo</Label>
             <Select value={type} onValueChange={(v) => setType(v as Mov["type"])}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="entrada">Entrada</SelectItem>
                 <SelectItem value="saida">Saída</SelectItem>
@@ -455,33 +652,65 @@ function MovDialog({ open, onOpenChange, items, userId }: { open: boolean; onOpe
           <div className="space-y-2">
             <Label>Item</Label>
             <Select value={itemId} onValueChange={setItemId}>
-              <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione…" />
+              </SelectTrigger>
               <SelectContent>
-                {items.map((i) => <SelectItem key={i.id} value={i.id}>{i.sku} · {i.name} (saldo: {Number(i.balance).toFixed(0)} {i.unit})</SelectItem>)}
+                {items.map((i) => (
+                  <SelectItem key={i.id} value={i.id}>
+                    {i.sku} · {i.name} (saldo: {Number(i.balance).toFixed(0)} {i.unit})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            {selected && <p className="text-xs text-muted-foreground">Saldo atual: {Number(selected.balance).toFixed(0)} {selected.unit}</p>}
+            {selected && (
+              <p className="text-xs text-muted-foreground">
+                Saldo atual: {Number(selected.balance).toFixed(0)} {selected.unit}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>{type === "ajuste" ? "Novo saldo absoluto" : "Quantidade"}</Label>
-            <Input type="number" min="0" step="0.01" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} required />
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              value={quantity}
+              onChange={(e) => setQuantity(Number(e.target.value))}
+              required
+            />
           </div>
           {type === "entrada" && (
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>Lote do fornecedor</Label>
-                <Input value={supplierLot} onChange={(e) => setSupplierLot(e.target.value)} placeholder="ex: LOTE-2026-A" />
+                <Input
+                  value={supplierLot}
+                  onChange={(e) => setSupplierLot(e.target.value)}
+                  placeholder="ex: LOTE-2026-A"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Cor recebida</Label>
-                <Input value={supplierColor} onChange={(e) => setSupplierColor(e.target.value)} placeholder="ex: Azul Marinho 4521" />
+                <Input
+                  value={supplierColor}
+                  onChange={(e) => setSupplierColor(e.target.value)}
+                  placeholder="ex: Azul Marinho 4521"
+                />
               </div>
             </div>
           )}
-          <div className="space-y-2"><Label>Notas</Label><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></div>
+          <div className="space-y-2">
+            <Label>Notas</Label>
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
+          </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={saveMut.isPending}>{saveMut.isPending ? "Salvando…" : "Registrar"}</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saveMut.isPending}>
+              {saveMut.isPending ? "Salvando…" : "Registrar"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -9,13 +9,46 @@ const baseData: AlertsData = {
     { id: "i2", name: "Linha 60", balance: 0, minimum: 5, unit: "rl" },
   ],
   overdue: [{ id: "o1", code: "OP-100", due_date: "2025-01-01", progress: 30 }],
-  stuck: [{ id: "s1", code: "OP-200", stage: "corte", stage_updated_at: new Date(Date.now() - 5 * 86_400_000).toISOString() }],
-  oldProtos: [
-    { id: "p1", code: "PT-1", name: "Camisa A", stage: "modelagem", updated_at: new Date(Date.now() - 10 * 86_400_000).toISOString() },
-    { id: "p2", code: "PT-2", name: "Camisa B", stage: "piloto", updated_at: new Date(Date.now() - 15 * 86_400_000).toISOString() },
-    { id: "p3", code: "PT-3", name: "Camisa C", stage: "piloto", updated_at: new Date(Date.now() - 20 * 86_400_000).toISOString() },
+  stuck: [
+    {
+      id: "s1",
+      code: "OP-200",
+      stage: "corte",
+      stage_updated_at: new Date(Date.now() - 5 * 86_400_000).toISOString(),
+    },
   ],
-  comments: [{ id: "c1", kind: "proto", refCode: "PT-1", body: "Ajustar manga", when: new Date().toISOString() }],
+  oldProtos: [
+    {
+      id: "p1",
+      code: "PT-1",
+      name: "Camisa A",
+      stage: "modelagem",
+      updated_at: new Date(Date.now() - 10 * 86_400_000).toISOString(),
+    },
+    {
+      id: "p2",
+      code: "PT-2",
+      name: "Camisa B",
+      stage: "piloto",
+      updated_at: new Date(Date.now() - 15 * 86_400_000).toISOString(),
+    },
+    {
+      id: "p3",
+      code: "PT-3",
+      name: "Camisa C",
+      stage: "piloto",
+      updated_at: new Date(Date.now() - 20 * 86_400_000).toISOString(),
+    },
+  ],
+  comments: [
+    {
+      id: "c1",
+      kind: "proto",
+      refCode: "PT-1",
+      body: "Ajustar manga",
+      when: new Date().toISOString(),
+    },
+  ],
   marketing: [{ id: "m1", title: "Campanha pronta", body: "Aprovar criativo" }],
 };
 
@@ -60,7 +93,17 @@ describe("AlertsPanel · integração de chips", () => {
   it("alternar chips repetidas vezes nunca duplica itens", async () => {
     const user = userEvent.setup();
     render(<AlertsPanel data={baseData} />);
-    for (const k of ["estoque", "atraso", "parado", "proto", "comentario", "marketing", "all", "proto", "all"] as const) {
+    for (const k of [
+      "estoque",
+      "atraso",
+      "parado",
+      "proto",
+      "comentario",
+      "marketing",
+      "all",
+      "proto",
+      "all",
+    ] as const) {
       await user.click(screen.getByTestId(`chip-${k}`));
       const items = within(screen.getByTestId("alerts-list")).queryAllByTestId(/^item-/);
       const ids = items.map((el) => el.getAttribute("data-testid"));
@@ -79,7 +122,14 @@ describe("AlertsPanel · integração de chips", () => {
   });
 
   it("sem alertas em nenhuma categoria mostra 'Tudo sob controle'", () => {
-    const zero: AlertsData = { critical: [], overdue: [], stuck: [], oldProtos: [], comments: [], marketing: [] };
+    const zero: AlertsData = {
+      critical: [],
+      overdue: [],
+      stuck: [],
+      oldProtos: [],
+      comments: [],
+      marketing: [],
+    };
     render(<AlertsPanel data={zero} />);
     expect(screen.getByTestId("empty-state")).toHaveTextContent("Tudo sob controle");
     expect(screen.getByTestId("alerts-total")).toHaveTextContent("0 alertas no total");

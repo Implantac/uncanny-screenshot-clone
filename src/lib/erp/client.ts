@@ -1,8 +1,17 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { ErpSale, ErpInventory, ErpPurchase } from "./types";
 
-export async function fetchErpSales(opts?: { from?: string; to?: string; influencerCode?: string; limit?: number }) {
-  let q = supabase.from("erp_sales_mirror").select("*").order("sold_at", { ascending: false }).limit(opts?.limit ?? 500);
+export async function fetchErpSales(opts?: {
+  from?: string;
+  to?: string;
+  influencerCode?: string;
+  limit?: number;
+}) {
+  let q = supabase
+    .from("erp_sales_mirror")
+    .select("*")
+    .order("sold_at", { ascending: false })
+    .limit(opts?.limit ?? 500);
   if (opts?.from) q = q.gte("sold_at", opts.from);
   if (opts?.to) q = q.lte("sold_at", opts.to);
   if (opts?.influencerCode) q = q.eq("influencer_code", opts.influencerCode);
@@ -12,7 +21,11 @@ export async function fetchErpSales(opts?: { from?: string; to?: string; influen
 }
 
 export async function fetchErpInventory(sku?: string) {
-  let q = supabase.from("erp_inventory_mirror").select("*").order("synced_at", { ascending: false }).limit(1000);
+  let q = supabase
+    .from("erp_inventory_mirror")
+    .select("*")
+    .order("synced_at", { ascending: false })
+    .limit(1000);
   if (sku) q = q.eq("sku", sku);
   const { data, error } = await q;
   if (error) throw error;
@@ -21,16 +34,27 @@ export async function fetchErpInventory(sku?: string) {
 
 export async function fetchErpPurchases(limit = 500) {
   const { data, error } = await supabase
-    .from("erp_purchase_mirror").select("*").order("ordered_at", { ascending: false }).limit(limit);
+    .from("erp_purchase_mirror")
+    .select("*")
+    .order("ordered_at", { ascending: false })
+    .limit(limit);
   if (error) throw error;
   return (data ?? []) as ErpPurchase[];
 }
 
 export function aggregateSalesByInfluencer(sales: ErpSale[]) {
-  const map = new Map<string, { code: string; orders: number; quantity: number; revenue: number }>();
+  const map = new Map<
+    string,
+    { code: string; orders: number; quantity: number; revenue: number }
+  >();
   for (const s of sales) {
     if (!s.influencer_code) continue;
-    const cur = map.get(s.influencer_code) ?? { code: s.influencer_code, orders: 0, quantity: 0, revenue: 0 };
+    const cur = map.get(s.influencer_code) ?? {
+      code: s.influencer_code,
+      orders: 0,
+      quantity: 0,
+      revenue: 0,
+    };
     cur.orders += 1;
     cur.quantity += Number(s.quantity ?? 0);
     cur.revenue += Number(s.total_value ?? 0);

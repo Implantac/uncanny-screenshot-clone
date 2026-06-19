@@ -8,7 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -48,7 +55,10 @@ function FornecedoresPage() {
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("suppliers").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("suppliers")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Supplier[];
     },
@@ -67,29 +77,42 @@ function FornecedoresPage() {
   });
 
   const total = suppliers.length;
-  const ativos = suppliers.filter(s => s.active).length;
-  const avgRating = total ? (suppliers.reduce((a, s) => a + (s.rating || 0), 0) / total).toFixed(1) : "—";
+  const ativos = suppliers.filter((s) => s.active).length;
+  const avgRating = total
+    ? (suppliers.reduce((a, s) => a + (s.rating || 0), 0) / total).toFixed(1)
+    : "—";
   const topCats = Object.entries(
     suppliers.reduce<Record<string, number>>((m, s) => {
       const k = s.category || "Sem categoria";
       m[k] = (m[k] || 0) + 1;
       return m;
-    }, {})
-  ).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    }, {}),
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
 
   async function generatePortalLink(supplierId: string) {
     if (!user) return;
-    const token = (crypto as any).randomUUID().replace(/-/g, "") + Math.random().toString(36).slice(2, 10);
+    const token =
+      (crypto as any).randomUUID().replace(/-/g, "") + Math.random().toString(36).slice(2, 10);
     const { error } = await supabase.from("supplier_portal_tokens").insert({
-      owner_id: user.id, supplier_id: supplierId, token,
+      owner_id: user.id,
+      supplier_id: supplierId,
+      token,
       expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24 * 90).toISOString(),
     });
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     const url = `${window.location.origin}/portal/fornecedor/${token}`;
-    try { await navigator.clipboard.writeText(url); toast.success("Link copiado: " + url); }
-    catch { toast.success(url); }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copiado: " + url);
+    } catch {
+      toast.success(url);
+    }
   }
-
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
@@ -98,9 +121,17 @@ function FornecedoresPage() {
           <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
             <Truck className="size-6 text-primary" /> Fornecedores
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Sua rede de parceiros — tecidos, aviamentos, costura e mais.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Sua rede de parceiros — tecidos, aviamentos, costura e mais.
+          </p>
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
+        <Button
+          onClick={() => {
+            setEditing(null);
+            setOpen(true);
+          }}
+          className="gap-2"
+        >
           <Plus className="size-4" /> Novo Fornecedor
         </Button>
       </div>
@@ -116,14 +147,23 @@ function FornecedoresPage() {
             <div className="text-2xl font-semibold text-emerald-400">{ativos}</div>
           </div>
           <div className="rounded-xl border border-border bg-card/50 p-4">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">Avaliação média</div>
-            <div className="text-2xl font-semibold flex items-center gap-2">{avgRating}<Star className="size-4 fill-amber-400 text-amber-400" /></div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">
+              Avaliação média
+            </div>
+            <div className="text-2xl font-semibold flex items-center gap-2">
+              {avgRating}
+              <Star className="size-4 fill-amber-400 text-amber-400" />
+            </div>
           </div>
           <div className="rounded-xl border border-border bg-card/50 p-4">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Top categorias</div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
+              Top categorias
+            </div>
             <div className="flex flex-wrap gap-1">
               {topCats.map(([c, n]) => (
-                <Badge key={c} variant="outline" className="text-[10px]">{c} · {n}</Badge>
+                <Badge key={c} variant="outline" className="text-[10px]">
+                  {c} · {n}
+                </Badge>
               ))}
               {!topCats.length && <span className="text-xs text-muted-foreground">—</span>}
             </div>
@@ -138,29 +178,51 @@ function FornecedoresPage() {
           <Sparkles className="size-10 text-primary mx-auto mb-3" />
           <h3 className="font-semibold mb-1">Nenhum fornecedor ainda</h3>
           <p className="text-sm text-muted-foreground mb-4">Cadastre seu primeiro parceiro.</p>
-          <Button onClick={() => { setEditing(null); setOpen(true); }}>Cadastrar fornecedor</Button>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+            }}
+          >
+            Cadastrar fornecedor
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {suppliers.map((s) => (
-            <div key={s.id} className="glass rounded-xl p-5 flex flex-col gap-3 hover:border-primary/40 transition-colors">
+            <div
+              key={s.id}
+              className="glass rounded-xl p-5 flex flex-col gap-3 hover:border-primary/40 transition-colors"
+            >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <h3 className="font-semibold truncate">{s.name}</h3>
-                  {s.category && <p className="text-xs text-muted-foreground mt-0.5">{s.category}</p>}
+                  {s.category && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{s.category}</p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   {s.active ? (
-                    <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Ativo</Badge>
+                    <Badge
+                      variant="outline"
+                      className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                    >
+                      Ativo
+                    </Badge>
                   ) : (
-                    <Badge variant="outline" className="bg-muted text-muted-foreground">Inativo</Badge>
+                    <Badge variant="outline" className="bg-muted text-muted-foreground">
+                      Inativo
+                    </Badge>
                   )}
                 </div>
               </div>
               {s.rating > 0 && (
                 <div className="flex gap-0.5">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className={`size-3.5 ${i < s.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40"}`} />
+                    <Star
+                      key={i}
+                      className={`size-3.5 ${i < s.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40"}`}
+                    />
                   ))}
                 </div>
               )}
@@ -185,13 +247,25 @@ function FornecedoresPage() {
               {s.notes && <p className="text-xs text-muted-foreground line-clamp-2">{s.notes}</p>}
               {s.owner_id === user?.id && (
                 <div className="flex justify-end gap-1 pt-2 border-t border-border">
-                  <button onClick={() => generatePortalLink(s.id)} className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border hover:bg-muted">
+                  <button
+                    onClick={() => generatePortalLink(s.id)}
+                    className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border hover:bg-muted"
+                  >
                     Link do portal
                   </button>
-                  <button onClick={() => { setEditing(s); setOpen(true); }} className="size-7 grid place-items-center rounded hover:bg-muted">
+                  <button
+                    onClick={() => {
+                      setEditing(s);
+                      setOpen(true);
+                    }}
+                    className="size-7 grid place-items-center rounded hover:bg-muted"
+                  >
                     <Pencil className="size-3.5" />
                   </button>
-                  <button onClick={() => confirm("Remover este fornecedor?") && deleteMut.mutate(s.id)} className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive">
+                  <button
+                    onClick={() => confirm("Remover este fornecedor?") && deleteMut.mutate(s.id)}
+                    className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive"
+                  >
                     <Trash2 className="size-3.5" />
                   </button>
                 </div>
@@ -207,7 +281,10 @@ function FornecedoresPage() {
 }
 
 function SupplierDialog({
-  open, onOpenChange, editing, userId,
+  open,
+  onOpenChange,
+  editing,
+  userId,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -245,8 +322,16 @@ function SupplierDialog({
   }, [open, editing]);
 
   function reset() {
-    setName(""); setCategory(""); setContactName(""); setEmail(""); setPhone("");
-    setCity(""); setState(""); setRating(0); setNotes(""); setActive(true);
+    setName("");
+    setCategory("");
+    setContactName("");
+    setEmail("");
+    setPhone("");
+    setCity("");
+    setState("");
+    setRating(0);
+    setNotes("");
+    setActive(true);
   }
 
   const saveMut = useMutation({
@@ -282,25 +367,50 @@ function SupplierDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) reset(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        onOpenChange(v);
+        if (!v) reset();
+      }}
+    >
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editing ? "Editar fornecedor" : "Novo fornecedor"}</DialogTitle>
           <DialogDescription>Dados de contato e avaliação do parceiro.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={(e) => { e.preventDefault(); saveMut.mutate(); }} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            saveMut.mutate();
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label>Nome</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Tecidos São Paulo" required />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Tecidos São Paulo"
+              required
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Categoria</Label>
-              <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Tecidos" />
+              <Input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="Tecidos"
+              />
             </div>
             <div className="space-y-2">
               <Label>Contato</Label>
-              <Input value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Maria" />
+              <Input
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                placeholder="Maria"
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -310,7 +420,11 @@ function SupplierDialog({
             </div>
             <div className="space-y-2">
               <Label>Telefone</Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(11) 9..." />
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="(11) 9..."
+              />
             </div>
           </div>
           <div className="grid grid-cols-[1fr_100px] gap-3">
@@ -327,8 +441,14 @@ function SupplierDialog({
             <Label>Avaliação ({rating}/5)</Label>
             <div className="flex gap-1">
               {Array.from({ length: 5 }).map((_, i) => (
-                <button key={i} type="button" onClick={() => setRating(i + 1 === rating ? 0 : i + 1)}>
-                  <Star className={`size-6 ${i < rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40"}`} />
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setRating(i + 1 === rating ? 0 : i + 1)}
+                >
+                  <Star
+                    className={`size-6 ${i < rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40"}`}
+                  />
                 </button>
               ))}
             </div>
@@ -345,7 +465,9 @@ function SupplierDialog({
             <Switch checked={active} onCheckedChange={setActive} />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
             <Button type="submit" disabled={saveMut.isPending}>
               {saveMut.isPending ? "Salvando…" : editing ? "Atualizar" : "Criar"}
             </Button>

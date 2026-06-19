@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { FileText, ImageIcon, Ruler, Layers, ListChecks, Shirt, Palette } from "lucide-react";
 
@@ -66,7 +72,13 @@ type GridRow = {
 };
 
 /** Ficha técnica para produção — SEM valores, só receita de bolo. */
-export function ProductionTechSheetDrawer({ productId, productionOrderId, orderCode, open, onOpenChange }: Props) {
+export function ProductionTechSheetDrawer({
+  productId,
+  productionOrderId,
+  orderCode,
+  open,
+  onOpenChange,
+}: Props) {
   const product = useQuery({
     enabled: open && !!productId,
     queryKey: ["prod-ts-product", productId],
@@ -148,7 +160,9 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
     queryFn: async () => {
       const { data, error } = await supabase
         .from("production_order_grid")
-        .select("variant_id, quantity, product_variants!inner(sku, product_color_options(name, hex), product_size_options(label))")
+        .select(
+          "variant_id, quantity, product_variants!inner(sku, product_color_options(name, hex), product_size_options(label))",
+        )
         .eq("production_order_id", productionOrderId as string);
       if (error) throw error;
       return (data ?? []).map((r: any) => ({
@@ -192,7 +206,9 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
           <SheetTitle className="flex items-center gap-2">
             <FileText className="size-4 text-primary" />
             Ficha para produção
-            {orderCode && <span className="font-mono text-xs text-muted-foreground">· {orderCode}</span>}
+            {orderCode && (
+              <span className="font-mono text-xs text-muted-foreground">· {orderCode}</span>
+            )}
           </SheetTitle>
           <SheetDescription className="text-xs">
             Receita completa para corte, costura, silk e bordado — produza igual à peça piloto.
@@ -203,7 +219,11 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
         <div className="flex gap-3 mt-4">
           <div className="size-24 rounded-lg overflow-hidden bg-muted/40 shrink-0">
             {product.data?.image_url ? (
-              <img src={product.data.image_url} alt={product.data.name} className="size-full object-cover" />
+              <img
+                src={product.data.image_url}
+                alt={product.data.name}
+                className="size-full object-cover"
+              />
             ) : (
               <div className="size-full grid place-items-center text-muted-foreground">
                 <ImageIcon className="size-6" />
@@ -212,13 +232,19 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-base font-semibold">{product.data?.name ?? "—"}</div>
-            <div className="text-xs text-muted-foreground font-mono">{product.data?.sku ?? "—"}</div>
+            <div className="text-xs text-muted-foreground font-mono">
+              {product.data?.sku ?? "—"}
+            </div>
             {product.data?.category && (
-              <Badge variant="outline" className="mt-1 text-[10px]">{product.data.category}</Badge>
+              <Badge variant="outline" className="mt-1 text-[10px]">
+                {product.data.category}
+              </Badge>
             )}
             {sheet.data && (
               <div className="flex gap-1 mt-1.5">
-                <Badge variant="outline" className="text-[10px]">v{sheet.data.version}</Badge>
+                <Badge variant="outline" className="text-[10px]">
+                  v{sheet.data.version}
+                </Badge>
                 <Badge
                   variant="outline"
                   className={`text-[10px] ${sheet.data.status === "aprovada" ? "bg-success/15 text-success border-success/30" : "bg-amber-500/10 text-amber-600 border-amber-500/30"}`}
@@ -238,13 +264,18 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
 
         {!sheet.data ? (
           <div className="mt-6 rounded-lg border border-dashed border-warning/40 bg-warning/5 p-4 text-center text-xs text-warning">
-            Esta referência ainda não possui ficha técnica aprovada. Avise o desenvolvimento antes de produzir.
+            Esta referência ainda não possui ficha técnica aprovada. Avise o desenvolvimento antes
+            de produzir.
           </div>
         ) : (
           <div className="mt-5 space-y-5">
             {/* GRADE / QUANTIDADES */}
             {productionOrderId && (
-              <Section icon={<Shirt className="size-4" />} title="Grade desta ordem" right={totalQty > 0 ? `${totalQty} pç` : undefined}>
+              <Section
+                icon={<Shirt className="size-4" />}
+                title="Grade desta ordem"
+                right={totalQty > 0 ? `${totalQty} pç` : undefined}
+              >
                 {grid.data && grid.data.length > 0 ? (
                   <ColorSizeGrid rows={grid.data} />
                 ) : (
@@ -254,7 +285,11 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
             )}
 
             {/* MATERIAIS / COMPOSIÇÃO */}
-            <Section icon={<Layers className="size-4" />} title="Materiais & composição" right={`${materials.data?.length ?? 0} itens`}>
+            <Section
+              icon={<Layers className="size-4" />}
+              title="Materiais & composição"
+              right={`${materials.data?.length ?? 0} itens`}
+            >
               {materials.data && materials.data.length > 0 ? (
                 <div className="rounded-lg border border-border overflow-hidden">
                   <table className="w-full text-xs">
@@ -284,7 +319,11 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
             </Section>
 
             {/* PROCESSOS - receita de bolo */}
-            <Section icon={<ListChecks className="size-4" />} title="Processos de produção" right={`${operations.data?.length ?? 0} passos`}>
+            <Section
+              icon={<ListChecks className="size-4" />}
+              title="Processos de produção"
+              right={`${operations.data?.length ?? 0} passos`}
+            >
               {operations.data && operations.data.length > 0 ? (
                 <ol className="space-y-2">
                   {operations.data.map((op, i) => (
@@ -300,7 +339,9 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
                           </div>
                         )}
                         {op.notes && (
-                          <div className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{op.notes}</div>
+                          <div className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
+                            {op.notes}
+                          </div>
                         )}
                       </div>
                     </li>
@@ -312,7 +353,11 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
             </Section>
 
             {/* MEDIDAS */}
-            <Section icon={<Ruler className="size-4" />} title="Medidas & tolerâncias" right={`${measurements.data?.length ?? 0} pontos`}>
+            <Section
+              icon={<Ruler className="size-4" />}
+              title="Medidas & tolerâncias"
+              right={`${measurements.data?.length ?? 0} pontos`}
+            >
               {measurements.data && measurements.data.length > 0 ? (
                 <MeasurementsTable items={measurements.data} />
               ) : (
@@ -322,7 +367,11 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
 
             {/* ANEXOS - layout, silk, bordado */}
             {attachments.data && attachments.data.length > 0 && (
-              <Section icon={<Palette className="size-4" />} title="Layout, silk & bordado" right={`${attachments.data.length} anexos`}>
+              <Section
+                icon={<Palette className="size-4" />}
+                title="Layout, silk & bordado"
+                right={`${attachments.data.length} anexos`}
+              >
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {attachments.data.map((a) => {
                     const isImg = /\.(png|jpe?g|webp|gif|svg)$/i.test(a.url);
@@ -336,7 +385,11 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
                         title={a.name}
                       >
                         {isImg ? (
-                          <img src={a.url} alt={a.name} className="w-full h-24 object-cover bg-muted" />
+                          <img
+                            src={a.url}
+                            alt={a.name}
+                            className="w-full h-24 object-cover bg-muted"
+                          />
                         ) : (
                           <div className="h-24 grid place-items-center bg-muted text-xs text-muted-foreground">
                             {a.kind ?? "Arquivo"}
@@ -356,7 +409,17 @@ export function ProductionTechSheetDrawer({ productId, productionOrderId, orderC
   );
 }
 
-function Section({ icon, title, right, children }: { icon: React.ReactNode; title: string; right?: string; children: React.ReactNode }) {
+function Section({
+  icon,
+  title,
+  right,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  right?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section>
       <div className="flex items-center justify-between mb-2">
@@ -381,12 +444,12 @@ function Empty({ children }: { children: React.ReactNode }) {
 function ColorSizeGrid({ rows }: { rows: GridRow[] }) {
   const colors = Array.from(
     new Map(
-      rows
-        .filter((r) => r.variant?.color)
-        .map((r) => [r.variant!.color!.name, r.variant!.color!]),
+      rows.filter((r) => r.variant?.color).map((r) => [r.variant!.color!.name, r.variant!.color!]),
     ).values(),
   );
-  const sizes = Array.from(new Set(rows.map((r) => r.variant?.size?.label).filter(Boolean))) as string[];
+  const sizes = Array.from(
+    new Set(rows.map((r) => r.variant?.size?.label).filter(Boolean)),
+  ) as string[];
 
   if (colors.length === 0 && sizes.length === 0) {
     return (
@@ -402,7 +465,8 @@ function ColorSizeGrid({ rows }: { rows: GridRow[] }) {
   }
 
   const cell = (color: string, size: string) =>
-    rows.find((r) => r.variant?.color?.name === color && r.variant?.size?.label === size)?.quantity ?? 0;
+    rows.find((r) => r.variant?.color?.name === color && r.variant?.size?.label === size)
+      ?.quantity ?? 0;
 
   return (
     <div className="rounded-lg border border-border overflow-hidden">
@@ -411,7 +475,9 @@ function ColorSizeGrid({ rows }: { rows: GridRow[] }) {
           <tr>
             <th className="text-left px-2 py-1.5 font-medium">Cor</th>
             {sizes.map((s) => (
-              <th key={s} className="px-2 py-1.5 text-center font-medium">{s}</th>
+              <th key={s} className="px-2 py-1.5 text-center font-medium">
+                {s}
+              </th>
             ))}
             <th className="px-2 py-1.5 text-right font-medium">Total</th>
           </tr>
@@ -423,12 +489,19 @@ function ColorSizeGrid({ rows }: { rows: GridRow[] }) {
               <tr key={c.name} className="border-t border-border">
                 <td className="px-2 py-1.5 font-medium">
                   <span className="inline-flex items-center gap-1.5">
-                    {c.hex && <span className="inline-block size-3 rounded-full border border-border" style={{ background: c.hex }} />}
+                    {c.hex && (
+                      <span
+                        className="inline-block size-3 rounded-full border border-border"
+                        style={{ background: c.hex }}
+                      />
+                    )}
                     {c.name}
                   </span>
                 </td>
                 {sizes.map((s) => (
-                  <td key={s} className="px-2 py-1.5 text-center tabular-nums">{cell(c.name, s) || "—"}</td>
+                  <td key={s} className="px-2 py-1.5 text-center tabular-nums">
+                    {cell(c.name, s) || "—"}
+                  </td>
                 ))}
                 <td className="px-2 py-1.5 text-right tabular-nums font-semibold">{total}</td>
               </tr>
@@ -449,7 +522,9 @@ function MeasurementsTable({ items }: { items: Measurement[] }) {
           <tr>
             <th className="text-left px-2 py-1.5 font-medium">Ponto</th>
             {sizeKeys.map((k) => (
-              <th key={k} className="px-2 py-1.5 text-center font-medium">{k}</th>
+              <th key={k} className="px-2 py-1.5 text-center font-medium">
+                {k}
+              </th>
             ))}
             <th className="px-2 py-1.5 text-center font-medium">Tol.</th>
           </tr>
@@ -459,7 +534,9 @@ function MeasurementsTable({ items }: { items: Measurement[] }) {
             <tr key={m.id} className="border-t border-border">
               <td className="px-2 py-1.5 font-medium">{m.point}</td>
               {sizeKeys.map((k) => (
-                <td key={k} className="px-2 py-1.5 text-center tabular-nums">{m.sizes?.[k] ?? "—"}</td>
+                <td key={k} className="px-2 py-1.5 text-center tabular-nums">
+                  {m.sizes?.[k] ?? "—"}
+                </td>
               ))}
               <td className="px-2 py-1.5 text-center text-muted-foreground tabular-nums">
                 +{m.tolerance_plus}/-{m.tolerance_minus}

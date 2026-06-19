@@ -49,7 +49,9 @@ export function AICoordinatorPanel({
           <Sparkles className="size-4 text-primary" />
           <div>
             <div className="text-sm font-semibold leading-tight">{title ?? LABEL[persona]}</div>
-            <div className="text-[11px] text-muted-foreground">IA explica o motivo, não só o número</div>
+            <div className="text-[11px] text-muted-foreground">
+              IA explica o motivo, não só o número
+            </div>
           </div>
         </div>
         <button
@@ -58,7 +60,11 @@ export function AICoordinatorPanel({
           className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
           title="Atualizar"
         >
-          {mutation.isPending ? <Loader2 className="size-3 animate-spin" /> : <RefreshCw className="size-3" />}
+          {mutation.isPending ? (
+            <Loader2 className="size-3 animate-spin" />
+          ) : (
+            <RefreshCw className="size-3" />
+          )}
         </button>
       </div>
 
@@ -68,14 +74,18 @@ export function AICoordinatorPanel({
             <Loader2 className="size-3 animate-spin" /> Analisando dados…
           </div>
         ) : mutation.error ? (
-          <div className="text-xs text-destructive">Falha ao consultar IA: {(mutation.error as Error).message}</div>
+          <div className="text-xs text-destructive">
+            Falha ao consultar IA: {(mutation.error as Error).message}
+          </div>
         ) : mutation.data ? (
           <>
             <Markdown content={mutation.data.text} />
             <InlineChart text={mutation.data.text} />
           </>
         ) : (
-          <div className="text-xs text-muted-foreground">Clique em atualizar para gerar insights.</div>
+          <div className="text-xs text-muted-foreground">
+            Clique em atualizar para gerar insights.
+          </div>
         )}
       </div>
     </div>

@@ -11,7 +11,15 @@ export const CAT_LABEL: Record<Cat, string> = {
   marketing: "Marketing",
 };
 
-export const CATEGORIES: Cat[] = ["all", "estoque", "atraso", "parado", "proto", "comentario", "marketing"];
+export const CATEGORIES: Cat[] = [
+  "all",
+  "estoque",
+  "atraso",
+  "parado",
+  "proto",
+  "comentario",
+  "marketing",
+];
 
 /** True se a seção `k` deve renderizar quando o chip selecionado é `cat`. */
 export function show(cat: Cat, k: Exclude<Cat, "all">): boolean {

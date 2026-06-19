@@ -29,8 +29,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,7 +60,11 @@ const colecoesSearchSchema = z.object({
   q: fallback(z.string().trim().max(80), "").default(""),
   status: fallback(z.enum(["all", ...STATUS_KEYS]), "all").default("all"),
   season: fallback(
-    z.string().trim().max(40).regex(/^[\p{L}\p{N}\s\-–]+$/u),
+    z
+      .string()
+      .trim()
+      .max(40)
+      .regex(/^[\p{L}\p{N}\s\-–]+$/u),
     "all",
   ).default("all"),
   sort: fallback(z.enum(SORT_KEYS), "recent").default("recent"),
@@ -60,7 +77,10 @@ export const Route = createFileRoute("/_authenticated/_app/colecoes")({
   head: () => ({
     meta: [
       { title: "Coleções · USE MODA OS" },
-      { name: "description", content: "Gestão de coleções com visão de planejamento, mix, performance e rentabilidade." },
+      {
+        name: "description",
+        content: "Gestão de coleções com visão de planejamento, mix, performance e rentabilidade.",
+      },
     ],
   }),
   component: ColecoesPage,
@@ -119,12 +139,18 @@ const STATUS_PROGRESS: Record<Collection["status"], number> = {
 };
 
 function brl(value: number) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  return value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  });
 }
 
 async function resolveCoverUrl(path: string | null) {
   if (!path) return null;
-  const { data, error } = await supabase.storage.from("collection-covers").createSignedUrl(path, 60 * 60);
+  const { data, error } = await supabase.storage
+    .from("collection-covers")
+    .createSignedUrl(path, 60 * 60);
   if (error) throw error;
   return data.signedUrl;
 }
@@ -136,7 +162,15 @@ async function resolveProductImageUrl(path: string | null): Promise<string | nul
   return data?.signedUrl ?? null;
 }
 
-function CollectionCover({ path, alt, className }: { path: string | null; alt: string; className?: string }) {
+function CollectionCover({
+  path,
+  alt,
+  className,
+}: {
+  path: string | null;
+  alt: string;
+  className?: string;
+}) {
   const { data: url } = useQuery({
     queryKey: ["collection-cover", path],
     queryFn: () => resolveCoverUrl(path),
@@ -155,7 +189,15 @@ function CollectionCover({ path, alt, className }: { path: string | null; alt: s
   return <img src={url} alt={alt} className={className} loading="lazy" />;
 }
 
-function ProductThumb({ path, alt, className }: { path: string | null; alt: string; className?: string }) {
+function ProductThumb({
+  path,
+  alt,
+  className,
+}: {
+  path: string | null;
+  alt: string;
+  className?: string;
+}) {
   const { data: url } = useQuery({
     queryKey: ["product-thumb", path],
     queryFn: () => resolveProductImageUrl(path),
@@ -169,7 +211,14 @@ function ProductThumb({ path, alt, className }: { path: string | null; alt: stri
       </div>
     );
   }
-  return <img src={url} alt={alt} className={`${className ?? ""} object-cover rounded-lg shrink-0`} loading="lazy" />;
+  return (
+    <img
+      src={url}
+      alt={alt}
+      className={`${className ?? ""} object-cover rounded-lg shrink-0`}
+      loading="lazy"
+    />
+  );
 }
 
 function ColecoesPage() {
@@ -179,7 +228,14 @@ function ColecoesPage() {
 
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { q, status: statusFilter, season: seasonFilter, sort: sortBy, page, id: selectedId } = search;
+  const {
+    q,
+    status: statusFilter,
+    season: seasonFilter,
+    sort: sortBy,
+    page,
+    id: selectedId,
+  } = search;
   const pageSize = 6;
 
   const updateSearch = (patch: Partial<typeof search>) =>
@@ -190,7 +246,9 @@ function ColecoesPage() {
   const setSortBy = (v: typeof sortBy) => updateSearch({ sort: v, page: 1 });
   const setPage = (v: number | ((p: number) => number)) =>
     updateSearch({ page: typeof v === "function" ? v(page) : v });
-  const setSelectedId = (v: string | null | ((cur: string | undefined) => string | undefined | null)) => {
+  const setSelectedId = (
+    v: string | null | ((cur: string | undefined) => string | undefined | null),
+  ) => {
     const next = typeof v === "function" ? v(selectedId) : v;
     updateSearch({ id: next ?? undefined });
   };
@@ -201,7 +259,10 @@ function ColecoesPage() {
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["collections"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("collections").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("collections")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Collection[];
     },
@@ -212,7 +273,9 @@ function ColecoesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, collection_id, name, category, status, sell_price, cost_price, colors, image_url, created_at")
+        .select(
+          "id, collection_id, name, category, status, sell_price, cost_price, colors, image_url, created_at",
+        )
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as ProductRef[];
@@ -224,7 +287,9 @@ function ColecoesPage() {
       setSelectedId(null);
       return;
     }
-    setSelectedId((current) => (current && collections.some((item) => item.id === current) ? current : collections[0].id));
+    setSelectedId((current) =>
+      current && collections.some((item) => item.id === current) ? current : collections[0].id,
+    );
   }, [collections]);
 
   const selected = useMemo(
@@ -248,7 +313,16 @@ function ColecoesPage() {
         .select("product_id, quantity, progress, status, stage, due_date")
         .in("product_id", selectedProductIds);
       if (error) throw error;
-      const map: Record<string, { qty: number; done: number; stages: Record<string, number>; late: number; status: Record<string, number> }> = {};
+      const map: Record<
+        string,
+        {
+          qty: number;
+          done: number;
+          stages: Record<string, number>;
+          late: number;
+          status: Record<string, number>;
+        }
+      > = {};
       const now = Date.now();
       (data ?? []).forEach((o: any) => {
         if (!o.product_id) return;
@@ -257,7 +331,13 @@ function ColecoesPage() {
         m.done += Math.round((o.quantity ?? 0) * ((o.progress ?? 0) / 100));
         if (o.stage) m.stages[o.stage] = (m.stages[o.stage] ?? 0) + (o.quantity ?? 0);
         if (o.status) m.status[o.status] = (m.status[o.status] ?? 0) + 1;
-        if (o.due_date && new Date(o.due_date).getTime() < now && (o.progress ?? 0) < 100 && o.status !== "concluida") m.late += 1;
+        if (
+          o.due_date &&
+          new Date(o.due_date).getTime() < now &&
+          (o.progress ?? 0) < 100 &&
+          o.status !== "concluida"
+        )
+          m.late += 1;
       });
       return map;
     },
@@ -271,7 +351,13 @@ function ColecoesPage() {
         .select("product_id, quantity, progress, status, stage")
         .neq("status", "cancelada");
       if (error) throw error;
-      return (data ?? []) as Array<{ product_id: string | null; quantity: number | null; progress: number | null; status: string | null; stage: string | null }>;
+      return (data ?? []) as Array<{
+        product_id: string | null;
+        quantity: number | null;
+        progress: number | null;
+        status: string | null;
+        stage: string | null;
+      }>;
     },
   });
 
@@ -298,18 +384,23 @@ function ColecoesPage() {
   const { data: techSheets = [] } = useQuery({
     queryKey: ["collections-tech-sheets"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tech_sheets")
-        .select("id, product_id, status");
+      const { data, error } = await supabase.from("tech_sheets").select("id, product_id, status");
       if (error) throw error;
-      return (data ?? []) as Array<{ id: string; product_id: string | null; status: string | null }>;
+      return (data ?? []) as Array<{
+        id: string;
+        product_id: string | null;
+        status: string | null;
+      }>;
     },
   });
 
   const { data: protosByProduct = {} } = useQuery({
     queryKey: ["collections-prototypes"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("prototypes").select("product_id, stage").not("product_id", "is", null);
+      const { data, error } = await supabase
+        .from("prototypes")
+        .select("product_id, stage")
+        .not("product_id", "is", null);
       if (error) throw error;
       const map: Record<string, { any: boolean; approved: boolean }> = {};
       (data ?? []).forEach((p: any) => {
@@ -322,8 +413,11 @@ function ColecoesPage() {
   });
 
   const pulseByCollection = useMemo(() => {
-    const map: Record<string, { total: number; croqui: number; piloto: number; ficha: number }> = {};
-    const sheetSet = new Set(techSheets.filter((t) => t.status === "aprovada" && t.product_id).map((t) => t.product_id!));
+    const map: Record<string, { total: number; croqui: number; piloto: number; ficha: number }> =
+      {};
+    const sheetSet = new Set(
+      techSheets.filter((t) => t.status === "aprovada" && t.product_id).map((t) => t.product_id!),
+    );
     products.forEach((p) => {
       if (!p.collection_id) return;
       const a = (map[p.collection_id] ??= { total: 0, croqui: 0, piloto: 0, ficha: 0 });
@@ -336,7 +430,6 @@ function ColecoesPage() {
     return map;
   }, [products, protosByProduct, techSheets]);
 
-
   const { data: bom = [] } = useQuery({
     queryKey: ["collections-bom"],
     queryFn: async () => {
@@ -344,7 +437,11 @@ function ColecoesPage() {
         .from("tech_sheet_materials")
         .select("tech_sheet_id, inventory_item_id, inventory_items(balance)");
       if (error) throw error;
-      return (data ?? []) as Array<{ tech_sheet_id: string; inventory_item_id: string | null; inventory_items: { balance: number | null } | null }>;
+      return (data ?? []) as Array<{
+        tech_sheet_id: string;
+        inventory_item_id: string | null;
+        inventory_items: { balance: number | null } | null;
+      }>;
     },
   });
 
@@ -368,7 +465,9 @@ function ColecoesPage() {
       return sheets.some((sid) => {
         const mats = matsBySheet.get(sid) ?? [];
         if (mats.length === 0) return false;
-        return mats.every((m) => m.inventory_item_id && Number(m.inventory_items?.balance ?? 0) > 0);
+        return mats.every(
+          (m) => m.inventory_item_id && Number(m.inventory_items?.balance ?? 0) > 0,
+        );
       });
     };
     const map: Record<string, { total: number; sheetOk: number; matOk: number; pct: number }> = {};
@@ -380,12 +479,11 @@ function ColecoesPage() {
       if (hasSheet) a.sheetOk += 1;
       if (hasSheet && productMaterialsOk(p.id)) a.matOk += 1;
     });
-    Object.values(map).forEach((a) => { a.pct = a.total > 0 ? Math.round((a.matOk / a.total) * 100) : 0; });
+    Object.values(map).forEach((a) => {
+      a.pct = a.total > 0 ? Math.round((a.matOk / a.total) * 100) : 0;
+    });
     return map;
   }, [techSheets, bom, products]);
-
-
-
 
   const derived = useMemo(() => {
     const revenue = selectedProducts.reduce((sum, item) => sum + Number(item.sell_price || 0), 0);
@@ -401,10 +499,12 @@ function ColecoesPage() {
       acc[key] = (acc[key] ?? 0) + 1;
       return acc;
     }, {});
-    const colorCount = selectedProducts.flatMap((item) => item.colors ?? []).reduce<Record<string, number>>((acc, color) => {
-      acc[color] = (acc[color] ?? 0) + 1;
-      return acc;
-    }, {});
+    const colorCount = selectedProducts
+      .flatMap((item) => item.colors ?? [])
+      .reduce<Record<string, number>>((acc, color) => {
+        acc[color] = (acc[color] ?? 0) + 1;
+        return acc;
+      }, {});
 
     return {
       revenue,
@@ -453,7 +553,10 @@ function ColecoesPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const seasons = useMemo(() => Array.from(new Set(collections.map((c) => c.season))).sort(), [collections]);
+  const seasons = useMemo(
+    () => Array.from(new Set(collections.map((c) => c.season))).sort(),
+    [collections],
+  );
 
   const filteredCollections = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -472,23 +575,31 @@ function ColecoesPage() {
     const farFuture = 8640000000000000;
     sorted.sort((a, b) => {
       switch (sortBy) {
-        case "name": return a.name.localeCompare(b.name, "pt-BR");
-        case "progress": return b.progress - a.progress;
-        case "year": return b.year - a.year;
+        case "name":
+          return a.name.localeCompare(b.name, "pt-BR");
+        case "progress":
+          return b.progress - a.progress;
+        case "year":
+          return b.year - a.year;
         case "launch": {
           const av = a.launch_date ? new Date(a.launch_date).getTime() : farFuture;
           const bv = b.launch_date ? new Date(b.launch_date).getTime() : farFuture;
           return av - bv;
         }
-        default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
     });
     return sorted;
   }, [collections, q, statusFilter, seasonFilter, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCollections.length / pageSize));
-  useEffect(() => { setPage(1); }, [q, statusFilter, seasonFilter, sortBy]);
-  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
+  useEffect(() => {
+    setPage(1);
+  }, [q, statusFilter, seasonFilter, sortBy]);
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
   const pagedCollections = useMemo(
     () => filteredCollections.slice((page - 1) * pageSize, page * pageSize),
     [filteredCollections, page],
@@ -538,16 +649,28 @@ function ColecoesPage() {
     toast.success("Spec exportado");
   }
 
-
   const timeline = useMemo(() => {
     if (!selected) return [];
     const start = new Date(selected.created_at);
-    const launch = selected.launch_date ? new Date(selected.launch_date) : new Date(start.getFullYear(), start.getMonth() + 4, start.getDate());
-    const span = Math.max(10, Math.round((launch.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+    const launch = selected.launch_date
+      ? new Date(selected.launch_date)
+      : new Date(start.getFullYear(), start.getMonth() + 4, start.getDate());
+    const span = Math.max(
+      10,
+      Math.round((launch.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)),
+    );
     const steps = [
       { label: "Briefing", at: start, progress: 10 },
-      { label: "Mix & direção", at: new Date(start.getTime() + span * 0.25 * 86400000), progress: 30 },
-      { label: "Desenvolvimento", at: new Date(start.getTime() + span * 0.55 * 86400000), progress: 60 },
+      {
+        label: "Mix & direção",
+        at: new Date(start.getTime() + span * 0.25 * 86400000),
+        progress: 30,
+      },
+      {
+        label: "Desenvolvimento",
+        at: new Date(start.getTime() + span * 0.55 * 86400000),
+        progress: 60,
+      },
       { label: "Go to market", at: launch, progress: 100 },
     ];
     return steps;
@@ -557,11 +680,13 @@ function ColecoesPage() {
     if (!selected) return null;
     const ps = selectedProducts;
     const sheetsByProduct = new Map<string, string[]>();
-    techSheets.filter((t) => t.status === "aprovada" && t.product_id).forEach((t) => {
-      const arr = sheetsByProduct.get(t.product_id!) ?? [];
-      arr.push(t.id);
-      sheetsByProduct.set(t.product_id!, arr);
-    });
+    techSheets
+      .filter((t) => t.status === "aprovada" && t.product_id)
+      .forEach((t) => {
+        const arr = sheetsByProduct.get(t.product_id!) ?? [];
+        arr.push(t.id);
+        sheetsByProduct.set(t.product_id!, arr);
+      });
     const matsBySheet = new Map<string, typeof bom>();
     bom.forEach((m) => {
       const arr = matsBySheet.get(m.tech_sheet_id) ?? [];
@@ -574,7 +699,10 @@ function ColecoesPage() {
       if (!sids) return false;
       return !sids.some((sid) => {
         const mats = matsBySheet.get(sid) ?? [];
-        return mats.length > 0 && mats.every((m) => m.inventory_item_id && Number(m.inventory_items?.balance ?? 0) > 0);
+        return (
+          mats.length > 0 &&
+          mats.every((m) => m.inventory_item_id && Number(m.inventory_items?.balance ?? 0) > 0)
+        );
       });
     });
     const lateProducts = ps.filter((p) => (productionByProduct[p.id]?.late ?? 0) > 0);
@@ -595,11 +723,15 @@ function ColecoesPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">Módulo 2</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">
+            Módulo 2
+          </div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
             <Layers className="size-6 text-primary" /> Gestão de Coleções
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Planejamento, direção criativa, mix, cronograma, performance e ROI em uma única visão.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Planejamento, direção criativa, mix, cronograma, performance e ROI em uma única visão.
+          </p>
         </div>
         <div className="flex gap-2">
           <CollectionCompareDialog collections={collections as any} />
@@ -617,7 +749,9 @@ function ColecoesPage() {
         <div className="glass rounded-xl p-12 text-center">
           <Sparkles className="size-10 text-primary mx-auto mb-3" />
           <h2 className="font-semibold mb-1">Nenhuma coleção cadastrada</h2>
-          <p className="text-sm text-muted-foreground mb-4">Crie a primeira coleção para estruturar o calendário criativo do time.</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Crie a primeira coleção para estruturar o calendário criativo do time.
+          </p>
           <Button onClick={openCreate}>Criar coleção</Button>
         </div>
       ) : (
@@ -654,27 +788,37 @@ function ColecoesPage() {
 
             <div className="grid grid-cols-2 gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos status</SelectItem>
                   {Object.entries(STATUS_LABELS).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <Select value={seasonFilter} onValueChange={setSeasonFilter}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Temporada" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Temporada" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas temporadas</SelectItem>
                   {seasons.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Ordenar por" /></SelectTrigger>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue placeholder="Ordenar por" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="recent">Mais recentes</SelectItem>
                 <SelectItem value="name">Nome (A–Z)</SelectItem>
@@ -686,79 +830,110 @@ function ColecoesPage() {
 
             <div className="space-y-2">
               {filteredCollections.length === 0 ? (
-                <div className="text-xs text-muted-foreground text-center py-6">Nenhuma coleção encontrada.</div>
-              ) : pagedCollections.map((collection) => {
-                const active = collection.id === selected?.id;
-                return (
-                  <button
-                    key={collection.id}
-                    type="button"
-                    onClick={() => setSelectedId(collection.id)}
-                    className={`w-full text-left rounded-xl border p-3 transition-all ${
-                      active ? "border-primary/40 bg-primary/10" : "border-border bg-background/30 hover:bg-muted/30"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="font-medium truncate">{collection.name}</div>
-                        <div className="text-xs text-muted-foreground mt-1">{collection.season} {collection.year}</div>
-                      </div>
-                      <Badge variant="outline" className={STATUS_COLORS[collection.status]}>{STATUS_LABELS[collection.status]}</Badge>
-                    </div>
-                    <div className="mt-3 space-y-1.5">
-                      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                        <span>Progresso</span>
-                        <span>{collection.progress}%</span>
-                      </div>
-                      <Progress value={collection.progress} className="h-1.5" />
-                      {readinessByCollection[collection.id]?.planned > 0 && (
-                        <>
-                          <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
-                            <span>Produção (real/plan)</span>
-                            <span className="tabular-nums">{readinessByCollection[collection.id].pct}%</span>
+                <div className="text-xs text-muted-foreground text-center py-6">
+                  Nenhuma coleção encontrada.
+                </div>
+              ) : (
+                pagedCollections.map((collection) => {
+                  const active = collection.id === selected?.id;
+                  return (
+                    <button
+                      key={collection.id}
+                      type="button"
+                      onClick={() => setSelectedId(collection.id)}
+                      className={`w-full text-left rounded-xl border p-3 transition-all ${
+                        active
+                          ? "border-primary/40 bg-primary/10"
+                          : "border-border bg-background/30 hover:bg-muted/30"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">{collection.name}</div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {collection.season} {collection.year}
                           </div>
-                          <Progress value={readinessByCollection[collection.id].pct} className="h-1.5" />
-                        </>
-                      )}
-                    </div>
-
-                  </button>
-                );
-              })}
+                        </div>
+                        <Badge variant="outline" className={STATUS_COLORS[collection.status]}>
+                          {STATUS_LABELS[collection.status]}
+                        </Badge>
+                      </div>
+                      <div className="mt-3 space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                          <span>Progresso</span>
+                          <span>{collection.progress}%</span>
+                        </div>
+                        <Progress value={collection.progress} className="h-1.5" />
+                        {readinessByCollection[collection.id]?.planned > 0 && (
+                          <>
+                            <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                              <span>Produção (real/plan)</span>
+                              <span className="tabular-nums">
+                                {readinessByCollection[collection.id].pct}%
+                              </span>
+                            </div>
+                            <Progress
+                              value={readinessByCollection[collection.id].pct}
+                              className="h-1.5"
+                            />
+                          </>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
 
             {totalPages > 1 && (
               <div className="flex items-center justify-between pt-1">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
                   Anterior
                 </Button>
                 <div className="text-xs text-muted-foreground tabular-nums">
                   Página {page} de {totalPages}
                 </div>
-                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
                   Próxima
                 </Button>
               </div>
             )}
           </section>
 
-
-
           {selected && (
             <section className="space-y-4">
               <div className="glass rounded-xl overflow-hidden">
                 <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-0">
                   <div className="min-h-[280px] lg:min-h-[360px] relative bg-muted/20">
-                    <CollectionCover path={selected.cover_path} alt={`Mood da coleção ${selected.name}`} className="size-full object-cover" />
+                    <CollectionCover
+                      path={selected.cover_path}
+                      alt={`Mood da coleção ${selected.name}`}
+                      className="size-full object-cover"
+                    />
                     <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-background via-background/60 to-transparent">
                       <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <Badge variant="outline" className={STATUS_COLORS[selected.status]}>{STATUS_LABELS[selected.status]}</Badge>
-                        <Badge variant="outline">{selected.season} {selected.year}</Badge>
+                        <Badge variant="outline" className={STATUS_COLORS[selected.status]}>
+                          {STATUS_LABELS[selected.status]}
+                        </Badge>
+                        <Badge variant="outline">
+                          {selected.season} {selected.year}
+                        </Badge>
                         <Badge variant="outline">{selectedProducts.length} SKUs</Badge>
                       </div>
                       <h2 className="text-2xl font-semibold tracking-tight">{selected.name}</h2>
                       <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-                        {selected.description || "Direção criativa ainda sem descrição estruturada."}
+                        {selected.description ||
+                          "Direção criativa ainda sem descrição estruturada."}
                       </p>
                     </div>
                   </div>
@@ -767,12 +942,25 @@ function ColecoesPage() {
                     {[
                       { label: "Receita potencial", value: brl(derived.revenue), icon: TrendingUp },
                       { label: "Margem estimada", value: brl(derived.margin), icon: Target },
-                      { label: "Mix ativo", value: `${selectedProducts.length} produtos`, icon: BarChart3 },
-                      { label: "Go-live", value: selected.launch_date ? new Date(selected.launch_date).toLocaleDateString("pt-BR") : "A definir", icon: Calendar },
+                      {
+                        label: "Mix ativo",
+                        value: `${selectedProducts.length} produtos`,
+                        icon: BarChart3,
+                      },
+                      {
+                        label: "Go-live",
+                        value: selected.launch_date
+                          ? new Date(selected.launch_date).toLocaleDateString("pt-BR")
+                          : "A definir",
+                        icon: Calendar,
+                      },
                     ].map((item) => {
                       const Icon = item.icon;
                       return (
-                        <div key={item.label} className="rounded-xl border border-border bg-background/30 p-4">
+                        <div
+                          key={item.label}
+                          className="rounded-xl border border-border bg-background/30 p-4"
+                        >
                           <Icon className="size-4 text-primary mb-3" />
                           <div className="text-lg font-semibold tracking-tight">{item.value}</div>
                           <div className="text-xs text-muted-foreground mt-1">{item.label}</div>
@@ -785,30 +973,48 @@ function ColecoesPage() {
                       if (!p || p.total === 0) return null;
                       const pct = (n: number) => Math.round((n / p.total) * 100);
                       const faltas: string[] = [];
-                      if (p.croqui < p.total) faltas.push(`${p.total - p.croqui} croqui${p.total - p.croqui > 1 ? "s" : ""}`);
-                      if (p.piloto < p.total) faltas.push(`${p.total - p.piloto} piloto${p.total - p.piloto > 1 ? "s" : ""}`);
-                      if (p.ficha < p.total) faltas.push(`${p.total - p.ficha} ficha${p.total - p.ficha > 1 ? "s" : ""}`);
+                      if (p.croqui < p.total)
+                        faltas.push(
+                          `${p.total - p.croqui} croqui${p.total - p.croqui > 1 ? "s" : ""}`,
+                        );
+                      if (p.piloto < p.total)
+                        faltas.push(
+                          `${p.total - p.piloto} piloto${p.total - p.piloto > 1 ? "s" : ""}`,
+                        );
+                      if (p.ficha < p.total)
+                        faltas.push(
+                          `${p.total - p.ficha} ficha${p.total - p.ficha > 1 ? "s" : ""}`,
+                        );
                       return (
                         <div className="col-span-2 rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
                           <div className="flex items-center gap-2">
                             <Sparkles className="size-4 text-primary" />
-                            <div className="text-sm font-semibold">Pulso da coleção · Coordenador</div>
+                            <div className="text-sm font-semibold">
+                              Pulso da coleção · Coordenador
+                            </div>
                           </div>
                           <div className="grid grid-cols-3 gap-3 text-xs">
-                            {([
-                              ["Croqui", p.croqui, "bg-pink-500"],
-                              ["Piloto", p.piloto, "bg-amber-500"],
-                              ["Ficha aprovada", p.ficha, "bg-emerald-500"],
-                            ] as const).map(([label, n, color]) => (
+                            {(
+                              [
+                                ["Croqui", p.croqui, "bg-pink-500"],
+                                ["Piloto", p.piloto, "bg-amber-500"],
+                                ["Ficha aprovada", p.ficha, "bg-emerald-500"],
+                              ] as const
+                            ).map(([label, n, color]) => (
                               <div key={label}>
                                 <div className="flex items-center justify-between mb-1">
                                   <span className="text-muted-foreground">{label}</span>
                                   <span className="font-semibold tabular-nums">{pct(n)}%</span>
                                 </div>
                                 <div className="h-1.5 rounded bg-muted overflow-hidden">
-                                  <div className={`h-full ${color}`} style={{ width: `${pct(n)}%` }} />
+                                  <div
+                                    className={`h-full ${color}`}
+                                    style={{ width: `${pct(n)}%` }}
+                                  />
                                 </div>
-                                <div className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{n} de {p.total}</div>
+                                <div className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">
+                                  {n} de {p.total}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -835,7 +1041,8 @@ function ColecoesPage() {
                           </div>
                           <Progress value={r.pct} className="h-2" />
                           <div className="text-xs text-muted-foreground mt-2">
-                            {r.done.toLocaleString("pt-BR")} de {r.planned.toLocaleString("pt-BR")} peças produzidas · {r.ops} OPs ativas
+                            {r.done.toLocaleString("pt-BR")} de {r.planned.toLocaleString("pt-BR")}{" "}
+                            peças produzidas · {r.ops} OPs ativas
                           </div>
                         </div>
                       );
@@ -850,36 +1057,55 @@ function ColecoesPage() {
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <Target className="size-4 text-primary" />
-                              <div className="text-sm font-medium">Pronta para entrar em produção</div>
+                              <div className="text-sm font-medium">
+                                Pronta para entrar em produção
+                              </div>
                             </div>
-                            <Badge variant="outline" className={ok ? "bg-success/20 text-success border-success/30" : "bg-warning/20 text-warning border-warning/30"}>
+                            <Badge
+                              variant="outline"
+                              className={
+                                ok
+                                  ? "bg-success/20 text-success border-success/30"
+                                  : "bg-warning/20 text-warning border-warning/30"
+                              }
+                            >
                               {ok ? "Liberada" : `${d.pct}%`}
                             </Badge>
                           </div>
                           <Progress value={d.pct} className="h-2" />
                           <div className="text-xs text-muted-foreground mt-2">
-                            {d.matOk} de {d.total} produtos com ficha aprovada <span className="opacity-60">e materiais em estoque</span>
+                            {d.matOk} de {d.total} produtos com ficha aprovada{" "}
+                            <span className="opacity-60">e materiais em estoque</span>
                             {!ok && ` · faltam ${d.total - d.matOk}`}
                             {d.sheetOk > d.matOk && ` (${d.sheetOk - d.matOk} sem material)`}
                           </div>
-
                         </div>
                       );
                     })()}
 
-
                     <div className="col-span-2 rounded-xl border border-border bg-background/30 p-4 flex flex-wrap gap-2 items-center justify-between">
                       <div>
                         <div className="text-sm font-medium">Direção cromática</div>
-                        <div className="text-xs text-muted-foreground">Paleta principal da coleção</div>
+                        <div className="text-xs text-muted-foreground">
+                          Paleta principal da coleção
+                        </div>
                       </div>
                       <div className="flex gap-2 flex-wrap justify-end">
-                        {(selected.palette.length ? selected.palette : ["#a78bfa", "#fb7185", "#f59e0b"]).slice(0, 6).map((color) => (
-                          <div key={color} className="size-7 rounded-full border border-border" style={{ background: color }} title={color} />
-                        ))}
+                        {(selected.palette.length
+                          ? selected.palette
+                          : ["#a78bfa", "#fb7185", "#f59e0b"]
+                        )
+                          .slice(0, 6)
+                          .map((color) => (
+                            <div
+                              key={color}
+                              className="size-7 rounded-full border border-border"
+                              style={{ background: color }}
+                              title={color}
+                            />
+                          ))}
                       </div>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -896,31 +1122,62 @@ function ColecoesPage() {
                     ["performance", "Performance"],
                     ["roi", "ROI"],
                   ].map(([value, label]) => (
-                    <TabsTrigger key={value} value={value} className="rounded-lg border border-border bg-background/40 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <TabsTrigger
+                      key={value}
+                      value={value}
+                      className="rounded-lg border border-border bg-background/40 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
                       {label}
                     </TabsTrigger>
                   ))}
                 </TabsList>
 
-                <TabsContent value="planejamento" className="mt-0 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <TabsContent
+                  value="planejamento"
+                  className="mt-0 grid grid-cols-1 lg:grid-cols-3 gap-4"
+                >
                   <div className="lg:col-span-2 glass rounded-xl p-5 space-y-5">
                     <div>
-                      <div className="text-sm font-semibold flex items-center gap-2"><Flag className="size-4 text-primary" /> Plano mestre</div>
-                      <div className="text-xs text-muted-foreground mt-1">Ponto de controle executivo desta coleção.</div>
+                      <div className="text-sm font-semibold flex items-center gap-2">
+                        <Flag className="size-4 text-primary" /> Plano mestre
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Ponto de controle executivo desta coleção.
+                      </div>
                     </div>
                     <div className="grid sm:grid-cols-3 gap-3">
-                      <Metric label="Meta de progresso" value={`${Math.max(selected.progress, STATUS_PROGRESS[selected.status])}%`} />
+                      <Metric
+                        label="Meta de progresso"
+                        value={`${Math.max(selected.progress, STATUS_PROGRESS[selected.status])}%`}
+                      />
                       <Metric label="Categorias ativas" value={String(derived.categories.length)} />
                       <Metric label="Margem prevista" value={`${derived.marginPct.toFixed(0)}%`} />
                     </div>
                     <div className="space-y-3">
                       {[
-                        ["Narrativa da coleção", selected.description || "Definir conceito e pilares criativos da temporada."],
-                        ["Linha comercial", `${selectedProducts.length} produtos mapeados para entrada no calendário.`],
-                        ["Ritmo de lançamento", selected.launch_date ? `Data-alvo ${new Date(selected.launch_date).toLocaleDateString("pt-BR")}.` : "Data de lançamento ainda pendente."],
+                        [
+                          "Narrativa da coleção",
+                          selected.description ||
+                            "Definir conceito e pilares criativos da temporada.",
+                        ],
+                        [
+                          "Linha comercial",
+                          `${selectedProducts.length} produtos mapeados para entrada no calendário.`,
+                        ],
+                        [
+                          "Ritmo de lançamento",
+                          selected.launch_date
+                            ? `Data-alvo ${new Date(selected.launch_date).toLocaleDateString("pt-BR")}.`
+                            : "Data de lançamento ainda pendente.",
+                        ],
                       ].map(([label, text]) => (
-                        <div key={label} className="rounded-xl border border-border bg-background/30 p-4">
-                          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">{label}</div>
+                        <div
+                          key={label}
+                          className="rounded-xl border border-border bg-background/30 p-4"
+                        >
+                          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">
+                            {label}
+                          </div>
                           <p className="text-sm leading-6">{text}</p>
                         </div>
                       ))}
@@ -935,9 +1192,19 @@ function ColecoesPage() {
                       { label: "Direção cromática validada", done: selected.palette.length >= 3 },
                       { label: "Go-live definido", done: Boolean(selected.launch_date) },
                     ].map((item) => (
-                      <div key={item.label} className="flex items-center justify-between rounded-lg border border-border bg-background/30 p-3 text-sm">
+                      <div
+                        key={item.label}
+                        className="flex items-center justify-between rounded-lg border border-border bg-background/30 p-3 text-sm"
+                      >
                         <span>{item.label}</span>
-                        <Badge variant="outline" className={item.done ? "bg-success/20 text-success border-success/30" : "bg-muted text-muted-foreground"}>
+                        <Badge
+                          variant="outline"
+                          className={
+                            item.done
+                              ? "bg-success/20 text-success border-success/30"
+                              : "bg-muted text-muted-foreground"
+                          }
+                        >
                           {item.done ? "OK" : "Pendente"}
                         </Badge>
                       </div>
@@ -948,31 +1215,57 @@ function ColecoesPage() {
                 <TabsContent value="moodboard" className="mt-0 space-y-4">
                   <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
                     <div className="glass rounded-xl overflow-hidden min-h-[320px]">
-                      <CollectionCover path={selected.cover_path} alt={`Imagem da coleção ${selected.name}`} className="size-full min-h-[320px] object-cover" />
+                      <CollectionCover
+                        path={selected.cover_path}
+                        alt={`Imagem da coleção ${selected.name}`}
+                        className="size-full min-h-[320px] object-cover"
+                      />
                     </div>
                     <div className="glass rounded-xl p-5 space-y-5">
                       <div>
-                        <div className="text-sm font-semibold flex items-center gap-2"><Palette className="size-4 text-primary" /> Direção visual</div>
-                        <div className="text-xs text-muted-foreground mt-1">Base criativa montada com os sinais já disponíveis no catálogo.</div>
+                        <div className="text-sm font-semibold flex items-center gap-2">
+                          <Palette className="size-4 text-primary" /> Direção visual
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Base criativa montada com os sinais já disponíveis no catálogo.
+                        </div>
                       </div>
                       <div className="space-y-3">
                         <div>
-                          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">Paleta-chave</div>
+                          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">
+                            Paleta-chave
+                          </div>
                           <div className="flex flex-wrap gap-2">
-                            {(selected.palette.length ? selected.palette : derived.colors.map(([color]) => color)).slice(0, 8).map((color) => (
-                              <div key={color} className="w-14">
-                                <div className="h-10 rounded-lg border border-border" style={{ background: color }} />
-                                <div className="text-[10px] text-muted-foreground truncate mt-1">{color}</div>
-                              </div>
-                            ))}
+                            {(selected.palette.length
+                              ? selected.palette
+                              : derived.colors.map(([color]) => color)
+                            )
+                              .slice(0, 8)
+                              .map((color) => (
+                                <div key={color} className="w-14">
+                                  <div
+                                    className="h-10 rounded-lg border border-border"
+                                    style={{ background: color }}
+                                  />
+                                  <div className="text-[10px] text-muted-foreground truncate mt-1">
+                                    {color}
+                                  </div>
+                                </div>
+                              ))}
                           </div>
                         </div>
                         <div>
-                          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">Categorias em foco</div>
+                          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">
+                            Categorias em foco
+                          </div>
                           <div className="flex flex-wrap gap-2">
-                            {(derived.categories.length ? derived.categories : [["Sem dados", 0]]).slice(0, 6).map(([label, total]) => (
-                              <Badge key={label} variant="secondary">{label} · {total}</Badge>
-                            ))}
+                            {(derived.categories.length ? derived.categories : [["Sem dados", 0]])
+                              .slice(0, 6)
+                              .map(([label, total]) => (
+                                <Badge key={label} variant="secondary">
+                                  {label} · {total}
+                                </Badge>
+                              ))}
                           </div>
                         </div>
                       </div>
@@ -981,46 +1274,84 @@ function ColecoesPage() {
                   <CollectionMoodboard collectionId={selected.id} />
                 </TabsContent>
 
-                <TabsContent value="tendencias" className="mt-0 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <TabsContent
+                  value="tendencias"
+                  className="mt-0 grid grid-cols-1 lg:grid-cols-2 gap-4"
+                >
                   <div className="glass rounded-xl p-5 space-y-3">
-                    <div className="text-sm font-semibold flex items-center gap-2"><TrendingUp className="size-4 text-primary" /> Cores em alta na coleção</div>
-                    {derived.colors.length ? derived.colors.slice(0, 8).map(([color, n]) => {
-                      const max = derived.colors[0]?.[1] || 1;
-                      return (
-                        <div key={color} className="flex items-center gap-2 text-xs">
-                          <div className="size-4 rounded border border-border" style={{ background: color }} />
-                          <span className="w-24 truncate">{color}</span>
-                          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                            <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(n / max) * 100}%` }} />
+                    <div className="text-sm font-semibold flex items-center gap-2">
+                      <TrendingUp className="size-4 text-primary" /> Cores em alta na coleção
+                    </div>
+                    {derived.colors.length ? (
+                      derived.colors.slice(0, 8).map(([color, n]) => {
+                        const max = derived.colors[0]?.[1] || 1;
+                        return (
+                          <div key={color} className="flex items-center gap-2 text-xs">
+                            <div
+                              className="size-4 rounded border border-border"
+                              style={{ background: color }}
+                            />
+                            <span className="w-24 truncate">{color}</span>
+                            <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                              <div
+                                className="h-full bg-[image:var(--gradient-primary)]"
+                                style={{ width: `${(n / max) * 100}%` }}
+                              />
+                            </div>
+                            <span className="tabular-nums text-muted-foreground w-6 text-right">
+                              {n}
+                            </span>
                           </div>
-                          <span className="tabular-nums text-muted-foreground w-6 text-right">{n}</span>
-                        </div>
-                      );
-                    }) : <div className="text-sm text-muted-foreground">Sem sinais de cor ainda.</div>}
+                        );
+                      })
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Sem sinais de cor ainda.</div>
+                    )}
                   </div>
                   <div className="glass rounded-xl p-5 space-y-3">
-                    <div className="text-sm font-semibold flex items-center gap-2"><BarChart3 className="size-4 text-primary" /> Categorias dominantes</div>
-                    {derived.categories.length ? derived.categories.slice(0, 8).map(([label, n]) => {
-                      const max = derived.categories[0]?.[1] || 1;
-                      return (
-                        <div key={label} className="space-y-1.5">
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span>{label}</span><span>{n}</span>
+                    <div className="text-sm font-semibold flex items-center gap-2">
+                      <BarChart3 className="size-4 text-primary" /> Categorias dominantes
+                    </div>
+                    {derived.categories.length ? (
+                      derived.categories.slice(0, 8).map(([label, n]) => {
+                        const max = derived.categories[0]?.[1] || 1;
+                        return (
+                          <div key={label} className="space-y-1.5">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>{label}</span>
+                              <span>{n}</span>
+                            </div>
+                            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                              <div
+                                className="h-full bg-[image:var(--gradient-primary)]"
+                                style={{ width: `${(n / max) * 100}%` }}
+                              />
+                            </div>
                           </div>
-                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                            <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(n / max) * 100}%` }} />
-                          </div>
-                        </div>
-                      );
-                    }) : <div className="text-sm text-muted-foreground">Sem categorias mapeadas.</div>}
+                        );
+                      })
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Sem categorias mapeadas.</div>
+                    )}
                   </div>
                 </TabsContent>
 
-                <TabsContent value="mix" className="mt-0 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4">
+                <TabsContent
+                  value="mix"
+                  className="mt-0 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4"
+                >
                   <div className="glass rounded-xl p-5 space-y-3">
                     <div className="text-sm font-semibold">Distribuição do mix</div>
-                    {(derived.categories.length ? derived.categories : [["Sem categoria", 0] as [string, number]]).map(([label, count]) => {
-                      const max = Math.max(1, ...(derived.categories.length ? derived.categories.map((item) => item[1]) : [1]));
+                    {(derived.categories.length
+                      ? derived.categories
+                      : [["Sem categoria", 0] as [string, number]]
+                    ).map(([label, count]) => {
+                      const max = Math.max(
+                        1,
+                        ...(derived.categories.length
+                          ? derived.categories.map((item) => item[1])
+                          : [1]),
+                      );
                       const numericCount = Number(count);
                       return (
                         <div key={label} className="space-y-1.5">
@@ -1029,7 +1360,10 @@ function ColecoesPage() {
                             <span>{numericCount}</span>
                           </div>
                           <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                            <div className="h-full bg-[image:var(--gradient-primary)]" style={{ width: `${(numericCount / max) * 100}%` }} />
+                            <div
+                              className="h-full bg-[image:var(--gradient-primary)]"
+                              style={{ width: `${(numericCount / max) * 100}%` }}
+                            />
                           </div>
                         </div>
                       );
@@ -1040,111 +1374,175 @@ function ColecoesPage() {
                     {selectedProducts.length ? (
                       <div className="grid sm:grid-cols-2 gap-3">
                         {selectedProducts.map((product) => (
-                          <div key={product.id} className="rounded-xl border border-border bg-background/30 p-4">
+                          <div
+                            key={product.id}
+                            className="rounded-xl border border-border bg-background/30 p-4"
+                          >
                             <div className="flex items-start gap-3">
-                              <ProductThumb path={product.image_url} alt={product.name} className="size-16" />
+                              <ProductThumb
+                                path={product.image_url}
+                                alt={product.name}
+                                className="size-16"
+                              />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="min-w-0">
                                     <div className="font-medium truncate">{product.name}</div>
-                                    <div className="text-xs text-muted-foreground mt-1">{product.category || "Sem categoria"}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                      {product.category || "Sem categoria"}
+                                    </div>
                                   </div>
                                   <Badge variant="outline">{product.status}</Badge>
                                 </div>
-                                <div className="mt-3 text-xs text-muted-foreground">Preço potencial {brl(Number(product.sell_price || 0))}</div>
+                                <div className="mt-3 text-xs text-muted-foreground">
+                                  Preço potencial {brl(Number(product.sell_price || 0))}
+                                </div>
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-sm text-muted-foreground py-10 text-center">Nenhum produto vinculado a esta coleção ainda.</div>
+                      <div className="text-sm text-muted-foreground py-10 text-center">
+                        Nenhum produto vinculado a esta coleção ainda.
+                      </div>
                     )}
                   </div>
                 </TabsContent>
 
-                <TabsContent value="cronograma" className="mt-0 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4">
+                <TabsContent
+                  value="cronograma"
+                  className="mt-0 grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-4"
+                >
                   <div className="glass rounded-xl p-5">
                     <div className="flex items-center gap-2 mb-4 text-sm font-semibold">
                       <Flag className="size-4 text-warning" /> Pendências que travam a coleção
                     </div>
-                    {pendingForSelected && (() => {
-                      const items: Array<{ key: string; tone: string; title: string; detail: string; cta: string; onClick: () => void }> = [];
-                      if (pendingForSelected.noSheet.length) {
-                        const first = pendingForSelected.noSheet[0];
-                        items.push({
-                          key: "sheet",
-                          tone: "bg-warning/15 text-warning border-warning/30",
-                          title: `${pendingForSelected.noSheet.length} produto(s) sem ficha técnica aprovada`,
-                          detail: `Próximo: ${first.name}` + (pendingForSelected.noSheet.length > 1 ? ` (+${pendingForSelected.noSheet.length - 1})` : ""),
-                          cta: `Criar ficha de "${first.name}"`,
-                          onClick: () => navigate({ to: "/ficha-tecnica", search: { productId: first.id } }),
-                        });
-                      }
-                      if (pendingForSelected.noStock.length) {
-                        const first = pendingForSelected.noStock[0];
-                        items.push({
-                          key: "stock",
-                          tone: "bg-destructive/15 text-destructive border-destructive/30",
-                          title: `${pendingForSelected.noStock.length} produto(s) com ficha aprovada mas sem material em estoque`,
-                          detail: `Próximo: ${first.name}` + (pendingForSelected.noStock.length > 1 ? ` (+${pendingForSelected.noStock.length - 1})` : ""),
-                          cta: `Abrir materiais de "${first.name}"`,
-                          onClick: () => navigate({ to: "/ficha-tecnica", search: { productId: first.id } }),
-                        });
-                      }
-                      if (pendingForSelected.lateProducts.length) {
-                        const first = pendingForSelected.lateProducts[0];
-                        items.push({
-                          key: "late",
-                          tone: "bg-destructive/15 text-destructive border-destructive/30",
-                          title: `${pendingForSelected.lateProducts.length} produto(s) com ordens atrasadas`,
-                          detail: `Próximo: ${first.name}` + (pendingForSelected.lateProducts.length > 1 ? ` (+${pendingForSelected.lateProducts.length - 1})` : ""),
-                          cta: `War Room de "${first.name}"`,
-                          onClick: () => navigate({ to: "/war-room-producao", search: { productId: first.id } }),
-                        });
-                      }
-                      if (pendingForSelected.missingLaunch) items.push({
-                        key: "launch",
-                        tone: "bg-info/15 text-info border-info/30",
-                        title: "Data de lançamento não definida",
-                        detail: "Sem go-live a coleção não entra no calendário comercial.",
-                        cta: "Editar coleção",
-                        onClick: () => selected && openEdit(selected),
-                      });
-                      if (!items.length) {
+                    {pendingForSelected &&
+                      (() => {
+                        const items: Array<{
+                          key: string;
+                          tone: string;
+                          title: string;
+                          detail: string;
+                          cta: string;
+                          onClick: () => void;
+                        }> = [];
+                        if (pendingForSelected.noSheet.length) {
+                          const first = pendingForSelected.noSheet[0];
+                          items.push({
+                            key: "sheet",
+                            tone: "bg-warning/15 text-warning border-warning/30",
+                            title: `${pendingForSelected.noSheet.length} produto(s) sem ficha técnica aprovada`,
+                            detail:
+                              `Próximo: ${first.name}` +
+                              (pendingForSelected.noSheet.length > 1
+                                ? ` (+${pendingForSelected.noSheet.length - 1})`
+                                : ""),
+                            cta: `Criar ficha de "${first.name}"`,
+                            onClick: () =>
+                              navigate({ to: "/ficha-tecnica", search: { productId: first.id } }),
+                          });
+                        }
+                        if (pendingForSelected.noStock.length) {
+                          const first = pendingForSelected.noStock[0];
+                          items.push({
+                            key: "stock",
+                            tone: "bg-destructive/15 text-destructive border-destructive/30",
+                            title: `${pendingForSelected.noStock.length} produto(s) com ficha aprovada mas sem material em estoque`,
+                            detail:
+                              `Próximo: ${first.name}` +
+                              (pendingForSelected.noStock.length > 1
+                                ? ` (+${pendingForSelected.noStock.length - 1})`
+                                : ""),
+                            cta: `Abrir materiais de "${first.name}"`,
+                            onClick: () =>
+                              navigate({ to: "/ficha-tecnica", search: { productId: first.id } }),
+                          });
+                        }
+                        if (pendingForSelected.lateProducts.length) {
+                          const first = pendingForSelected.lateProducts[0];
+                          items.push({
+                            key: "late",
+                            tone: "bg-destructive/15 text-destructive border-destructive/30",
+                            title: `${pendingForSelected.lateProducts.length} produto(s) com ordens atrasadas`,
+                            detail:
+                              `Próximo: ${first.name}` +
+                              (pendingForSelected.lateProducts.length > 1
+                                ? ` (+${pendingForSelected.lateProducts.length - 1})`
+                                : ""),
+                            cta: `War Room de "${first.name}"`,
+                            onClick: () =>
+                              navigate({
+                                to: "/war-room-producao",
+                                search: { productId: first.id },
+                              }),
+                          });
+                        }
+                        if (pendingForSelected.missingLaunch)
+                          items.push({
+                            key: "launch",
+                            tone: "bg-info/15 text-info border-info/30",
+                            title: "Data de lançamento não definida",
+                            detail: "Sem go-live a coleção não entra no calendário comercial.",
+                            cta: "Editar coleção",
+                            onClick: () => selected && openEdit(selected),
+                          });
+                        if (!items.length) {
+                          return (
+                            <div className="text-sm text-success border border-success/30 bg-success/10 rounded-lg p-4">
+                              Nenhum bloqueio crítico. A coleção está fluindo dentro do plano.
+                            </div>
+                          );
+                        }
                         return (
-                          <div className="text-sm text-success border border-success/30 bg-success/10 rounded-lg p-4">
-                            Nenhum bloqueio crítico. A coleção está fluindo dentro do plano.
+                          <div className="space-y-3">
+                            {items.map((it) => (
+                              <div key={it.key} className={`rounded-xl border p-3 ${it.tone}`}>
+                                <div className="text-sm font-medium leading-tight">{it.title}</div>
+                                {it.detail && (
+                                  <div className="text-xs opacity-80 mt-1 line-clamp-2">
+                                    {it.detail}
+                                  </div>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="mt-3 h-7 text-xs"
+                                  onClick={it.onClick}
+                                >
+                                  {it.cta}
+                                </Button>
+                              </div>
+                            ))}
                           </div>
                         );
-                      }
-                      return (
-                        <div className="space-y-3">
-                          {items.map((it) => (
-                            <div key={it.key} className={`rounded-xl border p-3 ${it.tone}`}>
-                              <div className="text-sm font-medium leading-tight">{it.title}</div>
-                              {it.detail && <div className="text-xs opacity-80 mt-1 line-clamp-2">{it.detail}</div>}
-                              <Button size="sm" variant="outline" className="mt-3 h-7 text-xs" onClick={it.onClick}>{it.cta}</Button>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
+                      })()}
                   </div>
 
                   <div className="glass rounded-xl p-5">
-                    <div className="flex items-center gap-2 mb-5 text-sm font-semibold"><Clock3 className="size-4 text-primary" /> Cronograma macro</div>
+                    <div className="flex items-center gap-2 mb-5 text-sm font-semibold">
+                      <Clock3 className="size-4 text-primary" /> Cronograma macro
+                    </div>
                     <div className="space-y-4">
                       {timeline.map((step, index) => (
                         <div key={step.label} className="flex gap-4">
                           <div className="flex flex-col items-center">
-                            <div className="size-8 rounded-full bg-primary/10 text-primary grid place-items-center text-xs font-semibold">{index + 1}</div>
-                            {index < timeline.length - 1 && <div className="w-px flex-1 bg-border mt-2" />}
+                            <div className="size-8 rounded-full bg-primary/10 text-primary grid place-items-center text-xs font-semibold">
+                              {index + 1}
+                            </div>
+                            {index < timeline.length - 1 && (
+                              <div className="w-px flex-1 bg-border mt-2" />
+                            )}
                           </div>
                           <div className="pb-5">
                             <div className="font-medium">{step.label}</div>
-                            <div className="text-sm text-muted-foreground mt-1">{step.at.toLocaleDateString("pt-BR")}</div>
-                            <div className="text-xs text-muted-foreground mt-2">Meta acumulada {step.progress}% do calendário.</div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              {step.at.toLocaleDateString("pt-BR")}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-2">
+                              Meta acumulada {step.progress}% do calendário.
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -1154,28 +1552,45 @@ function ColecoesPage() {
 
                 <TabsContent value="status" className="mt-0 glass rounded-xl p-5 space-y-3">
                   <div className="text-sm font-semibold">Status de produção por produto</div>
-                  <div className="text-xs text-muted-foreground mb-2">Consolidação das OPs vinculadas aos produtos desta coleção.</div>
+                  <div className="text-xs text-muted-foreground mb-2">
+                    Consolidação das OPs vinculadas aos produtos desta coleção.
+                  </div>
                   {selectedProducts.length ? (
                     <div className="space-y-2">
                       {selectedProducts.map((p) => {
                         const m = (productionByProduct as any)[p.id];
-                        const pct = m && m.qty > 0 ? Math.min(100, Math.round((m.done / m.qty) * 100)) : 0;
-                        const topStage = m ? Object.entries(m.stages).sort((a: any, b: any) => b[1] - a[1])[0] : null;
+                        const pct =
+                          m && m.qty > 0 ? Math.min(100, Math.round((m.done / m.qty) * 100)) : 0;
+                        const topStage = m
+                          ? Object.entries(m.stages).sort((a: any, b: any) => b[1] - a[1])[0]
+                          : null;
                         return (
-                          <div key={p.id} className="rounded-lg border border-border bg-background/30 p-3">
+                          <div
+                            key={p.id}
+                            className="rounded-lg border border-border bg-background/30 p-3"
+                          >
                             <div className="flex items-center justify-between gap-3 text-sm">
                               <div className="min-w-0">
                                 <div className="font-medium truncate">{p.name}</div>
                                 <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2">
                                   <span>{m ? `${m.qty} pç` : "Sem OP"}</span>
                                   {topStage && <span>· etapa {String(topStage[0])}</span>}
-                                  {m && m.late > 0 && <Badge variant="outline" className="bg-destructive/20 text-destructive border-destructive/30">{m.late} atrasada(s)</Badge>}
+                                  {m && m.late > 0 && (
+                                    <Badge
+                                      variant="outline"
+                                      className="bg-destructive/20 text-destructive border-destructive/30"
+                                    >
+                                      {m.late} atrasada(s)
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
                               <div className="w-32 shrink-0">
                                 <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
                                   <span>{pct}%</span>
-                                  <span className="tabular-nums">{m?.done ?? 0}/{m?.qty ?? 0}</span>
+                                  <span className="tabular-nums">
+                                    {m?.done ?? 0}/{m?.qty ?? 0}
+                                  </span>
                                 </div>
                                 <Progress value={pct} className="h-1.5" />
                               </div>
@@ -1185,20 +1600,36 @@ function ColecoesPage() {
                       })}
                     </div>
                   ) : (
-                    <div className="text-sm text-muted-foreground py-8 text-center">Nenhum produto vinculado.</div>
+                    <div className="text-sm text-muted-foreground py-8 text-center">
+                      Nenhum produto vinculado.
+                    </div>
                   )}
                 </TabsContent>
 
-                <TabsContent value="performance" className="mt-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                  <PerformanceCard label="Produtos em desenvolvimento" value={String(derived.statusCount.desenvolvimento ?? 0)} />
-                  <PerformanceCard label="Produtos aprovados" value={String(derived.statusCount.aprovado ?? 0)} />
-                  <PerformanceCard label="Produtos em produção" value={String(derived.statusCount.producao ?? 0)} />
+                <TabsContent
+                  value="performance"
+                  className="mt-0 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"
+                >
+                  <PerformanceCard
+                    label="Produtos em desenvolvimento"
+                    value={String(derived.statusCount.desenvolvimento ?? 0)}
+                  />
+                  <PerformanceCard
+                    label="Produtos aprovados"
+                    value={String(derived.statusCount.aprovado ?? 0)}
+                  />
+                  <PerformanceCard
+                    label="Produtos em produção"
+                    value={String(derived.statusCount.producao ?? 0)}
+                  />
                   <PerformanceCard label="Cores mapeadas" value={String(derived.colors.length)} />
                 </TabsContent>
 
                 <TabsContent value="roi" className="mt-0 grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div className="glass rounded-xl p-5 space-y-4">
-                    <div className="text-sm font-semibold flex items-center gap-2"><Target className="size-4 text-primary" /> Rentabilidade estimada</div>
+                    <div className="text-sm font-semibold flex items-center gap-2">
+                      <Target className="size-4 text-primary" /> Rentabilidade estimada
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                       <Metric label="Receita projetada" value={brl(derived.revenue)} />
                       <Metric label="Custo somado" value={brl(derived.cost)} />
@@ -1210,10 +1641,19 @@ function ColecoesPage() {
                     <div className="text-sm font-semibold">Leituras executivas</div>
                     {[
                       `A coleção concentra ${selectedProducts.length} SKUs em pipeline ativo.`,
-                      derived.categories[0] ? `Categoria líder: ${derived.categories[0][0]} com ${derived.categories[0][1]} itens.` : "Ainda não há categorias consolidadas.",
-                      derived.colors[0] ? `Cor mais recorrente: ${derived.colors[0][0]} em ${derived.colors[0][1]} produtos.` : "Ainda não há cores recorrentes suficientes.",
+                      derived.categories[0]
+                        ? `Categoria líder: ${derived.categories[0][0]} com ${derived.categories[0][1]} itens.`
+                        : "Ainda não há categorias consolidadas.",
+                      derived.colors[0]
+                        ? `Cor mais recorrente: ${derived.colors[0][0]} em ${derived.colors[0][1]} produtos.`
+                        : "Ainda não há cores recorrentes suficientes.",
                     ].map((line) => (
-                      <div key={line} className="rounded-lg border border-border bg-background/30 p-3 text-sm text-muted-foreground">{line}</div>
+                      <div
+                        key={line}
+                        className="rounded-lg border border-border bg-background/30 p-3 text-sm text-muted-foreground"
+                      >
+                        {line}
+                      </div>
                     ))}
                   </div>
                 </TabsContent>
@@ -1225,7 +1665,12 @@ function ColecoesPage() {
                 </Button>
                 {selected.owner_id === user?.id && (
                   <>
-                    <Button variant="outline" onClick={() => duplicateMut.mutate(selected)} disabled={duplicateMut.isPending} className="gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => duplicateMut.mutate(selected)}
+                      disabled={duplicateMut.isPending}
+                      className="gap-2"
+                    >
                       <Copy className="size-4" /> Duplicar
                     </Button>
                     <Button variant="outline" onClick={() => openEdit(selected)} className="gap-2">
@@ -1233,7 +1678,9 @@ function ColecoesPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => confirm("Remover esta coleção?") && deleteMut.mutate(selected.id)}
+                      onClick={() =>
+                        confirm("Remover esta coleção?") && deleteMut.mutate(selected.id)
+                      }
                       className="gap-2 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="size-4" /> Remover
@@ -1329,7 +1776,9 @@ function CollectionDialog({
         if (coverFile.size > 5 * 1024 * 1024) throw new Error("Imagem deve ter no máximo 5MB");
         const extension = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
         const path = `${userId}/${crypto.randomUUID()}.${extension}`;
-        const { error: uploadError } = await supabase.storage.from("collection-covers").upload(path, coverFile, { contentType: coverFile.type });
+        const { error: uploadError } = await supabase.storage
+          .from("collection-covers")
+          .upload(path, coverFile, { contentType: coverFile.type });
         if (uploadError) throw uploadError;
         coverPath = path;
       }
@@ -1340,7 +1789,10 @@ function CollectionDialog({
         year,
         status,
         description: description || null,
-        palette: paletteStr.split(",").map((value) => value.trim()).filter(Boolean),
+        palette: paletteStr
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean),
         launch_date: launchDate || null,
         progress,
         ...(coverPath !== undefined ? { cover_path: coverPath } : {}),
@@ -1353,7 +1805,9 @@ function CollectionDialog({
           await supabase.storage.from("collection-covers").remove([editing.cover_path]);
         }
       } else {
-        const { error } = await supabase.from("collections").insert({ ...payload, owner_id: userId });
+        const { error } = await supabase
+          .from("collections")
+          .insert({ ...payload, owner_id: userId });
         if (error) throw error;
       }
     },
@@ -1367,76 +1821,136 @@ function CollectionDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={(value) => {
-      onOpenChange(value);
-      if (!value) resetForm();
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(value) => {
+        onOpenChange(value);
+        if (!value) resetForm();
+      }}
+    >
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editing ? "Editar coleção" : "Nova coleção"}</DialogTitle>
-          <DialogDescription>Cadastre a coleção com narrativa, paleta, calendário e progresso executivo.</DialogDescription>
+          <DialogDescription>
+            Cadastre a coleção com narrativa, paleta, calendário e progresso executivo.
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={(event) => {
-          event.preventDefault();
-          saveMut.mutate();
-        }} className="space-y-4">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            saveMut.mutate();
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label>Nome</Label>
-            <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Ex: Resort 2027" required />
+            <Input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Ex: Resort 2027"
+              required
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Temporada</Label>
               <Select value={season} onValueChange={setSeason}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {["Verão", "Inverno", "Resort", "Pré-Outono", "Pré-Verão", "Cápsula"].map((item) => (
-                    <SelectItem key={item} value={item}>{item}</SelectItem>
-                  ))}
+                  {["Verão", "Inverno", "Resort", "Pré-Outono", "Pré-Verão", "Cápsula"].map(
+                    (item) => (
+                      <SelectItem key={item} value={item}>
+                        {item}
+                      </SelectItem>
+                    ),
+                  )}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Ano</Label>
-              <Input type="number" value={year} onChange={(event) => setYear(Number(event.target.value))} required />
+              <Input
+                type="number"
+                value={year}
+                onChange={(event) => setYear(Number(event.target.value))}
+                required
+              />
             </div>
           </div>
           <div className="space-y-2">
             <Label>Status</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as Collection["status"])}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select
+              value={status}
+              onValueChange={(value) => setStatus(value as Collection["status"])}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {Object.entries(STATUS_LABELS).map(([key, value]) => (
-                  <SelectItem key={key} value={key}>{value}</SelectItem>
+                  <SelectItem key={key} value={key}>
+                    {value}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label>Descrição</Label>
-            <Textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} placeholder="Conceito, storytelling e targets da coleção" />
+            <Textarea
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              rows={3}
+              placeholder="Conceito, storytelling e targets da coleção"
+            />
           </div>
           <div className="space-y-2">
-            <Label className="flex items-center gap-1.5"><ImagePlus className="size-4" /> Capa da coleção</Label>
-            <Input type="file" accept="image/*" onChange={(event) => setCoverFile(event.target.files?.[0] ?? null)} />
+            <Label className="flex items-center gap-1.5">
+              <ImagePlus className="size-4" /> Capa da coleção
+            </Label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(event) => setCoverFile(event.target.files?.[0] ?? null)}
+            />
           </div>
           <div className="space-y-2">
             <Label>Paleta (cores separadas por vírgula)</Label>
-            <Input value={paletteStr} onChange={(event) => setPaletteStr(event.target.value)} placeholder="#d6c3a1, #6f7f63, #f4ede2" />
+            <Input
+              value={paletteStr}
+              onChange={(event) => setPaletteStr(event.target.value)}
+              placeholder="#d6c3a1, #6f7f63, #f4ede2"
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Data de lançamento</Label>
-              <Input type="date" value={launchDate} onChange={(event) => setLaunchDate(event.target.value)} />
+              <Input
+                type="date"
+                value={launchDate}
+                onChange={(event) => setLaunchDate(event.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label>Progresso ({progress}%)</Label>
-              <Input type="range" min="0" max="100" value={progress} onChange={(event) => setProgress(Number(event.target.value))} />
+              <Input
+                type="range"
+                min="0"
+                max="100"
+                value={progress}
+                onChange={(event) => setProgress(Number(event.target.value))}
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={saveMut.isPending}>{saveMut.isPending ? "Salvando…" : editing ? "Atualizar" : "Criar"}</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saveMut.isPending}>
+              {saveMut.isPending ? "Salvando…" : editing ? "Atualizar" : "Criar"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

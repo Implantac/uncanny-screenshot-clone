@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Boxes, Palette } from "lucide-react";
 
 type Mov = {
@@ -28,19 +34,15 @@ export function InventoryLotBreakdownButton({
     <>
       <button
         title="Saldo por lote/cor do fornecedor"
-        onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
         className="size-7 grid place-items-center rounded hover:bg-muted text-muted-foreground"
       >
         <Palette className="size-3.5" />
       </button>
-      {open && (
-        <LotDialog
-          itemId={itemId}
-          itemName={itemName}
-          unit={unit}
-          onOpenChange={setOpen}
-        />
-      )}
+      {open && <LotDialog itemId={itemId} itemName={itemName} unit={unit} onOpenChange={setOpen} />}
     </>
   );
 }
@@ -91,17 +93,24 @@ function LotDialog({
     <Dialog open onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Boxes className="size-4" /> Lotes e cores · {itemName}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Boxes className="size-4" /> Lotes e cores · {itemName}
+          </DialogTitle>
           <DialogDescription>
-            Saldo agrupado por <strong>lote do fornecedor × cor</strong> calculado a partir das movimentações.
-            Total rastreado: <strong>{totalRastreado} {unit}</strong>.
+            Saldo agrupado por <strong>lote do fornecedor × cor</strong> calculado a partir das
+            movimentações. Total rastreado:{" "}
+            <strong>
+              {totalRastreado} {unit}
+            </strong>
+            .
           </DialogDescription>
         </DialogHeader>
         {isLoading ? (
           <div className="text-sm text-muted-foreground">Carregando…</div>
         ) : rows.length === 0 ? (
           <div className="text-sm text-muted-foreground p-6 text-center">
-            Nenhuma movimentação informa lote ou cor ainda. Inclua "Lote do fornecedor" e "Cor" ao registrar entradas em /movimentacoes.
+            Nenhuma movimentação informa lote ou cor ainda. Inclua "Lote do fornecedor" e "Cor" ao
+            registrar entradas em /movimentacoes.
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-border">
@@ -119,7 +128,9 @@ function LotDialog({
                   <tr key={i} className="border-t border-border">
                     <td className="px-3 py-2 font-mono text-xs">{r.lot}</td>
                     <td className="px-3 py-2">{r.color}</td>
-                    <td className={`px-3 py-2 text-right tabular-nums ${r.balance < 0 ? "text-destructive" : r.balance === 0 ? "text-muted-foreground" : ""}`}>
+                    <td
+                      className={`px-3 py-2 text-right tabular-nums ${r.balance < 0 ? "text-destructive" : r.balance === 0 ? "text-muted-foreground" : ""}`}
+                    >
                       {r.balance} {unit}
                     </td>
                     <td className="px-3 py-2 text-right text-xs text-muted-foreground">

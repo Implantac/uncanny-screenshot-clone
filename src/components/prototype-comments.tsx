@@ -24,7 +24,13 @@ function timeAgo(iso: string) {
   return `${Math.floor(s / 86400)}d`;
 }
 
-export function PrototypeCommentsButton({ prototypeId, prototypeCode }: { prototypeId: string; prototypeCode: string }) {
+export function PrototypeCommentsButton({
+  prototypeId,
+  prototypeCode,
+}: {
+  prototypeId: string;
+  prototypeCode: string;
+}) {
   const [open, setOpen] = useState(false);
   const { data: count = 0 } = useQuery({
     queryKey: ["prototype-comments-count", prototypeId],
@@ -39,7 +45,13 @@ export function PrototypeCommentsButton({ prototypeId, prototypeCode }: { protot
   });
   return (
     <>
-      <Button size="icon" variant="ghost" onClick={() => setOpen(true)} title="Discussão" className="relative">
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => setOpen(true)}
+        title="Discussão"
+        className="relative"
+      >
         <MessageSquare className="size-4" />
         {count > 0 && (
           <span className="absolute -top-0.5 -right-0.5 size-4 rounded-full bg-primary text-[9px] font-semibold text-primary-foreground grid place-items-center">
@@ -52,7 +64,8 @@ export function PrototypeCommentsButton({ prototypeId, prototypeCode }: { protot
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageSquare className="size-4 text-primary" />
-              Discussão · <span className="font-mono text-xs text-muted-foreground">{prototypeCode}</span>
+              Discussão ·{" "}
+              <span className="font-mono text-xs text-muted-foreground">{prototypeCode}</span>
             </DialogTitle>
           </DialogHeader>
           <CommentsThread prototypeId={prototypeId} />
@@ -127,7 +140,11 @@ function CommentsThread({ prototypeId }: { prototypeId: string }) {
                 <span className="flex items-center gap-2">
                   <span>{timeAgo(c.created_at)}</span>
                   {c.author_id === user?.id && (
-                    <button onClick={() => del.mutate(c.id)} className="hover:text-destructive" title="Excluir">
+                    <button
+                      onClick={() => del.mutate(c.id)}
+                      className="hover:text-destructive"
+                      title="Excluir"
+                    >
                       <Trash2 className="size-3" />
                     </button>
                   )}

@@ -6,7 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type Props = { sheetId: string; ownerId: string; canEdit: boolean };
 
@@ -103,7 +110,9 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <div className="text-sm font-semibold flex items-center gap-2"><Layers3 className="size-4 text-primary" /> BOM · Materiais</div>
+        <div className="text-sm font-semibold flex items-center gap-2">
+          <Layers3 className="size-4 text-primary" /> BOM · Materiais
+        </div>
         {canEdit && (
           <Button size="sm" variant="outline" className="gap-1" onClick={() => add.mutate()}>
             <Plus className="size-3.5" /> Material
@@ -113,7 +122,9 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Carregando…</div>
       ) : data.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">Nenhum material no BOM ainda.</div>
+        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+          Nenhum material no BOM ainda.
+        </div>
       ) : (
         <div className="rounded-xl border border-border overflow-x-auto">
           <Table>
@@ -131,15 +142,52 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
             <TableBody>
               {data.map((m) => (
                 <TableRow key={m.id}>
-                  <TableCell><EditableText value={m.name} disabled={!canEdit} onSave={(v) => upd.mutate({ id: m.id, patch: { name: v } })} /></TableCell>
-                  <TableCell><EditableText value={m.unit} disabled={!canEdit} onSave={(v) => upd.mutate({ id: m.id, patch: { unit: v } })} /></TableCell>
-                  <TableCell className="text-right"><EditableNum value={m.consumption} disabled={!canEdit} onSave={(v) => upd.mutate({ id: m.id, patch: { consumption: v } })} /></TableCell>
-                  <TableCell className="text-right"><EditableNum value={m.loss_pct} disabled={!canEdit} onSave={(v) => upd.mutate({ id: m.id, patch: { loss_pct: v } })} /></TableCell>
-                  <TableCell className="text-right"><EditableNum value={m.unit_cost} disabled={!canEdit} onSave={(v) => upd.mutate({ id: m.id, patch: { unit_cost: v } })} /></TableCell>
-                  <TableCell className="text-right tabular-nums">{fmt(Number(m.total_cost || 0))}</TableCell>
+                  <TableCell>
+                    <EditableText
+                      value={m.name}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: m.id, patch: { name: v } })}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <EditableText
+                      value={m.unit}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: m.id, patch: { unit: v } })}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <EditableNum
+                      value={m.consumption}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: m.id, patch: { consumption: v } })}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <EditableNum
+                      value={m.loss_pct}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: m.id, patch: { loss_pct: v } })}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <EditableNum
+                      value={m.unit_cost}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: m.id, patch: { unit_cost: v } })}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {fmt(Number(m.total_cost || 0))}
+                  </TableCell>
                   {canEdit && (
                     <TableCell>
-                      <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => del.mutate(m.id)}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-7 text-destructive"
+                        onClick={() => del.mutate(m.id)}
+                      >
                         <Trash2 className="size-3.5" />
                       </Button>
                     </TableCell>
@@ -147,7 +195,9 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                 </TableRow>
               ))}
               <TableRow className="bg-muted/30 font-medium">
-                <TableCell colSpan={5} className="text-right">Subtotal materiais</TableCell>
+                <TableCell colSpan={5} className="text-right">
+                  Subtotal materiais
+                </TableCell>
                 <TableCell className="text-right tabular-nums">{fmt(total)}</TableCell>
                 {canEdit && <TableCell />}
               </TableRow>
@@ -178,8 +228,13 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
   const add = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("tech_sheet_operations").insert({
-        owner_id: ownerId, tech_sheet_id: sheetId,
-        name: "Nova operação", machine: "", sam: 0, rate_per_min: 0, position: data.length,
+        owner_id: ownerId,
+        tech_sheet_id: sheetId,
+        name: "Nova operação",
+        machine: "",
+        sam: 0,
+        rate_per_min: 0,
+        position: data.length,
       });
       if (error) throw error;
     },
@@ -214,7 +269,9 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <div className="text-sm font-semibold flex items-center gap-2"><Scissors className="size-4 text-primary" /> Operações · SAM</div>
+        <div className="text-sm font-semibold flex items-center gap-2">
+          <Scissors className="size-4 text-primary" /> Operações · SAM
+        </div>
         {canEdit && (
           <Button size="sm" variant="outline" className="gap-1" onClick={() => add.mutate()}>
             <Plus className="size-3.5" /> Operação
@@ -224,7 +281,9 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Carregando…</div>
       ) : data.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">Nenhuma operação cadastrada.</div>
+        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+          Nenhuma operação cadastrada.
+        </div>
       ) : (
         <div className="rounded-xl border border-border overflow-x-auto">
           <Table>
@@ -241,14 +300,45 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
             <TableBody>
               {data.map((o) => (
                 <TableRow key={o.id}>
-                  <TableCell><EditableText value={o.name} disabled={!canEdit} onSave={(v) => upd.mutate({ id: o.id, patch: { name: v } })} /></TableCell>
-                  <TableCell><EditableText value={o.machine ?? ""} disabled={!canEdit} onSave={(v) => upd.mutate({ id: o.id, patch: { machine: v } })} /></TableCell>
-                  <TableCell className="text-right"><EditableNum value={o.sam} disabled={!canEdit} onSave={(v) => upd.mutate({ id: o.id, patch: { sam: v } })} /></TableCell>
-                  <TableCell className="text-right"><EditableNum value={o.rate_per_min} disabled={!canEdit} onSave={(v) => upd.mutate({ id: o.id, patch: { rate_per_min: v } })} /></TableCell>
-                  <TableCell className="text-right tabular-nums">{fmt(Number(o.total_cost || 0))}</TableCell>
+                  <TableCell>
+                    <EditableText
+                      value={o.name}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: o.id, patch: { name: v } })}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <EditableText
+                      value={o.machine ?? ""}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: o.id, patch: { machine: v } })}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <EditableNum
+                      value={o.sam}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: o.id, patch: { sam: v } })}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <EditableNum
+                      value={o.rate_per_min}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: o.id, patch: { rate_per_min: v } })}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {fmt(Number(o.total_cost || 0))}
+                  </TableCell>
                   {canEdit && (
                     <TableCell>
-                      <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => del.mutate(o.id)}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-7 text-destructive"
+                        onClick={() => del.mutate(o.id)}
+                      >
                         <Trash2 className="size-3.5" />
                       </Button>
                     </TableCell>
@@ -256,7 +346,9 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
                 </TableRow>
               ))}
               <TableRow className="bg-muted/30 font-medium">
-                <TableCell colSpan={2} className="text-right">Totais</TableCell>
+                <TableCell colSpan={2} className="text-right">
+                  Totais
+                </TableCell>
                 <TableCell className="text-right tabular-nums">{totalSam.toFixed(2)}</TableCell>
                 <TableCell />
                 <TableCell className="text-right tabular-nums">{fmt(totalCost)}</TableCell>
@@ -288,18 +380,28 @@ export function MeasurementsPanel({ sheetId, ownerId, canEdit }: Props) {
     },
   });
 
-  const sizes = Array.from(new Set([
-    ...sizesInput.split(",").map((s) => s.trim()).filter(Boolean),
-    ...data.flatMap((m) => Object.keys(m.sizes || {})),
-  ]));
+  const sizes = Array.from(
+    new Set([
+      ...sizesInput
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      ...data.flatMap((m) => Object.keys(m.sizes || {})),
+    ]),
+  );
 
   const add = useMutation({
     mutationFn: async () => {
       const empty: Record<string, number> = {};
       sizes.forEach((s) => (empty[s] = 0));
       const { error } = await supabase.from("tech_sheet_measurements").insert({
-        owner_id: ownerId, tech_sheet_id: sheetId,
-        point: "Novo ponto", tolerance_plus: 1, tolerance_minus: 1, sizes: empty, position: data.length,
+        owner_id: ownerId,
+        tech_sheet_id: sheetId,
+        point: "Novo ponto",
+        tolerance_plus: 1,
+        tolerance_minus: 1,
+        sizes: empty,
+        position: data.length,
       });
       if (error) throw error;
     },
@@ -325,10 +427,16 @@ export function MeasurementsPanel({ sheetId, ownerId, canEdit }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="text-sm font-semibold flex items-center gap-2"><Ruler className="size-4 text-primary" /> POM · Medidas (cm)</div>
+        <div className="text-sm font-semibold flex items-center gap-2">
+          <Ruler className="size-4 text-primary" /> POM · Medidas (cm)
+        </div>
         <div className="flex items-center gap-2">
           <Label className="text-xs text-muted-foreground">Grade</Label>
-          <Input value={sizesInput} onChange={(e) => setSizesInput(e.target.value)} className="h-8 w-40 text-xs" />
+          <Input
+            value={sizesInput}
+            onChange={(e) => setSizesInput(e.target.value)}
+            className="h-8 w-40 text-xs"
+          />
           {canEdit && (
             <Button size="sm" variant="outline" className="gap-1" onClick={() => add.mutate()}>
               <Plus className="size-3.5" /> Ponto
@@ -339,7 +447,9 @@ export function MeasurementsPanel({ sheetId, ownerId, canEdit }: Props) {
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Carregando…</div>
       ) : data.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">Nenhum ponto de medida.</div>
+        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+          Nenhum ponto de medida.
+        </div>
       ) : (
         <div className="rounded-xl border border-border overflow-x-auto">
           <Table>
@@ -348,28 +458,57 @@ export function MeasurementsPanel({ sheetId, ownerId, canEdit }: Props) {
                 <TableHead>Ponto</TableHead>
                 <TableHead className="w-16 text-right">Tol +</TableHead>
                 <TableHead className="w-16 text-right">Tol −</TableHead>
-                {sizes.map((s) => <TableHead key={s} className="w-20 text-right">{s}</TableHead>)}
+                {sizes.map((s) => (
+                  <TableHead key={s} className="w-20 text-right">
+                    {s}
+                  </TableHead>
+                ))}
                 {canEdit && <TableHead className="w-12" />}
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map((m) => (
                 <TableRow key={m.id}>
-                  <TableCell><EditableText value={m.point} disabled={!canEdit} onSave={(v) => upd.mutate({ id: m.id, patch: { point: v } })} /></TableCell>
-                  <TableCell className="text-right"><EditableNum value={m.tolerance_plus} disabled={!canEdit} onSave={(v) => upd.mutate({ id: m.id, patch: { tolerance_plus: v } })} /></TableCell>
-                  <TableCell className="text-right"><EditableNum value={m.tolerance_minus} disabled={!canEdit} onSave={(v) => upd.mutate({ id: m.id, patch: { tolerance_minus: v } })} /></TableCell>
+                  <TableCell>
+                    <EditableText
+                      value={m.point}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: m.id, patch: { point: v } })}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <EditableNum
+                      value={m.tolerance_plus}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: m.id, patch: { tolerance_plus: v } })}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <EditableNum
+                      value={m.tolerance_minus}
+                      disabled={!canEdit}
+                      onSave={(v) => upd.mutate({ id: m.id, patch: { tolerance_minus: v } })}
+                    />
+                  </TableCell>
                   {sizes.map((s) => (
                     <TableCell key={s} className="text-right">
                       <EditableNum
                         value={Number(m.sizes?.[s] ?? 0)}
                         disabled={!canEdit}
-                        onSave={(v) => upd.mutate({ id: m.id, patch: { sizes: { ...(m.sizes || {}), [s]: v } } })}
+                        onSave={(v) =>
+                          upd.mutate({ id: m.id, patch: { sizes: { ...(m.sizes || {}), [s]: v } } })
+                        }
                       />
                     </TableCell>
                   ))}
                   {canEdit && (
                     <TableCell>
-                      <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => del.mutate(m.id)}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-7 text-destructive"
+                        onClick={() => del.mutate(m.id)}
+                      >
                         <Trash2 className="size-3.5" />
                       </Button>
                     </TableCell>
@@ -402,7 +541,10 @@ export function CostsPanel({ sheetId, ownerId: _ownerId, canEdit }: Props) {
 
   const upd = useMutation({
     mutationFn: async (overhead_pct: number) => {
-      const { error } = await supabase.from("tech_sheets").update({ overhead_pct }).eq("id", sheetId);
+      const { error } = await supabase
+        .from("tech_sheets")
+        .update({ overhead_pct })
+        .eq("id", sheetId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -419,26 +561,44 @@ export function CostsPanel({ sheetId, ownerId: _ownerId, canEdit }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="text-sm font-semibold flex items-center gap-2"><Wallet className="size-4 text-primary" /> Custo total da ficha</div>
+      <div className="text-sm font-semibold flex items-center gap-2">
+        <Wallet className="size-4 text-primary" /> Custo total da ficha
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <CostCard label="Materiais" value={fmt(mat)} />
         <CostCard label="Mão de obra" value={fmt(lab)} />
         <div className="rounded-xl border border-border bg-background/30 p-3">
           <div className="text-xs text-muted-foreground">Overhead (%)</div>
-          <EditableNum value={oh} disabled={!canEdit} onSave={(v) => upd.mutate(v)} className="text-lg font-semibold mt-1" />
+          <EditableNum
+            value={oh}
+            disabled={!canEdit}
+            onSave={(v) => upd.mutate(v)}
+            className="text-lg font-semibold mt-1"
+          />
         </div>
         <CostCard label="Custo final" value={fmt(total)} highlight />
       </div>
       <p className="text-xs text-muted-foreground">
-        Custo final = (materiais + mão de obra) × (1 + overhead%). Atualiza automaticamente quando você edita BOM ou operações.
+        Custo final = (materiais + mão de obra) × (1 + overhead%). Atualiza automaticamente quando
+        você edita BOM ou operações.
       </p>
     </div>
   );
 }
 
-function CostCard({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function CostCard({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
   return (
-    <div className={`rounded-xl border p-3 ${highlight ? "border-primary/40 bg-primary/10" : "border-border bg-background/30"}`}>
+    <div
+      className={`rounded-xl border p-3 ${highlight ? "border-primary/40 bg-primary/10" : "border-border bg-background/30"}`}
+    >
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="text-lg font-semibold tabular-nums mt-1">{value}</div>
     </div>
@@ -446,20 +606,40 @@ function CostCard({ label, value, highlight }: { label: string; value: string; h
 }
 
 /* --------------------------------- Inputs --------------------------------- */
-function EditableText({ value, onSave, disabled }: { value: string; onSave: (v: string) => void; disabled?: boolean }) {
+function EditableText({
+  value,
+  onSave,
+  disabled,
+}: {
+  value: string;
+  onSave: (v: string) => void;
+  disabled?: boolean;
+}) {
   const [v, setV] = useState(value);
   return (
     <Input
       value={v}
       disabled={disabled}
       onChange={(e) => setV(e.target.value)}
-      onBlur={() => { if (v !== value) onSave(v); }}
+      onBlur={() => {
+        if (v !== value) onSave(v);
+      }}
       className="h-8 text-sm bg-transparent border-transparent hover:border-border focus:border-border"
     />
   );
 }
 
-function EditableNum({ value, onSave, disabled, className }: { value: number; onSave: (v: number) => void; disabled?: boolean; className?: string }) {
+function EditableNum({
+  value,
+  onSave,
+  disabled,
+  className,
+}: {
+  value: number;
+  onSave: (v: number) => void;
+  disabled?: boolean;
+  className?: string;
+}) {
   const [v, setV] = useState(String(value));
   return (
     <Input

@@ -26,7 +26,13 @@ export type CostVarianceRow = {
   variance: number;
   variance_pct: number;
   /** Sinais. */
-  occurrences: { refugo: number; retrabalho: number; parada: number; outras: number; total: number };
+  occurrences: {
+    refugo: number;
+    retrabalho: number;
+    parada: number;
+    outras: number;
+    total: number;
+  };
   has_tech_sheet: boolean;
   has_real_consumption: boolean;
 };
@@ -34,10 +40,12 @@ export type CostVarianceRow = {
 export const listCostVariance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
-    z.object({
-      collectionId: z.string().uuid().optional(),
-      sinceDays: z.number().int().min(1).max(720).default(180),
-    }).parse(d ?? {}),
+    z
+      .object({
+        collectionId: z.string().uuid().optional(),
+        sinceDays: z.number().int().min(1).max(720).default(180),
+      })
+      .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
@@ -45,14 +53,16 @@ export const listCostVariance = createServerFn({ method: "POST" })
 
     const { data: orders, error } = await supabase
       .from("production_orders")
-      .select("id, code, product_id, quantity, stage, status, started_at, created_at, progress, products(name, sku, collection_id)")
+      .select(
+        "id, code, product_id, quantity, stage, status, started_at, created_at, progress, products(name, sku, collection_id)",
+      )
       .gte("created_at", since)
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) throw error;
 
-    const ops = (orders ?? []).filter((o: any) =>
-      !data.collectionId || o.products?.collection_id === data.collectionId,
+    const ops = (orders ?? []).filter(
+      (o: any) => !data.collectionId || o.products?.collection_id === data.collectionId,
     );
     if (ops.length === 0) return [] as CostVarianceRow[];
 
@@ -87,13 +97,22 @@ export const listCostVariance = createServerFn({ method: "POST" })
     const consumedByOp = new Map<string, number>();
     (moves ?? []).forEach((m: any) => {
       if (m.type !== "saida" || !m.reference_id) return;
-      consumedByOp.set(m.reference_id, (consumedByOp.get(m.reference_id) ?? 0) + Number(m.quantity ?? 0));
+      consumedByOp.set(
+        m.reference_id,
+        (consumedByOp.get(m.reference_id) ?? 0) + Number(m.quantity ?? 0),
+      );
     });
 
     const occByOp = new Map<string, CostVarianceRow["occurrences"]>();
     (occs ?? []).forEach((o: any) => {
       if (!o.order_id) return;
-      const cur = occByOp.get(o.order_id) ?? { refugo: 0, retrabalho: 0, parada: 0, outras: 0, total: 0 };
+      const cur = occByOp.get(o.order_id) ?? {
+        refugo: 0,
+        retrabalho: 0,
+        parada: 0,
+        outras: 0,
+        total: 0,
+      };
       const qty = Number(o.affected_qty ?? 0);
       const k = String(o.kind ?? "").toLowerCase();
       if (k.includes("refugo")) cur.refugo += qty;
@@ -120,7 +139,8 @@ export const listCostVariance = createServerFn({ method: "POST" })
       const consumed = consumedByOp.get(o.id) ?? 0;
       const occ = occByOp.get(o.id) ?? { refugo: 0, retrabalho: 0, parada: 0, outras: 0, total: 0 };
       const hasReal = consumed > 0;
-      const realMaterials = hasReal && qty > 0 ? matU * Math.max(consumed, qty) : theoreticalMaterials;
+      const realMaterials =
+        hasReal && qty > 0 ? matU * Math.max(consumed, qty) : theoreticalMaterials;
       // Mão de obra: produção real (ou planejada) × custo unitário; retrabalho amplia
       const baseLaborQty = produced > 0 ? produced + occ.retrabalho : qty;
       const realLabor = labU * baseLaborQty;

@@ -30,7 +30,9 @@ type Row = {
 async function load(): Promise<Row[]> {
   const [{ data: sups }, { data: ords }] = await Promise.all([
     supabase.from("suppliers").select("*"),
-    supabase.from("production_orders").select("supplier_id, status, quantity, progress, due_date, updated_at"),
+    supabase
+      .from("production_orders")
+      .select("supplier_id, status, quantity, progress, due_date, updated_at"),
   ]);
   const byS = new Map<string, typeof ords>();
   (ords ?? []).forEach((o) => {
@@ -40,47 +42,92 @@ async function load(): Promise<Row[]> {
     byS.set(o.supplier_id, arr);
   });
   const today = Date.now();
-  return (sups ?? []).map((s) => {
-    const list = byS.get(s.id) ?? [];
-    const orders = list.length;
-    const completed = list.filter((o) => o.status === "concluida").length;
-    const late = list.filter((o) => o.due_date && new Date(o.due_date).getTime() < today && o.status !== "concluida").length;
-    const onTime = completed - list.filter((o) => o.status === "concluida" && o.due_date && new Date(o.updated_at).getTime() > new Date(o.due_date).getTime()).length;
-    const otdPct = completed > 0 ? (onTime / completed) * 100 : 0;
-    const totalQty = list.reduce((a, o) => a + (o.quantity ?? 0), 0);
-    const avgProgress = orders > 0 ? list.reduce((a, o) => a + o.progress, 0) / orders : 0;
-    const score = Math.round((otdPct * 0.5) + (avgProgress * 0.3) + ((s.rating ?? 0) * 20 * 0.2));
-    const tier: Row["tier"] = score >= 80 ? "ouro" : score >= 60 ? "prata" : score >= 40 ? "bronze" : "atencao";
-    return {
-      id: s.id, name: s.name, category: s.category, city: s.city, state: s.state,
-      rating: s.rating ?? 0, active: s.active,
-      orders, onTime, late, completed, totalQty, otdPct, avgProgress, score, tier,
-    };
-  }).sort((a, b) => b.score - a.score);
+  return (sups ?? [])
+    .map((s) => {
+      const list = byS.get(s.id) ?? [];
+      const orders = list.length;
+      const completed = list.filter((o) => o.status === "concluida").length;
+      const late = list.filter(
+        (o) => o.due_date && new Date(o.due_date).getTime() < today && o.status !== "concluida",
+      ).length;
+      const onTime =
+        completed -
+        list.filter(
+          (o) =>
+            o.status === "concluida" &&
+            o.due_date &&
+            new Date(o.updated_at).getTime() > new Date(o.due_date).getTime(),
+        ).length;
+      const otdPct = completed > 0 ? (onTime / completed) * 100 : 0;
+      const totalQty = list.reduce((a, o) => a + (o.quantity ?? 0), 0);
+      const avgProgress = orders > 0 ? list.reduce((a, o) => a + o.progress, 0) / orders : 0;
+      const score = Math.round(otdPct * 0.5 + avgProgress * 0.3 + (s.rating ?? 0) * 20 * 0.2);
+      const tier: Row["tier"] =
+        score >= 80 ? "ouro" : score >= 60 ? "prata" : score >= 40 ? "bronze" : "atencao";
+      return {
+        id: s.id,
+        name: s.name,
+        category: s.category,
+        city: s.city,
+        state: s.state,
+        rating: s.rating ?? 0,
+        active: s.active,
+        orders,
+        onTime,
+        late,
+        completed,
+        totalQty,
+        otdPct,
+        avgProgress,
+        score,
+        tier,
+      };
+    })
+    .sort((a, b) => b.score - a.score);
 }
 
 function SupplierScore() {
   const { data: rows = [], isLoading } = useQuery({ queryKey: ["supplier-score"], queryFn: load });
 
-  const summary = useMemo(() => ({
-    total: rows.length,
-    ouro: rows.filter((r) => r.tier === "ouro").length,
-    atencao: rows.filter((r) => r.tier === "atencao").length,
-    avgOtd: rows.length > 0 ? rows.reduce((s, r) => s + r.otdPct, 0) / rows.length : 0,
-  }), [rows]);
+  const summary = useMemo(
+    () => ({
+      total: rows.length,
+      ouro: rows.filter((r) => r.tier === "ouro").length,
+      atencao: rows.filter((r) => r.tier === "atencao").length,
+      avgOtd: rows.length > 0 ? rows.reduce((s, r) => s + r.otdPct, 0) / rows.length : 0,
+    }),
+    [rows],
+  );
 
   return (
     <div className="p-6 space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Supplier Scorecard</h1>
-        <p className="text-sm text-muted-foreground">OTD, qualidade e rating consolidados em um score 0–100.</p>
+        <p className="text-sm text-muted-foreground">
+          OTD, qualidade e rating consolidados em um score 0–100.
+        </p>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KPI label="Fornecedores" value={summary.total} icon={<Truck className="size-4" />} />
-        <KPI label="Tier Ouro" value={summary.ouro} icon={<Trophy className="size-4" />} tone="success" />
-        <KPI label="Em atenção" value={summary.atencao} icon={<AlertTriangle className="size-4" />} tone="destructive" />
-        <KPI label="OTD médio" value={`${summary.avgOtd.toFixed(0)}%`} icon={<CheckCircle2 className="size-4" />} tone="primary" />
+        <KPI
+          label="Tier Ouro"
+          value={summary.ouro}
+          icon={<Trophy className="size-4" />}
+          tone="success"
+        />
+        <KPI
+          label="Em atenção"
+          value={summary.atencao}
+          icon={<AlertTriangle className="size-4" />}
+          tone="destructive"
+        />
+        <KPI
+          label="OTD médio"
+          value={`${summary.avgOtd.toFixed(0)}%`}
+          icon={<CheckCircle2 className="size-4" />}
+          tone="primary"
+        />
       </div>
 
       <div className="rounded-xl border border-border overflow-hidden bg-card">
@@ -101,23 +148,53 @@ function SupplierScore() {
               </tr>
             </thead>
             <tbody>
-              {isLoading && <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">Carregando…</td></tr>}
-              {!isLoading && rows.length === 0 && <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">Sem fornecedores cadastrados.</td></tr>}
+              {isLoading && (
+                <tr>
+                  <td colSpan={10} className="p-8 text-center text-muted-foreground">
+                    Carregando…
+                  </td>
+                </tr>
+              )}
+              {!isLoading && rows.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="p-8 text-center text-muted-foreground">
+                    Sem fornecedores cadastrados.
+                  </td>
+                </tr>
+              )}
               {rows.map((r) => (
                 <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-                  <td className="px-3 py-2"><Tier t={r.tier} /></td>
+                  <td className="px-3 py-2">
+                    <Tier t={r.tier} />
+                  </td>
                   <td className="px-3 py-2">
                     <div className="font-medium">{r.name}</div>
-                    <div className="text-[10px] text-muted-foreground">{r.category ?? "—"}{!r.active && " • inativo"}</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {r.category ?? "—"}
+                      {!r.active && " • inativo"}
+                    </div>
                   </td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">{r.city ? `${r.city}/${r.state ?? ""}` : "—"}</td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">
+                    {r.city ? `${r.city}/${r.state ?? ""}` : "—"}
+                  </td>
                   <td className="px-3 py-2 text-right">{r.orders}</td>
                   <td className="px-3 py-2 text-right">{r.totalQty.toLocaleString("pt-BR")}</td>
                   <td className="px-3 py-2 text-right text-success">{r.completed}</td>
-                  <td className={`px-3 py-2 text-right ${r.late > 0 ? "text-destructive font-medium" : "text-muted-foreground"}`}>{r.late}</td>
-                  <td className={`px-3 py-2 text-right ${r.otdPct >= 80 ? "text-success" : r.otdPct >= 50 ? "text-warning" : "text-destructive"}`}>{r.otdPct.toFixed(0)}%</td>
+                  <td
+                    className={`px-3 py-2 text-right ${r.late > 0 ? "text-destructive font-medium" : "text-muted-foreground"}`}
+                  >
+                    {r.late}
+                  </td>
+                  <td
+                    className={`px-3 py-2 text-right ${r.otdPct >= 80 ? "text-success" : r.otdPct >= 50 ? "text-warning" : "text-destructive"}`}
+                  >
+                    {r.otdPct.toFixed(0)}%
+                  </td>
                   <td className="px-3 py-2 text-right">
-                    <span className="inline-flex items-center gap-0.5 text-warning">{"★".repeat(r.rating)}<span className="text-muted-foreground">{"★".repeat(5 - r.rating)}</span></span>
+                    <span className="inline-flex items-center gap-0.5 text-warning">
+                      {"★".repeat(r.rating)}
+                      <span className="text-muted-foreground">{"★".repeat(5 - r.rating)}</span>
+                    </span>
                   </td>
                   <td className="px-3 py-2 text-right font-semibold">{r.score}</td>
                 </tr>
@@ -138,14 +215,36 @@ function Tier({ t }: { t: Row["tier"] }) {
     atencao: ["bg-destructive/15 text-destructive", "Atenção"],
   } as const;
   const [cls, label] = map[t];
-  return <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${cls}`}>{label}</span>;
+  return (
+    <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${cls}`}>
+      {label}
+    </span>
+  );
 }
 
-function KPI({ label, value, icon, tone = "default" }: { label: string; value: number | string; icon: React.ReactNode; tone?: "default" | "success" | "destructive" | "primary" }) {
-  const tones = { default: "", success: "text-success", destructive: "text-destructive", primary: "text-primary" };
+function KPI({
+  label,
+  value,
+  icon,
+  tone = "default",
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+  tone?: "default" | "success" | "destructive" | "primary";
+}) {
+  const tones = {
+    default: "",
+    success: "text-success",
+    destructive: "text-destructive",
+    primary: "text-primary",
+  };
   return (
     <div className="rounded-xl border border-border p-4 bg-card">
-      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">{icon}{label}</div>
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+        {icon}
+        {label}
+      </div>
       <div className={`mt-1 text-2xl font-semibold ${tones[tone]}`}>{value}</div>
     </div>
   );

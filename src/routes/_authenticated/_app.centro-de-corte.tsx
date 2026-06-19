@@ -11,7 +11,9 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/centro-de-corte")({
-  validateSearch: zodValidator(z.object({ q: fallback(z.string().trim().max(80), "").default("") })),
+  validateSearch: zodValidator(
+    z.object({ q: fallback(z.string().trim().max(80), "").default("") }),
+  ),
   head: () => ({
     meta: [
       { title: "Centro de Corte · USE MODA OS" },
@@ -23,15 +25,23 @@ export const Route = createFileRoute("/_authenticated/_app/centro-de-corte")({
 
 type Phase = "corte" | "costura" | "acabamento" | "concluido";
 type OP = {
-  id: string; code: string; quantity: number; progress: number;
-  due_date: string | null; status: string; product_id: string | null;
+  id: string;
+  code: string;
+  quantity: number;
+  progress: number;
+  due_date: string | null;
+  status: string;
+  product_id: string | null;
 };
 
 const phaseOf = (p: number): Phase =>
   p >= 100 ? "concluido" : p >= 80 ? "acabamento" : p >= 30 ? "costura" : "corte";
 
 const PHASE_LABEL: Record<Phase, string> = {
-  corte: "Em corte", costura: "Em costura", acabamento: "Acabamento", concluido: "Concluído",
+  corte: "Em corte",
+  costura: "Em costura",
+  acabamento: "Acabamento",
+  concluido: "Concluído",
 };
 const PHASE_STYLE: Record<Phase, string> = {
   corte: "bg-amber-500/15 text-amber-400",
@@ -45,12 +55,16 @@ function CentroCorte() {
   useRealtime("production_orders", ["production_orders"]);
   const { q: search } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const setSearch = (v: string) => navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
+  const setSearch = (v: string) =>
+    navigate({ search: (p: { q: string }) => ({ ...p, q: v }), replace: true });
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["production_orders"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("production_orders").select("id,code,quantity,progress,due_date,status,product_id").order("due_date", { ascending: true });
+      const { data, error } = await supabase
+        .from("production_orders")
+        .select("id,code,quantity,progress,due_date,status,product_id")
+        .order("due_date", { ascending: true });
       if (error) throw error;
       return data as OP[];
     },
@@ -58,10 +72,16 @@ function CentroCorte() {
 
   const cuttingMut = useMutation({
     mutationFn: async ({ id, progress }: { id: string; progress: number }) => {
-      const { error } = await supabase.from("production_orders").update({ progress, status: "em_producao" }).eq("id", id);
+      const { error } = await supabase
+        .from("production_orders")
+        .update({ progress, status: "em_producao" })
+        .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["production_orders"] }); toast.success("Plano de corte atualizado"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["production_orders"] });
+      toast.success("Plano de corte atualizado");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -70,12 +90,23 @@ function CentroCorte() {
     return rows.filter((r) => !s || r.code.toLowerCase().includes(s));
   }, [rows, search]);
 
-  const cutting = filtered.filter((r) => phaseOf(r.progress) === "corte" && r.status !== "cancelada");
+  const cutting = filtered.filter(
+    (r) => phaseOf(r.progress) === "corte" && r.status !== "cancelada",
+  );
   const totalPecas = filtered.reduce((a, b) => a + b.quantity, 0);
-  const pecasCortadas = filtered.reduce((a, b) => a + Math.round((b.quantity * Math.min(b.progress, 30)) / 30), 0);
+  const pecasCortadas = filtered.reduce(
+    (a, b) => a + Math.round((b.quantity * Math.min(b.progress, 30)) / 30),
+    0,
+  );
   const opsConcluidas = filtered.filter((r) => phaseOf(r.progress) === "concluido").length;
-  const atrasadasNoCorte = cutting.filter((r) => r.due_date && new Date(r.due_date).getTime() < Date.now()).length;
-  const pecasPendentesCorte = cutting.reduce((a, b) => a + Math.max(0, b.quantity - Math.round((b.quantity * Math.min(b.progress, 30)) / 30)), 0);
+  const atrasadasNoCorte = cutting.filter(
+    (r) => r.due_date && new Date(r.due_date).getTime() < Date.now(),
+  ).length;
+  const pecasPendentesCorte = cutting.reduce(
+    (a, b) =>
+      a + Math.max(0, b.quantity - Math.round((b.quantity * Math.min(b.progress, 30)) / 30)),
+    0,
+  );
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
@@ -86,20 +117,45 @@ function CentroCorte() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Centro de Corte</h1>
-            <p className="text-sm text-muted-foreground">Plano de corte e enfesto · derivado das OPs</p>
+            <p className="text-sm text-muted-foreground">
+              Plano de corte e enfesto · derivado das OPs
+            </p>
           </div>
         </div>
-        <Input placeholder="Buscar OP…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs" />
+        <Input
+          placeholder="Buscar OP…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-xs"
+        />
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Kpi icon={<Ruler className="size-4" />} label="OPs em corte" value={String(cutting.length)} />
-        <Kpi icon={<Scissors className="size-4" />} label="Peças no plano" value={totalPecas.toLocaleString("pt-BR")} />
-        <Kpi icon={<Sparkles className="size-4" />} label="Peças cortadas (est.)" value={pecasCortadas.toLocaleString("pt-BR")} />
-        <Kpi icon={<CheckCircle2 className="size-4" />} label="OPs concluídas" value={String(opsConcluidas)} />
+        <Kpi
+          icon={<Ruler className="size-4" />}
+          label="OPs em corte"
+          value={String(cutting.length)}
+        />
+        <Kpi
+          icon={<Scissors className="size-4" />}
+          label="Peças no plano"
+          value={totalPecas.toLocaleString("pt-BR")}
+        />
+        <Kpi
+          icon={<Sparkles className="size-4" />}
+          label="Peças cortadas (est.)"
+          value={pecasCortadas.toLocaleString("pt-BR")}
+        />
+        <Kpi
+          icon={<CheckCircle2 className="size-4" />}
+          label="OPs concluídas"
+          value={String(opsConcluidas)}
+        />
       </div>
 
-      <div className={`rounded-xl border p-4 ${atrasadasNoCorte ? "border-destructive/40 bg-destructive/5" : "border-border bg-card"}`}>
+      <div
+        className={`rounded-xl border p-4 ${atrasadasNoCorte ? "border-destructive/40 bg-destructive/5" : "border-border bg-card"}`}
+      >
         <div className="text-sm font-medium">Fila inteligente do corte</div>
         <div className="mt-1 text-sm text-muted-foreground">
           {atrasadasNoCorte
@@ -114,7 +170,9 @@ function CentroCorte() {
         <div className="glass rounded-xl p-12 text-center">
           <Scissors className="size-10 text-primary mx-auto mb-3" />
           <h3 className="font-semibold mb-1">Sem ordens de produção</h3>
-          <p className="text-sm text-muted-foreground">Crie OPs em PCP para alimentar o plano de corte.</p>
+          <p className="text-sm text-muted-foreground">
+            Crie OPs em PCP para alimentar o plano de corte.
+          </p>
         </div>
       ) : (
         <div className="glass rounded-xl overflow-hidden">
@@ -137,20 +195,37 @@ function CentroCorte() {
                   return (
                     <tr key={r.id} className="border-t border-border hover:bg-muted/30">
                       <td className="px-5 py-3 font-medium">{r.code}</td>
-                      <td className="px-5 py-3"><span className={`px-2 py-0.5 rounded text-xs ${PHASE_STYLE[phase]}`}>{PHASE_LABEL[phase]}</span></td>
-                      <td className="px-5 py-3 text-right tabular-nums">{r.quantity.toLocaleString("pt-BR")}</td>
-                      <td className="px-5 py-3 text-muted-foreground tabular-nums">{r.due_date ? new Date(r.due_date).toLocaleDateString("pt-BR") : "—"}</td>
+                      <td className="px-5 py-3">
+                        <span className={`px-2 py-0.5 rounded text-xs ${PHASE_STYLE[phase]}`}>
+                          {PHASE_LABEL[phase]}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-right tabular-nums">
+                        {r.quantity.toLocaleString("pt-BR")}
+                      </td>
+                      <td className="px-5 py-3 text-muted-foreground tabular-nums">
+                        {r.due_date ? new Date(r.due_date).toLocaleDateString("pt-BR") : "—"}
+                      </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
                           <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
-                            <div className="h-full bg-primary" style={{ width: `${r.progress}%` }} />
+                            <div
+                              className="h-full bg-primary"
+                              style={{ width: `${r.progress}%` }}
+                            />
                           </div>
-                          <span className="text-xs tabular-nums text-muted-foreground w-9 text-right">{r.progress}%</span>
+                          <span className="text-xs tabular-nums text-muted-foreground w-9 text-right">
+                            {r.progress}%
+                          </span>
                         </div>
                       </td>
                       <td className="px-5 py-3 text-right">
                         {phase === "corte" && (
-                          <Button size="sm" variant="outline" onClick={() => cuttingMut.mutate({ id: r.id, progress: 30 })}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => cuttingMut.mutate({ id: r.id, progress: 30 })}
+                          >
                             Marcar cortado
                           </Button>
                         )}
@@ -170,7 +245,10 @@ function CentroCorte() {
 function Kpi({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="glass rounded-xl p-5">
-      <div className="text-xs text-muted-foreground inline-flex items-center gap-1.5">{icon}{label}</div>
+      <div className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
+        {icon}
+        {label}
+      </div>
       <div className="text-2xl font-semibold mt-1 tabular-nums">{value}</div>
     </div>
   );

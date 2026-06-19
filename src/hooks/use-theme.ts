@@ -7,7 +7,8 @@ export function useTheme() {
   const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
-    const stored = (typeof localStorage !== "undefined" && localStorage.getItem(KEY)) as Theme | null;
+    const stored = (typeof localStorage !== "undefined" &&
+      localStorage.getItem(KEY)) as Theme | null;
     const initial: Theme = stored ?? "dark";
     setThemeState(initial);
     document.documentElement.classList.toggle("light", initial === "light");
@@ -16,7 +17,11 @@ export function useTheme() {
   function setTheme(next: Theme) {
     setThemeState(next);
     document.documentElement.classList.toggle("light", next === "light");
-    try { localStorage.setItem(KEY, next); } catch {}
+    try {
+      localStorage.setItem(KEY, next);
+    } catch {
+      // Storage can be unavailable in private mode or restricted browser contexts.
+    }
   }
 
   return { theme, setTheme, toggle: () => setTheme(theme === "dark" ? "light" : "dark") };

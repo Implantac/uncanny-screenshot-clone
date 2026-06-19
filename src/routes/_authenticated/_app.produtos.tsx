@@ -3,7 +3,20 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, ImageIcon, Loader2, Package, Pencil, Plus, Scissors, Search, Sparkles, Tag, Trash2, Upload } from "lucide-react";
+import {
+  Download,
+  ImageIcon,
+  Loader2,
+  Package,
+  Pencil,
+  Plus,
+  Scissors,
+  Search,
+  Sparkles,
+  Tag,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -12,8 +25,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
@@ -32,14 +58,16 @@ export const Route = createFileRoute("/_authenticated/_app/produtos")({
   head: () => ({
     meta: [
       { title: "Produtos · USE MODA OS" },
-      { name: "description", content: "Catálogo premium com histórico, coleção vinculada, preços e visão de margem." },
+      {
+        name: "description",
+        content: "Catálogo premium com histórico, coleção vinculada, preços e visão de margem.",
+      },
     ],
   }),
   component: ProdutosPage,
 });
 
 type Prefill = { name?: string; category?: string; colors?: string };
-
 
 type Product = {
   id: string;
@@ -63,9 +91,42 @@ type Product = {
 };
 
 const GROUPS = ["Feminino", "Masculino", "Infantil", "Unissex", "Acessórios"];
-const SUBGROUPS = ["Superior", "Inferior", "Vestido", "Conjunto", "Sobreposição", "Íntimo", "Praia", "Acessório"];
-const CLASSES = ["Camiseta", "Camisa", "Blusa", "Vestido", "Saia", "Calça", "Short", "Bermuda", "Jaqueta", "Casaco", "Macacão", "Body"];
-const GRADES = ["PP-GG", "P-GG", "PP-XGG", "36-46", "38-48", "40-50", "1-4", "4-10", "10-16", "Único"];
+const SUBGROUPS = [
+  "Superior",
+  "Inferior",
+  "Vestido",
+  "Conjunto",
+  "Sobreposição",
+  "Íntimo",
+  "Praia",
+  "Acessório",
+];
+const CLASSES = [
+  "Camiseta",
+  "Camisa",
+  "Blusa",
+  "Vestido",
+  "Saia",
+  "Calça",
+  "Short",
+  "Bermuda",
+  "Jaqueta",
+  "Casaco",
+  "Macacão",
+  "Body",
+];
+const GRADES = [
+  "PP-GG",
+  "P-GG",
+  "PP-XGG",
+  "36-46",
+  "38-48",
+  "40-50",
+  "1-4",
+  "4-10",
+  "10-16",
+  "Único",
+];
 
 type CollectionRef = { id: string; name: string; season: string; year: number };
 
@@ -119,14 +180,24 @@ function ProdutosPage() {
     setPrefill({ name: prefillName, category: prefillCategory, colors: prefillColors });
     setEditing(null);
     setOpen(true);
-    navigate({ search: (p: typeof sp) => ({ ...p, prefillName: undefined, prefillCategory: undefined, prefillColors: undefined }), replace: true });
+    navigate({
+      search: (p: typeof sp) => ({
+        ...p,
+        prefillName: undefined,
+        prefillCategory: undefined,
+        prefillColors: undefined,
+      }),
+      replace: true,
+    });
   }, [prefillName, prefillCategory, prefillColors, navigate]);
-
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Product[];
     },
@@ -135,7 +206,10 @@ function ProdutosPage() {
   const { data: collections = [] } = useQuery({
     queryKey: ["collections-ref"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("collections").select("id, name, season, year").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("collections")
+        .select("id, name, season, year")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data as CollectionRef[];
     },
@@ -145,7 +219,9 @@ function ProdutosPage() {
     const term = search.trim().toLowerCase();
     if (!term) return products;
     return products.filter((product) =>
-      [product.name, product.sku, product.category || "", STATUS_LABELS[product.status]].some((value) => value.toLowerCase().includes(term)),
+      [product.name, product.sku, product.category || "", STATUS_LABELS[product.status]].some(
+        (value) => value.toLowerCase().includes(term),
+      ),
     );
   }, [products, search]);
 
@@ -154,14 +230,25 @@ function ProdutosPage() {
       setSelectedId(null);
       return;
     }
-    setSelectedId((current) => (current && filtered.some((item) => item.id === current) ? current : filtered[0].id));
+    setSelectedId((current) =>
+      current && filtered.some((item) => item.id === current) ? current : filtered[0].id,
+    );
   }, [filtered]);
 
-  const selected = useMemo(() => filtered.find((item) => item.id === selectedId) ?? filtered[0] ?? null, [filtered, selectedId]);
-  const selectedCollection = useMemo(() => collections.find((item) => item.id === selected?.collection_id) ?? null, [collections, selected?.collection_id]);
+  const selected = useMemo(
+    () => filtered.find((item) => item.id === selectedId) ?? filtered[0] ?? null,
+    [filtered, selectedId],
+  );
+  const selectedCollection = useMemo(
+    () => collections.find((item) => item.id === selected?.collection_id) ?? null,
+    [collections, selected?.collection_id],
+  );
 
   const summary = useMemo(() => {
-    const totalMargin = products.reduce((sum, item) => sum + (Number(item.sell_price || 0) - Number(item.cost_price || 0)), 0);
+    const totalMargin = products.reduce(
+      (sum, item) => sum + (Number(item.sell_price || 0) - Number(item.cost_price || 0)),
+      0,
+    );
     const avgMargin = products.length ? totalMargin / products.length : 0;
     return {
       total: products.length,
@@ -187,31 +274,47 @@ function ProdutosPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">Módulo 4</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">
+            Módulo 4
+          </div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
             <Package className="size-6 text-primary" /> Produtos
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Catálogo premium com leitura rápida de coleção, margem, status e histórico do item.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Catálogo premium com leitura rápida de coleção, margem, status e histórico do item.
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
-            onClick={() => exportToCsv("produtos", products.map((product) => ({ ...product, status: STATUS_LABELS[product.status] })), [
-              { key: "sku", label: "SKU" },
-              { key: "name", label: "Nome" },
-              { key: "category", label: "Categoria" },
-              { key: "status", label: "Status" },
-              { key: "cost_price", label: "Custo" },
-              { key: "sell_price", label: "Venda" },
-              { key: "sizes", label: "Tamanhos" },
-              { key: "colors", label: "Cores" },
-            ])}
+            onClick={() =>
+              exportToCsv(
+                "produtos",
+                products.map((product) => ({ ...product, status: STATUS_LABELS[product.status] })),
+                [
+                  { key: "sku", label: "SKU" },
+                  { key: "name", label: "Nome" },
+                  { key: "category", label: "Categoria" },
+                  { key: "status", label: "Status" },
+                  { key: "cost_price", label: "Custo" },
+                  { key: "sell_price", label: "Venda" },
+                  { key: "sizes", label: "Tamanhos" },
+                  { key: "colors", label: "Cores" },
+                ],
+              )
+            }
             disabled={!products.length}
             className="gap-2"
           >
             <Download className="size-4" /> Exportar CSV
           </Button>
-          <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+            }}
+            className="gap-2"
+          >
             <Plus className="size-4" /> Novo produto
           </Button>
         </div>
@@ -224,8 +327,10 @@ function ProdutosPage() {
         <SummaryCard label="Margem média" value={brl(summary.avgMargin)} />
       </div>
 
-      <AICoordinatorPanel persona="development" title="Coordenador de Desenvolvimento — leitura do catálogo" />
-
+      <AICoordinatorPanel
+        persona="development"
+        title="Coordenador de Desenvolvimento — leitura do catálogo"
+      />
 
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
@@ -233,15 +338,29 @@ function ProdutosPage() {
         <div className="glass rounded-xl p-12 text-center">
           <Package className="size-10 text-primary mx-auto mb-3" />
           <h2 className="font-semibold mb-1">Nenhum produto cadastrado</h2>
-          <p className="text-sm text-muted-foreground mb-4">Comece o catálogo adicionando o primeiro SKU da operação.</p>
-          <Button onClick={() => { setEditing(null); setOpen(true); }}>Cadastrar produto</Button>
+          <p className="text-sm text-muted-foreground mb-4">
+            Comece o catálogo adicionando o primeiro SKU da operação.
+          </p>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+            }}
+          >
+            Cadastrar produto
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-4">
           <section className="glass rounded-xl p-4 space-y-3">
             <div className="relative">
               <Search className="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por SKU, nome ou categoria" className="pl-9" />
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Buscar por SKU, nome ou categoria"
+                className="pl-9"
+              />
             </div>
             <div className="space-y-2">
               {filtered.map((product) => {
@@ -256,9 +375,13 @@ function ProdutosPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <div className="font-medium truncate">{product.name}</div>
-                        <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Tag className="size-3" /> {product.sku}</div>
+                        <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                          <Tag className="size-3" /> {product.sku}
+                        </div>
                       </div>
-                      <Badge variant="outline" className={STATUS_COLORS[product.status]}>{STATUS_LABELS[product.status]}</Badge>
+                      <Badge variant="outline" className={STATUS_COLORS[product.status]}>
+                        {STATUS_LABELS[product.status]}
+                      </Badge>
                     </div>
                     <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                       <span>{product.category || "Sem categoria"}</span>
@@ -267,7 +390,11 @@ function ProdutosPage() {
                   </button>
                 );
               })}
-              {!filtered.length && <div className="text-sm text-muted-foreground text-center py-8">Nenhum resultado para essa busca.</div>}
+              {!filtered.length && (
+                <div className="text-sm text-muted-foreground text-center py-8">
+                  Nenhum resultado para essa busca.
+                </div>
+              )}
             </div>
           </section>
 
@@ -286,7 +413,17 @@ function ProdutosPage() {
         </div>
       )}
 
-      <ProductDialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setPrefill(null); }} editing={editing} userId={user?.id} collections={collections} prefill={prefill} />
+      <ProductDialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v);
+          if (!v) setPrefill(null);
+        }}
+        editing={editing}
+        userId={user?.id}
+        collections={collections}
+        prefill={prefill}
+      />
     </div>
   );
 }
@@ -328,7 +465,10 @@ function ProductDetail({
     queryKey: ["product-next-step", product.id, product.image_url, product.status],
     queryFn: async () => {
       const [{ data: protos }, { data: sheets }] = await Promise.all([
-        supabase.from("prototypes").select("id, stage, needs_adjustment, updated_at").eq("product_id", product.id),
+        supabase
+          .from("prototypes")
+          .select("id, stage, needs_adjustment, updated_at")
+          .eq("product_id", product.id),
         supabase.from("tech_sheets").select("id, status").eq("product_id", product.id),
       ]);
       return { protos: protos ?? [], sheets: sheets ?? [] };
@@ -337,38 +477,78 @@ function ProductDetail({
 
   const nextStep = useMemo(() => {
     if (!product.image_url) {
-      return { title: "Adicionar croqui", reason: "Sem imagem o time não consegue solicitar piloto nem cotar tecidos.", action: "sketch" as const };
+      return {
+        title: "Adicionar croqui",
+        reason: "Sem imagem o time não consegue solicitar piloto nem cotar tecidos.",
+        action: "sketch" as const,
+      };
     }
     const protos = nextStepInfo?.protos ?? [];
     const sheets = nextStepInfo?.sheets ?? [];
     if (protos.length === 0) {
-      return { title: "Solicitar piloto", reason: "Croqui pronto e nenhum protótipo aberto — hora de produzir a peça-piloto.", action: "prototype" as const };
+      return {
+        title: "Solicitar piloto",
+        reason: "Croqui pronto e nenhum protótipo aberto — hora de produzir a peça-piloto.",
+        action: "prototype" as const,
+      };
     }
-    const stuck = protos.find((p: any) => p.needs_adjustment && p.updated_at && (Date.now() - new Date(p.updated_at).getTime()) / 86400000 > 7);
+    const stuck = protos.find(
+      (p: any) =>
+        p.needs_adjustment &&
+        p.updated_at &&
+        (Date.now() - new Date(p.updated_at).getTime()) / 86400000 > 7,
+    );
     if (stuck) {
-      return { title: "Cobrar ajuste do fornecedor", reason: "Protótipo em ajuste há mais de 7 dias sem atualização.", action: "prototype" as const };
+      return {
+        title: "Cobrar ajuste do fornecedor",
+        reason: "Protótipo em ajuste há mais de 7 dias sem atualização.",
+        action: "prototype" as const,
+      };
     }
     const approved = protos.some((p: any) => p.stage === "aprovado");
     const hasSheet = sheets.length > 0;
     if (approved && !hasSheet) {
-      return { title: "Criar ficha técnica", reason: "Protótipo aprovado — sem ficha, produção e compras ficam paradas.", action: "techsheet" as const };
+      return {
+        title: "Criar ficha técnica",
+        reason: "Protótipo aprovado — sem ficha, produção e compras ficam paradas.",
+        action: "techsheet" as const,
+      };
     }
     if (approved && sheets.every((s: any) => s.status !== "aprovada")) {
-      return { title: "Aprovar ficha técnica", reason: "Ficha existe mas ainda não está aprovada — bloqueia repasse de custo.", action: "techsheet" as const };
+      return {
+        title: "Aprovar ficha técnica",
+        reason: "Ficha existe mas ainda não está aprovada — bloqueia repasse de custo.",
+        action: "techsheet" as const,
+      };
     }
-    return { title: "Tudo fluindo", reason: "Sem pendências críticas neste produto agora.", action: null };
+    return {
+      title: "Tudo fluindo",
+      reason: "Sem pendências críticas neste produto agora.",
+      action: null,
+    };
   }, [product.image_url, nextStepInfo]);
 
   async function handleSketchUpload(file: File) {
-    if (!user?.id) { toast.error("Sessão expirada"); return; }
-    if (file.size > 4 * 1024 * 1024) { toast.error("Imagem maior que 4MB"); return; }
+    if (!user?.id) {
+      toast.error("Sessão expirada");
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      toast.error("Imagem maior que 4MB");
+      return;
+    }
     setSketchUploading(true);
     try {
       const ext = file.name.split(".").pop() || "jpg";
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+      const { error: upErr } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, { upsert: false });
       if (upErr) throw upErr;
-      const { error: updErr } = await supabase.from("products").update({ image_url: path }).eq("id", product.id);
+      const { error: updErr } = await supabase
+        .from("products")
+        .update({ image_url: path })
+        .eq("id", product.id);
       if (updErr) throw updErr;
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Croqui adicionado");
@@ -380,12 +560,8 @@ function ProductDetail({
   }
 
   const margin = Number(product.sell_price || 0) - Number(product.cost_price || 0);
-  const marginPct = Number(product.sell_price || 0) > 0 ? (margin / Number(product.sell_price)) * 100 : 0;
-
-
-
-
-
+  const marginPct =
+    Number(product.sell_price || 0) > 0 ? (margin / Number(product.sell_price)) * 100 : 0;
 
   return (
     <section className="space-y-4">
@@ -393,7 +569,12 @@ function ProductDetail({
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-0">
           <div className="min-h-[320px] bg-muted/20 overflow-hidden relative group">
             {imageUrl ? (
-              <img src={imageUrl} alt={product.name} className="size-full object-cover" loading="lazy" />
+              <img
+                src={imageUrl}
+                alt={product.name}
+                className="size-full object-cover"
+                loading="lazy"
+              />
             ) : (
               <button
                 type="button"
@@ -402,8 +583,14 @@ function ProductDetail({
                 className="size-full grid place-items-center text-muted-foreground hover:bg-muted/40 transition disabled:cursor-not-allowed"
               >
                 <div className="flex flex-col items-center gap-2">
-                  {sketchUploading ? <Loader2 className="size-8 animate-spin" /> : <Upload className="size-8 text-primary/70" />}
-                  <span className="text-xs font-medium">{canEdit ? "Adicionar croqui" : "Sem croqui"}</span>
+                  {sketchUploading ? (
+                    <Loader2 className="size-8 animate-spin" />
+                  ) : (
+                    <Upload className="size-8 text-primary/70" />
+                  )}
+                  <span className="text-xs font-medium">
+                    {canEdit ? "Adicionar croqui" : "Sem croqui"}
+                  </span>
                   {canEdit && <span className="text-[10px]">PNG/JPG até 4MB</span>}
                 </div>
               </button>
@@ -415,7 +602,11 @@ function ProductDetail({
                 onClick={() => sketchRef.current?.click()}
                 className="absolute top-2 right-2 px-2 py-1 rounded-md bg-background/90 border border-border text-xs flex items-center gap-1 opacity-0 group-hover:opacity-100 transition"
               >
-                {sketchUploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />}
+                {sketchUploading ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <Upload className="size-3" />
+                )}
                 Trocar
               </button>
             )}
@@ -424,14 +615,19 @@ function ProductDetail({
               type="file"
               accept="image/png,image/jpeg,image/webp"
               className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSketchUpload(f); e.currentTarget.value = ""; }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleSketchUpload(f);
+                e.currentTarget.value = "";
+              }}
             />
           </div>
 
-
           <div className="p-5 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className={STATUS_COLORS[product.status]}>{STATUS_LABELS[product.status]}</Badge>
+              <Badge variant="outline" className={STATUS_COLORS[product.status]}>
+                {STATUS_LABELS[product.status]}
+              </Badge>
               {product.product_group && <Badge variant="outline">{product.product_group}</Badge>}
               {product.subgroup && <Badge variant="outline">{product.subgroup}</Badge>}
               {product.product_class && <Badge variant="outline">{product.product_class}</Badge>}
@@ -440,9 +636,14 @@ function ProductDetail({
             </div>
 
             <div>
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">SKU</div>
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">
+                SKU
+              </div>
               <h2 className="text-2xl font-semibold tracking-tight">{product.name}</h2>
-              <p className="text-sm text-muted-foreground mt-2">{product.sku}{product.description ? ` · ${product.description}` : ""}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                {product.sku}
+                {product.description ? ` · ${product.description}` : ""}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -454,20 +655,42 @@ function ProductDetail({
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">Tamanhos</div>
+                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">
+                  Tamanhos
+                </div>
                 <div className="flex flex-wrap gap-2">
-                  {product.sizes.length ? product.sizes.map((size) => <Badge key={size} variant="secondary">{size}</Badge>) : <span className="text-sm text-muted-foreground">Sem grade cadastrada</span>}
+                  {product.sizes.length ? (
+                    product.sizes.map((size) => (
+                      <Badge key={size} variant="secondary">
+                        {size}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Sem grade cadastrada</span>
+                  )}
                 </div>
               </div>
               <div>
-                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">Cores</div>
+                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-2">
+                  Cores
+                </div>
                 <div className="flex flex-wrap gap-2 items-center">
-                  {product.colors.length ? product.colors.map((color) => (
-                    <div key={color} className="flex items-center gap-2 rounded-full border border-border px-2 py-1 text-xs">
-                      <span className="size-3 rounded-full border border-border" style={{ background: color }} />
-                      {color}
-                    </div>
-                  )) : <span className="text-sm text-muted-foreground">Sem cores cadastradas</span>}
+                  {product.colors.length ? (
+                    product.colors.map((color) => (
+                      <div
+                        key={color}
+                        className="flex items-center gap-2 rounded-full border border-border px-2 py-1 text-xs"
+                      >
+                        <span
+                          className="size-3 rounded-full border border-border"
+                          style={{ background: color }}
+                        />
+                        {color}
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Sem cores cadastradas</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -480,7 +703,6 @@ function ProductDetail({
           <ProductTimeline productId={product.id} createdAt={product.created_at} />
         </div>
 
-
         <div className="glass rounded-xl p-5 space-y-4">
           <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-2">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary font-semibold">
@@ -489,32 +711,59 @@ function ProductDetail({
             <div className="text-base font-semibold">{nextStep.title}</div>
             <div className="text-xs text-muted-foreground">{nextStep.reason}</div>
             {nextStep.action === "sketch" && canEdit && (
-              <Button size="sm" disabled={sketchUploading} onClick={() => sketchRef.current?.click()} className="gap-2 mt-1">
-                {sketchUploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} Adicionar croqui
+              <Button
+                size="sm"
+                disabled={sketchUploading}
+                onClick={() => sketchRef.current?.click()}
+                className="gap-2 mt-1"
+              >
+                {sketchUploading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Upload className="size-4" />
+                )}{" "}
+                Adicionar croqui
               </Button>
             )}
             {nextStep.action === "prototype" && (
               <Button asChild size="sm" className="gap-2 mt-1">
-                <Link to="/prototipos" search={{ productId: product.id }}><Scissors className="size-4" /> Ir para protótipos</Link>
+                <Link to="/prototipos" search={{ productId: product.id }}>
+                  <Scissors className="size-4" /> Ir para protótipos
+                </Link>
               </Button>
             )}
             {nextStep.action === "techsheet" && (
               <Button asChild size="sm" className="gap-2 mt-1">
-                <Link to="/ficha-tecnica" search={{ productId: product.id }}><Sparkles className="size-4" /> Abrir ficha técnica</Link>
+                <Link to="/ficha-tecnica" search={{ productId: product.id }}>
+                  <Sparkles className="size-4" /> Abrir ficha técnica
+                </Link>
               </Button>
             )}
           </div>
 
           <div>
             <div className="text-sm font-semibold">Leitura comercial</div>
-            <div className="text-xs text-muted-foreground mt-1">Resumo rápido para estilo, comercial e pricing.</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Resumo rápido para estilo, comercial e pricing.
+            </div>
           </div>
           {[
-            collection ? `Vinculado à coleção ${collection.name}, pronta para leitura comercial integrada.` : "Produto ainda não conectado a uma coleção.",
-            margin > 0 ? `Margem bruta positiva de ${brl(margin)} por item.` : "Preço de venda abaixo ou igual ao custo cadastrado.",
-            product.status === "aprovado" || product.status === "producao" ? "Produto apto para fluxo comercial." : "Produto ainda em fase de desenvolvimento interno.",
+            collection
+              ? `Vinculado à coleção ${collection.name}, pronta para leitura comercial integrada.`
+              : "Produto ainda não conectado a uma coleção.",
+            margin > 0
+              ? `Margem bruta positiva de ${brl(margin)} por item.`
+              : "Preço de venda abaixo ou igual ao custo cadastrado.",
+            product.status === "aprovado" || product.status === "producao"
+              ? "Produto apto para fluxo comercial."
+              : "Produto ainda em fase de desenvolvimento interno.",
           ].map((line) => (
-            <div key={line} className="rounded-xl border border-border bg-background/30 p-3 text-sm text-muted-foreground">{line}</div>
+            <div
+              key={line}
+              className="rounded-xl border border-border bg-background/30 p-3 text-sm text-muted-foreground"
+            >
+              {line}
+            </div>
           ))}
 
           <div className="flex flex-wrap gap-2 pt-2">
@@ -525,20 +774,26 @@ function ProductDetail({
             </Button>
             {canEdit && (
               <>
-                <Button variant="outline" onClick={onEdit} className="gap-2"><Pencil className="size-4" /> Editar</Button>
-                <Button variant="outline" onClick={onDelete} className="gap-2 text-destructive hover:text-destructive"><Trash2 className="size-4" /> Remover</Button>
+                <Button variant="outline" onClick={onEdit} className="gap-2">
+                  <Pencil className="size-4" /> Editar
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={onDelete}
+                  className="gap-2 text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="size-4" /> Remover
+                </Button>
               </>
             )}
           </div>
         </div>
-
       </div>
 
       <ProductGallery productId={product.id} canEdit={canEdit} />
     </section>
   );
 }
-
 
 function ProductDialog({
   open,
@@ -604,7 +859,6 @@ function ProductDialog({
     }
   }, [editing, open, prefill]);
 
-
   function reset() {
     setSku("");
     setName("");
@@ -633,7 +887,9 @@ function ProductDialog({
     try {
       const extension = file.name.split(".").pop() || "jpg";
       const path = `${userId}/${crypto.randomUUID()}.${extension}`;
-      const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+      const { error } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, { upsert: false });
       if (error) throw error;
       setImagePath(path);
       setPreviewUrl(await resolveImageUrl(path));
@@ -648,7 +904,8 @@ function ProductDialog({
   const saveMut = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error("Sessão expirada");
-      if (!collectionId || collectionId === "none") throw new Error("Selecione uma coleção para o produto");
+      if (!collectionId || collectionId === "none")
+        throw new Error("Selecione uma coleção para o produto");
       const payload = {
         sku,
         name,
@@ -663,8 +920,14 @@ function ProductDialog({
         status,
         collection_id: collectionId === "none" ? null : collectionId,
         image_url: imagePath,
-        sizes: sizesStr.split(",").map((item) => item.trim()).filter(Boolean),
-        colors: colorsStr.split(",").map((item) => item.trim()).filter(Boolean),
+        sizes: sizesStr
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+        colors: colorsStr
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
       };
       if (editing) {
         const { error } = await supabase.from("products").update(payload).eq("id", editing.id);
@@ -684,31 +947,64 @@ function ProductDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={(value) => {
-      onOpenChange(value);
-      if (!value) reset();
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(value) => {
+        onOpenChange(value);
+        if (!value) reset();
+      }}
+    >
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editing ? "Editar produto" : "Novo produto"}</DialogTitle>
-          <DialogDescription>Cadastro de catálogo com coleção vinculada, preços e variações.</DialogDescription>
+          <DialogDescription>
+            Cadastro de catálogo com coleção vinculada, preços e variações.
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={(event) => {
-          event.preventDefault();
-          saveMut.mutate();
-        }} className="space-y-4">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            saveMut.mutate();
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label>Imagem</Label>
             <div className="flex items-center gap-3">
               <div className="size-20 rounded-lg overflow-hidden bg-muted/40 grid place-items-center shrink-0">
-                {previewUrl ? <img src={previewUrl} alt="Preview do produto" className="size-full object-cover" /> : <ImageIcon className="size-6 text-muted-foreground/40" />}
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt="Preview do produto"
+                    className="size-full object-cover"
+                  />
+                ) : (
+                  <ImageIcon className="size-6 text-muted-foreground/40" />
+                )}
               </div>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) handleUpload(file);
-              }} />
-              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading} className="gap-2">
-                {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) handleUpload(file);
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="gap-2"
+              >
+                {uploading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Upload className="size-4" />
+                )}
                 {imagePath ? "Trocar imagem" : "Enviar imagem"}
               </Button>
             </div>
@@ -717,93 +1013,163 @@ function ProductDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>SKU</Label>
-              <Input value={sku} onChange={(event) => setSku(event.target.value)} placeholder="VST-001" required />
+              <Input
+                value={sku}
+                onChange={(event) => setSku(event.target.value)}
+                placeholder="VST-001"
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label>Nome</Label>
-              <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Vestido Florença" required />
+              <Input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Vestido Florença"
+                required
+              />
             </div>
           </div>
 
           <div className="rounded-xl border border-border/60 bg-background/30 p-3 space-y-3">
-            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Classificação</div>
+            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              Classificação
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>Grupo</Label>
                 <Select value={productGroup} onValueChange={setProductGroup}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Não definido</SelectItem>
-                    {GROUPS.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                    {GROUPS.map((g) => (
+                      <SelectItem key={g} value={g}>
+                        {g}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Subgrupo</Label>
                 <Select value={subgroup} onValueChange={setSubgroup}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Não definido</SelectItem>
-                    {SUBGROUPS.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                    {SUBGROUPS.map((g) => (
+                      <SelectItem key={g} value={g}>
+                        {g}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Classe</Label>
                 <Select value={productClass} onValueChange={setProductClass}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Não definido</SelectItem>
-                    {CLASSES.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                    {CLASSES.map((g) => (
+                      <SelectItem key={g} value={g}>
+                        {g}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Categoria livre</Label>
-                <Input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Ex: Festa" />
+                <Input
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value)}
+                  placeholder="Ex: Festa"
+                />
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
             <Label>Descrição</Label>
-            <Textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} placeholder="Narrativa comercial, modelagem, diferencial do produto..." />
+            <Textarea
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              rows={3}
+              placeholder="Narrativa comercial, modelagem, diferencial do produto..."
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Preço de custo</Label>
-              <Input type="number" step="0.01" value={costPrice} onChange={(event) => setCostPrice(Number(event.target.value))} />
+              <Input
+                type="number"
+                step="0.01"
+                value={costPrice}
+                onChange={(event) => setCostPrice(Number(event.target.value))}
+              />
             </div>
             <div className="space-y-2">
               <Label>Preço de venda</Label>
-              <Input type="number" step="0.01" value={sellPrice} onChange={(event) => setSellPrice(Number(event.target.value))} />
+              <Input
+                type="number"
+                step="0.01"
+                value={sellPrice}
+                onChange={(event) => setSellPrice(Number(event.target.value))}
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={status} onValueChange={(value) => setStatus(value as Product["status"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={status}
+                onValueChange={(value) => setStatus(value as Product["status"])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(STATUS_LABELS).map(([key, value]) => <SelectItem key={key} value={key}>{value}</SelectItem>)}
+                  {Object.entries(STATUS_LABELS).map(([key, value]) => (
+                    <SelectItem key={key} value={key}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Coleção <span className="text-destructive">*</span></Label>
+              <Label>
+                Coleção <span className="text-destructive">*</span>
+              </Label>
               <Select value={collectionId} onValueChange={setCollectionId}>
-                <SelectTrigger><SelectValue placeholder="Selecione a coleção" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a coleção" />
+                </SelectTrigger>
                 <SelectContent>
                   {collections.length === 0 ? (
-                    <SelectItem value="none" disabled>Crie uma coleção primeiro</SelectItem>
-                  ) : collections.map((collection) => (
-                    <SelectItem key={collection.id} value={collection.id}>{collection.name} ({collection.season} {collection.year})</SelectItem>
-                  ))}
+                    <SelectItem value="none" disabled>
+                      Crie uma coleção primeiro
+                    </SelectItem>
+                  ) : (
+                    collections.map((collection) => (
+                      <SelectItem key={collection.id} value={collection.id}>
+                        {collection.name} ({collection.season} {collection.year})
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
-              <p className="text-[11px] text-muted-foreground">Todo produto PLM pertence a uma coleção.</p>
+              <p className="text-[11px] text-muted-foreground">
+                Todo produto PLM pertence a uma coleção.
+              </p>
             </div>
           </div>
 
@@ -811,27 +1177,45 @@ function ProductDialog({
             <div className="space-y-2">
               <Label>Grade</Label>
               <Select value={grade} onValueChange={setGrade}>
-                <SelectTrigger><SelectValue placeholder="Selecione a grade" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a grade" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Não definida</SelectItem>
-                  {GRADES.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                  {GRADES.map((g) => (
+                    <SelectItem key={g} value={g}>
+                      {g}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Tamanhos da grade</Label>
-              <Input value={sizesStr} onChange={(event) => setSizesStr(event.target.value)} placeholder="P, M, G, GG" />
+              <Input
+                value={sizesStr}
+                onChange={(event) => setSizesStr(event.target.value)}
+                placeholder="P, M, G, GG"
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label>Cores</Label>
-            <Input value={colorsStr} onChange={(event) => setColorsStr(event.target.value)} placeholder="#111111, #f4ede2 ou Preto, Off-white" />
+            <Input
+              value={colorsStr}
+              onChange={(event) => setColorsStr(event.target.value)}
+              placeholder="#111111, #f4ede2 ou Preto, Off-white"
+            />
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={saveMut.isPending}>{saveMut.isPending ? "Salvando…" : editing ? "Atualizar" : "Criar"}</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saveMut.isPending}>
+              {saveMut.isPending ? "Salvando…" : editing ? "Atualizar" : "Criar"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

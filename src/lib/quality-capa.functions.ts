@@ -28,10 +28,12 @@ export type CapaRow = {
 export const listCapas = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
-    z.object({
-      status: z.string().optional(),
-      supplierId: z.string().uuid().optional(),
-    }).parse(d ?? {}),
+    z
+      .object({
+        status: z.string().optional(),
+        supplierId: z.string().uuid().optional(),
+      })
+      .parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
@@ -54,27 +56,32 @@ export const listCapas = createServerFn({ method: "POST" })
 export const upsertCapa = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
-    z.object({
-      id: z.string().uuid().optional(),
-      title: z.string().min(2),
-      problem: z.string().min(2),
-      root_cause: z.string().optional().nullable(),
-      corrective_action: z.string().optional().nullable(),
-      preventive_action: z.string().optional().nullable(),
-      severity: z.enum(["baixa", "media", "alta", "critica"]).default("media"),
-      status: z.enum(["aberta", "em_andamento", "concluida", "verificada", "cancelada"]).default("aberta"),
-      due_date: z.string().optional().nullable(),
-      effectiveness_check: z.string().optional().nullable(),
-      supplier_id: z.string().uuid().optional().nullable(),
-      inspection_id: z.string().uuid().optional().nullable(),
-      occurrence_id: z.string().uuid().optional().nullable(),
-      order_id: z.string().uuid().optional().nullable(),
-    }).parse(d),
+    z
+      .object({
+        id: z.string().uuid().optional(),
+        title: z.string().min(2),
+        problem: z.string().min(2),
+        root_cause: z.string().optional().nullable(),
+        corrective_action: z.string().optional().nullable(),
+        preventive_action: z.string().optional().nullable(),
+        severity: z.enum(["baixa", "media", "alta", "critica"]).default("media"),
+        status: z
+          .enum(["aberta", "em_andamento", "concluida", "verificada", "cancelada"])
+          .default("aberta"),
+        due_date: z.string().optional().nullable(),
+        effectiveness_check: z.string().optional().nullable(),
+        supplier_id: z.string().uuid().optional().nullable(),
+        inspection_id: z.string().uuid().optional().nullable(),
+        occurrence_id: z.string().uuid().optional().nullable(),
+        order_id: z.string().uuid().optional().nullable(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const payload: any = { ...data, owner_id: userId };
-    if (data.status === "concluida" && !payload.closed_at) payload.closed_at = new Date().toISOString();
+    if (data.status === "concluida" && !payload.closed_at)
+      payload.closed_at = new Date().toISOString();
     if (data.status === "verificada") {
       payload.verified_at = new Date().toISOString();
       payload.verified_by = userId;

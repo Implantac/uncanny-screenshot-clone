@@ -4,10 +4,20 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { listOutsourcedWip } from "@/lib/pcp-ops.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Truck, Package, Tags, Boxes, ChevronDown, ChevronRight, AlertTriangle, PackageCheck, Minus } from "lucide-react";
+import {
+  Truck,
+  Package,
+  Tags,
+  Boxes,
+  ChevronDown,
+  ChevronRight,
+  AlertTriangle,
+  PackageCheck,
+  Minus,
+} from "lucide-react";
 import { toast } from "sonner";
 
-const lineLabel = (line?: string | null) => line === "segunda_linha" ? "2ª linha" : "1ª linha";
+const lineLabel = (line?: string | null) => (line === "segunda_linha" ? "2ª linha" : "1ª linha");
 
 export const Route = createFileRoute("/_authenticated/_app/terceirizados")({
   head: () => ({ meta: [{ title: "Terceirizados · USE MODA OS" }] }),
@@ -33,7 +43,10 @@ function OutsourcedPage() {
     { pieces: 0, lots: 0, refs: 0, suppliers: 0 },
   );
   const criticalSuppliers = useMemo(
-    () => (data ?? []).filter((s: any) => (s.max_days_at_supplier ?? 0) > 15 || (s.second_line_count ?? 0) > 0).slice(0, 3),
+    () =>
+      (data ?? [])
+        .filter((s: any) => (s.max_days_at_supplier ?? 0) > 15 || (s.second_line_count ?? 0) > 0)
+        .slice(0, 3),
     [data],
   );
 
@@ -45,18 +58,27 @@ function OutsourcedPage() {
         </div>
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Terceirizados</h1>
-          <p className="text-xs text-muted-foreground">O que está em poder de cada facção neste momento — peças, lotes, referências e dias em casa.</p>
+          <p className="text-xs text-muted-foreground">
+            O que está em poder de cada facção neste momento — peças, lotes, referências e dias em
+            casa.
+          </p>
         </div>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Kpi icon={Truck} label="Facções com WIP" value={totals.suppliers} />
-        <Kpi icon={Package} label="Peças em terceiros" value={totals.pieces.toLocaleString("pt-BR")} />
+        <Kpi
+          icon={Package}
+          label="Peças em terceiros"
+          value={totals.pieces.toLocaleString("pt-BR")}
+        />
         <Kpi icon={Boxes} label="Lotes abertos" value={totals.lots} />
         <Kpi icon={Tags} label="Referências distintas" value={totals.refs} />
       </div>
 
-      <div className={`rounded-xl border p-4 ${criticalSuppliers.length ? "border-warning/50 bg-warning/5" : "border-border bg-card"}`}>
+      <div
+        className={`rounded-xl border p-4 ${criticalSuppliers.length ? "border-warning/50 bg-warning/5" : "border-border bg-card"}`}
+      >
         <div className="text-sm font-medium">Plano de cobrança</div>
         <div className="mt-1 text-sm text-muted-foreground">
           {criticalSuppliers.length
@@ -66,9 +88,13 @@ function OutsourcedPage() {
       </div>
 
       <div className="glass rounded-2xl overflow-hidden">
-        {isLoading && <div className="p-8 text-center text-sm text-muted-foreground">Carregando…</div>}
+        {isLoading && (
+          <div className="p-8 text-center text-sm text-muted-foreground">Carregando…</div>
+        )}
         {!isLoading && (data?.length ?? 0) === 0 && (
-          <div className="p-8 text-center text-sm text-muted-foreground">Nenhuma OS aberta em terceirizados.</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">
+            Nenhuma OS aberta em terceirizados.
+          </div>
         )}
         {data?.map((s: any) => {
           const isOpen = !!open[s.supplier_id];
@@ -81,13 +107,17 @@ function OutsourcedPage() {
               >
                 {isOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{s.supplier_name ?? s.supplier_id.slice(0, 8)}</div>
+                  <div className="font-medium truncate">
+                    {s.supplier_name ?? s.supplier_id.slice(0, 8)}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     {s.open_os_count} OS · {s.open_lot_count} lote(s) · {s.distinct_refs} ref(s)
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-mono font-semibold">{(s.pieces_at_supplier ?? 0).toLocaleString("pt-BR")}</div>
+                  <div className="font-mono font-semibold">
+                    {(s.pieces_at_supplier ?? 0).toLocaleString("pt-BR")}
+                  </div>
                   <div className="text-[11px] text-muted-foreground">peças</div>
                 </div>
                 {(s.second_line_count ?? 0) > 0 && (
@@ -95,7 +125,9 @@ function OutsourcedPage() {
                     {s.second_line_count} OS 2ª linha
                   </div>
                 )}
-                <div className={`ml-4 text-xs px-2 py-1 rounded border inline-flex items-center gap-1 ${lateDays > 15 ? "bg-destructive/15 text-destructive border-destructive/30" : "bg-muted text-muted-foreground border-border"}`}>
+                <div
+                  className={`ml-4 text-xs px-2 py-1 rounded border inline-flex items-center gap-1 ${lateDays > 15 ? "bg-destructive/15 text-destructive border-destructive/30" : "bg-muted text-muted-foreground border-border"}`}
+                >
                   {lateDays > 15 && <AlertTriangle className="size-3" />}
                   {lateDays}d máx
                 </div>
@@ -122,7 +154,9 @@ function OutsourcedPage() {
                       {s.orders.map((o: any) => (
                         <tr key={o.id} className="border-t border-border/50">
                           <td className="py-2 font-mono">{o.code}</td>
-                          <td className="py-2">{o.production_orders?.batch_code ?? o.production_orders?.code ?? "—"}</td>
+                          <td className="py-2">
+                            {o.production_orders?.batch_code ?? o.production_orders?.code ?? "—"}
+                          </td>
                           <td className="py-2">
                             {o.product_variants
                               ? `${o.product_variants.sku} (${o.product_variants.color}/${o.product_variants.size})`
@@ -130,11 +164,21 @@ function OutsourcedPage() {
                           </td>
                           <td className="py-2">{o.production_packages?.code ?? "—"}</td>
                           <td className="py-2">
-                            <span className={`px-1.5 py-0.5 rounded border ${o.line_type === "segunda_linha" ? "bg-orange-500/10 text-orange-500 border-orange-500/30" : "bg-muted text-muted-foreground border-border"}`}>{lineLabel(o.line_type)}</span>
+                            <span
+                              className={`px-1.5 py-0.5 rounded border ${o.line_type === "segunda_linha" ? "bg-orange-500/10 text-orange-500 border-orange-500/30" : "bg-muted text-muted-foreground border-border"}`}
+                            >
+                              {lineLabel(o.line_type)}
+                            </span>
                           </td>
-                          <td className="py-2 text-muted-foreground">{o.from_stage} → {o.to_stage}</td>
-                          <td className="py-2 text-right font-mono">{o.quantity} / {o.qty_received ?? 0}</td>
-                          <td className="py-2">{o.sent_at ? new Date(o.sent_at).toLocaleDateString("pt-BR") : "—"}</td>
+                          <td className="py-2 text-muted-foreground">
+                            {o.from_stage} → {o.to_stage}
+                          </td>
+                          <td className="py-2 text-right font-mono">
+                            {o.quantity} / {o.qty_received ?? 0}
+                          </td>
+                          <td className="py-2">
+                            {o.sent_at ? new Date(o.sent_at).toLocaleDateString("pt-BR") : "—"}
+                          </td>
                           <td className="py-2">{o.status}</td>
                           <td className="py-2 text-right">
                             <ReturnButton os={{ ...o, owner_id: s.owner_id }} />
@@ -151,7 +195,9 @@ function OutsourcedPage() {
       </div>
 
       <div className="text-xs text-muted-foreground">
-        <Link to="/fornecedores" className="hover:underline">Gerenciar facções →</Link>
+        <Link to="/fornecedores" className="hover:underline">
+          Gerenciar facções →
+        </Link>
       </div>
     </div>
   );
@@ -217,7 +263,10 @@ function ReturnButton({ os }: { os: any }) {
     <div className="relative inline-block">
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
         className="text-[10px] inline-flex items-center gap-1 px-2 py-1 rounded border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition"
       >
         <PackageCheck className="size-3" /> Registrar retorno
@@ -234,42 +283,73 @@ function ReturnButton({ os }: { os: any }) {
               Enviado {sent} · Recebido {received} · Pendente <strong>{pending}</strong>
             </div>
             <div className="flex gap-1">
-              <button type="button" onClick={() => setQty(pending)}
-                className={`flex-1 text-[10px] py-1 rounded border ${qty === pending ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted"}`}>
+              <button
+                type="button"
+                onClick={() => setQty(pending)}
+                className={`flex-1 text-[10px] py-1 rounded border ${qty === pending ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted"}`}
+              >
                 Integral ({pending})
               </button>
-              <button type="button" onClick={() => setQty(Math.max(1, Math.floor(pending / 2)))}
-                className={`flex-1 text-[10px] py-1 rounded border ${qty !== pending && qty > 0 ? "border-amber-500/40 bg-amber-500/10 text-amber-600" : "border-border hover:bg-muted"}`}>
+              <button
+                type="button"
+                onClick={() => setQty(Math.max(1, Math.floor(pending / 2)))}
+                className={`flex-1 text-[10px] py-1 rounded border ${qty !== pending && qty > 0 ? "border-amber-500/40 bg-amber-500/10 text-amber-600" : "border-border hover:bg-muted"}`}
+              >
                 Parcial
               </button>
             </div>
             <label className="block text-[10px] text-muted-foreground">
               Quantidade recebida agora
-              <input type="number" min={1} max={pending} value={qty}
-                onChange={(e) => setQty(Math.max(1, Math.min(pending, Number(e.target.value) || 0)))}
-                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1" />
+              <input
+                type="number"
+                min={1}
+                max={pending}
+                value={qty}
+                onChange={(e) =>
+                  setQty(Math.max(1, Math.min(pending, Number(e.target.value) || 0)))
+                }
+                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
+              />
             </label>
             <label className="block text-[10px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1"><Minus className="size-3" />Perda no retorno (opcional)</span>
-              <input type="number" min={0} value={loss}
+              <span className="inline-flex items-center gap-1">
+                <Minus className="size-3" />
+                Perda no retorno (opcional)
+              </span>
+              <input
+                type="number"
+                min={0}
+                value={loss}
                 onChange={(e) => setLoss(Math.max(0, Number(e.target.value) || 0))}
                 placeholder="0"
-                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1" />
-              <span className="text-[9px] text-muted-foreground">Gera ocorrência negativa na OP.</span>
+                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
+              />
+              <span className="text-[9px] text-muted-foreground">
+                Gera ocorrência negativa na OP.
+              </span>
             </label>
             <label className="block text-[10px] text-muted-foreground">
               Observação
-              <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)}
+              <input
+                type="text"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                 placeholder="Ex: 5 peças manchadas…"
-                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1" />
+                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
+              />
             </label>
             <div className="flex gap-2 pt-1">
-              <button onClick={() => submit.mutate()} disabled={submit.isPending}
-                className="flex-1 text-xs px-2 py-1.5 rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50">
+              <button
+                onClick={() => submit.mutate()}
+                disabled={submit.isPending}
+                className="flex-1 text-xs px-2 py-1.5 rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              >
                 {submit.isPending ? "Salvando…" : "Confirmar retorno"}
               </button>
-              <button onClick={() => setOpen(false)}
-                className="text-xs px-2 py-1.5 rounded border border-border hover:bg-muted">
+              <button
+                onClick={() => setOpen(false)}
+                className="text-xs px-2 py-1.5 rounded border border-border hover:bg-muted"
+              >
                 Cancelar
               </button>
             </div>

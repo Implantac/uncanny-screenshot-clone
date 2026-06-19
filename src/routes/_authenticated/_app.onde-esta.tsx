@@ -36,7 +36,13 @@ type OrderRow = {
   product_id: string | null;
   supplier_id: string | null;
 };
-type BatchRow = { id: string; code: string; status: string; planned_qty: number; produced_qty: number };
+type BatchRow = {
+  id: string;
+  code: string;
+  status: string;
+  planned_qty: number;
+  produced_qty: number;
+};
 
 const STAGE_LABEL: Record<string, string> = {
   cad: "CAD",
@@ -178,19 +184,17 @@ function OndeEsta() {
             className="pl-9"
           />
         </div>
-        <Button type="submit" disabled={!query.trim()}>Rastrear</Button>
+        <Button type="submit" disabled={!query.trim()}>
+          Rastrear
+        </Button>
       </form>
 
-      {submitted && loadingOrder && (
-        <p className="text-muted-foreground text-sm">Procurando…</p>
-      )}
+      {submitted && loadingOrder && <p className="text-muted-foreground text-sm">Procurando…</p>}
 
       {submitted && !loadingOrder && !loadingBatch && !order && !batch && (
         <div className="rounded-xl border border-border bg-card/50 p-8 text-center">
           <Package className="size-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">
-            Nenhuma OP encontrada para "{submitted}".
-          </p>
+          <p className="text-sm text-muted-foreground">Nenhuma OP encontrada para "{submitted}".</p>
         </div>
       )}
 
@@ -201,18 +205,26 @@ function OndeEsta() {
               <div className="font-mono text-xs text-muted-foreground">{batch.code}</div>
               <div className="text-lg font-semibold mt-1">Lote encontrado</div>
               <div className="text-xs text-muted-foreground">
-                {batchOrders.length} OPs vinculadas · {batch.produced_qty}/{batch.planned_qty} pç · status {batch.status}
+                {batchOrders.length} OPs vinculadas · {batch.produced_qty}/{batch.planned_qty} pç ·
+                status {batch.status}
               </div>
             </div>
             <Link to="/lotes">
-              <Button size="sm" variant="outline">Abrir rastreabilidade do lote</Button>
+              <Button size="sm" variant="outline">
+                Abrir rastreabilidade do lote
+              </Button>
             </Link>
           </div>
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
             {batchOrders.slice(0, 6).map((o) => (
-              <div key={o.id} className="rounded-lg border border-border bg-background/30 p-3 text-sm">
+              <div
+                key={o.id}
+                className="rounded-lg border border-border bg-background/30 p-3 text-sm"
+              >
                 <div className="font-mono text-xs">{o.code}</div>
-                <div className="text-xs text-muted-foreground">Agora em {STAGE_LABEL[o.stage] ?? o.stage} · {o.quantity} pç</div>
+                <div className="text-xs text-muted-foreground">
+                  Agora em {STAGE_LABEL[o.stage] ?? o.stage} · {o.quantity} pç
+                </div>
               </div>
             ))}
           </div>
@@ -225,9 +237,7 @@ function OndeEsta() {
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <div className="font-mono text-xs text-muted-foreground">{order.code}</div>
-                <div className="text-lg font-semibold mt-1">
-                  {product?.name ?? "Produto —"}
-                </div>
+                <div className="text-lg font-semibold mt-1">{product?.name ?? "Produto —"}</div>
                 <div className="text-xs text-muted-foreground">
                   Facção: {supplier?.name ?? "—"} · Qtd: {order.quantity}
                 </div>
@@ -245,7 +255,9 @@ function OndeEsta() {
             </div>
             <div className="mt-4 flex gap-2">
               <Link to="/pcp-kanban">
-                <Button size="sm" variant="outline">Abrir no Kanban</Button>
+                <Button size="sm" variant="outline">
+                  Abrir no Kanban
+                </Button>
               </Link>
             </div>
           </div>
@@ -255,9 +267,7 @@ function OndeEsta() {
             {loadingLogs ? (
               <p className="text-sm text-muted-foreground">Carregando histórico…</p>
             ) : logs.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Sem movimentações registradas ainda.
-              </p>
+              <p className="text-sm text-muted-foreground">Sem movimentações registradas ainda.</p>
             ) : (
               <ol className="relative border-l border-border ml-3 space-y-4">
                 {logs.map((l) => (
@@ -274,7 +284,10 @@ function OndeEsta() {
                       )}
                       <span>{STAGE_LABEL[l.to_stage] ?? l.to_stage}</span>
                       {l.is_partial && (
-                        <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 text-[10px]">
+                        <Badge
+                          variant="outline"
+                          className="bg-amber-500/10 text-amber-500 border-amber-500/30 text-[10px]"
+                        >
                           parcial
                         </Badge>
                       )}

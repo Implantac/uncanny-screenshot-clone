@@ -22,7 +22,9 @@ async function loadGallery(userId: string, productId: string): Promise<Item[]> {
   const urls = await Promise.all(
     files.map(async (f) => {
       const path = `${pfx}/${f.name}`;
-      const { data: signed } = await supabase.storage.from("product-images").createSignedUrl(path, 60 * 60);
+      const { data: signed } = await supabase.storage
+        .from("product-images")
+        .createSignedUrl(path, 60 * 60);
       const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
       return {
         name: f.name,
@@ -67,7 +69,9 @@ export function ProductGallery({ productId, canEdit }: { productId: string; canE
       for (const file of Array.from(files)) {
         const ext = file.name.split(".").pop() || "jpg";
         const path = `${pfx}/${crypto.randomUUID()}.${ext}`;
-        const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+        const { error } = await supabase.storage
+          .from("product-images")
+          .upload(path, file, { upsert: false });
         if (error) throw error;
       }
       toast.success(`${files.length} arquivo(s) enviado(s)`);
@@ -107,7 +111,11 @@ export function ProductGallery({ productId, canEdit }: { productId: string; canE
               disabled={uploading}
               className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground inline-flex items-center gap-1.5 disabled:opacity-60"
             >
-              {uploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />}
+              {uploading ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : (
+                <Upload className="size-3" />
+              )}
               Enviar
             </button>
           </>
@@ -125,7 +133,10 @@ export function ProductGallery({ productId, canEdit }: { productId: string; canE
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {items.map((it) => (
-            <div key={it.path} className="group relative aspect-square rounded-lg overflow-hidden border border-border bg-muted/30">
+            <div
+              key={it.path}
+              className="group relative aspect-square rounded-lg overflow-hidden border border-border bg-muted/30"
+            >
               {it.isVideo ? (
                 <>
                   <video src={it.url} className="size-full object-cover" muted playsInline />

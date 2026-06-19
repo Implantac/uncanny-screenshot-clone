@@ -23,13 +23,27 @@ type Event = {
 
 async function loadEvents(productId: string, createdAt: string): Promise<Event[]> {
   const [protos, fits, sheets, ops, logs] = await Promise.all([
-    supabase.from("prototypes").select("id, code, name, stage, created_at, updated_at").eq("product_id", productId),
-    supabase.from("fit_sessions").select("id, title, status, scheduled_at, created_at").eq("product_id", productId),
-    supabase.from("tech_sheets").select("id, version, status, updated_at, created_at").eq("product_id", productId),
-    supabase.from("production_orders").select("id, code, stage, status, quantity, created_at").eq("product_id", productId),
+    supabase
+      .from("prototypes")
+      .select("id, code, name, stage, created_at, updated_at")
+      .eq("product_id", productId),
+    supabase
+      .from("fit_sessions")
+      .select("id, title, status, scheduled_at, created_at")
+      .eq("product_id", productId),
+    supabase
+      .from("tech_sheets")
+      .select("id, version, status, updated_at, created_at")
+      .eq("product_id", productId),
+    supabase
+      .from("production_orders")
+      .select("id, code, stage, status, quantity, created_at")
+      .eq("product_id", productId),
     supabase
       .from("production_stage_log")
-      .select("id, from_stage, to_stage, quantity, is_partial, created_at, production_orders!inner(product_id, code)")
+      .select(
+        "id, from_stage, to_stage, quantity, is_partial, created_at, production_orders!inner(product_id, code)",
+      )
       .eq("production_orders.product_id", productId)
       .order("created_at", { ascending: false })
       .limit(50),
@@ -86,7 +100,11 @@ async function loadEvents(productId: string, createdAt: string): Promise<Event[]
     ev.push({
       id: `log-${l.id}`,
       at: l.created_at,
-      icon: l.is_partial ? <Scissors className="size-3.5" /> : <CheckCircle2 className="size-3.5" />,
+      icon: l.is_partial ? (
+        <Scissors className="size-3.5" />
+      ) : (
+        <CheckCircle2 className="size-3.5" />
+      ),
       title: `${l.production_orders?.code ?? "OP"}: ${l.from_stage ?? "—"} → ${l.to_stage}`,
       detail: `${l.is_partial ? "Parcial" : "Integral"}${l.quantity ? ` · ${l.quantity} pç` : ""}`,
       tone: l.is_partial ? "warning" : "success",
@@ -99,7 +117,13 @@ async function loadEvents(productId: string, createdAt: string): Promise<Event[]
     .slice(0, 30);
 }
 
-export function ProductTimeline({ productId, createdAt }: { productId: string; createdAt: string }) {
+export function ProductTimeline({
+  productId,
+  createdAt,
+}: {
+  productId: string;
+  createdAt: string;
+}) {
   const { data, isLoading } = useQuery({
     queryKey: ["product-timeline", productId],
     queryFn: () => loadEvents(productId, createdAt),
@@ -135,7 +159,9 @@ export function ProductTimeline({ productId, createdAt }: { productId: string; c
                     : "bg-muted text-muted-foreground border-border";
             return (
               <li key={e.id} className="relative">
-                <span className={`absolute -left-[1.4rem] top-0.5 size-5 rounded-full grid place-items-center border ${tone}`}>
+                <span
+                  className={`absolute -left-[1.4rem] top-0.5 size-5 rounded-full grid place-items-center border ${tone}`}
+                >
                   {e.icon}
                 </span>
                 <div className="text-sm font-medium leading-tight">{e.title}</div>

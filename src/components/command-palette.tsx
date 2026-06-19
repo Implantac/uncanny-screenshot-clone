@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { MODULES } from "@/lib/modules";
 
@@ -29,7 +36,11 @@ export function CommandPalette() {
     queryFn: async () => {
       const like = `%${term}%`;
       const [products, collections, suppliers] = await Promise.all([
-        supabase.from("products").select("id, sku, name").or(`name.ilike.${like},sku.ilike.${like}`).limit(6),
+        supabase
+          .from("products")
+          .select("id, sku, name")
+          .or(`name.ilike.${like},sku.ilike.${like}`)
+          .limit(6),
         supabase.from("collections").select("id, name, season, year").ilike("name", like).limit(6),
         supabase.from("suppliers").select("id, name, category").ilike("name", like).limit(6),
       ]);
@@ -55,12 +66,20 @@ export function CommandPalette() {
       >
         <Search className="size-4 shrink-0" />
         <span className="truncate flex-1 text-left">Buscar…</span>
-        <kbd className="hidden sm:block text-[10px] border border-border rounded px-1.5 py-0.5">⌘K</kbd>
+        <kbd className="hidden sm:block text-[10px] border border-border rounded px-1.5 py-0.5">
+          ⌘K
+        </kbd>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput value={q} onValueChange={setQ} placeholder="Buscar produtos, coleções, fornecedores, módulos…" />
+        <CommandInput
+          value={q}
+          onValueChange={setQ}
+          placeholder="Buscar produtos, coleções, fornecedores, módulos…"
+        />
         <CommandList>
-          <CommandEmpty>{term.length < 2 ? "Digite ao menos 2 caracteres" : "Nenhum resultado"}</CommandEmpty>
+          <CommandEmpty>
+            {term.length < 2 ? "Digite ao menos 2 caracteres" : "Nenhum resultado"}
+          </CommandEmpty>
 
           {!term && (
             <CommandGroup heading="Módulos">
@@ -92,7 +111,9 @@ export function CommandPalette() {
               {data.collections.map((c) => (
                 <CommandItem key={c.id} onSelect={() => go("/colecoes")}>
                   {c.name}
-                  <span className="ml-2 text-xs text-muted-foreground">{c.season} {c.year}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {c.season} {c.year}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

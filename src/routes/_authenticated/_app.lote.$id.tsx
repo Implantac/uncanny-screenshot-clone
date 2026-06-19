@@ -1,7 +1,25 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Factory, Clock, CheckCircle2, AlertTriangle, ArrowLeft, ArrowRight, Package, ListChecks, ShieldAlert, Layers, FileText, ImageIcon, RefreshCcw, ClipboardList, Plus, Minus } from "lucide-react";
+import {
+  Boxes,
+  Factory,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  Package,
+  ListChecks,
+  ShieldAlert,
+  Layers,
+  FileText,
+  ImageIcon,
+  RefreshCcw,
+  ClipboardList,
+  Plus,
+  Minus,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
 import { Badge } from "@/components/ui/badge";
@@ -12,14 +30,21 @@ import { TechSheetDrawerTrigger } from "@/components/tech-sheet-drawer";
 import { LoteQrButton } from "@/components/lote-qr-button";
 
 const OCC_KIND_LABEL: Record<string, string> = {
-  positiva: "Positiva (+)", negativa: "Negativa (−)", neutra: "Neutra",
-  falta_material: "Falta de material", erro_corte: "Erro de corte", erro_costura: "Erro de costura",
-  defeito: "Defeito", retrabalho: "Retrabalho", atraso: "Atraso", outro: "Outro",
+  positiva: "Positiva (+)",
+  negativa: "Negativa (−)",
+  neutra: "Neutra",
+  falta_material: "Falta de material",
+  erro_corte: "Erro de corte",
+  erro_costura: "Erro de costura",
+  defeito: "Defeito",
+  retrabalho: "Retrabalho",
+  atraso: "Atraso",
+  outro: "Outro",
 };
 const OCC_KIND_TONE: Record<string, string> = {
   positiva: "bg-success/15 text-success border-success/30",
   negativa: "bg-destructive/15 text-destructive border-destructive/30",
-  neutra:   "bg-amber-500/15 text-amber-600 border-amber-500/30",
+  neutra: "bg-amber-500/15 text-amber-600 border-amber-500/30",
 };
 const OCC_STATUS_TONE: Record<string, string> = {
   aberta: "bg-destructive/15 text-destructive border-destructive/30",
@@ -31,15 +56,23 @@ export const Route = createFileRoute("/_authenticated/_app/lote/$id")({
   head: () => ({
     meta: [
       { title: "Lote · USE MODA PLM" },
-      { name: "description", content: "Visão completa do lote: OPs, grade, ocorrências e timeline." },
+      {
+        name: "description",
+        content: "Visão completa do lote: OPs, grade, ocorrências e timeline.",
+      },
     ],
   }),
   component: LotePage,
 });
 
 const STAGE_LABEL: Record<string, string> = {
-  cad: "CAD", modelagem: "Modelagem", corte: "Corte", costura: "Costura",
-  acabamento: "Acabamento", expedicao: "Expedição", concluido: "Concluído",
+  cad: "CAD",
+  modelagem: "Modelagem",
+  corte: "Corte",
+  costura: "Costura",
+  acabamento: "Acabamento",
+  expedicao: "Expedição",
+  concluido: "Concluído",
 };
 
 const STATUS_TONE: Record<string, string> = {
@@ -65,7 +98,11 @@ function LotePage() {
   const { data: batch, isLoading } = useQuery({
     queryKey: ["lote", id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("production_batches").select("*").eq("id", id).maybeSingle();
+      const { data, error } = await supabase
+        .from("production_batches")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -75,8 +112,11 @@ function LotePage() {
     enabled: !!batch?.code,
     queryKey: ["lote-orders", batch?.code],
     queryFn: async () => {
-      const { data, error } = await supabase.from("production_orders")
-        .select("id, code, stage, status, quantity, progress, due_date, stage_updated_at, product_id, supplier_id, owner_id, products(name, sku, image_url), suppliers(name)")
+      const { data, error } = await supabase
+        .from("production_orders")
+        .select(
+          "id, code, stage, status, quantity, progress, due_date, stage_updated_at, product_id, supplier_id, owner_id, products(name, sku, image_url), suppliers(name)",
+        )
         .eq("batch_code", batch!.code)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -89,7 +129,8 @@ function LotePage() {
     enabled: orderIds.length > 0,
     queryKey: ["lote-logs", orderIds.join(",")],
     queryFn: async () => {
-      const { data, error } = await supabase.from("production_stage_log")
+      const { data, error } = await supabase
+        .from("production_stage_log")
         .select("id, order_id, from_stage, to_stage, quantity, note, is_partial, created_at")
         .in("order_id", orderIds)
         .order("created_at", { ascending: false })
@@ -104,8 +145,11 @@ function LotePage() {
     enabled: orderIds.length > 0 || !!batch?.id,
     queryKey: ["lote-occ", batch?.id, orderIds.join(",")],
     queryFn: async () => {
-      let q = supabase.from("production_occurrences")
-        .select("id, kind, sector, status, affected_qty, description, created_at, resolved_at, order_id, batch_id")
+      let q = supabase
+        .from("production_occurrences")
+        .select(
+          "id, kind, sector, status, affected_qty, description, created_at, resolved_at, order_id, batch_id",
+        )
         .order("created_at", { ascending: false });
       if (orderIds.length > 0 && batch?.id) {
         q = q.or(`batch_id.eq.${batch.id},order_id.in.(${orderIds.join(",")})`);
@@ -125,7 +169,8 @@ function LotePage() {
     enabled: productIds.length > 0,
     queryKey: ["lote-materials", productIds.join(",")],
     queryFn: async () => {
-      const { data: sheets, error: e1 } = await supabase.from("tech_sheets")
+      const { data: sheets, error: e1 } = await supabase
+        .from("tech_sheets")
         .select("id, product_id, status")
         .in("product_id", productIds as string[])
         .eq("status", "aprovada");
@@ -133,20 +178,28 @@ function LotePage() {
       const sheetIds = (sheets ?? []).map((s) => s.id);
       if (sheetIds.length === 0) return [] as any[];
       const sheetToProduct = new Map((sheets ?? []).map((s) => [s.id, s.product_id]));
-      const { data: mats, error: e2 } = await supabase.from("tech_sheet_materials")
+      const { data: mats, error: e2 } = await supabase
+        .from("tech_sheet_materials")
         .select("tech_sheet_id, inventory_item_id, name, consumption, loss_pct, unit, unit_cost")
         .in("tech_sheet_id", sheetIds);
       if (e2) throw e2;
-      const invIds = Array.from(new Set((mats ?? []).map((m) => m.inventory_item_id).filter(Boolean)));
+      const invIds = Array.from(
+        new Set((mats ?? []).map((m) => m.inventory_item_id).filter(Boolean)),
+      );
       const { data: inv } = invIds.length
-        ? await supabase.from("inventory_items").select("id, name, sku, unit, balance, minimum, photo_url").in("id", invIds as string[])
+        ? await supabase
+            .from("inventory_items")
+            .select("id, name, sku, unit, balance, minimum, photo_url")
+            .in("id", invIds as string[])
         : { data: [] as any[] };
       const invMap = new Map((inv ?? []).map((i: any) => [i.id, i]));
       // aggregate per inventory_item_id (or name when no link)
       const agg = new Map<string, any>();
       for (const m of mats ?? []) {
         const productId = sheetToProduct.get(m.tech_sheet_id);
-        const totalQty = orders.filter((o) => o.product_id === productId).reduce((s, o) => s + Number(o.quantity || 0), 0);
+        const totalQty = orders
+          .filter((o) => o.product_id === productId)
+          .reduce((s, o) => s + Number(o.quantity || 0), 0);
         if (totalQty === 0) continue;
         const need = Number(m.consumption || 0) * (1 + Number(m.loss_pct || 0) / 100) * totalQty;
         const key = m.inventory_item_id ?? `name:${m.name}`;
@@ -175,23 +228,49 @@ function LotePage() {
     const total = orders.reduce((s, o) => s + (o.quantity ?? 0), 0);
     const done = orders.filter((o) => o.stage === "concluido").length;
     const pct = orders.length ? Math.round((done / orders.length) * 100) : 0;
-    const late = orders.filter((o) => o.due_date && new Date(o.due_date).getTime() < Date.now() && o.stage !== "concluido");
+    const late = orders.filter(
+      (o) => o.due_date && new Date(o.due_date).getTime() < Date.now() && o.stage !== "concluido",
+    );
     const byStage = new Map<string, number>();
     orders.forEach((o) => byStage.set(o.stage, (byStage.get(o.stage) ?? 0) + 1));
     const occOpen = occurrences.filter((o) => o.status !== "resolvida").length;
-    const occPos = occurrences.filter((o) => o.kind === "positiva").reduce((s, o) => s + Number(o.affected_qty || 0), 0);
-    const occNeg = occurrences.filter((o) => o.kind === "negativa").reduce((s, o) => s + Number(o.affected_qty || 0), 0);
+    const occPos = occurrences
+      .filter((o) => o.kind === "positiva")
+      .reduce((s, o) => s + Number(o.affected_qty || 0), 0);
+    const occNeg = occurrences
+      .filter((o) => o.kind === "negativa")
+      .reduce((s, o) => s + Number(o.affected_qty || 0), 0);
     const finalForecast = Math.max(0, total + occPos - occNeg);
-    const matMissing = materialsNeeded.filter((m) => m.balance !== null && m.needed > m.balance).length;
-    return { total, done, pct, late: late.length, byStage: [...byStage.entries()], occOpen, occPos, occNeg, finalForecast, matMissing };
+    const matMissing = materialsNeeded.filter(
+      (m) => m.balance !== null && m.needed > m.balance,
+    ).length;
+    return {
+      total,
+      done,
+      pct,
+      late: late.length,
+      byStage: [...byStage.entries()],
+      occOpen,
+      occPos,
+      occNeg,
+      finalForecast,
+      matMissing,
+    };
   }, [orders, occurrences, materialsNeeded]);
 
   if (isLoading) return <div className="p-6 text-muted-foreground">Carregando…</div>;
   if (!batch) {
     return (
       <div className="p-6 space-y-4">
-        <Link to="/lotes"><Button variant="ghost" size="sm"><ArrowLeft className="size-4 mr-1" />Voltar</Button></Link>
-        <div className="rounded-xl border border-border bg-card/50 p-8 text-center text-muted-foreground">Lote não encontrado.</div>
+        <Link to="/lotes">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="size-4 mr-1" />
+            Voltar
+          </Button>
+        </Link>
+        <div className="rounded-xl border border-border bg-card/50 p-8 text-center text-muted-foreground">
+          Lote não encontrado.
+        </div>
       </div>
     );
   }
@@ -199,9 +278,18 @@ function LotePage() {
   return (
     <div className="p-4 sm:p-6 space-y-5">
       <div className="flex items-center gap-3">
-        <Link to="/lotes"><Button variant="ghost" size="sm"><ArrowLeft className="size-4 mr-1" />Lotes</Button></Link>
-        <Badge variant="outline" className={STATUS_TONE[batch.status] ?? ""}>{batch.status}</Badge>
-        <div className="ml-auto"><LoteQrButton batchCode={batch.code} batchId={batch.id} /></div>
+        <Link to="/lotes">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="size-4 mr-1" />
+            Lotes
+          </Button>
+        </Link>
+        <Badge variant="outline" className={STATUS_TONE[batch.status] ?? ""}>
+          {batch.status}
+        </Badge>
+        <div className="ml-auto">
+          <LoteQrButton batchCode={batch.code} batchId={batch.id} />
+        </div>
       </div>
 
       <div className="flex items-start gap-3">
@@ -224,17 +312,49 @@ function LotePage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
         <Card icon={Package} label="Peças programadas" value={summary.total} />
-        <Card icon={Plus} label="Positivas (+)" value={summary.occPos} tone={summary.occPos > 0 ? "text-success" : "text-muted-foreground"} />
-        <Card icon={Minus} label="Negativas (−)" value={summary.occNeg} tone={summary.occNeg > 0 ? "text-destructive" : "text-muted-foreground"} />
-        <Card icon={CheckCircle2} label="Saldo final previsto" value={summary.finalForecast} tone="text-primary" />
-        <Card icon={AlertTriangle} label="Atrasadas" value={summary.late} tone={summary.late > 0 ? "text-destructive" : "text-success"} />
-        <Card icon={ShieldAlert} label="Ocorr. abertas" value={summary.occOpen} tone={summary.occOpen > 0 ? "text-destructive" : "text-success"} />
-        <Card icon={Layers} label="Materiais em falta" value={summary.matMissing} tone={summary.matMissing > 0 ? "text-destructive" : "text-success"} />
+        <Card
+          icon={Plus}
+          label="Positivas (+)"
+          value={summary.occPos}
+          tone={summary.occPos > 0 ? "text-success" : "text-muted-foreground"}
+        />
+        <Card
+          icon={Minus}
+          label="Negativas (−)"
+          value={summary.occNeg}
+          tone={summary.occNeg > 0 ? "text-destructive" : "text-muted-foreground"}
+        />
+        <Card
+          icon={CheckCircle2}
+          label="Saldo final previsto"
+          value={summary.finalForecast}
+          tone="text-primary"
+        />
+        <Card
+          icon={AlertTriangle}
+          label="Atrasadas"
+          value={summary.late}
+          tone={summary.late > 0 ? "text-destructive" : "text-success"}
+        />
+        <Card
+          icon={ShieldAlert}
+          label="Ocorr. abertas"
+          value={summary.occOpen}
+          tone={summary.occOpen > 0 ? "text-destructive" : "text-success"}
+        />
+        <Card
+          icon={Layers}
+          label="Materiais em falta"
+          value={summary.matMissing}
+          tone={summary.matMissing > 0 ? "text-destructive" : "text-success"}
+        />
       </div>
 
       {summary.byStage.length > 0 && (
         <div className="glass rounded-xl p-4">
-          <div className="text-sm font-semibold mb-3 flex items-center gap-2"><ListChecks className="size-4 text-primary" /> Distribuição por etapa</div>
+          <div className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <ListChecks className="size-4 text-primary" /> Distribuição por etapa
+          </div>
           <div className="flex flex-wrap gap-2">
             {summary.byStage.map(([stage, n]) => (
               <Badge key={stage} variant="outline" className="bg-muted/40">
@@ -253,19 +373,31 @@ function LotePage() {
               <div className="flex gap-3">
                 <div className="size-16 rounded-lg overflow-hidden bg-muted/40 shrink-0">
                   {o.products?.image_url ? (
-                    <img src={o.products.image_url} alt={o.products?.name} loading="lazy" className="size-full object-cover" />
+                    <img
+                      src={o.products.image_url}
+                      alt={o.products?.name}
+                      loading="lazy"
+                      className="size-full object-cover"
+                    />
                   ) : (
-                    <div className="size-full grid place-items-center text-[10px] text-muted-foreground">sem foto</div>
+                    <div className="size-full grid place-items-center text-[10px] text-muted-foreground">
+                      sem foto
+                    </div>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="font-mono text-[11px] text-muted-foreground">{o.code}</div>
                   <div className="text-sm font-medium truncate">{o.products?.name ?? "—"}</div>
-                  <div className="text-xs text-muted-foreground truncate">{o.suppliers?.name ?? "—"}</div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {o.suppliers?.name ?? "—"}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[10px]">
+                <Badge
+                  variant="outline"
+                  className="bg-primary/10 text-primary border-primary/30 text-[10px]"
+                >
                   {STAGE_LABEL[o.stage] ?? o.stage}
                 </Badge>
                 <span className="text-[11px] text-muted-foreground tabular-nums">
@@ -278,7 +410,13 @@ function LotePage() {
                 </div>
               )}
               <div className="grid grid-cols-5 gap-1 pt-1 border-t border-border/60">
-                <RefMenuLink to="/movimentacoes" search={{ op: o.code } as any} icon={ArrowRight} label="Passagem 1ª" title="Passagem 1ª linha (entrada/saída entre setores)" />
+                <RefMenuLink
+                  to="/movimentacoes"
+                  search={{ op: o.code } as any}
+                  icon={ArrowRight}
+                  label="Passagem 1ª"
+                  title="Passagem 1ª linha (entrada/saída entre setores)"
+                />
                 <TechSheetDrawerTrigger
                   productId={o.product_id}
                   productName={o.products?.name}
@@ -286,7 +424,13 @@ function LotePage() {
                   productImage={o.products?.image_url}
                   orderCode={o.code}
                 />
-                <RefMenuLink to="/produtos" search={{ q: o.products?.sku ?? o.code } as any} icon={ImageIcon} label="Layout" title="Arte / layout visual" />
+                <RefMenuLink
+                  to="/produtos"
+                  search={{ q: o.products?.sku ?? o.code } as any}
+                  icon={ImageIcon}
+                  label="Layout"
+                  title="Arte / layout visual"
+                />
                 <button
                   type="button"
                   onClick={() => document.getElementById(`occ-retrabalho-${o.id}`)?.click()}
@@ -308,10 +452,22 @@ function LotePage() {
               </div>
               <div className="hidden">
                 <span id={`occ-default-${o.id}`}>
-                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} batchId={batch?.id} />
+                  <ProductionOccurrenceButton
+                    orderId={o.id}
+                    orderCode={o.code}
+                    ownerId={o.owner_id}
+                    stage={o.stage}
+                    batchId={batch?.id}
+                  />
                 </span>
                 <span id={`occ-retrabalho-${o.id}`}>
-                  <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={o.stage} batchId={batch?.id} />
+                  <ProductionOccurrenceButton
+                    orderId={o.id}
+                    orderCode={o.code}
+                    ownerId={o.owner_id}
+                    stage={o.stage}
+                    batchId={batch?.id}
+                  />
                 </span>
               </div>
             </div>
@@ -333,32 +489,60 @@ function LotePage() {
             </span>
           </div>
           {materialsNeeded.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Sem materiais vinculados (cadastre ficha técnica aprovada para os produtos).</p>
+            <p className="text-xs text-muted-foreground">
+              Sem materiais vinculados (cadastre ficha técnica aprovada para os produtos).
+            </p>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
               {materialsNeeded.map((m: any) => {
                 const linked = m.balance !== null;
                 const missing = linked && m.needed > m.balance;
-                const cobertura = linked && m.needed > 0 ? Math.min(100, Math.round((m.balance / m.needed) * 100)) : null;
+                const cobertura =
+                  linked && m.needed > 0
+                    ? Math.min(100, Math.round((m.balance / m.needed) * 100))
+                    : null;
                 return (
-                  <div key={m.key} className="flex items-center gap-3 rounded-lg border border-border bg-card/50 p-2.5">
+                  <div
+                    key={m.key}
+                    className="flex items-center gap-3 rounded-lg border border-border bg-card/50 p-2.5"
+                  >
                     <div className="size-10 rounded bg-muted/40 overflow-hidden shrink-0">
-                      {m.photo_url ? <img src={m.photo_url} alt={m.name} loading="lazy" className="size-full object-cover" /> : null}
+                      {m.photo_url ? (
+                        <img
+                          src={m.photo_url}
+                          alt={m.name}
+                          loading="lazy"
+                          className="size-full object-cover"
+                        />
+                      ) : null}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-medium truncate">{m.name}</div>
                       <div className="text-[11px] text-muted-foreground truncate">
                         {m.sku ? `${m.sku} · ` : ""}precisa {m.needed.toFixed(2)} {m.unit}
-                        {linked ? ` · tem ${m.balance.toFixed(2)} ${m.unit}` : " · não vinculado ao estoque"}
+                        {linked
+                          ? ` · tem ${m.balance.toFixed(2)} ${m.unit}`
+                          : " · não vinculado ao estoque"}
                       </div>
                     </div>
                     <div className="text-right">
                       {linked ? (
-                        <Badge variant="outline" className={missing ? "bg-destructive/15 text-destructive border-destructive/30" : "bg-success/15 text-success border-success/30"}>
-                          {missing ? `faltam ${(m.needed - m.balance).toFixed(1)} ${m.unit}` : `${cobertura}% coberto`}
+                        <Badge
+                          variant="outline"
+                          className={
+                            missing
+                              ? "bg-destructive/15 text-destructive border-destructive/30"
+                              : "bg-success/15 text-success border-success/30"
+                          }
+                        >
+                          {missing
+                            ? `faltam ${(m.needed - m.balance).toFixed(1)} ${m.unit}`
+                            : `${cobertura}% coberto`}
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="bg-muted/40 text-muted-foreground">sem vínculo</Badge>
+                        <Badge variant="outline" className="bg-muted/40 text-muted-foreground">
+                          sem vínculo
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -384,13 +568,28 @@ function LotePage() {
                 return (
                   <li key={o.id} className="rounded-lg border border-border bg-card/50 p-2.5">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className={OCC_KIND_TONE[o.kind] ?? "bg-muted/40"}>{OCC_KIND_LABEL[o.kind] ?? o.kind}</Badge>
-                      <Badge variant="outline" className={OCC_STATUS_TONE[o.status] ?? "bg-muted/40"}>{o.status}</Badge>
-                      {o.sector && <span className="text-[10px] text-muted-foreground">· {STAGE_LABEL[o.sector] ?? o.sector}</span>}
-                      <span className="text-[10px] text-muted-foreground ml-auto">há {relTime(o.created_at)}</span>
+                      <Badge variant="outline" className={OCC_KIND_TONE[o.kind] ?? "bg-muted/40"}>
+                        {OCC_KIND_LABEL[o.kind] ?? o.kind}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={OCC_STATUS_TONE[o.status] ?? "bg-muted/40"}
+                      >
+                        {o.status}
+                      </Badge>
+                      {o.sector && (
+                        <span className="text-[10px] text-muted-foreground">
+                          · {STAGE_LABEL[o.sector] ?? o.sector}
+                        </span>
+                      )}
+                      <span className="text-[10px] text-muted-foreground ml-auto">
+                        há {relTime(o.created_at)}
+                      </span>
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-1">
-                      {op?.code ?? "—"} · {o.kind === "positiva" ? "+" : o.kind === "negativa" ? "−" : ""}{o.affected_qty ?? 0} pç
+                      {op?.code ?? "—"} ·{" "}
+                      {o.kind === "positiva" ? "+" : o.kind === "negativa" ? "−" : ""}
+                      {o.affected_qty ?? 0} pç
                     </div>
                     {o.description && <div className="text-xs mt-1 italic">"{o.description}"</div>}
                   </li>
@@ -400,7 +599,6 @@ function LotePage() {
           )}
         </div>
       </div>
-
 
       <div className="glass rounded-xl p-4">
         <div className="text-sm font-semibold mb-3">Linha do tempo do lote</div>
@@ -416,17 +614,30 @@ function LotePage() {
                   <div className="flex items-center gap-2 text-xs font-medium">
                     {l.from_stage && (
                       <>
-                        <span className="text-muted-foreground">{STAGE_LABEL[l.from_stage] ?? l.from_stage}</span>
+                        <span className="text-muted-foreground">
+                          {STAGE_LABEL[l.from_stage] ?? l.from_stage}
+                        </span>
                         <ArrowRight className="size-3 text-muted-foreground" />
                       </>
                     )}
                     <span>{STAGE_LABEL[l.to_stage] ?? l.to_stage}</span>
-                    {l.is_partial && <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 text-[9px]">parcial</Badge>}
+                    {l.is_partial && (
+                      <Badge
+                        variant="outline"
+                        className="bg-amber-500/10 text-amber-500 border-amber-500/30 text-[9px]"
+                      >
+                        parcial
+                      </Badge>
+                    )}
                   </div>
                   <div className="text-[11px] text-muted-foreground">
                     {op?.code} · {l.quantity} pç · há {relTime(l.created_at)}
                   </div>
-                  {l.note && <div className="text-[11px] italic text-muted-foreground mt-0.5">"{l.note}"</div>}
+                  {l.note && (
+                    <div className="text-[11px] italic text-muted-foreground mt-0.5">
+                      "{l.note}"
+                    </div>
+                  )}
                 </li>
               );
             })}
@@ -437,16 +648,40 @@ function LotePage() {
   );
 }
 
-function Card({ icon: Icon, label, value, tone }: { icon: any; label: string; value: number; tone?: string }) {
+function Card({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: any;
+  label: string;
+  value: number;
+  tone?: string;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card/50 p-3">
-      <div className="text-xs text-muted-foreground flex items-center gap-1.5"><Icon className="size-3.5" /> {label}</div>
+      <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+        <Icon className="size-3.5" /> {label}
+      </div>
       <div className={`text-2xl font-semibold tabular-nums mt-1 ${tone ?? ""}`}>{value}</div>
     </div>
   );
 }
 
-function RefMenuLink({ to, search, icon: Icon, label, title }: { to: string; search?: Record<string, unknown>; icon: any; label: string; title: string }) {
+function RefMenuLink({
+  to,
+  search,
+  icon: Icon,
+  label,
+  title,
+}: {
+  to: string;
+  search?: Record<string, unknown>;
+  icon: any;
+  label: string;
+  title: string;
+}) {
   return (
     <Link
       to={to as any}

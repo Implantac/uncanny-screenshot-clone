@@ -4,7 +4,11 @@ export type AuthErrorLike = { message?: string; code?: string; status?: number }
 export function mapSignInError(error: AuthErrorLike): string {
   const msg = (error.message ?? "").toLowerCase();
   const code = (error.code ?? "").toLowerCase();
-  if (code === "email_not_confirmed" || msg.includes("not confirmed") || msg.includes("email not confirmed")) {
+  if (
+    code === "email_not_confirmed" ||
+    msg.includes("not confirmed") ||
+    msg.includes("email not confirmed")
+  ) {
     return "Email não confirmado. Verifique sua caixa de entrada para ativar a conta.";
   }
   if (code === "invalid_credentials" || msg.includes("invalid login") || msg.includes("invalid")) {
@@ -19,13 +23,27 @@ export function mapSignInError(error: AuthErrorLike): string {
 export function mapSignUpError(error: AuthErrorLike): string {
   const msg = (error.message ?? "").toLowerCase();
   const code = (error.code ?? "").toLowerCase();
-  if (code.includes("already") || msg.includes("already registered") || msg.includes("already exists") || msg.includes("user already")) {
+  if (
+    code.includes("already") ||
+    msg.includes("already registered") ||
+    msg.includes("already exists") ||
+    msg.includes("user already")
+  ) {
     return "Este email já está cadastrado. Faça login.";
   }
-  if (code === "weak_password" || msg.includes("weak") || msg.includes("password should") || msg.includes("password is too")) {
+  if (
+    code === "weak_password" ||
+    msg.includes("weak") ||
+    msg.includes("password should") ||
+    msg.includes("password is too")
+  ) {
     return "Senha muito fraca. Use pelo menos 6 caracteres, combinando letras e números.";
   }
-  if (code === "validation_failed" || msg.includes("invalid email") || msg.includes("email address")) {
+  if (
+    code === "validation_failed" ||
+    msg.includes("invalid email") ||
+    msg.includes("email address")
+  ) {
     return "Email inválido. Verifique o endereço informado.";
   }
   if (msg.includes("signup") && msg.includes("disabled")) {

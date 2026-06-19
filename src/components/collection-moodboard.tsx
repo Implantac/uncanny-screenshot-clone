@@ -5,7 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
@@ -65,14 +71,19 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
       qc.invalidateQueries({ queryKey: ["moodboard", collectionId] });
       toast.success("Referência adicionada");
       setOpen(false);
-      setUrl(""); setCaption(""); setKind("inspiracao");
+      setUrl("");
+      setCaption("");
+      setKind("inspiracao");
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("collection_moodboard" as never).delete().eq("id", id);
+      const { error } = await supabase
+        .from("collection_moodboard" as never)
+        .delete()
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["moodboard", collectionId] }),
@@ -101,11 +112,23 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {data.map((m) => (
-            <div key={m.id} className="group relative rounded-lg overflow-hidden border border-border bg-muted/30 aspect-square">
-              <img src={m.image_url} alt={m.caption ?? "Referência"} className="size-full object-cover" loading="lazy" />
+            <div
+              key={m.id}
+              className="group relative rounded-lg overflow-hidden border border-border bg-muted/30 aspect-square"
+            >
+              <img
+                src={m.image_url}
+                alt={m.caption ?? "Referência"}
+                className="size-full object-cover"
+                loading="lazy"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex flex-col justify-end p-2">
                 <div className="flex items-center justify-between gap-1">
-                  {m.kind && <Badge variant="secondary" className="text-[9px] h-4 px-1.5">{KIND_LABEL[m.kind]}</Badge>}
+                  {m.kind && (
+                    <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
+                      {KIND_LABEL[m.kind]}
+                    </Badge>
+                  )}
                   <button
                     onClick={() => del.mutate(m.id)}
                     className="size-5 rounded bg-destructive/80 text-white flex items-center justify-center hover:bg-destructive"
@@ -114,7 +137,9 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
                     <Trash2 className="size-3" />
                   </button>
                 </div>
-                {m.caption && <div className="text-[10px] text-white/90 mt-1 line-clamp-2">{m.caption}</div>}
+                {m.caption && (
+                  <div className="text-[10px] text-white/90 mt-1 line-clamp-2">{m.caption}</div>
+                )}
               </div>
             </div>
           ))}
@@ -128,7 +153,13 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
               <ImagePlus className="size-4 text-primary" /> Nova referência
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="space-y-3">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              add.mutate();
+            }}
+            className="space-y-3"
+          >
             <div className="space-y-1.5">
               <label className="text-xs text-muted-foreground">Imagem</label>
               <StorageUploader
@@ -141,7 +172,11 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
             </div>
             <div className="space-y-1.5">
               <label className="text-xs text-muted-foreground">Legenda (opcional)</label>
-              <Input value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Tons terrosos · outono" />
+              <Input
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Tons terrosos · outono"
+              />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs text-muted-foreground">Tipo</label>
@@ -159,8 +194,12 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-              <Button type="submit" disabled={add.isPending}>{add.isPending ? "Salvando…" : "Adicionar"}</Button>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={add.isPending}>
+                {add.isPending ? "Salvando…" : "Adicionar"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

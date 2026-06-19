@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Package, ImageIcon, FileText, ChevronRight } from "lucide-react";
 import { ProductionTechSheetDrawer } from "./production-tech-sheet-drawer";
 
@@ -21,7 +27,11 @@ type Ref = {
 };
 
 export function LoteReferencesDrawer({ batchCode, open, onOpenChange }: Props) {
-  const [picked, setPicked] = useState<{ productId: string; orderId: string; orderCode: string } | null>(null);
+  const [picked, setPicked] = useState<{
+    productId: string;
+    orderId: string;
+    orderCode: string;
+  } | null>(null);
 
   const { data: refs = [], isLoading } = useQuery({
     enabled: open && !!batchCode,
@@ -52,8 +62,9 @@ export function LoteReferencesDrawer({ batchCode, open, onOpenChange }: Props) {
               <span className="font-mono text-sm">{batchCode ?? "—"}</span>
             </SheetTitle>
             <SheetDescription className="text-xs">
-              {refs.length} referência{refs.length === 1 ? "" : "s"} · {totalQty.toLocaleString("pt-BR")} peças. Toque numa peça
-              para abrir a ficha de produção.
+              {refs.length} referência{refs.length === 1 ? "" : "s"} ·{" "}
+              {totalQty.toLocaleString("pt-BR")} peças. Toque numa peça para abrir a ficha de
+              produção.
             </SheetDescription>
           </SheetHeader>
 
@@ -77,7 +88,11 @@ export function LoteReferencesDrawer({ batchCode, open, onOpenChange }: Props) {
                 >
                   <div className="size-12 rounded-md overflow-hidden bg-muted shrink-0">
                     {r.product?.image_url ? (
-                      <img src={r.product.image_url} alt={r.product.name} className="size-full object-cover" />
+                      <img
+                        src={r.product.image_url}
+                        alt={r.product.name}
+                        className="size-full object-cover"
+                      />
                     ) : (
                       <div className="size-full grid place-items-center text-muted-foreground">
                         <ImageIcon className="size-5" />
@@ -85,7 +100,9 @@ export function LoteReferencesDrawer({ batchCode, open, onOpenChange }: Props) {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium truncate">{r.product?.name ?? "Produto removido"}</div>
+                    <div className="text-sm font-medium truncate">
+                      {r.product?.name ?? "Produto removido"}
+                    </div>
                     <div className="text-[11px] text-muted-foreground font-mono truncate">
                       {r.code} · {r.product?.sku ?? "—"}
                     </div>

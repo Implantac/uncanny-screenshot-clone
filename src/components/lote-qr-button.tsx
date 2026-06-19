@@ -10,9 +10,10 @@ type Props = { batchCode: string; batchId: string };
  * na página do lote para apontar passagens, ocorrências, etc.).
  */
 export function LoteQrButton({ batchCode, batchId }: Props) {
-  const url = typeof window !== "undefined"
-    ? `${window.location.origin}/lote/${batchId}`
-    : `/lote/${batchId}`;
+  const url =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/lote/${batchId}`
+      : `/lote/${batchId}`;
 
   const print = () => {
     const w = window.open("", "_blank", "width=420,height=520");
@@ -33,7 +34,9 @@ export function LoteQrButton({ batchCode, batchId }: Props) {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[260px] space-y-3">
-        <div className="text-xs uppercase tracking-wider text-muted-foreground">Escaneie no chão de fábrica</div>
+        <div className="text-xs uppercase tracking-wider text-muted-foreground">
+          Escaneie no chão de fábrica
+        </div>
         <div className="bg-white rounded-lg p-3 grid place-items-center">
           <QRCodeSVG id={`qr-${batchId}`} value={url} size={216} level="M" />
         </div>

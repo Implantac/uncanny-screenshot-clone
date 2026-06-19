@@ -4,8 +4,15 @@ import { z } from "zod";
 import { intelFilter } from "./intel-filter";
 
 const INTEL_TABS = [
-  "production", "kanban", "dev", "score", "restock",
-  "sales", "geo", "influencers", "lake",
+  "production",
+  "kanban",
+  "dev",
+  "score",
+  "restock",
+  "sales",
+  "geo",
+  "influencers",
+  "lake",
 ] as const;
 const schema = z.object({
   tab: fallback(z.enum(INTEL_TABS), "production").default("production"),
@@ -61,20 +68,20 @@ describe("intelligence URL search restore", () => {
   });
 
   it("filtra ordens por código/notes + nome do produto via lookup (kanban)", () => {
-    expect(intelFilter(orders, "OP-0002", ["code", "notes"], products).map((o) => o.id))
-      .toEqual(["o2"]);
-    expect(intelFilter(orders, "Solaris", ["code", "notes"], products).map((o) => o.id))
-      .toEqual(["o1"]);
+    expect(intelFilter(orders, "OP-0002", ["code", "notes"], products).map((o) => o.id)).toEqual([
+      "o2",
+    ]);
+    expect(intelFilter(orders, "Solaris", ["code", "notes"], products).map((o) => o.id)).toEqual([
+      "o1",
+    ]);
   });
 
   it("filtra protótipos por code/notes (dev)", () => {
-    expect(intelFilter(prototypes, "vestido", ["code", "notes"]).map((p) => p.id))
-      .toEqual(["pt1"]);
+    expect(intelFilter(prototypes, "vestido", ["code", "notes"]).map((p) => p.id)).toEqual(["pt1"]);
   });
 
   it("filtra campanhas por name/channel (atribuição)", () => {
-    expect(intelFilter(campaigns, "tiktok", ["name", "channel"]).map((c) => c.id))
-      .toEqual(["c2"]);
+    expect(intelFilter(campaigns, "tiktok", ["name", "channel"]).map((c) => c.id)).toEqual(["c2"]);
   });
 
   it("q vazio devolve a lista intacta", () => {

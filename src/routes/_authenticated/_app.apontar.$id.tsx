@@ -3,7 +3,15 @@ import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
-import { ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, Clock, Package, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Package,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/apontar/$id")({
@@ -16,7 +24,15 @@ export const Route = createFileRoute("/_authenticated/_app/apontar/$id")({
   component: ApontarPage,
 });
 
-type Stage = "cad" | "corte" | "costura" | "acabamento" | "qualidade" | "expedicao" | "entregue" | "concluido";
+type Stage =
+  | "cad"
+  | "corte"
+  | "costura"
+  | "acabamento"
+  | "qualidade"
+  | "expedicao"
+  | "entregue"
+  | "concluido";
 
 const STAGES: { key: Stage; label: string }[] = [
   { key: "cad", label: "CAD / Modelagem" },
@@ -47,7 +63,9 @@ function ApontarPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("production_orders")
-        .select("id, code, stage, quantity, progress, due_date, stage_updated_at, batch_code, owner_id, products(name, sku, image_url), suppliers(name)")
+        .select(
+          "id, code, stage, quantity, progress, due_date, stage_updated_at, batch_code, owner_id, products(name, sku, image_url), suppliers(name)",
+        )
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
@@ -55,7 +73,10 @@ function ApontarPage() {
     },
   });
 
-  const stageIdx = useMemo(() => STAGES.findIndex((s) => s.key === (order?.stage as Stage)), [order?.stage]);
+  const stageIdx = useMemo(
+    () => STAGES.findIndex((s) => s.key === (order?.stage as Stage)),
+    [order?.stage],
+  );
   const nextStage = stageIdx >= 0 && stageIdx < STAGES.length - 1 ? STAGES[stageIdx + 1] : null;
   const prevStage = stageIdx > 0 ? STAGES[stageIdx - 1] : null;
 
@@ -110,12 +131,17 @@ function ApontarPage() {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">OP não encontrada.</p>
-        <Link to="/lotes" className="text-primary text-sm">Voltar</Link>
+        <Link to="/lotes" className="text-primary text-sm">
+          Voltar
+        </Link>
       </div>
     );
   }
 
-  const late = order.due_date && new Date(order.due_date).getTime() < Date.now() && order.stage !== "concluido";
+  const late =
+    order.due_date &&
+    new Date(order.due_date).getTime() < Date.now() &&
+    order.stage !== "concluido";
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -124,7 +150,9 @@ function ApontarPage() {
           <ArrowLeft className="size-5" />
         </Link>
         <div className="flex-1 min-w-0">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Apontar produção</div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            Apontar produção
+          </div>
           <div className="text-base font-semibold truncate">{order.code}</div>
         </div>
         {late && (
@@ -138,7 +166,11 @@ function ApontarPage() {
         <section className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-3">
             {order.products?.image_url ? (
-              <img src={order.products.image_url} alt="" className="size-16 rounded-lg object-cover bg-muted" />
+              <img
+                src={order.products.image_url}
+                alt=""
+                className="size-16 rounded-lg object-cover bg-muted"
+              />
             ) : (
               <div className="size-16 rounded-lg bg-muted grid place-items-center text-muted-foreground">
                 <Package className="size-6" />
@@ -147,17 +179,24 @@ function ApontarPage() {
             <div className="min-w-0">
               <div className="font-medium truncate">{order.products?.name ?? "—"}</div>
               <div className="text-xs text-muted-foreground truncate">
-                {order.products?.sku ?? ""}{order.suppliers?.name ? ` · ${order.suppliers.name}` : ""}
+                {order.products?.sku ?? ""}
+                {order.suppliers?.name ? ` · ${order.suppliers.name}` : ""}
               </div>
-              <div className="text-xs text-muted-foreground">Lote {order.batch_code ?? "—"} · {order.quantity} pç</div>
+              <div className="text-xs text-muted-foreground">
+                Lote {order.batch_code ?? "—"} · {order.quantity} pç
+              </div>
             </div>
           </div>
         </section>
 
         <section className="rounded-xl border border-border bg-card p-4">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Etapa atual</div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+            Etapa atual
+          </div>
           <div className="flex items-center justify-between">
-            <div className="text-2xl font-semibold">{STAGES.find((s) => s.key === order.stage)?.label ?? order.stage}</div>
+            <div className="text-2xl font-semibold">
+              {STAGES.find((s) => s.key === order.stage)?.label ?? order.stage}
+            </div>
             <div className="text-xs text-muted-foreground inline-flex items-center gap-1">
               <Clock className="size-3" /> {relTime(order.stage_updated_at)}
             </div>
@@ -173,7 +212,9 @@ function ApontarPage() {
               type="button"
               onClick={() => setQty((q) => Math.max(0, (typeof q === "number" ? q : 0) - 1))}
               className="size-12 rounded-lg border border-border text-2xl"
-            >−</button>
+            >
+              −
+            </button>
             <input
               inputMode="numeric"
               value={qty}
@@ -188,7 +229,9 @@ function ApontarPage() {
               type="button"
               onClick={() => setQty((q) => (typeof q === "number" ? q : 0) + 1)}
               className="size-12 rounded-lg border border-border text-2xl"
-            >+</button>
+            >
+              +
+            </button>
           </div>
           <div className="flex gap-2">
             {[10, 25, 50, 100].map((n) => (
@@ -234,7 +277,8 @@ function ApontarPage() {
         </section>
 
         <p className="text-[11px] text-muted-foreground text-center">
-          Apontamento parcial: digite uma quantidade menor que {order.quantity}. A OP só avança quando todas as peças passarem.
+          Apontamento parcial: digite uma quantidade menor que {order.quantity}. A OP só avança
+          quando todas as peças passarem.
         </p>
       </main>
     </div>

@@ -6,14 +6,16 @@ const IdInput = z.object({ id: z.string().uuid() });
 
 // Public read of a passport by dpp_record id (preferred) or product id (fallback)
 export const getPublicPassport = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) => IdInput.parse(input))
+  .validator((input: unknown) => IdInput.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Try as dpp_record id first
     const { data: rec } = await supabaseAdmin
       .from("dpp_records")
-      .select("id, product_id, version, status, snapshot, hash, composition, origin, care_instructions, repairability_score, certifications, published_at")
+      .select(
+        "id, product_id, version, status, snapshot, hash, composition, origin, care_instructions, repairability_score, certifications, published_at",
+      )
       .eq("id", data.id)
       .eq("status", "publicado")
       .maybeSingle();
@@ -26,7 +28,9 @@ export const getPublicPassport = createServerFn({ method: "GET" })
     if (!rec) {
       const { data: latest } = await supabaseAdmin
         .from("dpp_records")
-        .select("id, product_id, snapshot, composition, origin, care_instructions, certifications, version, published_at")
+        .select(
+          "id, product_id, snapshot, composition, origin, care_instructions, certifications, version, published_at",
+        )
         .eq("product_id", data.id)
         .eq("status", "publicado")
         .order("version", { ascending: false })
@@ -56,7 +60,9 @@ export const getPublicPassport = createServerFn({ method: "GET" })
 
     // Fire and forget view log
     if (recordId) {
-      await supabaseAdmin.from("dpp_views").insert({ dpp_record_id: recordId, product_id: productId });
+      await supabaseAdmin
+        .from("dpp_views")
+        .insert({ dpp_record_id: recordId, product_id: productId });
     }
 
     return {
@@ -67,10 +73,12 @@ export const getPublicPassport = createServerFn({ method: "GET" })
       name: product.name,
       category: product.category,
       image_url: product.image_url,
-      collection: (product as { collections?: { name: string; season: string; year: number } | null }).collections ?? null,
+      collection:
+        (product as { collections?: { name: string; season: string; year: number } | null })
+          .collections ?? null,
       lote: `L-${String(h % 9999).padStart(4, "0")}`,
       emitidos: 100 + (h % 500),
-      co2: (snap.co2 as string) ?? (2 + ((h % 70) / 10)).toFixed(1),
+      co2: (snap.co2 as string) ?? (2 + (h % 70) / 10).toFixed(1),
       cert: (rec?.certifications?.[0] as string) ?? CERTS[h % CERTS.length],
       origem: rec?.origin ?? ORIGINS[h % ORIGINS.length],
       composition: rec?.composition ?? null,
@@ -92,7 +100,7 @@ const PublishInput = z.object({
 
 export const publishPassport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => PublishInput.parse(input))
+  .validator((input: unknown) => PublishInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: prod, error: pe } = await supabase
@@ -151,7 +159,7 @@ export const publishPassport = createServerFn({ method: "POST" })
 
 export const revokePassport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => IdInput.parse(input))
+  .validator((input: unknown) => IdInput.parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("dpp_records")

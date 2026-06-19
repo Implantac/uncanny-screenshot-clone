@@ -10,7 +10,17 @@
   "theme_color": "#0b0b0f",
   "lang": "pt-BR",
   "icons": [
-    { "src": "/__l5e/assets-v1/4e2d7e17-e5dc-42c8-a8ff-4dfe373ec781/logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/__l5e/assets-v1/4e2d7e17-e5dc-42c8-a8ff-4dfe373ec781/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "/__l5e/assets-v1/4e2d7e17-e5dc-42c8-a8ff-4dfe373ec781/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/__l5e/assets-v1/4e2d7e17-e5dc-42c8-a8ff-4dfe373ec781/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

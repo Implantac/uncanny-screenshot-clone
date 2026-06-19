@@ -51,8 +51,16 @@ export function BomTemplatesButton({ sheetId, ownerId, disabled }: Props) {
       if (!user?.id) throw new Error("Sessão expirada");
       if (!name.trim()) throw new Error("Dê um nome ao template");
       const [{ data: mats, error: e1 }, { data: ops, error: e2 }] = await Promise.all([
-        supabase.from("tech_sheet_materials").select("name, unit, consumption, loss_pct, unit_cost, position").eq("tech_sheet_id", sheetId).order("position"),
-        supabase.from("tech_sheet_operations").select("name, machine, sam, rate_per_min, position").eq("tech_sheet_id", sheetId).order("position"),
+        supabase
+          .from("tech_sheet_materials")
+          .select("name, unit, consumption, loss_pct, unit_cost, position")
+          .eq("tech_sheet_id", sheetId)
+          .order("position"),
+        supabase
+          .from("tech_sheet_operations")
+          .select("name, machine, sam, rate_per_min, position")
+          .eq("tech_sheet_id", sheetId)
+          .order("position"),
       ]);
       if (e1) throw e1;
       if (e2) throw e2;
@@ -69,7 +77,8 @@ export function BomTemplatesButton({ sheetId, ownerId, disabled }: Props) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["bom-templates"] });
       toast.success("Template salvo");
-      setName(""); setCategory("");
+      setName("");
+      setCategory("");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -77,14 +86,23 @@ export function BomTemplatesButton({ sheetId, ownerId, disabled }: Props) {
   const applyTpl = useMutation({
     mutationFn: async (tpl: Template) => {
       const matRows = (tpl.materials ?? []).map((m: any, i: number) => ({
-        owner_id: ownerId, tech_sheet_id: sheetId,
-        name: m.name, unit: m.unit, consumption: m.consumption ?? 0,
-        loss_pct: m.loss_pct ?? 0, unit_cost: m.unit_cost ?? 0, position: i,
+        owner_id: ownerId,
+        tech_sheet_id: sheetId,
+        name: m.name,
+        unit: m.unit,
+        consumption: m.consumption ?? 0,
+        loss_pct: m.loss_pct ?? 0,
+        unit_cost: m.unit_cost ?? 0,
+        position: i,
       }));
       const opRows = (tpl.operations ?? []).map((o: any, i: number) => ({
-        owner_id: ownerId, tech_sheet_id: sheetId,
-        name: o.name, machine: o.machine, sam: o.sam ?? 0,
-        rate_per_min: o.rate_per_min ?? 0, position: i,
+        owner_id: ownerId,
+        tech_sheet_id: sheetId,
+        name: o.name,
+        machine: o.machine,
+        sam: o.sam ?? 0,
+        rate_per_min: o.rate_per_min ?? 0,
+        position: i,
       }));
       if (matRows.length) {
         const { error } = await supabase.from("tech_sheet_materials").insert(matRows);
@@ -115,21 +133,54 @@ export function BomTemplatesButton({ sheetId, ownerId, disabled }: Props) {
 
   return (
     <>
-      <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setOpen(true)} disabled={disabled}>
+      <Button
+        variant="outline"
+        size="sm"
+        className="gap-1.5"
+        onClick={() => setOpen(true)}
+        disabled={disabled}
+      >
         <BookOpen className="size-3.5" /> Templates BOM
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><BookOpen className="size-4 text-primary" /> Templates de BOM</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="size-4 text-primary" /> Templates de BOM
+            </DialogTitle>
+          </DialogHeader>
 
           {canEdit && (
             <div className="rounded-xl border border-border bg-background/30 p-3 space-y-2">
-              <div className="text-xs font-semibold flex items-center gap-1.5"><Save className="size-3.5 text-primary" /> Salvar esta ficha como template</div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1"><Label className="text-xs">Nome</Label><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Camiseta básica" className="h-8 text-sm" /></div>
-                <div className="space-y-1"><Label className="text-xs">Categoria</Label><Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Camisetas" className="h-8 text-sm" /></div>
+              <div className="text-xs font-semibold flex items-center gap-1.5">
+                <Save className="size-3.5 text-primary" /> Salvar esta ficha como template
               </div>
-              <Button size="sm" className="w-full gap-1" disabled={saveTpl.isPending || !name.trim()} onClick={() => saveTpl.mutate()}>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">Nome</Label>
+                  <Input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Camiseta básica"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Categoria</Label>
+                  <Input
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    placeholder="Camisetas"
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+              <Button
+                size="sm"
+                className="w-full gap-1"
+                disabled={saveTpl.isPending || !name.trim()}
+                onClick={() => saveTpl.mutate()}
+              >
                 <Plus className="size-3.5" /> Salvar template
               </Button>
             </div>
@@ -138,27 +189,55 @@ export function BomTemplatesButton({ sheetId, ownerId, disabled }: Props) {
           <div className="space-y-2 max-h-80 overflow-y-auto">
             <div className="text-xs font-semibold">Disponíveis ({templates.length})</div>
             {templates.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border p-6 text-xs text-center text-muted-foreground">Nenhum template ainda. Salve sua primeira ficha como base reutilizável.</div>
-            ) : templates.map((t) => (
-              <div key={t.id} className="flex items-center gap-2 rounded-lg border border-border bg-background/30 p-2.5">
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium truncate">{t.name}</div>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {t.category && <Badge variant="outline" className="text-[10px]">{t.category}</Badge>}
-                    <Badge variant="outline" className="text-[10px]">{(t.materials ?? []).length} materiais</Badge>
-                    <Badge variant="outline" className="text-[10px]">{(t.operations ?? []).length} operações</Badge>
-                  </div>
-                </div>
-                {canEdit && (
-                  <Button size="sm" variant="default" className="h-7 text-xs" disabled={applyTpl.isPending} onClick={() => applyTpl.mutate(t)}>
-                    Aplicar
-                  </Button>
-                )}
-                <Button size="icon" variant="ghost" className="size-7 text-destructive" onClick={() => { if (confirm("Remover template?")) delTpl.mutate(t.id); }}>
-                  <Trash2 className="size-3.5" />
-                </Button>
+              <div className="rounded-lg border border-dashed border-border p-6 text-xs text-center text-muted-foreground">
+                Nenhum template ainda. Salve sua primeira ficha como base reutilizável.
               </div>
-            ))}
+            ) : (
+              templates.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-background/30 p-2.5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium truncate">{t.name}</div>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {t.category && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {t.category}
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="text-[10px]">
+                        {(t.materials ?? []).length} materiais
+                      </Badge>
+                      <Badge variant="outline" className="text-[10px]">
+                        {(t.operations ?? []).length} operações
+                      </Badge>
+                    </div>
+                  </div>
+                  {canEdit && (
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="h-7 text-xs"
+                      disabled={applyTpl.isPending}
+                      onClick={() => applyTpl.mutate(t)}
+                    >
+                      Aplicar
+                    </Button>
+                  )}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-7 text-destructive"
+                    onClick={() => {
+                      if (confirm("Remover template?")) delTpl.mutate(t.id);
+                    }}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
         </DialogContent>
       </Dialog>

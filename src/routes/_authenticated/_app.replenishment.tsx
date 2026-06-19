@@ -28,13 +28,26 @@ async function loadReplenishment(): Promise<Row[]> {
   const since30 = new Date(now - 30 * 86400000).toISOString();
   const since7 = new Date(now - 7 * 86400000).toISOString();
 
-  const [{ data: products }, { data: erpInv }, { data: invItems }, { data: s90 }, { data: ops }] = await Promise.all([
-    supabase.from("products").select("id, sku, name, cost_price, sell_price, status").eq("status", "aprovado").limit(800),
-    supabase.from("erp_inventory_mirror").select("sku, balance").limit(2000),
-    supabase.from("inventory_items").select("sku, balance").limit(2000),
-    supabase.from("erp_sales_mirror").select("sku, quantity, total_value, sold_at").gte("sold_at", since90).limit(20000),
-    supabase.from("production_orders").select("products(sku), quantity, stage").neq("status", "cancelada").limit(2000),
-  ]);
+  const [{ data: products }, { data: erpInv }, { data: invItems }, { data: s90 }, { data: ops }] =
+    await Promise.all([
+      supabase
+        .from("products")
+        .select("id, sku, name, cost_price, sell_price, status")
+        .eq("status", "aprovado")
+        .limit(800),
+      supabase.from("erp_inventory_mirror").select("sku, balance").limit(2000),
+      supabase.from("inventory_items").select("sku, balance").limit(2000),
+      supabase
+        .from("erp_sales_mirror")
+        .select("sku, quantity, total_value, sold_at")
+        .gte("sold_at", since90)
+        .limit(20000),
+      supabase
+        .from("production_orders")
+        .select("products(sku), quantity, stage")
+        .neq("status", "cancelada")
+        .limit(2000),
+    ]);
 
   // estoque = ERP mirror se houver, senão almoxarifado PLM
   const stockBySku = new Map<string, number>();
@@ -96,37 +109,57 @@ async function loadReplenishment(): Promise<Row[]> {
 }
 
 function Replenishment() {
-  const { data: items = [], isLoading } = useQuery({ queryKey: ["replenishment-v2"], queryFn: loadReplenishment });
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["replenishment-v2"],
+    queryFn: loadReplenishment,
+  });
 
   const priority = useMemo(
-    () => items.filter((i) => i.suggestion > 0).sort((a, b) => b.score - a.score).slice(0, 40),
+    () =>
+      items
+        .filter((i) => i.suggestion > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 40),
     [items],
   );
   const rupture = useMemo(
-    () => items.filter((i) => i.daysCover < 14 && i.velocity > 0).sort((a, b) => a.daysCover - b.daysCover).slice(0, 30),
+    () =>
+      items
+        .filter((i) => i.daysCover < 14 && i.velocity > 0)
+        .sort((a, b) => a.daysCover - b.daysCover)
+        .slice(0, 30),
     [items],
   );
   const excess = useMemo(
-    () => items.filter((i) => i.daysCover > 120 && i.stock > 0).sort((a, b) => b.stock - a.stock).slice(0, 30),
+    () =>
+      items
+        .filter((i) => i.daysCover > 120 && i.stock > 0)
+        .sort((a, b) => b.stock - a.stock)
+        .slice(0, 30),
     [items],
   );
 
-  const summary = useMemo(() => ({
-    total: items.length,
-    actionable: priority.length,
-    rupture: rupture.length,
-    excess: excess.length,
-  }), [items, priority, rupture, excess]);
+  const summary = useMemo(
+    () => ({
+      total: items.length,
+      actionable: priority.length,
+      rupture: rupture.length,
+      excess: excess.length,
+    }),
+    [items, priority, rupture, excess],
+  );
 
   return (
     <div className="p-6 space-y-6">
       <header className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-            <Brain className="size-6 text-primary" />Necessidade de Produção
+            <Brain className="size-6 text-primary" />
+            Necessidade de Produção
           </h1>
           <p className="text-sm text-muted-foreground">
-            Motor inteligente — combina estoque, WIP, vendas 7/30/90d, margem, ABC e sazonalidade. Score 0–100 por SKU.
+            Motor inteligente — combina estoque, WIP, vendas 7/30/90d, margem, ABC e sazonalidade.
+            Score 0–100 por SKU.
           </p>
         </div>
         <div className="grid grid-cols-4 gap-2 text-xs">
@@ -139,25 +172,56 @@ function Replenishment() {
 
       {isLoading && <div className="text-muted-foreground">Calculando prioridades…</div>}
 
-      <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — onde investir produção" question="Olhando ruptura, ABC, margem e velocidade: quais 3 SKUs produzir hoje e por quê?" />
+      <AICoordinatorPanel
+        persona="pcp"
+        title="Coordenador de PCP — onde investir produção"
+        question="Olhando ruptura, ABC, margem e velocidade: quais 3 SKUs produzir hoje e por quê?"
+      />
 
-      <Section title="Prioridade de produção" icon={<Flame className="size-4 text-primary" />} desc="Ordenado por score — combina giro, margem, ruptura, ABC e tendência">
+      <Section
+        title="Prioridade de produção"
+        icon={<Flame className="size-4 text-primary" />}
+        desc="Ordenado por score — combina giro, margem, ruptura, ABC e tendência"
+      >
         <PriorityTable items={priority} />
       </Section>
 
-      <Section title="Risco de ruptura" icon={<TrendingDown className="size-4 text-destructive" />} desc="Cobertura inferior a 14 dias">
+      <Section
+        title="Risco de ruptura"
+        icon={<TrendingDown className="size-4 text-destructive" />}
+        desc="Cobertura inferior a 14 dias"
+      >
         <PriorityTable items={rupture} />
       </Section>
 
-      <Section title="Excesso de estoque" icon={<TrendingUp className="size-4 text-warning" />} desc="Cobertura acima de 120 dias — considerar liquidar">
+      <Section
+        title="Excesso de estoque"
+        icon={<TrendingUp className="size-4 text-warning" />}
+        desc="Cobertura acima de 120 dias — considerar liquidar"
+      >
         <PriorityTable items={excess} hideSuggestion />
       </Section>
     </div>
   );
 }
 
-function Mini({ label, v, tone }: { label: string; v: number; tone?: "primary" | "red" | "yellow" }) {
-  const c = tone === "red" ? "text-destructive" : tone === "yellow" ? "text-warning" : tone === "primary" ? "text-primary" : "";
+function Mini({
+  label,
+  v,
+  tone,
+}: {
+  label: string;
+  v: number;
+  tone?: "primary" | "red" | "yellow";
+}) {
+  const c =
+    tone === "red"
+      ? "text-destructive"
+      : tone === "yellow"
+        ? "text-warning"
+        : tone === "primary"
+          ? "text-primary"
+          : "";
   return (
     <div className="rounded-lg border border-border bg-card px-3 py-2">
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
@@ -166,11 +230,24 @@ function Mini({ label, v, tone }: { label: string; v: number; tone?: "primary" |
   );
 }
 
-function Section({ title, icon, desc, children }: { title: string; icon: React.ReactNode; desc: string; children: React.ReactNode }) {
+function Section({
+  title,
+  icon,
+  desc,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  desc: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card">
       <div className="px-4 py-3 border-b border-border">
-        <div className="flex items-center gap-2 font-medium">{icon}{title}</div>
+        <div className="flex items-center gap-2 font-medium">
+          {icon}
+          {title}
+        </div>
         <div className="text-xs text-muted-foreground">{desc}</div>
       </div>
       {children}
@@ -185,7 +262,14 @@ function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion
   const [pendingId, setPendingId] = useState<string | null>(null);
   const mutation = useMutation({
     mutationFn: async (row: Row) =>
-      createOp({ data: { productId: row.id, quantity: row.suggestion, reason: row.reasons.join(" · "), priority: row.score >= 75 ? 3 : 2 } }),
+      createOp({
+        data: {
+          productId: row.id,
+          quantity: row.suggestion,
+          reason: row.reasons.join(" · "),
+          priority: row.score >= 75 ? 3 : 2,
+        },
+      }),
     onMutate: (row: Row) => setPendingId(row.id),
     onSuccess: (op: any) => {
       toast.success(`OP ${op.code} criada`);
@@ -196,7 +280,8 @@ function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion
     onSettled: () => setPendingId(null),
   });
 
-  if (items.length === 0) return <div className="p-6 text-center text-sm text-muted-foreground">Nada por aqui. ✅</div>;
+  if (items.length === 0)
+    return <div className="p-6 text-center text-sm text-muted-foreground">Nada por aqui. ✅</div>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -226,22 +311,34 @@ function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion
               </td>
               <td className="px-3 py-2 max-w-[220px]">
                 <VerdictBadge verdict={i.verdict} label={i.verdictLabel} />
-                <div className="text-[10px] text-muted-foreground mt-1 leading-snug">{i.verdictReason}</div>
+                <div className="text-[10px] text-muted-foreground mt-1 leading-snug">
+                  {i.verdictReason}
+                </div>
               </td>
               <td className="px-3 py-2 text-right tabular-nums">{i.stock}</td>
-              <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{i.wip || "—"}</td>
+              <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
+                {i.wip || "—"}
+              </td>
               <td className="px-3 py-2 text-right tabular-nums">
-                <span className={i.daysToStockout < 14 ? "text-destructive" : i.daysToStockout > 120 ? "text-warning" : ""}>
+                <span
+                  className={
+                    i.daysToStockout < 14
+                      ? "text-destructive"
+                      : i.daysToStockout > 120
+                        ? "text-warning"
+                        : ""
+                  }
+                >
                   {i.daysToStockout >= 999 ? "—" : `${Math.round(i.daysToStockout)}d`}
                 </span>
               </td>
               <td className="px-3 py-2 text-right tabular-nums">{i.velocity.toFixed(1)}/d</td>
               {!hideSuggestion && (
-                <td className="px-3 py-2 text-right tabular-nums font-semibold text-primary">{i.suggestion || "—"}</td>
+                <td className="px-3 py-2 text-right tabular-nums font-semibold text-primary">
+                  {i.suggestion || "—"}
+                </td>
               )}
-              <td className="px-3 py-2 text-xs text-muted-foreground">
-                {i.reasons.join(" · ")}
-              </td>
+              <td className="px-3 py-2 text-xs text-muted-foreground">{i.reasons.join(" · ")}</td>
               {!hideSuggestion && (
                 <td className="px-3 py-2 text-right">
                   <button
@@ -250,7 +347,11 @@ function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion
                     onClick={() => mutation.mutate(i)}
                     className="text-[11px] px-2 py-1 rounded bg-primary text-primary-foreground hover:opacity-90 inline-flex items-center gap-1 disabled:opacity-50"
                   >
-                    {pendingId === i.id ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+                    {pendingId === i.id ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="size-3" />
+                    )}
                     Gerar OP
                   </button>
                 </td>
@@ -265,26 +366,35 @@ function PriorityTable({ items, hideSuggestion }: { items: Row[]; hideSuggestion
 
 function VerdictBadge({ verdict, label }: { verdict: PriorityResult["verdict"]; label: string }) {
   const tone =
-    verdict === "produzir-ja" ? "bg-destructive/15 text-destructive border-destructive/30"
-    : verdict === "programar" ? "bg-primary/10 text-primary border-primary/30"
-    : verdict === "monitorar" ? "bg-warning/15 text-warning border-warning/30"
-    : "bg-muted text-muted-foreground border-border";
+    verdict === "produzir-ja"
+      ? "bg-destructive/15 text-destructive border-destructive/30"
+      : verdict === "programar"
+        ? "bg-primary/10 text-primary border-primary/30"
+        : verdict === "monitorar"
+          ? "bg-warning/15 text-warning border-warning/30"
+          : "bg-muted text-muted-foreground border-border";
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-medium ${tone}`}>
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-medium ${tone}`}
+    >
       {label}
     </span>
   );
 }
 
-
 function ScoreBadge({ score }: { score: number }) {
   const tone =
-    score >= 75 ? "bg-destructive/15 text-destructive border-destructive/30"
-    : score >= 50 ? "bg-warning/15 text-warning border-warning/30"
-    : score >= 25 ? "bg-primary/10 text-primary border-primary/30"
-    : "bg-muted text-muted-foreground border-border";
+    score >= 75
+      ? "bg-destructive/15 text-destructive border-destructive/30"
+      : score >= 50
+        ? "bg-warning/15 text-warning border-warning/30"
+        : score >= 25
+          ? "bg-primary/10 text-primary border-primary/30"
+          : "bg-muted text-muted-foreground border-border";
   return (
-    <span className={`inline-flex items-center justify-center w-10 h-7 rounded border font-semibold text-sm tabular-nums ${tone}`}>
+    <span
+      className={`inline-flex items-center justify-center w-10 h-7 rounded border font-semibold text-sm tabular-nums ${tone}`}
+    >
       {score}
     </span>
   );

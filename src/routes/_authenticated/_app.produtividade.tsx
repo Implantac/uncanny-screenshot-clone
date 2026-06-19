@@ -61,11 +61,13 @@ function Produtividade() {
       };
     }
     if (range === "today") {
-      const d = new Date(now); d.setHours(0, 0, 0, 0);
+      const d = new Date(now);
+      d.setHours(0, 0, 0, 0);
       return { fromISO: d.toISOString(), toISO: now.toISOString(), label: "Hoje" };
     }
     const days = range === "30d" ? 30 : 7;
-    const d = new Date(now); d.setDate(d.getDate() - days);
+    const d = new Date(now);
+    d.setDate(d.getDate() - days);
     return { fromISO: d.toISOString(), toISO: now.toISOString(), label: `Últimos ${days} dias` };
   }, [range, from, to]);
 
@@ -96,10 +98,20 @@ function Produtividade() {
   const today = new Date().toISOString().slice(0, 10);
 
   const agg = useMemo(() => {
-    const m = new Map<string, { passagens: number; pcs: number; passagensHoje: number; pcsHoje: number; stages: Set<string> }>();
+    const m = new Map<
+      string,
+      {
+        passagens: number;
+        pcs: number;
+        passagensHoje: number;
+        pcsHoje: number;
+        stages: Set<string>;
+      }
+    >();
     for (const r of rows) {
       const uid = r.created_by!;
-      if (!m.has(uid)) m.set(uid, { passagens: 0, pcs: 0, passagensHoje: 0, pcsHoje: 0, stages: new Set() });
+      if (!m.has(uid))
+        m.set(uid, { passagens: 0, pcs: 0, passagensHoje: 0, pcsHoje: 0, stages: new Set() });
       const x = m.get(uid)!;
       const qty = Number(r.qty_received ?? r.quantity ?? 0);
       x.passagens++;
@@ -115,8 +127,14 @@ function Produtividade() {
       .sort((a, b) => b.pcs - a.pcs);
   }, [rows, today]);
 
-  const totaisHoje = agg.reduce((s, x) => ({ p: s.p + x.passagensHoje, pc: s.pc + x.pcsHoje }), { p: 0, pc: 0 });
-  const totaisPeriodo = agg.reduce((s, x) => ({ p: s.p + x.passagens, pc: s.pc + x.pcs }), { p: 0, pc: 0 });
+  const totaisHoje = agg.reduce((s, x) => ({ p: s.p + x.passagensHoje, pc: s.pc + x.pcsHoje }), {
+    p: 0,
+    pc: 0,
+  });
+  const totaisPeriodo = agg.reduce((s, x) => ({ p: s.p + x.passagens, pc: s.pc + x.pcs }), {
+    p: 0,
+    pc: 0,
+  });
   const top = agg[0];
 
   const setPreset = (v: "today" | "7d" | "30d") =>
@@ -143,7 +161,9 @@ function Produtividade() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Produtividade</h1>
-            <p className="text-sm text-muted-foreground">Ranking de passagens por operador · {label}</p>
+            <p className="text-sm text-muted-foreground">
+              Ranking de passagens por operador · {label}
+            </p>
           </div>
         </div>
 
@@ -154,7 +174,9 @@ function Produtividade() {
               onClick={() => setPreset(p.v)}
               className={cn(
                 "px-3 h-8 rounded-md text-xs font-medium transition",
-                range === p.v ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
+                range === p.v
+                  ? "bg-background shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               {p.label}
@@ -165,16 +187,25 @@ function Produtividade() {
               <Button
                 variant="ghost"
                 size="sm"
-                className={cn("h-8 px-3 gap-1.5 text-xs", range === "custom" && "bg-background shadow-sm")}
+                className={cn(
+                  "h-8 px-3 gap-1.5 text-xs",
+                  range === "custom" && "bg-background shadow-sm",
+                )}
               >
                 <CalendarIcon className="size-3.5" />
-                {range === "custom" && from && to ? `${format(new Date(from), "dd/MM")}–${format(new Date(to), "dd/MM")}` : "Personalizado"}
+                {range === "custom" && from && to
+                  ? `${format(new Date(from), "dd/MM")}–${format(new Date(to), "dd/MM")}`
+                  : "Personalizado"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
               <Calendar
                 mode="range"
-                selected={range === "custom" && from && to ? { from: new Date(from), to: new Date(to) } : undefined}
+                selected={
+                  range === "custom" && from && to
+                    ? { from: new Date(from), to: new Date(to) }
+                    : undefined
+                }
                 onSelect={setCustom}
                 numberOfMonths={2}
                 className={cn("p-3 pointer-events-auto")}
@@ -191,16 +222,24 @@ function Produtividade() {
         </div>
         <div className="glass rounded-xl p-5">
           <div className="text-xs text-muted-foreground">Peças passadas no período</div>
-          <div className="text-2xl font-semibold tabular-nums">{totaisPeriodo.pc.toLocaleString("pt-BR")}</div>
+          <div className="text-2xl font-semibold tabular-nums">
+            {totaisPeriodo.pc.toLocaleString("pt-BR")}
+          </div>
         </div>
         <div className="glass rounded-xl p-5">
           <div className="text-xs text-muted-foreground">Operadores ativos</div>
           <div className="text-2xl font-semibold tabular-nums">{agg.length}</div>
         </div>
         <div className="glass rounded-xl p-5 border border-primary/30">
-          <div className="text-xs text-muted-foreground flex items-center gap-1"><Trophy className="size-3" /> Top operador</div>
-          <div className="text-base font-semibold truncate">{top ? (profMap.get(top.uid)?.full_name ?? "—") : "—"}</div>
-          <div className="text-xs text-muted-foreground tabular-nums">{top?.pcs.toLocaleString("pt-BR") ?? 0} pç</div>
+          <div className="text-xs text-muted-foreground flex items-center gap-1">
+            <Trophy className="size-3" /> Top operador
+          </div>
+          <div className="text-base font-semibold truncate">
+            {top ? (profMap.get(top.uid)?.full_name ?? "—") : "—"}
+          </div>
+          <div className="text-xs text-muted-foreground tabular-nums">
+            {top?.pcs.toLocaleString("pt-BR") ?? 0} pç
+          </div>
         </div>
       </div>
 
@@ -211,8 +250,13 @@ function Produtividade() {
         </div>
         {agg.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
-            Nenhuma passagem no período. Use o botão <span className="font-medium">Passar</span> nos kanbans.
-            <div className="mt-3"><Link to="/pcp-kanban" className="text-primary hover:underline">Abrir PCP Kanban</Link></div>
+            Nenhuma passagem no período. Use o botão <span className="font-medium">Passar</span> nos
+            kanbans.
+            <div className="mt-3">
+              <Link to="/pcp-kanban" className="text-primary hover:underline">
+                Abrir PCP Kanban
+              </Link>
+            </div>
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -234,16 +278,31 @@ function Produtividade() {
                     <td className="px-5 py-3 text-muted-foreground">{i + 1}</td>
                     <td className="px-5 py-3 font-medium flex items-center gap-2">
                       {p?.avatar_url ? (
-                        <img src={p.avatar_url} alt="" className="size-6 rounded-full object-cover" />
+                        <img
+                          src={p.avatar_url}
+                          alt=""
+                          className="size-6 rounded-full object-cover"
+                        />
                       ) : (
-                        <div className="size-6 rounded-full bg-muted grid place-items-center text-[10px]">{(p?.full_name ?? "?").slice(0, 1).toUpperCase()}</div>
+                        <div className="size-6 rounded-full bg-muted grid place-items-center text-[10px]">
+                          {(p?.full_name ?? "?").slice(0, 1).toUpperCase()}
+                        </div>
                       )}
                       {p?.full_name ?? "Sem nome"}
                     </td>
-                    <td className="px-5 py-3 text-right tabular-nums">{x.pcsHoje.toLocaleString("pt-BR")} <span className="text-xs text-muted-foreground">({x.passagensHoje})</span></td>
-                    <td className="px-5 py-3 text-right tabular-nums font-medium">{x.pcs.toLocaleString("pt-BR")}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">{x.passagens}</td>
-                    <td className="px-5 py-3 text-xs text-muted-foreground">{x.stages.join(", ")}</td>
+                    <td className="px-5 py-3 text-right tabular-nums">
+                      {x.pcsHoje.toLocaleString("pt-BR")}{" "}
+                      <span className="text-xs text-muted-foreground">({x.passagensHoje})</span>
+                    </td>
+                    <td className="px-5 py-3 text-right tabular-nums font-medium">
+                      {x.pcs.toLocaleString("pt-BR")}
+                    </td>
+                    <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">
+                      {x.passagens}
+                    </td>
+                    <td className="px-5 py-3 text-xs text-muted-foreground">
+                      {x.stages.join(", ")}
+                    </td>
                   </tr>
                 );
               })}

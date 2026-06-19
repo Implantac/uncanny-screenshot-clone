@@ -5,14 +5,18 @@ import { z } from "zod";
 /** Rastreabilidade visual: timeline de uma OP (por código ou batch). */
 export const getOrderTimeline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { query: string }) => z.object({ query: z.string().trim().min(2).max(80) }).parse(i))
+  .inputValidator((i: { query: string }) =>
+    z.object({ query: z.string().trim().min(2).max(80) }).parse(i),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const q = data.query.toUpperCase();
 
     const { data: orders, error } = await supabase
       .from("production_orders")
-      .select("id, code, quantity, stage, status, batch_code, due_date, stage_updated_at, created_at, products(name, sku, image_url), suppliers(name)")
+      .select(
+        "id, code, quantity, stage, status, batch_code, due_date, stage_updated_at, created_at, products(name, sku, image_url), suppliers(name)",
+      )
       .eq("owner_id", userId)
       .or(`code.ilike.%${q}%,batch_code.ilike.%${q}%`)
       .order("created_at", { ascending: false })

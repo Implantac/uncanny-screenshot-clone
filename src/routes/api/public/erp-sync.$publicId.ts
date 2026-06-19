@@ -58,7 +58,9 @@ export const Route = createFileRoute("/api/public/erp-sync/$publicId")({
         }
 
         const ownerId = cfg.owner_id;
-        let salesIns = 0, purchasesIns = 0, invIns = 0;
+        let salesIns = 0,
+          purchasesIns = 0,
+          invIns = 0;
         const errors: string[] = [];
 
         for (const ev of parsed.events) {
@@ -119,7 +121,12 @@ export const Route = createFileRoute("/api/public/erp-sync/$publicId")({
           entity_type: "mixed",
           status: errors.length ? (totalOk ? "ok" : "erro") : "ok",
           records_affected: totalOk,
-          payload: { sales: salesIns, purchases: purchasesIns, inventory: invIns, error_count: errors.length },
+          payload: {
+            sales: salesIns,
+            purchases: purchasesIns,
+            inventory: invIns,
+            error_count: errors.length,
+          },
           error_message: errors.slice(0, 5).join(" | ") || null,
         });
 
@@ -132,7 +139,13 @@ export const Route = createFileRoute("/api/public/erp-sync/$publicId")({
           .eq("owner_id", ownerId);
 
         return new Response(
-          JSON.stringify({ ok: true, sales: salesIns, purchases: purchasesIns, inventory: invIns, errors: errors.length }),
+          JSON.stringify({
+            ok: true,
+            sales: salesIns,
+            purchases: purchasesIns,
+            inventory: invIns,
+            errors: errors.length,
+          }),
           { status: 200, headers: { "content-type": "application/json" } },
         );
       },

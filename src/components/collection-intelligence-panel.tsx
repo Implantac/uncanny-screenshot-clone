@@ -22,7 +22,9 @@ export function CollectionIntelligencePanel() {
       <header className="flex items-center gap-2">
         <Sparkles className="size-4 text-primary" />
         <div className="font-medium text-sm">Coleção Inteligente</div>
-        <span className="text-xs text-muted-foreground">— produtos âncora, risco por coleção e sugestões</span>
+        <span className="text-xs text-muted-foreground">
+          — produtos âncora, risco por coleção e sugestões
+        </span>
       </header>
 
       {data.suggestions.length > 0 && (
@@ -45,9 +47,14 @@ export function CollectionIntelligencePanel() {
           ) : (
             <div className="space-y-1">
               {data.anchorProducts.slice(0, 5).map((p) => (
-                <div key={p.sku} className="flex items-center justify-between text-xs border-b border-border/50 pb-1">
+                <div
+                  key={p.sku}
+                  className="flex items-center justify-between text-xs border-b border-border/50 pb-1"
+                >
                   <div className="font-mono">{p.sku}</div>
-                  <div className="text-muted-foreground">{p.units} un · {fmt(p.revenue)}</div>
+                  <div className="text-muted-foreground">
+                    {p.units} un · {fmt(p.revenue)}
+                  </div>
                 </div>
               ))}
             </div>
@@ -66,13 +73,28 @@ export function CollectionIntelligencePanel() {
                 <div key={r.id} className="text-xs rounded-md border border-border p-2">
                   <div className="flex items-center justify-between">
                     <div className="font-medium">{r.name}</div>
-                    <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                      r.risk === "high" ? "bg-destructive/15 text-destructive" : r.risk === "medium" ? "bg-amber-500/15 text-amber-600" : "bg-emerald-500/15 text-emerald-600"
-                    }`}>{r.risk}</span>
+                    <span
+                      className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                        r.risk === "high"
+                          ? "bg-destructive/15 text-destructive"
+                          : r.risk === "medium"
+                            ? "bg-amber-500/15 text-amber-600"
+                            : "bg-emerald-500/15 text-emerald-600"
+                      }`}
+                    >
+                      {r.risk}
+                    </span>
                   </div>
                   <div className="text-muted-foreground mt-0.5 flex items-center gap-2">
-                    {r.daysToLaunch !== null && <span className="inline-flex items-center gap-1"><Calendar className="size-3" />{r.daysToLaunch}d</span>}
-                    <span>{r.approvedSheetsPct}% fichas · {r.activeOps} OPs</span>
+                    {r.daysToLaunch !== null && (
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="size-3" />
+                        {r.daysToLaunch}d
+                      </span>
+                    )}
+                    <span>
+                      {r.approvedSheetsPct}% fichas · {r.activeOps} OPs
+                    </span>
                   </div>
                   <div className="text-muted-foreground/80 mt-0.5">{r.reason}</div>
                 </div>

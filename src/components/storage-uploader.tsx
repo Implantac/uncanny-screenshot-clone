@@ -18,14 +18,7 @@ type Props = {
  * Upload para Supabase Storage (privado) com URL assinada (1 ano).
  * Caminho: <auth.uid()>/<timestamp>-<safe-filename>
  */
-export function StorageUploader({
-  bucket,
-  value,
-  onChange,
-  accept,
-  kind = "file",
-  label,
-}: Props) {
+export function StorageUploader({ bucket, value, onChange, accept, kind = "file", label }: Props) {
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
 
@@ -35,7 +28,7 @@ export function StorageUploader({
       const { data: u } = await supabase.auth.getUser();
       const uid = u.user?.id;
       if (!uid) throw new Error("Faça login para enviar arquivos.");
-      const safe = file.name.replace(/[^\w.\-]+/g, "_");
+      const safe = file.name.replace(/[^\w.-]+/g, "_");
       const path = `${uid}/${Date.now()}-${safe}`;
       const { error } = await supabase.storage.from(bucket).upload(path, file, {
         cacheControl: "3600",
@@ -75,16 +68,38 @@ export function StorageUploader({
       {hasValue ? (
         <div className="flex items-center gap-2">
           {kind === "image" ? (
-            <img src={value!} alt={label ?? ""} className="size-16 rounded-lg border border-border object-cover bg-muted" />
+            <img
+              src={value!}
+              alt={label ?? ""}
+              className="size-16 rounded-lg border border-border object-cover bg-muted"
+            />
           ) : (
-            <a href={value!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+            <a
+              href={value!}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+            >
               <FileText className="size-4" /> Abrir arquivo
             </a>
           )}
-          <Button type="button" variant="outline" size="sm" onClick={() => ref.current?.click()} disabled={busy}>
-            {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />} Trocar
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => ref.current?.click()}
+            disabled={busy}
+          >
+            {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}{" "}
+            Trocar
           </Button>
-          <Button type="button" variant="ghost" size="sm" onClick={() => onChange(null, null)} disabled={busy}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onChange(null, null)}
+            disabled={busy}
+          >
             <X className="size-3.5" />
           </Button>
         </div>
@@ -96,8 +111,14 @@ export function StorageUploader({
           disabled={busy}
           className="gap-2"
         >
-          {busy ? <Loader2 className="size-4 animate-spin" /> : <><Icon className="size-4" /> <Upload className="size-3.5" /></>}
-          {busy ? "Enviando…" : label ?? "Enviar arquivo"}
+          {busy ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <>
+              <Icon className="size-4" /> <Upload className="size-3.5" />
+            </>
+          )}
+          {busy ? "Enviando…" : (label ?? "Enviar arquivo")}
         </Button>
       )}
     </div>

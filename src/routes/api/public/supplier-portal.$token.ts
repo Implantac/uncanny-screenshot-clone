@@ -74,7 +74,14 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
           .eq("supplier_id", tok.supplier_id)
           .order("created_at", { ascending: false });
 
-        return Response.json({ supplier, rfqs: rfqs ?? [], quotes: myQuotes ?? [], production_orders: pos ?? [], attachments: attachments ?? [], acks: acks ?? [] });
+        return Response.json({
+          supplier,
+          rfqs: rfqs ?? [],
+          quotes: myQuotes ?? [],
+          production_orders: pos ?? [],
+          attachments: attachments ?? [],
+          acks: acks ?? [],
+        });
       },
       // POST: submit/update a quote OR ?action=ack | ?action=upload (multipart)
       POST: async ({ request, params }) => {
@@ -105,7 +112,10 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
           const p = Ack.safeParse(body);
           if (!p.success) return Response.json({ error: p.error.flatten() }, { status: 400 });
           const { data: po } = await supabaseAdmin
-            .from("production_orders").select("id, owner_id, supplier_id").eq("id", p.data.production_order_id).single();
+            .from("production_orders")
+            .select("id, owner_id, supplier_id")
+            .eq("id", p.data.production_order_id)
+            .single();
           if (!po || po.owner_id !== tokRow.owner_id || po.supplier_id !== tokRow.supplier_id)
             return new Response("Forbidden", { status: 403 });
           await supabaseAdmin.from("supplier_portal_acks").insert({
@@ -116,7 +126,10 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
             counter_due_date: p.data.counter_due_date || null,
             notes: p.data.notes || null,
           });
-          log("info", "supplier_portal.ack", { production_order_id: p.data.production_order_id, decision: p.data.decision });
+          log("info", "supplier_portal.ack", {
+            production_order_id: p.data.production_order_id,
+            decision: p.data.decision,
+          });
           return Response.json({ ok: true });
         }
 
@@ -132,8 +145,12 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
           const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
           const path = `${tokRow.owner_id}/${tokRow.supplier_id}/${Date.now()}_${safe}`;
           const buf = new Uint8Array(await file.arrayBuffer());
-          const { error: upErr } = await supabaseAdmin.storage.from("supplier-uploads")
-            .upload(path, buf, { contentType: file.type || "application/octet-stream", upsert: false });
+          const { error: upErr } = await supabaseAdmin.storage
+            .from("supplier-uploads")
+            .upload(path, buf, {
+              contentType: file.type || "application/octet-stream",
+              upsert: false,
+            });
           if (upErr) return new Response(upErr.message, { status: 500 });
           await supabaseAdmin.from("supplier_portal_attachments").insert({
             owner_id: tokRow.owner_id,
@@ -146,14 +163,18 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
             size: file.size,
             uploaded_via: "portal",
           });
-          log("info", "supplier_portal.upload", { supplier_id: tokRow.supplier_id, size: file.size });
+          log("info", "supplier_portal.upload", {
+            supplier_id: tokRow.supplier_id,
+            size: file.size,
+          });
           return Response.json({ ok: true, path });
         }
 
         // === QUOTE (default) ===
         const body = await request.json().catch(() => null);
         const parsed = Submit.safeParse(body);
-        if (!parsed.success) return Response.json({ error: parsed.error.flatten() }, { status: 400 });
+        if (!parsed.success)
+          return Response.json({ error: parsed.error.flatten() }, { status: 400 });
         const tok = tokRow;
 
         // Ensure the RFQ belongs to this owner
@@ -168,7 +189,10 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
           return new Response("RFQ closed", { status: 409 });
 
         const { data: supplier } = await supabaseAdmin
-          .from("suppliers").select("name").eq("id", tok.supplier_id).single();
+          .from("suppliers")
+          .select("name")
+          .eq("id", tok.supplier_id)
+          .single();
 
         // Upsert quote per (rfq, supplier)
         const { data: existing } = await supabaseAdmin
@@ -195,7 +219,11 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
         } else {
           await supabaseAdmin.from("rfq_quotes").insert(payload);
         }
-        await supabaseAdmin.from("rfq_requests").update({ status: "cotando" }).eq("id", parsed.data.rfq_id).eq("status", "aberta");
+        await supabaseAdmin
+          .from("rfq_requests")
+          .update({ status: "cotando" })
+          .eq("id", parsed.data.rfq_id)
+          .eq("status", "aberta");
 
         log("info", "supplier_portal.quote_submitted", {
           rfq_id: parsed.data.rfq_id,

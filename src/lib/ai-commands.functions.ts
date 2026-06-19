@@ -30,12 +30,16 @@ const Input = z.discriminatedUnion("kind", [CreateRFQ, CreateOP, BlockSupplier])
 
 export const executeAICommand = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => Input.parse(data))
+  .validator((data) => Input.parse(data))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
     if (data.kind === "create_rfq") {
-      const code = "RFQ-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+      const code =
+        "RFQ-" +
+        new Date().toISOString().slice(0, 10).replace(/-/g, "") +
+        "-" +
+        Math.random().toString(36).slice(2, 6).toUpperCase();
       const { data: row, error } = await (supabase as any)
         .from("rfq_requests")
         .insert({
@@ -51,7 +55,13 @@ export const executeAICommand = createServerFn({ method: "POST" })
         .select("id, code")
         .single();
       if (error) throw new Error(error.message);
-      return { ok: true, kind: "create_rfq" as const, id: row.id, code: row.code, link: "/sourcing" };
+      return {
+        ok: true,
+        kind: "create_rfq" as const,
+        id: row.id,
+        code: row.code,
+        link: "/sourcing",
+      };
     }
 
     if (data.kind === "block_supplier") {
@@ -70,7 +80,13 @@ export const executeAICommand = createServerFn({ method: "POST" })
         .update({ active: false, notes: note })
         .eq("id", sup.id);
       if (error) throw new Error(error.message);
-      return { ok: true, kind: "block_supplier" as const, id: sup.id, name: sup.name, link: "/fornecedores" };
+      return {
+        ok: true,
+        kind: "block_supplier" as const,
+        id: sup.id,
+        name: sup.name,
+        link: "/fornecedores",
+      };
     }
 
     // create_op
@@ -96,7 +112,11 @@ export const executeAICommand = createServerFn({ method: "POST" })
       supplierId = sup?.id ?? null;
     }
 
-    const code = "OP-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+    const code =
+      "OP-" +
+      new Date().toISOString().slice(0, 10).replace(/-/g, "") +
+      "-" +
+      Math.random().toString(36).slice(2, 6).toUpperCase();
     const { data: row, error } = await supabase
       .from("production_orders")
       .insert({
@@ -113,5 +133,11 @@ export const executeAICommand = createServerFn({ method: "POST" })
       .select("id, code")
       .single();
     if (error) throw new Error(error.message);
-    return { ok: true, kind: "create_op" as const, id: row.id, code: row.code, link: "/pcp-kanban" };
+    return {
+      ok: true,
+      kind: "create_op" as const,
+      id: row.id,
+      code: row.code,
+      link: "/pcp-kanban",
+    };
   });

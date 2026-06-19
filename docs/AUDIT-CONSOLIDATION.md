@@ -5,15 +5,15 @@
 
 ## Telas redundantes (candidatas a merge)
 
-| Mantém                | Funde / Esconde                                  | Motivo |
-|-----------------------|--------------------------------------------------|--------|
-| `/pcp-kanban`         | `/pcp` (lista plana)                             | Kanban já mostra tudo + drag-drop |
-| `/control-tower`      | `/stock-health`, `/replenishment`                | Mesmas métricas de cobertura e necessidade |
-| `/colecao-360`        | `/colecoes` (lista CRUD)                         | 360 é a tela rica; lista vira drawer |
-| `/marketing`          | `/campaigns`, `/influencers`, `/influencer-roi`  | Marketing Intelligence consolida em abas |
-| `/financeiro`, `/cashflow`, `/fpa`, `/margem`, `/profitability` | TODOS marcados como ERP-mirror | PLM não cria nem edita financeiro |
-| `/clientes`, `/representantes`, `/comercial`, `/omnichannel`, `/sales-performance`, `/geo-sales`, `/b2b` | TODOS marcados como ERP-mirror | CRM/Vendas é do ERP |
-| `/almoxarifado`, `/movimentacoes`, `/compras`, `/pedidos-compra` | ERP-mirror (somente leitura) | Estoque/Compras vive no ERP |
+| Mantém                                                                                                   | Funde / Esconde                                 | Motivo                                     |
+| -------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
+| `/pcp-kanban`                                                                                            | `/pcp` (lista plana)                            | Kanban já mostra tudo + drag-drop          |
+| `/control-tower`                                                                                         | `/stock-health`, `/replenishment`               | Mesmas métricas de cobertura e necessidade |
+| `/colecao-360`                                                                                           | `/colecoes` (lista CRUD)                        | 360 é a tela rica; lista vira drawer       |
+| `/marketing`                                                                                             | `/campaigns`, `/influencers`, `/influencer-roi` | Marketing Intelligence consolida em abas   |
+| `/financeiro`, `/cashflow`, `/fpa`, `/margem`, `/profitability`                                          | TODOS marcados como ERP-mirror                  | PLM não cria nem edita financeiro          |
+| `/clientes`, `/representantes`, `/comercial`, `/omnichannel`, `/sales-performance`, `/geo-sales`, `/b2b` | TODOS marcados como ERP-mirror                  | CRM/Vendas é do ERP                        |
+| `/almoxarifado`, `/movimentacoes`, `/compras`, `/pedidos-compra`                                         | ERP-mirror (somente leitura)                    | Estoque/Compras vive no ERP                |
 
 ## Telas órfãs (sem entrada clara no fluxo)
 

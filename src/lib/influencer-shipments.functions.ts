@@ -38,12 +38,36 @@ export const suggestShipments = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");
     const supabase = context.supabase;
 
-    const [{ data: collection }, { data: products }, { data: influencers }, { data: sales }, { data: history }] = await Promise.all([
-      supabase.from("collections").select("id, name, season, year").eq("id", data.collection_id).maybeSingle(),
-      supabase.from("products").select("id, name, sku, category").eq("collection_id", data.collection_id).limit(60),
-      supabase.from("influencers").select("id, nome, cidade, estado, segmento, seguidores, engajamento").limit(80),
-      supabase.from("erp_sales_mirror").select("product_ref, region, quantity, total_value").gte("sold_at", new Date(Date.now() - 90 * 86400000).toISOString()).limit(2000),
-      supabase.from("influencer_shipments").select("influencer_id, product_id, sales_before, sales_after, region").limit(500),
+    const [
+      { data: collection },
+      { data: products },
+      { data: influencers },
+      { data: sales },
+      { data: history },
+    ] = await Promise.all([
+      supabase
+        .from("collections")
+        .select("id, name, season, year")
+        .eq("id", data.collection_id)
+        .maybeSingle(),
+      supabase
+        .from("products")
+        .select("id, name, sku, category")
+        .eq("collection_id", data.collection_id)
+        .limit(60),
+      supabase
+        .from("influencers")
+        .select("id, nome, cidade, estado, segmento, seguidores, engajamento")
+        .limit(80),
+      supabase
+        .from("erp_sales_mirror")
+        .select("product_ref, region, quantity, total_value")
+        .gte("sold_at", new Date(Date.now() - 90 * 86400000).toISOString())
+        .limit(2000),
+      supabase
+        .from("influencer_shipments")
+        .select("influencer_id, product_id, sales_before, sales_after, region")
+        .limit(500),
     ]);
 
     if (!collection) throw new Error("Coleção não encontrada");
@@ -66,10 +90,24 @@ ${(products ?? []).map((p: any) => `- ${p.id} · \`${p.sku ?? "—"}\` · ${p.na
 ${(influencers ?? []).map((i: any) => `- ${i.id} · ${i.nome} · ${i.cidade ?? "—"}/${i.estado ?? "—"} · ${i.segmento ?? "—"} · ${i.seguidores} · ${Number(i.engajamento ?? 0).toFixed(1)}`).join("\n")}
 
 # Receita por região últimos 90 dias
-${[...salesByRegion.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([r, v]) => `- ${r}: R$ ${v.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`).join("\n") || "- sem dados"}
+${
+  [...salesByRegion.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([r, v]) => `- ${r}: R$ ${v.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`)
+    .join("\n") || "- sem dados"
+}
 
 # Histórico de envios anteriores (uplift = depois - antes)
-${(history ?? []).slice(0, 60).map((h: any) => `- inf=${h.influencer_id} prod=${h.product_id} região=${h.region ?? "—"} uplift=${(Number(h.sales_after ?? 0) - Number(h.sales_before ?? 0)).toFixed(0)}`).join("\n") || "- nenhum"}`;
+${
+  (history ?? [])
+    .slice(0, 60)
+    .map(
+      (h: any) =>
+        `- inf=${h.influencer_id} prod=${h.product_id} região=${h.region ?? "—"} uplift=${(Number(h.sales_after ?? 0) - Number(h.sales_before ?? 0)).toFixed(0)}`,
+    )
+    .join("\n") || "- nenhum"
+}`;
 
     const gateway = createLovableAiGatewayProvider(apiKey);
     const model = gateway("google/gemini-3-flash-preview");
@@ -80,11 +118,15 @@ ${(history ?? []).slice(0, 60).map((h: any) => `- inf=${h.influencer_id} prod=${
       temperature: 0.3,
     });
 
-    let parsed: { suggestions: { product_id: string; influencer_id: string; score: number; reason: string }[] } = { suggestions: [] };
+    let parsed: {
+      suggestions: { product_id: string; influencer_id: string; score: number; reason: string }[];
+    } = { suggestions: [] };
     try {
       const m = res.text.match(/\{[\s\S]*\}/);
       if (m) parsed = JSON.parse(m[0]);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     const pMap = new Map((products ?? []).map((p: any) => [p.id, p]));
     const iMap = new Map((influencers ?? []).map((i: any) => [i.id, i]));

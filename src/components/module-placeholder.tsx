@@ -2,7 +2,10 @@ import type { LucideIcon } from "lucide-react";
 import { Sparkles } from "lucide-react";
 
 export function ModulePlaceholder({
-  title, description, icon: Icon, features,
+  title,
+  description,
+  icon: Icon,
+  features,
 }: {
   title: string;
   description: string;
@@ -39,7 +42,8 @@ export function ModulePlaceholder({
         </div>
         <h3 className="text-xl font-semibold">Módulo em desenvolvimento</h3>
         <p className="text-muted-foreground text-sm mt-2 max-w-md mx-auto">
-          A estrutura está pronta. Próximo passo: conectar dados reais e habilitar fluxos de trabalho.
+          A estrutura está pronta. Próximo passo: conectar dados reais e habilitar fluxos de
+          trabalho.
         </p>
       </div>
     </div>

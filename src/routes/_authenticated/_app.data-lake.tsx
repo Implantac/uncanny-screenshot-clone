@@ -28,7 +28,7 @@ async function load() {
     DOMAINS.map(async (d) => {
       const { count } = await supabase.from(d.key).select("*", { count: "exact", head: true });
       return [d.key, count ?? 0] as const;
-    })
+    }),
   );
   return Object.fromEntries(results) as Record<DomainKey, number>;
 }
@@ -45,14 +45,23 @@ function DataLake() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Data Lake — Visão Unificada</h1>
         <p className="text-sm text-muted-foreground">
-          Camada analítica que consolida todos os domínios da plataforma — base para IA, BI e relatórios LGPD.
+          Camada analítica que consolida todos os domínios da plataforma — base para IA, BI e
+          relatórios LGPD.
         </p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Kpi icon={Database} label="Registros totais" value={isLoading ? "…" : total.toLocaleString("pt-BR")} />
+        <Kpi
+          icon={Database}
+          label="Registros totais"
+          value={isLoading ? "…" : total.toLocaleString("pt-BR")}
+        />
         <Kpi icon={LayersIcon} label="Domínios mapeados" value={String(DOMAINS.length)} />
-        <Kpi icon={Database} label="Maior domínio" value={isLoading ? "…" : (DOMAINS.find((d) => counts[d.key] === max)?.label ?? "—")} />
+        <Kpi
+          icon={Database}
+          label="Maior domínio"
+          value={isLoading ? "…" : (DOMAINS.find((d) => counts[d.key] === max)?.label ?? "—")}
+        />
       </div>
 
       <div className="rounded-lg border border-border bg-card p-5">
@@ -65,7 +74,9 @@ function DataLake() {
               <div key={d.key}>
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">{d.label}</span>
-                  <span className="font-mono text-muted-foreground">{c.toLocaleString("pt-BR")}</span>
+                  <span className="font-mono text-muted-foreground">
+                    {c.toLocaleString("pt-BR")}
+                  </span>
                 </div>
                 <div className="mt-1 h-2 rounded-full bg-muted overflow-hidden">
                   <div className={`h-full ${d.color}`} style={{ width: `${pct}%` }} />

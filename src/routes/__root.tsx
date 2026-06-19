@@ -78,25 +78,52 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "USE MODA OS · Fashion Operating System" },
-      { name: "description", content: "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais." },
+      {
+        name: "description",
+        content:
+          "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais.",
+      },
       { name: "author", content: "USE MODA" },
       { property: "og:title", content: "USE MODA OS · Fashion Operating System" },
-      { property: "og:description", content: "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais." },
+      {
+        property: "og:description",
+        content:
+          "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "USE MODA OS · Fashion Operating System" },
-      { name: "twitter:description", content: "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais." },
+      {
+        name: "twitter:description",
+        content:
+          "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais.",
+      },
       { name: "theme-color", content: "#0b0b0f" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "USE MODA" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/028610a0-21d7-4f09-bc66-0a93cd1c264f/id-preview-00d18732--3318cfc8-a95b-4ad3-b0e3-ef230cc84289.lovable.app-1781237838276.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/028610a0-21d7-4f09-bc66-0a93cd1c264f/id-preview-00d18732--3318cfc8-a95b-4ad3-b0e3-ef230cc84289.lovable.app-1781237838276.png" },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/028610a0-21d7-4f09-bc66-0a93cd1c264f/id-preview-00d18732--3318cfc8-a95b-4ad3-b0e3-ef230cc84289.lovable.app-1781237838276.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/028610a0-21d7-4f09-bc66-0a93cd1c264f/id-preview-00d18732--3318cfc8-a95b-4ad3-b0e3-ef230cc84289.lovable.app-1781237838276.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/png", href: "/__l5e/assets-v1/4e2d7e17-e5dc-42c8-a8ff-4dfe373ec781/logo.png" },
-      { rel: "apple-touch-icon", href: "/__l5e/assets-v1/4e2d7e17-e5dc-42c8-a8ff-4dfe373ec781/logo.png" },
+      {
+        rel: "icon",
+        type: "image/png",
+        href: "/__l5e/assets-v1/4e2d7e17-e5dc-42c8-a8ff-4dfe373ec781/logo.png",
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/__l5e/assets-v1/4e2d7e17-e5dc-42c8-a8ff-4dfe373ec781/logo.png",
+      },
       { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),

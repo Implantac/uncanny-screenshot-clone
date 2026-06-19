@@ -34,14 +34,10 @@ function SectorGuard({ children }: { children: React.ReactNode }) {
         <Lock className="size-10 mx-auto text-muted-foreground mb-3" />
         <h1 className="text-lg font-semibold mb-1">Acesso restrito</h1>
         <p className="text-sm text-muted-foreground">
-          Esta tela pertence ao setor{" "}
-          <strong>{required ? SECTOR_LABEL[required] : "—"}</strong> e não foi
-          liberada para o seu usuário. Solicite acesso ao administrador.
+          Esta tela pertence ao setor <strong>{required ? SECTOR_LABEL[required] : "—"}</strong> e
+          não foi liberada para o seu usuário. Solicite acesso ao administrador.
         </p>
-        <Link
-          to="/"
-          className="inline-block mt-4 text-xs text-primary hover:underline"
-        >
+        <Link to="/" className="inline-block mt-4 text-xs text-primary hover:underline">
           Voltar ao início
         </Link>
       </div>

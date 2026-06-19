@@ -12,9 +12,24 @@ import { toast } from "sonner";
 type Kind = "positiva" | "negativa" | "neutra";
 
 const KIND_META: Record<Kind, { label: string; hint: string; tone: string; icon: typeof Plus }> = {
-  positiva: { label: "Positiva", hint: "produziu além do programado", tone: "bg-success/15 text-success border-success/30", icon: Plus },
-  negativa: { label: "Negativa", hint: "perda não recuperável", tone: "bg-destructive/15 text-destructive border-destructive/30", icon: Minus },
-  neutra:   { label: "Neutra",   hint: "evento sem impacto no saldo", tone: "bg-amber-500/15 text-amber-600 border-amber-500/30", icon: Equal },
+  positiva: {
+    label: "Positiva",
+    hint: "produziu além do programado",
+    tone: "bg-success/15 text-success border-success/30",
+    icon: Plus,
+  },
+  negativa: {
+    label: "Negativa",
+    hint: "perda não recuperável",
+    tone: "bg-destructive/15 text-destructive border-destructive/30",
+    icon: Minus,
+  },
+  neutra: {
+    label: "Neutra",
+    hint: "evento sem impacto no saldo",
+    tone: "bg-amber-500/15 text-amber-600 border-amber-500/30",
+    icon: Equal,
+  },
 };
 
 export function ProductionOccurrenceButton({
@@ -47,7 +62,10 @@ export function ProductionOccurrenceButton({
   return (
     <>
       <button
-        onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
         title="Registrar ocorrência"
         className={`relative inline-flex items-center gap-0.5 h-6 px-1.5 rounded text-[10px] border transition ${count > 0 ? "border-destructive/40 text-destructive bg-destructive/10" : "border-border text-muted-foreground hover:text-destructive hover:border-destructive/40"}`}
       >
@@ -59,7 +77,8 @@ export function ProductionOccurrenceButton({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertOctagon className="size-4 text-destructive" />
-              Ocorrência · <span className="font-mono text-xs text-muted-foreground">{orderCode}</span>
+              Ocorrência ·{" "}
+              <span className="font-mono text-xs text-muted-foreground">{orderCode}</span>
             </DialogTitle>
           </DialogHeader>
           <Form
@@ -75,7 +94,19 @@ export function ProductionOccurrenceButton({
   );
 }
 
-function Form({ orderId, ownerId, stage, batchId, onDone }: { orderId: string; ownerId: string; stage: string; batchId?: string | null; onDone: () => void }) {
+function Form({
+  orderId,
+  ownerId,
+  stage,
+  batchId,
+  onDone,
+}: {
+  orderId: string;
+  ownerId: string;
+  stage: string;
+  batchId?: string | null;
+  onDone: () => void;
+}) {
   const qc = useQueryClient();
   const { user } = useAuth();
   const [kind, setKind] = useState<Kind>("negativa");
@@ -128,7 +159,13 @@ function Form({ orderId, ownerId, stage, batchId, onDone }: { orderId: string; o
   });
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); submit.mutate(); }} className="space-y-3">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit.mutate();
+      }}
+      className="space-y-3"
+    >
       <div>
         <label className="text-xs text-muted-foreground mb-1 block">Tipo</label>
         <div className="grid grid-cols-3 gap-1.5">
@@ -163,7 +200,9 @@ function Form({ orderId, ownerId, stage, batchId, onDone }: { orderId: string; o
         />
       </div>
       <div>
-        <label className="text-xs text-muted-foreground mb-1 block">O que aconteceu? · setor {stage}</label>
+        <label className="text-xs text-muted-foreground mb-1 block">
+          O que aconteceu? · setor {stage}
+        </label>
         <Textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
@@ -182,7 +221,8 @@ function Form({ orderId, ownerId, stage, batchId, onDone }: { orderId: string; o
         </Button>
       </div>
       <p className="text-[10px] text-muted-foreground">
-        Positiva aumenta produção final · Negativa reduz · Neutra só registra evento (não altera saldo).
+        Positiva aumenta produção final · Negativa reduz · Neutra só registra evento (não altera
+        saldo).
       </p>
     </form>
   );

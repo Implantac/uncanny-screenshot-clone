@@ -25,12 +25,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { MaterialsPanel, OperationsPanel, MeasurementsPanel, CostsPanel } from "@/components/tech-pack/panels";
+import {
+  MaterialsPanel,
+  OperationsPanel,
+  MeasurementsPanel,
+  CostsPanel,
+} from "@/components/tech-pack/panels";
 import { BomTemplatesButton } from "@/components/bom-templates-button";
 import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer";
 import { Camera } from "lucide-react";
@@ -44,7 +61,11 @@ export const Route = createFileRoute("/_authenticated/_app/ficha-tecnica")({
   head: () => ({
     meta: [
       { title: "Ficha Técnica · USE MODA OS" },
-      { name: "description", content: "Fichas técnicas com visualização de produto, seções estruturadas e histórico de versões." },
+      {
+        name: "description",
+        content:
+          "Fichas técnicas com visualização de produto, seções estruturadas e histórico de versões.",
+      },
     ],
   }),
   component: FichaTecnicaPage,
@@ -126,13 +147,18 @@ function stringifySheetContent(content: SheetContent) {
 }
 
 function splitLines(value: string) {
-  return value.split("\n").map((item) => item.trim()).filter(Boolean);
+  return value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 async function resolveProductImage(path: string | null) {
   if (!path) return null;
   if (path.startsWith("http") || path.startsWith("/")) return path;
-  const { data, error } = await supabase.storage.from("product-images").createSignedUrl(path, 60 * 60);
+  const { data, error } = await supabase.storage
+    .from("product-images")
+    .createSignedUrl(path, 60 * 60);
   if (error) throw error;
   return data.signedUrl;
 }
@@ -152,7 +178,10 @@ function FichaTecnicaPage() {
   const { data: sheets = [], isLoading } = useQuery({
     queryKey: ["tech_sheets"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("tech_sheets").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("tech_sheets")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Sheet[];
     },
@@ -161,7 +190,10 @@ function FichaTecnicaPage() {
   const { data: products = [] } = useQuery({
     queryKey: ["tech-sheet-products"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("products").select("id, name, sku, category, image_url").order("name");
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, sku, category, image_url")
+        .order("name");
       if (error) throw error;
       return data as ProductRef[];
     },
@@ -172,7 +204,9 @@ function FichaTecnicaPage() {
       setSelectedId(null);
       return;
     }
-    setSelectedId((current) => (current && sheets.some((sheet) => sheet.id === current) ? current : sheets[0].id));
+    setSelectedId((current) =>
+      current && sheets.some((sheet) => sheet.id === current) ? current : sheets[0].id,
+    );
   }, [sheets]);
 
   useEffect(() => {
@@ -189,13 +223,24 @@ function FichaTecnicaPage() {
     navigate({ search: { productId: undefined }, replace: true });
   }, [deepLinkProductId, sheets, navigate]);
 
-  const selected = useMemo(() => sheets.find((item) => item.id === selectedId) ?? sheets[0] ?? null, [selectedId, sheets]);
-  const selectedContent = useMemo(() => parseSheetContent(selected?.content ?? null), [selected?.content]);
-  const selectedProduct = useMemo(() => products.find((product) => product.id === selected?.product_id) ?? null, [products, selected?.product_id]);
+  const selected = useMemo(
+    () => sheets.find((item) => item.id === selectedId) ?? sheets[0] ?? null,
+    [selectedId, sheets],
+  );
+  const selectedContent = useMemo(
+    () => parseSheetContent(selected?.content ?? null),
+    [selected?.content],
+  );
+  const selectedProduct = useMemo(
+    () => products.find((product) => product.id === selected?.product_id) ?? null,
+    [products, selected?.product_id],
+  );
 
   const versionHistory = useMemo(() => {
     if (!selected) return [];
-    return sheets.filter((item) => item.code === selected.code).sort((a, b) => b.created_at.localeCompare(a.created_at));
+    return sheets
+      .filter((item) => item.code === selected.code)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
   }, [selected, sheets]);
 
   const del = useMutation({
@@ -219,14 +264,18 @@ function FichaTecnicaPage() {
   const newVersion = useMutation({
     mutationFn: async (sheet: Sheet) => {
       if (!user?.id) throw new Error("Sessão expirada");
-      const { data, error } = await supabase.from("tech_sheets").insert({
-        owner_id: user.id,
-        product_id: sheet.product_id,
-        code: sheet.code,
-        version: bumpVersion(sheet.version),
-        status: "rascunho",
-        content: sheet.content,
-      }).select("id").single();
+      const { data, error } = await supabase
+        .from("tech_sheets")
+        .insert({
+          owner_id: user.id,
+          product_id: sheet.product_id,
+          code: sheet.code,
+          version: bumpVersion(sheet.version),
+          status: "rascunho",
+          content: sheet.content,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
       return data.id as string;
     },
@@ -252,11 +301,15 @@ function FichaTecnicaPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">Módulo 5</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">
+            Módulo 5
+          </div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
             <FileText className="size-6 text-primary" /> Ficha Técnica Inteligente
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Visualização de produto, conteúdo estruturado por área e histórico versionado.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Visualização de produto, conteúdo estruturado por área e histórico versionado.
+          </p>
         </div>
         <Button onClick={openCreate} className="gap-2">
           <Plus className="size-4" /> Nova ficha
@@ -269,7 +322,9 @@ function FichaTecnicaPage() {
         <div className="glass rounded-xl p-12 text-center">
           <ClipboardList className="size-10 text-primary mx-auto mb-3" />
           <h2 className="font-semibold mb-1">Nenhuma ficha técnica cadastrada</h2>
-          <p className="text-sm text-muted-foreground mb-4">Crie a primeira ficha para centralizar materiais, operações e custos.</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Crie a primeira ficha para centralizar materiais, operações e custos.
+          </p>
           <Button onClick={openCreate}>Criar ficha</Button>
         </div>
       ) : (
@@ -277,7 +332,9 @@ function FichaTecnicaPage() {
           <section className="glass rounded-xl p-4 space-y-3">
             <div>
               <div className="text-sm font-semibold">Biblioteca de versões</div>
-              <div className="text-xs text-muted-foreground">{sheets.length} fichas ativas no workspace</div>
+              <div className="text-xs text-muted-foreground">
+                {sheets.length} fichas ativas no workspace
+              </div>
             </div>
             <div className="space-y-2">
               {sheets.map((sheet) => {
@@ -293,11 +350,17 @@ function FichaTecnicaPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <div className="font-medium truncate">{sheet.code}</div>
-                        <div className="text-xs text-muted-foreground mt-1 truncate">{product?.name || "Sem produto vinculado"}</div>
+                        <div className="text-xs text-muted-foreground mt-1 truncate">
+                          {product?.name || "Sem produto vinculado"}
+                        </div>
                       </div>
-                      <Badge variant="outline" className={COLOR[sheet.status]}>{LABEL[sheet.status]}</Badge>
+                      <Badge variant="outline" className={COLOR[sheet.status]}>
+                        {LABEL[sheet.status]}
+                      </Badge>
                     </div>
-                    <div className="mt-3 text-xs text-muted-foreground">{sheet.version} · {new Date(sheet.created_at).toLocaleDateString("pt-BR")}</div>
+                    <div className="mt-3 text-xs text-muted-foreground">
+                      {sheet.version} · {new Date(sheet.created_at).toLocaleDateString("pt-BR")}
+                    </div>
                   </button>
                 );
               })}
@@ -307,7 +370,12 @@ function FichaTecnicaPage() {
           {selected && (
             <section className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-[360px_minmax(0,1fr)] gap-4">
-                <ProductPreviewCard product={selectedProduct} code={selected.code} version={selected.version} status={selected.status} />
+                <ProductPreviewCard
+                  product={selectedProduct}
+                  code={selected.code}
+                  version={selected.version}
+                  status={selected.status}
+                />
 
                 <div className="glass rounded-xl p-5">
                   <div className="flex justify-end mb-3">
@@ -324,29 +392,60 @@ function FichaTecnicaPage() {
                         ["documentos", "Documentos"],
                         ["ia", "IA"],
                       ].map(([value, label]) => (
-                        <TabsTrigger key={value} value={value} className="rounded-lg border border-border bg-background/40 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                        <TabsTrigger
+                          key={value}
+                          value={value}
+                          className="rounded-lg border border-border bg-background/40 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                        >
                           {label}
                         </TabsTrigger>
                       ))}
                     </TabsList>
 
                     <TabsContent value="materiais" className="mt-0">
-                      <MaterialsPanel sheetId={selected.id} ownerId={selected.owner_id} canEdit={selected.owner_id === user?.id} />
+                      <MaterialsPanel
+                        sheetId={selected.id}
+                        ownerId={selected.owner_id}
+                        canEdit={selected.owner_id === user?.id}
+                      />
                     </TabsContent>
                     <TabsContent value="operacoes" className="mt-0">
-                      <OperationsPanel sheetId={selected.id} ownerId={selected.owner_id} canEdit={selected.owner_id === user?.id} />
+                      <OperationsPanel
+                        sheetId={selected.id}
+                        ownerId={selected.owner_id}
+                        canEdit={selected.owner_id === user?.id}
+                      />
                     </TabsContent>
                     <TabsContent value="medidas" className="mt-0">
-                      <MeasurementsPanel sheetId={selected.id} ownerId={selected.owner_id} canEdit={selected.owner_id === user?.id} />
+                      <MeasurementsPanel
+                        sheetId={selected.id}
+                        ownerId={selected.owner_id}
+                        canEdit={selected.owner_id === user?.id}
+                      />
                     </TabsContent>
                     <TabsContent value="consumo" className="mt-0">
-                      <SectionList title="Consumo" icon={ClipboardList} items={selectedContent.consumption} emptyLabel="Nenhum consumo informado." />
+                      <SectionList
+                        title="Consumo"
+                        icon={ClipboardList}
+                        items={selectedContent.consumption}
+                        emptyLabel="Nenhum consumo informado."
+                      />
                     </TabsContent>
                     <TabsContent value="custos" className="mt-0">
-                      <CostsPanel sheetId={selected.id} ownerId={selected.owner_id} canEdit={selected.owner_id === user?.id} />
+                      <CostsPanel
+                        sheetId={selected.id}
+                        ownerId={selected.owner_id}
+                        canEdit={selected.owner_id === user?.id}
+                      />
                     </TabsContent>
                     <TabsContent value="documentos" className="mt-0">
-                      <SectionList title="Documentos e anexos" icon={FileText} items={selectedContent.documents} emptyLabel="Nenhum documento referenciado." chips />
+                      <SectionList
+                        title="Documentos e anexos"
+                        icon={FileText}
+                        items={selectedContent.documents}
+                        emptyLabel="Nenhum documento referenciado."
+                        chips
+                      />
                     </TabsContent>
                     <TabsContent value="ia" className="mt-0">
                       <AiSuggestionsPanel sheetId={selected.id} />
@@ -359,7 +458,9 @@ function FichaTecnicaPage() {
                 <div className="glass rounded-xl p-5 space-y-4">
                   <div>
                     <div className="text-sm font-semibold">Observações gerais</div>
-                    <div className="text-xs text-muted-foreground mt-1">Resumo central da engenharia de produto.</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Resumo central da engenharia de produto.
+                    </div>
                   </div>
                   <div className="rounded-xl border border-border bg-background/30 p-4 min-h-32 text-sm leading-6 text-muted-foreground whitespace-pre-wrap">
                     {selectedContent.overview || "Sem observações gerais registradas."}
@@ -370,22 +471,36 @@ function FichaTecnicaPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="text-sm font-semibold">Histórico de versões</div>
-                      <div className="text-xs text-muted-foreground mt-1">Auditoria rápida por código técnico.</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Auditoria rápida por código técnico.
+                      </div>
                     </div>
                     {versionHistory.length >= 2 && (
-                      <Button size="sm" variant="outline" onClick={() => setDiffOpen(true)} className="gap-1 text-xs">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setDiffOpen(true)}
+                        className="gap-1 text-xs"
+                      >
                         <Layers3 className="size-3.5" /> Comparar
                       </Button>
                     )}
                   </div>
                   <div className="space-y-3">
                     {versionHistory.map((sheet) => (
-                      <div key={sheet.id} className="rounded-xl border border-border bg-background/30 p-3">
+                      <div
+                        key={sheet.id}
+                        className="rounded-xl border border-border bg-background/30 p-3"
+                      >
                         <div className="flex items-center justify-between gap-2">
                           <div className="font-medium">{sheet.version}</div>
-                          <Badge variant="outline" className={COLOR[sheet.status]}>{LABEL[sheet.status]}</Badge>
+                          <Badge variant="outline" className={COLOR[sheet.status]}>
+                            {LABEL[sheet.status]}
+                          </Badge>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-2">{new Date(sheet.created_at).toLocaleString("pt-BR")}</div>
+                        <div className="text-xs text-muted-foreground mt-2">
+                          {new Date(sheet.created_at).toLocaleString("pt-BR")}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -397,7 +512,11 @@ function FichaTecnicaPage() {
                   <Button variant="outline" onClick={() => openEdit(selected)} className="gap-2">
                     <Pencil className="size-4" /> Editar ficha
                   </Button>
-                  <Button variant="outline" onClick={() => setSnapshotsOpen(true)} className="gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSnapshotsOpen(true)}
+                    className="gap-2"
+                  >
                     <Camera className="size-4" /> Snapshots
                   </Button>
                   <Button
@@ -425,7 +544,10 @@ function FichaTecnicaPage() {
 
       <SheetDialog
         open={open}
-        onOpenChange={(v) => { setOpen(v); if (!v) setInitialProductId(null); }}
+        onOpenChange={(v) => {
+          setOpen(v);
+          if (!v) setInitialProductId(null);
+        }}
         editing={editing}
         initialProductId={initialProductId}
         userId={user?.id}
@@ -433,7 +555,11 @@ function FichaTecnicaPage() {
       />
       <VersionDiffDialog open={diffOpen} onOpenChange={setDiffOpen} versions={versionHistory} />
       {selectedId && (
-        <TechSheetVersionsDrawer techSheetId={selectedId} open={snapshotsOpen} onOpenChange={setSnapshotsOpen} />
+        <TechSheetVersionsDrawer
+          techSheetId={selectedId}
+          open={snapshotsOpen}
+          onOpenChange={setSnapshotsOpen}
+        />
       )}
     </div>
   );
@@ -461,7 +587,12 @@ function ProductPreviewCard({
     <div className="glass rounded-xl overflow-hidden">
       <div className="aspect-[4/4.8] bg-muted/20 overflow-hidden">
         {imageUrl ? (
-          <img src={imageUrl} alt={product?.name || code} className="size-full object-cover" loading="lazy" />
+          <img
+            src={imageUrl}
+            alt={product?.name || code}
+            className="size-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <div className="size-full grid place-items-center text-muted-foreground">
             <FileText className="size-10 text-primary/70" />
@@ -470,13 +601,22 @@ function ProductPreviewCard({
       </div>
       <div className="p-5 space-y-3">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline" className={COLOR[status]}>{LABEL[status]}</Badge>
+          <Badge variant="outline" className={COLOR[status]}>
+            {LABEL[status]}
+          </Badge>
           <Badge variant="outline">{version}</Badge>
         </div>
         <div>
-          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-1">Produto</div>
-          <div className="text-xl font-semibold tracking-tight">{product?.name || "Produto não vinculado"}</div>
-          <div className="text-sm text-muted-foreground mt-1">{product?.sku || code}{product?.category ? ` · ${product.category}` : ""}</div>
+          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground mb-1">
+            Produto
+          </div>
+          <div className="text-xl font-semibold tracking-tight">
+            {product?.name || "Produto não vinculado"}
+          </div>
+          <div className="text-sm text-muted-foreground mt-1">
+            {product?.sku || code}
+            {product?.category ? ` · ${product.category}` : ""}
+          </div>
         </div>
       </div>
     </div>
@@ -498,21 +638,34 @@ function SectionList({
 }) {
   return (
     <div className="space-y-4">
-      <div className="text-sm font-semibold flex items-center gap-2"><Icon className="size-4 text-primary" /> {title}</div>
+      <div className="text-sm font-semibold flex items-center gap-2">
+        <Icon className="size-4 text-primary" /> {title}
+      </div>
       {items.length ? (
         chips ? (
           <div className="flex flex-wrap gap-2">
-            {items.map((item) => <Badge key={item} variant="secondary">{item}</Badge>)}
+            {items.map((item) => (
+              <Badge key={item} variant="secondary">
+                {item}
+              </Badge>
+            ))}
           </div>
         ) : (
           <div className="space-y-2">
             {items.map((item, index) => (
-              <div key={`${item}-${index}`} className="rounded-xl border border-border bg-background/30 p-3 text-sm">{item}</div>
+              <div
+                key={`${item}-${index}`}
+                className="rounded-xl border border-border bg-background/30 p-3 text-sm"
+              >
+                {item}
+              </div>
             ))}
           </div>
         )
       ) : (
-        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">{emptyLabel}</div>
+        <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+          {emptyLabel}
+        </div>
       )}
     </div>
   );
@@ -619,33 +772,54 @@ function SheetDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={(value) => {
-      onOpenChange(value);
-      if (!value) reset();
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(value) => {
+        onOpenChange(value);
+        if (!value) reset();
+      }}
+    >
       <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editing ? "Editar ficha técnica" : "Nova ficha técnica"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={(event) => {
-          event.preventDefault();
-          save.mutate();
-        }} className="space-y-4">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            save.mutate();
+          }}
+          className="space-y-4"
+        >
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2 space-y-2">
               <Label>Código</Label>
-              <Input value={code} onChange={(event) => setCode(event.target.value)} placeholder="FT-001" required />
+              <Input
+                value={code}
+                onChange={(event) => setCode(event.target.value)}
+                placeholder="FT-001"
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label>Versão</Label>
-              <Input value={version} onChange={(event) => setVersion(event.target.value)} placeholder="v1.0" />
+              <Input
+                value={version}
+                onChange={(event) => setVersion(event.target.value)}
+                placeholder="v1.0"
+              />
             </div>
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={status} onValueChange={(value) => setStatus(value as Status)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(LABEL).map(([key, value]) => <SelectItem key={key} value={key}>{value}</SelectItem>)}
+                  {Object.entries(LABEL).map(([key, value]) => (
+                    <SelectItem key={key} value={key}>
+                      {value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -654,31 +828,94 @@ function SheetDialog({
           <div className="space-y-2">
             <Label>Produto</Label>
             <Select value={productId} onValueChange={setProductId}>
-              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Nenhum</SelectItem>
-                {products.map((product) => <SelectItem key={product.id} value={product.id}>{product.name}</SelectItem>)}
+                {products.map((product) => (
+                  <SelectItem key={product.id} value={product.id}>
+                    {product.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
             <Label>Observações gerais</Label>
-            <Textarea rows={4} value={overview} onChange={(event) => setOverview(event.target.value)} placeholder="Resumo técnico, revisão, alertas de engenharia..." />
+            <Textarea
+              rows={4}
+              value={overview}
+              onChange={(event) => setOverview(event.target.value)}
+              placeholder="Resumo técnico, revisão, alertas de engenharia..."
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Materiais</Label><Textarea rows={5} value={materials} onChange={(event) => setMaterials(event.target.value)} placeholder="1 item por linha" /></div>
-            <div className="space-y-2"><Label>Operações</Label><Textarea rows={5} value={operations} onChange={(event) => setOperations(event.target.value)} placeholder="1 item por linha" /></div>
-            <div className="space-y-2"><Label>Medidas</Label><Textarea rows={5} value={measurements} onChange={(event) => setMeasurements(event.target.value)} placeholder="1 item por linha" /></div>
-            <div className="space-y-2"><Label>Consumo</Label><Textarea rows={5} value={consumption} onChange={(event) => setConsumption(event.target.value)} placeholder="1 item por linha" /></div>
-            <div className="space-y-2"><Label>Custos</Label><Textarea rows={5} value={costs} onChange={(event) => setCosts(event.target.value)} placeholder="1 item por linha" /></div>
-            <div className="space-y-2"><Label>Documentos</Label><Textarea rows={5} value={documents} onChange={(event) => setDocuments(event.target.value)} placeholder="SVG, PDF, DXF, PLT..." /></div>
+            <div className="space-y-2">
+              <Label>Materiais</Label>
+              <Textarea
+                rows={5}
+                value={materials}
+                onChange={(event) => setMaterials(event.target.value)}
+                placeholder="1 item por linha"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Operações</Label>
+              <Textarea
+                rows={5}
+                value={operations}
+                onChange={(event) => setOperations(event.target.value)}
+                placeholder="1 item por linha"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Medidas</Label>
+              <Textarea
+                rows={5}
+                value={measurements}
+                onChange={(event) => setMeasurements(event.target.value)}
+                placeholder="1 item por linha"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Consumo</Label>
+              <Textarea
+                rows={5}
+                value={consumption}
+                onChange={(event) => setConsumption(event.target.value)}
+                placeholder="1 item por linha"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Custos</Label>
+              <Textarea
+                rows={5}
+                value={costs}
+                onChange={(event) => setCosts(event.target.value)}
+                placeholder="1 item por linha"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Documentos</Label>
+              <Textarea
+                rows={5}
+                value={documents}
+                onChange={(event) => setDocuments(event.target.value)}
+                placeholder="SVG, PDF, DXF, PLT..."
+              />
+            </div>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={save.isPending}>{save.isPending ? "Salvando…" : "Salvar ficha"}</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={save.isPending}>
+              {save.isPending ? "Salvando…" : "Salvar ficha"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -741,18 +978,30 @@ function VersionDiffDialog({
           <div>
             <Label className="text-xs">Versão A (anterior)</Label>
             <Select value={aId} onValueChange={setAId}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {versions.map((v) => <SelectItem key={v.id} value={v.id}>{v.version} · {new Date(v.created_at).toLocaleDateString("pt-BR")}</SelectItem>)}
+                {versions.map((v) => (
+                  <SelectItem key={v.id} value={v.id}>
+                    {v.version} · {new Date(v.created_at).toLocaleDateString("pt-BR")}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div>
             <Label className="text-xs">Versão B (nova)</Label>
             <Select value={bId} onValueChange={setBId}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {versions.map((v) => <SelectItem key={v.id} value={v.id}>{v.version} · {new Date(v.created_at).toLocaleDateString("pt-BR")}</SelectItem>)}
+                {versions.map((v) => (
+                  <SelectItem key={v.id} value={v.id}>
+                    {v.version} · {new Date(v.created_at).toLocaleDateString("pt-BR")}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -771,13 +1020,26 @@ function VersionDiffDialog({
                 );
               }
               return (
-                <div key={key} className="rounded-lg border border-border bg-background/30 p-3 space-y-1">
+                <div
+                  key={key}
+                  className="rounded-lg border border-border bg-background/30 p-3 space-y-1"
+                >
                   <div className="text-xs font-semibold">{label}</div>
                   {d.removed.map((x, i) => (
-                    <div key={`r-${i}`} className="text-xs px-2 py-1 rounded bg-destructive/10 text-destructive line-through">− {x}</div>
+                    <div
+                      key={`r-${i}`}
+                      className="text-xs px-2 py-1 rounded bg-destructive/10 text-destructive line-through"
+                    >
+                      − {x}
+                    </div>
                   ))}
                   {d.added.map((x, i) => (
-                    <div key={`a-${i}`} className="text-xs px-2 py-1 rounded bg-success/10 text-success">+ {x}</div>
+                    <div
+                      key={`a-${i}`}
+                      className="text-xs px-2 py-1 rounded bg-success/10 text-success"
+                    >
+                      + {x}
+                    </div>
                   ))}
                 </div>
               );
@@ -813,14 +1075,22 @@ function AiSuggestionsPanel({ sheetId }: { sheetId: string }) {
           <div className="text-sm font-semibold flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" /> Fashion-GPT — sugestões para esta ficha
           </div>
-          <div className="text-xs text-muted-foreground">Analisa BOM, operações e custo e propõe otimizações.</div>
+          <div className="text-xs text-muted-foreground">
+            Analisa BOM, operações e custo e propõe otimizações.
+          </div>
         </div>
         <Button size="sm" onClick={handleRun} disabled={loading}>
           {loading ? "Analisando…" : "Gerar análise"}
         </Button>
       </div>
       <div className="rounded-xl border border-border bg-background/30 p-4 min-h-32 text-sm">
-        {text ? <Markdown content={text} /> : <div className="text-xs text-muted-foreground">Clique em "Gerar análise" para receber recomendações.</div>}
+        {text ? (
+          <Markdown content={text} />
+        ) : (
+          <div className="text-xs text-muted-foreground">
+            Clique em "Gerar análise" para receber recomendações.
+          </div>
+        )}
       </div>
     </div>
   );

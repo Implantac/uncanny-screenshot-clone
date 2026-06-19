@@ -64,8 +64,9 @@ export const Route = createFileRoute("/api/chat")({
         }
         // Size limits per message
         for (const m of messages) {
-          const text = Array.isArray((m as UIMessage).parts)
-            ? (m as UIMessage).parts.map((p: any) => (p?.type === "text" ? p.text ?? "" : "")).join("")
+          const parts = (m as UIMessage).parts;
+          const text = Array.isArray(parts)
+            ? parts.map((p: any) => (p?.type === "text" ? (p.text ?? "") : "")).join("")
             : "";
           if (text.length > MAX_MESSAGE_CHARS) {
             return new Response("Message too large", { status: 413 });
@@ -90,6 +91,10 @@ export const Route = createFileRoute("/api/chat")({
           model,
           system: SYSTEM_PROMPT + contextBlock,
           messages: await convertToModelMessages(messages),
+          // Prevent protocol errors: the runtime must execute tool_calls and
+          // append tool responses for each tool_call_id.
+          // This endpoint doesn't implement tool execution, so tool calling must be disabled.
+          tools: undefined,
         });
 
         return result.toUIMessageStreamResponse({ originalMessages: messages });

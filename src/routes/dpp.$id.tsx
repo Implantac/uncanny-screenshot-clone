@@ -9,7 +9,10 @@ export const Route = createFileRoute("/dpp/$id")({
       { title: `Digital Product Passport · ${params.id.slice(0, 8)}` },
       { name: "description", content: "Rastreabilidade, origem e impacto ambiental desta peça." },
       { property: "og:title", content: "Digital Product Passport · USE MODA" },
-      { property: "og:description", content: "Rastreabilidade, origem e impacto ambiental desta peça." },
+      {
+        property: "og:description",
+        content: "Rastreabilidade, origem e impacto ambiental desta peça.",
+      },
     ],
   }),
   loader: ({ params, context }) =>
@@ -28,7 +31,9 @@ function Fallback({ msg }: { msg: string }) {
       <div className="text-center space-y-3">
         <ShieldCheck className="size-10 mx-auto text-muted-foreground" />
         <div className="text-sm text-muted-foreground">{msg}</div>
-        <Link to="/" className="text-xs text-primary underline">Voltar</Link>
+        <Link to="/" className="text-xs text-primary underline">
+          Voltar
+        </Link>
       </div>
     </div>
   );
@@ -50,41 +55,93 @@ function PublicPassport() {
             <ShieldCheck className="size-5 text-primary-foreground" />
           </div>
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Digital Product Passport</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Digital Product Passport
+            </div>
             <div className="font-semibold">USE MODA</div>
           </div>
         </header>
 
         {p.image_url && (
-          <img src={p.image_url} alt={p.name} className="w-full aspect-square object-cover rounded-xl border border-border" />
+          <img
+            src={p.image_url}
+            alt={p.name}
+            className="w-full aspect-square object-cover rounded-xl border border-border"
+          />
         )}
 
         <div>
-          <div className="text-xs text-muted-foreground tabular-nums">{p.sku} · {p.lote}</div>
+          <div className="text-xs text-muted-foreground tabular-nums">
+            {p.sku} · {p.lote}
+          </div>
           <h1 className="text-2xl font-semibold mt-1">{p.name}</h1>
-          {p.collection && <div className="text-sm text-muted-foreground">{p.collection.name} {p.collection.season}/{p.collection.year}</div>}
+          {p.collection && (
+            <div className="text-sm text-muted-foreground">
+              {p.collection.name} {p.collection.season}/{p.collection.year}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Card icon={<Leaf className="size-4 text-emerald-500" />} label="CO₂ por peça" value={`${p.co2} kg`} />
-          <Card icon={<Globe className="size-4 text-primary" />} label="Certificações" value={p.cert} />
+          <Card
+            icon={<Leaf className="size-4 text-emerald-500" />}
+            label="CO₂ por peça"
+            value={`${p.co2} kg`}
+          />
+          <Card
+            icon={<Globe className="size-4 text-primary" />}
+            label="Certificações"
+            value={p.cert}
+          />
           <Card icon={<MapPin className="size-4 text-warning" />} label="Origem" value={p.origem} />
-          <Card icon={<ShieldCheck className="size-4 text-muted-foreground" />} label="Peças emitidas" value={String(p.emitidos)} />
+          <Card
+            icon={<ShieldCheck className="size-4 text-muted-foreground" />}
+            label="Peças emitidas"
+            value={String(p.emitidos)}
+          />
         </div>
 
         {(p.composition || p.care || p.repairability != null) && (
           <div className="rounded-xl border border-border p-4 space-y-2 text-sm">
-            {p.composition && (<div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Composição</div><div>{p.composition}</div></div>)}
-            {p.care && (<div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Cuidados</div><div>{p.care}</div></div>)}
-            {p.repairability != null && (<div><div className="text-[10px] uppercase tracking-widest text-muted-foreground">Reparabilidade</div><div>{p.repairability}/10</div></div>)}
+            {p.composition && (
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Composição
+                </div>
+                <div>{p.composition}</div>
+              </div>
+            )}
+            {p.care && (
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Cuidados
+                </div>
+                <div>{p.care}</div>
+              </div>
+            )}
+            {p.repairability != null && (
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Reparabilidade
+                </div>
+                <div>{p.repairability}/10</div>
+              </div>
+            )}
           </div>
         )}
 
         <div className="rounded-xl border border-border p-4">
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Cadeia produtiva</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+            Cadeia produtiva
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {p.stages.map((s) => (
-              <span key={s} className="px-2 py-1 rounded-full text-xs bg-emerald-500/15 text-emerald-500">{s}</span>
+              <span
+                key={s}
+                className="px-2 py-1 rounded-full text-xs bg-emerald-500/15 text-emerald-500"
+              >
+                {s}
+              </span>
             ))}
           </div>
         </div>
@@ -100,7 +157,10 @@ function PublicPassport() {
 function Card({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border p-3">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">{icon}{label}</div>
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+        {icon}
+        {label}
+      </div>
       <div className="mt-1 font-medium truncate">{value}</div>
     </div>
   );

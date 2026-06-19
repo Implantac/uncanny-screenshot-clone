@@ -56,20 +56,31 @@ function Audit() {
       logs.filter(
         (l) =>
           (entityFilter === "all" || l.entity === entityFilter) &&
-          (actionFilter === "all" || l.action === actionFilter)
+          (actionFilter === "all" || l.action === actionFilter),
       ),
-    [logs, entityFilter, actionFilter]
+    [logs, entityFilter, actionFilter],
   );
 
-  const sensitive = logs.filter((l) => ["delete", "export"].includes(l.action.toLowerCase())).length;
-  const last24h = logs.filter((l) => Date.now() - new Date(l.created_at).getTime() < 86_400_000).length;
+  const sensitive = logs.filter((l) =>
+    ["delete", "export"].includes(l.action.toLowerCase()),
+  ).length;
+  const last24h = logs.filter(
+    (l) => Date.now() - new Date(l.created_at).getTime() < 86_400_000,
+  ).length;
 
   function exportCsv() {
     const header = ["created_at", "actor", "entity", "entity_id", "action", "ip"].join(",");
     const rows = filtered.map((l) =>
-      [l.created_at, l.actor_email ?? l.user_id ?? "", l.entity, l.entity_id ?? "", l.action, l.ip_address ?? ""]
+      [
+        l.created_at,
+        l.actor_email ?? l.user_id ?? "",
+        l.entity,
+        l.entity_id ?? "",
+        l.action,
+        l.ip_address ?? "",
+      ]
         .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-        .join(",")
+        .join(","),
     );
     const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -99,8 +110,16 @@ function Audit() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Kpi icon={Activity} label="Eventos (24h)" value={last24h.toLocaleString("pt-BR")} />
-        <Kpi icon={ShieldCheck} label="Total registrado" value={logs.length.toLocaleString("pt-BR")} />
-        <Kpi icon={AlertTriangle} label="Ações sensíveis" value={sensitive.toLocaleString("pt-BR")} />
+        <Kpi
+          icon={ShieldCheck}
+          label="Total registrado"
+          value={logs.length.toLocaleString("pt-BR")}
+        />
+        <Kpi
+          icon={AlertTriangle}
+          label="Ações sensíveis"
+          value={sensitive.toLocaleString("pt-BR")}
+        />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -111,7 +130,9 @@ function Audit() {
         >
           <option value="all">Todas as entidades</option>
           {entities.map((e) => (
-            <option key={e} value={e}>{e}</option>
+            <option key={e} value={e}>
+              {e}
+            </option>
           ))}
         </select>
         <select
@@ -121,7 +142,9 @@ function Audit() {
         >
           <option value="all">Todas as ações</option>
           {actions.map((a) => (
-            <option key={a} value={a}>{a}</option>
+            <option key={a} value={a}>
+              {a}
+            </option>
           ))}
         </select>
       </div>
@@ -140,10 +163,18 @@ function Audit() {
           </thead>
           <tbody>
             {isLoading && (
-              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Carregando…</td></tr>
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-muted-foreground">
+                  Carregando…
+                </td>
+              </tr>
             )}
             {!isLoading && filtered.length === 0 && (
-              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Nenhum evento registrado.</td></tr>
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-muted-foreground">
+                  Nenhum evento registrado.
+                </td>
+              </tr>
             )}
             {filtered.map((l) => (
               <tr key={l.id} className="border-t border-border">
@@ -153,12 +184,18 @@ function Audit() {
                 <td className="p-3">{l.actor_email ?? l.user_id ?? "—"}</td>
                 <td className="p-3 font-medium">{l.entity}</td>
                 <td className="p-3">
-                  <span className={`inline-flex rounded-md px-2 py-0.5 text-xs ${colorFor(l.action)}`}>
+                  <span
+                    className={`inline-flex rounded-md px-2 py-0.5 text-xs ${colorFor(l.action)}`}
+                  >
                     {l.action}
                   </span>
                 </td>
-                <td className="p-3 font-mono text-xs text-muted-foreground">{l.entity_id ?? "—"}</td>
-                <td className="p-3 font-mono text-xs text-muted-foreground">{l.ip_address ?? "—"}</td>
+                <td className="p-3 font-mono text-xs text-muted-foreground">
+                  {l.entity_id ?? "—"}
+                </td>
+                <td className="p-3 font-mono text-xs text-muted-foreground">
+                  {l.ip_address ?? "—"}
+                </td>
               </tr>
             ))}
           </tbody>

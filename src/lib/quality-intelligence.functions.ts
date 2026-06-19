@@ -29,7 +29,10 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
     const since = new Date(Date.now() - WINDOW * 86400000).toISOString();
 
     const [{ data: occs }, { data: orders }, { data: suppliers }] = await Promise.all([
-      sb.from("production_occurrences").select("kind, sector, affected_qty, status, order_id, created_at").gte("created_at", since),
+      sb
+        .from("production_occurrences")
+        .select("kind, sector, affected_qty, status, order_id, created_at")
+        .gte("created_at", since),
       sb.from("production_orders").select("id, supplier_id, quantity"),
       sb.from("suppliers").select("id, name"),
     ]);
@@ -54,7 +57,13 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
     (occs ?? []).forEach((o: any) => {
       const sid = o.order_id ? orderToSupplier.get(o.order_id) : null;
       if (!sid) return;
-      const a = bySup.get(sid) ?? { occurrences: 0, affectedQty: 0, kinds: new Map(), sectors: new Map(), totalQty: 0 };
+      const a = bySup.get(sid) ?? {
+        occurrences: 0,
+        affectedQty: 0,
+        kinds: new Map(),
+        sectors: new Map(),
+        totalQty: 0,
+      };
       a.occurrences += 1;
       a.affectedQty += Number(o.affected_qty ?? 0);
       if (o.kind) a.kinds.set(o.kind, (a.kinds.get(o.kind) ?? 0) + 1);
@@ -73,8 +82,12 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
     bySup.forEach((a, sid) => {
       const total = qtyBySup.get(sid) ?? 0;
       const rate = total ? (a.affectedQty / total) * 100 : 0;
-      const recurringKinds = [...a.kinds.entries()].map(([kind, count]) => ({ kind, count })).sort((x, y) => y.count - x.count);
-      const recurringSectors = [...a.sectors.entries()].map(([sector, count]) => ({ sector, count })).sort((x, y) => y.count - x.count);
+      const recurringKinds = [...a.kinds.entries()]
+        .map(([kind, count]) => ({ kind, count }))
+        .sort((x, y) => y.count - x.count);
+      const recurringSectors = [...a.sectors.entries()]
+        .map(([sector, count]) => ({ sector, count }))
+        .sort((x, y) => y.count - x.count);
       const topKind = recurringKinds[0];
       const blockSuggested = rate > 8 || a.occurrences >= 5;
       let reason = `${a.occurrences} ocorrências em ${WINDOW}d`;
@@ -93,11 +106,17 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
       });
     });
 
-    suppliersOut.sort((a, b) => Number(b.blockSuggested) - Number(a.blockSuggested) || b.occurrences - a.occurrences);
+    suppliersOut.sort(
+      (a, b) =>
+        Number(b.blockSuggested) - Number(a.blockSuggested) || b.occurrences - a.occurrences,
+    );
 
     const kindAgg = new Map<string, number>();
     (occs ?? []).forEach((o: any) => o.kind && kindAgg.set(o.kind, (kindAgg.get(o.kind) ?? 0) + 1));
-    const topKinds = [...kindAgg.entries()].map(([kind, count]) => ({ kind, count })).sort((a, b) => b.count - a.count).slice(0, 5);
+    const topKinds = [...kindAgg.entries()]
+      .map(([kind, count]) => ({ kind, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
 
     return {
       windowDays: WINDOW,

@@ -2,7 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
-import { Factory, AlertTriangle, Clock, Flag, ArrowRight, History, Package, X, Sparkles, FileText } from "lucide-react";
+import {
+  Factory,
+  AlertTriangle,
+  Clock,
+  Flag,
+  ArrowRight,
+  History,
+  Package,
+  X,
+  Sparkles,
+  FileText,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
@@ -53,7 +64,9 @@ const PRIORITY: Record<number, { label: string; tone: string }> = {
 async function load(): Promise<Order[]> {
   const { data, error } = await supabase
     .from("production_orders")
-    .select("id, owner_id, code, stage, quantity, progress, due_date, priority, stage_updated_at, batch_code, product_id, suppliers(name), products(name)")
+    .select(
+      "id, owner_id, code, stage, quantity, progress, due_date, priority, stage_updated_at, batch_code, product_id, suppliers(name), products(name)",
+    )
     .order("priority", { ascending: true })
     .order("due_date", { ascending: true, nullsFirst: false });
   if (error) throw error;
@@ -78,10 +91,16 @@ function PcpKanban() {
   const [mode, setMode] = useState<"ordens" | "lotes">("ordens");
   const [batchFilter, setBatchFilter] = useState<string | null>(null);
   const [loteDrawer, setLoteDrawer] = useState<string | null>(null);
-  const [fichaDrawer, setFichaDrawer] = useState<{ productId: string; orderId: string; orderCode: string } | null>(null);
+  const [fichaDrawer, setFichaDrawer] = useState<{
+    productId: string;
+    orderId: string;
+    orderCode: string;
+  } | null>(null);
 
   const update = useMutation({
-    mutationFn: async (patch: { id: string } & Partial<Pick<Order, "stage" | "priority" | "due_date" | "progress">>) => {
+    mutationFn: async (
+      patch: { id: string } & Partial<Pick<Order, "stage" | "priority" | "due_date" | "progress">>,
+    ) => {
       const { id, ...changes } = patch;
       const { error } = await supabase.from("production_orders").update(changes).eq("id", id);
       if (error) throw error;
@@ -90,7 +109,15 @@ function PcpKanban() {
       await qc.cancelQueries({ queryKey: ["pcp-kanban"] });
       const prev = qc.getQueryData<Order[]>(["pcp-kanban"]);
       qc.setQueryData<Order[]>(["pcp-kanban"], (old = []) =>
-        old.map((o) => (o.id === patch.id ? { ...o, ...patch, stage_updated_at: patch.stage ? new Date().toISOString() : o.stage_updated_at } : o)),
+        old.map((o) =>
+          o.id === patch.id
+            ? {
+                ...o,
+                ...patch,
+                stage_updated_at: patch.stage ? new Date().toISOString() : o.stage_updated_at,
+              }
+            : o,
+        ),
       );
       return { prev };
     },
@@ -114,7 +141,9 @@ function PcpKanban() {
   }, [filtered]);
 
   const summary = useMemo(() => {
-    const wip = orders.filter((o) => o.stage !== "entregue" && o.stage !== "cad").reduce((s, o) => s + o.quantity, 0);
+    const wip = orders
+      .filter((o) => o.stage !== "entregue" && o.stage !== "cad")
+      .reduce((s, o) => s + o.quantity, 0);
     const late = orders.filter((o) => {
       const d = daysTo(o.due_date);
       return o.stage !== "entregue" && d !== null && d < 0;
@@ -125,7 +154,13 @@ function PcpKanban() {
 
   const bottleneck = useMemo(() => {
     const now = Date.now();
-    let worst: { stage: Stage; label: string; count: number; avgDays: number; oldest: number } | null = null;
+    let worst: {
+      stage: Stage;
+      label: string;
+      count: number;
+      avgDays: number;
+      oldest: number;
+    } | null = null;
     for (const col of STAGES) {
       if (col.key === "entregue" || col.key === "cad") continue;
       const items = orders.filter((o) => o.stage === col.key);
@@ -142,7 +177,6 @@ function PcpKanban() {
     return worst;
   }, [orders]);
 
-
   const move = (id: string, stage: Stage) => {
     const o = orders.find((x) => x.id === id);
     if (!o || o.stage === stage) return;
@@ -155,7 +189,10 @@ function PcpKanban() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">PCP — Passagem por setores</h1>
-          <p className="text-sm text-muted-foreground">Arraste cards entre colunas para programar a passagem entre setores. Prioridade, prazo e tempo no setor visíveis em cada card.</p>
+          <p className="text-sm text-muted-foreground">
+            Arraste cards entre colunas para programar a passagem entre setores. Prioridade, prazo e
+            tempo no setor visíveis em cada card.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {batchFilter && (
@@ -176,7 +213,10 @@ function PcpKanban() {
               <Factory className="size-3.5" /> Ordens
             </button>
             <button
-              onClick={() => { setMode("lotes"); setBatchFilter(null); }}
+              onClick={() => {
+                setMode("lotes");
+                setBatchFilter(null);
+              }}
               className={`px-3 py-1.5 inline-flex items-center gap-1 ${mode === "lotes" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
             >
               <Package className="size-3.5" /> Lotes
@@ -187,18 +227,34 @@ function PcpKanban() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KPI label="Ordens" value={summary.total} icon={<Factory className="size-4" />} />
-        <KPI label="WIP (peças)" value={summary.wip.toLocaleString("pt-BR")} icon={<Clock className="size-4" />} tone="primary" />
-        <KPI label="Atrasadas" value={summary.late} icon={<AlertTriangle className="size-4" />} tone="destructive" />
-        <KPI label="Prioridade alta" value={summary.urgent} icon={<Flag className="size-4" />} tone="warning" />
+        <KPI
+          label="WIP (peças)"
+          value={summary.wip.toLocaleString("pt-BR")}
+          icon={<Clock className="size-4" />}
+          tone="primary"
+        />
+        <KPI
+          label="Atrasadas"
+          value={summary.late}
+          icon={<AlertTriangle className="size-4" />}
+          tone="destructive"
+        />
+        <KPI
+          label="Prioridade alta"
+          value={summary.urgent}
+          icon={<Flag className="size-4" />}
+          tone="warning"
+        />
       </div>
 
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
 
       <DelayPredictionPanel />
 
-
       <div className="rounded-xl border border-border bg-card p-4">
-        <div className="flex items-center gap-2 text-sm font-medium"><Sparkles className="size-4 text-primary" /> Próxima melhor ação</div>
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Sparkles className="size-4 text-primary" /> Próxima melhor ação
+        </div>
         <div className="mt-1 text-sm text-muted-foreground">
           {bottleneck
             ? `${bottleneck.label} concentra ${bottleneck.count} OPs por ${bottleneck.avgDays.toFixed(1)} dias em média. Trate essa coluna antes de abrir novas liberações.`
@@ -214,22 +270,29 @@ function PcpKanban() {
             <Sparkles className="size-3.5" /> Gargalo detectado
           </div>
           <div className="flex-1 min-w-[220px] text-sm">
-            <span className="font-semibold">{bottleneck.label}</span> · {bottleneck.count} OPs paradas há média de{" "}
+            <span className="font-semibold">{bottleneck.label}</span> · {bottleneck.count} OPs
+            paradas há média de{" "}
             <span className="font-semibold tabular-nums">{bottleneck.avgDays.toFixed(1)}d</span>
-            {bottleneck.oldest > bottleneck.avgDays + 1 && ` (mais antiga: ${bottleneck.oldest.toFixed(0)}d)`}.
+            {bottleneck.oldest > bottleneck.avgDays + 1 &&
+              ` (mais antiga: ${bottleneck.oldest.toFixed(0)}d)`}
+            .
             <div className="text-xs text-muted-foreground mt-0.5">
-              Realoque capacidade para {bottleneck.label.toLowerCase()} ou cobre o setor — segura toda a esteira a partir daqui.
+              Realoque capacidade para {bottleneck.label.toLowerCase()} ou cobre o setor — segura
+              toda a esteira a partir daqui.
             </div>
           </div>
           <button
-            onClick={() => { setMode("ordens"); const el = document.querySelector(`[data-stage="${bottleneck.stage}"]`); el?.scrollIntoView({ behavior: "smooth", block: "center" }); }}
+            onClick={() => {
+              setMode("ordens");
+              const el = document.querySelector(`[data-stage="${bottleneck.stage}"]`);
+              el?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }}
             className="text-xs px-3 py-1.5 rounded-md bg-warning text-warning-foreground font-medium hover:bg-warning/90"
           >
             Ver coluna
           </button>
         </div>
       )}
-
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         {STAGES.map((col) => {
@@ -241,14 +304,25 @@ function PcpKanban() {
               key={col.key}
               data-stage={col.key}
               className={`rounded-xl border bg-card flex flex-col min-h-[420px] transition ${isOver ? "border-primary ring-2 ring-primary/30" : "border-border"}`}
-              onDragOver={(e) => { e.preventDefault(); setOver(col.key); }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setOver(col.key);
+              }}
               onDragLeave={() => setOver((v) => (v === col.key ? null : v))}
-              onDrop={() => { if (dragging) { move(dragging, col.key); setDragging(null); setOver(null); } }}
+              onDrop={() => {
+                if (dragging) {
+                  move(dragging, col.key);
+                  setDragging(null);
+                  setOver(null);
+                }
+              }}
             >
               <div className="px-3 py-2 border-b border-border">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold">{col.label}</span>
-                  <span className="text-[10px] tabular-nums text-muted-foreground">{items.length} · {qty} pç</span>
+                  <span className="text-[10px] tabular-nums text-muted-foreground">
+                    {items.length} · {qty} pç
+                  </span>
                 </div>
                 <div className="text-[10px] text-muted-foreground">{col.hint}</div>
               </div>
@@ -256,43 +330,77 @@ function PcpKanban() {
                 {isLoading ? (
                   <div className="text-xs text-muted-foreground p-2">Carregando…</div>
                 ) : items.length === 0 ? (
-                  <div className="text-[11px] text-muted-foreground p-3 border border-dashed border-border rounded-lg text-center">Solte aqui</div>
+                  <div className="text-[11px] text-muted-foreground p-3 border border-dashed border-border rounded-lg text-center">
+                    Solte aqui
+                  </div>
                 ) : mode === "lotes" && !batchFilter ? (
-                  Array.from(items.reduce((m, o) => {
-                    const k = o.batch_code ?? "—";
-                    const v = m.get(k) ?? { code: k, qty: 0, count: 0, urgent: 0, late: 0, progressSum: 0 };
-                    v.qty += o.quantity; v.count += 1;
-                    v.progressSum += o.progress;
-                    if (o.priority <= 2) v.urgent += 1;
-                    const d = daysTo(o.due_date);
-                    if (d !== null && d < 0 && col.key !== "entregue") v.late += 1;
-                    m.set(k, v); return m;
-                  }, new Map<string, { code: string; qty: number; count: number; urgent: number; late: number; progressSum: number }>()).values()).map((b) => (
+                  Array.from(
+                    items
+                      .reduce((m, o) => {
+                        const k = o.batch_code ?? "—";
+                        const v = m.get(k) ?? {
+                          code: k,
+                          qty: 0,
+                          count: 0,
+                          urgent: 0,
+                          late: 0,
+                          progressSum: 0,
+                        };
+                        v.qty += o.quantity;
+                        v.count += 1;
+                        v.progressSum += o.progress;
+                        if (o.priority <= 2) v.urgent += 1;
+                        const d = daysTo(o.due_date);
+                        if (d !== null && d < 0 && col.key !== "entregue") v.late += 1;
+                        m.set(k, v);
+                        return m;
+                      }, new Map<string, { code: string; qty: number; count: number; urgent: number; late: number; progressSum: number }>())
+                      .values(),
+                  ).map((b) => (
                     <div
                       key={b.code}
                       className="w-full rounded-lg border border-border bg-background p-2.5 text-xs space-y-1 hover:border-primary/50 transition"
                     >
                       <button onClick={() => setBatchFilter(b.code)} className="w-full text-left">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold inline-flex items-center gap-1"><Package className="size-3" />{b.code}</span>
-                          <span className="text-[10px] text-muted-foreground tabular-nums">{b.count} OPs</span>
+                          <span className="font-semibold inline-flex items-center gap-1">
+                            <Package className="size-3" />
+                            {b.code}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground tabular-nums">
+                            {b.count} OPs
+                          </span>
                         </div>
                         <div className="flex items-center justify-between text-muted-foreground tabular-nums">
                           <span>{b.qty} pç</span>
                           <span>{Math.round(b.progressSum / b.count)}%</span>
                         </div>
                         <div className="h-1 bg-muted rounded overflow-hidden">
-                          <div className="h-full bg-primary" style={{ width: `${Math.round(b.progressSum / b.count)}%` }} />
+                          <div
+                            className="h-full bg-primary"
+                            style={{ width: `${Math.round(b.progressSum / b.count)}%` }}
+                          />
                         </div>
                         {(b.urgent > 0 || b.late > 0) && (
                           <div className="flex gap-1 pt-0.5">
-                            {b.urgent > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">{b.urgent} urg</span>}
-                            {b.late > 0 && <span className="text-[9px] px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">{b.late} atras</span>}
+                            {b.urgent > 0 && (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500 border border-orange-500/30">
+                                {b.urgent} urg
+                              </span>
+                            )}
+                            {b.late > 0 && (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-destructive/15 text-destructive border border-destructive/30">
+                                {b.late} atras
+                              </span>
+                            )}
                           </div>
                         )}
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); setLoteDrawer(b.code); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLoteDrawer(b.code);
+                        }}
                         className="w-full mt-1 text-[10px] inline-flex items-center justify-center gap-1 px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground hover:text-foreground"
                         title="Ver referências e fichas de produção do lote"
                       >
@@ -300,101 +408,158 @@ function PcpKanban() {
                       </button>
                     </div>
                   ))
-                ) : items.map((o) => {
-                  const d = daysTo(o.due_date);
-                  const overdue = d !== null && d < 0 && col.key !== "entregue";
-                  const soon = d !== null && d >= 0 && d <= 3 && col.key !== "entregue";
-                  const inStageH = Math.floor((Date.now() - new Date(o.stage_updated_at).getTime()) / 3600000);
-                  const pri = PRIORITY[o.priority] ?? PRIORITY[3];
-                  const nextStage = STAGES[STAGES.findIndex((s) => s.key === col.key) + 1];
-                  return (
-                    <div
-                      key={o.id}
-                      draggable
-                      onDragStart={() => setDragging(o.id)}
-                      onDragEnd={() => { setDragging(null); setOver(null); }}
-                      className={`group rounded-lg border bg-background p-2.5 text-xs space-y-1.5 cursor-grab active:cursor-grabbing hover:border-primary/50 transition ${overdue ? "border-destructive/60" : soon ? "border-orange-500/50" : "border-border"}`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold tabular-nums">{o.code}</span>
-                        <div className="flex items-center gap-1">
-                          {o.product_id && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setFichaDrawer({ productId: o.product_id!, orderId: o.id, orderCode: o.code }); }}
-                              className="size-5 grid place-items-center rounded hover:bg-muted text-muted-foreground hover:text-primary"
-                              title="Abrir ficha de produção (sem valores)"
-                            >
-                              <FileText className="size-3.5" />
-                            </button>
-                          )}
-                          <ProductionOrderCommentsButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} />
-                          <ProductionOccurrenceButton orderId={o.id} orderCode={o.code} ownerId={o.owner_id} stage={col.key} />
-                          <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>{pri.label}</span>
-                        </div>
-                      </div>
-                      {o.product && <div className="text-muted-foreground truncate" title={o.product}>{o.product}</div>}
-                      <div className="flex items-center justify-between text-muted-foreground tabular-nums">
-                        <span>{o.quantity} pç</span>
-                        <span>{o.progress}%</span>
-                      </div>
-                      <div className="h-1 bg-muted rounded overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
-                      </div>
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
-                        <span className="inline-flex items-center gap-1"><History className="size-3" />{inStageH < 24 ? `${inStageH}h no setor` : `${Math.floor(inStageH / 24)}d no setor`}</span>
-                        {o.due_date && (
-                          <span className={overdue ? "text-destructive font-medium" : soon ? "text-orange-500 font-medium" : ""}>
-                            {d! < 0 ? `${Math.abs(d!)}d atrasada` : d === 0 ? "hoje" : `${d}d`}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between gap-1 pt-1 md:opacity-0 md:group-hover:opacity-100 transition">
-                        <select
-                          className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5"
-                          value={o.priority}
-                          onChange={(e) => update.mutate({ id: o.id, priority: Number(e.target.value) })}
-                          aria-label="Prioridade"
-                        >
-                          {[1, 2, 3, 4, 5].map((p) => <option key={p} value={p}>P{p}</option>)}
-                        </select>
-                        <input
-                          type="date"
-                          className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5 flex-1 min-w-0"
-                          value={o.due_date ?? ""}
-                          onChange={(e) => update.mutate({ id: o.id, due_date: e.target.value || (null as any) })}
-                          aria-label="Prazo"
-                        />
-                        <select
-                          className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5"
-                          value={col.key}
-                          onChange={(e) => move(o.id, e.target.value as Stage)}
-                          aria-label="Mover para setor"
-                        >
-                          {STAGES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
-                        </select>
-                        {nextStage && (
-                          <>
-                            <QuickPassButton
+                ) : (
+                  items.map((o) => {
+                    const d = daysTo(o.due_date);
+                    const overdue = d !== null && d < 0 && col.key !== "entregue";
+                    const soon = d !== null && d >= 0 && d <= 3 && col.key !== "entregue";
+                    const inStageH = Math.floor(
+                      (Date.now() - new Date(o.stage_updated_at).getTime()) / 3600000,
+                    );
+                    const pri = PRIORITY[o.priority] ?? PRIORITY[3];
+                    const nextStage = STAGES[STAGES.findIndex((s) => s.key === col.key) + 1];
+                    return (
+                      <div
+                        key={o.id}
+                        draggable
+                        onDragStart={() => setDragging(o.id)}
+                        onDragEnd={() => {
+                          setDragging(null);
+                          setOver(null);
+                        }}
+                        className={`group rounded-lg border bg-background p-2.5 text-xs space-y-1.5 cursor-grab active:cursor-grabbing hover:border-primary/50 transition ${overdue ? "border-destructive/60" : soon ? "border-orange-500/50" : "border-border"}`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold tabular-nums">{o.code}</span>
+                          <div className="flex items-center gap-1">
+                            {o.product_id && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFichaDrawer({
+                                    productId: o.product_id!,
+                                    orderId: o.id,
+                                    orderCode: o.code,
+                                  });
+                                }}
+                                className="size-5 grid place-items-center rounded hover:bg-muted text-muted-foreground hover:text-primary"
+                                title="Abrir ficha de produção (sem valores)"
+                              >
+                                <FileText className="size-3.5" />
+                              </button>
+                            )}
+                            <ProductionOrderCommentsButton
                               orderId={o.id}
                               orderCode={o.code}
                               ownerId={o.owner_id}
-                              fromStage={col.key}
-                              toStage={nextStage.key}
-                              remaining={Math.max(1, o.quantity - Math.floor((o.quantity * o.progress) / 100))}
                             />
-                            <button
-                              onClick={() => move(o.id, nextStage.key)}
-                              className="text-[10px] inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary text-primary-foreground hover:opacity-90"
-                              title={`Avançar tudo para ${nextStage.label}`}
-                            >
-                              <ArrowRight className="size-3" />
-                            </button>
-                          </>
+                            <ProductionOccurrenceButton
+                              orderId={o.id}
+                              orderCode={o.code}
+                              ownerId={o.owner_id}
+                              stage={col.key}
+                            />
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>
+                              {pri.label}
+                            </span>
+                          </div>
+                        </div>
+                        {o.product && (
+                          <div className="text-muted-foreground truncate" title={o.product}>
+                            {o.product}
+                          </div>
                         )}
+                        <div className="flex items-center justify-between text-muted-foreground tabular-nums">
+                          <span>{o.quantity} pç</span>
+                          <span>{o.progress}%</span>
+                        </div>
+                        <div className="h-1 bg-muted rounded overflow-hidden">
+                          <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
+                          <span className="inline-flex items-center gap-1">
+                            <History className="size-3" />
+                            {inStageH < 24
+                              ? `${inStageH}h no setor`
+                              : `${Math.floor(inStageH / 24)}d no setor`}
+                          </span>
+                          {o.due_date && (
+                            <span
+                              className={
+                                overdue
+                                  ? "text-destructive font-medium"
+                                  : soon
+                                    ? "text-orange-500 font-medium"
+                                    : ""
+                              }
+                            >
+                              {d! < 0 ? `${Math.abs(d!)}d atrasada` : d === 0 ? "hoje" : `${d}d`}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between gap-1 pt-1 md:opacity-0 md:group-hover:opacity-100 transition">
+                          <select
+                            className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5"
+                            value={o.priority}
+                            onChange={(e) =>
+                              update.mutate({ id: o.id, priority: Number(e.target.value) })
+                            }
+                            aria-label="Prioridade"
+                          >
+                            {[1, 2, 3, 4, 5].map((p) => (
+                              <option key={p} value={p}>
+                                P{p}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            type="date"
+                            className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5 flex-1 min-w-0"
+                            value={o.due_date ?? ""}
+                            onChange={(e) =>
+                              update.mutate({ id: o.id, due_date: e.target.value || (null as any) })
+                            }
+                            aria-label="Prazo"
+                          />
+                          <select
+                            className="text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5"
+                            value={col.key}
+                            onChange={(e) => move(o.id, e.target.value as Stage)}
+                            aria-label="Mover para setor"
+                          >
+                            {STAGES.map((s) => (
+                              <option key={s.key} value={s.key}>
+                                {s.label}
+                              </option>
+                            ))}
+                          </select>
+                          {nextStage && (
+                            <>
+                              <QuickPassButton
+                                orderId={o.id}
+                                orderCode={o.code}
+                                ownerId={o.owner_id}
+                                fromStage={col.key}
+                                toStage={nextStage.key}
+                                remaining={Math.max(
+                                  1,
+                                  o.quantity - Math.floor((o.quantity * o.progress) / 100),
+                                )}
+                              />
+                              <button
+                                onClick={() => move(o.id, nextStage.key)}
+                                className="text-[10px] inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary text-primary-foreground hover:opacity-90"
+                                title={`Avançar tudo para ${nextStage.label}`}
+                              >
+                                <ArrowRight className="size-3" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </div>
           );
@@ -417,12 +582,30 @@ function PcpKanban() {
   );
 }
 
-function KPI({ label, value, icon, tone = "default" }: { label: string; value: string | number; icon: React.ReactNode; tone?: "default" | "primary" | "destructive" | "warning" }) {
-  const toneCls = tone === "primary" ? "text-primary" : tone === "destructive" ? "text-destructive" : tone === "warning" ? "text-orange-500" : "text-foreground";
+function KPI({
+  label,
+  value,
+  icon,
+  tone = "default",
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ReactNode;
+  tone?: "default" | "primary" | "destructive" | "warning";
+}) {
+  const toneCls =
+    tone === "primary"
+      ? "text-primary"
+      : tone === "destructive"
+        ? "text-destructive"
+        : tone === "warning"
+          ? "text-orange-500"
+          : "text-foreground";
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{label}</span>{icon}
+        <span>{label}</span>
+        {icon}
       </div>
       <div className={`text-2xl font-semibold mt-1 tabular-nums ${toneCls}`}>{value}</div>
     </div>

@@ -33,9 +33,7 @@ export function DefaultError({ error, reset }: { error: Error; reset: () => void
     <div className="flex min-h-[60vh] items-center justify-center px-4">
       <div className="max-w-md text-center">
         <h1 className="text-lg font-semibold text-foreground">Esta tela falhou ao carregar</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {error?.message ?? "Erro inesperado."}
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{error?.message ?? "Erro inesperado."}</p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {

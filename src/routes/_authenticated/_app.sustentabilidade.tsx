@@ -10,14 +10,29 @@ import { Leaf } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/sustentabilidade")({
-  head: () => ({ meta: [{ title: "Sustainability Scoring · USE MODA PLM" }, { name: "description", content: "Pegada CO₂, % materiais sustentáveis, certificações por produto." }] }),
+  head: () => ({
+    meta: [
+      { title: "Sustainability Scoring · USE MODA PLM" },
+      {
+        name: "description",
+        content: "Pegada CO₂, % materiais sustentáveis, certificações por produto.",
+      },
+    ],
+  }),
   component: Page,
 });
 
 type Row = {
-  id: string; sku: string; name: string;
-  s_id: string | null; co2_kg: number; water_liters: number;
-  recycled_pct: number; organic_pct: number; score_overall: number; certifications: string[];
+  id: string;
+  sku: string;
+  name: string;
+  s_id: string | null;
+  co2_kg: number;
+  water_liters: number;
+  recycled_pct: number;
+  organic_pct: number;
+  score_overall: number;
+  certifications: string[];
 };
 
 function Page() {
@@ -35,7 +50,9 @@ function Page() {
       return (products ?? []).map((p: any) => {
         const s = (scores ?? []).find((x: any) => x.product_id === p.id);
         return {
-          id: p.id, sku: p.sku, name: p.name,
+          id: p.id,
+          sku: p.sku,
+          name: p.name,
           s_id: s?.id ?? null,
           co2_kg: s?.co2_kg ?? 0,
           water_liters: s?.water_liters ?? 0,
@@ -51,14 +68,32 @@ function Page() {
   const save = useMutation({
     mutationFn: async (r: Row) => {
       const e = { ...r, ...edit[r.id] };
-      const score = Math.min(100, Math.round((Number(e.recycled_pct || 0) + Number(e.organic_pct || 0)) / 2 + e.certifications.length * 5));
+      const score = Math.min(
+        100,
+        Math.round(
+          (Number(e.recycled_pct || 0) + Number(e.organic_pct || 0)) / 2 +
+            e.certifications.length * 5,
+        ),
+      );
       const { error } = await (supabase as any).from("product_sustainability").upsert(
-        { owner_id: user!.id, product_id: r.id, co2_kg: e.co2_kg, water_liters: e.water_liters, recycled_pct: e.recycled_pct, organic_pct: e.organic_pct, certifications: e.certifications, score_overall: score },
-        { onConflict: "owner_id,product_id" }
+        {
+          owner_id: user!.id,
+          product_id: r.id,
+          co2_kg: e.co2_kg,
+          water_liters: e.water_liters,
+          recycled_pct: e.recycled_pct,
+          organic_pct: e.organic_pct,
+          certifications: e.certifications,
+          score_overall: score,
+        },
+        { onConflict: "owner_id,product_id" },
       );
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Score salvo"); qc.invalidateQueries({ queryKey: ["sustainability"] }); },
+    onSuccess: () => {
+      toast.success("Score salvo");
+      qc.invalidateQueries({ queryKey: ["sustainability"] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -68,7 +103,9 @@ function Page() {
         <Leaf className="h-6 w-6 text-green-600" />
         <div>
           <h1 className="text-2xl font-bold">Sustainability Scoring</h1>
-          <p className="text-sm text-muted-foreground">Score por produto: pegada CO₂, água, % reciclado/orgânico e certificações.</p>
+          <p className="text-sm text-muted-foreground">
+            Score por produto: pegada CO₂, água, % reciclado/orgânico e certificações.
+          </p>
         </div>
       </div>
       <div className="glass rounded-xl overflow-hidden">
@@ -90,14 +127,91 @@ function Page() {
               const e = { ...r, ...edit[r.id] };
               return (
                 <tr key={r.id} className="border-t">
-                  <td className="p-3"><div className="font-medium">{r.name}</div><div className="text-xs text-muted-foreground">{r.sku}</div></td>
-                  <td className="text-right p-3"><Input className="w-20 text-right ml-auto" type="number" value={e.co2_kg} onChange={(ev) => setEdit({ ...edit, [r.id]: { ...e, co2_kg: Number(ev.target.value) } })} /></td>
-                  <td className="text-right p-3"><Input className="w-20 text-right ml-auto" type="number" value={e.water_liters} onChange={(ev) => setEdit({ ...edit, [r.id]: { ...e, water_liters: Number(ev.target.value) } })} /></td>
-                  <td className="text-right p-3"><Input className="w-20 text-right ml-auto" type="number" value={e.recycled_pct} onChange={(ev) => setEdit({ ...edit, [r.id]: { ...e, recycled_pct: Number(ev.target.value) } })} /></td>
-                  <td className="text-right p-3"><Input className="w-20 text-right ml-auto" type="number" value={e.organic_pct} onChange={(ev) => setEdit({ ...edit, [r.id]: { ...e, organic_pct: Number(ev.target.value) } })} /></td>
-                  <td className="p-3"><Input value={(e.certifications || []).join(", ")} onChange={(ev) => setEdit({ ...edit, [r.id]: { ...e, certifications: ev.target.value.split(",").map((s) => s.trim()).filter(Boolean) } })} /></td>
-                  <td className="text-right p-3"><Badge className={e.score_overall >= 70 ? "bg-green-600" : e.score_overall >= 40 ? "bg-yellow-600" : "bg-red-600"}>{e.score_overall}</Badge></td>
-                  <td className="p-3"><Button size="sm" variant="outline" onClick={() => save.mutate(r)}>Salvar</Button></td>
+                  <td className="p-3">
+                    <div className="font-medium">{r.name}</div>
+                    <div className="text-xs text-muted-foreground">{r.sku}</div>
+                  </td>
+                  <td className="text-right p-3">
+                    <Input
+                      className="w-20 text-right ml-auto"
+                      type="number"
+                      value={e.co2_kg}
+                      onChange={(ev) =>
+                        setEdit({ ...edit, [r.id]: { ...e, co2_kg: Number(ev.target.value) } })
+                      }
+                    />
+                  </td>
+                  <td className="text-right p-3">
+                    <Input
+                      className="w-20 text-right ml-auto"
+                      type="number"
+                      value={e.water_liters}
+                      onChange={(ev) =>
+                        setEdit({
+                          ...edit,
+                          [r.id]: { ...e, water_liters: Number(ev.target.value) },
+                        })
+                      }
+                    />
+                  </td>
+                  <td className="text-right p-3">
+                    <Input
+                      className="w-20 text-right ml-auto"
+                      type="number"
+                      value={e.recycled_pct}
+                      onChange={(ev) =>
+                        setEdit({
+                          ...edit,
+                          [r.id]: { ...e, recycled_pct: Number(ev.target.value) },
+                        })
+                      }
+                    />
+                  </td>
+                  <td className="text-right p-3">
+                    <Input
+                      className="w-20 text-right ml-auto"
+                      type="number"
+                      value={e.organic_pct}
+                      onChange={(ev) =>
+                        setEdit({ ...edit, [r.id]: { ...e, organic_pct: Number(ev.target.value) } })
+                      }
+                    />
+                  </td>
+                  <td className="p-3">
+                    <Input
+                      value={(e.certifications || []).join(", ")}
+                      onChange={(ev) =>
+                        setEdit({
+                          ...edit,
+                          [r.id]: {
+                            ...e,
+                            certifications: ev.target.value
+                              .split(",")
+                              .map((s) => s.trim())
+                              .filter(Boolean),
+                          },
+                        })
+                      }
+                    />
+                  </td>
+                  <td className="text-right p-3">
+                    <Badge
+                      className={
+                        e.score_overall >= 70
+                          ? "bg-green-600"
+                          : e.score_overall >= 40
+                            ? "bg-yellow-600"
+                            : "bg-red-600"
+                      }
+                    >
+                      {e.score_overall}
+                    </Badge>
+                  </td>
+                  <td className="p-3">
+                    <Button size="sm" variant="outline" onClick={() => save.mutate(r)}>
+                      Salvar
+                    </Button>
+                  </td>
                 </tr>
               );
             })}

@@ -52,21 +52,23 @@ export function ProductionOrderCommentsButton({
       <Button
         size={size === "icon" ? "icon" : "sm"}
         variant="ghost"
-        onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
         title="Discussão da OP"
         className="relative h-6 px-1.5"
       >
         <MessageSquare className="size-3.5" />
-        {count > 0 && (
-          <span className="ml-1 text-[10px] tabular-nums">{count}</span>
-        )}
+        {count > 0 && <span className="ml-1 text-[10px] tabular-nums">{count}</span>}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageSquare className="size-4 text-primary" />
-              Discussão · <span className="font-mono text-xs text-muted-foreground">{orderCode}</span>
+              Discussão ·{" "}
+              <span className="font-mono text-xs text-muted-foreground">{orderCode}</span>
             </DialogTitle>
           </DialogHeader>
           <Thread orderId={orderId} ownerId={ownerId} />
@@ -141,7 +143,11 @@ function Thread({ orderId, ownerId }: { orderId: string; ownerId: string }) {
                 <span className="flex items-center gap-2">
                   <span>{timeAgo(c.created_at)}</span>
                   {(c.author_id === user?.id || ownerId === user?.id) && (
-                    <button onClick={() => del.mutate(c.id)} className="hover:text-destructive" title="Excluir">
+                    <button
+                      onClick={() => del.mutate(c.id)}
+                      className="hover:text-destructive"
+                      title="Excluir"
+                    >
                       <Trash2 className="size-3" />
                     </button>
                   )}

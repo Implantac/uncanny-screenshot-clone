@@ -17,7 +17,10 @@ export const listTeam = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [{ data: profiles }, { data: roles }, { data: sectors }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, full_name, avatar_url, created_at").order("created_at", { ascending: false }),
+      supabaseAdmin
+        .from("profiles")
+        .select("id, full_name, avatar_url, created_at")
+        .order("created_at", { ascending: false }),
       supabaseAdmin.from("user_roles").select("user_id, role"),
       supabaseAdmin.from("user_sectors").select("user_id, sector"),
     ]);
@@ -42,11 +45,13 @@ export const listTeam = createServerFn({ method: "POST" })
 export const setUserRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { userId: string; role: (typeof ROLES)[number]; enabled: boolean }) =>
-    z.object({
-      userId: z.string().uuid(),
-      role: z.enum(ROLES),
-      enabled: z.boolean(),
-    }).parse(input),
+    z
+      .object({
+        userId: z.string().uuid(),
+        role: z.enum(ROLES),
+        enabled: z.boolean(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
@@ -70,11 +75,13 @@ export const setUserRole = createServerFn({ method: "POST" })
 export const setUserSector = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { userId: string; sector: (typeof SECTORS)[number]; enabled: boolean }) =>
-    z.object({
-      userId: z.string().uuid(),
-      sector: z.enum(SECTORS),
-      enabled: z.boolean(),
-    }).parse(input),
+    z
+      .object({
+        userId: z.string().uuid(),
+        sector: z.enum(SECTORS),
+        enabled: z.boolean(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);

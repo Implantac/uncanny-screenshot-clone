@@ -40,7 +40,11 @@ Regras: 5-7 sinais. relevance reflete encaixe com a marca (paleta + categorias +
 function extractJson(s: string): any | null {
   const m = s.match(/\{[\s\S]*\}/);
   if (!m) return null;
-  try { return JSON.parse(m[0]); } catch { return null; }
+  try {
+    return JSON.parse(m[0]);
+  } catch {
+    return null;
+  }
 }
 
 export const scanTrendRadar = createServerFn({ method: "POST" })
@@ -61,8 +65,14 @@ export const scanTrendRadar = createServerFn({ method: "POST" })
       if (p.category) catMap.set(p.category, (catMap.get(p.category) ?? 0) + 1);
       (p.colors ?? []).forEach((c: string) => colorMap.set(c, (colorMap.get(c) ?? 0) + 1));
     });
-    const topCats = [...catMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([c]) => c);
-    const topColors = [...colorMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([c]) => c);
+    const topCats = [...catMap.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([c]) => c);
+    const topColors = [...colorMap.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([c]) => c);
 
     const brandContext = `Categorias principais: ${topCats.join(", ") || "—"}
 Paleta atual: ${topColors.join(", ") || "—"}
@@ -81,21 +91,28 @@ ${data.notes ? `Observações: ${data.notes}` : ""}`;
       });
       const parsed = extractJson(res.text);
       const arr = Array.isArray(parsed?.signals) ? parsed.signals : [];
-      const signals: TrendSignal[] = arr.slice(0, 8).map((s: any) => ({
-        title: String(s.title ?? ""),
-        summary: String(s.summary ?? ""),
-        keywords: Array.isArray(s.keywords) ? s.keywords.slice(0, 6).map(String) : [],
-        colors: Array.isArray(s.colors) ? s.colors.filter((c: any) => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 5) : [],
-        category: String(s.category ?? ""),
-        relevance: Math.max(0, Math.min(100, Math.round(Number(s.relevance ?? 0)))),
-        why: String(s.why ?? ""),
-      })).sort((a: TrendSignal, b: TrendSignal) => b.relevance - a.relevance);
+      const signals: TrendSignal[] = arr
+        .slice(0, 8)
+        .map((s: any) => ({
+          title: String(s.title ?? ""),
+          summary: String(s.summary ?? ""),
+          keywords: Array.isArray(s.keywords) ? s.keywords.slice(0, 6).map(String) : [],
+          colors: Array.isArray(s.colors)
+            ? s.colors.filter((c: any) => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 5)
+            : [],
+          category: String(s.category ?? ""),
+          relevance: Math.max(0, Math.min(100, Math.round(Number(s.relevance ?? 0)))),
+          why: String(s.why ?? ""),
+        }))
+        .sort((a: TrendSignal, b: TrendSignal) => b.relevance - a.relevance);
 
       return { signals, brandContext };
     } catch (err: any) {
       const status = err?.statusCode ?? err?.lastError?.statusCode;
-      if (status === 429) throw new Error("Limite de requisições da IA atingido. Aguarde alguns segundos.");
-      if (status === 402) throw new Error("Créditos de IA esgotados. Adicione créditos no workspace.");
+      if (status === 429)
+        throw new Error("Limite de requisições da IA atingido. Aguarde alguns segundos.");
+      if (status === 402)
+        throw new Error("Créditos de IA esgotados. Adicione créditos no workspace.");
       throw err;
     }
   });

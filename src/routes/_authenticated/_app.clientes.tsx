@@ -8,7 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/clientes")({
@@ -17,9 +24,16 @@ export const Route = createFileRoute("/_authenticated/_app/clientes")({
 });
 
 type Customer = {
-  id: string; owner_id: string; name: string; document: string | null;
-  email: string | null; phone: string | null; city: string | null;
-  state: string | null; notes: string | null; created_at: string;
+  id: string;
+  owner_id: string;
+  name: string;
+  document: string | null;
+  email: string | null;
+  phone: string | null;
+  city: string | null;
+  state: string | null;
+  notes: string | null;
+  created_at: string;
 };
 
 function ClientesPage() {
@@ -31,7 +45,10 @@ function ClientesPage() {
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("customers").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("customers")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Customer[];
     },
@@ -42,7 +59,10 @@ function ClientesPage() {
       const { error } = await supabase.from("customers").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["customers"] }); toast.success("Cliente removido"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      toast.success("Cliente removido");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -55,7 +75,13 @@ function ClientesPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Cadastro de clientes B2B e varejo.</p>
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-2">
+        <Button
+          onClick={() => {
+            setEditing(null);
+            setOpen(true);
+          }}
+          className="gap-2"
+        >
           <Plus className="size-4" /> Novo Cliente
         </Button>
       </div>
@@ -66,7 +92,14 @@ function ClientesPage() {
         <div className="glass rounded-xl p-12 text-center">
           <h3 className="font-semibold mb-1">Nenhum cliente ainda</h3>
           <p className="text-sm text-muted-foreground mb-4">Cadastre seu primeiro cliente.</p>
-          <Button onClick={() => { setEditing(null); setOpen(true); }}>Cadastrar cliente</Button>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+            }}
+          >
+            Cadastrar cliente
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -75,19 +108,46 @@ function ClientesPage() {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <h3 className="font-semibold truncate">{c.name}</h3>
-                  {c.document && <p className="text-xs text-muted-foreground mt-0.5">{c.document}</p>}
+                  {c.document && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{c.document}</p>
+                  )}
                 </div>
               </div>
               <div className="space-y-1.5 text-sm">
-                {c.email && <p className="flex items-center gap-2 text-xs text-muted-foreground"><Mail className="size-3" /> {c.email}</p>}
-                {c.phone && <p className="flex items-center gap-2 text-xs text-muted-foreground"><Phone className="size-3" /> {c.phone}</p>}
-                {(c.city || c.state) && <p className="flex items-center gap-2 text-xs text-muted-foreground"><MapPin className="size-3" /> {[c.city, c.state].filter(Boolean).join(" / ")}</p>}
+                {c.email && (
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Mail className="size-3" /> {c.email}
+                  </p>
+                )}
+                {c.phone && (
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Phone className="size-3" /> {c.phone}
+                  </p>
+                )}
+                {(c.city || c.state) && (
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <MapPin className="size-3" /> {[c.city, c.state].filter(Boolean).join(" / ")}
+                  </p>
+                )}
               </div>
               {c.notes && <p className="text-xs text-muted-foreground line-clamp-2">{c.notes}</p>}
               {c.owner_id === user?.id && (
                 <div className="flex justify-end gap-1 pt-2 border-t border-border">
-                  <button onClick={() => { setEditing(c); setOpen(true); }} className="size-7 grid place-items-center rounded hover:bg-muted"><Pencil className="size-3.5" /></button>
-                  <button onClick={() => confirm("Remover este cliente?") && delMut.mutate(c.id)} className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive"><Trash2 className="size-3.5" /></button>
+                  <button
+                    onClick={() => {
+                      setEditing(c);
+                      setOpen(true);
+                    }}
+                    className="size-7 grid place-items-center rounded hover:bg-muted"
+                  >
+                    <Pencil className="size-3.5" />
+                  </button>
+                  <button
+                    onClick={() => confirm("Remover este cliente?") && delMut.mutate(c.id)}
+                    className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
                 </div>
               )}
             </div>
@@ -100,13 +160,39 @@ function ClientesPage() {
   );
 }
 
-function CustomerDialog({ open, onOpenChange, editing, userId }: { open: boolean; onOpenChange: (v: boolean) => void; editing: Customer | null; userId?: string }) {
+function CustomerDialog({
+  open,
+  onOpenChange,
+  editing,
+  userId,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  editing: Customer | null;
+  userId?: string;
+}) {
   const qc = useQueryClient();
-  const [f, setF] = useState({ name: "", document: "", email: "", phone: "", city: "", state: "", notes: "" });
+  const [f, setF] = useState({
+    name: "",
+    document: "",
+    email: "",
+    phone: "",
+    city: "",
+    state: "",
+    notes: "",
+  });
 
   useEffect(() => {
     if (open && editing) {
-      setF({ name: editing.name, document: editing.document || "", email: editing.email || "", phone: editing.phone || "", city: editing.city || "", state: editing.state || "", notes: editing.notes || "" });
+      setF({
+        name: editing.name,
+        document: editing.document || "",
+        email: editing.email || "",
+        phone: editing.phone || "",
+        city: editing.city || "",
+        state: editing.state || "",
+        notes: editing.notes || "",
+      });
     } else if (open) {
       setF({ name: "", document: "", email: "", phone: "", city: "", state: "", notes: "" });
     }
@@ -117,8 +203,12 @@ function CustomerDialog({ open, onOpenChange, editing, userId }: { open: boolean
       if (!userId) throw new Error("Sessão expirada");
       const payload = {
         name: f.name,
-        document: f.document || null, email: f.email || null, phone: f.phone || null,
-        city: f.city || null, state: f.state || null, notes: f.notes || null,
+        document: f.document || null,
+        email: f.email || null,
+        phone: f.phone || null,
+        city: f.city || null,
+        state: f.state || null,
+        notes: f.notes || null,
       };
       if (editing) {
         const { error } = await supabase.from("customers").update(payload).eq("id", editing.id);
@@ -143,21 +233,64 @@ function CustomerDialog({ open, onOpenChange, editing, userId }: { open: boolean
           <DialogTitle>{editing ? "Editar cliente" : "Novo cliente"}</DialogTitle>
           <DialogDescription>Dados cadastrais e contato.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={(e) => { e.preventDefault(); saveMut.mutate(); }} className="space-y-4">
-          <div className="space-y-2"><Label>Nome / Razão social</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required /></div>
-          <div className="space-y-2"><Label>CPF / CNPJ</Label><Input value={f.document} onChange={(e) => setF({ ...f, document: e.target.value })} /></div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            saveMut.mutate();
+          }}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label>Nome / Razão social</Label>
+            <Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required />
+          </div>
+          <div className="space-y-2">
+            <Label>CPF / CNPJ</Label>
+            <Input value={f.document} onChange={(e) => setF({ ...f, document: e.target.value })} />
+          </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2"><Label>Email</Label><Input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Telefone</Label><Input value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} /></div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={f.email}
+                onChange={(e) => setF({ ...f, email: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Telefone</Label>
+              <Input value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
+            </div>
           </div>
           <div className="grid grid-cols-[1fr_100px] gap-3">
-            <div className="space-y-2"><Label>Cidade</Label><Input value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })} /></div>
-            <div className="space-y-2"><Label>UF</Label><Input value={f.state} onChange={(e) => setF({ ...f, state: e.target.value })} maxLength={2} /></div>
+            <div className="space-y-2">
+              <Label>Cidade</Label>
+              <Input value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>UF</Label>
+              <Input
+                value={f.state}
+                onChange={(e) => setF({ ...f, state: e.target.value })}
+                maxLength={2}
+              />
+            </div>
           </div>
-          <div className="space-y-2"><Label>Observações</Label><Textarea value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} rows={2} /></div>
+          <div className="space-y-2">
+            <Label>Observações</Label>
+            <Textarea
+              value={f.notes}
+              onChange={(e) => setF({ ...f, notes: e.target.value })}
+              rows={2}
+            />
+          </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={saveMut.isPending}>{saveMut.isPending ? "Salvando…" : editing ? "Atualizar" : "Criar"}</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saveMut.isPending}>
+              {saveMut.isPending ? "Salvando…" : editing ? "Atualizar" : "Criar"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

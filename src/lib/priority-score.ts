@@ -44,12 +44,9 @@ export type PriorityResult = {
   startInDays: number;
 };
 
-
-
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
 export function computePriority(i: PriorityInput): PriorityResult {
-
   const lead = i.leadTimeDays ?? 30;
   const daily30 = i.sold30 / 30;
   const daily7 = i.sold7 / 7;
@@ -77,11 +74,29 @@ export function computePriority(i: PriorityInput): PriorityResult {
   const seasonality = i.seasonal ? 1 : 0.4;
 
   const parts: { label: string; value: number; weight: number }[] = [
-    { label: `giro alto (${velocity.toFixed(1)} un/dia)`, value: sellOut, weight: 0.30 },
-    { label: `margem ${Math.round(margin * 100)}%`, value: margin, weight: 0.20 },
-    { label: ruptureRisk > 0.5 ? `ruptura em ${Math.round(daysCover)}d` : `cobertura ${Math.round(daysCover)}d`, value: ruptureRisk, weight: 0.20 },
-    { label: i.abc === 1 ? "curva A" : i.abc === 2 ? "curva B" : "curva C", value: abcWeight, weight: 0.15 },
-    { label: daily7 > daily30 ? `vendas subindo ${Math.round(((daily7 - daily30) / Math.max(daily30, 0.01)) * 100)}%` : "vendas estáveis", value: accel, weight: 0.10 },
+    { label: `giro alto (${velocity.toFixed(1)} un/dia)`, value: sellOut, weight: 0.3 },
+    { label: `margem ${Math.round(margin * 100)}%`, value: margin, weight: 0.2 },
+    {
+      label:
+        ruptureRisk > 0.5
+          ? `ruptura em ${Math.round(daysCover)}d`
+          : `cobertura ${Math.round(daysCover)}d`,
+      value: ruptureRisk,
+      weight: 0.2,
+    },
+    {
+      label: i.abc === 1 ? "curva A" : i.abc === 2 ? "curva B" : "curva C",
+      value: abcWeight,
+      weight: 0.15,
+    },
+    {
+      label:
+        daily7 > daily30
+          ? `vendas subindo ${Math.round(((daily7 - daily30) / Math.max(daily30, 0.01)) * 100)}%`
+          : "vendas estáveis",
+      value: accel,
+      weight: 0.1,
+    },
     { label: i.seasonal ? "estação de pico" : "fora do pico", value: seasonality, weight: 0.05 },
   ];
 
@@ -108,9 +123,10 @@ export function computePriority(i: PriorityInput): PriorityResult {
   if (suggestion <= 0) {
     verdict = "nao-produzir";
     verdictLabel = "Não produzir";
-    verdictReason = velocity <= 0
-      ? "Sem giro nos últimos 30 dias — não há venda para reposição."
-      : `Cobertura de ${Math.round(daysToStockout)}d já supera o lead time.`;
+    verdictReason =
+      velocity <= 0
+        ? "Sem giro nos últimos 30 dias — não há venda para reposição."
+        : `Cobertura de ${Math.round(daysToStockout)}d já supera o lead time.`;
   } else if (margin > 0 && margin < 0.1 && (i.abc ?? 3) >= 3) {
     verdict = "nao-produzir";
     verdictLabel = "Não vale";
@@ -148,7 +164,6 @@ export function computePriority(i: PriorityInput): PriorityResult {
     startInDays,
   };
 }
-
 
 /** Classifica produtos em ABC pelo faturamento dos últimos 30 dias (80/15/5). */
 export function classifyABC(revenues: { sku: string; revenue: number }[]): Map<string, 1 | 2 | 3> {

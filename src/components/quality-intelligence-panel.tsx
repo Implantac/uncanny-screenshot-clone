@@ -19,14 +19,18 @@ export function QualityIntelligencePanel() {
         <ShieldAlert className="size-4 text-primary" />
         <div className="font-medium text-sm">Qualidade Inteligente</div>
         <span className="text-xs text-muted-foreground">
-          — {data.totalOccurrences} ocorrências em {data.windowDays}d · {data.openOccurrences} abertas
+          — {data.totalOccurrences} ocorrências em {data.windowDays}d · {data.openOccurrences}{" "}
+          abertas
         </span>
       </header>
 
       {data.topKinds.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {data.topKinds.map((k) => (
-            <span key={k.kind} className="text-[11px] px-2 py-0.5 rounded-full bg-muted/50 border border-border">
+            <span
+              key={k.kind}
+              className="text-[11px] px-2 py-0.5 rounded-full bg-muted/50 border border-border"
+            >
               {k.kind} · {k.count}
             </span>
           ))}
@@ -34,13 +38,20 @@ export function QualityIntelligencePanel() {
       )}
 
       <div className="space-y-2">
-        <div className="text-xs text-muted-foreground flex items-center gap-1"><Activity className="size-3.5" /> Fornecedores com recorrência</div>
+        <div className="text-xs text-muted-foreground flex items-center gap-1">
+          <Activity className="size-3.5" /> Fornecedores com recorrência
+        </div>
         {data.suppliers.length === 0 ? (
-          <div className="text-xs text-muted-foreground">Sem ocorrências vinculadas a fornecedores.</div>
+          <div className="text-xs text-muted-foreground">
+            Sem ocorrências vinculadas a fornecedores.
+          </div>
         ) : (
           <div className="space-y-1.5">
             {data.suppliers.map((s) => (
-              <div key={s.supplierId} className={`text-xs rounded-md border p-2 ${s.blockSuggested ? "border-destructive/40 bg-destructive/5" : "border-border"}`}>
+              <div
+                key={s.supplierId}
+                className={`text-xs rounded-md border p-2 ${s.blockSuggested ? "border-destructive/40 bg-destructive/5" : "border-border"}`}
+              >
                 <div className="flex items-center justify-between">
                   <div className="font-medium">{s.supplierName}</div>
                   {s.blockSuggested && (
@@ -53,7 +64,9 @@ export function QualityIntelligencePanel() {
                 {s.recurringKinds.length > 0 && (
                   <div className="mt-1 flex flex-wrap gap-1">
                     {s.recurringKinds.map((k) => (
-                      <span key={k.kind} className="text-[10px] px-1.5 py-0.5 rounded bg-muted/50">{k.kind}×{k.count}</span>
+                      <span key={k.kind} className="text-[10px] px-1.5 py-0.5 rounded bg-muted/50">
+                        {k.kind}×{k.count}
+                      </span>
                     ))}
                   </div>
                 )}

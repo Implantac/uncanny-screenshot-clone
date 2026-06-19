@@ -10,10 +10,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 type Props = {
@@ -40,10 +52,12 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
   const [notes, setNotes] = useState("");
 
   const create = useMutation({
-    mutationFn: () => createFn({ data: { techSheetId, label: label || undefined, notes: notes || undefined } }),
+    mutationFn: () =>
+      createFn({ data: { techSheetId, label: label || undefined, notes: notes || undefined } }),
     onSuccess: (v: any) => {
       toast.success(`Snapshot v${v.version_number} criado`);
-      setLabel(""); setNotes("");
+      setLabel("");
+      setNotes("");
       qc.invalidateQueries({ queryKey: versionsKey });
     },
     onError: (e: any) => toast.error(e?.message ?? "Erro ao criar snapshot"),
@@ -78,16 +92,33 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
           <div className="grid gap-2 sm:grid-cols-2">
             <div>
               <Label className="text-xs">Rótulo</Label>
-              <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="ex.: Aprovação cliente" />
+              <Input
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="ex.: Aprovação cliente"
+              />
             </div>
             <div>
               <Label className="text-xs">Notas</Label>
-              <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="opcional" />
+              <Input
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="opcional"
+              />
             </div>
           </div>
           <div className="flex justify-end">
-            <Button size="sm" onClick={() => create.mutate()} disabled={create.isPending} className="gap-1">
-              {create.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
+            <Button
+              size="sm"
+              onClick={() => create.mutate()}
+              disabled={create.isPending}
+              className="gap-1"
+            >
+              {create.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Plus className="size-3.5" />
+              )}
               Criar snapshot
             </Button>
           </div>
@@ -98,14 +129,24 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
           {isLoading ? (
             <div className="text-xs text-muted-foreground">Carregando…</div>
           ) : versions.length === 0 ? (
-            <div className="text-xs text-muted-foreground">Sem snapshots ainda. Crie o primeiro para começar a versionar.</div>
+            <div className="text-xs text-muted-foreground">
+              Sem snapshots ainda. Crie o primeiro para começar a versionar.
+            </div>
           ) : (
             <div className="space-y-2">
               {versions.map((v: any) => (
-                <div key={v.id} className="rounded-lg border border-border bg-background/40 p-3 text-sm flex items-center justify-between">
+                <div
+                  key={v.id}
+                  className="rounded-lg border border-border bg-background/40 p-3 text-sm flex items-center justify-between"
+                >
                   <div>
-                    <div className="font-medium">v{v.version_number} {v.label ? <span className="text-muted-foreground">· {v.label}</span> : null}</div>
-                    <div className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleString("pt-BR")}</div>
+                    <div className="font-medium">
+                      v{v.version_number}{" "}
+                      {v.label ? <span className="text-muted-foreground">· {v.label}</span> : null}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(v.created_at).toLocaleString("pt-BR")}
+                    </div>
                     {v.notes && <div className="text-xs text-muted-foreground mt-1">{v.notes}</div>}
                   </div>
                   <Badge variant="outline">v{v.version_number}</Badge>
@@ -124,10 +165,14 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
               <div>
                 <Label className="text-xs">De</Label>
                 <Select value={fromId} onValueChange={setFromId}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
                   <SelectContent>
                     {versions.map((v: any) => (
-                      <SelectItem key={v.id} value={v.id}>v{v.version_number} {v.label ? `· ${v.label}` : ""}</SelectItem>
+                      <SelectItem key={v.id} value={v.id}>
+                        v{v.version_number} {v.label ? `· ${v.label}` : ""}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -135,15 +180,23 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
               <div>
                 <Label className="text-xs">Para</Label>
                 <Select value={toId} onValueChange={setToId}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
                   <SelectContent>
                     {versions.map((v: any) => (
-                      <SelectItem key={v.id} value={v.id}>v{v.version_number} {v.label ? `· ${v.label}` : ""}</SelectItem>
+                      <SelectItem key={v.id} value={v.id}>
+                        v{v.version_number} {v.label ? `· ${v.label}` : ""}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <Button size="sm" onClick={() => diff.mutate()} disabled={!fromId || !toId || fromId === toId || diff.isPending}>
+              <Button
+                size="sm"
+                onClick={() => diff.mutate()}
+                disabled={!fromId || !toId || fromId === toId || diff.isPending}
+              >
                 {diff.isPending ? <Loader2 className="size-3.5 animate-spin" /> : "Comparar"}
               </Button>
             </div>
@@ -153,7 +206,9 @@ export function TechSheetVersionsDrawer({ techSheetId, open, onOpenChange }: Pro
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Fechar
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -168,12 +223,17 @@ function DiffView({ diff }: { diff: any }) {
   ];
   const totalChanges =
     diff.header.length +
-    sections.reduce((s, x) => s + x.data.added.length + x.data.removed.length + x.data.changed.length, 0);
+    sections.reduce(
+      (s, x) => s + x.data.added.length + x.data.removed.length + x.data.changed.length,
+      0,
+    );
 
   return (
     <div className="space-y-3 text-sm">
       <div className="text-xs text-muted-foreground">
-        {totalChanges === 0 ? "Sem diferenças." : `${totalChanges} alteração(ões) entre v${diff.from.version_number} → v${diff.to.version_number}`}
+        {totalChanges === 0
+          ? "Sem diferenças."
+          : `${totalChanges} alteração(ões) entre v${diff.from.version_number} → v${diff.to.version_number}`}
       </div>
 
       {diff.header.length > 0 && (
@@ -199,10 +259,14 @@ function DiffView({ diff }: { diff: any }) {
             <div className="text-xs font-semibold mb-2">{s.title}</div>
             <div className="space-y-1 text-xs">
               {added.map((r: any, i: number) => (
-                <div key={`a-${i}`} className="text-emerald-500">+ {summarize(r)}</div>
+                <div key={`a-${i}`} className="text-emerald-500">
+                  + {summarize(r)}
+                </div>
               ))}
               {removed.map((r: any, i: number) => (
-                <div key={`r-${i}`} className="text-destructive">− {summarize(r)}</div>
+                <div key={`r-${i}`} className="text-destructive">
+                  − {summarize(r)}
+                </div>
               ))}
               {changed.map((c: any, i: number) => (
                 <div key={`c-${i}`}>

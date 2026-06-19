@@ -49,8 +49,12 @@ function DayProductionPage() {
             <Factory className="size-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold tracking-tight capitalize">Produção do dia · {stage}</h1>
-            <p className="text-xs text-muted-foreground">O que este setor precisa entregar agora. Atualiza a cada 30s.</p>
+            <h1 className="text-xl font-semibold tracking-tight capitalize">
+              Produção do dia · {stage}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              O que este setor precisa entregar agora. Atualiza a cada 30s.
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2 text-xs">
@@ -85,8 +89,20 @@ function DayProductionPage() {
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={9} className="text-center py-8 text-muted-foreground">Carregando…</td></tr>}
-            {!isLoading && (data?.length ?? 0) === 0 && <tr><td colSpan={9} className="text-center py-8 text-muted-foreground">Nada para produzir neste setor hoje.</td></tr>}
+            {isLoading && (
+              <tr>
+                <td colSpan={9} className="text-center py-8 text-muted-foreground">
+                  Carregando…
+                </td>
+              </tr>
+            )}
+            {!isLoading && (data?.length ?? 0) === 0 && (
+              <tr>
+                <td colSpan={9} className="text-center py-8 text-muted-foreground">
+                  Nada para produzir neste setor hoje.
+                </td>
+              </tr>
+            )}
             {data?.map((r: any) => {
               const prio = PRIORITY_LABEL[r.priority ?? 1] ?? PRIORITY_LABEL[1];
               const isLate = r.due_date && r.due_date < today;
@@ -95,22 +111,33 @@ function DayProductionPage() {
                 : 0;
               const score = Math.round(r.score ?? 0);
               const scoreCls =
-                score >= 70 ? "bg-destructive/15 text-destructive border-destructive/30"
-                : score >= 40 ? "bg-amber-500/15 text-amber-600 border-amber-500/30"
-                : "bg-muted text-muted-foreground border-border";
+                score >= 70
+                  ? "bg-destructive/15 text-destructive border-destructive/30"
+                  : score >= 40
+                    ? "bg-amber-500/15 text-amber-600 border-amber-500/30"
+                    : "bg-muted text-muted-foreground border-border";
               return (
                 <tr key={r.id} className="border-t border-border hover:bg-muted/20">
                   <td className="px-4 py-3">
-                    <span className={`text-[11px] font-mono font-semibold px-2 py-0.5 rounded border ${scoreCls}`} title={(r.score_reasons ?? []).join(" · ")}>
+                    <span
+                      className={`text-[11px] font-mono font-semibold px-2 py-0.5 rounded border ${scoreCls}`}
+                      title={(r.score_reasons ?? []).join(" · ")}
+                    >
                       {score}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded border ${prio.cls}`}>{prio.label}</span>
+                    <span
+                      className={`text-[11px] font-medium px-2 py-0.5 rounded border ${prio.cls}`}
+                    >
+                      {prio.label}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="font-medium">{r.code}</div>
-                    {r.batch_code && <div className="text-xs text-muted-foreground">Lote {r.batch_code}</div>}
+                    {r.batch_code && (
+                      <div className="text-xs text-muted-foreground">Lote {r.batch_code}</div>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
@@ -128,7 +155,9 @@ function DayProductionPage() {
                       )}
                       <div className="min-w-0">
                         <div className="truncate">{r.products?.name ?? "—"}</div>
-                        <div className="text-xs text-muted-foreground font-mono">{r.products?.sku}</div>
+                        <div className="text-xs text-muted-foreground font-mono">
+                          {r.products?.sku}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -139,7 +168,9 @@ function DayProductionPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right font-mono">{r.quantity}</td>
-                  <td className={`px-4 py-3 ${isLate ? "text-destructive font-medium" : ""}`}>{r.due_date ?? "—"}</td>
+                  <td className={`px-4 py-3 ${isLate ? "text-destructive font-medium" : ""}`}>
+                    {r.due_date ?? "—"}
+                  </td>
                   <td className="px-4 py-3 inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="size-3" /> {daysInStage}d
                   </td>
@@ -165,7 +196,9 @@ function DayProductionPage() {
       </div>
 
       <div className="text-xs text-muted-foreground">
-        <Link to="/pcp-kanban" className="hover:underline">← Voltar ao Kanban PCP</Link>
+        <Link to="/pcp-kanban" className="hover:underline">
+          ← Voltar ao Kanban PCP
+        </Link>
       </div>
     </div>
   );

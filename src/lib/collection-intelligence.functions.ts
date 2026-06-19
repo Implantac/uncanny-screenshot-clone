@@ -35,19 +35,39 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
     const sb = context.supabase;
     const iso90 = new Date(Date.now() - 90 * 86400000).toISOString();
 
-    const [{ data: sales }, { data: collections }, { data: products }, { data: sheets }, { data: ops }] = await Promise.all([
-      sb.from("erp_sales_mirror").select("sku, product_ref, quantity, total_value").gte("sold_at", iso90).limit(3000),
+    const [
+      { data: sales },
+      { data: collections },
+      { data: products },
+      { data: sheets },
+      { data: ops },
+    ] = await Promise.all([
+      sb
+        .from("erp_sales_mirror")
+        .select("sku, product_ref, quantity, total_value")
+        .gte("sold_at", iso90)
+        .limit(3000),
       sb.from("collections").select("id, name, season, launch_date, status"),
       sb.from("products").select("id, name, sku, collection_id, status"),
       sb.from("tech_sheets").select("product_id, status"),
-      sb.from("production_orders").select("id, product_id, status").neq("status", "cancelada").neq("status", "concluida"),
+      sb
+        .from("production_orders")
+        .select("id, product_id, status")
+        .neq("status", "cancelada")
+        .neq("status", "concluida"),
     ]);
 
     // Anchor products: top by revenue with > 1 unit/day
     const byProd = new Map<string, AnchorProduct>();
     (sales ?? []).forEach((s: any) => {
       const k = s.sku ?? s.product_ref ?? "—";
-      const cur = byProd.get(k) ?? { sku: k, name: s.product_ref ?? k, units: 0, revenue: 0, avgPrice: 0 };
+      const cur = byProd.get(k) ?? {
+        sku: k,
+        name: s.product_ref ?? k,
+        units: 0,
+        revenue: 0,
+        avgPrice: 0,
+      };
       cur.units += Number(s.quantity ?? 0);
       cur.revenue += Number(s.total_value ?? 0);
       byProd.set(k, cur);
@@ -58,9 +78,14 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
       .slice(0, 8);
 
     // Risk per active collection
-    const approvedSheetByProd = new Set((sheets ?? []).filter((s: any) => s.status === "aprovada").map((s: any) => s.product_id));
+    const approvedSheetByProd = new Set(
+      (sheets ?? []).filter((s: any) => s.status === "aprovada").map((s: any) => s.product_id),
+    );
     const opsByProd = new Map<string, number>();
-    (ops ?? []).forEach((o: any) => o.product_id && opsByProd.set(o.product_id, (opsByProd.get(o.product_id) ?? 0) + 1));
+    (ops ?? []).forEach(
+      (o: any) =>
+        o.product_id && opsByProd.set(o.product_id, (opsByProd.get(o.product_id) ?? 0) + 1),
+    );
 
     const now = Date.now();
     const risks: CollectionRisk[] = (collections ?? [])
@@ -70,7 +95,9 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
         const approved = items.filter((p: any) => approvedSheetByProd.has(p.id)).length;
         const pct = items.length ? Math.round((approved / items.length) * 100) : 0;
         const activeOps = items.reduce((s: number, p: any) => s + (opsByProd.get(p.id) ?? 0), 0);
-        const days = c.launch_date ? Math.ceil((new Date(c.launch_date).getTime() - now) / 86400000) : null;
+        const days = c.launch_date
+          ? Math.ceil((new Date(c.launch_date).getTime() - now) / 86400000)
+          : null;
 
         let risk: CollectionRisk["risk"] = "low";
         let reason = "Dentro do ritmo esperado.";
@@ -89,8 +116,17 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
         }
 
         return {
-          id: c.id, name: c.name, season: c.season, launchDate: c.launch_date, daysToLaunch: days,
-          productCount: items.length, approvedSheets: approved, approvedSheetsPct: pct, activeOps, risk, reason,
+          id: c.id,
+          name: c.name,
+          season: c.season,
+          launchDate: c.launch_date,
+          daysToLaunch: days,
+          productCount: items.length,
+          approvedSheets: approved,
+          approvedSheetsPct: pct,
+          activeOps,
+          risk,
+          reason,
         };
       })
       .sort((a, b) => {
@@ -101,12 +137,17 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
     const suggestions: string[] = [];
     if (anchorProducts.length) {
       const top = anchorProducts[0];
-      suggestions.push(`**Repor âncora** \`${top.sku}\` — ${top.units} un · R$ ${Math.round(top.revenue).toLocaleString("pt-BR")} em 90d.`);
+      suggestions.push(
+        `**Repor âncora** \`${top.sku}\` — ${top.units} un · R$ ${Math.round(top.revenue).toLocaleString("pt-BR")} em 90d.`,
+      );
     }
     const highRisk = risks.find((r) => r.risk === "high");
-    if (highRisk) suggestions.push(`**Acelerar fichas** da coleção *${highRisk.name}* — ${highRisk.reason}`);
+    if (highRisk)
+      suggestions.push(`**Acelerar fichas** da coleção *${highRisk.name}* — ${highRisk.reason}`);
     if (anchorProducts.length >= 3) {
-      suggestions.push(`**Próxima coleção** deve manter o ticket médio em torno de R$ ${Math.round(anchorProducts.slice(0, 3).reduce((a, b) => a + b.avgPrice, 0) / 3).toLocaleString("pt-BR")}.`);
+      suggestions.push(
+        `**Próxima coleção** deve manter o ticket médio em torno de R$ ${Math.round(anchorProducts.slice(0, 3).reduce((a, b) => a + b.avgPrice, 0) / 3).toLocaleString("pt-BR")}.`,
+      );
     }
 
     return { anchorProducts, risks: risks.slice(0, 8), suggestions };

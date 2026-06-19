@@ -17,7 +17,7 @@ type Analysis = {
 
 export const analyzeTrendImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => Input.parse(input))
+  .validator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<Analysis> => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("LOVABLE_API_KEY ausente");
@@ -47,8 +47,10 @@ export const analyzeTrendImage = createServerFn({ method: "POST" })
     });
     if (!res.ok) {
       const err = await res.text();
-      if (res.status === 429) throw new Error("Limite de requisições atingido. Tente novamente em instantes.");
-      if (res.status === 402) throw new Error("Créditos de IA esgotados. Adicione créditos para continuar.");
+      if (res.status === 429)
+        throw new Error("Limite de requisições atingido. Tente novamente em instantes.");
+      if (res.status === 402)
+        throw new Error("Créditos de IA esgotados. Adicione créditos para continuar.");
       throw new Error(`AI Gateway: ${res.status} ${err.slice(0, 200)}`);
     }
     const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };

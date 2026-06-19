@@ -30,7 +30,11 @@ Regras: 4-6 cores coerentes (hex válido), 3-5 tecidos com composição real, 3-
 function extractJson(s: string): any | null {
   const m = s.match(/\{[\s\S]*\}/);
   if (!m) return null;
-  try { return JSON.parse(m[0]); } catch { return null; }
+  try {
+    return JSON.parse(m[0]);
+  } catch {
+    return null;
+  }
 }
 
 export const suggestPaletteFabric = createServerFn({ method: "POST" })
@@ -55,22 +59,28 @@ Devolva o JSON conforme o schema.`;
       if (!parsed) throw new Error("Resposta inválida da IA");
       return {
         mood: String(parsed.mood ?? ""),
-        palette: Array.isArray(parsed.palette) ? parsed.palette.slice(0, 6).map((p: any) => ({
-          name: String(p.name ?? ""),
-          hex: /^#[0-9a-f]{6}$/i.test(p.hex ?? "") ? p.hex : "#888888",
-          usage: String(p.usage ?? "apoio"),
-        })) : [],
-        fabrics: Array.isArray(parsed.fabrics) ? parsed.fabrics.slice(0, 5).map((f: any) => ({
-          name: String(f.name ?? ""),
-          composition: String(f.composition ?? ""),
-          why: String(f.why ?? ""),
-        })) : [],
+        palette: Array.isArray(parsed.palette)
+          ? parsed.palette.slice(0, 6).map((p: any) => ({
+              name: String(p.name ?? ""),
+              hex: /^#[0-9a-f]{6}$/i.test(p.hex ?? "") ? p.hex : "#888888",
+              usage: String(p.usage ?? "apoio"),
+            }))
+          : [],
+        fabrics: Array.isArray(parsed.fabrics)
+          ? parsed.fabrics.slice(0, 5).map((f: any) => ({
+              name: String(f.name ?? ""),
+              composition: String(f.composition ?? ""),
+              why: String(f.why ?? ""),
+            }))
+          : [],
         refs: Array.isArray(parsed.refs) ? parsed.refs.slice(0, 6).map(String) : [],
       };
     } catch (err: any) {
       const status = err?.statusCode ?? err?.lastError?.statusCode;
-      if (status === 429) throw new Error("Limite de requisições da IA atingido. Aguarde alguns segundos.");
-      if (status === 402) throw new Error("Créditos de IA esgotados. Adicione créditos no workspace.");
+      if (status === 429)
+        throw new Error("Limite de requisições da IA atingido. Aguarde alguns segundos.");
+      if (status === 402)
+        throw new Error("Créditos de IA esgotados. Adicione créditos no workspace.");
       throw err;
     }
   });

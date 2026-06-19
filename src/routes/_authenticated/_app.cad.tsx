@@ -10,14 +10,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/cad")({
-  validateSearch: zodValidator(z.object({
-    q: fallback(z.string().trim().max(80), "").default(""),
-    cat: fallback(z.string().trim().max(40), "all").default("all"),
-  })),
+  validateSearch: zodValidator(
+    z.object({
+      q: fallback(z.string().trim().max(80), "").default(""),
+      cat: fallback(z.string().trim().max(40), "all").default("all"),
+    }),
+  ),
   head: () => ({
     meta: [
       { title: "CAD e Modelagem · USE MODA OS" },
@@ -56,8 +64,10 @@ function CAD() {
   const cadSearch = Route.useSearch();
   const { q, cat } = cadSearch;
   const navigate = useNavigate({ from: Route.fullPath });
-  const setQ = (v: string) => navigate({ search: (p: typeof cadSearch) => ({ ...p, q: v }), replace: true });
-  const setCat = (v: string) => navigate({ search: (p: typeof cadSearch) => ({ ...p, cat: v }), replace: true });
+  const setQ = (v: string) =>
+    navigate({ search: (p: typeof cadSearch) => ({ ...p, q: v }), replace: true });
+  const setCat = (v: string) =>
+    navigate({ search: (p: typeof cadSearch) => ({ ...p, cat: v }), replace: true });
   const [selected, setSelected] = useState<Molde | null>(null);
 
   const { data, isLoading } = useQuery({
@@ -66,7 +76,9 @@ function CAD() {
       const [{ data: products, error }, { count: protoCount }] = await Promise.all([
         supabase
           .from("products")
-          .select("id, sku, name, category, sizes, colors, grade, image_url, updated_at, description")
+          .select(
+            "id, sku, name, category, sizes, colors, grade, image_url, updated_at, description",
+          )
           .order("updated_at", { ascending: false })
           .limit(200),
         supabase.from("prototypes").select("id", { count: "exact", head: true }),
@@ -201,14 +213,17 @@ function CAD() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((m, i) => {
-            const grade =
-              (m.sizes ?? []).length ? `${m.sizes![0]}-${m.sizes![m.sizes!.length - 1]}` : "—";
+            const grade = (m.sizes ?? []).length
+              ? `${m.sizes![0]}-${m.sizes![m.sizes!.length - 1]}`
+              : "—";
             return (
               <div
                 key={m.id}
                 className="glass rounded-xl overflow-hidden hover:border-primary/40 transition-colors"
               >
-                <div className={`h-32 bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]} relative`}>
+                <div
+                  className={`h-32 bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]} relative`}
+                >
                   {m.image_url ? (
                     <img
                       src={m.image_url}
@@ -222,9 +237,24 @@ function CAD() {
                       viewBox="0 0 100 100"
                       preserveAspectRatio="none"
                     >
-                      <path d="M20,10 L80,10 L70,90 L30,90 Z" fill="none" stroke="white" strokeWidth="0.5" />
-                      <path d="M30,30 L70,30" stroke="white" strokeWidth="0.3" strokeDasharray="2 2" />
-                      <path d="M28,60 L72,60" stroke="white" strokeWidth="0.3" strokeDasharray="2 2" />
+                      <path
+                        d="M20,10 L80,10 L70,90 L30,90 Z"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="0.5"
+                      />
+                      <path
+                        d="M30,30 L70,30"
+                        stroke="white"
+                        strokeWidth="0.3"
+                        strokeDasharray="2 2"
+                      />
+                      <path
+                        d="M28,60 L72,60"
+                        stroke="white"
+                        strokeWidth="0.3"
+                        strokeDasharray="2 2"
+                      />
                     </svg>
                   )}
                   <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/40 backdrop-blur text-[10px] text-white tabular-nums">
@@ -241,7 +271,9 @@ function CAD() {
                     </div>
                     <div className="flex justify-between">
                       <span>Cores</span>
-                      <span className="text-foreground/80 tabular-nums">{m.colors?.length ?? 0}</span>
+                      <span className="text-foreground/80 tabular-nums">
+                        {m.colors?.length ?? 0}
+                      </span>
                     </div>
                   </div>
                   <div className="mt-3 flex gap-2">
@@ -297,18 +329,26 @@ function CAD() {
                   <div>
                     <div className="text-xs text-muted-foreground mb-1">Grade de tamanhos</div>
                     <div className="flex flex-wrap gap-1">
-                      {(selected.sizes ?? []).length === 0 && <span className="text-muted-foreground">—</span>}
+                      {(selected.sizes ?? []).length === 0 && (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                       {(selected.sizes ?? []).map((s) => (
-                        <Badge key={s} variant="secondary">{s}</Badge>
+                        <Badge key={s} variant="secondary">
+                          {s}
+                        </Badge>
                       ))}
                     </div>
                   </div>
                   <div>
                     <div className="text-xs text-muted-foreground mb-1">Cores</div>
                     <div className="flex flex-wrap gap-1">
-                      {(selected.colors ?? []).length === 0 && <span className="text-muted-foreground">—</span>}
+                      {(selected.colors ?? []).length === 0 && (
+                        <span className="text-muted-foreground">—</span>
+                      )}
                       {(selected.colors ?? []).map((c) => (
-                        <Badge key={c} variant="outline">{c}</Badge>
+                        <Badge key={c} variant="outline">
+                          {c}
+                        </Badge>
                       ))}
                     </div>
                   </div>
@@ -326,7 +366,9 @@ function CAD() {
                 </div>
               )}
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="ghost" onClick={() => setSelected(null)}>Fechar</Button>
+                <Button variant="ghost" onClick={() => setSelected(null)}>
+                  Fechar
+                </Button>
                 <Button onClick={() => exportSpec(selected)}>
                   <Download className="size-4 mr-2" /> Exportar spec
                 </Button>

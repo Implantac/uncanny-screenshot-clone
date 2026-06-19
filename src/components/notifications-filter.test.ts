@@ -1,7 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { show, computeCounts, CATEGORIES, type Cat } from "./notifications-filter";
 
-const SECTIONS: Exclude<Cat, "all">[] = ["estoque", "atraso", "parado", "proto", "comentario", "marketing"];
+const SECTIONS: Exclude<Cat, "all">[] = [
+  "estoque",
+  "atraso",
+  "parado",
+  "proto",
+  "comentario",
+  "marketing",
+];
 
 describe("notifications-filter · show()", () => {
   it("'all' mostra todas as 6 seções, exatamente uma vez cada", () => {
@@ -35,14 +42,28 @@ describe("notifications-filter · show()", () => {
 
 describe("notifications-filter · computeCounts()", () => {
   it("'all' é a soma das categorias", () => {
-    const c = computeCounts({ estoque: 1, atraso: 2, parado: 3, proto: 4, comentario: 5, marketing: 6 });
+    const c = computeCounts({
+      estoque: 1,
+      atraso: 2,
+      parado: 3,
+      proto: 4,
+      comentario: 5,
+      marketing: 6,
+    });
     expect(c.all).toBe(21);
     expect(c.estoque).toBe(1);
     expect(c.marketing).toBe(6);
   });
 
   it("zero em tudo → all=0", () => {
-    const c = computeCounts({ estoque: 0, atraso: 0, parado: 0, proto: 0, comentario: 0, marketing: 0 });
+    const c = computeCounts({
+      estoque: 0,
+      atraso: 0,
+      parado: 0,
+      proto: 0,
+      comentario: 0,
+      marketing: 0,
+    });
     expect(c.all).toBe(0);
   });
 });

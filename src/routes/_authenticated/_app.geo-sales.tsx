@@ -8,10 +8,41 @@ export const Route = createFileRoute("/_authenticated/_app/geo-sales")({
   component: GeoSales,
 });
 
-const UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+const UFS = [
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
+];
 const REGIONS: Record<string, string> = {
-  N: "AC AM AP PA RO RR TO", NE: "AL BA CE MA PB PE PI RN SE",
-  CO: "DF GO MT MS", SE_R: "ES MG RJ SP", S: "PR RS SC",
+  N: "AC AM AP PA RO RR TO",
+  NE: "AL BA CE MA PB PE PI RN SE",
+  CO: "DF GO MT MS",
+  SE_R: "ES MG RJ SP",
+  S: "PR RS SC",
 };
 
 type UFStat = { uf: string; revenue: number; qty: number; orders: number };
@@ -44,18 +75,23 @@ async function loadGeo(): Promise<UFStat[]> {
   return Array.from(map.values());
 }
 
-
 function GeoSales() {
   const { data: stats = [], isLoading } = useQuery({ queryKey: ["geo-sales"], queryFn: loadGeo });
   const maxRevenue = useMemo(() => Math.max(1, ...stats.map((s) => s.revenue)), [stats]);
   const sorted = useMemo(() => [...stats].sort((a, b) => b.revenue - a.revenue), [stats]);
   const totalRev = useMemo(() => stats.reduce((a, s) => a + s.revenue, 0), [stats]);
 
-  const byRegion = useMemo(() => Object.entries(REGIONS).map(([r, list]) => {
-    const ufs = list.split(" ");
-    const rev = stats.filter((s) => ufs.includes(s.uf)).reduce((a, s) => a + s.revenue, 0);
-    return { region: r, revenue: rev };
-  }).sort((a, b) => b.revenue - a.revenue), [stats]);
+  const byRegion = useMemo(
+    () =>
+      Object.entries(REGIONS)
+        .map(([r, list]) => {
+          const ufs = list.split(" ");
+          const rev = stats.filter((s) => ufs.includes(s.uf)).reduce((a, s) => a + s.revenue, 0);
+          return { region: r, revenue: rev };
+        })
+        .sort((a, b) => b.revenue - a.revenue),
+    [stats],
+  );
 
   const heat = (v: number) => {
     const t = v / maxRevenue;
@@ -70,27 +106,48 @@ function GeoSales() {
     <div className="p-6 space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Geo Sales Analytics</h1>
-        <p className="text-sm text-muted-foreground">Aceitação por estado e região nos últimos 90 dias.</p>
+        <p className="text-sm text-muted-foreground">
+          Aceitação por estado e região nos últimos 90 dias.
+        </p>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {byRegion.map((r) => (
           <div key={r.region} className="rounded-xl border border-border p-3 bg-card">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">Região {r.region.replace("_R", "")}</div>
-            <div className="mt-1 text-xl font-semibold">{r.revenue.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</div>
-            <div className="text-[11px] text-muted-foreground">{totalRev > 0 ? Math.round((r.revenue / totalRev) * 100) : 0}% do total</div>
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">
+              Região {r.region.replace("_R", "")}
+            </div>
+            <div className="mt-1 text-xl font-semibold">
+              {r.revenue.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+                maximumFractionDigits: 0,
+              })}
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              {totalRev > 0 ? Math.round((r.revenue / totalRev) * 100) : 0}% do total
+            </div>
           </div>
         ))}
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2 mb-4"><MapPin className="size-4 text-primary" /><span className="font-medium">Mapa de calor por UF</span></div>
-        {isLoading ? <div className="text-muted-foreground">Carregando…</div> : (
+        <div className="flex items-center gap-2 mb-4">
+          <MapPin className="size-4 text-primary" />
+          <span className="font-medium">Mapa de calor por UF</span>
+        </div>
+        {isLoading ? (
+          <div className="text-muted-foreground">Carregando…</div>
+        ) : (
           <div className="grid grid-cols-6 md:grid-cols-9 gap-2">
             {UFS.map((u) => {
               const s = stats.find((x) => x.uf === u) ?? { uf: u, revenue: 0, qty: 0, orders: 0 };
               return (
-                <div key={u} className={`rounded-lg p-3 ${heat(s.revenue)}`} title={`${u}: R$ ${s.revenue.toFixed(2)} • ${s.qty} pç`}>
+                <div
+                  key={u}
+                  className={`rounded-lg p-3 ${heat(s.revenue)}`}
+                  title={`${u}: R$ ${s.revenue.toFixed(2)} • ${s.qty} pç`}
+                >
                   <div className="font-mono font-semibold">{u}</div>
                   <div className="text-[10px] opacity-80">{s.qty} pç</div>
                 </div>
@@ -101,14 +158,37 @@ function GeoSales() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <RankCard title="Maior aceitação" rows={sorted.slice(0, 10)} tone="success" totalRev={totalRev} />
-        <RankCard title="Potencial de crescimento" rows={sorted.filter((s) => s.revenue > 0).slice(-10).reverse()} tone="warning" totalRev={totalRev} />
+        <RankCard
+          title="Maior aceitação"
+          rows={sorted.slice(0, 10)}
+          tone="success"
+          totalRev={totalRev}
+        />
+        <RankCard
+          title="Potencial de crescimento"
+          rows={sorted
+            .filter((s) => s.revenue > 0)
+            .slice(-10)
+            .reverse()}
+          tone="warning"
+          totalRev={totalRev}
+        />
       </div>
     </div>
   );
 }
 
-function RankCard({ title, rows, tone, totalRev }: { title: string; rows: UFStat[]; tone: "success" | "warning"; totalRev: number }) {
+function RankCard({
+  title,
+  rows,
+  tone,
+  totalRev,
+}: {
+  title: string;
+  rows: UFStat[];
+  tone: "success" | "warning";
+  totalRev: number;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card">
       <div className="px-4 py-3 border-b border-border font-medium">{title}</div>
@@ -121,8 +201,16 @@ function RankCard({ title, rows, tone, totalRev }: { title: string; rows: UFStat
               <span className="text-muted-foreground text-xs">{r.qty} pç</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className={`text-${tone} font-medium`}>{r.revenue.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}</span>
-              <span className="text-xs text-muted-foreground w-10 text-right">{totalRev > 0 ? Math.round((r.revenue / totalRev) * 100) : 0}%</span>
+              <span className={`text-${tone} font-medium`}>
+                {r.revenue.toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                  maximumFractionDigits: 0,
+                })}
+              </span>
+              <span className="text-xs text-muted-foreground w-10 text-right">
+                {totalRev > 0 ? Math.round((r.revenue / totalRev) * 100) : 0}%
+              </span>
             </div>
           </div>
         ))}
