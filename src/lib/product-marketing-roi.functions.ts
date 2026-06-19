@@ -67,10 +67,15 @@ type SaleRow = {
   total_value: number | null;
 };
 
-type MarketingCostRow = {
-  product_id: string;
+type MarketingCampaignRow = {
+  product_id: string | null;
   collection_id: string | null;
-  amount: number | null;
+  investment: number | null;
+  cost_shoot: number | null;
+  cost_photos: number | null;
+  cost_traffic: number | null;
+  revenue: number | null;
+  channel: string | null;
 };
 
 const inputSchema = z.object({
