@@ -34,6 +34,7 @@ export type CardActionOrder = {
   owner_id: string;
   quantity: number;
   progress: number;
+  stage: string;
 };
 
 export function ProductionCardActions({
@@ -199,6 +200,8 @@ export function ProductionCardActions({
               orderId={order.id}
               orderCode={order.batch_code ?? order.code}
               ownerId={order.owner_id}
+              stage={order.stage}
+              batchId={null}
             />
           </div>
           <div className="px-1 py-0.5">
