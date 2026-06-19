@@ -1089,7 +1089,66 @@ function AcompanhamentoProducao() {
         )}
       </section>
 
+      {/* TOP LOTES PARADOS — "Qual produto está parado há mais tempo?" */}
+      {stalledTop.length > 0 && (
+        <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 overflow-hidden">
+          <div className="px-4 py-2 border-b border-amber-500/20 text-sm font-semibold inline-flex items-center gap-2 text-amber-700 dark:text-amber-400">
+            <Timer className="size-4" /> Lotes parados há mais tempo
+            <span className="text-[10px] font-normal text-muted-foreground ml-2">
+              clique para abrir o histórico
+            </span>
+          </div>
+          <table className="w-full text-xs">
+            <thead className="bg-muted/30">
+              <tr>
+                <th className="text-left px-3 py-2">Lote / OP</th>
+                <th className="text-left px-3 py-2">Produto</th>
+                <th className="text-left px-3 py-2">Setor</th>
+                <th className="text-left px-3 py-2">Local</th>
+                <th className="text-right px-3 py-2">Dias parado</th>
+                <th className="text-left px-3 py-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stalledTop.map(({ o, dias }) => {
+                const st = statusOf(o);
+                const col = COLUMNS.find((c) => c.match(o));
+                return (
+                  <tr
+                    key={o.id}
+                    onClick={() => setDrawer(o)}
+                    className="border-t border-border hover:bg-amber-500/5 cursor-pointer"
+                  >
+                    <td className="px-3 py-1.5 font-semibold">{o.batch_code ?? o.code}</td>
+                    <td className="px-3 py-1.5">
+                      <div className="truncate max-w-[260px]">{o.product_name ?? "—"}</div>
+                      <div className="text-[10px] text-muted-foreground">{o.product_sku ?? ""}</div>
+                    </td>
+                    <td className="px-3 py-1.5">{col?.label ?? stageLabel(o.stage)}</td>
+                    <td className="px-3 py-1.5">
+                      {o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}
+                    </td>
+                    <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-amber-700 dark:text-amber-400">
+                      {dias}d
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <span
+                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] ${STATUS_META[st].cls}`}
+                      >
+                        <span className={`size-1.5 rounded-full ${STATUS_META[st].dot}`} />
+                        {STATUS_META[st].label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </section>
+      )}
+
       {/* LISTA DETALHADA */}
+
       <section className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-2 border-b border-border text-sm font-semibold flex items-center justify-between">
           <span>Lista detalhada ({filtered.length})</span>
