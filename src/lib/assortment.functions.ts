@@ -199,9 +199,10 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
     );
     const committedByFamily = new Map<string | null, number>();
     for (const po of poRows ?? []) {
-      if (!familyByProduct.has(po.product_id)) continue; // outside this collection
-      const fid = familyByProduct.get(po.product_id) ?? null;
-      committedByFamily.set(fid, (committedByFamily.get(fid) ?? 0) + Number(po.quantity ?? 0));
+      const pid = (po as any).product_id as string | null;
+      if (!pid || !familyByProduct.has(pid)) continue; // outside this collection
+      const fid = familyByProduct.get(pid) ?? null;
+      committedByFamily.set(fid, (committedByFamily.get(fid) ?? 0) + Number((po as any).quantity ?? 0));
     }
     const targetByFamily = new Map<string | null, number>();
     for (const c of cells) {
