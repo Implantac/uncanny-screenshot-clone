@@ -36,9 +36,28 @@ import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-p
 
 export const Route = createFileRoute("/_authenticated/_app/acompanhamento-producao")({
   component: AcompanhamentoProducao,
+const searchSchema = z.object({
+  q: fallback(z.string(), "").default(""),
+  colKey: fallback(z.string(), "").default(""),
+  supplierId: fallback(z.string(), "").default(""),
+  statusF: fallback(z.string(), "").default(""),
+  origin: fallback(z.enum(["", "interna", "externa"]), "").default(""),
+  collection: fallback(z.string(), "").default(""),
+  category: fallback(z.string(), "").default(""),
+  productGroup: fallback(z.string(), "").default(""),
+  productLine: fallback(z.string(), "").default(""),
+  supplierCat: fallback(z.string(), "").default(""),
+  dueFrom: fallback(z.string(), "").default(""),
+  dueTo: fallback(z.string(), "").default(""),
+  listFilter: fallback(z.enum(["", "no_prazo", "atrasado", "finalizado"]), "").default(""),
+  groupBy: fallback(z.enum(["none", "collection", "supplier", "line"]), "none").default("none"),
 });
 
-type Stage =
+export const Route = createFileRoute("/_authenticated/_app/acompanhamento-producao")({
+  validateSearch: zodValidator(searchSchema),
+  component: AcompanhamentoProducao,
+});
+
   | "cad"
   | "corte"
   | "costura"
