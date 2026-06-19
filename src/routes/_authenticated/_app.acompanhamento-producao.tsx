@@ -194,6 +194,7 @@ async function load(): Promise<Order[]> {
 }
 
 function AcompanhamentoProducao() {
+  const qc = useQueryClient();
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["acompanhamento-producao"],
     queryFn: load,
@@ -211,6 +212,18 @@ function AcompanhamentoProducao() {
   const [dueTo, setDueTo] = useState<string>("");
   const [drawer, setDrawer] = useState<Order | null>(null);
   const [zoomCol, setZoomCol] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<string | null>(null);
+
+  const move = useMutation({
+    mutationFn: (vars: { orderId: string; toColumn: string }) =>
+      moveOrderToColumn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Lote movido");
+      qc.invalidateQueries({ queryKey: ["acompanhamento-producao"] });
+    },
+    onError: (e: Error) => toast.error(e.message ?? "Falha ao mover"),
+  });
 
   const suppliers = useMemo(() => {
     const m = new Map<string, string>();
