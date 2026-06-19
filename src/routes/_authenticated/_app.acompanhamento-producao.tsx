@@ -49,9 +49,12 @@ type Order = {
   product_id: string | null;
   supplier_id: string | null;
   supplier_name: string | null;
+  supplier_category: string | null;
   product_name: string | null;
   product_sku: string | null;
   product_category: string | null;
+  product_group: string | null;
+  product_line: string | null;
   collection_name: string | null;
 };
 
