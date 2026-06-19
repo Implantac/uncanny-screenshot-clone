@@ -396,7 +396,20 @@ function Prototipos() {
                 ))}
               </SelectContent>
             </Select>
+            <ViewPresetsDropdown
+              module="prototipos"
+              current={{ q, stage: stageFilter }}
+              onClear={() => {
+                setQ("");
+                setStageFilter("all");
+              }}
+              onApply={(f: ViewPresetFilters) => {
+                if (typeof f.q === "string") setQ(f.q);
+                if (typeof f.stage === "string") setStageFilter(f.stage);
+              }}
+            />
           </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {(Object.keys(STAGE_LABEL) as Stage[]).map((st) => {
