@@ -129,6 +129,9 @@ function IntelHub() {
   const batches = useMemo(() => data?.batches ?? [], [data?.batches]);
   const products = useMemo(() => data?.products ?? [], [data?.products]);
   const suppliers = useMemo(() => data?.suppliers ?? [], [data?.suppliers]);
+  const campaigns = useMemo(() => data?.campaigns ?? [], [data?.campaigns]);
+  const shipments = useMemo(() => data?.shipments ?? [], [data?.shipments]);
+  const briefs = useMemo(() => data?.briefs ?? [], [data?.briefs]);
 
   const now = Date.now();
   const alerts = useMemo(() => {
