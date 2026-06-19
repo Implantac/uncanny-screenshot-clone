@@ -9,7 +9,7 @@ Execute a tarefa descrita pelo agente abaixo e produza um relatório acionável 
 
 export const runAgent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input) => z.object({ agentId: z.string().uuid() }).parse(input))
+  .inputValidator((input) => z.object({ agentId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 

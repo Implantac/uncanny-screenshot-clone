@@ -56,7 +56,7 @@ type RfqClient = {
 
 export const executeAICommand = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data) => Input.parse(data))
+  .inputValidator((data) => Input.parse(data))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 

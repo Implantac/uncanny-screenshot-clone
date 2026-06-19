@@ -5,7 +5,7 @@ import { z } from "zod";
 /** Rastreabilidade visual: timeline de uma OP (por código ou batch). */
 export const getOrderTimeline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: { query: string }) =>
+  .inputValidator((i: { query: string }) =>
     z.object({ query: z.string().trim().min(2).max(80) }).parse(i),
   )
   .handler(async ({ data, context }) => {

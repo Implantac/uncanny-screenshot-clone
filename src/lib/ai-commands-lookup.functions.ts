@@ -6,7 +6,7 @@ const Input = z.object({ q: z.string().trim().max(80).optional().default("") });
 
 export const lookupCommandRefs = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data) => Input.parse(data))
+  .inputValidator((data) => Input.parse(data))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const q = data.q;

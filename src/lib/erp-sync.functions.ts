@@ -33,7 +33,7 @@ const SaveConfigInput = z.object({
 
 export const saveErpConfig = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => SaveConfigInput.parse(input))
+  .inputValidator((input: unknown) => SaveConfigInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { error } = await supabase
@@ -83,7 +83,7 @@ const PushInput = z.object({ tech_sheet_id: z.string().uuid() });
 
 export const pushPlmRelease = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => PushInput.parse(input))
+  .inputValidator((input: unknown) => PushInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: ts, error } = await supabase

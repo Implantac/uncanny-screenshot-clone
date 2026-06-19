@@ -44,7 +44,7 @@ export const listTeam = createServerFn({ method: "POST" })
 
 export const setUserRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { userId: string; role: (typeof ROLES)[number]; enabled: boolean }) =>
+  .inputValidator((input: { userId: string; role: (typeof ROLES)[number]; enabled: boolean }) =>
     z
       .object({
         userId: z.string().uuid(),
@@ -74,7 +74,7 @@ export const setUserRole = createServerFn({ method: "POST" })
 
 export const setUserSector = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { userId: string; sector: (typeof SECTORS)[number]; enabled: boolean }) =>
+  .inputValidator((input: { userId: string; sector: (typeof SECTORS)[number]; enabled: boolean }) =>
     z
       .object({
         userId: z.string().uuid(),
