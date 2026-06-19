@@ -37,7 +37,7 @@ export const enqueuePushForCurrentUser = createServerFn({ method: "POST" })
           link: data.link ?? null,
           kind: data.kind,
           severity: data.severity,
-          payload: data.payload ?? null,
+          payload: (data.payload ?? null) as never,
           error: "Nenhum dispositivo mobile ativo",
         })
         .select("id")
