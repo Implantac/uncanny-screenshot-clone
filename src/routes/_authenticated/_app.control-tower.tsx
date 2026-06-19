@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, CheckCircle2, AlertCircle, Activity, Radio, Factory } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useRealtime } from "@/hooks/use-realtime";
+import { WarRoomPanel } from "@/components/war-room-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/control-tower")({
   component: ControlTower,
@@ -185,6 +186,8 @@ function ControlTower() {
           </button>
         </div>
       </header>
+
+      <WarRoomPanel />
 
       {tab === "live" ? <LiveTab /> : <DemandTab />}
     </div>
