@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   Factory,
   AlertTriangle,
@@ -14,8 +15,12 @@ import {
   History,
   CheckCircle2,
   CircleSlash,
+  Sparkles,
+  TrendingDown,
+  ArrowRight,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
+import { moveOrderToColumn } from "@/lib/production-tracking.functions";
 
 export const Route = createFileRoute("/_authenticated/_app/acompanhamento-producao")({
   component: AcompanhamentoProducao,
