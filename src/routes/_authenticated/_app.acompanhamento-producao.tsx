@@ -421,6 +421,40 @@ function AcompanhamentoProducao() {
     return cards.slice(0, 4);
   }, [sectorSummary, supplierSummary, filtered]);
 
+  // SLA por setor (horas-alvo por etapa) — saúde do fluxo
+  const SLA_HOURS: Record<string, number> = {
+    aguardando_corte: 24,
+    em_corte: 48,
+    aguardando_costura: 24,
+    costura_interna: 96,
+    costura_externa: 168,
+    aguardando_acabamento: 24,
+    acabamento_interno: 48,
+    acabamento_externo: 96,
+    revisao: 24,
+    embalagem: 24,
+    expedicao: 24,
+  };
+  const slaBySetor = useMemo(() => {
+    const map = new Map<string, { setor: string; key: string; target: number; lotes: number; within: number; avgH: number }>();
+    filtered
+      .filter((o) => o.stage !== "entregue")
+      .forEach((o) => {
+        const col = COLUMNS.find((c) => c.match(o));
+        if (!col || col.key === "finalizado") return;
+        const target = SLA_HOURS[col.key] ?? 48;
+        const h = (Date.now() - new Date(o.stage_updated_at).getTime()) / 3600000;
+        const v = map.get(col.key) ?? { setor: col.label, key: col.key, target, lotes: 0, within: 0, avgH: 0 };
+        v.lotes += 1;
+        if (h <= target) v.within += 1;
+        v.avgH += h;
+        map.set(col.key, v);
+      });
+    return Array.from(map.values())
+      .map((v) => ({ ...v, avgH: Math.round(v.avgH / Math.max(1, v.lotes)), pct: Math.round((v.within / Math.max(1, v.lotes)) * 100) }))
+      .sort((a, b) => a.pct - b.pct);
+  }, [filtered]);
+
   const clearFilters = () => {
     setQ("");
     setColKey("");
