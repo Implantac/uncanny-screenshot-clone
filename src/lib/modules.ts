@@ -105,6 +105,7 @@ export const PRIMARY_SLUGS = new Set<string>([
   "pcp-stages",
   "terceirizados",
   "war-room-producao",
+  "acompanhamento-producao",
   "onde-esta",
   "fornecedores",
   "almoxarifado",
@@ -640,6 +641,17 @@ export const MODULES: ModuleDef[] = [
     icon: Factory,
     group: "PCP & Produção",
   },
+  {
+    slug: "acompanhamento-producao",
+    path: "/acompanhamento-producao",
+    title: "Acompanhamento de Produção",
+    short: "Kanban macro + micro",
+    description:
+      "Onde está cada lote agora — kanban por setor (interno/externo), KPIs, resumo por terceiro, histórico de passagens e exportação.",
+    icon: Factory,
+    group: "PCP & Produção",
+  },
+
   {
     slug: "onde-esta",
     path: "/onde-esta",

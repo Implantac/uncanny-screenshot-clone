@@ -95,6 +95,7 @@ import { Route as AuthenticatedAppAuditRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAppAttributionRouteImport } from './routes/_authenticated/_app.attribution'
 import { Route as AuthenticatedAppApprovalsRouteImport } from './routes/_authenticated/_app.approvals'
 import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
+import { Route as AuthenticatedAppAcompanhamentoProducaoRouteImport } from './routes/_authenticated/_app.acompanhamento-producao'
 import { Route as ApiPublicSupplierPortalTokenRouteImport } from './routes/api/public/supplier-portal.$token'
 import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
@@ -594,6 +595,12 @@ const AuthenticatedAppAlmoxarifadoRoute =
     path: '/almoxarifado',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppAcompanhamentoProducaoRoute =
+  AuthenticatedAppAcompanhamentoProducaoRouteImport.update({
+    id: '/acompanhamento-producao',
+    path: '/acompanhamento-producao',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const ApiPublicSupplierPortalTokenRoute =
   ApiPublicSupplierPortalTokenRouteImport.update({
     id: '/api/public/supplier-portal/$token',
@@ -647,6 +654,7 @@ export interface FileRoutesByFullPath {
   '/trust': typeof TrustRoute
   '/api/chat': typeof ApiChatRoute
   '/dpp/$id': typeof DppIdRoute
+  '/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/approvals': typeof AuthenticatedAppApprovalsRoute
   '/attribution': typeof AuthenticatedAppAttributionRoute
@@ -741,6 +749,7 @@ export interface FileRoutesByTo {
   '/trust': typeof TrustRoute
   '/api/chat': typeof ApiChatRoute
   '/dpp/$id': typeof DppIdRoute
+  '/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/approvals': typeof AuthenticatedAppApprovalsRoute
   '/attribution': typeof AuthenticatedAppAttributionRoute
@@ -837,6 +846,7 @@ export interface FileRoutesById {
   '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
   '/dpp/$id': typeof DppIdRoute
+  '/_authenticated/_app/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
   '/_authenticated/_app/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/_authenticated/_app/approvals': typeof AuthenticatedAppApprovalsRoute
   '/_authenticated/_app/attribution': typeof AuthenticatedAppAttributionRoute
@@ -934,6 +944,7 @@ export interface FileRouteTypes {
     | '/trust'
     | '/api/chat'
     | '/dpp/$id'
+    | '/acompanhamento-producao'
     | '/almoxarifado'
     | '/approvals'
     | '/attribution'
@@ -1028,6 +1039,7 @@ export interface FileRouteTypes {
     | '/trust'
     | '/api/chat'
     | '/dpp/$id'
+    | '/acompanhamento-producao'
     | '/almoxarifado'
     | '/approvals'
     | '/attribution'
@@ -1123,6 +1135,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app'
     | '/api/chat'
     | '/dpp/$id'
+    | '/_authenticated/_app/acompanhamento-producao'
     | '/_authenticated/_app/almoxarifado'
     | '/_authenticated/_app/approvals'
     | '/_authenticated/_app/attribution'
@@ -1829,6 +1842,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAlmoxarifadoRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/acompanhamento-producao': {
+      id: '/_authenticated/_app/acompanhamento-producao'
+      path: '/acompanhamento-producao'
+      fullPath: '/acompanhamento-producao'
+      preLoaderRoute: typeof AuthenticatedAppAcompanhamentoProducaoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/api/public/supplier-portal/$token': {
       id: '/api/public/supplier-portal/$token'
       path: '/api/public/supplier-portal/$token'
@@ -1889,6 +1909,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppAcompanhamentoProducaoRoute: typeof AuthenticatedAppAcompanhamentoProducaoRoute
   AuthenticatedAppAlmoxarifadoRoute: typeof AuthenticatedAppAlmoxarifadoRoute
   AuthenticatedAppApprovalsRoute: typeof AuthenticatedAppApprovalsRoute
   AuthenticatedAppAttributionRoute: typeof AuthenticatedAppAttributionRoute
@@ -1976,6 +1997,8 @@ interface AuthenticatedAppRouteChildren {
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppAcompanhamentoProducaoRoute:
+    AuthenticatedAppAcompanhamentoProducaoRoute,
   AuthenticatedAppAlmoxarifadoRoute: AuthenticatedAppAlmoxarifadoRoute,
   AuthenticatedAppApprovalsRoute: AuthenticatedAppApprovalsRoute,
   AuthenticatedAppAttributionRoute: AuthenticatedAppAttributionRoute,
