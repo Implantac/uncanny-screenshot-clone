@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Factory, Clock, CheckCircle2, AlertTriangle, Gauge, Activity } from "lucide-react";
 import { CapacitySimulator } from "@/components/capacity-simulator";
+import { PcpIntelligencePanel } from "@/components/pcp-intelligence-panel";
+import { SupplierCapacityEditor } from "@/components/supplier-capacity-editor";
 
 export const Route = createFileRoute("/_authenticated/_app/capacity")({
   component: Capacity,
@@ -122,7 +124,12 @@ function Capacity() {
         </div>
       </div>
 
-      <CapacitySimulator orders={orders} />
+      <PcpIntelligencePanel />
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        <SupplierCapacityEditor />
+        <CapacitySimulator orders={orders} />
+      </div>
 
       <div className="rounded-xl border border-border bg-card">
         <div className="px-4 py-3 border-b border-border font-medium">
