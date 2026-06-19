@@ -282,11 +282,14 @@ function AcompanhamentoProducao() {
       if (statusF && statusOf(o) !== statusF) return false;
       if (collection && o.collection_name !== collection) return false;
       if (category && o.product_category !== category) return false;
+      if (productGroup && o.product_group !== productGroup) return false;
+      if (productLine && o.product_line !== productLine) return false;
+      if (supplierCat && o.supplier_category !== supplierCat) return false;
       if (dueFrom && (!o.due_date || o.due_date < dueFrom)) return false;
       if (dueTo && (!o.due_date || o.due_date > dueTo)) return false;
       return true;
     });
-  }, [orders, q, colKey, supplierId, origin, statusF, collection, category, dueFrom, dueTo]);
+  }, [orders, q, colKey, supplierId, origin, statusF, collection, category, productGroup, productLine, supplierCat, dueFrom, dueTo]);
 
   // KPIs
   const kpis = useMemo(() => {
