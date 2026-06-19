@@ -219,6 +219,23 @@ function AcompanhamentoProducao() {
     queryFn: load,
   });
 
+  // Realtime: invalida quando OPs ou passagens mudam (apontamentos de outros usuários, ERP, etc.)
+  useRealtime("production_orders", ["acompanhamento-producao"]);
+  useRealtime("production_stage_log", ["acompanhamento-producao"]);
+
+  // Predição de atrasos por OP — cache 5 min, indexado por orderId
+  const { data: prediction } = useQuery({
+    queryKey: ["acompanhamento-producao", "predict"],
+    queryFn: () => predictDelays(),
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+  });
+  const predByOrder = useMemo(() => {
+    const m = new Map<string, DelayPrediction>();
+    (prediction?.items ?? []).forEach((p) => m.set(p.orderId, p));
+    return m;
+  }, [prediction]);
+
   // Filtros
   const [q, setQ] = useState("");
   const [colKey, setColKey] = useState<string>("");
@@ -237,6 +254,19 @@ function AcompanhamentoProducao() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
   const [listFilter, setListFilter] = useState<"" | "no_prazo" | "atrasado" | "finalizado">("");
+
+  // UX: modo painel (TV) e agrupamento (swimlanes)
+  const [tvMode, setTvMode] = useState(false);
+  const [groupBy, setGroupBy] = useState<"none" | "collection" | "supplier" | "line">("none");
+
+  // Auto-refresh periódico no modo TV (além do realtime, garante UI viva)
+  useEffect(() => {
+    if (!tvMode) return;
+    const id = setInterval(() => {
+      qc.invalidateQueries({ queryKey: ["acompanhamento-producao"] });
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [tvMode, qc]);
 
   const move = useMutation({
     mutationFn: (vars: { orderId: string; toColumn: string }) =>
