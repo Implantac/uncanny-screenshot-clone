@@ -49,9 +49,12 @@ type Order = {
   product_id: string | null;
   supplier_id: string | null;
   supplier_name: string | null;
+  supplier_category: string | null;
   product_name: string | null;
   product_sku: string | null;
   product_category: string | null;
+  product_group: string | null;
+  product_line: string | null;
   collection_name: string | null;
 };
 
@@ -167,8 +170,8 @@ async function load(): Promise<Order[]> {
     .select(
       `id, code, stage, quantity, progress, due_date, stage_updated_at, batch_code, outsourced, notes,
        product_id, supplier_id,
-       suppliers(name),
-       products(name, sku, category, collections(name))`,
+       suppliers(name, category),
+       products(name, sku, category, product_group, collections(name), product_lines(name))`,
     )
     .order("due_date", { ascending: true, nullsFirst: false });
   if (error) throw error;
@@ -186,9 +189,12 @@ async function load(): Promise<Order[]> {
     product_id: o.product_id,
     supplier_id: o.supplier_id,
     supplier_name: o.suppliers?.name ?? null,
+    supplier_category: o.suppliers?.category ?? null,
     product_name: o.products?.name ?? null,
     product_sku: o.products?.sku ?? null,
     product_category: o.products?.category ?? null,
+    product_group: o.products?.product_group ?? null,
+    product_line: o.products?.product_lines?.name ?? null,
     collection_name: o.products?.collections?.name ?? null,
   })) as Order[];
 }
@@ -208,6 +214,9 @@ function AcompanhamentoProducao() {
   const [origin, setOrigin] = useState<"" | "interna" | "externa">("");
   const [collection, setCollection] = useState<string>("");
   const [category, setCategory] = useState<string>("");
+  const [productGroup, setProductGroup] = useState<string>("");
+  const [productLine, setProductLine] = useState<string>("");
+  const [supplierCat, setSupplierCat] = useState<string>("");
   const [dueFrom, setDueFrom] = useState<string>("");
   const [dueTo, setDueTo] = useState<string>("");
   const [drawer, setDrawer] = useState<Order | null>(null);
@@ -243,6 +252,18 @@ function AcompanhamentoProducao() {
     () => Array.from(new Set(orders.map((o) => o.product_category).filter(Boolean))) as string[],
     [orders],
   );
+  const productGroups = useMemo(
+    () => Array.from(new Set(orders.map((o) => o.product_group).filter(Boolean))) as string[],
+    [orders],
+  );
+  const productLines = useMemo(
+    () => Array.from(new Set(orders.map((o) => o.product_line).filter(Boolean))) as string[],
+    [orders],
+  );
+  const supplierCats = useMemo(
+    () => Array.from(new Set(orders.map((o) => o.supplier_category).filter(Boolean))) as string[],
+    [orders],
+  );
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
@@ -261,11 +282,14 @@ function AcompanhamentoProducao() {
       if (statusF && statusOf(o) !== statusF) return false;
       if (collection && o.collection_name !== collection) return false;
       if (category && o.product_category !== category) return false;
+      if (productGroup && o.product_group !== productGroup) return false;
+      if (productLine && o.product_line !== productLine) return false;
+      if (supplierCat && o.supplier_category !== supplierCat) return false;
       if (dueFrom && (!o.due_date || o.due_date < dueFrom)) return false;
       if (dueTo && (!o.due_date || o.due_date > dueTo)) return false;
       return true;
     });
-  }, [orders, q, colKey, supplierId, origin, statusF, collection, category, dueFrom, dueTo]);
+  }, [orders, q, colKey, supplierId, origin, statusF, collection, category, productGroup, productLine, supplierCat, dueFrom, dueTo]);
 
   // KPIs
   const kpis = useMemo(() => {
@@ -274,6 +298,9 @@ function AcompanhamentoProducao() {
     const internos = wip.filter((o) => !o.outsourced);
     const externos = wip.filter((o) => o.outsourced);
     const atrasados = wip.filter((o) => statusOf(o) === "atrasado");
+    const avgDays = wip.length
+      ? wip.reduce((s, o) => s + daysSince(o.stage_updated_at), 0) / wip.length
+      : 0;
     return {
       lotesProd: lotes.size,
       pcsProd: wip.reduce((s, o) => s + o.quantity, 0),
@@ -281,6 +308,7 @@ function AcompanhamentoProducao() {
       lotesExt: new Set(externos.map((o) => o.batch_code ?? o.id)).size,
       lotesAtr: new Set(atrasados.map((o) => o.batch_code ?? o.id)).size,
       pcsAtr: atrasados.reduce((s, o) => s + o.quantity, 0),
+      avgDays: Math.round(avgDays * 10) / 10,
     };
   }, [filtered]);
 
@@ -463,9 +491,22 @@ function AcompanhamentoProducao() {
     setOrigin("");
     setCollection("");
     setCategory("");
+    setProductGroup("");
+    setProductLine("");
+    setSupplierCat("");
     setDueFrom("");
     setDueTo("");
   };
+
+  // KPIs gerenciais derivados (gargalo / risco)
+  const topBottleneck = useMemo(
+    () => [...sectorSummary].sort((a, b) => b.lotes - a.lotes)[0],
+    [sectorSummary],
+  );
+  const topRiskySupplier = useMemo(
+    () => [...supplierSummary].sort((a, b) => b.atrasado - a.atrasado)[0],
+    [supplierSummary],
+  );
 
   const exportRows = () => {
     exportToCsv(
@@ -599,6 +640,42 @@ function AcompanhamentoProducao() {
               </option>
             ))}
           </select>
+          <select
+            value={productLine}
+            onChange={(e) => setProductLine(e.target.value)}
+            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+          >
+            <option value="">Linha de produto</option>
+            {productLines.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <select
+            value={productGroup}
+            onChange={(e) => setProductGroup(e.target.value)}
+            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+          >
+            <option value="">Grupo / Gênero</option>
+            {productGroups.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <select
+            value={supplierCat}
+            onChange={(e) => setSupplierCat(e.target.value)}
+            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+          >
+            <option value="">Categoria do terceiro</option>
+            {supplierCats.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
           <div className="flex items-center gap-1">
             <input
               type="date"
@@ -618,7 +695,7 @@ function AcompanhamentoProducao() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-9 gap-3">
         <KPI label="Lotes em produção" value={kpis.lotesProd} icon={<Package className="size-4" />} />
         <KPI
           label="Peças em produção"
@@ -638,6 +715,23 @@ function AcompanhamentoProducao() {
           label="Peças atrasadas"
           value={kpis.pcsAtr.toLocaleString("pt-BR")}
           icon={<Clock className="size-4" />}
+          tone="destructive"
+        />
+        <KPI
+          label="Dias médios no setor"
+          value={`${kpis.avgDays}d`}
+          icon={<Clock className="size-4" />}
+        />
+        <KPI
+          label="Setor com mais acúmulo"
+          value={topBottleneck && topBottleneck.lotes > 0 ? `${topBottleneck.setor} · ${topBottleneck.lotes}` : "—"}
+          icon={<Factory className="size-4" />}
+          tone="warning"
+        />
+        <KPI
+          label="Terceiro com mais atraso"
+          value={topRiskySupplier && topRiskySupplier.atrasado > 0 ? `${topRiskySupplier.terceiro} · ${topRiskySupplier.atrasado}` : "—"}
+          icon={<Truck className="size-4" />}
           tone="destructive"
         />
       </div>
