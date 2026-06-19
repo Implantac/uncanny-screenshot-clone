@@ -800,7 +800,9 @@ function ColecoesPage() {
             collectionName={selected.name}
             currentState={(selected.status ?? "briefing") as CollectionState}
           />
+          <ThemesPanel collectionId={selected.id} collectionName={selected.name} />
           <CarryOverPanel collectionId={selected.id} collectionName={selected.name} />
+          <ChannelMixPanel collectionId={selected.id} collectionName={selected.name} />
           <AssortmentPanel collectionId={selected.id} collectionName={selected.name} />
         </>
       )}
