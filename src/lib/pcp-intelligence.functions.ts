@@ -168,7 +168,9 @@ export const getPcpIntelligence = createServerFn({ method: "GET" })
 
     const suggestions: Array<{
       from_supplier: string;
+      from_supplier_id: string;
       to_supplier: string;
+      to_supplier_id: string;
       order_code: string | null;
       order_id: string;
       pieces: number;
@@ -181,7 +183,9 @@ export const getPcpIntelligence = createServerFn({ method: "GET" })
       if (lateOrder && target) {
         suggestions.push({
           from_supplier: over.supplier_name,
+          from_supplier_id: over.supplier_id,
           to_supplier: target.supplier_name,
+          to_supplier_id: target.supplier_id,
           order_code: lateOrder.code,
           order_id: lateOrder.id,
           pieces: lateOrder.quantity_remaining,
