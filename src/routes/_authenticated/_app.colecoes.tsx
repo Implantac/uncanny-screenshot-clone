@@ -784,6 +784,7 @@ function ColecoesPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <LinesDialogButton />
           <CollectionCompareDialog collections={collections as any} />
           <Button onClick={openCreate} className="gap-2">
             <Plus className="size-4" /> Nova coleção
