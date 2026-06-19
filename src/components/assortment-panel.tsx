@@ -128,6 +128,7 @@ export function AssortmentPanel({
   const families = data?.families ?? [];
   const cells = data?.cells ?? [];
   const insights = data?.insights ?? [];
+  const otb = data?.otb ?? [];
 
   const cellMap = useMemo(() => {
     const m = new Map<string, (typeof cells)[number]>();
