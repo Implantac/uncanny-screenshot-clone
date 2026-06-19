@@ -31,7 +31,7 @@ type OrderRow = {
   suppliers?: { name: string | null } | null;
 };
 
-const ACTIVE_STATUS = ["aguardando", "em_producao", "atrasada"];
+const ACTIVE_STATUS = ["aguardando", "em_producao", "atrasada"] as const;
 
 function addBusinessDays(from: Date, days: number, workingDaysPerWeek: number): Date {
   const d = new Date(from);
