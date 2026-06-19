@@ -41,7 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { listCapas, upsertCapa, deleteCapa, type CapaRow } from "@/lib/quality-capa.functions";
+
 import { toast } from "sonner";
 
 const sevTone: Record<string, string> = {
