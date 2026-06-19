@@ -39,7 +39,7 @@ export type CostVarianceRow = {
 
 export const listCostVariance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d) =>
+  .inputValidator((d) =>
     z
       .object({
         collectionId: z.string().uuid().optional(),

@@ -17,7 +17,7 @@ type Analysis = {
 
 export const analyzeTrendImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => Input.parse(input))
+  .inputValidator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<Analysis> => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("LOVABLE_API_KEY ausente");

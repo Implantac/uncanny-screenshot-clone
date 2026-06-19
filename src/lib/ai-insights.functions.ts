@@ -291,7 +291,7 @@ ${
 
 export const askInsight = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data) => Input.parse(data))
+  .inputValidator((data) => Input.parse(data))
   .handler(async ({ data, context }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");

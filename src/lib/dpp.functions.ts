@@ -6,7 +6,7 @@ const IdInput = z.object({ id: z.string().uuid() });
 
 // Public read of a passport by dpp_record id (preferred) or product id (fallback)
 export const getPublicPassport = createServerFn({ method: "GET" })
-  .validator((input: unknown) => IdInput.parse(input))
+  .inputValidator((input: unknown) => IdInput.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -100,7 +100,7 @@ const PublishInput = z.object({
 
 export const publishPassport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => PublishInput.parse(input))
+  .inputValidator((input: unknown) => PublishInput.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: prod, error: pe } = await supabase
@@ -159,7 +159,7 @@ export const publishPassport = createServerFn({ method: "POST" })
 
 export const revokePassport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => IdInput.parse(input))
+  .inputValidator((input: unknown) => IdInput.parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("dpp_records")

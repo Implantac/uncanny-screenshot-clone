@@ -17,7 +17,7 @@ Use os números do contexto. Sem disclaimers.`;
 
 export const suggestTechSheetImprovements = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input) => z.object({ techSheetId: z.string().uuid() }).parse(input))
+  .inputValidator((input) => z.object({ techSheetId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const apiKey = process.env.LOVABLE_API_KEY;
