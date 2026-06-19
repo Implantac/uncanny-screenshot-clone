@@ -105,6 +105,7 @@ export const PRIMARY_SLUGS = new Set<string>([
   "pcp-stages",
   "terceirizados",
   "war-room-producao",
+  "acompanhamento-producao",
   "onde-esta",
   "fornecedores",
   "almoxarifado",
