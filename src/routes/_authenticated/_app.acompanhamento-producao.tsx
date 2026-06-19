@@ -1124,6 +1124,7 @@ function AcompanhamentoProducao() {
         </div>
       </div>
 
+      {!tvMode && (<>
       {/* RESUMO POR SETOR */}
       <section className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-2 border-b border-border flex items-center justify-between">
@@ -1424,6 +1425,7 @@ function AcompanhamentoProducao() {
           );
         })()}
       </section>
+      </>)}
 
       {drawer && <HistoryDrawer order={drawer} onClose={() => setDrawer(null)} />}
     </div>
