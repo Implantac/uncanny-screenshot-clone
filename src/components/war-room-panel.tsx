@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   AlertOctagon,
   ShieldCheck,
@@ -13,8 +14,10 @@ import {
   DollarSign,
   Megaphone,
   ArrowRight,
+  Bell,
 } from "lucide-react";
 import { getWarRoomBottlenecks, type Bottleneck } from "@/lib/war-room.functions";
+import { enqueuePushForCurrentUser } from "@/lib/push-notifications.functions";
 
 const MODULE_META: Record<
   Bottleneck["module"],
