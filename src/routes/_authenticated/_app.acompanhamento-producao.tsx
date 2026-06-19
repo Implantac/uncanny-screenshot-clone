@@ -640,6 +640,42 @@ function AcompanhamentoProducao() {
               </option>
             ))}
           </select>
+          <select
+            value={productLine}
+            onChange={(e) => setProductLine(e.target.value)}
+            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+          >
+            <option value="">Linha de produto</option>
+            {productLines.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <select
+            value={productGroup}
+            onChange={(e) => setProductGroup(e.target.value)}
+            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+          >
+            <option value="">Grupo / Gênero</option>
+            {productGroups.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <select
+            value={supplierCat}
+            onChange={(e) => setSupplierCat(e.target.value)}
+            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+          >
+            <option value="">Categoria do terceiro</option>
+            {supplierCats.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
           <div className="flex items-center gap-1">
             <input
               type="date"
@@ -659,7 +695,7 @@ function AcompanhamentoProducao() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-9 gap-3">
         <KPI label="Lotes em produção" value={kpis.lotesProd} icon={<Package className="size-4" />} />
         <KPI
           label="Peças em produção"
@@ -679,6 +715,23 @@ function AcompanhamentoProducao() {
           label="Peças atrasadas"
           value={kpis.pcsAtr.toLocaleString("pt-BR")}
           icon={<Clock className="size-4" />}
+          tone="destructive"
+        />
+        <KPI
+          label="Dias médios no setor"
+          value={`${kpis.avgDays}d`}
+          icon={<Clock className="size-4" />}
+        />
+        <KPI
+          label="Setor com mais acúmulo"
+          value={topBottleneck && topBottleneck.lotes > 0 ? `${topBottleneck.setor} · ${topBottleneck.lotes}` : "—"}
+          icon={<Factory className="size-4" />}
+          tone="warning"
+        />
+        <KPI
+          label="Terceiro com mais atraso"
+          value={topRiskySupplier && topRiskySupplier.atrasado > 0 ? `${topRiskySupplier.terceiro} · ${topRiskySupplier.atrasado}` : "—"}
+          icon={<Truck className="size-4" />}
           tone="destructive"
         />
       </div>
