@@ -13,7 +13,11 @@ import {
   Boxes,
   ArrowRight,
   TrendingUp,
+  TrendingDown,
   PackageSearch,
+  Megaphone,
+  Users,
+  DollarSign,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AskFashionAI } from "@/components/ask-fashion-ai";
@@ -70,7 +74,8 @@ type Supplier = {
 
 async function loadAll() {
   const today = new Date().toISOString().slice(0, 10);
-  const [orders, batches, products, suppliers] = await Promise.all([
+  const since30 = new Date(Date.now() - 30 * 86400000).toISOString();
+  const [orders, batches, products, suppliers, campaigns, shipments, briefs] = await Promise.all([
     supabase
       .from("production_orders")
       .select(
@@ -89,12 +94,29 @@ async function loadAll() {
       .eq("status", "aprovado")
       .limit(200),
     supabase.from("suppliers").select("id, name, rating, on_time_delivery_rate").limit(100),
+    supabase
+      .from("marketing_campaigns")
+      .select("id, name, channel, status, investment, revenue, roas, start_date, end_date")
+      .limit(100),
+    supabase
+      .from("influencer_shipments")
+      .select("id, status, posted_at, sales_before, sales_after, influencers(nome, seguidores, engajamento)")
+      .gte("created_at", since30)
+      .limit(200),
+    supabase
+      .from("marketing_briefs")
+      .select("id, title, status, kpi_target, budget, updated_at")
+      .neq("status", "arquivado")
+      .limit(50),
   ]);
   return {
     orders: (orders.data ?? []) as unknown as Order[],
     batches: (batches.data ?? []) as unknown as Batch[],
     products: (products.data ?? []) as unknown as Product[],
     suppliers: (suppliers.data ?? []) as unknown as Supplier[],
+    campaigns: (campaigns.data ?? []) as any[],
+    shipments: (shipments.data ?? []) as any[],
+    briefs: (briefs.data ?? []) as any[],
     today,
   };
 }
@@ -107,6 +129,9 @@ function IntelHub() {
   const batches = useMemo(() => data?.batches ?? [], [data?.batches]);
   const products = useMemo(() => data?.products ?? [], [data?.products]);
   const suppliers = useMemo(() => data?.suppliers ?? [], [data?.suppliers]);
+  const campaigns = useMemo(() => data?.campaigns ?? [], [data?.campaigns]);
+  const shipments = useMemo(() => data?.shipments ?? [], [data?.shipments]);
+  const briefs = useMemo(() => data?.briefs ?? [], [data?.briefs]);
 
   const now = Date.now();
   const alerts = useMemo(() => {
@@ -164,6 +189,82 @@ function IntelHub() {
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
   }, [suppliers]);
+
+  // Marketing Intelligence — cruza campanhas + influenciadores + briefs
+  const marketing = useMemo(() => {
+    const activeCampaigns = campaigns.filter((c) => c.status === "ativa" || c.status === "ativo");
+    const totalInvest = campaigns.reduce((s, c) => s + Number(c.investment ?? 0), 0);
+    const totalRevenue = campaigns.reduce((s, c) => s + Number(c.revenue ?? 0), 0);
+    const blendedRoas = totalInvest > 0 ? totalRevenue / totalInvest : 0;
+    const topRoas = [...campaigns]
+      .filter((c) => Number(c.roas ?? 0) > 0)
+      .sort((a, b) => Number(b.roas ?? 0) - Number(a.roas ?? 0))[0];
+    const worstRoas = [...campaigns]
+      .filter((c) => Number(c.investment ?? 0) > 0 && Number(c.roas ?? 0) > 0)
+      .sort((a, b) => Number(a.roas ?? 0) - Number(b.roas ?? 0))[0];
+
+    // ROI por influenciador via vendas_antes/depois nos envios
+    const infRoi = shipments
+      .filter((s) => s.posted_at && (s.sales_after ?? 0) > (s.sales_before ?? 0))
+      .map((s) => ({
+        nome: s.influencers?.nome ?? "—",
+        delta: (s.sales_after ?? 0) - (s.sales_before ?? 0),
+        seguidores: s.influencers?.seguidores ?? 0,
+      }))
+      .sort((a, b) => b.delta - a.delta)
+      .slice(0, 4);
+
+    const draftBriefs = briefs.filter((b) => b.status === "rascunho" || b.status === "draft").length;
+
+    // insights acionáveis
+    const insights: Array<{ tone: "ok" | "warn" | "info" | "danger"; title: string; reason: string }> = [];
+    if (blendedRoas >= 3) {
+      insights.push({
+        tone: "ok",
+        title: `ROAS blended ${blendedRoas.toFixed(2)}x — verba performando`,
+        reason: `Receita ${totalRevenue.toLocaleString("pt-BR")} sobre investimento ${totalInvest.toLocaleString("pt-BR")}. Considere escalar a campanha com maior retorno.`,
+      });
+    } else if (blendedRoas > 0 && blendedRoas < 1.5) {
+      insights.push({
+        tone: "danger",
+        title: `ROAS blended ${blendedRoas.toFixed(2)}x abaixo do limite saudável`,
+        reason: `Pause campanhas com ROAS < 1.5 e realoque para o canal vencedor. Investimento atual: ${totalInvest.toLocaleString("pt-BR")}.`,
+      });
+    }
+    if (worstRoas && Number(worstRoas.roas ?? 0) < 1.5) {
+      insights.push({
+        tone: "warn",
+        title: `"${worstRoas.name}" com ROAS ${Number(worstRoas.roas).toFixed(2)}x`,
+        reason: `Canal ${worstRoas.channel ?? "—"} consumiu ${Number(worstRoas.investment ?? 0).toLocaleString("pt-BR")} sem retorno proporcional. Reduza ou redirecione verba.`,
+      });
+    }
+    if (topRoas) {
+      insights.push({
+        tone: "info",
+        title: `Vencedor: "${topRoas.name}" (${Number(topRoas.roas).toFixed(2)}x)`,
+        reason: `Replique criativo/segmentação nas próximas campanhas do canal ${topRoas.channel ?? "—"}.`,
+      });
+    }
+    if (draftBriefs >= 3) {
+      insights.push({
+        tone: "warn",
+        title: `${draftBriefs} brief(s) em rascunho`,
+        reason: `Briefs parados atrasam lançamentos. Revise e aprove para destravar produção de conteúdo.`,
+      });
+    }
+
+    return {
+      activeCampaigns: activeCampaigns.length,
+      totalInvest,
+      totalRevenue,
+      blendedRoas,
+      topRoas,
+      worstRoas,
+      infRoi,
+      draftBriefs,
+      insights: insights.slice(0, 4),
+    };
+  }, [campaigns, shipments, briefs]);
 
   return (
     <div className="p-6 space-y-6">
@@ -422,6 +523,143 @@ function IntelHub() {
           </div>
         </section>
       </div>
+
+      {/* MARKETING INTELLIGENCE — IA Marketing cruzando campanhas + influenciadores + briefs */}
+      <section className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/5 p-4 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Megaphone className="size-4 text-fuchsia-600" />
+            <h2 className="font-semibold">Marketing Intelligence</h2>
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              IA Marketing — onde a verba está performando
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Link to="/campaigns" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted">
+              Campanhas
+            </Link>
+            <Link to="/influencer-roi" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted">
+              ROI Influenciadores
+            </Link>
+            <Link to="/attribution" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted">
+              Attribution
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <MiniKpi label="Campanhas ativas" value={marketing.activeCampaigns} icon={<Megaphone className="size-3.5" />} tone="primary" />
+          <MiniKpi
+            label="Investimento"
+            value={`R$ ${(marketing.totalInvest / 1000).toFixed(1)}k`}
+            icon={<DollarSign className="size-3.5" />}
+            tone="primary"
+          />
+          <MiniKpi
+            label="Receita atribuída"
+            value={`R$ ${(marketing.totalRevenue / 1000).toFixed(1)}k`}
+            icon={<TrendingUp className="size-3.5" />}
+            tone={marketing.totalRevenue >= marketing.totalInvest ? "green" : "yellow"}
+          />
+          <MiniKpi
+            label="ROAS blended"
+            value={`${marketing.blendedRoas.toFixed(2)}x`}
+            icon={marketing.blendedRoas >= 2 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
+            tone={marketing.blendedRoas >= 2 ? "green" : marketing.blendedRoas >= 1.5 ? "yellow" : "red"}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Insights IA Marketing */}
+          <div className="rounded-lg border border-border bg-card p-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 inline-flex items-center gap-1.5">
+              <Brain className="size-3.5" /> IA Marketing — sugestões
+            </div>
+            {isLoading ? (
+              <div className="text-xs text-muted-foreground">Carregando…</div>
+            ) : marketing.insights.length === 0 ? (
+              <div className="text-xs text-muted-foreground">Sem dados de campanhas suficientes para gerar insights.</div>
+            ) : (
+              <ul className="space-y-2">
+                {marketing.insights.map((ins, i) => {
+                  const tones: Record<string, string> = {
+                    ok: "border-emerald-500/30 bg-emerald-500/5 text-emerald-700",
+                    warn: "border-amber-500/30 bg-amber-500/5 text-amber-700",
+                    danger: "border-red-500/30 bg-red-500/5 text-red-700",
+                    info: "border-sky-500/30 bg-sky-500/5 text-sky-700",
+                  };
+                  return (
+                    <li key={i} className={`rounded border p-2 ${tones[ins.tone]}`}>
+                      <div className="text-xs font-semibold">{ins.title}</div>
+                      <div className="text-[11px] text-foreground/80 mt-0.5">{ins.reason}</div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          {/* Top influenciadores ROI */}
+          <div className="rounded-lg border border-border bg-card p-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 inline-flex items-center gap-1.5">
+              <Users className="size-3.5" /> Top influenciadores (Δ vendas)
+            </div>
+            {marketing.infRoi.length === 0 ? (
+              <div className="text-xs text-muted-foreground">Sem envios com retorno medido nos últimos 30 dias.</div>
+            ) : (
+              <ul className="space-y-1.5">
+                {marketing.infRoi.map((r, i) => (
+                  <li key={i} className="flex items-center justify-between text-xs">
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">{r.nome}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {(r.seguidores / 1000).toFixed(0)}k seguidores
+                      </div>
+                    </div>
+                    <span className="font-semibold tabular-nums text-emerald-600">+{r.delta.toLocaleString("pt-BR")}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {marketing.draftBriefs > 0 && (
+              <div className="mt-2 pt-2 border-t border-border text-[11px] text-muted-foreground">
+                {marketing.draftBriefs} brief(s) em rascunho —{" "}
+                <Link to="/marketing" className="text-primary hover:underline">
+                  revisar
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function MiniKpi({
+  label,
+  value,
+  icon,
+  tone,
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+  tone: "red" | "yellow" | "green" | "primary";
+}) {
+  const tones = {
+    red: "border-destructive/30 text-destructive",
+    yellow: "border-warning/30 text-warning",
+    green: "border-success/30 text-success",
+    primary: "border-primary/30 text-primary",
+  };
+  return (
+    <div className={`rounded-lg border bg-card p-2.5 ${tones[tone]}`}>
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+        {icon}
+        {label}
+      </div>
+      <div className="mt-0.5 text-lg font-semibold tabular-nums">{value}</div>
     </div>
   );
 }

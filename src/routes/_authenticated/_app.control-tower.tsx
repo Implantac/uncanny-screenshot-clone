@@ -1,7 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, CheckCircle2, AlertCircle, Activity, Radio, Factory } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  AlertCircle,
+  Activity,
+  Radio,
+  Factory,
+  Rocket,
+  Bell,
+  Gauge,
+  Brain,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { WarRoomPanel } from "@/components/war-room-panel";
@@ -192,12 +203,218 @@ function ControlTower() {
         <AutoPushSentinel />
       </div>
 
+      <ExecStrip />
+
       <WarRoomPanel />
 
       {tab === "live" ? <LiveTab /> : <DemandTab />}
     </div>
   );
 }
+
+// ====== SALA DE GUERRA EXECUTIVA ======
+const SLA_HOURS: Record<string, number> = {
+  cad: 24,
+  corte: 48,
+  costura: 120,
+  acabamento: 48,
+  qualidade: 24,
+  expedicao: 24,
+};
+
+async function loadExec() {
+  const today = new Date().toISOString().slice(0, 10);
+  const weekAhead = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+  const since24h = new Date(Date.now() - 24 * 3600000).toISOString();
+  const [{ data: orders }, { data: collections }, { data: pushes }, { data: capas }] =
+    await Promise.all([
+      supabase
+        .from("production_orders")
+        .select("id, stage, stage_updated_at, due_date, quantity, status")
+        .neq("status", "cancelada")
+        .neq("status", "concluida"),
+      supabase
+        .from("collections")
+        .select("id, name, season, year, status, status_changed_at")
+        .in("status", ["lancamento", "producao"])
+        .limit(50),
+      supabase
+        .from("push_notifications")
+        .select("id, title, severity, sent_at")
+        .gte("sent_at", since24h)
+        .order("sent_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("quality_capa")
+        .select("id, severity, status")
+        .eq("status", "aberta")
+        .limit(50),
+    ]);
+
+  // SLA por setor
+  const slaMap = new Map<string, { setor: string; lotes: number; within: number; avgH: number }>();
+  (orders ?? []).forEach((o) => {
+    const target = SLA_HOURS[o.stage] ?? 48;
+    const h = (Date.now() - new Date(o.stage_updated_at).getTime()) / 3600000;
+    const v = slaMap.get(o.stage) ?? { setor: o.stage, lotes: 0, within: 0, avgH: 0 };
+    v.lotes++;
+    if (h <= target) v.within++;
+    v.avgH += h;
+    slaMap.set(o.stage, v);
+  });
+  const slaArr = Array.from(slaMap.values()).map((v) => ({
+    ...v,
+    pct: Math.round((v.within / Math.max(1, v.lotes)) * 100),
+    avgH: Math.round(v.avgH / Math.max(1, v.lotes)),
+  }));
+  const slaGlobal = slaArr.length
+    ? Math.round(slaArr.reduce((s, v) => s + v.pct, 0) / slaArr.length)
+    : 100;
+  const opsCriticas = (orders ?? []).filter(
+    (o) => o.due_date && o.due_date < today,
+  ).length;
+  const launchesWeek = (collections ?? []).filter(
+    (c) => c.status === "lancamento" && (c.status_changed_at ?? "").slice(0, 10) <= weekAhead,
+  );
+  const critCapas = (capas ?? []).filter((c) => c.severity === "critica" || c.severity === "alta").length;
+  const pushCrit = (pushes ?? []).filter((p) => p.severity === "critical" || p.severity === "high").length;
+
+  return {
+    slaArr: slaArr.sort((a, b) => a.pct - b.pct),
+    slaGlobal,
+    opsCriticas,
+    launchesWeek,
+    pushesCount: (pushes ?? []).length,
+    pushCrit,
+    critCapas,
+  };
+}
+
+function ExecStrip() {
+  const { data } = useQuery({ queryKey: ["exec-strip"], queryFn: loadExec, refetchInterval: 60_000 });
+  if (!data) return null;
+  const tone = data.slaGlobal >= 85 ? "ok" : data.slaGlobal >= 60 ? "warn" : "danger";
+  const toneRing: Record<string, string> = {
+    ok: "border-emerald-500/30",
+    warn: "border-amber-500/30",
+    danger: "border-red-500/40",
+  };
+  return (
+    <section className={`rounded-xl border-2 ${toneRing[tone]} bg-gradient-to-br from-card to-muted/30 p-4 space-y-3`}>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <Gauge className="size-5 text-primary" />
+          <h2 className="font-semibold">Sala de Guerra Executiva</h2>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            visão de uma tela · diretoria
+          </span>
+        </div>
+        <div className="text-[10px] text-muted-foreground">atualiza a cada 60s</div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <ExecKpi
+          label="SLA global"
+          value={`${data.slaGlobal}%`}
+          tone={tone === "ok" ? "green" : tone === "warn" ? "yellow" : "red"}
+          icon={<Gauge className="size-3.5" />}
+          hint="lotes dentro do tempo-alvo"
+        />
+        <ExecKpi
+          label="OPs críticas"
+          value={data.opsCriticas}
+          tone={data.opsCriticas > 0 ? "red" : "green"}
+          icon={<AlertTriangle className="size-3.5" />}
+          hint="atrasadas vs hoje"
+        />
+        <ExecKpi
+          label="Lançamentos semana"
+          value={data.launchesWeek.length}
+          tone="primary"
+          icon={<Rocket className="size-3.5" />}
+          hint={data.launchesWeek[0]?.name?.slice(0, 22) ?? "—"}
+        />
+        <ExecKpi
+          label="Alertas push 24h"
+          value={data.pushesCount}
+          tone={data.pushCrit > 0 ? "red" : data.pushesCount > 5 ? "yellow" : "primary"}
+          icon={<Bell className="size-3.5" />}
+          hint={`${data.pushCrit} críticos`}
+        />
+        <ExecKpi
+          label="CAPAs abertas"
+          value={data.critCapas}
+          tone={data.critCapas > 0 ? "yellow" : "green"}
+          icon={<Brain className="size-3.5" />}
+          hint="severidade alta/crítica"
+        />
+      </div>
+
+      {data.slaArr.length > 0 && (
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
+          {data.slaArr.map((s) => {
+            const t = s.pct >= 85 ? "bg-emerald-500" : s.pct >= 60 ? "bg-amber-500" : "bg-red-500";
+            return (
+              <div key={s.setor} className="rounded border border-border bg-background p-1.5">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="capitalize font-medium">{s.setor}</span>
+                  <span className="tabular-nums text-muted-foreground">{s.pct}%</span>
+                </div>
+                <div className="h-1 bg-muted rounded mt-1 overflow-hidden">
+                  <div className={`h-full ${t}`} style={{ width: `${s.pct}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2 pt-1">
+        <Link to="/acompanhamento-producao" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted inline-flex items-center gap-1">
+          <Factory className="size-3" /> Acompanhar produção
+        </Link>
+        <Link to="/intel-hub" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted inline-flex items-center gap-1">
+          <Brain className="size-3" /> Intelligence
+        </Link>
+        <Link to="/war-room-producao" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted">
+          War Room produção
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function ExecKpi({
+  label,
+  value,
+  tone,
+  icon,
+  hint,
+}: {
+  label: string;
+  value: number | string;
+  tone: "red" | "yellow" | "green" | "primary";
+  icon: React.ReactNode;
+  hint?: string;
+}) {
+  const tones = {
+    red: "border-destructive/40 text-destructive",
+    yellow: "border-warning/40 text-warning",
+    green: "border-success/40 text-success",
+    primary: "border-primary/40 text-primary",
+  };
+  return (
+    <div className={`rounded-lg border bg-card p-2.5 ${tones[tone]}`}>
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+        {icon}
+        {label}
+      </div>
+      <div className="mt-0.5 text-xl font-semibold tabular-nums">{value}</div>
+      {hint && <div className="text-[10px] text-muted-foreground truncate">{hint}</div>}
+    </div>
+  );
+}
+// ====== /SALA DE GUERRA EXECUTIVA ======
 
 function LiveTab() {
   const { data, isLoading } = useQuery({
