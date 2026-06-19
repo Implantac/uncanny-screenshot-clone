@@ -6,7 +6,7 @@ import { computePriority } from "@/lib/priority-score";
 /** Produção do Dia: OPs ativas em um setor, ordenadas por Score de Prioridade. */
 export const listDayProduction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { stage: string }) => z.object({ stage: z.string().min(1) }).parse(i))
+  .validator((i: { stage: string }) => z.object({ stage: z.string().min(1) }).parse(i))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: rows, error } = await supabase
@@ -130,16 +130,15 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
 /** Cria uma OP a partir da sugestão do motor de necessidade (1 clique). */
 export const createOpFromSuggestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (i: { productId: string; quantity: number; reason?: string; priority?: number }) =>
-      z
-        .object({
-          productId: z.string().uuid(),
-          quantity: z.number().int().positive(),
-          reason: z.string().optional(),
-          priority: z.number().int().min(0).max(3).optional(),
-        })
-        .parse(i),
+  .validator((i: { productId: string; quantity: number; reason?: string; priority?: number }) =>
+    z
+      .object({
+        productId: z.string().uuid(),
+        quantity: z.number().int().positive(),
+        reason: z.string().optional(),
+        priority: z.number().int().min(0).max(3).optional(),
+      })
+      .parse(i),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;

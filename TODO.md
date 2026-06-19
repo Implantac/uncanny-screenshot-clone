@@ -7,9 +7,9 @@ Passar por correções seguras (sem quebrar execução/Lovable) e reduzir warnin
 ## Checklist
 
 - [x] Diagnóstico: rodar `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` e registrar falhas.
-- [ ] Corrigir CSRF warning no `src/start.ts` adicionando `csrfMiddleware` em `requestMiddleware`.
-- [x] Atualizar `createServerFn().inputValidator(...)` para `validator(...)` (parcial — revisado em `src/lib/*.functions.ts` iniciais).
+- [x] Corrigir CSRF warning no `src/start.ts` adicionando `csrfMiddleware` em `requestMiddleware`.
+- [x] Atualizar `createServerFn().inputValidator(...)` para `validator(...)`.
 
-- [ ] Re-rodar `npm run build` (lint pode continuar falhando por regra `no-explicit-any`).
+- [x] Re-rodar `npm run build`, `npm run lint` e `npx vitest run`.
 
-- [ ] Criar branch `blackboxai/` e preparar commit para GitHub.
+- [x] Publicar correções na `main` do GitHub.

@@ -27,7 +27,7 @@ export type CapaRow = {
 
 export const listCapas = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         status: z.string().optional(),
@@ -55,7 +55,7 @@ export const listCapas = createServerFn({ method: "POST" })
 
 export const upsertCapa = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         id: z.string().uuid().optional(),
@@ -96,7 +96,7 @@ export const upsertCapa = createServerFn({ method: "POST" })
 
 export const deleteCapa = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .validator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("quality_capa").delete().eq("id", data.id);
     if (error) throw error;

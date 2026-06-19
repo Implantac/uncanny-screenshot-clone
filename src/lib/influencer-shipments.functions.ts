@@ -32,7 +32,7 @@ Máximo 8 sugestões. Score reflete aderência do produto à região/segmento do
 
 export const suggestShipments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => SuggestInput.parse(d))
+  .validator((d) => SuggestInput.parse(d))
   .handler(async ({ data, context }): Promise<{ suggestions: ShipmentSuggestion[] }> => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");

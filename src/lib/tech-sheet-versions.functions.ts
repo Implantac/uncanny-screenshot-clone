@@ -20,7 +20,7 @@ async function buildSnapshot(supabase: any, sheetId: string) {
 
 export const listTechSheetVersions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ techSheetId: z.string().uuid() }).parse(d))
+  .validator((d) => z.object({ techSheetId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("tech_sheet_versions")
@@ -33,7 +33,7 @@ export const listTechSheetVersions = createServerFn({ method: "POST" })
 
 export const createTechSheetVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({
         techSheetId: z.string().uuid(),
@@ -83,7 +83,7 @@ export const createTechSheetVersion = createServerFn({ method: "POST" })
 
 export const getTechSheetVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ versionId: z.string().uuid() }).parse(d))
+  .validator((d) => z.object({ versionId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("tech_sheet_versions")
@@ -143,7 +143,7 @@ function diffList<T extends Record<string, any>>(
 
 export const diffTechSheetVersions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ fromId: z.string().uuid(), toId: z.string().uuid() }).parse(d))
+  .validator((d) => z.object({ fromId: z.string().uuid(), toId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("tech_sheet_versions")

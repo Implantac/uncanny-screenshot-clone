@@ -27,7 +27,7 @@ const Input = z.object({
 
 export const recommendStrategy = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => Input.parse(data))
+  .validator((data) => Input.parse(data))
   .handler(async ({ data }) => {
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");
