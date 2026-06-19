@@ -18,6 +18,8 @@ import {
   Sparkles,
   TrendingDown,
   ArrowRight,
+  MessageSquareWarning,
+  Timer,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { moveOrderToColumn } from "@/lib/production-tracking.functions";
@@ -508,6 +510,62 @@ function AcompanhamentoProducao() {
     [supplierSummary],
   );
 
+  // Contagem por status (para chips e respostas rápidas)
+  const statusCounts = useMemo(() => {
+    const acc: Record<StatusKey, number> = {
+      no_prazo: 0,
+      atencao: 0,
+      atrasado: 0,
+      sem_previsao: 0,
+      finalizado: 0,
+    };
+    filtered.forEach((o) => {
+      acc[statusOf(o)] += 1;
+    });
+    return acc;
+  }, [filtered]);
+
+  // Top lotes parados há mais tempo — "Qual produto está parado há mais tempo?"
+  const stalledTop = useMemo(() => {
+    return filtered
+      .filter((o) => o.stage !== "entregue")
+      .map((o) => ({ o, dias: daysSince(o.stage_updated_at) }))
+      .sort((a, b) => b.dias - a.dias)
+      .slice(0, 5);
+  }, [filtered]);
+
+  // Chips de filtros ativos
+  const activeChips = useMemo(() => {
+    const chips: Array<{ label: string; clear: () => void }> = [];
+    if (q) chips.push({ label: `Busca: "${q}"`, clear: () => setQ("") });
+    if (colKey)
+      chips.push({
+        label: `Setor: ${COLUMNS.find((c) => c.key === colKey)?.label}`,
+        clear: () => setColKey(""),
+      });
+    if (supplierId)
+      chips.push({
+        label: `Terceiro: ${suppliers.find((s) => s.id === supplierId)?.name ?? ""}`,
+        clear: () => setSupplierId(""),
+      });
+    if (origin)
+      chips.push({
+        label: origin === "interna" ? "Somente interna" : "Somente externa",
+        clear: () => setOrigin(""),
+      });
+    if (statusF)
+      chips.push({ label: `Status: ${STATUS_META[statusF].label}`, clear: () => setStatusF("") });
+    if (collection) chips.push({ label: `Coleção: ${collection}`, clear: () => setCollection("") });
+    if (category) chips.push({ label: `Tipo: ${category}`, clear: () => setCategory("") });
+    if (productLine) chips.push({ label: `Linha: ${productLine}`, clear: () => setProductLine("") });
+    if (productGroup) chips.push({ label: `Grupo: ${productGroup}`, clear: () => setProductGroup("") });
+    if (supplierCat) chips.push({ label: `Cat. terceiro: ${supplierCat}`, clear: () => setSupplierCat("") });
+    if (dueFrom) chips.push({ label: `De ${dueFrom}`, clear: () => setDueFrom("") });
+    if (dueTo) chips.push({ label: `Até ${dueTo}`, clear: () => setDueTo("") });
+    return chips;
+  }, [q, colKey, supplierId, origin, statusF, collection, category, productGroup, productLine, supplierCat, dueFrom, dueTo, suppliers]);
+
+
   const exportRows = () => {
     exportToCsv(
       `acompanhamento-producao-${new Date().toISOString().slice(0, 10)}.csv`,
@@ -692,7 +750,50 @@ function AcompanhamentoProducao() {
             />
           </div>
         </div>
+
+        {/* Chips de filtros ativos */}
+        {activeChips.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            {activeChips.map((c, i) => (
+              <button
+                key={i}
+                onClick={c.clear}
+                className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
+                title="Remover filtro"
+              >
+                {c.label}
+                <X className="size-2.5" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* CHIPS DE STATUS — filtragem em 1 clique */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {(["no_prazo", "atencao", "atrasado", "sem_previsao", "finalizado"] as StatusKey[]).map(
+          (s) => {
+            const active = statusF === s;
+            return (
+              <button
+                key={s}
+                onClick={() => setStatusF(active ? "" : s)}
+                className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition ${
+                  active
+                    ? `${STATUS_META[s].cls} ring-2 ring-offset-1 ring-offset-background ring-current/30`
+                    : `${STATUS_META[s].cls} opacity-70 hover:opacity-100`
+                }`}
+              >
+                <span className={`size-1.5 rounded-full ${STATUS_META[s].dot}`} />
+                {STATUS_META[s].label}
+                <span className="tabular-nums font-semibold">{statusCounts[s]}</span>
+              </button>
+            );
+          },
+        )}
+      </div>
+
+
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-9 gap-3">
@@ -988,7 +1089,66 @@ function AcompanhamentoProducao() {
         )}
       </section>
 
+      {/* TOP LOTES PARADOS — "Qual produto está parado há mais tempo?" */}
+      {stalledTop.length > 0 && (
+        <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 overflow-hidden">
+          <div className="px-4 py-2 border-b border-amber-500/20 text-sm font-semibold inline-flex items-center gap-2 text-amber-700 dark:text-amber-400">
+            <Timer className="size-4" /> Lotes parados há mais tempo
+            <span className="text-[10px] font-normal text-muted-foreground ml-2">
+              clique para abrir o histórico
+            </span>
+          </div>
+          <table className="w-full text-xs">
+            <thead className="bg-muted/30">
+              <tr>
+                <th className="text-left px-3 py-2">Lote / OP</th>
+                <th className="text-left px-3 py-2">Produto</th>
+                <th className="text-left px-3 py-2">Setor</th>
+                <th className="text-left px-3 py-2">Local</th>
+                <th className="text-right px-3 py-2">Dias parado</th>
+                <th className="text-left px-3 py-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stalledTop.map(({ o, dias }) => {
+                const st = statusOf(o);
+                const col = COLUMNS.find((c) => c.match(o));
+                return (
+                  <tr
+                    key={o.id}
+                    onClick={() => setDrawer(o)}
+                    className="border-t border-border hover:bg-amber-500/5 cursor-pointer"
+                  >
+                    <td className="px-3 py-1.5 font-semibold">{o.batch_code ?? o.code}</td>
+                    <td className="px-3 py-1.5">
+                      <div className="truncate max-w-[260px]">{o.product_name ?? "—"}</div>
+                      <div className="text-[10px] text-muted-foreground">{o.product_sku ?? ""}</div>
+                    </td>
+                    <td className="px-3 py-1.5">{col?.label ?? stageLabel(o.stage)}</td>
+                    <td className="px-3 py-1.5">
+                      {o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}
+                    </td>
+                    <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-amber-700 dark:text-amber-400">
+                      {dias}d
+                    </td>
+                    <td className="px-3 py-1.5">
+                      <span
+                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] ${STATUS_META[st].cls}`}
+                      >
+                        <span className={`size-1.5 rounded-full ${STATUS_META[st].dot}`} />
+                        {STATUS_META[st].label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </section>
+      )}
+
       {/* LISTA DETALHADA */}
+
       <section className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-2 border-b border-border text-sm font-semibold flex items-center justify-between">
           <span>Lista detalhada ({filtered.length})</span>
@@ -1134,6 +1294,13 @@ function CardLote({
           </span>
         )}
       </div>
+      {o.notes && (
+        <div className="flex items-start gap-1 text-[10px] text-muted-foreground border-t border-border/60 pt-1 mt-1">
+          <MessageSquareWarning className="size-3 shrink-0 mt-px text-amber-600" />
+          <span className="line-clamp-1 italic">{o.notes}</span>
+        </div>
+      )}
+
     </button>
   );
 }
