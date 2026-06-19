@@ -750,7 +750,50 @@ function AcompanhamentoProducao() {
             />
           </div>
         </div>
+
+        {/* Chips de filtros ativos */}
+        {activeChips.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            {activeChips.map((c, i) => (
+              <button
+                key={i}
+                onClick={c.clear}
+                className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
+                title="Remover filtro"
+              >
+                {c.label}
+                <X className="size-2.5" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* CHIPS DE STATUS — filtragem em 1 clique */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {(["no_prazo", "atencao", "atrasado", "sem_previsao", "finalizado"] as StatusKey[]).map(
+          (s) => {
+            const active = statusF === s;
+            return (
+              <button
+                key={s}
+                onClick={() => setStatusF(active ? "" : s)}
+                className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition ${
+                  active
+                    ? `${STATUS_META[s].cls} ring-2 ring-offset-1 ring-offset-background ring-current/30`
+                    : `${STATUS_META[s].cls} opacity-70 hover:opacity-100`
+                }`}
+              >
+                <span className={`size-1.5 rounded-full ${STATUS_META[s].dot}`} />
+                {STATUS_META[s].label}
+                <span className="tabular-nums font-semibold">{statusCounts[s]}</span>
+              </button>
+            );
+          },
+        )}
+      </div>
+
+
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-9 gap-3">
