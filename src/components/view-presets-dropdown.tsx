@@ -110,7 +110,7 @@ export function ViewPresetsDropdown({
           <DropdownMenuLabel className="text-[10px] uppercase tracking-wider">
             Rápidas
           </DropdownMenuLabel>
-          {BUILTIN.map((p) => (
+          {builtins.map((p) => (
             <DropdownMenuItem
               key={p.name}
               onSelect={(e) => {
