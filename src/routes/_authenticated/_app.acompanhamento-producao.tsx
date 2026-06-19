@@ -341,6 +341,88 @@ function AcompanhamentoProducao() {
     return Array.from(m.values()).sort((a, b) => b.pecas - a.pecas);
   }, [filtered]);
 
+  }, [filtered]);
+
+  // INSIGHTS — Coordenador PCP: gargalos, riscos e sugestões com motivo
+  const insights = useMemo(() => {
+    const cards: Array<{
+      tone: "warn" | "danger" | "ok" | "info";
+      title: string;
+      reason: string;
+      action?: { label: string; onClick: () => void };
+    }> = [];
+
+    // 1) Coluna com mais atrasados
+    const colLate = sectorSummary
+      .filter((s) => s.atrasado > 0)
+      .sort((a, b) => b.atrasado - a.atrasado)[0];
+    if (colLate) {
+      cards.push({
+        tone: "danger",
+        title: `${colLate.setor}: ${colLate.atrasado} lote(s) atrasado(s)`,
+        reason: `Este setor concentra o maior volume de atrasos no recorte atual (${colLate.pecas.toLocaleString("pt-BR")} peças, ${colLate.lotes} lote(s)). Priorize para destravar o fluxo a jusante.`,
+        action: { label: "Filtrar setor", onClick: () => setColKey(colLate.key) },
+      });
+    }
+
+    // 2) Lotes parados há muito tempo no mesmo setor (top 1)
+    const stalled = filtered
+      .filter((o) => o.stage !== "entregue")
+      .map((o) => ({ o, d: daysSince(o.stage_updated_at) }))
+      .sort((a, b) => b.d - a.d)[0];
+    if (stalled && stalled.d >= 5) {
+      cards.push({
+        tone: "warn",
+        title: `Lote ${stalled.o.batch_code ?? stalled.o.code} parado há ${stalled.d} dias`,
+        reason: `Está em "${COLUMNS.find((c) => c.match(stalled.o))?.label ?? stalled.o.stage}"${stalled.o.supplier_name ? ` com ${stalled.o.supplier_name}` : ""}. Bata na porta do responsável ou abra uma ocorrência.`,
+        action: { label: "Abrir histórico", onClick: () => setDrawer(stalled.o) },
+      });
+    }
+
+    // 3) Terceiro com risco
+    const riskySup = supplierSummary
+      .filter((s) => s.atrasado > 0)
+      .sort((a, b) => b.atrasado - a.atrasado)[0];
+    if (riskySup) {
+      cards.push({
+        tone: "warn",
+        title: `${riskySup.terceiro} com ${riskySup.atrasado} atraso(s) em ${riskySup.processo}`,
+        reason: `${riskySup.pecas.toLocaleString("pt-BR")} peças neste fornecedor. Considere renegociar prazo ou redistribuir parte do lote para outro parceiro com folga.`,
+      });
+    }
+
+    // 4) Sucesso: setores 100% no prazo
+    const allGreen = sectorSummary.filter(
+      (s) => s.lotes > 0 && s.atrasado === 0 && s.atencao === 0,
+    );
+    if (cards.length === 0 && allGreen.length > 0) {
+      cards.push({
+        tone: "ok",
+        title: "Fluxo saudável",
+        reason: `${allGreen.length} setor(es) com 100% no prazo. Aproveite para puxar OPs da fila de "Aguardando".`,
+      });
+    }
+
+    // 5) Recomendação tática: muitos lotes em "Aguardando" vs setor seguinte vazio
+    const pairs: Array<[string, string]> = [
+      ["aguardando_costura", "costura_interna"],
+      ["aguardando_acabamento", "acabamento_interno"],
+    ];
+    pairs.forEach(([waitKey, nextKey]) => {
+      const wait = sectorSummary.find((s) => s.key === waitKey);
+      const next = sectorSummary.find((s) => s.key === nextKey);
+      if (wait && next && wait.lotes >= 3 && next.lotes <= 1) {
+        cards.push({
+          tone: "info",
+          title: `Fila em "${wait.setor}" vs "${next.setor}" ocioso`,
+          reason: `Há ${wait.lotes} lote(s) parado(s) aguardando enquanto a célula seguinte está com ${next.lotes}. Puxe os próximos lotes (arraste no kanban) para nivelar a carga.`,
+        });
+      }
+    });
+
+    return cards.slice(0, 4);
+  }, [sectorSummary, supplierSummary, filtered]);
+
   const clearFilters = () => {
     setQ("");
     setColKey("");
