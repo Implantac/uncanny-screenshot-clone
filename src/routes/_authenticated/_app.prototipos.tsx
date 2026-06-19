@@ -47,6 +47,7 @@ import {
 } from "@/components/prototype-adjustments";
 import { PrototypeTimelineButton } from "@/components/prototype-timeline";
 import { DevIntelligencePanel } from "@/components/dev-intelligence-panel";
+import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
