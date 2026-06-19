@@ -1116,35 +1116,63 @@ function AcompanhamentoProducao() {
       </section>
 
       {/* TOP LOTES PARADOS — "Qual produto está parado há mais tempo?" */}
-      {stalledTop.length > 0 && (
+      {stalledTop.rows.length > 0 && (
         <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 overflow-hidden">
-          <div className="px-4 py-2 border-b border-amber-500/20 text-sm font-semibold inline-flex items-center gap-2 text-amber-700 dark:text-amber-400">
-            <Timer className="size-4" /> Lotes parados há mais tempo
-            <span className="text-[10px] font-normal text-muted-foreground ml-2">
-              clique para abrir o histórico
-            </span>
+          <div className="px-4 py-2 border-b border-amber-500/20 flex flex-wrap items-center justify-between gap-2">
+            <div className="text-sm font-semibold inline-flex items-center gap-2 text-amber-700 dark:text-amber-400">
+              <Timer className="size-4" /> Lotes parados há mais tempo
+              <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                ≥ {STALLED_MIN_DAYS} dias no mesmo setor • ordenado por criticidade
+              </span>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1">
+                <Package className="size-3" />
+                <span className="font-semibold text-foreground">
+                  {stalledTop.totalPecas.toLocaleString("pt-BR")}
+                </span>{" "}
+                peças paradas
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Clock className="size-3" />
+                <span className="font-semibold text-foreground">{stalledTop.totalDias}</span> dias
+                acumulados
+              </span>
+            </div>
           </div>
           <table className="w-full text-xs">
             <thead className="bg-muted/30">
               <tr>
+                <th className="text-left px-3 py-2">Severidade</th>
                 <th className="text-left px-3 py-2">Lote / OP</th>
                 <th className="text-left px-3 py-2">Produto</th>
                 <th className="text-left px-3 py-2">Setor</th>
                 <th className="text-left px-3 py-2">Local</th>
+                <th className="text-right px-3 py-2">Qtde</th>
                 <th className="text-right px-3 py-2">Dias parado</th>
+                <th className="text-right px-3 py-2">Entrega</th>
                 <th className="text-left px-3 py-2">Status</th>
               </tr>
             </thead>
             <tbody>
-              {stalledTop.map(({ o, dias }) => {
+              {stalledTop.rows.map(({ o, dias, diasAteEntrega, atrasoEntrega, severity }) => {
                 const st = statusOf(o);
                 const col = COLUMNS.find((c) => c.match(o));
+                const sev = SEVERITY_META[severity];
                 return (
                   <tr
                     key={o.id}
                     onClick={() => setDrawer(o)}
                     className="border-t border-border hover:bg-amber-500/5 cursor-pointer"
                   >
+                    <td className="px-3 py-1.5">
+                      <span
+                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium ${sev.cls}`}
+                      >
+                        <span className={`size-1.5 rounded-full ${sev.dot}`} />
+                        {sev.label}
+                      </span>
+                    </td>
                     <td className="px-3 py-1.5 font-semibold">{o.batch_code ?? o.code}</td>
                     <td className="px-3 py-1.5">
                       <div className="truncate max-w-[260px]">{o.product_name ?? "—"}</div>
@@ -1154,8 +1182,22 @@ function AcompanhamentoProducao() {
                     <td className="px-3 py-1.5">
                       {o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}
                     </td>
+                    <td className="px-3 py-1.5 text-right tabular-nums">
+                      {(o.quantity ?? 0).toLocaleString("pt-BR")}
+                    </td>
                     <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-amber-700 dark:text-amber-400">
                       {dias}d
+                    </td>
+                    <td className="px-3 py-1.5 text-right tabular-nums">
+                      {diasAteEntrega === null ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : atrasoEntrega > 0 ? (
+                        <span className="text-red-600 font-semibold">+{atrasoEntrega}d atraso</span>
+                      ) : diasAteEntrega === 0 ? (
+                        <span className="text-amber-600 font-semibold">hoje</span>
+                      ) : (
+                        <span className="text-muted-foreground">em {diasAteEntrega}d</span>
+                      )}
                     </td>
                     <td className="px-3 py-1.5">
                       <span
