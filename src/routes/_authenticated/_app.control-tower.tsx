@@ -188,6 +188,10 @@ function ControlTower() {
         </div>
       </header>
 
+      <div className="flex justify-end">
+        <AutoPushSentinel />
+      </div>
+
       <WarRoomPanel />
 
       {tab === "live" ? <LiveTab /> : <DemandTab />}
