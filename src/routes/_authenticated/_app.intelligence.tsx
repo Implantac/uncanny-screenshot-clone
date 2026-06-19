@@ -1353,7 +1353,7 @@ function InfluencerSuite() {
     },
   });
 
-  const items = list.data ?? [];
+  const items = useMemo(() => list.data ?? [], [list.data]);
   const totals = useMemo(() => {
     const lifts = items
       .filter((i) => Number(i.vendas_antes) > 0)
@@ -1777,7 +1777,7 @@ function SalesSuite({ products }: { products: any[] }) {
     },
   });
 
-  const items = list.data ?? [];
+  const items = useMemo(() => list.data ?? [], [list.data]);
   const totals = useMemo(() => {
     const revenue = items.reduce((s, x) => s + Number(x.total || 0), 0);
     const units = items.reduce((s, x) => s + Number(x.quantity || 0), 0);

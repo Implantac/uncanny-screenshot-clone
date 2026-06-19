@@ -176,14 +176,14 @@ function BI() {
       (await supabase.from("influencer_shipments").select("status,value")).data ?? [],
   });
 
-  const orders = ordersQ.data ?? [];
-  const products = productsQ.data ?? [];
-  const fin = finQ.data ?? [];
-  const prodOrd = prodOrdQ.data ?? [];
-  const protos = protosQ.data ?? [];
-  const quality = qualityQ.data ?? [];
-  const campaigns = campaignsQ.data ?? [];
-  const ships = shipsQ.data ?? [];
+  const orders = useMemo(() => ordersQ.data ?? [], [ordersQ.data]);
+  const products = useMemo(() => productsQ.data ?? [], [productsQ.data]);
+  const fin = useMemo(() => finQ.data ?? [], [finQ.data]);
+  const prodOrd = useMemo(() => prodOrdQ.data ?? [], [prodOrdQ.data]);
+  const protos = useMemo(() => protosQ.data ?? [], [protosQ.data]);
+  const quality = useMemo(() => qualityQ.data ?? [], [qualityQ.data]);
+  const campaigns = useMemo(() => campaignsQ.data ?? [], [campaignsQ.data]);
+  const ships = useMemo(() => shipsQ.data ?? [], [shipsQ.data]);
 
   const totalReceita = orders.reduce((s, o) => s + Number(o.total_value ?? 0), 0);
   const pedidosAtivos = orders.filter((o) => o.status !== "cancelado").length;

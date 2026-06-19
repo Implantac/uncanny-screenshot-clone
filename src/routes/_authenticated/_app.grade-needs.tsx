@@ -21,10 +21,10 @@ async function load() {
 
 function GradeNeeds() {
   const { data, isLoading } = useQuery({ queryKey: ["grade-needs"], queryFn: load });
-  const products = data?.products ?? [];
-  const sales = data?.sales ?? [];
 
   const rows = useMemo(() => {
+    const products = data?.products ?? [];
+    const sales = data?.sales ?? [];
     return products
       .map((p) => {
         const ps = sales.filter((s) => s.product_id === p.id);
@@ -48,7 +48,7 @@ function GradeNeeds() {
         return { ...p, sizes, bySize, needs, total };
       })
       .filter((r) => r.total > 0 || r.sizes.length > 0);
-  }, [products, sales]);
+  }, [data]);
 
   const allSizes = useMemo(() => {
     const set = new Set<string>();

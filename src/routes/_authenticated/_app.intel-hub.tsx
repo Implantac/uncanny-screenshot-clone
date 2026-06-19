@@ -103,10 +103,10 @@ function IntelHub() {
   useRealtime("production_orders", ["intel-hub"]);
   useRealtime("production_batches", ["intel-hub"]);
   const { data, isLoading } = useQuery({ queryKey: ["intel-hub"], queryFn: loadAll });
-  const orders = data?.orders ?? [];
-  const batches = data?.batches ?? [];
-  const products = data?.products ?? [];
-  const suppliers = data?.suppliers ?? [];
+  const orders = useMemo(() => data?.orders ?? [], [data?.orders]);
+  const batches = useMemo(() => data?.batches ?? [], [data?.batches]);
+  const products = useMemo(() => data?.products ?? [], [data?.products]);
+  const suppliers = useMemo(() => data?.suppliers ?? [], [data?.suppliers]);
 
   const now = Date.now();
   const alerts = useMemo(() => {

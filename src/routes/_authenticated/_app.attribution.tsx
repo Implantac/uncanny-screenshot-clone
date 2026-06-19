@@ -39,7 +39,7 @@ async function load() {
 
 function Attribution() {
   const { data, isLoading } = useQuery({ queryKey: ["attribution"], queryFn: load });
-  const sales = data?.sales ?? [];
+  const sales = useMemo(() => data?.sales ?? [], [data?.sales]);
   const influencers = data?.influencers ?? [];
 
   const byChannel = useMemo(() => {

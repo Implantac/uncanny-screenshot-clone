@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3,
@@ -238,20 +238,27 @@ function ColecoesPage() {
   } = search;
   const pageSize = 6;
 
-  const updateSearch = (patch: Partial<typeof search>) =>
-    navigate({ search: (prev: typeof search) => ({ ...prev, ...patch }), replace: true });
+  const updateSearch = useCallback(
+    (patch: Partial<typeof search>) =>
+      navigate({ search: (prev: typeof search) => ({ ...prev, ...patch }), replace: true }),
+    [navigate],
+  );
   const setQ = (v: string) => updateSearch({ q: v, page: 1 });
   const setStatusFilter = (v: typeof statusFilter) => updateSearch({ status: v, page: 1 });
   const setSeasonFilter = (v: string) => updateSearch({ season: v, page: 1 });
   const setSortBy = (v: typeof sortBy) => updateSearch({ sort: v, page: 1 });
-  const setPage = (v: number | ((p: number) => number)) =>
-    updateSearch({ page: typeof v === "function" ? v(page) : v });
-  const setSelectedId = (
-    v: string | null | ((cur: string | undefined) => string | undefined | null),
-  ) => {
-    const next = typeof v === "function" ? v(selectedId) : v;
-    updateSearch({ id: next ?? undefined });
-  };
+  const setPage = useCallback(
+    (v: number | ((p: number) => number)) =>
+      updateSearch({ page: typeof v === "function" ? v(page) : v }),
+    [page, updateSearch],
+  );
+  const setSelectedId = useCallback(
+    (v: string | null | ((cur: string | undefined) => string | undefined | null)) => {
+      const next = typeof v === "function" ? v(selectedId) : v;
+      updateSearch({ id: next ?? undefined });
+    },
+    [selectedId, updateSearch],
+  );
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
@@ -290,7 +297,7 @@ function ColecoesPage() {
     setSelectedId((current) =>
       current && collections.some((item) => item.id === current) ? current : collections[0].id,
     );
-  }, [collections]);
+  }, [collections, setSelectedId]);
 
   const selected = useMemo(
     () => collections.find((item) => item.id === selectedId) ?? collections[0] ?? null,
@@ -596,10 +603,10 @@ function ColecoesPage() {
   const totalPages = Math.max(1, Math.ceil(filteredCollections.length / pageSize));
   useEffect(() => {
     setPage(1);
-  }, [q, statusFilter, seasonFilter, sortBy]);
+  }, [q, statusFilter, seasonFilter, sortBy, setPage]);
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
+  }, [page, totalPages, setPage]);
   const pagedCollections = useMemo(
     () => filteredCollections.slice((page - 1) * pageSize, page * pageSize),
     [filteredCollections, page],

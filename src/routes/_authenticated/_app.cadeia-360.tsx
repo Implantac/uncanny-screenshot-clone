@@ -69,9 +69,9 @@ async function loadAll() {
 function Cadeia360() {
   useRealtime("production_orders", ["cadeia-360"]);
   const { data, isLoading } = useQuery({ queryKey: ["cadeia-360"], queryFn: loadAll });
-  const suppliers = data?.suppliers ?? [];
-  const orders = data?.orders ?? [];
-  const products = data?.products ?? [];
+  const suppliers = useMemo(() => data?.suppliers ?? [], [data?.suppliers]);
+  const orders = useMemo(() => data?.orders ?? [], [data?.orders]);
+  const products = useMemo(() => data?.products ?? [], [data?.products]);
   const now = Date.now();
 
   // Score do fornecedor: rating + OTD calculado das OPs entregues

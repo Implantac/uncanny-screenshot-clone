@@ -44,7 +44,7 @@ function colorFor(a: string) {
 
 function Audit() {
   const { data, isLoading } = useQuery({ queryKey: ["audit-logs"], queryFn: load });
-  const logs = data ?? [];
+  const logs = useMemo(() => data ?? [], [data]);
   const [entityFilter, setEntityFilter] = useState<string>("all");
   const [actionFilter, setActionFilter] = useState<string>("all");
 

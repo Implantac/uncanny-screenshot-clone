@@ -88,7 +88,7 @@ function CAD() {
     },
   });
 
-  const moldes = data?.products ?? [];
+  const moldes = useMemo(() => data?.products ?? [], [data?.products]);
   const categories = useMemo(
     () => Array.from(new Set(moldes.map((m) => m.category).filter(Boolean))) as string[],
     [moldes],

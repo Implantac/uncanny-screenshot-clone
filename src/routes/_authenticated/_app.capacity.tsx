@@ -39,8 +39,8 @@ async function load() {
 
 function Capacity() {
   const { data, isLoading } = useQuery({ queryKey: ["capacity"], queryFn: load });
-  const orders = data?.orders ?? [];
-  const today = Date.now();
+  const orders = useMemo(() => data?.orders ?? [], [data?.orders]);
+  const today = useMemo(() => Date.now(), []);
 
   const summary = useMemo(() => {
     const active = orders.filter((o) => o.status !== "concluida" && o.status !== "cancelada");
@@ -50,7 +50,7 @@ function Capacity() {
     const oee = planned > 0 ? (produced / planned) * 100 : 0;
     const late = active.filter((o) => o.due_date && new Date(o.due_date).getTime() < today).length;
     return { wip, planned, produced, oee, late, active: active.length };
-  }, [orders]);
+  }, [orders, today]);
 
   const bySupplier = useMemo(() => {
     const m = new Map<

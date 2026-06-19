@@ -32,8 +32,8 @@ async function load() {
 
 function Compras() {
   const { data, isLoading } = useQuery({ queryKey: ["compras"], queryFn: load });
-  const items = data?.items ?? [];
-  const suppliers = data?.suppliers ?? [];
+  const items = useMemo(() => data?.items ?? [], [data?.items]);
+  const suppliers = useMemo(() => data?.suppliers ?? [], [data?.suppliers]);
 
   const needs = useMemo(
     () =>

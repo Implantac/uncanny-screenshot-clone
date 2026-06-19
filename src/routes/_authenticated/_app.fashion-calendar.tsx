@@ -36,11 +36,12 @@ async function load(): Promise<Col[]> {
 }
 
 function FashionCalendar() {
-  const { data: cols = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["fashion-calendar"],
     queryFn: load,
   });
-  const today = new Date();
+  const cols = useMemo(() => data ?? [], [data]);
+  const today = useMemo(() => new Date(), []);
 
   const enriched = useMemo(
     () =>
@@ -59,7 +60,7 @@ function FashionCalendar() {
                   : "desenvolvimento";
         return { ...c, days, phase };
       }),
-    [cols],
+    [cols, today],
   );
 
   const summary = useMemo(

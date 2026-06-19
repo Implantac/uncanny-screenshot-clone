@@ -35,7 +35,7 @@ async function load() {
 
 function DataLake() {
   const { data, isLoading } = useQuery({ queryKey: ["data-lake"], queryFn: load });
-  const counts = data ?? ({} as Record<DomainKey, number>);
+  const counts = useMemo(() => data ?? ({} as Record<DomainKey, number>), [data]);
 
   const total = useMemo(() => Object.values(counts).reduce((a, b) => a + b, 0), [counts]);
   const max = Math.max(1, ...Object.values(counts));

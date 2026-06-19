@@ -26,9 +26,13 @@ async function load(): Promise<Acc[]> {
 }
 
 function Cashflow() {
-  const { data: accs = [], isLoading } = useQuery({ queryKey: ["cashflow"], queryFn: load });
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const { data, isLoading } = useQuery({ queryKey: ["cashflow"], queryFn: load });
+  const accs = useMemo(() => data ?? [], [data]);
+  const today = useMemo(() => {
+    const value = new Date();
+    value.setHours(0, 0, 0, 0);
+    return value;
+  }, []);
 
   const totals = useMemo(() => {
     const open = accs.filter((a) => a.status === "pendente" || a.status === "atrasado");

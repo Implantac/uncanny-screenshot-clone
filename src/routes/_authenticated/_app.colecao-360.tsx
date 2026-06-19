@@ -118,13 +118,13 @@ function Colecao360() {
     queryKey: ["colecao-360"],
     queryFn: loadAll,
   });
-  const collections = data?.collections ?? [];
-  const products = data?.products ?? [];
-  const prototypes = data?.prototypes ?? [];
-  const orders = data?.orders ?? [];
-  const sales = data?.sales ?? [];
-  const sheets = data?.sheets ?? [];
-  const campaigns = data?.campaigns ?? [];
+  const collections = useMemo(() => data?.collections ?? [], [data?.collections]);
+  const products = useMemo(() => data?.products ?? [], [data?.products]);
+  const prototypes = useMemo(() => data?.prototypes ?? [], [data?.prototypes]);
+  const orders = useMemo(() => data?.orders ?? [], [data?.orders]);
+  const sales = useMemo(() => data?.sales ?? [], [data?.sales]);
+  const sheets = useMemo(() => data?.sheets ?? [], [data?.sheets]);
+  const campaigns = useMemo(() => data?.campaigns ?? [], [data?.campaigns]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const currentId = selectedId ?? collections[0]?.id ?? null;
