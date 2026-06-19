@@ -55,11 +55,11 @@ export const generateBriefPlan = createServerFn({ method: "POST" })
     if (brief.product_id) {
       const { data: prod } = await supabase
         .from("products")
-        .select("sku, name, price, cost_price")
+        .select("sku, name, cost_price")
         .eq("id", brief.product_id)
         .maybeSingle();
       if (prod) {
-        productCtx = `\n## Produto âncora\n- SKU: ${prod.sku}\n- Nome: ${prod.name}\n- Preço: R$ ${prod.price ?? 0}\n- Custo: R$ ${prod.cost_price ?? 0}`;
+        productCtx = `\n## Produto âncora\n- SKU: ${prod.sku}\n- Nome: ${prod.name}\n- Custo: R$ ${prod.cost_price ?? 0}`;
       }
     }
 
@@ -122,7 +122,7 @@ export const promoteBriefToCampaign = createServerFn({ method: "POST" })
         start_date: today.toISOString().slice(0, 10),
         end_date: end.toISOString().slice(0, 10),
         investment: brief.budget ?? 0,
-        status: "planejada",
+        status: "programada",
         notes: `Gerada do brief ${brief.id}`,
         product_id: brief.product_id,
         collection_id: brief.collection_id,
