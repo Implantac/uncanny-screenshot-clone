@@ -67,10 +67,15 @@ type SaleRow = {
   total_value: number | null;
 };
 
-type MarketingCostRow = {
-  product_id: string;
+type MarketingCampaignRow = {
+  product_id: string | null;
   collection_id: string | null;
-  amount: number | null;
+  investment: number | null;
+  cost_shoot: number | null;
+  cost_photos: number | null;
+  cost_traffic: number | null;
+  revenue: number | null;
+  channel: string | null;
 };
 
 const inputSchema = z.object({
@@ -108,7 +113,7 @@ export const listProductMarketingRoi = createServerFn({ method: "POST" })
 
     if (data.collectionId) productsQuery.eq("collection_id", data.collectionId);
 
-    const [productsRes, salesRes, costsRes] = await Promise.all([
+    const [productsRes, salesRes, campaignsRes] = await Promise.all([
       productsQuery,
       supabase
         .from("erp_sales_mirror")
@@ -116,18 +121,20 @@ export const listProductMarketingRoi = createServerFn({ method: "POST" })
         .gte("sold_at", since)
         .limit(10000),
       supabase
-        .from("product_marketing_costs" as "products")
-        .select("product_id, collection_id, amount")
-        .gte("spent_at", since.slice(0, 10)),
+        .from("marketing_campaigns")
+        .select(
+          "product_id, collection_id, investment, cost_shoot, cost_photos, cost_traffic, revenue, channel",
+        )
+        .gte("start_date", since.slice(0, 10)),
     ]);
 
     if (productsRes.error) throw productsRes.error;
     if (salesRes.error) throw salesRes.error;
-    if (costsRes.error) throw costsRes.error;
+    if (campaignsRes.error) throw campaignsRes.error;
 
     const products = (productsRes.data ?? []) as ProductRow[];
     const sales = (salesRes.data ?? []) as SaleRow[];
-    const costs = (costsRes.data ?? []) as unknown as MarketingCostRow[];
+    const campaigns = (campaignsRes.data ?? []) as MarketingCampaignRow[];
     const productBySku = new Map(products.map((p) => [p.sku?.trim().toLowerCase(), p]));
     const productByName = new Map(products.map((p) => [p.name?.trim().toLowerCase(), p]));
 
@@ -143,23 +150,57 @@ export const listProductMarketingRoi = createServerFn({ method: "POST" })
       salesByProduct.set(product.id, cur);
     });
 
+    // Custo de marketing = investimento total da(s) campanha(s) atrelada(s) ao produto.
+    // Coleção é rateada igualmente entre produtos da coleção.
     const costsByProduct = new Map<string, number>();
-    costs.forEach((cost) => {
-      if (data.collectionId && cost.collection_id !== data.collectionId) return;
-      costsByProduct.set(
-        cost.product_id,
-        (costsByProduct.get(cost.product_id) ?? 0) + Number(cost.amount ?? 0),
-      );
+    const attributedRevenueByProduct = new Map<string, number>();
+    const productsByCollection = new Map<string, string[]>();
+    products.forEach((p) => {
+      if (!p.collection_id) return;
+      const arr = productsByCollection.get(p.collection_id) ?? [];
+      arr.push(p.id);
+      productsByCollection.set(p.collection_id, arr);
+    });
+
+    campaigns.forEach((c) => {
+      if (data.collectionId && c.collection_id !== data.collectionId) return;
+      const totalCost =
+        Number(c.investment ?? 0) +
+        Number(c.cost_shoot ?? 0) +
+        Number(c.cost_photos ?? 0) +
+        Number(c.cost_traffic ?? 0);
+      const totalRev = Number(c.revenue ?? 0);
+      const targets: string[] = c.product_id
+        ? [c.product_id]
+        : c.collection_id
+          ? productsByCollection.get(c.collection_id) ?? []
+          : [];
+      if (targets.length === 0) return;
+      const share = 1 / targets.length;
+      targets.forEach((pid) => {
+        costsByProduct.set(pid, (costsByProduct.get(pid) ?? 0) + totalCost * share);
+        if (totalRev > 0) {
+          attributedRevenueByProduct.set(
+            pid,
+            (attributedRevenueByProduct.get(pid) ?? 0) + totalRev * share,
+          );
+        }
+      });
     });
 
     const rows = products
       .map<ProductMarketingRoiRow>((product) => {
         const salesAgg = salesByProduct.get(product.id) ?? { units: 0, revenue: 0 };
         const marketingCost = costsByProduct.get(product.id) ?? 0;
+        const attributedRev = attributedRevenueByProduct.get(product.id) ?? 0;
         const estimatedUnitCost = Number(product.cost_price ?? 0);
         const fallbackUnitRevenue = Number(product.sell_price ?? 0);
         const revenue =
-          salesAgg.revenue > 0 ? salesAgg.revenue : salesAgg.units * fallbackUnitRevenue;
+          salesAgg.revenue > 0
+            ? salesAgg.revenue
+            : attributedRev > 0
+              ? attributedRev
+              : salesAgg.units * fallbackUnitRevenue;
         const estimatedCogs = estimatedUnitCost * salesAgg.units;
         const grossProfit = revenue - estimatedCogs;
         const netProfit = grossProfit - marketingCost;
