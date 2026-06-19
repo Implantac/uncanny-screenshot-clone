@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.collections_lifecycle_transition() FROM PUBLIC, anon, authenticated;

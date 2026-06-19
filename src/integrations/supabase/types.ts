@@ -474,6 +474,9 @@ export type Database = {
           progress: number
           season: string
           status: Database["public"]["Enums"]["collection_status"]
+          status_change_reason: string | null
+          status_changed_at: string
+          status_changed_by: string | null
           updated_at: string
           year: number
         }
@@ -490,6 +493,9 @@ export type Database = {
           progress?: number
           season: string
           status?: Database["public"]["Enums"]["collection_status"]
+          status_change_reason?: string | null
+          status_changed_at?: string
+          status_changed_by?: string | null
           updated_at?: string
           year: number
         }
@@ -506,6 +512,9 @@ export type Database = {
           progress?: number
           season?: string
           status?: Database["public"]["Enums"]["collection_status"]
+          status_change_reason?: string | null
+          status_changed_at?: string
+          status_changed_by?: string | null
           updated_at?: string
           year?: number
         }
@@ -4076,9 +4085,13 @@ export type Database = {
       collection_status:
         | "briefing"
         | "design"
+        | "aprovacao"
         | "desenvolvimento"
         | "producao"
         | "entregue"
+        | "lancamento"
+        | "markdown"
+        | "descontinuada"
       inventory_category: "tecido" | "aviamento" | "acabado" | "outros"
       product_lifecycle_state:
         | "planned"
@@ -4295,9 +4308,13 @@ export const Constants = {
       collection_status: [
         "briefing",
         "design",
+        "aprovacao",
         "desenvolvimento",
         "producao",
         "entregue",
+        "lancamento",
+        "markdown",
+        "descontinuada",
       ],
       inventory_category: ["tecido", "aviamento", "acabado", "outros"],
       product_lifecycle_state: [

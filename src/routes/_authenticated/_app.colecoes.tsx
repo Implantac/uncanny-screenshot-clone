@@ -53,6 +53,8 @@ import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionIntelligencePanel } from "@/components/collection-intelligence-panel";
 import { CarryOverPanel } from "@/components/carry-over-panel";
 import { AssortmentPanel } from "@/components/assortment-panel";
+import { LifecyclePanel } from "@/components/lifecycle-panel";
+import type { CollectionState } from "@/lib/lifecycle.functions";
 import { CollectionCompareDialog } from "@/components/collection-compare-dialog";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
@@ -791,6 +793,11 @@ function ColecoesPage() {
 
       {selected && (
         <>
+          <LifecyclePanel
+            collectionId={selected.id}
+            collectionName={selected.name}
+            currentState={(selected.status ?? "briefing") as CollectionState}
+          />
           <CarryOverPanel collectionId={selected.id} collectionName={selected.name} />
           <AssortmentPanel collectionId={selected.id} collectionName={selected.name} />
         </>
