@@ -214,6 +214,9 @@ function AcompanhamentoProducao() {
   const [origin, setOrigin] = useState<"" | "interna" | "externa">("");
   const [collection, setCollection] = useState<string>("");
   const [category, setCategory] = useState<string>("");
+  const [productGroup, setProductGroup] = useState<string>("");
+  const [productLine, setProductLine] = useState<string>("");
+  const [supplierCat, setSupplierCat] = useState<string>("");
   const [dueFrom, setDueFrom] = useState<string>("");
   const [dueTo, setDueTo] = useState<string>("");
   const [drawer, setDrawer] = useState<Order | null>(null);
