@@ -659,22 +659,64 @@ function AcompanhamentoProducao() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className={`p-4 md:p-6 space-y-4 ${tvMode ? "text-base" : ""}`}>
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight inline-flex items-center gap-2">
             Acompanhamento de Produção
+            <span
+              title="Atualização em tempo real ativa"
+              className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 border border-emerald-500/30"
+            >
+              <Radio className="size-2.5 animate-pulse" /> live
+            </span>
           </h1>
           <p className="text-sm text-muted-foreground">
             Onde está cada lote agora — interno, externo, prazo e gargalo, em uma única tela.
           </p>
         </div>
-        <button
-          onClick={exportRows}
-          className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-md border border-border bg-card hover:bg-muted"
-        >
-          <Download className="size-3.5" /> Exportar Excel/CSV
-        </button>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {/* Agrupar por (swimlanes) */}
+          <div className="inline-flex items-center gap-1 text-[11px] text-muted-foreground border border-border rounded-md bg-card px-2 py-1">
+            <span>Agrupar:</span>
+            {(
+              [
+                ["none", "—"],
+                ["collection", "Coleção"],
+                ["supplier", "Terceiro"],
+                ["line", "Linha"],
+              ] as const
+            ).map(([k, label]) => (
+              <button
+                key={k}
+                onClick={() => setGroupBy(k)}
+                className={`px-1.5 py-0.5 rounded ${
+                  groupBy === k ? "bg-primary/15 text-primary font-semibold" : "hover:bg-muted"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setTvMode((v) => !v)}
+            title={tvMode ? "Sair do modo painel" : "Modo painel (TV chão de fábrica)"}
+            className={`inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-md border ${
+              tvMode
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-card hover:bg-muted"
+            }`}
+          >
+            {tvMode ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
+            Modo painel
+          </button>
+          <button
+            onClick={exportRows}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-md border border-border bg-card hover:bg-muted"
+          >
+            <Download className="size-3.5" /> Exportar Excel/CSV
+          </button>
+        </div>
       </header>
 
       {/* FILTROS */}
