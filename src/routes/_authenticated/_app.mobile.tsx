@@ -134,6 +134,7 @@ function Mobile() {
         </div>
       </div>
 
+      <DeviceRegistrationPanel />
       <PushHistoryPanel />
     </div>
   );
