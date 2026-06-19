@@ -3313,40 +3313,61 @@ export type Database = {
       }
       supplier_portal_attachments: {
         Row: {
+          attachment_kind: Database["public"]["Enums"]["attachment_kind"]
+          checklist: Json | null
           created_at: string
           file_name: string
           file_path: string
           id: string
+          inspection_notes: string | null
           mime: string | null
+          notes: string | null
           owner_id: string
           production_order_id: string | null
           rfq_id: string | null
+          sample_status:
+            | Database["public"]["Enums"]["sample_review_status"]
+            | null
           size: number | null
           supplier_id: string
           uploaded_via: string
         }
         Insert: {
+          attachment_kind?: Database["public"]["Enums"]["attachment_kind"]
+          checklist?: Json | null
           created_at?: string
           file_name: string
           file_path: string
           id?: string
+          inspection_notes?: string | null
           mime?: string | null
+          notes?: string | null
           owner_id: string
           production_order_id?: string | null
           rfq_id?: string | null
+          sample_status?:
+            | Database["public"]["Enums"]["sample_review_status"]
+            | null
           size?: number | null
           supplier_id: string
           uploaded_via?: string
         }
         Update: {
+          attachment_kind?: Database["public"]["Enums"]["attachment_kind"]
+          checklist?: Json | null
           created_at?: string
           file_name?: string
           file_path?: string
           id?: string
+          inspection_notes?: string | null
           mime?: string | null
+          notes?: string | null
           owner_id?: string
           production_order_id?: string | null
           rfq_id?: string | null
+          sample_status?:
+            | Database["public"]["Enums"]["sample_review_status"]
+            | null
           size?: number | null
           supplier_id?: string
           uploaded_via?: string
@@ -3918,6 +3939,7 @@ export type Database = {
       ai_agent_status: "ativo" | "pausado" | "erro"
       app_role: "admin" | "gerente" | "designer" | "comprador" | "vendedor"
       app_sector: "marketing" | "pcp" | "desenvolvimento"
+      attachment_kind: "sample" | "photo" | "document" | "invoice" | "other"
       b2b_order_status:
         | "rascunho"
         | "aprovado"
@@ -3981,6 +4003,12 @@ export type Database = {
         | "aprovado"
         | "recebido"
         | "cancelado"
+      sample_review_status:
+        | "pending_review"
+        | "approved"
+        | "needs_adjustment"
+        | "received"
+        | "rejected"
       service_order_kind: "parcial" | "integral"
       service_order_status:
         | "aberta"
@@ -4122,6 +4150,7 @@ export const Constants = {
       ai_agent_status: ["ativo", "pausado", "erro"],
       app_role: ["admin", "gerente", "designer", "comprador", "vendedor"],
       app_sector: ["marketing", "pcp", "desenvolvimento"],
+      attachment_kind: ["sample", "photo", "document", "invoice", "other"],
       b2b_order_status: [
         "rascunho",
         "aprovado",
@@ -4194,6 +4223,13 @@ export const Constants = {
         "aprovado",
         "recebido",
         "cancelado",
+      ],
+      sample_review_status: [
+        "pending_review",
+        "approved",
+        "needs_adjustment",
+        "received",
+        "rejected",
       ],
       service_order_kind: ["parcial", "integral"],
       service_order_status: [
