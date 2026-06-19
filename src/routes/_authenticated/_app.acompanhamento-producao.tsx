@@ -510,6 +510,62 @@ function AcompanhamentoProducao() {
     [supplierSummary],
   );
 
+  // Contagem por status (para chips e respostas rápidas)
+  const statusCounts = useMemo(() => {
+    const acc: Record<StatusKey, number> = {
+      no_prazo: 0,
+      atencao: 0,
+      atrasado: 0,
+      sem_previsao: 0,
+      finalizado: 0,
+    };
+    filtered.forEach((o) => {
+      acc[statusOf(o)] += 1;
+    });
+    return acc;
+  }, [filtered]);
+
+  // Top lotes parados há mais tempo — "Qual produto está parado há mais tempo?"
+  const stalledTop = useMemo(() => {
+    return filtered
+      .filter((o) => o.stage !== "entregue")
+      .map((o) => ({ o, dias: daysSince(o.stage_updated_at) }))
+      .sort((a, b) => b.dias - a.dias)
+      .slice(0, 5);
+  }, [filtered]);
+
+  // Chips de filtros ativos
+  const activeChips = useMemo(() => {
+    const chips: Array<{ label: string; clear: () => void }> = [];
+    if (q) chips.push({ label: `Busca: "${q}"`, clear: () => setQ("") });
+    if (colKey)
+      chips.push({
+        label: `Setor: ${COLUMNS.find((c) => c.key === colKey)?.label}`,
+        clear: () => setColKey(""),
+      });
+    if (supplierId)
+      chips.push({
+        label: `Terceiro: ${suppliers.find((s) => s.id === supplierId)?.name ?? ""}`,
+        clear: () => setSupplierId(""),
+      });
+    if (origin)
+      chips.push({
+        label: origin === "interna" ? "Somente interna" : "Somente externa",
+        clear: () => setOrigin(""),
+      });
+    if (statusF)
+      chips.push({ label: `Status: ${STATUS_META[statusF].label}`, clear: () => setStatusF("") });
+    if (collection) chips.push({ label: `Coleção: ${collection}`, clear: () => setCollection("") });
+    if (category) chips.push({ label: `Tipo: ${category}`, clear: () => setCategory("") });
+    if (productLine) chips.push({ label: `Linha: ${productLine}`, clear: () => setProductLine("") });
+    if (productGroup) chips.push({ label: `Grupo: ${productGroup}`, clear: () => setProductGroup("") });
+    if (supplierCat) chips.push({ label: `Cat. terceiro: ${supplierCat}`, clear: () => setSupplierCat("") });
+    if (dueFrom) chips.push({ label: `De ${dueFrom}`, clear: () => setDueFrom("") });
+    if (dueTo) chips.push({ label: `Até ${dueTo}`, clear: () => setDueTo("") });
+    return chips;
+  }, [q, colKey, supplierId, origin, statusF, collection, category, productGroup, productLine, supplierCat, dueFrom, dueTo, suppliers]);
+
+
   const exportRows = () => {
     exportToCsv(
       `acompanhamento-producao-${new Date().toISOString().slice(0, 10)}.csv`,
