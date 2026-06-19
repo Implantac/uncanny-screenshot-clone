@@ -18,6 +18,8 @@ import {
   Sparkles,
   TrendingDown,
   ArrowRight,
+  MessageSquareWarning,
+  Timer,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { moveOrderToColumn } from "@/lib/production-tracking.functions";
