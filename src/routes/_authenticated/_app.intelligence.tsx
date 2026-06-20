@@ -442,8 +442,10 @@ function ProductionTab({
     const stockBySku = new Map<string, number>();
     const minBySku = new Map<string, number>();
     for (const i of inventory as InventoryRow[]) {
-      stockBySku.set(i.sku, (stockBySku.get(i.sku) ?? 0) + Number(i.balance || 0));
-      minBySku.set(i.sku, Math.max(minBySku.get(i.sku) ?? 0, Number(i.minimum || 0)));
+      const sku = i.sku ?? "";
+      if (!sku) continue;
+      stockBySku.set(sku, (stockBySku.get(sku) ?? 0) + Number(i.balance || 0));
+      minBySku.set(sku, Math.max(minBySku.get(sku) ?? 0, Number(i.minimum || 0)));
     }
 
     return (products as ProductRow[]).map((p) => {
