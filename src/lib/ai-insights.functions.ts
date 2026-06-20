@@ -218,7 +218,19 @@ ${
   }
 
   // marketing
-  const [{ data: sales30 }, { data: sales7 }] = await Promise.all([
+  type Sale30 = {
+    sku: string | null;
+    product_ref: string | null;
+    channel: string | null;
+    region: string | null;
+    quantity: number | null;
+    total_value: number | string | null;
+    influencer_code: string | null;
+    campaign_code: string | null;
+    sold_at: string;
+  };
+  type Sale7 = { sku: string | null; quantity: number | null; total_value: number | string | null; channel: string | null };
+  const [{ data: sales30Raw }, { data: sales7Raw }] = await Promise.all([
     supabase
       .from("erp_sales_mirror")
       .select(
@@ -232,9 +244,11 @@ ${
       .gte("sold_at", iso7)
       .limit(2000),
   ]);
+  const sales30 = (sales30Raw ?? []) as unknown as Sale30[];
+  const sales7 = (sales7Raw ?? []) as unknown as Sale7[];
 
   const byProduct = new Map<string, { units: number; revenue: number; name: string }>();
-  (sales30 ?? []).forEach((s: any) => {
+  sales30.forEach((s) => {
     const k = s.sku ?? s.product_ref ?? "—";
     const prev = byProduct.get(k) ?? { units: 0, revenue: 0, name: s.product_ref ?? k };
     prev.units += s.quantity ?? 0;
@@ -246,31 +260,31 @@ ${
     .slice(0, 10);
 
   const byChannel = new Map<string, number>();
-  (sales30 ?? []).forEach((s: any) =>
+  sales30.forEach((s) =>
     byChannel.set(
       s.channel ?? "—",
       (byChannel.get(s.channel ?? "—") ?? 0) + Number(s.total_value ?? 0),
     ),
   );
   const byInfluencer = new Map<string, number>();
-  (sales30 ?? [])
-    .filter((s: any) => s.influencer_code)
-    .forEach((s: any) =>
+  sales30
+    .filter((s): s is Sale30 & { influencer_code: string } => Boolean(s.influencer_code))
+    .forEach((s) =>
       byInfluencer.set(
         s.influencer_code,
         (byInfluencer.get(s.influencer_code) ?? 0) + Number(s.total_value ?? 0),
       ),
     );
   const byRegion = new Map<string, number>();
-  (sales30 ?? []).forEach((s: any) =>
+  sales30.forEach((s) =>
     byRegion.set(
       s.region ?? "—",
       (byRegion.get(s.region ?? "—") ?? 0) + Number(s.total_value ?? 0),
     ),
   );
 
-  const rev30 = (sales30 ?? []).reduce((s: number, x: any) => s + Number(x.total_value ?? 0), 0);
-  const rev7 = (sales7 ?? []).reduce((s: number, x: any) => s + Number(x.total_value ?? 0), 0);
+  const rev30 = sales30.reduce((s, x) => s + Number(x.total_value ?? 0), 0);
+  const rev7 = sales7.reduce((s, x) => s + Number(x.total_value ?? 0), 0);
 
   const fmt = (n: number) => `R$ ${n.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`;
 
