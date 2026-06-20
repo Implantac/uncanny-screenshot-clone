@@ -37,13 +37,17 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
       sb.from("suppliers").select("id, name"),
     ]);
 
+    type OrderRow = { id: string; supplier_id: string | null; quantity: number | null };
+    type SupRow = { id: string; name: string };
+    type OccRow = { kind: string | null; sector: string | null; affected_qty: number | null; status: string | null; order_id: string | null; created_at: string };
+
     const orderToSupplier = new Map<string, string | null>();
     const orderQty = new Map<string, number>();
-    (orders ?? []).forEach((o: any) => {
+    ((orders ?? []) as OrderRow[]).forEach((o) => {
       orderToSupplier.set(o.id, o.supplier_id);
       orderQty.set(o.id, Number(o.quantity ?? 0));
     });
-    const supMap = new Map((suppliers ?? []).map((s: any) => [s.id, s.name]));
+    const supMap = new Map(((suppliers ?? []) as SupRow[]).map((s) => [s.id, s.name]));
 
     type Agg = {
       occurrences: number;
@@ -54,7 +58,7 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
     };
     const bySup = new Map<string, Agg>();
 
-    (occs ?? []).forEach((o: any) => {
+    ((occs ?? []) as OccRow[]).forEach((o) => {
       const sid = o.order_id ? orderToSupplier.get(o.order_id) : null;
       if (!sid) return;
       const a = bySup.get(sid) ?? {
@@ -73,7 +77,7 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
 
     // Total qty per supplier across all OPs in window
     const qtyBySup = new Map<string, number>();
-    (orders ?? []).forEach((o: any) => {
+    ((orders ?? []) as OrderRow[]).forEach((o) => {
       if (!o.supplier_id) return;
       qtyBySup.set(o.supplier_id, (qtyBySup.get(o.supplier_id) ?? 0) + Number(o.quantity ?? 0));
     });
@@ -112,7 +116,7 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
     );
 
     const kindAgg = new Map<string, number>();
-    (occs ?? []).forEach((o: any) => o.kind && kindAgg.set(o.kind, (kindAgg.get(o.kind) ?? 0) + 1));
+    ((occs ?? []) as OccRow[]).forEach((o) => o.kind && kindAgg.set(o.kind, (kindAgg.get(o.kind) ?? 0) + 1));
     const topKinds = [...kindAgg.entries()]
       .map(([kind, count]) => ({ kind, count }))
       .sort((a, b) => b.count - a.count)
@@ -121,7 +125,7 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
     return {
       windowDays: WINDOW,
       totalOccurrences: (occs ?? []).length,
-      openOccurrences: (occs ?? []).filter((o: any) => o.status === "aberta").length,
+      openOccurrences: ((occs ?? []) as OccRow[]).filter((o) => o.status === "aberta").length,
       suppliers: suppliersOut.slice(0, 10),
       topKinds,
     };
