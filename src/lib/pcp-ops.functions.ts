@@ -133,7 +133,8 @@ export const listDayProduction = createServerFn({ method: "POST" })
 
     const scored = list.map((r) => {
       const sku = r.products?.sku;
-      if (!sku) return { ...r, score: 0, score_reasons: [] as string[] };
+      if (!sku) return { ...r, score: 0, score_reasons: [] as string[], lead_time_days: null as number | null };
+      const lead = leadFor(r.product_id, r.supplier_id);
       const res = computePriority({
         sku,
         sold7: sum((s7.data ?? []) as unknown as SkuQtyRow[], sku),
@@ -143,8 +144,9 @@ export const listDayProduction = createServerFn({ method: "POST" })
         wip: r.quantity ?? 0,
         cost: r.products?.cost_price ?? null,
         price: r.products?.sell_price ?? null,
+        leadTimeDays: lead,
       });
-      return { ...r, score: res.score, score_reasons: res.reasons };
+      return { ...r, score: res.score, score_reasons: res.reasons, lead_time_days: lead ?? null };
     });
 
     scored.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
