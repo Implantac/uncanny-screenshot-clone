@@ -322,7 +322,7 @@ function Almoxarifado() {
             <div className="flex items-center gap-2 font-medium">
               <Zap className="size-4 text-primary" /> Reposição inteligente sugerida
               <span className="text-xs text-muted-foreground font-normal">
-                ponto de pedido = giro diário × {LEAD_TIME_DAYS}d + segurança
+                ponto de pedido = giro diário × (lead-time do fornecedor + segurança)
               </span>
             </div>
             <Link
