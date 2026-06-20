@@ -814,7 +814,7 @@ function Shortcut({ to, label }: { to: string; label: string }) {
   );
 }
 
-function CoordinatorBriefing({ c }: { c: any }) {
+function CoordinatorBriefing({ c }: { c: CollectionAggregate }) {
   const alerts: string[] = [];
   if (c.semPiloto > 0)
     alerts.push(`${c.semPiloto} produto${c.semPiloto > 1 ? "s" : ""} sem piloto aprovado`);
@@ -893,7 +893,7 @@ function fmt(v: number) {
   return `R$ ${v.toFixed(0)}`;
 }
 
-function DigitalTwinAggregate({ c }: { c: any }) {
+function DigitalTwinAggregate({ c }: { c: CollectionAggregate }) {
   const coverage = c.coverageDays as number | null;
   const coverageLabel = coverage === null ? "—" : coverage > 365 ? "365+d" : `${coverage}d`;
   const coverageTone =
@@ -956,7 +956,7 @@ function DigitalTwinAggregate({ c }: { c: any }) {
           <TwinSkuList
             title="Ruptura com venda"
             icon={<Package className="size-3.5" />}
-            rows={c.ruptureSkus.map((p: any) => ({
+            rows={c.ruptureSkus.map((p: { id: string; sku: string; name: string }) => ({
               id: p.id,
               sku: p.sku,
               name: p.name,
@@ -967,7 +967,7 @@ function DigitalTwinAggregate({ c }: { c: any }) {
           <TwinSkuList
             title="Possível excesso"
             icon={<Boxes className="size-3.5" />}
-            rows={c.excessSkus.map((row: any) => ({
+            rows={c.excessSkus.map((row: { p: { id: string; sku: string; name: string }; stock: number; days: number }) => ({
               id: row.p.id,
               sku: row.p.sku,
               name: row.p.name,
@@ -1021,7 +1021,7 @@ function TwinSkuList({
   );
 }
 
-function InvestmentResult({ c }: { c: any }) {
+function InvestmentResult({ c }: { c: CollectionAggregate }) {
   const investment: number = c.investment;
   const productionCost: number = c.productionCost ?? 0;
   const marketingCost: number = c.marketingCost ?? 0;
@@ -1123,7 +1123,7 @@ function Metric({
   );
 }
 
-function MetaMood({ c }: { c: any }) {
+function MetaMood({ c }: { c: CollectionAggregate }) {
   const goal = c.investment > 0 ? c.investment * 1.5 : Math.max(c.revenue * 1.2, 50000);
   const pct = goal > 0 ? Math.min(100, (c.revenue / goal) * 100) : 0;
   const moodKey =
