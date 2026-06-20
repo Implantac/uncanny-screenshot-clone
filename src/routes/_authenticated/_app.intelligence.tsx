@@ -413,7 +413,7 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQCha
     const DAY = 24 * 60 * 60 * 1000;
     // Sales aggregated by product_id
     const salesByPid = new Map<string, { d7: number; d30: number }>();
-    for (const s of sales as any[]) {
+    for (const s of sales as SaleRow[]) {
       if (!s.product_id) continue;
       const ageDays = (now - new Date(s.sold_at).getTime()) / DAY;
       const qty = Number(s.quantity || 0);
@@ -425,7 +425,7 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQCha
     // Inventory by sku
     const stockBySku = new Map<string, number>();
     const minBySku = new Map<string, number>();
-    for (const i of inventory as any[]) {
+    for (const i of inventory as InventoryRow[]) {
       stockBySku.set(i.sku, (stockBySku.get(i.sku) ?? 0) + Number(i.balance || 0));
       minBySku.set(i.sku, Math.max(minBySku.get(i.sku) ?? 0, Number(i.minimum || 0)));
     }
@@ -808,7 +808,7 @@ function PcpKanban({ orders, products }: any) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const map = new Map(PCP_STAGES.map((s) => [s, [] as any[]]));
+  const map = new Map(PCP_STAGES.map((s) => [s, [] as OrderRow[]]));
   (orders as OrderRow[]).forEach((o) => map.get(inferStage(o))?.push(o));
 
   return (
@@ -917,7 +917,7 @@ function DevelopmentBoard({ prototypes }: any) {
     aprovado: "Liberado PCP",
     reprovado: "Ajuste",
   };
-  const cols = new Map(stages.map((s) => [s, [] as any[]]));
+  const cols = new Map(stages.map((s) => [s, [] as PrototypeRow[]]));
   (prototypes as PrototypeRow[]).forEach((p) => {
     const target = STAGE_MAP[String(p.stage)] ?? "Pesquisa";
     cols.get(target)?.push(p);
@@ -1012,7 +1012,7 @@ function DevelopmentBoard({ prototypes }: any) {
 function ProductScore({ products, sales, inventory }: any) {
   // Real aggregates from sales + inventory
   const salesByProduct = new Map<string, { units: number; revenue: number }>();
-  for (const s of sales as any[]) {
+  for (const s of sales as SaleRow[]) {
     if (!s.product_id) continue;
     const cur = salesByProduct.get(s.product_id) ?? { units: 0, revenue: 0 };
     cur.units += Number(s.quantity || 0);
@@ -1020,7 +1020,7 @@ function ProductScore({ products, sales, inventory }: any) {
     salesByProduct.set(s.product_id, cur);
   }
   const stockBySku = new Map<string, number>();
-  for (const i of inventory as any[]) {
+  for (const i of inventory as InventoryRow[]) {
     if (!i.sku) continue;
     stockBySku.set(i.sku, (stockBySku.get(i.sku) ?? 0) + Number(i.balance || 0));
   }
@@ -1137,7 +1137,7 @@ function ProductScore({ products, sales, inventory }: any) {
 /* ===================== GEO SALES (M38) ===================== */
 function GeoSales({ b2b, sales = [] }: any) {
   const byUf = new Map<string, number>();
-  for (const s of sales as any[]) {
+  for (const s of sales as SaleRow[]) {
     const uf = String(s.uf ?? "").toUpperCase();
     if (!uf) continue;
     byUf.set(uf, (byUf.get(uf) ?? 0) + Number(s.quantity || 0));
@@ -1230,7 +1230,7 @@ const CHANNEL_LABEL: Record<string, string> = {
 
 function Attribution({ campaigns, b2b, sales = [] }: any) {
   const revenueByChannel = new Map<string, number>();
-  for (const s of sales as any[]) {
+  for (const s of sales as SaleRow[]) {
     const k = String(s.channel ?? "ecommerce");
     revenueByChannel.set(k, (revenueByChannel.get(k) ?? 0) + Number(s.total || 0));
   }
@@ -1765,7 +1765,7 @@ const CHANNELS = [
   "representante",
 ];
 
-function SalesSuite({ products }: { products: any[] }) {
+function SalesSuite({ products }: { products: ProductRow[] }) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -2051,9 +2051,9 @@ function RestockEngine({
   inventory,
   products,
 }: {
-  sales: any[];
-  inventory: any[];
-  products: any[];
+  sales: SaleRow[];
+  inventory: InventoryRow[];
+  products: ProductRow[];
 }) {
   const WINDOW_DAYS = 30;
   const COVER_TARGET = 30; // dias de cobertura desejados
