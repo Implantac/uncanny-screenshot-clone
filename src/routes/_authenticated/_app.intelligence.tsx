@@ -1417,7 +1417,7 @@ function InfluencerSuite() {
   const save = useMutation({
     mutationFn: async (v: Partial<Influencer>) => {
       if (!user) throw new Error("Sem usuário");
-      const payload: any = { ...v, owner_id: user.id };
+      const payload = { ...v, owner_id: user.id };
       const { error } = v.id
         ? await supabase.from("influencers").update(payload).eq("id", v.id)
         : await supabase.from("influencers").insert(payload);
@@ -1464,7 +1464,7 @@ function InfluencerSuite() {
     setDraft(EMPTY_INF);
     setOpen(true);
   }
-  function field<K extends keyof Influencer>(k: K, v: any) {
+  function field<K extends keyof Influencer>(k: K, v: Influencer[K]) {
     setDraft((d) => ({ ...d, [k]: v }));
   }
 
@@ -1832,7 +1832,7 @@ function SalesSuite({ products }: { products: ProductRow[] }) {
       if (!user) throw new Error("Sem usuário");
       const qty = Number(v.quantity || 0),
         price = Number(v.unit_price || 0);
-      const payload: any = {
+      const payload = {
         ...v,
         user_id: user.id,
         quantity: qty,
@@ -1886,7 +1886,7 @@ function SalesSuite({ products }: { products: ProductRow[] }) {
     setDraft(EMPTY_SALE);
     setOpen(true);
   }
-  function field<K extends keyof Sale>(k: K, v: any) {
+  function field<K extends keyof Sale>(k: K, v: Sale[K]) {
     setDraft((d) => ({ ...d, [k]: v }));
   }
 
