@@ -31,11 +31,11 @@ export const suggestTechSheetImprovements = createServerFn({ method: "POST" })
         .single(),
       supabase
         .from("tech_sheet_materials")
-        .select("description, consumption, unit, waste_pct, unit_cost, total_cost")
+        .select("name, consumption, unit, loss_pct, unit_cost, total_cost")
         .eq("tech_sheet_id", data.techSheetId),
       supabase
         .from("tech_sheet_operations")
-        .select("description, sam_minutes, machine, unit_cost, total_cost")
+        .select("name, sam, machine, rate_per_min, total_cost")
         .eq("tech_sheet_id", data.techSheetId),
     ]);
     if (!sheet) throw new Error("Ficha não encontrada");
@@ -53,8 +53,8 @@ Custo final: R$ ${Number(sheet.cost_price ?? 0).toFixed(2)}
 ${
   (mats ?? [])
     .map(
-      (m: any) =>
-        `- ${m.description}: ${m.consumption}${m.unit ?? ""} × R$${m.unit_cost} (perda ${m.waste_pct ?? 0}%) = R$${m.total_cost}`,
+      (m) =>
+        `- ${m.name}: ${m.consumption}${m.unit ?? ""} × R$${m.unit_cost} (perda ${m.loss_pct ?? 0}%) = R$${m.total_cost}`,
     )
     .join("\n") || "(vazio)"
 }
@@ -63,8 +63,8 @@ ${
 ${
   (ops ?? [])
     .map(
-      (o: any) =>
-        `- ${o.description}: ${o.sam_minutes ?? 0}min ${o.machine ?? ""} = R$${o.total_cost}`,
+      (o) =>
+        `- ${o.name}: ${o.sam ?? 0}min ${o.machine ?? ""} = R$${o.total_cost}`,
     )
     .join("\n") || "(vazio)"
 }

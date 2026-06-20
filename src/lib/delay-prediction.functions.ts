@@ -64,7 +64,8 @@ export const predictDelays = createServerFn({ method: "GET" })
 
       // tempo médio que uma OP ficou em from_stage antes de avançar
       const byOrder = new Map<string, Array<{ stage: Stage | null; at: number }>>();
-      (logs ?? []).forEach((l: any) => {
+      type LogRow = { order_id: string; to_stage: Stage | null; created_at: string };
+      ((logs ?? []) as LogRow[]).forEach((l) => {
         const arr = byOrder.get(l.order_id) ?? [];
         arr.push({ stage: l.to_stage, at: new Date(l.created_at).getTime() });
         byOrder.set(l.order_id, arr);
@@ -100,7 +101,8 @@ export const predictDelays = createServerFn({ method: "GET" })
         .limit(500);
 
       const now = Date.now();
-      const items: DelayPrediction[] = (orders ?? []).map((o: any) => {
+      type OrderRow = { id: string; code: string; stage: Stage; due_date: string | null; stage_updated_at: string | null; products: { name: string | null } | null };
+      const items: DelayPrediction[] = ((orders ?? []) as OrderRow[]).map((o) => {
         const stage = o.stage as Stage;
         const idx = ORDER.indexOf(stage);
         const stageStart = o.stage_updated_at ? new Date(o.stage_updated_at).getTime() : now;

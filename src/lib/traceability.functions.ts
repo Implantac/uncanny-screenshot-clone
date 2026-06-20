@@ -24,7 +24,7 @@ export const getOrderTimeline = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!orders || orders.length === 0) return { orders: [], events: [] };
 
-    const ids = orders.map((o: any) => o.id);
+    const ids = orders.map((o) => o.id);
     const { data: events, error: e2 } = await supabase
       .from("production_stage_log")
       .select("id, order_id, from_stage, to_stage, quantity, is_partial, note, created_at")

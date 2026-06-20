@@ -45,6 +45,12 @@ const STAGES_ACTIVE: StageKey[] = ["solicitado", "em_confeccao", "em_prova"];
 export const getDevIntelligence = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<DevIntelligence> => {
+    // NOTE: `prototype_stage_log` table and several columns
+    // (`prototypes.name`, `prototypes.stage_updated_at`) referenced below
+    // are not present in the current generated Database types. Keeping `any`
+    // here intentionally until the schema is reconciled — outside scope of
+    // the typing refactor.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = context.supabase as any;
 
     const [{ data: logs }, { data: protos }, { data: collections }] =
@@ -108,7 +114,7 @@ export const getDevIntelligence = createServerFn({ method: "GET" })
     const stuck: StuckPrototype[] = [];
     const now = Date.now();
     const collNameById = new Map<string, string>(
-      (collections ?? []).map((c: any) => [c.id as string, c.name as string]),
+      (collections ?? []).map((c: { id: string; name: string }) => [c.id, c.name]),
     );
     for (const p of protos ?? []) {
       if (!STAGES_ACTIVE.includes(p.stage as StageKey)) continue;
