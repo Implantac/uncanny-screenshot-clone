@@ -70,7 +70,7 @@ function Page() {
       const { data, error } = await supabase
         .from("fit_session_comments")
         .select("*")
-        .eq("fit_session_id", selected)
+        .eq("fit_session_id", selected!)
         .order("created_at");
       if (error) throw error;
       return (data ?? []) as Comment[];
