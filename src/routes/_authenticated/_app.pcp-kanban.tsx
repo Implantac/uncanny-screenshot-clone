@@ -86,6 +86,23 @@ function PcpKanban() {
   const qc = useQueryClient();
   useRealtime("production_orders", ["pcp-kanban"]);
   const { data: orders = [], isLoading } = useQuery({ queryKey: ["pcp-kanban"], queryFn: load });
+
+  // Gate de qualidade: OPs com CAPA aberta não podem avançar para Expedição/Entregue.
+  const { data: openCapaOrderIds = new Set<string>() } = useQuery({
+    queryKey: ["pcp-kanban-open-capa"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("quality_capa")
+        .select("order_id")
+        .eq("status", "aberta")
+        .not("order_id", "is", null);
+      if (error) throw error;
+      return new Set<string>((data ?? []).map((r) => r.order_id as string));
+    },
+    refetchInterval: 60_000,
+  });
+  useRealtime("quality_capa", ["pcp-kanban-open-capa"]);
+
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<Stage | null>(null);
   const [mode, setMode] = useState<"ordens" | "lotes">("ordens");
@@ -180,6 +197,13 @@ function PcpKanban() {
   const move = (id: string, stage: Stage) => {
     const o = orders.find((x) => x.id === id);
     if (!o || o.stage === stage) return;
+    // Gate de qualidade — bloqueia passagem para Expedição/Entregue quando há CAPA aberta.
+    if ((stage === "expedicao" || stage === "entregue") && openCapaOrderIds.has(id)) {
+      toast.error(`${o.code} tem CAPA de qualidade aberta — resolva antes de expedir.`, {
+        action: { label: "Ver CAPA", onClick: () => window.open(`/quality`, "_self") },
+      });
+      return;
+    }
     update.mutate({ id, stage });
     toast.success(`${o.code} → ${STAGES.find((s) => s.key === stage)?.label}`);
   };
@@ -430,7 +454,17 @@ function PcpKanban() {
                         className={`group rounded-lg border bg-background p-2.5 text-xs space-y-1.5 cursor-grab active:cursor-grabbing hover:border-primary/50 transition ${overdue ? "border-destructive/60" : soon ? "border-orange-500/50" : "border-border"}`}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-semibold tabular-nums">{o.code}</span>
+                          <span className="font-semibold tabular-nums flex items-center gap-1">
+                            {o.code}
+                            {openCapaOrderIds.has(o.id) && (
+                              <span
+                                className="text-[9px] px-1 py-0.5 rounded border border-destructive/40 bg-destructive/10 text-destructive inline-flex items-center gap-0.5"
+                                title="CAPA de qualidade aberta — não pode expedir"
+                              >
+                                <AlertTriangle className="size-2.5" /> CAPA
+                              </span>
+                            )}
+                          </span>
                           <div className="flex items-center gap-1">
                             {o.product_id && (
                               <button
