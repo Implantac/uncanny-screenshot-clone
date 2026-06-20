@@ -35,7 +35,15 @@ export const listThemes = createServerFn({ method: "GET" })
     for (const c of cp ?? []) {
       if (c.theme_id) counts.set(c.theme_id, (counts.get(c.theme_id) ?? 0) + 1);
     }
-    return (themes ?? []).map((t: any) => ({
+    type ThemeDbRow = {
+      id: string;
+      name: string;
+      description: string | null;
+      color: string | null;
+      palette: string[] | null;
+      display_order: number;
+    };
+    return ((themes ?? []) as ThemeDbRow[]).map((t) => ({
       id: t.id,
       name: t.name,
       description: t.description,
@@ -129,7 +137,15 @@ export const listLines = createServerFn({ method: "GET" })
     for (const p of products ?? []) {
       if (p.line_id) counts.set(p.line_id, (counts.get(p.line_id) ?? 0) + 1);
     }
-    return (lines ?? []).map((l: any) => ({
+    type LineDbRow = {
+      id: string;
+      name: string;
+      season: string | null;
+      year: number | null;
+      description: string | null;
+      display_order: number;
+    };
+    return ((lines ?? []) as LineDbRow[]).map((l) => ({
       id: l.id,
       name: l.name,
       season: l.season,
@@ -227,14 +243,20 @@ export const getChannelMix = createServerFn({ method: "GET" })
         .eq("collection_id", data.collectionId),
       sb.from("products").select("id, sku, name, image_url"),
     ]);
-    const pmap = new Map((products ?? []).map((p: any) => [p.id, p]));
-    return (cp ?? []).map((c: any) => {
+    type ProdRow = { id: string; sku: string | null; name: string | null; image_url: string | null };
+    type CpRow = {
+      product_id: string;
+      role: string;
+      channel_exclusive: string[] | null;
+    };
+    const pmap = new Map(((products ?? []) as ProdRow[]).map((p) => [p.id, p]));
+    return ((cp ?? []) as CpRow[]).map((c) => {
       const p = pmap.get(c.product_id);
       return {
         productId: c.product_id,
-        sku: (p as any)?.sku ?? "—",
-        name: (p as any)?.name ?? "—",
-        imageUrl: (p as any)?.image_url ?? null,
+        sku: p?.sku ?? "—",
+        name: p?.name ?? "—",
+        imageUrl: p?.image_url ?? null,
         channels:
           c.channel_exclusive && c.channel_exclusive.length > 0
             ? (c.channel_exclusive as ChannelKey[])

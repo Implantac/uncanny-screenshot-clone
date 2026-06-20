@@ -73,7 +73,16 @@ export const getPrototypeApprovals = createServerFn({ method: "GET" })
       targetCost = tc?.[0]?.target_cost ?? null;
     }
 
-    const approvals: ApprovalRow[] = (rows ?? []).map((r: any) => ({
+    type ApprovalDbRow = {
+      id: string;
+      role: ApprovalRole;
+      approved_at: string;
+      note: string | null;
+      cost_at_approval: number | null;
+      target_cost_at_approval: number | null;
+      approved_by: string | null;
+    };
+    const approvals: ApprovalRow[] = ((rows ?? []) as ApprovalDbRow[]).map((r) => ({
       id: r.id,
       role: r.role,
       approvedAt: r.approved_at,
