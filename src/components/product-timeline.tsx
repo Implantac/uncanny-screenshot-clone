@@ -24,24 +24,23 @@ type Event = {
 type ProtoRow = {
   id: string;
   code: string;
-  name: string | null;
   stage: string;
   created_at: string;
   updated_at: string | null;
 };
 type SheetRow = {
   id: string;
-  version: number | null;
+  version: string | null;
   status: string;
   created_at: string;
   updated_at: string | null;
 };
 type FitRow = {
   id: string;
-  title: string | null;
   status: string;
-  scheduled_at: string | null;
+  session_date: string | null;
   created_at: string;
+  fit_model: string | null;
 };
 type OpRow = {
   id: string;
@@ -65,11 +64,11 @@ async function loadEvents(productId: string, createdAt: string): Promise<Event[]
   const [protos, fits, sheets, ops, logs] = await Promise.all([
     supabase
       .from("prototypes")
-      .select("id, code, name, stage, created_at, updated_at")
+      .select("id, code, stage, created_at, updated_at")
       .eq("product_id", productId),
     supabase
       .from("fit_sessions")
-      .select("id, title, status, scheduled_at, created_at")
+      .select("id, status, session_date, created_at, fit_model")
       .eq("product_id", productId),
     supabase
       .from("tech_sheets")
@@ -97,46 +96,45 @@ async function loadEvents(productId: string, createdAt: string): Promise<Event[]
     title: "Produto criado",
     tone: "default",
   });
-  (protos.data ?? []).forEach((p: ProtoRow) => {
+  ((protos.data ?? []) as ProtoRow[]).forEach((p) => {
     ev.push({
       id: `proto-${p.id}`,
       at: p.updated_at ?? p.created_at,
       icon: <Sparkles className="size-3.5" />,
       title: `Protótipo ${p.code} · ${p.stage}`,
-      detail: p.name ?? undefined,
       tone: p.stage === "aprovado" ? "success" : "primary",
     });
   });
-  (sheets.data ?? []).forEach((s: SheetRow) => {
+  ((sheets.data ?? []) as SheetRow[]).forEach((s) => {
     ev.push({
       id: `sheet-${s.id}`,
       at: s.updated_at ?? s.created_at,
       icon: <FileText className="size-3.5" />,
-      title: `Ficha técnica v${s.version} · ${s.status}`,
+      title: `Ficha técnica v${s.version ?? "—"} · ${s.status}`,
       tone: s.status === "aprovada" ? "success" : "default",
     });
   });
-  (fits.data ?? []).forEach((f: FitRow) => {
+  ((fits.data ?? []) as FitRow[]).forEach((f) => {
     ev.push({
       id: `fit-${f.id}`,
-      at: f.scheduled_at ?? f.created_at,
+      at: f.session_date ?? f.created_at,
       icon: <Ruler className="size-3.5" />,
       title: `Prova de modelagem · ${f.status}`,
-      detail: f.title ?? undefined,
+      detail: f.fit_model ?? undefined,
       tone: "primary",
     });
   });
-  (ops.data ?? []).forEach((o: OpRow) => {
+  ((ops.data ?? []) as OpRow[]).forEach((o) => {
     ev.push({
       id: `op-${o.id}`,
       at: o.created_at,
       icon: <Factory className="size-3.5" />,
-      title: `OP ${o.code} aberta (${o.quantity} pç)`,
+      title: `OP ${o.code} aberta (${o.quantity ?? 0} pç)`,
       detail: `Estágio ${o.stage} · ${o.status}`,
       tone: "primary",
     });
   });
-  (logs.data ?? []).forEach((l: LogRow) => {
+  ((logs.data ?? []) as unknown as LogRow[]).forEach((l) => {
     ev.push({
       id: `log-${l.id}`,
       at: l.created_at,
