@@ -277,6 +277,8 @@ function PcpKanban() {
 
       <DelayPredictionPanel />
 
+      <SamEfficiencyPanel />
+
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-medium">
           <Sparkles className="size-4 text-primary" /> Próxima melhor ação
