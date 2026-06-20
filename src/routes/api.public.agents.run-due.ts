@@ -34,8 +34,8 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
         const authed = safeEq(apiKey, expectedApi) || safeEq(cronSecret, expectedCron);
         if (!authed) return new Response("Unauthorized", { status: 401 });
 
-        const apiKey = process.env.LOVABLE_API_KEY;
-        if (!apiKey) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const lovableKey = process.env.LOVABLE_API_KEY;
+        if (!lovableKey) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
