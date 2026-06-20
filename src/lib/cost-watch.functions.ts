@@ -49,20 +49,32 @@ export const getCostWatch = createServerFn({ method: "GET" })
       sb.from("product_target_costs").select("product_id, target_cost"),
     ]);
 
+    type SheetRow = {
+      product_id: string | null;
+      cost_price: number | null;
+      materials_cost: number | null;
+      labor_cost: number | null;
+      status: string;
+      updated_at: string;
+    };
+    type TargetRow = { product_id: string; target_cost: number | null };
+    type ProductRow = { id: string; sku: string | null; name: string; image_url: string | null };
+
     // pega ficha mais recente por produto
-    const sheetBy = new Map<string, any>();
-    (sheets ?? []).forEach((s: any) => {
+    const sheetBy = new Map<string, SheetRow>();
+    ((sheets ?? []) as SheetRow[]).forEach((s) => {
+      if (!s.product_id) return;
       const cur = sheetBy.get(s.product_id);
       if (!cur || new Date(s.updated_at) > new Date(cur.updated_at)) {
         sheetBy.set(s.product_id, s);
       }
     });
-    const targetBy = new Map(
-      (targets ?? []).map((t: any) => [t.product_id, Number(t.target_cost ?? 0)]),
+    const targetBy = new Map<string, number>(
+      ((targets ?? []) as TargetRow[]).map((t) => [t.product_id, Number(t.target_cost ?? 0)]),
     );
 
     const items: CostWatchItem[] = [];
-    (products ?? []).forEach((p: any) => {
+    ((products ?? []) as ProductRow[]).forEach((p) => {
       const target = Number(targetBy.get(p.id) ?? 0);
       const sheet = sheetBy.get(p.id);
       const approved = Number(sheet?.cost_price ?? 0);

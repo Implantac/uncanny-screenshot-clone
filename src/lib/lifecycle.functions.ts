@@ -59,11 +59,13 @@ export const previewTransition = createServerFn({ method: "GET" })
         .eq("status", "aprovada"),
     ]);
 
-    const nonNos = (cp ?? []).filter((c: any) => c.role !== "nos");
-    const approvedIds = new Set((ts ?? []).map((t: any) => t.product_id));
+    type CpRow = { product_id: string; role: string | null };
+    type TsRow = { id: string; product_id: string | null; status: string };
+    const nonNos = ((cp ?? []) as CpRow[]).filter((c) => c.role !== "nos");
+    const approvedIds = new Set(((ts ?? []) as TsRow[]).map((t) => t.product_id));
 
     if (data.to === "producao") {
-      const missing = nonNos.filter((c: any) => !approvedIds.has(c.product_id)).length;
+      const missing = nonNos.filter((c) => !approvedIds.has(c.product_id)).length;
       if (nonNos.length === 0) warnings.push("Nenhum produto no mix da coleção.");
       if (missing > 0)
         warnings.push(`${missing} produto(s) sem ficha técnica aprovada.`);
