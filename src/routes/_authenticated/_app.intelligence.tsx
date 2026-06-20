@@ -919,7 +919,7 @@ function PcpKanban({ orders, products }: { orders: OrderRow[]; products: Product
 }
 
 /* ===================== DEVELOPMENT (M45/M46) ===================== */
-function DevelopmentBoard({ prototypes }: any) {
+function DevelopmentBoard({ prototypes }: { prototypes: PrototypeRow[] }) {
   const stages = [
     "Pesquisa",
     "Moodboard",
