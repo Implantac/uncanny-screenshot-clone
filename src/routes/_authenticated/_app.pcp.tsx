@@ -896,6 +896,10 @@ function PCP() {
               ownerId={user?.id ?? null}
             />
           </TabsContent>
+
+          <TabsContent value="mrp">
+            <PcpMrpPanel />
+          </TabsContent>
         </Tabs>
       )}
 
