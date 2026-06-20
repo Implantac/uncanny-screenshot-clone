@@ -345,9 +345,10 @@ export const askInsight = createServerFn({ method: "POST" })
         temperature: 0.3,
       });
       return { text: res.text, persona: persona.label };
-    } catch (err: any) {
-      const msg = String(err?.message ?? err);
-      const status = err?.statusCode ?? err?.lastError?.statusCode;
+    } catch (err: unknown) {
+      const e = err as { message?: unknown; statusCode?: number; lastError?: { statusCode?: number } } | undefined;
+      const msg = String(e?.message ?? err);
+      const status = e?.statusCode ?? e?.lastError?.statusCode;
       if (status === 429 || /Too Many Requests/i.test(msg)) {
         return {
           text: "**Limite de requisições atingido.** A IA está recebendo muitas chamadas no momento. Aguarde alguns segundos e tente novamente.",
