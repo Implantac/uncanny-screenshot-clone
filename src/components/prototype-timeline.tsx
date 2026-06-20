@@ -51,32 +51,48 @@ export function PrototypeTimelineButton({
         supabase.from("production_orders").select("id").ilike("notes", `%[proto:${prototypeId}]%`),
       ]);
 
-      const stageLogs: any[] = [];
-      const orderIds = (opR.data ?? []).map((o: any) => o.id);
+      type StageLogRow = {
+        from_stage: string | null;
+        to_stage: string;
+        quantity: number | null;
+        is_partial: boolean | null;
+        created_at: string;
+      };
+      type CmtRow = { id: string; body: string; created_at: string };
+      type AdjRow = {
+        id: string;
+        sector: string | null;
+        reason: string | null;
+        status: string;
+        created_at: string;
+      };
+
+      const stageLogs: StageLogRow[] = [];
+      const orderIds = (opR.data ?? []).map((o: { id: string }) => o.id);
       if (orderIds.length) {
         const { data } = await supabase
           .from("production_stage_log")
           .select("from_stage, to_stage, quantity, is_partial, created_at")
           .in("order_id", orderIds)
           .order("created_at", { ascending: false });
-        stageLogs.push(...(data ?? []));
+        stageLogs.push(...((data ?? []) as StageLogRow[]));
       }
 
       const ev: Event[] = [
-        ...(cmts.data ?? []).map((c: any) => ({
+        ...((cmts.data ?? []) as CmtRow[]).map((c) => ({
           ts: c.created_at,
           kind: "comment" as const,
           title: "Comentário",
           body: c.body,
         })),
-        ...(adjs.data ?? []).map((a: any) => ({
+        ...((adjs.data ?? []) as AdjRow[]).map((a) => ({
           ts: a.created_at,
           kind: "adjustment" as const,
           title: `Ajuste · ${a.sector ?? "—"}`,
           body: a.reason ?? undefined,
           badge: a.status,
         })),
-        ...stageLogs.map((s: any) => ({
+        ...stageLogs.map((s) => ({
           ts: s.created_at,
           kind: "stage" as const,
           title: `Produção: ${s.from_stage ? (STAGE_LABEL[s.from_stage] ?? s.from_stage) : "início"} → ${STAGE_LABEL[s.to_stage] ?? s.to_stage}`,
