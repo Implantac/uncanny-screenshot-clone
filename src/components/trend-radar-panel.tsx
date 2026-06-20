@@ -20,7 +20,8 @@ export function TrendRadarPanel() {
   const m = useMutation({
     mutationFn: () =>
       fn({ data: { horizon } }) as Promise<{ signals: TrendSignal[]; brandContext: string }>,
-    onError: (e: any) => toast.error(e?.message ?? "Falha ao escanear tendências"),
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Falha ao escanear tendências"),
   });
 
   const signals = m.data?.signals ?? [];
