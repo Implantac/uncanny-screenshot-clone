@@ -454,7 +454,17 @@ function PcpKanban() {
                         className={`group rounded-lg border bg-background p-2.5 text-xs space-y-1.5 cursor-grab active:cursor-grabbing hover:border-primary/50 transition ${overdue ? "border-destructive/60" : soon ? "border-orange-500/50" : "border-border"}`}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-semibold tabular-nums">{o.code}</span>
+                          <span className="font-semibold tabular-nums flex items-center gap-1">
+                            {o.code}
+                            {openCapaOrderIds.has(o.id) && (
+                              <span
+                                className="text-[9px] px-1 py-0.5 rounded border border-destructive/40 bg-destructive/10 text-destructive inline-flex items-center gap-0.5"
+                                title="CAPA de qualidade aberta — não pode expedir"
+                              >
+                                <AlertTriangle className="size-2.5" /> CAPA
+                              </span>
+                            )}
+                          </span>
                           <div className="flex items-center gap-1">
                             {o.product_id && (
                               <button
