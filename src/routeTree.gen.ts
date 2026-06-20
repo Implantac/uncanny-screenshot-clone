@@ -101,6 +101,7 @@ import { Route as ApiPublicHooksMarkLateOpsRouteImport } from './routes/api/publ
 import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
 import { Route as AuthenticatedAppWarRoomColecaoIdRouteImport } from './routes/_authenticated/_app.war-room-colecao.$id'
+import { Route as AuthenticatedAppQualityCapaRulesRouteImport } from './routes/_authenticated/_app.quality.capa-rules'
 import { Route as AuthenticatedAppPrototipoIdRouteImport } from './routes/_authenticated/_app.prototipo.$id'
 import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes/_authenticated/_app.producao-do-dia.$stage'
 import { Route as AuthenticatedAppLoteIdRouteImport } from './routes/_authenticated/_app.lote.$id'
@@ -631,6 +632,12 @@ const AuthenticatedAppWarRoomColecaoIdRoute =
     path: '/war-room-colecao/$id',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppQualityCapaRulesRoute =
+  AuthenticatedAppQualityCapaRulesRouteImport.update({
+    id: '/capa-rules',
+    path: '/capa-rules',
+    getParentRoute: () => AuthenticatedAppQualityRoute,
+  } as any)
 const AuthenticatedAppPrototipoIdRoute =
   AuthenticatedAppPrototipoIdRouteImport.update({
     id: '/prototipo/$id',
@@ -721,7 +728,7 @@ export interface FileRoutesByFullPath {
   '/produzir-hoje': typeof AuthenticatedAppProduzirHojeRoute
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/prototipos': typeof AuthenticatedAppPrototiposRoute
-  '/quality': typeof AuthenticatedAppQualityRoute
+  '/quality': typeof AuthenticatedAppQualityRouteWithChildren
   '/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
@@ -745,6 +752,7 @@ export interface FileRoutesByFullPath {
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
+  '/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
   '/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
@@ -817,7 +825,7 @@ export interface FileRoutesByTo {
   '/produzir-hoje': typeof AuthenticatedAppProduzirHojeRoute
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/prototipos': typeof AuthenticatedAppPrototiposRoute
-  '/quality': typeof AuthenticatedAppQualityRoute
+  '/quality': typeof AuthenticatedAppQualityRouteWithChildren
   '/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
@@ -841,6 +849,7 @@ export interface FileRoutesByTo {
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
+  '/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
   '/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
@@ -915,7 +924,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/produzir-hoje': typeof AuthenticatedAppProduzirHojeRoute
   '/_authenticated/_app/profitability': typeof AuthenticatedAppProfitabilityRoute
   '/_authenticated/_app/prototipos': typeof AuthenticatedAppPrototiposRoute
-  '/_authenticated/_app/quality': typeof AuthenticatedAppQualityRoute
+  '/_authenticated/_app/quality': typeof AuthenticatedAppQualityRouteWithChildren
   '/_authenticated/_app/replenishment': typeof AuthenticatedAppReplenishmentRoute
   '/_authenticated/_app/representantes': typeof AuthenticatedAppRepresentantesRoute
   '/_authenticated/_app/sales-performance': typeof AuthenticatedAppSalesPerformanceRoute
@@ -940,6 +949,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/_authenticated/_app/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/_authenticated/_app/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
+  '/_authenticated/_app/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
   '/_authenticated/_app/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
@@ -1038,6 +1048,7 @@ export interface FileRouteTypes {
     | '/lote/$id'
     | '/producao-do-dia/$stage'
     | '/prototipo/$id'
+    | '/quality/capa-rules'
     | '/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
@@ -1134,6 +1145,7 @@ export interface FileRouteTypes {
     | '/lote/$id'
     | '/producao-do-dia/$stage'
     | '/prototipo/$id'
+    | '/quality/capa-rules'
     | '/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
@@ -1232,6 +1244,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/lote/$id'
     | '/_authenticated/_app/producao-do-dia/$stage'
     | '/_authenticated/_app/prototipo/$id'
+    | '/_authenticated/_app/quality/capa-rules'
     | '/_authenticated/_app/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
@@ -1898,6 +1911,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppWarRoomColecaoIdRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/quality/capa-rules': {
+      id: '/_authenticated/_app/quality/capa-rules'
+      path: '/capa-rules'
+      fullPath: '/quality/capa-rules'
+      preLoaderRoute: typeof AuthenticatedAppQualityCapaRulesRouteImport
+      parentRoute: typeof AuthenticatedAppQualityRoute
+    }
     '/_authenticated/_app/prototipo/$id': {
       id: '/_authenticated/_app/prototipo/$id'
       path: '/prototipo/$id'
@@ -1928,6 +1948,21 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedAppQualityRouteChildren {
+  AuthenticatedAppQualityCapaRulesRoute: typeof AuthenticatedAppQualityCapaRulesRoute
+}
+
+const AuthenticatedAppQualityRouteChildren: AuthenticatedAppQualityRouteChildren =
+  {
+    AuthenticatedAppQualityCapaRulesRoute:
+      AuthenticatedAppQualityCapaRulesRoute,
+  }
+
+const AuthenticatedAppQualityRouteWithChildren =
+  AuthenticatedAppQualityRoute._addFileChildren(
+    AuthenticatedAppQualityRouteChildren,
+  )
 
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAcompanhamentoProducaoRoute: typeof AuthenticatedAppAcompanhamentoProducaoRoute
@@ -1990,7 +2025,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppProduzirHojeRoute: typeof AuthenticatedAppProduzirHojeRoute
   AuthenticatedAppProfitabilityRoute: typeof AuthenticatedAppProfitabilityRoute
   AuthenticatedAppPrototiposRoute: typeof AuthenticatedAppPrototiposRoute
-  AuthenticatedAppQualityRoute: typeof AuthenticatedAppQualityRoute
+  AuthenticatedAppQualityRoute: typeof AuthenticatedAppQualityRouteWithChildren
   AuthenticatedAppReplenishmentRoute: typeof AuthenticatedAppReplenishmentRoute
   AuthenticatedAppRepresentantesRoute: typeof AuthenticatedAppRepresentantesRoute
   AuthenticatedAppSalesPerformanceRoute: typeof AuthenticatedAppSalesPerformanceRoute
@@ -2080,7 +2115,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppProduzirHojeRoute: AuthenticatedAppProduzirHojeRoute,
   AuthenticatedAppProfitabilityRoute: AuthenticatedAppProfitabilityRoute,
   AuthenticatedAppPrototiposRoute: AuthenticatedAppPrototiposRoute,
-  AuthenticatedAppQualityRoute: AuthenticatedAppQualityRoute,
+  AuthenticatedAppQualityRoute: AuthenticatedAppQualityRouteWithChildren,
   AuthenticatedAppReplenishmentRoute: AuthenticatedAppReplenishmentRoute,
   AuthenticatedAppRepresentantesRoute: AuthenticatedAppRepresentantesRoute,
   AuthenticatedAppSalesPerformanceRoute: AuthenticatedAppSalesPerformanceRoute,

@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ShieldCheck, AlertTriangle, Clock, Truck } from "lucide-react";
+import { ShieldCheck, AlertTriangle, Clock, Truck, Sliders } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { QualityIntelligencePanel } from "@/components/quality-intelligence-panel";
 import { QualityFpyPanel } from "@/components/quality-fpy-panel";
 import { QualityConqPanel } from "@/components/quality-conq-panel";
@@ -125,13 +126,20 @@ function Quality() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ShieldCheck className="h-6 w-6 text-cyan-600" /> Centro de Qualidade & SLA
-        </h1>
-        <p className="text-muted-foreground">
-          Inspeções, defeitos por fornecedor e cumprimento de prazo.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <ShieldCheck className="h-6 w-6 text-cyan-600" /> Centro de Qualidade & SLA
+          </h1>
+          <p className="text-muted-foreground">
+            Inspeções, defeitos por fornecedor e cumprimento de prazo.
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link to="/quality/capa-rules">
+            <Sliders className="size-4 mr-1" /> Regras de CAPA automática
+          </Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
