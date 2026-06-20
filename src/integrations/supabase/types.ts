@@ -2980,6 +2980,42 @@ export type Database = {
           },
         ]
       }
+      quality_capa_rules: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          fpy_threshold: number
+          max_critical_defects: number
+          min_inspections: number
+          min_occurrences: number
+          owner_id: string
+          updated_at: string
+          window_days: number
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          fpy_threshold?: number
+          max_critical_defects?: number
+          min_inspections?: number
+          min_occurrences?: number
+          owner_id: string
+          updated_at?: string
+          window_days?: number
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          fpy_threshold?: number
+          max_critical_defects?: number
+          min_inspections?: number
+          min_occurrences?: number
+          owner_id?: string
+          updated_at?: string
+          window_days?: number
+        }
+        Relationships: []
+      }
       quality_inspections: {
         Row: {
           aql_level: string | null
