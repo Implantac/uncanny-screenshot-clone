@@ -21,6 +21,46 @@ type Event = {
   tone?: "default" | "primary" | "success" | "warning";
 };
 
+type ProtoRow = {
+  id: string;
+  code: string;
+  name: string | null;
+  stage: string;
+  created_at: string;
+  updated_at: string | null;
+};
+type SheetRow = {
+  id: string;
+  version: number | null;
+  status: string;
+  created_at: string;
+  updated_at: string | null;
+};
+type FitRow = {
+  id: string;
+  title: string | null;
+  status: string;
+  scheduled_at: string | null;
+  created_at: string;
+};
+type OpRow = {
+  id: string;
+  code: string;
+  stage: string;
+  status: string;
+  quantity: number | null;
+  created_at: string;
+};
+type LogRow = {
+  id: string;
+  from_stage: string | null;
+  to_stage: string;
+  quantity: number | null;
+  is_partial: boolean | null;
+  created_at: string;
+  production_orders: { code: string | null; product_id: string | null } | null;
+};
+
 async function loadEvents(productId: string, createdAt: string): Promise<Event[]> {
   const [protos, fits, sheets, ops, logs] = await Promise.all([
     supabase
