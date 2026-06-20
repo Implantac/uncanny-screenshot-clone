@@ -54,7 +54,53 @@ import {
   Trash2,
   ShoppingCart,
   PackageSearch,
+  type LucideIcon,
 } from "lucide-react";
+
+type ProductRow = {
+  id: string;
+  sku?: string | null;
+  name?: string | null;
+  sell_price?: number | null;
+  cost_price?: number | null;
+  [k: string]: unknown;
+};
+type OrderRow = {
+  id: string;
+  product_id?: string | null;
+  status?: string | null;
+  stage?: string | null;
+  progress?: number | null;
+  quantity?: number | null;
+  [k: string]: unknown;
+};
+type InventoryRow = {
+  id?: string;
+  sku?: string | null;
+  balance?: number | null;
+  minimum?: number | null;
+  [k: string]: unknown;
+};
+type SaleRow = {
+  id?: string;
+  product_id?: string | null;
+  sku?: string | null;
+  sold_at: string;
+  quantity?: number | null;
+  total?: number | null;
+  channel?: string | null;
+  uf?: string | null;
+  [k: string]: unknown;
+};
+type B2BRow = { status?: string | null; total_value?: number | null; [k: string]: unknown };
+type PrototypeRow = {
+  id: string;
+  stage?: string | null;
+  code?: string | null;
+  due_date?: string | null;
+  [k: string]: unknown;
+};
+type CampaignRow = { id: string; [k: string]: unknown };
 import {
   ResponsiveContainer,
   BarChart,
