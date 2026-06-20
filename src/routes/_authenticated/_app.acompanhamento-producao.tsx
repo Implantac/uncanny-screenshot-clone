@@ -971,7 +971,7 @@ function AcompanhamentoProducao() {
 
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-9 gap-3">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))] gap-3">
         <KPI label="Lotes em produção" value={kpis.lotesProd} icon={<Package className="size-4" />} />
         <KPI
           label="Peças em produção"
@@ -1070,7 +1070,7 @@ function AcompanhamentoProducao() {
               meta = horas-alvo por etapa · vermelho &lt;60% · âmbar 60–84% · verde ≥85%
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-2">
             {slaBySetor.map((s) => {
               const tone = s.pct >= 85 ? "emerald" : s.pct >= 60 ? "amber" : "red";
               const colorMap: Record<string, string> = {
@@ -1087,18 +1087,18 @@ function AcompanhamentoProducao() {
                 <button
                   key={s.key}
                   onClick={() => setColKey(s.key)}
-                  className="text-left rounded-lg border border-border bg-background p-2 hover:border-primary transition"
+                  className="min-w-0 text-left rounded-lg border border-border bg-background p-2.5 hover:border-primary transition"
                 >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium truncate">{s.setor}</span>
-                    <span className={`font-semibold tabular-nums ${textMap[tone]}`}>{s.pct}%</span>
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs">
+                    <span className="min-w-0 truncate font-medium" title={s.setor}>{s.setor}</span>
+                    <span className={`shrink-0 font-semibold tabular-nums ${textMap[tone]}`}>{s.pct}%</span>
                   </div>
                   <div className="h-1.5 bg-muted rounded mt-1.5 overflow-hidden">
                     <div className={`h-full ${colorMap[tone]}`} style={{ width: `${s.pct}%` }} />
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-1 tabular-nums">
-                    <span>{s.lotes} lote(s) · média {s.avgH}h</span>
-                    <span>meta {s.target}h</span>
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground mt-1 tabular-nums">
+                    <span className="min-w-0 truncate">{s.lotes} lote(s) · média {s.avgH}h</span>
+                    <span className="shrink-0">meta {s.target}h</span>
                   </div>
                 </button>
               );
@@ -1809,12 +1809,12 @@ function KPI({
     warning: "text-amber-600",
   };
   return (
-    <div className="rounded-xl border border-border bg-card p-3">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+    <div className="min-w-0 rounded-xl border border-border bg-card p-3">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
         {icon}
-        {label}
+        <span className="min-w-0 leading-tight break-words">{label}</span>
       </div>
-      <div className={`mt-1 text-2xl font-semibold tabular-nums ${tones[tone]}`}>{value}</div>
+      <div className={`mt-2 text-xl font-semibold leading-tight tabular-nums break-words ${tones[tone]}`}>{value}</div>
     </div>
   );
 }
