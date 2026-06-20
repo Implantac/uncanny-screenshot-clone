@@ -352,9 +352,9 @@ export const upsertAssortmentCell = createServerFn({ method: "POST" })
       const { error } = await sb
         .from("assortment_plan")
         .update(payload)
-        .eq("id", (existing as any).id);
+        .eq("id", (existing as { id: string }).id);
       if (error) throw new Error(error.message);
-      return { id: (existing as any).id as string };
+      return { id: (existing as { id: string }).id };
     }
     const { data: ins, error } = await sb
       .from("assortment_plan")
