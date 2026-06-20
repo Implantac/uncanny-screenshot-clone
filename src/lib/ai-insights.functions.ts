@@ -99,25 +99,31 @@ async function buildContext(supabase: DB, persona: Persona): Promise<string> {
   const todayISO = today.toISOString();
 
   if (persona === "development") {
+    type Proto = { code: string; name: string | null; stage: string; updated_at: string };
+    type Product = { id: string; name: string; sku: string; status: string; created_at: string };
+    type Sheet = { product_id: string | null; status: string };
     const [{ data: protos }, { data: products }, { data: sheets }] = await Promise.all([
       supabase.from("prototypes").select("code, name, stage, updated_at").limit(80),
       supabase.from("products").select("id, name, sku, status, created_at").limit(120),
       supabase.from("tech_sheets").select("product_id, status").limit(200),
     ]);
+    const protosT = (protos ?? []) as unknown as Proto[];
+    const productsT = (products ?? []) as unknown as Product[];
+    const sheetsT = (sheets ?? []) as unknown as Sheet[];
     const productsWithSheet = new Set(
-      (sheets ?? []).filter((s: any) => s.status === "aprovada").map((s: any) => s.product_id),
+      sheetsT.filter((s) => s.status === "aprovada").map((s) => s.product_id),
     );
-    const semFicha = (products ?? []).filter(
-      (p: any) => p.status === "aprovado" && !productsWithSheet.has(p.id),
+    const semFicha = productsT.filter(
+      (p) => p.status === "aprovado" && !productsWithSheet.has(p.id),
     );
-    const pilotosPendentes = (protos ?? []).filter(
-      (p: any) => p.stage !== "aprovado" && p.stage !== "reprovado",
+    const pilotosPendentes = protosT.filter(
+      (p) => p.stage !== "aprovado" && p.stage !== "reprovado",
     );
-    const aprovadosRecentes = (protos ?? []).filter(
-      (p: any) => p.stage === "aprovado" && p.updated_at > iso30,
+    const aprovadosRecentes = protosT.filter(
+      (p) => p.stage === "aprovado" && p.updated_at > iso30,
     );
     return `# Contexto · Desenvolvimento (atualizado ${todayISO})
-- Total de protótipos: ${(protos ?? []).length}
+- Total de protótipos: ${protosT.length}
 - Pilotos pendentes (não aprovados/reprovados): ${pilotosPendentes.length}
 - Pilotos aprovados nos últimos 30 dias: ${aprovadosRecentes.length}
 - Produtos aprovados SEM ficha técnica aprovada: ${semFicha.length}
@@ -127,7 +133,7 @@ ${
   pilotosPendentes
     .slice(0, 10)
     .map(
-      (p: any) => `- \`${p.code}\` · ${p.name ?? "—"} · ${p.stage} · ${p.updated_at?.slice(0, 10)}`,
+      (p) => `- \`${p.code}\` · ${p.name ?? "—"} · ${p.stage} · ${p.updated_at?.slice(0, 10)}`,
     )
     .join("\n") || "- nenhum"
 }
@@ -136,7 +142,7 @@ ${
 ${
   semFicha
     .slice(0, 10)
-    .map((p: any) => `- \`${p.sku}\` · ${p.name}`)
+    .map((p) => `- \`${p.sku}\` · ${p.name}`)
     .join("\n") || "- nenhum"
 }`;
   }
