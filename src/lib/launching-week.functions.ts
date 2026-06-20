@@ -48,18 +48,26 @@ export const getLaunchingThisWeek = createServerFn({ method: "GET" })
         .in("collection_id", ids),
     ]);
 
-    const briefByCol = new Map<string, { id: string; status: string; product_id: string | null }>();
-    (briefs ?? []).forEach((b) => briefByCol.set(b.collection_id!, b as any));
+    type BriefRow = { id: string; collection_id: string | null; status: string | null; product_id: string | null };
+    type CpRow = {
+      collection_id: string;
+      product_id: string;
+      role: string | null;
+      products: { name: string | null; sku: string | null } | null;
+    };
+
+    const briefByCol = new Map<string, BriefRow>();
+    (briefs ?? []).forEach((b) => { if (b.collection_id) briefByCol.set(b.collection_id, b as BriefRow); });
 
     const countByCol = new Map<string, number>();
     const heroByCol = new Map<string, { id: string; name: string; sku: string }>();
-    (cps ?? []).forEach((cp: any) => {
+    ((cps ?? []) as unknown as CpRow[]).forEach((cp) => {
       countByCol.set(cp.collection_id, (countByCol.get(cp.collection_id) ?? 0) + 1);
       if (cp.role === "hero" && !heroByCol.has(cp.collection_id) && cp.products) {
         heroByCol.set(cp.collection_id, {
           id: cp.product_id,
-          name: cp.products.name,
-          sku: cp.products.sku,
+          name: cp.products.name ?? "",
+          sku: cp.products.sku ?? "",
         });
       }
     });
