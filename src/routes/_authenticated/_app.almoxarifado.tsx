@@ -71,7 +71,11 @@ type Item = {
   last_entry_at: string | null;
   last_exit_at: string | null;
   turnover_30d: number;
+  preferred_supplier_id: string | null;
+  safety_days: number;
 };
+
+type SupplierLite = { id: string; name: string; lead_time_days: number | null };
 
 function fmtDate(d: string | null) {
   if (!d) return "—";
@@ -89,13 +93,25 @@ const CAT_LABEL: Record<Category, string> = {
   outros: "Outros",
 };
 
-const LEAD_TIME_DAYS = 14; // padrão; futuramente por fornecedor
+const DEFAULT_LEAD_TIME_DAYS = 14; // usado só se item não tem fornecedor preferencial
+const DEFAULT_SAFETY_DAYS = 7;
 
-/** Ponto de pedido = consumo diário (giro 30d / 30) × lead time + estoque de segurança (mínimo). */
-function reorderPoint(turnover30d: number, minimum: number, leadDays = LEAD_TIME_DAYS): number {
+/**
+ * Ponto de pedido dinâmico = consumo diário (giro 30d / 30) × (lead-time + dias de segurança).
+ * lead-time vem do fornecedor preferencial do item; segurança é por item (safety_days).
+ */
+function reorderPoint(
+  turnover30d: number,
+  leadDays: number,
+  safetyDays: number,
+  minimum: number,
+): number {
   const daily = (Number(turnover30d) || 0) / 30;
-  return Math.ceil(daily * leadDays + (Number(minimum) || 0));
+  const dynamic = Math.ceil(daily * (leadDays + safetyDays));
+  // nunca abaixo do mínimo configurado manualmente
+  return Math.max(dynamic, Number(minimum) || 0);
 }
+
 
 function Almoxarifado() {
   const { user } = useAuth();
@@ -120,6 +136,34 @@ function Almoxarifado() {
     },
   });
 
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ["suppliers-leadtime"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("suppliers")
+        .select("id, name, lead_time_days")
+        .order("name");
+      if (error) throw error;
+      return data as SupplierLite[];
+    },
+  });
+  const supplierLeadById = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const s of suppliers) {
+      if (s.lead_time_days != null) m.set(s.id, Number(s.lead_time_days));
+    }
+    return m;
+  }, [suppliers]);
+
+  function leadFor(i: Item) {
+    return i.preferred_supplier_id
+      ? (supplierLeadById.get(i.preferred_supplier_id) ?? DEFAULT_LEAD_TIME_DAYS)
+      : DEFAULT_LEAD_TIME_DAYS;
+  }
+  function safetyFor(i: Item) {
+    return Number(i.safety_days ?? DEFAULT_SAFETY_DAYS);
+  }
+
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("inventory_items").delete().eq("id", id);
@@ -141,7 +185,7 @@ function Almoxarifado() {
   const noPontoPedido = items.filter((i) => {
     const bal = Number(i.balance),
       min = Number(i.minimum);
-    const pp = reorderPoint(Number(i.turnover_30d || 0), min);
+    const pp = reorderPoint(Number(i.turnover_30d || 0), leadFor(i), safetyFor(i), min);
     return bal >= min && bal <= pp && pp > min;
   }).length;
   const totalSaldo = items.reduce((s, i) => s + Number(i.balance || 0), 0);
@@ -152,20 +196,25 @@ function Almoxarifado() {
   }));
   const criticosList = items.filter((i) => Number(i.balance) < Number(i.minimum)).slice(0, 5);
 
-  // Reposição inteligente: usa ponto de pedido (lead-time + segurança) e giro 30d
+  // Reposição inteligente: usa ponto de pedido dinâmico por item (lead-time real + segurança)
   const reposicao = useMemo(() => {
     return items
       .map((i) => {
         const bal = Number(i.balance),
           min = Number(i.minimum),
           max = Number(i.maximum),
-          giro = Number(i.turnover_30d || 0);
-        const pp = reorderPoint(giro, min);
+          giro = Number(i.turnover_30d || 0),
+          lead = leadFor(i),
+          safety = safetyFor(i);
+        const pp = reorderPoint(giro, lead, safety, min);
         const sugerido = max > 0 ? Math.max(0, max - bal) : Math.max(0, pp * 2 - bal);
         const diasCobertura = giro > 0 ? Math.round((bal / giro) * 30) : null;
         const urgencia: "alta" | "media" | null =
           bal < min ? "alta" : bal <= pp && pp > min ? "media" : null;
-        return { ...i, sugerido, diasCobertura, urgencia, pp };
+        const supplierName = i.preferred_supplier_id
+          ? (suppliers.find((s) => s.id === i.preferred_supplier_id)?.name ?? null)
+          : null;
+        return { ...i, sugerido, diasCobertura, urgencia, pp, lead, safety, supplierName };
       })
       .filter((i) => i.urgencia && i.sugerido > 0)
       .sort(
@@ -174,7 +223,8 @@ function Almoxarifado() {
           Number(b.turnover_30d || 0) - Number(a.turnover_30d || 0),
       )
       .slice(0, 6);
-  }, [items]);
+  }, [items, supplierLeadById, suppliers]);
+
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
@@ -272,7 +322,7 @@ function Almoxarifado() {
             <div className="flex items-center gap-2 font-medium">
               <Zap className="size-4 text-primary" /> Reposição inteligente sugerida
               <span className="text-xs text-muted-foreground font-normal">
-                ponto de pedido = giro diário × {LEAD_TIME_DAYS}d + segurança
+                ponto de pedido = giro diário × (lead-time do fornecedor + segurança)
               </span>
             </div>
             <Link
@@ -294,6 +344,13 @@ function Almoxarifado() {
                     {r.sku} · saldo {Number(r.balance)} {r.unit} · PP {r.pp} {r.unit}
                     {r.diasCobertura !== null && ` · cobre ${r.diasCobertura}d`}
                   </div>
+                  <div className="text-[10px] text-muted-foreground/80 mt-0.5">
+                    {r.supplierName
+                      ? `via ${r.supplierName} (lead ${r.lead}d`
+                      : `lead padrão ${r.lead}d`}
+                    {` + ${r.safety}d segurança)`}
+                  </div>
+
                 </div>
                 <div className="text-right">
                   <div
@@ -370,7 +427,7 @@ function Almoxarifado() {
                   const min = Number(i.minimum);
                   const max = Number(i.maximum);
                   const giro = Number(i.turnover_30d || 0);
-                  const pp = reorderPoint(giro, min);
+                  const pp = reorderPoint(giro, leadFor(i), safetyFor(i), min);
                   const critico = bal < min;
                   const excesso = max > 0 && bal > max;
                   const repor = !critico && bal <= pp && pp > min;

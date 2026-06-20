@@ -1274,7 +1274,9 @@ export type Database = {
           notes: string | null
           owner_id: string
           photo_url: string | null
+          preferred_supplier_id: string | null
           product_id: string | null
+          safety_days: number
           sku: string
           supplier_color: string | null
           supplier_lot: string | null
@@ -1301,7 +1303,9 @@ export type Database = {
           notes?: string | null
           owner_id: string
           photo_url?: string | null
+          preferred_supplier_id?: string | null
           product_id?: string | null
+          safety_days?: number
           sku: string
           supplier_color?: string | null
           supplier_lot?: string | null
@@ -1328,7 +1332,9 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           photo_url?: string | null
+          preferred_supplier_id?: string | null
           product_id?: string | null
+          safety_days?: number
           sku?: string
           supplier_color?: string | null
           supplier_lot?: string | null
@@ -1338,6 +1344,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "inventory_items_preferred_supplier_id_fkey"
+            columns: ["preferred_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "inventory_items_product_id_fkey"
             columns: ["product_id"]
@@ -3918,6 +3931,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          lead_time_days: number | null
           name: string
           notes: string | null
           owner_id: string
@@ -3934,6 +3948,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          lead_time_days?: number | null
           name: string
           notes?: string | null
           owner_id: string
@@ -3950,6 +3965,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          lead_time_days?: number | null
           name?: string
           notes?: string | null
           owner_id?: string
