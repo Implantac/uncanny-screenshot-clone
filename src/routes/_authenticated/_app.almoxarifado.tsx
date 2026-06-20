@@ -420,7 +420,7 @@ function Almoxarifado() {
                   const min = Number(i.minimum);
                   const max = Number(i.maximum);
                   const giro = Number(i.turnover_30d || 0);
-                  const pp = reorderPoint(giro, min);
+                  const pp = reorderPoint(giro, leadFor(i), safetyFor(i), min);
                   const critico = bal < min;
                   const excesso = max > 0 && bal > max;
                   const repor = !critico && bal <= pp && pp > min;
