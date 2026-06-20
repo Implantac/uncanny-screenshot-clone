@@ -44,11 +44,18 @@ export const getCellEfficiency = createServerFn({ method: "GET" })
           .select("supplier_id, pieces_per_day, working_days_per_week"),
       ]);
 
+    type OrderRow = { id: string; supplier_id: string | null; quantity: number | null };
+    type SupplierRow = { id: string; name: string };
+    type CapRow = { supplier_id: string; pieces_per_day: number | null; working_days_per_week: number | null };
+    type LogRow = { order_id: string | null; to_stage: string | null; quantity: number | null; created_at: string };
+
     const orderSup = new Map<string, string | null>();
-    (orders ?? []).forEach((o: any) => orderSup.set(o.id, o.supplier_id));
-    const supName = new Map((suppliers ?? []).map((s: any) => [s.id, s.name]));
-    const capMap = new Map(
-      (caps ?? []).map((c: any) => [
+    ((orders ?? []) as OrderRow[]).forEach((o) => orderSup.set(o.id, o.supplier_id));
+    const supName = new Map<string, string>(
+      ((suppliers ?? []) as SupplierRow[]).map((s) => [s.id, s.name]),
+    );
+    const capMap = new Map<string, { perDay: number; dpw: number }>(
+      ((caps ?? []) as CapRow[]).map((c) => [
         c.supplier_id,
         { perDay: Number(c.pieces_per_day ?? 0), dpw: Number(c.working_days_per_week ?? 5) },
       ]),
@@ -56,7 +63,7 @@ export const getCellEfficiency = createServerFn({ method: "GET" })
 
     // soma quantity por fornecedor (transições conclusivas: expedicao/acabamento)
     const produced = new Map<string, number>();
-    (logs ?? []).forEach((l: any) => {
+    ((logs ?? []) as LogRow[]).forEach((l) => {
       if (!l.order_id) return;
       const sid = orderSup.get(l.order_id);
       if (!sid) return;
