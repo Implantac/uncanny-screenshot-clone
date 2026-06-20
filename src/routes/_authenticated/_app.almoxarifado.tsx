@@ -71,7 +71,11 @@ type Item = {
   last_entry_at: string | null;
   last_exit_at: string | null;
   turnover_30d: number;
+  preferred_supplier_id: string | null;
+  safety_days: number;
 };
+
+type SupplierLite = { id: string; name: string; lead_time_days: number | null };
 
 function fmtDate(d: string | null) {
   if (!d) return "—";
@@ -89,13 +93,25 @@ const CAT_LABEL: Record<Category, string> = {
   outros: "Outros",
 };
 
-const LEAD_TIME_DAYS = 14; // padrão; futuramente por fornecedor
+const DEFAULT_LEAD_TIME_DAYS = 14; // usado só se item não tem fornecedor preferencial
+const DEFAULT_SAFETY_DAYS = 7;
 
-/** Ponto de pedido = consumo diário (giro 30d / 30) × lead time + estoque de segurança (mínimo). */
-function reorderPoint(turnover30d: number, minimum: number, leadDays = LEAD_TIME_DAYS): number {
+/**
+ * Ponto de pedido dinâmico = consumo diário (giro 30d / 30) × (lead-time + dias de segurança).
+ * lead-time vem do fornecedor preferencial do item; segurança é por item (safety_days).
+ */
+function reorderPoint(
+  turnover30d: number,
+  leadDays: number,
+  safetyDays: number,
+  minimum: number,
+): number {
   const daily = (Number(turnover30d) || 0) / 30;
-  return Math.ceil(daily * leadDays + (Number(minimum) || 0));
+  const dynamic = Math.ceil(daily * (leadDays + safetyDays));
+  // nunca abaixo do mínimo configurado manualmente
+  return Math.max(dynamic, Number(minimum) || 0);
 }
+
 
 function Almoxarifado() {
   const { user } = useAuth();
