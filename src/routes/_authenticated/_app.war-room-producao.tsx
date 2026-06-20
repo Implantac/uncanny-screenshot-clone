@@ -362,7 +362,7 @@ function WarRoomProducao() {
                   </div>
                 </div>
                 <div className="text-xs text-destructive whitespace-nowrap">
-                  venceu {new Date(o.due_date).toLocaleDateString("pt-BR")}
+                  venceu {o.due_date ? new Date(o.due_date).toLocaleDateString("pt-BR") : "—"}
                 </div>
               </li>
             ))}
