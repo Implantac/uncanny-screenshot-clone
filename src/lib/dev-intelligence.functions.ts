@@ -114,7 +114,7 @@ export const getDevIntelligence = createServerFn({ method: "GET" })
     const stuck: StuckPrototype[] = [];
     const now = Date.now();
     const collNameById = new Map<string, string>(
-      (collections ?? []).map((c: any) => [c.id as string, c.name as string]),
+      (collections ?? []).map((c: { id: string; name: string }) => [c.id, c.name]),
     );
     for (const p of protos ?? []) {
       if (!STAGES_ACTIVE.includes(p.stage as StageKey)) continue;
