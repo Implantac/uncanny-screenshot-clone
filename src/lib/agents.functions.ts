@@ -28,7 +28,7 @@ export const runAgent = createServerFn({ method: "POST" })
     const [{ count: produtos }, { count: ordens }, { count: vendas }] = await Promise.all([
       supabase.from("products").select("*", { count: "exact", head: true }).eq("owner_id", userId),
       supabase.from("production_orders").select("*", { count: "exact", head: true }).eq("owner_id", userId),
-      supabase.from("sales").select("*", { count: "exact", head: true }).eq("owner_id", userId),
+      supabase.from("sales").select("*", { count: "exact", head: true }).eq("user_id", userId),
     ]);
 
     const gateway = createLovableAiGatewayProvider(apiKey);
