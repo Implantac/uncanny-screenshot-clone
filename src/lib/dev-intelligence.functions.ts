@@ -45,7 +45,7 @@ const STAGES_ACTIVE: StageKey[] = ["solicitado", "em_confeccao", "em_prova"];
 export const getDevIntelligence = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<DevIntelligence> => {
-    const sb = context.supabase as any;
+    const sb = context.supabase;
 
     const [{ data: logs }, { data: protos }, { data: collections }] =
       await Promise.all([
