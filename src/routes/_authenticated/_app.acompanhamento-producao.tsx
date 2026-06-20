@@ -1809,12 +1809,12 @@ function KPI({
     warning: "text-amber-600",
   };
   return (
-    <div className="rounded-xl border border-border bg-card p-3">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+    <div className="min-w-0 rounded-xl border border-border bg-card p-3">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
         {icon}
-        {label}
+        <span className="min-w-0 leading-tight break-words">{label}</span>
       </div>
-      <div className={`mt-1 text-2xl font-semibold tabular-nums ${tones[tone]}`}>{value}</div>
+      <div className={`mt-2 text-xl font-semibold leading-tight tabular-nums break-words ${tones[tone]}`}>{value}</div>
     </div>
   );
 }
