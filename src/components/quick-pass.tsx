@@ -23,7 +23,7 @@ type GridRow = {
   variant_id: string;
   product_variants: {
     sku: string | null;
-    sizes: { name: string } | null;
+    sizes: { label: string } | null;
     colors: { name: string } | null;
   } | null;
 };
