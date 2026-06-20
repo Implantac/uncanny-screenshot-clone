@@ -31,16 +31,29 @@ export function LoteSplitDialog({
   totalQty,
   defaultSupplierId,
   defaultDueDate,
-  suppliers,
+  suppliers: suppliersProp,
 }: {
   orderId: string;
   orderCode: string;
   totalQty: number;
   defaultSupplierId: string | null;
   defaultDueDate: string | null;
-  suppliers: Supplier[];
+  suppliers?: Supplier[];
 }) {
   const [open, setOpen] = useState(false);
+  const { data: fetchedSuppliers } = useQuery({
+    queryKey: ["suppliers-for-split"],
+    enabled: open && !suppliersProp,
+    queryFn: async (): Promise<Supplier[]> => {
+      const { data, error } = await supabase
+        .from("suppliers")
+        .select("id, name")
+        .order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const suppliers = suppliersProp ?? fetchedSuppliers ?? [];
   const [splits, setSplits] = useState<Split[]>([
     { quantity: Math.floor(totalQty / 2), supplierId: defaultSupplierId, dueDate: defaultDueDate },
     { quantity: Math.ceil(totalQty / 2), supplierId: defaultSupplierId, dueDate: defaultDueDate },
