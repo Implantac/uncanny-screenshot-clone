@@ -2,6 +2,28 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { computePriority } from "@/lib/priority-score";
+import type { Database } from "@/integrations/supabase/types";
+
+type Stage = Database["public"]["Enums"] extends { production_stage: infer S } ? S : string;
+type SkuQtyRow = { sku: string | null; quantity: number | null };
+type StockRow = { sku: string | null; balance: number | string | null };
+
+type DayOpRow = {
+  id: string;
+  code: string;
+  owner_id: string;
+  quantity: number | null;
+  priority: number | null;
+  due_date: string | null;
+  stage: string;
+  stage_updated_at: string | null;
+  batch_code: string | null;
+  outsourced: boolean | null;
+  product_id: string | null;
+  supplier_id: string | null;
+  products: { name: string | null; sku: string | null; image_url: string | null; cost_price: number | null; sell_price: number | null } | null;
+  suppliers: { name: string | null } | null;
+};
 
 /** Produção do Dia: OPs ativas em um setor, ordenadas por Score de Prioridade. */
 export const listDayProduction = createServerFn({ method: "POST" })
@@ -15,16 +37,16 @@ export const listDayProduction = createServerFn({ method: "POST" })
         "id, code, owner_id, quantity, priority, due_date, stage, stage_updated_at, batch_code, outsourced, product_id, supplier_id, products(name, sku, image_url, cost_price, sell_price), suppliers(name)",
       )
       .eq("owner_id", userId)
-      .eq("stage", data.stage as any)
+      .eq("stage", data.stage as Stage)
       .neq("status", "concluida")
       .order("priority", { ascending: false, nullsFirst: false })
       .order("due_date", { ascending: true, nullsFirst: false });
     if (error) throw new Error(error.message);
-    const list = rows ?? [];
+    const list = (rows ?? []) as unknown as DayOpRow[];
 
     const skus = Array.from(
-      new Set(list.map((r: any) => r.products?.sku).filter(Boolean)),
-    ) as string[];
+      new Set(list.map((r) => r.products?.sku).filter((s): s is string => Boolean(s))),
+    );
     if (skus.length === 0) return list;
 
     const since30 = new Date(Date.now() - 30 * 86400000).toISOString();
@@ -57,34 +79,64 @@ export const listDayProduction = createServerFn({ method: "POST" })
         .in("sku", skus),
     ]);
 
-    const sum = (rs: any[] | null | undefined, sku: string) =>
+    const sum = (rs: SkuQtyRow[] | null | undefined, sku: string) =>
       (rs ?? [])
-        .filter((r: any) => r.sku === sku)
-        .reduce((a: number, r: any) => a + Number(r.quantity ?? 0), 0);
+        .filter((r) => r.sku === sku)
+        .reduce((a, r) => a + Number(r.quantity ?? 0), 0);
+    const stockRows = (inv.data ?? []) as unknown as StockRow[];
     const stockOf = (sku: string) =>
-      (inv.data ?? [])
-        .filter((r: any) => r.sku === sku)
-        .reduce((a: number, r: any) => a + Number(r.balance ?? 0), 0);
+      stockRows
+        .filter((r) => r.sku === sku)
+        .reduce((a, r) => a + Number(r.balance ?? 0), 0);
 
-    const scored = list.map((r: any) => {
+    const scored = list.map((r) => {
       const sku = r.products?.sku;
-      if (!sku) return { ...r, score: 0, score_reasons: [] };
+      if (!sku) return { ...r, score: 0, score_reasons: [] as string[] };
       const res = computePriority({
         sku,
-        sold7: sum(s7.data, sku),
-        sold30: sum(s30.data, sku),
-        sold90: sum(s90.data, sku),
+        sold7: sum((s7.data ?? []) as unknown as SkuQtyRow[], sku),
+        sold30: sum((s30.data ?? []) as unknown as SkuQtyRow[], sku),
+        sold90: sum((s90.data ?? []) as unknown as SkuQtyRow[], sku),
         stock: stockOf(sku),
-        wip: r.quantity,
+        wip: r.quantity ?? 0,
         cost: r.products?.cost_price ?? null,
         price: r.products?.sell_price ?? null,
       });
       return { ...r, score: res.score, score_reasons: res.reasons };
     });
 
-    scored.sort((a: any, b: any) => (b.score ?? 0) - (a.score ?? 0));
+    scored.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
     return scored;
   });
+
+type ServiceOrderRow = {
+  id: string;
+  code: string;
+  supplier_id: string | null;
+  production_order_id: string | null;
+  quantity: number | null;
+  qty_received: number | null;
+  sent_at: string | null;
+  due_at: string | null;
+  status: string;
+  from_stage: string | null;
+  to_stage: string | null;
+  line_type: string | null;
+  variant_id: string | null;
+  package_id: string | null;
+  suppliers: { name: string | null } | null;
+  production_orders: { code: string; batch_code: string | null } | null;
+  product_variants: { sku: string | null; color: string | null; size: string | null } | null;
+  production_packages: { code: string } | null;
+};
+
+type SupplierWipBucket = {
+  supplier_id: string | null;
+  pieces_at_supplier: number;
+  supplier_name: string | null;
+  second_line_count: number;
+  orders: ServiceOrderRow[];
+};
 
 /** Terceirizados: WIP por fornecedor + detalhamento de OSs abertas. */
 export const listOutsourcedWip = createServerFn({ method: "GET" })
@@ -105,25 +157,27 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
     if (e1) throw new Error(e1.message);
     if (e2) throw new Error(e2.message);
 
-    const suppliersById: Record<string, any> = {};
-    for (const w of wip ?? []) {
-      suppliersById[w.supplier_id!] = {
+    const suppliersById: Record<string, SupplierWipBucket> = {};
+    for (const w of (wip ?? []) as unknown as Array<{ supplier_id: string | null; pieces_at_supplier: number | null; [k: string]: unknown }>) {
+      if (!w.supplier_id) continue;
+      suppliersById[w.supplier_id] = {
         ...w,
-        supplier_name: null as string | null,
-        orders: [] as any[],
+        pieces_at_supplier: Number(w.pieces_at_supplier ?? 0),
+        supplier_name: null,
+        second_line_count: 0,
+        orders: [],
       };
     }
-    for (const o of open ?? []) {
-      const sid = o.supplier_id!;
-      if (!suppliersById[sid]) continue;
-      suppliersById[sid].supplier_name = (o as any).suppliers?.name ?? null;
+    for (const o of (open ?? []) as unknown as ServiceOrderRow[]) {
+      const sid = o.supplier_id;
+      if (!sid || !suppliersById[sid]) continue;
+      suppliersById[sid].supplier_name = o.suppliers?.name ?? null;
       suppliersById[sid].second_line_count =
-        (suppliersById[sid].second_line_count ?? 0) +
-        ((o as any).line_type === "segunda_linha" ? 1 : 0);
+        (suppliersById[sid].second_line_count ?? 0) + (o.line_type === "segunda_linha" ? 1 : 0);
       suppliersById[sid].orders.push(o);
     }
     return Object.values(suppliersById).sort(
-      (a: any, b: any) => b.pieces_at_supplier - a.pieces_at_supplier,
+      (a, b) => b.pieces_at_supplier - a.pieces_at_supplier,
     );
   });
 
@@ -161,12 +215,12 @@ export const createOpFromSuggestion = createServerFn({ method: "POST" })
         code,
         quantity: data.quantity,
         status: "aguardando",
-        stage: "cad",
+        stage: "cad" as Stage,
         priority: data.priority ?? 2,
         notes: data.reason
           ? `Sugerida pelo motor: ${data.reason}`
           : "Sugerida pelo motor de necessidade",
-      } as any)
+      })
       .select("id, code")
       .single();
     if (error) throw new Error(error.message);

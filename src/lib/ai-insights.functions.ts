@@ -3,8 +3,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { generateText } from "ai";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
 type Persona = "development" | "pcp" | "marketing" | "command";
+type DB = SupabaseClient<Database>;
 
 const PERSONAS: Record<Persona, { label: string; system: string }> = {
   development: {
@@ -64,7 +67,7 @@ const Input = z.object({
   question: z.string().trim().min(3).max(500),
 });
 
-async function buildContext(supabase: any, persona: Persona): Promise<string> {
+async function buildContext(supabase: DB, persona: Persona): Promise<string> {
   if (persona === "command") {
     const [{ count: opsAtivas }, { count: rfqsAbertas }, { count: protosPend }] = await Promise.all(
       [
@@ -96,25 +99,31 @@ async function buildContext(supabase: any, persona: Persona): Promise<string> {
   const todayISO = today.toISOString();
 
   if (persona === "development") {
+    type Proto = { code: string; name: string | null; stage: string; updated_at: string };
+    type Product = { id: string; name: string; sku: string; status: string; created_at: string };
+    type Sheet = { product_id: string | null; status: string };
     const [{ data: protos }, { data: products }, { data: sheets }] = await Promise.all([
       supabase.from("prototypes").select("code, name, stage, updated_at").limit(80),
       supabase.from("products").select("id, name, sku, status, created_at").limit(120),
       supabase.from("tech_sheets").select("product_id, status").limit(200),
     ]);
+    const protosT = (protos ?? []) as unknown as Proto[];
+    const productsT = (products ?? []) as unknown as Product[];
+    const sheetsT = (sheets ?? []) as unknown as Sheet[];
     const productsWithSheet = new Set(
-      (sheets ?? []).filter((s: any) => s.status === "aprovada").map((s: any) => s.product_id),
+      sheetsT.filter((s) => s.status === "aprovada").map((s) => s.product_id),
     );
-    const semFicha = (products ?? []).filter(
-      (p: any) => p.status === "aprovado" && !productsWithSheet.has(p.id),
+    const semFicha = productsT.filter(
+      (p) => p.status === "aprovado" && !productsWithSheet.has(p.id),
     );
-    const pilotosPendentes = (protos ?? []).filter(
-      (p: any) => p.stage !== "aprovado" && p.stage !== "reprovado",
+    const pilotosPendentes = protosT.filter(
+      (p) => p.stage !== "aprovado" && p.stage !== "reprovado",
     );
-    const aprovadosRecentes = (protos ?? []).filter(
-      (p: any) => p.stage === "aprovado" && p.updated_at > iso30,
+    const aprovadosRecentes = protosT.filter(
+      (p) => p.stage === "aprovado" && p.updated_at > iso30,
     );
     return `# Contexto · Desenvolvimento (atualizado ${todayISO})
-- Total de protótipos: ${(protos ?? []).length}
+- Total de protótipos: ${protosT.length}
 - Pilotos pendentes (não aprovados/reprovados): ${pilotosPendentes.length}
 - Pilotos aprovados nos últimos 30 dias: ${aprovadosRecentes.length}
 - Produtos aprovados SEM ficha técnica aprovada: ${semFicha.length}
@@ -124,7 +133,7 @@ ${
   pilotosPendentes
     .slice(0, 10)
     .map(
-      (p: any) => `- \`${p.code}\` · ${p.name ?? "—"} · ${p.stage} · ${p.updated_at?.slice(0, 10)}`,
+      (p) => `- \`${p.code}\` · ${p.name ?? "—"} · ${p.stage} · ${p.updated_at?.slice(0, 10)}`,
     )
     .join("\n") || "- nenhum"
 }
@@ -133,12 +142,22 @@ ${
 ${
   semFicha
     .slice(0, 10)
-    .map((p: any) => `- \`${p.sku}\` · ${p.name}`)
+    .map((p) => `- \`${p.sku}\` · ${p.name}`)
     .join("\n") || "- nenhum"
 }`;
   }
 
   if (persona === "pcp") {
+    type Order = {
+      code: string;
+      stage: string;
+      status: string;
+      quantity: number | null;
+      due_date: string | null;
+      stage_updated_at: string | null;
+      products: { name: string | null; sku: string | null } | null;
+    };
+    type Batch = { code: string; status: string; planned_quantity: number | null; produced_quantity: number | null; updated_at: string };
     const [{ data: orders }, { data: batches }] = await Promise.all([
       supabase
         .from("production_orders")
@@ -150,25 +169,27 @@ ${
         .select("code, status, planned_quantity, produced_quantity, updated_at")
         .limit(80),
     ]);
+    const ordersT = (orders ?? []) as unknown as Order[];
+    const batchesT = (batches ?? []) as unknown as Batch[];
     const now = Date.now();
-    const atrasadas = (orders ?? []).filter(
-      (o: any) => o.stage !== "entregue" && o.due_date && new Date(o.due_date).getTime() < now,
+    const atrasadas = ordersT.filter(
+      (o) => o.stage !== "entregue" && o.due_date && new Date(o.due_date).getTime() < now,
     );
-    const paradas = (orders ?? []).filter(
-      (o: any) =>
-        o.stage !== "entregue" && now - new Date(o.stage_updated_at).getTime() > 5 * 86400000,
+    const paradas = ordersT.filter(
+      (o) =>
+        o.stage !== "entregue" && o.stage_updated_at != null && now - new Date(o.stage_updated_at).getTime() > 5 * 86400000,
     );
     const stageMap = new Map<string, number>();
-    (orders ?? [])
-      .filter((o: any) => o.stage !== "entregue")
-      .forEach((o: any) => stageMap.set(o.stage, (stageMap.get(o.stage) ?? 0) + (o.quantity ?? 0)));
+    ordersT
+      .filter((o) => o.stage !== "entregue")
+      .forEach((o) => stageMap.set(o.stage, (stageMap.get(o.stage) ?? 0) + (o.quantity ?? 0)));
     const filas = [...stageMap.entries()].sort((a, b) => b[1] - a[1]);
 
     return `# Contexto · PCP (atualizado ${todayISO})
-- OPs ativas: ${(orders ?? []).filter((o: any) => o.stage !== "entregue").length}
+- OPs ativas: ${ordersT.filter((o) => o.stage !== "entregue").length}
 - OPs atrasadas: ${atrasadas.length}
 - OPs paradas há mais de 5 dias: ${paradas.length}
-- Lotes em produção: ${(batches ?? []).filter((b: any) => b.status === "em_producao").length}
+- Lotes em produção: ${batchesT.filter((b) => b.status === "em_producao").length}
 
 ## Fila por setor (peças)
 ${filas.map(([s, q]) => `- ${s}: ${q}`).join("\n") || "- sem dados"}
@@ -178,7 +199,7 @@ ${
   atrasadas
     .slice(0, 10)
     .map(
-      (o: any) =>
+      (o) =>
         `- \`${o.code}\` · ${o.products?.name ?? "—"} · setor ${o.stage} · vence ${o.due_date}`,
     )
     .join("\n") || "- nenhuma"
@@ -189,7 +210,7 @@ ${
   paradas
     .slice(0, 10)
     .map(
-      (o: any) =>
+      (o) =>
         `- \`${o.code}\` · ${o.products?.name ?? "—"} · ${o.stage} · sem mover desde ${o.stage_updated_at?.slice(0, 10)}`,
     )
     .join("\n") || "- nenhuma"
@@ -197,7 +218,19 @@ ${
   }
 
   // marketing
-  const [{ data: sales30 }, { data: sales7 }] = await Promise.all([
+  type Sale30 = {
+    sku: string | null;
+    product_ref: string | null;
+    channel: string | null;
+    region: string | null;
+    quantity: number | null;
+    total_value: number | string | null;
+    influencer_code: string | null;
+    campaign_code: string | null;
+    sold_at: string;
+  };
+  type Sale7 = { sku: string | null; quantity: number | null; total_value: number | string | null; channel: string | null };
+  const [{ data: sales30Raw }, { data: sales7Raw }] = await Promise.all([
     supabase
       .from("erp_sales_mirror")
       .select(
@@ -211,9 +244,11 @@ ${
       .gte("sold_at", iso7)
       .limit(2000),
   ]);
+  const sales30 = (sales30Raw ?? []) as unknown as Sale30[];
+  const sales7 = (sales7Raw ?? []) as unknown as Sale7[];
 
   const byProduct = new Map<string, { units: number; revenue: number; name: string }>();
-  (sales30 ?? []).forEach((s: any) => {
+  sales30.forEach((s) => {
     const k = s.sku ?? s.product_ref ?? "—";
     const prev = byProduct.get(k) ?? { units: 0, revenue: 0, name: s.product_ref ?? k };
     prev.units += s.quantity ?? 0;
@@ -225,38 +260,38 @@ ${
     .slice(0, 10);
 
   const byChannel = new Map<string, number>();
-  (sales30 ?? []).forEach((s: any) =>
+  sales30.forEach((s) =>
     byChannel.set(
       s.channel ?? "—",
       (byChannel.get(s.channel ?? "—") ?? 0) + Number(s.total_value ?? 0),
     ),
   );
   const byInfluencer = new Map<string, number>();
-  (sales30 ?? [])
-    .filter((s: any) => s.influencer_code)
-    .forEach((s: any) =>
+  sales30
+    .filter((s): s is Sale30 & { influencer_code: string } => Boolean(s.influencer_code))
+    .forEach((s) =>
       byInfluencer.set(
         s.influencer_code,
         (byInfluencer.get(s.influencer_code) ?? 0) + Number(s.total_value ?? 0),
       ),
     );
   const byRegion = new Map<string, number>();
-  (sales30 ?? []).forEach((s: any) =>
+  sales30.forEach((s) =>
     byRegion.set(
       s.region ?? "—",
       (byRegion.get(s.region ?? "—") ?? 0) + Number(s.total_value ?? 0),
     ),
   );
 
-  const rev30 = (sales30 ?? []).reduce((s: number, x: any) => s + Number(x.total_value ?? 0), 0);
-  const rev7 = (sales7 ?? []).reduce((s: number, x: any) => s + Number(x.total_value ?? 0), 0);
+  const rev30 = sales30.reduce((s, x) => s + Number(x.total_value ?? 0), 0);
+  const rev7 = sales7.reduce((s, x) => s + Number(x.total_value ?? 0), 0);
 
   const fmt = (n: number) => `R$ ${n.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`;
 
   return `# Contexto · Marketing (espelho ERP, atualizado ${todayISO})
 - Receita últimos 7 dias: ${fmt(rev7)}
 - Receita últimos 30 dias: ${fmt(rev30)}
-- Pedidos no período: ${(sales30 ?? []).length}
+- Pedidos no período: ${sales30.length}
 
 ## Top 10 produtos por receita (30d)
 ${topProducts.map(([sku, v]) => `- \`${sku}\` · ${v.units} un · ${fmt(v.revenue)}`).join("\n") || "- sem vendas"}
@@ -310,9 +345,10 @@ export const askInsight = createServerFn({ method: "POST" })
         temperature: 0.3,
       });
       return { text: res.text, persona: persona.label };
-    } catch (err: any) {
-      const msg = String(err?.message ?? err);
-      const status = err?.statusCode ?? err?.lastError?.statusCode;
+    } catch (err: unknown) {
+      const e = err as { message?: unknown; statusCode?: number; lastError?: { statusCode?: number } } | undefined;
+      const msg = String(e?.message ?? err);
+      const status = e?.statusCode ?? e?.lastError?.statusCode;
       if (status === 429 || /Too Many Requests/i.test(msg)) {
         return {
           text: "**Limite de requisições atingido.** A IA está recebendo muitas chamadas no momento. Aguarde alguns segundos e tente novamente.",
