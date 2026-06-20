@@ -344,6 +344,13 @@ function Almoxarifado() {
                     {r.sku} · saldo {Number(r.balance)} {r.unit} · PP {r.pp} {r.unit}
                     {r.diasCobertura !== null && ` · cobre ${r.diasCobertura}d`}
                   </div>
+                  <div className="text-[10px] text-muted-foreground/80 mt-0.5">
+                    {r.supplierName
+                      ? `via ${r.supplierName} (lead ${r.lead}d`
+                      : `lead padrão ${r.lead}d`}
+                    {` + ${r.safety}d segurança)`}
+                  </div>
+
                 </div>
                 <div className="text-right">
                   <div
