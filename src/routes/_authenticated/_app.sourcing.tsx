@@ -71,7 +71,7 @@ function Page() {
       const { data, error } = await supabase
         .from("rfq_quotes")
         .select("*")
-        .eq("rfq_id", selected)
+        .eq("rfq_id", selected!)
         .order("unit_price");
       if (error) throw error;
       return (data ?? []) as Quote[];
