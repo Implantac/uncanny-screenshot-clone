@@ -1,5 +1,14 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LogOut, Menu, Sun, Moon, ChevronDown, ChevronRight } from "lucide-react";
+import {
+  LogOut,
+  Menu,
+  Sun,
+  Moon,
+  ChevronDown,
+  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import logoAsset from "@/assets/logo.png.asset.json";
 import { CommandPalette } from "./command-palette";
 import { NotificationsBell } from "./notifications-bell";
@@ -18,6 +27,7 @@ import { useRoles } from "@/hooks/use-role";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useEffect, useMemo, type ReactNode } from "react";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -27,6 +37,8 @@ const ROLE_LABEL: Record<string, string> = {
   comprador: "Comprador",
   vendedor: "Vendedor",
 };
+
+const SIDEBAR_COLLAPSED_KEY = "usemoda:sidebar-collapsed";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
@@ -38,9 +50,32 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+      if (v === "1") setCollapsed(true);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   useEffect(() => {
     setMobileOpen(false);
   }, [active]);
+
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      const next = !c;
+      try {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
 
   // Group → modules e qual grupo contém a rota ativa
   const grouped = useMemo(() => {
@@ -69,29 +104,82 @@ export function AppShell({ children }: { children: ReactNode }) {
     .map((s: string) => s[0]?.toUpperCase())
     .join("");
 
-  const sidebarContent = (
-    <>
-      <div className="flex items-center gap-2 px-5 h-16 border-b border-sidebar-border">
-        <div className="size-9 rounded-lg grid place-items-center shadow-[var(--shadow-glow)] overflow-hidden">
+  const renderSidebar = (isCollapsed: boolean) => (
+    <TooltipProvider delayDuration={150}>
+      <div
+        className={cn(
+          "flex items-center gap-2 h-16 border-b border-sidebar-border",
+          isCollapsed ? "px-2 justify-center" : "px-5",
+        )}
+      >
+        <div className="size-9 rounded-lg grid place-items-center shadow-[var(--shadow-glow)] overflow-hidden shrink-0">
           <img src={logoAsset.url} alt="USE MODA" className="size-9 object-contain" />
         </div>
-        <div className="leading-tight">
-          <div className="text-sm font-semibold tracking-tight">USE MODA</div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-            Fashion OS
+        {!isCollapsed && (
+          <div className="leading-tight flex-1 min-w-0">
+            <div className="text-sm font-semibold tracking-tight">USE MODA</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Fashion OS
+            </div>
           </div>
-        </div>
+        )}
+        {!isCollapsed && (
+          <button
+            onClick={toggleCollapsed}
+            title="Retrair menu"
+            className="hidden lg:grid size-8 place-items-center rounded-md hover:bg-sidebar-accent text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <PanelLeftClose className="size-4" />
+          </button>
+        )}
       </div>
-      <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1 text-sm">
+      <nav
+        className={cn(
+          "flex-1 overflow-y-auto py-3 space-y-1 text-sm",
+          isCollapsed ? "px-2" : "px-3",
+        )}
+      >
         {MODULE_GROUPS.map((group) => {
           const bucket = grouped.get(group);
           if (!bucket || bucket.items.length === 0) return null;
           const isOpen = openGroups[group] ?? bucket.activeIn ?? false;
           const totalCount = bucket.items.length;
+
           const renderItem = (m: ModuleDef) => {
             const isActive = active === m.path;
             const Icon = m.icon;
             const isErp = m.source === "erp-mirror";
+
+            if (isCollapsed) {
+              return (
+                <li key={m.slug}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        to={m.path}
+                        className={cn(
+                          "flex items-center justify-center size-10 rounded-md transition-colors",
+                          isActive
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                        )}
+                      >
+                        <Icon className={cn("size-4", isActive && "text-primary")} />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="flex items-center gap-2">
+                      <span>{m.title}</span>
+                      {isErp && (
+                        <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                          ERP
+                        </span>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                </li>
+              );
+            }
+
             return (
               <li key={m.slug}>
                 <Link
@@ -114,6 +202,16 @@ export function AppShell({ children }: { children: ReactNode }) {
               </li>
             );
           };
+
+          if (isCollapsed) {
+            return (
+              <ul key={group} className="space-y-0.5 mb-2">
+                {bucket.items.map(renderItem)}
+                <li className="mx-2 my-2 border-t border-sidebar-border/60" />
+              </ul>
+            );
+          }
+
           return (
             <div key={group}>
               <button
@@ -132,20 +230,27 @@ export function AppShell({ children }: { children: ReactNode }) {
           );
         })}
       </nav>
-      <div className="m-3 p-3 rounded-lg glass">
-        <div className="flex items-center gap-2 text-xs font-medium">
-          <div className="size-2 rounded-full bg-success animate-pulse" />
-          Sistema operacional
+      {!isCollapsed && (
+        <div className="m-3 p-3 rounded-lg glass">
+          <div className="flex items-center gap-2 text-xs font-medium">
+            <div className="size-2 rounded-full bg-success animate-pulse" />
+            Sistema operacional
+          </div>
+          <div className="mt-1 text-[11px] text-muted-foreground">18 módulos · 99.98% uptime</div>
         </div>
-        <div className="mt-1 text-[11px] text-muted-foreground">18 módulos · 99.98% uptime</div>
-      </div>
-    </>
+      )}
+    </TooltipProvider>
   );
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
-      <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar h-screen sticky top-0">
-        {sidebarContent}
+      <aside
+        className={cn(
+          "hidden lg:flex shrink-0 flex-col border-r border-sidebar-border bg-sidebar h-screen sticky top-0 transition-[width] duration-200",
+          collapsed ? "w-14" : "w-64",
+        )}
+      >
+        {renderSidebar(collapsed)}
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 h-screen">
@@ -161,9 +266,19 @@ export function AppShell({ children }: { children: ReactNode }) {
               className="p-0 w-72 bg-sidebar border-sidebar-border flex flex-col"
             >
               <SheetTitle className="sr-only">Menu</SheetTitle>
-              {sidebarContent}
+              {renderSidebar(false)}
             </SheetContent>
           </Sheet>
+
+          {collapsed && (
+            <button
+              onClick={toggleCollapsed}
+              title="Expandir menu"
+              className="hidden lg:grid size-9 place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <PanelLeftOpen className="size-4" />
+            </button>
+          )}
 
           <CommandPalette />
           <button
