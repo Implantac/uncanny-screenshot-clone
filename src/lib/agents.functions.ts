@@ -17,6 +17,7 @@ export const runAgent = createServerFn({ method: "POST" })
       .from("ai_agents")
       .select("id, name, description, executions, success_rate, owner_id")
       .eq("id", data.agentId)
+      .eq("owner_id", userId)
       .single();
     if (error || !agent) throw new Error("Agente não encontrado");
 
@@ -25,9 +26,9 @@ export const runAgent = createServerFn({ method: "POST" })
 
     // Light context: counts only, to keep prompt small and avoid leaking PII.
     const [{ count: produtos }, { count: ordens }, { count: vendas }] = await Promise.all([
-      supabase.from("products").select("*", { count: "exact", head: true }),
-      supabase.from("production_orders").select("*", { count: "exact", head: true }),
-      supabase.from("sales").select("*", { count: "exact", head: true }),
+      supabase.from("products").select("*", { count: "exact", head: true }).eq("owner_id", userId),
+      supabase.from("production_orders").select("*", { count: "exact", head: true }).eq("owner_id", userId),
+      supabase.from("sales").select("*", { count: "exact", head: true }).eq("owner_id", userId),
     ]);
 
     const gateway = createLovableAiGatewayProvider(apiKey);

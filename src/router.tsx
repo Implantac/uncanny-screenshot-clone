@@ -4,7 +4,16 @@ import { routeTree } from "./routeTree.gen";
 import { DefaultError, DefaultNotFound } from "./components/route-boundaries";
 
 export const getRouter = () => {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60_000,
+        gcTime: 5 * 60_000,
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
 
   // E2E hook: expose the query cache in the browser so Playwright can read
   // the unfiltered datasets and compute the expected filtered list.
