@@ -203,7 +203,7 @@ export const getMarketingBridgeAnalysis = createServerFn({ method: "POST" })
     const criticos = rows.filter((r) => r.riskLabel === "critico");
     const totalInvestment = rows.reduce((s, r) => s + r.investment, 0);
     const totalShipments = rows.reduce((s, r) => s + r.shipments, 0);
-    const tracked = rows.filter((r) => r.inspTotal > 0 || r.occurrences > 0);
+    const tracked = rows.filter((r) => r.occurrences > 0 || r.fpyPct < 100);
     const avgFpy = tracked.length
       ? tracked.reduce((s, r) => s + r.fpyPct, 0) / tracked.length
       : 100;
