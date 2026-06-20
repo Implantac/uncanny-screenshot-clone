@@ -197,6 +197,13 @@ function PcpKanban() {
   const move = (id: string, stage: Stage) => {
     const o = orders.find((x) => x.id === id);
     if (!o || o.stage === stage) return;
+    // Gate de qualidade — bloqueia passagem para Expedição/Entregue quando há CAPA aberta.
+    if ((stage === "expedicao" || stage === "entregue") && openCapaOrderIds.has(id)) {
+      toast.error(`${o.code} tem CAPA de qualidade aberta — resolva antes de expedir.`, {
+        action: { label: "Ver CAPA", onClick: () => window.open(`/quality`, "_self") },
+      });
+      return;
+    }
     update.mutate({ id, stage });
     toast.success(`${o.code} → ${STAGES.find((s) => s.key === stage)?.label}`);
   };
