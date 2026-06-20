@@ -526,9 +526,9 @@ function BI() {
               <div className="text-2xl font-semibold mt-1 tabular-nums">{mktKpis.ships}</div>
             </div>
             <div className="glass rounded-xl p-5">
-              <div className="text-xs text-muted-foreground">Valor enviado</div>
+              <div className="text-xs text-muted-foreground">Peças enviadas</div>
               <div className="text-2xl font-semibold mt-1 tabular-nums">
-                {BRL(mktKpis.sentValue)}
+                {mktKpis.sentValue.toLocaleString("pt-BR")}
               </div>
             </div>
           </div>
