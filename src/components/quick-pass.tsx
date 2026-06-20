@@ -16,6 +16,18 @@ type Props = {
 
 type Mode = "qty" | "package" | "grid";
 type LineType = "primeira" | "segunda_linha";
+type PackageRow = { id: string; code: string; qty: number; notes: string | null };
+type GridRow = {
+  id: string;
+  quantity: number;
+  variant_id: string;
+  product_variants: {
+    sku: string | null;
+    sizes: { name: string } | null;
+    colors: { name: string } | null;
+  } | null;
+};
+type SupplierRow = { id: string; name: string };
 
 /** Passagem rápida entre setores: por Quantidade, Pacote ou Grade (variante). */
 export function QuickPassButton({
