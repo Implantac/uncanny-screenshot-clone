@@ -114,9 +114,9 @@ async function loadAll() {
     batches: (batches.data ?? []) as unknown as Batch[],
     products: (products.data ?? []) as unknown as Product[],
     suppliers: (suppliers.data ?? []) as unknown as Supplier[],
-    campaigns: (campaigns.data ?? []) as any[],
-    shipments: (shipments.data ?? []) as any[],
-    briefs: (briefs.data ?? []) as any[],
+    campaigns: (campaigns.data ?? []) as Array<{ id: string; name: string | null; channel: string | null; status: string | null; investment: number | null; revenue: number | null; roas: number | null; start_date: string | null; end_date: string | null }>,
+    shipments: (shipments.data ?? []) as Array<{ posted_at: string | null; sales_before: number | null; sales_after: number | null; influencers: { nome: string | null; seguidores: number | null; engajamento: number | null } | null }>,
+    briefs: (briefs.data ?? []) as Array<{ id: string; title: string | null; status: string | null; kpi_target: string | null; budget: number | null; updated_at: string | null }>,
     today,
   };
 }
