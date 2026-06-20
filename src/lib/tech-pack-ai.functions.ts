@@ -53,7 +53,7 @@ Custo final: R$ ${Number(sheet.cost_price ?? 0).toFixed(2)}
 ${
   (mats ?? [])
     .map(
-      (m: any) =>
+      (m: { description: string | null; consumption: number | null; unit: string | null; unit_cost: number | null; waste_pct: number | null; total_cost: number | null }) =>
         `- ${m.description}: ${m.consumption}${m.unit ?? ""} × R$${m.unit_cost} (perda ${m.waste_pct ?? 0}%) = R$${m.total_cost}`,
     )
     .join("\n") || "(vazio)"
@@ -63,7 +63,7 @@ ${
 ${
   (ops ?? [])
     .map(
-      (o: any) =>
+      (o: { description: string | null; sam_minutes: number | null; machine: string | null; total_cost: number | null }) =>
         `- ${o.description}: ${o.sam_minutes ?? 0}min ${o.machine ?? ""} = R$${o.total_cost}`,
     )
     .join("\n") || "(vazio)"
