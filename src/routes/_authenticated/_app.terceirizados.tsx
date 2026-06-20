@@ -106,18 +106,19 @@ function OutsourcedPage() {
           </div>
         )}
         {data?.map((s: Supplier) => {
-          const isOpen = !!open[s.supplier_id];
+          const sid = s.supplier_id ?? "";
+          const isOpen = !!open[sid];
           const lateDays = s.max_days_at_supplier ?? 0;
           return (
-            <div key={s.supplier_id} className="border-b border-border last:border-0">
+            <div key={sid} className="border-b border-border last:border-0">
               <button
-                onClick={() => setOpen((o) => ({ ...o, [s.supplier_id]: !o[s.supplier_id] }))}
+                onClick={() => setOpen((o) => ({ ...o, [sid]: !o[sid] }))}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/20 text-left"
               >
                 {isOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">
-                    {s.supplier_name ?? s.supplier_id.slice(0, 8)}
+                    {s.supplier_name ?? sid.slice(0, 8)}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {s.open_os_count} OS · {s.open_lot_count} lote(s) · {s.distinct_refs} ref(s)
