@@ -17,6 +17,15 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+type Supplier = NonNullable<Awaited<ReturnType<typeof listOutsourcedWip>>>[number] & {
+  open_os_count?: number;
+  open_lot_count?: number;
+  distinct_refs?: number;
+  max_days_at_supplier?: number;
+  owner_id?: string;
+};
+type OrderRow = Supplier["orders"][number];
+
 const lineLabel = (line?: string | null) => (line === "segunda_linha" ? "2ª linha" : "1ª linha");
 
 export const Route = createFileRoute("/_authenticated/_app/terceirizados")({
