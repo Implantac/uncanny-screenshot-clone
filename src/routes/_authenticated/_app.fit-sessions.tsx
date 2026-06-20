@@ -96,7 +96,7 @@ function Page() {
     mutationFn: async () => {
       const { error } = await supabase
         .from("fit_session_comments")
-        .insert({ owner_id: user!.id, fit_session_id: selected, ...cf });
+        .insert({ owner_id: user!.id, fit_session_id: selected!, ...cf });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -121,7 +121,7 @@ function Page() {
       const { error } = await supabase
         .from("fit_sessions")
         .update({ status })
-        .eq("id", selected);
+        .eq("id", selected!);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["fit-sessions"] }),
