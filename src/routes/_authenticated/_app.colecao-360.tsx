@@ -42,6 +42,40 @@ export const Route = createFileRoute("/_authenticated/_app/colecao-360")({
   component: Colecao360,
 });
 
+type CollectionAggregate = {
+  collection: { id: string; name: string };
+  productCount: number;
+  protoCount: number;
+  protoApproved: number;
+  opsActive: number;
+  opsDone: number;
+  producedQty: number;
+  revenue: number;
+  unitsSold: number;
+  margin: number;
+  sellThrough: number;
+  investment: number;
+  productionCost: number;
+  marketingCost: number;
+  profit: number;
+  roi: number;
+  semPiloto: number;
+  protoPendentes: number;
+  opsAguardando: number;
+  liberadosPCP: number;
+  avanco: number;
+  semFicha: number;
+  stockUnits: number;
+  stockValue: number;
+  coverageDays: number | null;
+  dailyVelocity: number;
+  ruptureSkus: Array<{ id: string; sku: string; name: string }>;
+  excessSkus: Array<{ p: { id: string; sku: string; name: string }; stock: number; days: number }>;
+  dataSource: string;
+  champions: Array<{ p: { id: string; sku: string; name: string }; rev: number }>;
+  criticos: Array<{ p: { id: string; sku: string; name: string }; rev: number }>;
+};
+
 type Collection = {
   id: string;
   name: string;
