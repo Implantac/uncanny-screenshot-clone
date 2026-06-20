@@ -241,15 +241,15 @@ function BI() {
   const mktByChannel = useMemo(() => {
     const m = new Map<string, number>();
     campaigns.forEach((c) =>
-      m.set(c.channel ?? "—", (m.get(c.channel ?? "—") ?? 0) + Number(c.budget ?? 0)),
+      m.set(c.channel ?? "—", (m.get(c.channel ?? "—") ?? 0) + Number(c.investment ?? 0)),
     );
     return [...m.entries()]
       .map(([name, v]) => ({ name, v: Math.round(v) }))
       .sort((a, b) => b.v - a.v);
   }, [campaigns]);
   const mktKpis = useMemo(() => {
-    const budget = campaigns.reduce((s, c) => s + Number(c.budget ?? 0), 0);
-    const sentValue = ships.reduce((s, x) => s + Number(x.value ?? 0), 0);
+    const budget = campaigns.reduce((s, c) => s + Number(c.investment ?? 0), 0);
+    const sentValue = ships.reduce((s, x) => s + Number(x.quantity ?? 0), 0);
     return { budget, sentValue, campaigns: campaigns.length, ships: ships.length };
   }, [campaigns, ships]);
 
