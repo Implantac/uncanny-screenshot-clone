@@ -497,6 +497,15 @@ function PcpKanban() {
                               ownerId={o.owner_id}
                               stage={col.key}
                             />
+                            {o.quantity > 1 && (
+                              <LoteSplitDialog
+                                orderId={o.id}
+                                orderCode={o.code}
+                                totalQty={o.quantity}
+                                defaultSupplierId={null}
+                                defaultDueDate={o.due_date}
+                              />
+                            )}
                             <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>
                               {pri.label}
                             </span>
