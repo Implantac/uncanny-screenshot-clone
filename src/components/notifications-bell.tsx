@@ -397,7 +397,7 @@ export function NotificationsBell() {
                         Protótipo {p.code} sem evolução
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
-                        {p.name} · {p.stage} há {days} dias
+                        {p.stage} há {days} dias
                       </div>
                     </div>
                   </Link>
