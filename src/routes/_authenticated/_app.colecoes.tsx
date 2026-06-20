@@ -587,7 +587,7 @@ function ColecoesPage() {
         progress: 0,
         parent_id: c.parent_id,
         cover_path: c.cover_path,
-      });
+      } as never);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -2001,7 +2001,7 @@ function CollectionDialog({
       if (editing) {
         const { error } = await supabase
           .from("collections")
-          .update(payload)
+          .update(payload as never)
           .eq("id", editing.id);
         if (error) throw error;
         if (coverPath && editing.cover_path) {
@@ -2010,7 +2010,7 @@ function CollectionDialog({
       } else {
         const { error } = await supabase
           .from("collections")
-          .insert({ ...payload, owner_id: userId });
+          .insert({ ...payload, owner_id: userId } as never);
         if (error) throw error;
       }
     },
