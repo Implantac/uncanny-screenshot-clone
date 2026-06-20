@@ -34,7 +34,7 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
         .neq("status", "cancelada"),
       supabase
         .from("prototypes")
-        .select("id, code, name, stage, updated_at")
+        .select("id, code, stage, updated_at")
         .eq("owner_id", userId)
         .not("stage", "in", '("aprovado","rejeitado")')
         .lt("updated_at", d7),
@@ -56,10 +56,31 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
       supabase.from("product_target_costs").select("product_id, target_cost").eq("owner_id", userId),
     ]);
 
+    type OrderRow = {
+      id: string;
+      code: string;
+      status: string;
+      due_date: string | null;
+      stage: string | null;
+      product_id: string | null;
+      products: { name: string | null } | { name: string | null }[] | null;
+    };
+    type ProtoRow = { id: string; code: string; stage: string; updated_at: string };
+    type CapaRow = { id: string; title: string | null; severity: string | null; status: string; due_date: string | null };
+    type CampRow = { id: string; name: string; status: string; roas: number | null; investment: number | null };
+    type CostRow = { product_id: string | null; cost_price: number | null; products: { name: string | null } | { name: string | null }[] | null };
+    type TgtRow = { product_id: string | null; target_cost: number | null };
+
+    const pickName = (rel: OrderRow["products"]): string | null => {
+      if (!rel) return null;
+      if (Array.isArray(rel)) return rel[0]?.name ?? null;
+      return rel.name;
+    };
+
     const out: Bottleneck[] = [];
 
     // PCP — OPs atrasadas
-    (orders.data ?? []).forEach((o: any) => {
+    ((orders.data ?? []) as OrderRow[]).forEach((o) => {
       if (o.due_date && o.due_date < today) {
         const daysLate = Math.floor(
           (Date.parse(today) - Date.parse(o.due_date)) / 86400_000,
@@ -69,7 +90,7 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
           module: "pcp",
           severity: daysLate > 7 ? "critica" : daysLate > 2 ? "alta" : "media",
           title: `OP ${o.code} atrasada`,
-          detail: `${o.products?.name ?? "Produto"} · estágio ${o.stage ?? "—"}`,
+          detail: `${pickName(o.products) ?? "Produto"} · estágio ${o.stage ?? "—"}`,
           metric: `${daysLate}d`,
           action: {
             kind: "open_route",
@@ -82,21 +103,21 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
     });
 
     // Desenvolvimento — protótipos parados >7d
-    (protos.data ?? []).forEach((p: any) => {
+    ((protos.data ?? []) as ProtoRow[]).forEach((p) => {
       const days = Math.floor((Date.now() - Date.parse(p.updated_at)) / 86400_000);
       out.push({
         id: `proto-${p.id}`,
         module: "desenvolvimento",
         severity: days > 21 ? "critica" : days > 14 ? "alta" : "media",
         title: `Protótipo ${p.code} parado`,
-        detail: `${p.name ?? ""} · ${p.stage}`,
+        detail: `${p.stage}`,
         metric: `${days}d sem mover`,
         action: { kind: "open_route", label: "Destravar", route: "/prototipos", refId: p.id },
       });
     });
 
     // Qualidade — CAPA aberta
-    (capa.data ?? []).forEach((c: any) => {
+    ((capa.data ?? []) as CapaRow[]).forEach((c) => {
       const overdue = c.due_date && c.due_date < today;
       out.push({
         id: `capa-${c.id}`,
@@ -115,8 +136,11 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
 
     // Custo — overrun >10%
     const tgt = new Map<string, number>();
-    (targets.data ?? []).forEach((t: any) => t.product_id && tgt.set(t.product_id, Number(t.target_cost)));
-    (costs.data ?? []).forEach((c: any) => {
+    ((targets.data ?? []) as TgtRow[]).forEach(
+      (t) => t.product_id && tgt.set(t.product_id, Number(t.target_cost)),
+    );
+    ((costs.data ?? []) as CostRow[]).forEach((c) => {
+      if (!c.product_id) return;
       const t = tgt.get(c.product_id);
       if (!t || !c.cost_price) return;
       const gap = ((Number(c.cost_price) - t) / t) * 100;
@@ -125,7 +149,7 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
           id: `cost-${c.product_id}`,
           module: "custo",
           severity: gap > 25 ? "critica" : gap > 15 ? "alta" : "media",
-          title: `Custo estourado: ${c.products?.name ?? "produto"}`,
+          title: `Custo estourado: ${pickName(c.products) ?? "produto"}`,
           detail: `Atual acima do target`,
           metric: `+${gap.toFixed(1)}%`,
           action: { kind: "open_route", label: "Rever ficha", route: "/target-costing" },
@@ -134,7 +158,7 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
     });
 
     // Marketing — ROAS baixo
-    (camps.data ?? []).forEach((c: any) => {
+    ((camps.data ?? []) as CampRow[]).forEach((c) => {
       const roas = Number(c.roas ?? 0);
       if (roas > 0 && roas < 1.5 && Number(c.investment ?? 0) > 0) {
         out.push({

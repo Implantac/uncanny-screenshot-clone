@@ -68,7 +68,7 @@ export async function buildFashionContext(): Promise<FashionContext> {
   const byGroupP: Record<string, number> = {};
   for (const p of products) {
     byStatusP[p.status] = (byStatusP[p.status] ?? 0) + 1;
-    const g = (p as any).product_group ?? "Sem grupo";
+    const g = (p as { product_group?: string | null }).product_group ?? "Sem grupo";
     byGroupP[g] = (byGroupP[g] ?? 0) + 1;
   }
   const topMargin = [...products]
@@ -107,7 +107,8 @@ export async function buildFashionContext(): Promise<FashionContext> {
     minimum: Number(i.minimum),
   }));
 
-  const po = (prodOrdRes.data ?? []) as any[];
+  type PoRow = { code: string; status: string | null; quantity: number | null; due_date: string | null };
+  const po = (prodOrdRes.data ?? []) as PoRow[];
   const byStatusPO: Record<string, number> = {};
   for (const p of po)
     byStatusPO[p.status ?? "—"] = (byStatusPO[p.status ?? "—"] ?? 0) + Number(p.quantity ?? 0);
@@ -118,12 +119,13 @@ export async function buildFashionContext(): Promise<FashionContext> {
     .slice(0, 8)
     .map((p) => ({
       code: p.code,
-      status: p.status,
+      status: p.status ?? "",
       quantity: Number(p.quantity ?? 0),
       due: p.due_date ?? undefined,
     }));
 
-  const sales = (salesRes.data ?? []) as any[];
+  type SaleRow = { sku: string; channel: string | null; uf: string | null; quantity: number | null; total: number | null; sold_at: string };
+  const sales = (salesRes.data ?? []) as SaleRow[];
   const now = Date.now();
   const within = (days: number) =>
     sales.filter((s) => now - new Date(s.sold_at).getTime() <= days * 86400_000);
@@ -143,8 +145,10 @@ export async function buildFashionContext(): Promise<FashionContext> {
     .slice(0, 5)
     .map(([sku, qty]) => ({ sku, qty }));
 
-  const inf = (infRes.data ?? []) as any[];
-  const mkt = (mktRes.data ?? []) as any[];
+  type InfRow = { nome: string; seguidores: number | null; engajamento: number | null; vendas_antes: number | null; vendas_depois: number | null };
+  type MktRow = { status: string; channel: string | null; investment: number | null };
+  const inf = (infRes.data ?? []) as InfRow[];
+  const mkt = (mktRes.data ?? []) as MktRow[];
   const byChannelM: Record<string, number> = {};
   let totalInvestment = 0;
   for (const c of mkt) {

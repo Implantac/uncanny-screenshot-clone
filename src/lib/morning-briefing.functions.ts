@@ -77,19 +77,30 @@ export const getMorningBriefing = createServerFn({ method: "POST" })
         .eq("owner_id", userId),
     ]);
 
-    const targetMap = new Map((targets.data ?? []).map((t: any) => [t.product_id, Number(t.target_cost ?? 0)]));
-    const costAlerts = (ts.data ?? []).filter((t: any) => {
+    type TargetRow = { product_id: string | null; target_cost: number | null };
+    type TsRow = { id: string; product_id: string | null; cost_price: number | null };
+    type PoRow = { id: string; code: string; status: string; due_date: string | null; stage_updated_at: string | null };
+    type InvRow = { name: string; balance: number | null; minimum: number | null };
+    type CapaRow = { id: string; title: string | null; severity: string | null; due_date: string | null };
+
+    const targetMap = new Map(
+      ((targets.data ?? []) as TargetRow[])
+        .filter((t): t is TargetRow & { product_id: string } => !!t.product_id)
+        .map((t) => [t.product_id, Number(t.target_cost ?? 0)]),
+    );
+    const costAlerts = ((ts.data ?? []) as TsRow[]).filter((t) => {
+      if (!t.product_id) return false;
       const tg = targetMap.get(t.product_id);
       if (!tg || tg <= 0) return false;
       return Number(t.cost_price ?? 0) > tg * 1.1;
     }).length;
 
-    const productionLate = (po.data ?? []).filter(
-      (o: any) => o.due_date && o.due_date < today,
+    const productionLate = ((po.data ?? []) as PoRow[]).filter(
+      (o) => o.due_date && o.due_date < today,
     ).length;
 
-    const lowStock = (inv.data ?? []).filter(
-      (i: any) => Number(i.balance ?? 0) <= Number(i.minimum ?? 0),
+    const lowStock = ((inv.data ?? []) as InvRow[]).filter(
+      (i) => Number(i.balance ?? 0) <= Number(i.minimum ?? 0),
     ).length;
 
     const snapshot = {
@@ -102,15 +113,15 @@ export const getMorningBriefing = createServerFn({ method: "POST" })
       lowStock,
     };
 
-    const topLatePo = (po.data ?? [])
-      .filter((o: any) => o.due_date && o.due_date < today)
+    const topLatePo = ((po.data ?? []) as PoRow[])
+      .filter((o) => o.due_date && o.due_date < today)
       .slice(0, 3)
-      .map((o: any) => `${o.code} (vence ${o.due_date})`)
+      .map((o) => `${o.code} (vence ${o.due_date})`)
       .join(", ");
 
-    const topCapa = (capa.data ?? [])
+    const topCapa = ((capa.data ?? []) as CapaRow[])
       .slice(0, 3)
-      .map((c: any) => `${c.title} [${c.severity}]`)
+      .map((c) => `${c.title} [${c.severity}]`)
       .join(", ");
 
     const userPrompt = `Snapshot operacional de hoje:

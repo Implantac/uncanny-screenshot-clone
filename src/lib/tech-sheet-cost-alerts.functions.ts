@@ -34,24 +34,27 @@ export const getTechSheetCostAlerts = createServerFn({ method: "GET" })
       .eq("owner_id", userId)
       .order("version_number", { ascending: false });
 
-    const lastBySheet = new Map<string, { v: number; snap: any }>();
-    (versions ?? []).forEach((v: any) => {
+    type Snapshot = { sheet?: { cost_price?: number; materials_cost?: number; labor_cost?: number } };
+    type VersionRow = { tech_sheet_id: string; version_number: number; snapshot: Snapshot | null };
+    type SheetRow = { id: string; cost_price: number | null; materials_cost: number | null; labor_cost: number | null; product_id: string | null };
+    type ProductRow = { id: string; name: string | null; sku: string | null };
+
+    const lastBySheet = new Map<string, { v: number; snap: Snapshot | null }>();
+    ((versions ?? []) as VersionRow[]).forEach((v) => {
       if (!lastBySheet.has(v.tech_sheet_id)) {
         lastBySheet.set(v.tech_sheet_id, { v: v.version_number, snap: v.snapshot });
       }
     });
 
-    const productIds = sheets.map((s: any) => s.product_id).filter(Boolean);
+    const sheetRows = (sheets ?? []) as SheetRow[];
+    const productIds = sheetRows.map((s) => s.product_id).filter((id): id is string => !!id);
     const { data: products } = productIds.length
-      ? await supabase
-          .from("products")
-          .select("id, name, sku")
-          .in("id", productIds as string[])
-      : { data: [] as any[] };
-    const prodMap = new Map((products ?? []).map((p: any) => [p.id, p]));
+      ? await supabase.from("products").select("id, name, sku").in("id", productIds)
+      : { data: [] as ProductRow[] };
+    const prodMap = new Map(((products ?? []) as ProductRow[]).map((p) => [p.id, p]));
 
     const alerts: TechSheetCostAlert[] = [];
-    for (const s of sheets as any[]) {
+    for (const s of sheetRows) {
       const prev = lastBySheet.get(s.id);
       if (!prev) continue;
       const prevCost = Number(prev.snap?.sheet?.cost_price ?? 0);

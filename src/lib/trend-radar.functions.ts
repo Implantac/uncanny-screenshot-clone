@@ -37,11 +37,12 @@ Devolva APENAS JSON neste schema:
 }
 Regras: 5-7 sinais. relevance reflete encaixe com a marca (paleta + categorias + horizonte). Sem texto fora do JSON.`;
 
-function extractJson(s: string): any | null {
+type ParsedSignals = { signals?: unknown[] };
+function extractJson(s: string): ParsedSignals | null {
   const m = s.match(/\{[\s\S]*\}/);
   if (!m) return null;
   try {
-    return JSON.parse(m[0]);
+    return JSON.parse(m[0]) as ParsedSignals;
   } catch {
     return null;
   }
@@ -59,11 +60,12 @@ export const scanTrendRadar = createServerFn({ method: "POST" })
       .select("category, colors")
       .limit(500);
 
+    type ProductLite = { category: string | null; colors: string[] | null };
     const catMap = new Map<string, number>();
     const colorMap = new Map<string, number>();
-    (products ?? []).forEach((p: any) => {
+    ((products ?? []) as ProductLite[]).forEach((p) => {
       if (p.category) catMap.set(p.category, (catMap.get(p.category) ?? 0) + 1);
-      (p.colors ?? []).forEach((c: string) => colorMap.set(c, (colorMap.get(c) ?? 0) + 1));
+      (p.colors ?? []).forEach((c) => colorMap.set(c, (colorMap.get(c) ?? 0) + 1));
     });
     const topCats = [...catMap.entries()]
       .sort((a, b) => b[1] - a[1])
@@ -90,25 +92,40 @@ ${data.notes ? `Observações: ${data.notes}` : ""}`;
         temperature: 0.7,
       });
       const parsed = extractJson(res.text);
-      const arr = Array.isArray(parsed?.signals) ? parsed.signals : [];
+      const arr: unknown[] = Array.isArray(parsed?.signals) ? parsed!.signals! : [];
+      type RawSignal = Partial<{
+        title: unknown;
+        summary: unknown;
+        keywords: unknown;
+        colors: unknown;
+        category: unknown;
+        relevance: unknown;
+        why: unknown;
+      }>;
       const signals: TrendSignal[] = arr
         .slice(0, 8)
-        .map((s: any) => ({
-          title: String(s.title ?? ""),
-          summary: String(s.summary ?? ""),
-          keywords: Array.isArray(s.keywords) ? s.keywords.slice(0, 6).map(String) : [],
-          colors: Array.isArray(s.colors)
-            ? s.colors.filter((c: any) => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 5)
-            : [],
-          category: String(s.category ?? ""),
-          relevance: Math.max(0, Math.min(100, Math.round(Number(s.relevance ?? 0)))),
-          why: String(s.why ?? ""),
-        }))
-        .sort((a: TrendSignal, b: TrendSignal) => b.relevance - a.relevance);
+        .map((raw): TrendSignal => {
+          const s = (raw ?? {}) as RawSignal;
+          return {
+            title: String(s.title ?? ""),
+            summary: String(s.summary ?? ""),
+            keywords: Array.isArray(s.keywords) ? s.keywords.slice(0, 6).map(String) : [],
+            colors: Array.isArray(s.colors)
+              ? (s.colors as unknown[]).filter(
+                  (c): c is string => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c),
+                ).slice(0, 5)
+              : [],
+            category: String(s.category ?? ""),
+            relevance: Math.max(0, Math.min(100, Math.round(Number(s.relevance ?? 0)))),
+            why: String(s.why ?? ""),
+          };
+        })
+        .sort((a, b) => b.relevance - a.relevance);
 
       return { signals, brandContext };
-    } catch (err: any) {
-      const status = err?.statusCode ?? err?.lastError?.statusCode;
+    } catch (err: unknown) {
+      const e = err as { statusCode?: number; lastError?: { statusCode?: number } };
+      const status = e?.statusCode ?? e?.lastError?.statusCode;
       if (status === 429)
         throw new Error("Limite de requisições da IA atingido. Aguarde alguns segundos.");
       if (status === 402)
