@@ -96,9 +96,15 @@ function CommentsThread({ prototypeId }: { prototypeId: string }) {
   const add = useMutation({
     mutationFn: async (text: string) => {
       if (!user) throw new Error("Não autenticado");
+      const { data: proto, error: protoErr } = await supabase
+        .from("prototypes")
+        .select("owner_id")
+        .eq("id", prototypeId)
+        .single();
+      if (protoErr || !proto) throw new Error("Protótipo não encontrado");
       const { error } = await supabase.from("prototype_comments").insert({
         prototype_id: prototypeId,
-        owner_id: user.id,
+        owner_id: proto.owner_id,
         author_id: user.id,
         body: text,
       });

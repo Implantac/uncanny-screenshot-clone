@@ -19,10 +19,11 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Canonical pg_cron auth: validate `apikey` header against the project publishable key.
-        const provided = request.headers.get("apikey") ?? "";
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
-        if (!expected) return new Response("Server misconfigured", { status: 503 });
+        // Authenticate cron caller via dedicated secret. The publishable key
+        // is public and would let anyone trigger all agents.
+        const provided = request.headers.get("x-cron-secret") ?? "";
+        const expected = process.env.CRON_SECRET ?? "";
+        if (!expected) return new Response("Server misconfigured: CRON_SECRET missing", { status: 503 });
         const a = Buffer.from(provided);
         const b = Buffer.from(expected);
         const authed = a.length === b.length && (await import("crypto")).timingSafeEqual(a, b);
