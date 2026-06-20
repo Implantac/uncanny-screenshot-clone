@@ -51,6 +51,22 @@ export const listCostVariance = createServerFn({ method: "POST" })
     const { supabase } = context;
     const since = new Date(Date.now() - data.sinceDays * 86400000).toISOString();
 
+    type OrderRow = {
+      id: string;
+      code: string;
+      product_id: string | null;
+      quantity: number | null;
+      stage: string;
+      status: string;
+      started_at: string | null;
+      created_at: string;
+      progress: number | null;
+      products: { name: string | null; sku: string | null; collection_id: string | null } | null;
+    };
+    type SheetRow = { product_id: string | null; cost_price: number | string | null; materials_cost: number | string | null; labor_cost: number | string | null; status: string };
+    type MoveRow = { reference_id: string | null; type: string; quantity: number | string | null };
+    type OccRow = { order_id: string | null; kind: string | null; affected_qty: number | string | null };
+
     const { data: orders, error } = await supabase
       .from("production_orders")
       .select(
@@ -61,13 +77,13 @@ export const listCostVariance = createServerFn({ method: "POST" })
       .limit(500);
     if (error) throw error;
 
-    const ops = (orders ?? []).filter(
-      (o: any) => !data.collectionId || o.products?.collection_id === data.collectionId,
+    const ops = ((orders ?? []) as unknown as OrderRow[]).filter(
+      (o) => !data.collectionId || o.products?.collection_id === data.collectionId,
     );
     if (ops.length === 0) return [] as CostVarianceRow[];
 
-    const productIds = Array.from(new Set(ops.map((o: any) => o.product_id).filter(Boolean)));
-    const orderIds = ops.map((o: any) => o.id);
+    const productIds = Array.from(new Set(ops.map((o) => o.product_id).filter((id): id is string => Boolean(id))));
+    const orderIds = ops.map((o) => o.id);
 
     const [{ data: sheets }, { data: moves }, { data: occs }] = await Promise.all([
       productIds.length
@@ -76,7 +92,7 @@ export const listCostVariance = createServerFn({ method: "POST" })
             .select("product_id, cost_price, materials_cost, labor_cost, status")
             .in("product_id", productIds)
             .eq("status", "aprovada")
-        : Promise.resolve({ data: [] as any[] }),
+        : Promise.resolve({ data: [] as SheetRow[] }),
       supabase
         .from("stock_movements")
         .select("reference_id, type, quantity")
@@ -88,14 +104,14 @@ export const listCostVariance = createServerFn({ method: "POST" })
         .in("order_id", orderIds),
     ]);
 
-    const sheetByProduct = new Map<string, any>();
-    (sheets ?? []).forEach((s: any) => {
-      const cur = sheetByProduct.get(s.product_id);
-      if (!cur) sheetByProduct.set(s.product_id, s);
+    const sheetByProduct = new Map<string, SheetRow>();
+    ((sheets ?? []) as unknown as SheetRow[]).forEach((s) => {
+      if (!s.product_id) return;
+      if (!sheetByProduct.has(s.product_id)) sheetByProduct.set(s.product_id, s);
     });
 
     const consumedByOp = new Map<string, number>();
-    (moves ?? []).forEach((m: any) => {
+    ((moves ?? []) as unknown as MoveRow[]).forEach((m) => {
       if (m.type !== "saida" || !m.reference_id) return;
       consumedByOp.set(
         m.reference_id,
@@ -104,7 +120,7 @@ export const listCostVariance = createServerFn({ method: "POST" })
     });
 
     const occByOp = new Map<string, CostVarianceRow["occurrences"]>();
-    (occs ?? []).forEach((o: any) => {
+    ((occs ?? []) as unknown as OccRow[]).forEach((o) => {
       if (!o.order_id) return;
       const cur = occByOp.get(o.order_id) ?? {
         refugo: 0,
@@ -123,8 +139,8 @@ export const listCostVariance = createServerFn({ method: "POST" })
       occByOp.set(o.order_id, cur);
     });
 
-    const rows: CostVarianceRow[] = ops.map((o: any) => {
-      const sheet = o.product_id ? sheetByProduct.get(o.product_id) : null;
+    const rows: CostVarianceRow[] = ops.map((o) => {
+      const sheet = o.product_id ? sheetByProduct.get(o.product_id) ?? null : null;
       const qty = Number(o.quantity ?? 0);
       const produced = Math.round((Number(o.progress ?? 0) / 100) * qty);
       const matU = Number(sheet?.materials_cost ?? 0);
