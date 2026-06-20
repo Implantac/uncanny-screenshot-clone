@@ -10,6 +10,7 @@ import { QualityFpyPanel } from "@/components/quality-fpy-panel";
 import { QualityConqPanel } from "@/components/quality-conq-panel";
 import { QualityParetoPanel } from "@/components/quality-pareto-panel";
 import { QualityDevBridgePanel } from "@/components/quality-dev-bridge-panel";
+import { QualityCollectionsBridgePanel } from "@/components/quality-collections-bridge-panel";
 import { CapaPanel } from "@/components/capa-panel";
 import { CellEfficiencyPanel } from "@/components/cell-efficiency-panel";
 
@@ -168,6 +169,8 @@ function Quality() {
       <QualityParetoPanel />
 
       <QualityDevBridgePanel />
+
+      <QualityCollectionsBridgePanel />
 
 
 
