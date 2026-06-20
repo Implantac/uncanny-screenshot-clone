@@ -19,18 +19,23 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Authenticate cron caller via dedicated secret. The publishable key
-        // is public and would let anyone trigger all agents.
-        const provided = request.headers.get("x-cron-secret") ?? "";
-        const expected = process.env.CRON_SECRET ?? "";
-        if (!expected) return new Response("Server misconfigured: CRON_SECRET missing", { status: 503 });
-        const a = Buffer.from(provided);
-        const b = Buffer.from(expected);
-        const authed = a.length === b.length && (await import("crypto")).timingSafeEqual(a, b);
+        // Authenticate caller: aceitar apikey (padrão pg_cron) OU x-cron-secret (legado).
+        const { timingSafeEqual } = await import("crypto");
+        const safeEq = (a: string, b: string) => {
+          if (!a || !b) return false;
+          const ba = Buffer.from(a);
+          const bb = Buffer.from(b);
+          return ba.length === bb.length && timingSafeEqual(ba, bb);
+        };
+        const apiKey = request.headers.get("apikey") ?? "";
+        const cronSecret = request.headers.get("x-cron-secret") ?? "";
+        const expectedApi = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
+        const expectedCron = process.env.CRON_SECRET ?? "";
+        const authed = safeEq(apiKey, expectedApi) || safeEq(cronSecret, expectedCron);
         if (!authed) return new Response("Unauthorized", { status: 401 });
 
-        const apiKey = process.env.LOVABLE_API_KEY;
-        if (!apiKey) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const lovableKey = process.env.LOVABLE_API_KEY;
+        if (!lovableKey) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -45,7 +50,7 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
         if (error) return Response.json({ error: error.message }, { status: 500 });
         if (!due || due.length === 0) return Response.json({ ran: 0 });
 
-        const gateway = createLovableAiGatewayProvider(apiKey);
+        const gateway = createLovableAiGatewayProvider(lovableKey);
         const model = gateway("google/gemini-3-flash-preview");
 
         let okCount = 0;
