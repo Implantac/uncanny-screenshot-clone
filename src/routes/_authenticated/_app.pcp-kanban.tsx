@@ -86,6 +86,23 @@ function PcpKanban() {
   const qc = useQueryClient();
   useRealtime("production_orders", ["pcp-kanban"]);
   const { data: orders = [], isLoading } = useQuery({ queryKey: ["pcp-kanban"], queryFn: load });
+
+  // Gate de qualidade: OPs com CAPA aberta não podem avançar para Expedição/Entregue.
+  const { data: openCapaOrderIds = new Set<string>() } = useQuery({
+    queryKey: ["pcp-kanban-open-capa"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("quality_capa")
+        .select("order_id")
+        .eq("status", "aberta")
+        .not("order_id", "is", null);
+      if (error) throw error;
+      return new Set<string>((data ?? []).map((r) => r.order_id as string));
+    },
+    refetchInterval: 60_000,
+  });
+  useRealtime("quality_capa", ["pcp-kanban-open-capa"]);
+
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<Stage | null>(null);
   const [mode, setMode] = useState<"ordens" | "lotes">("ordens");
