@@ -170,6 +170,8 @@ function Quality() {
 
       <QualityDevBridgePanel />
 
+      <QualityCollectionsBridgePanel />
+
 
 
 
