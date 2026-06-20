@@ -101,7 +101,8 @@ export const predictDelays = createServerFn({ method: "GET" })
         .limit(500);
 
       const now = Date.now();
-      const items: DelayPrediction[] = (orders ?? []).map((o: any) => {
+      type OrderRow = { id: string; code: string; stage: Stage; due_date: string | null; stage_updated_at: string | null; products: { name: string | null } | null };
+      const items: DelayPrediction[] = ((orders ?? []) as OrderRow[]).map((o) => {
         const stage = o.stage as Stage;
         const idx = ORDER.indexOf(stage);
         const stageStart = o.stage_updated_at ? new Date(o.stage_updated_at).getTime() : now;
