@@ -67,7 +67,7 @@ const Input = z.object({
   question: z.string().trim().min(3).max(500),
 });
 
-async function buildContext(supabase: any, persona: Persona): Promise<string> {
+async function buildContext(supabase: DB, persona: Persona): Promise<string> {
   if (persona === "command") {
     const [{ count: opsAtivas }, { count: rfqsAbertas }, { count: protosPend }] = await Promise.all(
       [
