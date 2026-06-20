@@ -2,9 +2,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
 type PublicTable = keyof Database["public"]["Tables"];
-type CountableBuilder = ReturnType<
-  ReturnType<typeof supabase.from<PublicTable>>["select"]
->;
 
 export type PlmStageStatus = "completa" | "parcial" | "ausente";
 
@@ -31,15 +28,23 @@ export type PlmEnterpriseReadiness = {
 };
 
 type CountResult = { count: number | null };
+type CountBuilder = {
+  in: (col: string, values: readonly string[]) => CountBuilder;
+  not: (col: string, op: string, val: unknown) => CountBuilder;
+  then: PromiseLike<CountResult>["then"];
+};
 
 async function countRows(
   table: PublicTable,
-  query?: (q: CountableBuilder) => CountableBuilder,
+  query?: (q: CountBuilder) => CountBuilder | PromiseLike<CountResult>,
 ): Promise<number> {
-  const base = supabase.from(table).select("id", { count: "exact", head: true }) as CountableBuilder;
+  const base = supabase
+    .from(table)
+    .select("id", { count: "exact", head: true }) as unknown as CountBuilder;
   const { count } = (await (query ? query(base) : base)) as CountResult;
   return count ?? 0;
 }
+
 
 
 function pct(part: number, total: number) {
