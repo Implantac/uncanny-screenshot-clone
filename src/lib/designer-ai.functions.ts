@@ -69,14 +69,14 @@ Devolva o JSON conforme o schema.`;
       return {
         mood: String(parsed.mood ?? ""),
         palette: Array.isArray(parsed.palette)
-          ? parsed.palette.slice(0, 6).map((p: any) => ({
+          ? parsed.palette.slice(0, 6).map((p) => ({
               name: String(p.name ?? ""),
-              hex: /^#[0-9a-f]{6}$/i.test(p.hex ?? "") ? p.hex : "#888888",
+              hex: typeof p.hex === "string" && /^#[0-9a-f]{6}$/i.test(p.hex) ? p.hex : "#888888",
               usage: String(p.usage ?? "apoio"),
             }))
           : [],
         fabrics: Array.isArray(parsed.fabrics)
-          ? parsed.fabrics.slice(0, 5).map((f: any) => ({
+          ? parsed.fabrics.slice(0, 5).map((f) => ({
               name: String(f.name ?? ""),
               composition: String(f.composition ?? ""),
               why: String(f.why ?? ""),
@@ -84,8 +84,9 @@ Devolva o JSON conforme o schema.`;
           : [],
         refs: Array.isArray(parsed.refs) ? parsed.refs.slice(0, 6).map(String) : [],
       };
-    } catch (err: any) {
-      const status = err?.statusCode ?? err?.lastError?.statusCode;
+    } catch (err: unknown) {
+      const e = err as { statusCode?: number; lastError?: { statusCode?: number } };
+      const status = e?.statusCode ?? e?.lastError?.statusCode;
       if (status === 429)
         throw new Error("Limite de requisições da IA atingido. Aguarde alguns segundos.");
       if (status === 402)
