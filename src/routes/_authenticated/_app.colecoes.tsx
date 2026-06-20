@@ -366,7 +366,7 @@ function ColecoesPage() {
         }
       > = {};
       const now = Date.now();
-      (data ?? []).forEach((o: any) => {
+      (data ?? []).forEach((o) => {
         if (!o.product_id) return;
         const m = (map[o.product_id] ??= { qty: 0, done: 0, stages: {}, late: 0, status: {} });
         m.qty += o.quantity ?? 0;
@@ -445,7 +445,8 @@ function ColecoesPage() {
         .not("product_id", "is", null);
       if (error) throw error;
       const map: Record<string, { any: boolean; approved: boolean }> = {};
-      (data ?? []).forEach((p: any) => {
+      (data ?? []).forEach((p) => {
+        if (!p.product_id) return;
         const e = (map[p.product_id] ??= { any: false, approved: false });
         e.any = true;
         if (p.stage === "aprovado") e.approved = true;
