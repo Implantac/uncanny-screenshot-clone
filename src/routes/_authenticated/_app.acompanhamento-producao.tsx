@@ -1167,21 +1167,19 @@ function AcompanhamentoProducao() {
               >
                 <button
                   onClick={() => setZoomCol(opened ? null : col.key)}
-                  className="px-3 py-2 border-b border-border text-left hover:bg-muted/50 rounded-t-xl"
+                  className="px-2 py-2 border-b border-border text-left hover:bg-muted/50 rounded-t-xl min-w-0"
                 >
-                  <div className="flex items-center justify-between gap-2 min-w-0">
-                    <span className={`font-semibold truncate min-w-0 ${tvMode ? "text-sm" : "text-xs"}`}>
-                      {col.label}
-                    </span>
-                    <span className="shrink-0 whitespace-nowrap text-[10px] tabular-nums text-muted-foreground">
-                      {items.length}·{qty}
-                    </span>
+                  <div className={`font-semibold truncate ${tvMode ? "text-sm" : "text-[11px]"}`} title={col.label}>
+                    {col.label}
                   </div>
-                  {lateInCol > 0 && (
-                    <div className="mt-0.5 text-[10px] font-semibold text-red-600 inline-flex items-center gap-1">
-                      <AlertTriangle className="size-2.5" /> {lateInCol} atrasado(s)
-                    </div>
-                  )}
+                  <div className="mt-0.5 flex items-center justify-between gap-2 text-[10px] tabular-nums text-muted-foreground min-w-0">
+                    <span className="truncate">{items.length} lote · {qty} pç</span>
+                    {lateInCol > 0 && (
+                      <span className="shrink-0 font-semibold text-red-600 inline-flex items-center gap-0.5">
+                        <AlertTriangle className="size-2.5" /> {lateInCol}
+                      </span>
+                    )}
+                  </div>
                 </button>
                 <div className={`p-2 space-y-2 overflow-y-auto ${tvMode ? "max-h-[78vh]" : "max-h-[520px]"}`}>
                   {isLoading ? (
