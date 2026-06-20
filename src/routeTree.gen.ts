@@ -97,6 +97,7 @@ import { Route as AuthenticatedAppApprovalsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
 import { Route as AuthenticatedAppAcompanhamentoProducaoRouteImport } from './routes/_authenticated/_app.acompanhamento-producao'
 import { Route as ApiPublicSupplierPortalTokenRouteImport } from './routes/api/public/supplier-portal.$token'
+import { Route as ApiPublicHooksMarkLateOpsRouteImport } from './routes/api/public/hooks/mark-late-ops'
 import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
 import { Route as AuthenticatedAppWarRoomColecaoIdRouteImport } from './routes/_authenticated/_app.war-room-colecao.$id'
@@ -607,6 +608,12 @@ const ApiPublicSupplierPortalTokenRoute =
     path: '/api/public/supplier-portal/$token',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksMarkLateOpsRoute =
+  ApiPublicHooksMarkLateOpsRouteImport.update({
+    id: '/api/public/hooks/mark-late-ops',
+    path: '/api/public/hooks/mark-late-ops',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicErpSyncPublicIdRoute =
   ApiPublicErpSyncPublicIdRouteImport.update({
     id: '/api/public/erp-sync/$publicId',
@@ -741,6 +748,7 @@ export interface FileRoutesByFullPath {
   '/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
+  '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
 }
 export interface FileRoutesByTo {
@@ -836,6 +844,7 @@ export interface FileRoutesByTo {
   '/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
+  '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
 }
 export interface FileRoutesById {
@@ -934,6 +943,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
+  '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
 }
 export interface FileRouteTypes {
@@ -1031,6 +1041,7 @@ export interface FileRouteTypes {
     | '/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
+    | '/api/public/hooks/mark-late-ops'
     | '/api/public/supplier-portal/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1126,6 +1137,7 @@ export interface FileRouteTypes {
     | '/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
+    | '/api/public/hooks/mark-late-ops'
     | '/api/public/supplier-portal/$token'
   id:
     | '__root__'
@@ -1223,6 +1235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
+    | '/api/public/hooks/mark-late-ops'
     | '/api/public/supplier-portal/$token'
   fileRoutesById: FileRoutesById
 }
@@ -1235,6 +1248,7 @@ export interface RootRouteChildren {
   PortalFornecedorTokenRoute: typeof PortalFornecedorTokenRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
   ApiPublicErpSyncPublicIdRoute: typeof ApiPublicErpSyncPublicIdRoute
+  ApiPublicHooksMarkLateOpsRoute: typeof ApiPublicHooksMarkLateOpsRoute
   ApiPublicSupplierPortalTokenRoute: typeof ApiPublicSupplierPortalTokenRoute
 }
 
@@ -1856,6 +1870,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSupplierPortalTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/mark-late-ops': {
+      id: '/api/public/hooks/mark-late-ops'
+      path: '/api/public/hooks/mark-late-ops'
+      fullPath: '/api/public/hooks/mark-late-ops'
+      preLoaderRoute: typeof ApiPublicHooksMarkLateOpsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/erp-sync/$publicId': {
       id: '/api/public/erp-sync/$publicId'
       path: '/api/public/erp-sync/$publicId'
@@ -2111,6 +2132,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalFornecedorTokenRoute: PortalFornecedorTokenRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
   ApiPublicErpSyncPublicIdRoute: ApiPublicErpSyncPublicIdRoute,
+  ApiPublicHooksMarkLateOpsRoute: ApiPublicHooksMarkLateOpsRoute,
   ApiPublicSupplierPortalTokenRoute: ApiPublicSupplierPortalTokenRoute,
 }
 export const routeTree = rootRouteImport

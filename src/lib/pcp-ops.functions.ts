@@ -49,11 +49,15 @@ export const listDayProduction = createServerFn({ method: "POST" })
     );
     if (skus.length === 0) return list;
 
+    const productIds = Array.from(
+      new Set(list.map((r) => r.product_id).filter((p): p is string => Boolean(p))),
+    );
+
     const since30 = new Date(Date.now() - 30 * 86400000).toISOString();
     const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
     const since90 = new Date(Date.now() - 90 * 86400000).toISOString();
 
-    const [s30, s7, s90, inv] = await Promise.all([
+    const [s30, s7, s90, inv, completedOps] = await Promise.all([
       supabase
         .from("erp_sales_mirror")
         .select("sku, quantity")
@@ -77,7 +81,45 @@ export const listDayProduction = createServerFn({ method: "POST" })
         .select("sku, balance")
         .eq("owner_id", userId)
         .in("sku", skus),
+      productIds.length
+        ? supabase
+            .from("production_orders")
+            .select("product_id, supplier_id, created_at, stage_updated_at")
+            .eq("owner_id", userId)
+            .eq("status", "concluida")
+            .in("product_id", productIds)
+            .order("stage_updated_at", { ascending: false })
+            .limit(200)
+        : Promise.resolve({ data: [] as Array<{ product_id: string | null; supplier_id: string | null; created_at: string | null; stage_updated_at: string | null }> }),
     ]);
+
+    // Lead time real (mediana) por (product_id, supplier_id) com fallback para product_id.
+    const leadBy = new Map<string, number[]>();
+    for (const o of (completedOps.data ?? []) as Array<{ product_id: string | null; supplier_id: string | null; created_at: string | null; stage_updated_at: string | null }>) {
+      if (!o.product_id || !o.created_at || !o.stage_updated_at) continue;
+      const days = (new Date(o.stage_updated_at).getTime() - new Date(o.created_at).getTime()) / 86_400_000;
+      if (!Number.isFinite(days) || days <= 0 || days > 365) continue;
+      const keys = [`${o.product_id}:${o.supplier_id ?? "_"}`, `${o.product_id}:_`];
+      for (const k of keys) {
+        const arr = leadBy.get(k) ?? [];
+        if (arr.length < 5) {
+          arr.push(days);
+          leadBy.set(k, arr);
+        }
+      }
+    }
+    const median = (xs: number[]) => {
+      const s = [...xs].sort((a, b) => a - b);
+      return s[Math.floor(s.length / 2)];
+    };
+    const leadFor = (pid: string | null, sid: string | null): number | undefined => {
+      if (!pid) return undefined;
+      const exact = leadBy.get(`${pid}:${sid ?? "_"}`);
+      if (exact && exact.length >= 2) return Math.round(median(exact));
+      const any = leadBy.get(`${pid}:_`);
+      if (any && any.length >= 2) return Math.round(median(any));
+      return undefined;
+    };
 
     const sum = (rs: SkuQtyRow[] | null | undefined, sku: string) =>
       (rs ?? [])
