@@ -86,14 +86,14 @@ function WarRoomProducao() {
         .limit(100);
       if (bErr) throw new Error(bErr.message);
       if (!batches || batches.length === 0) return [];
-      const codes = batches.map((b: any) => b.code);
+      const codes = batches.map((b) => b.code);
       const { data: recentOrders, error: oErr } = await supabase
         .from("production_orders")
         .select("id, batch_code")
         .in("batch_code", codes);
       if (oErr) throw new Error(oErr.message);
-      const orderIds = (recentOrders ?? []).map((o: any) => o.id);
-      if (orderIds.length === 0) return batches.map((b: any) => ({ ...b, lastMove: null }));
+      const orderIds = (recentOrders ?? []).map((o) => o.id);
+      if (orderIds.length === 0) return batches.map((b) => ({ ...b, lastMove: null }));
       const { data: recentLogs, error: lErr } = await supabase
         .from("production_stage_log")
         .select("order_id, created_at")
@@ -101,30 +101,30 @@ function WarRoomProducao() {
         .gte("created_at", since24h);
       if (lErr) throw new Error(lErr.message);
       const movedCodes = new Set<string>();
-      (recentLogs ?? []).forEach((l: any) => {
-        const order = (recentOrders ?? []).find((o: any) => o.id === l.order_id);
+      (recentLogs ?? []).forEach((l) => {
+        const order = (recentOrders ?? []).find((o) => o.id === l.order_id);
         if (order?.batch_code) movedCodes.add(order.batch_code);
       });
-      return batches.filter((b: any) => !movedCodes.has(b.code));
+      return batches.filter((b) => !movedCodes.has(b.code));
     },
     refetchInterval: 60_000,
   });
 
   const analysis = useMemo(() => {
     const allOrders = data?.orders ?? [];
-    const orders = productId ? allOrders.filter((o: any) => o.product_id === productId) : allOrders;
+    const orders = productId ? allOrders.filter((o) => o.product_id === productId) : allOrders;
     const stages = data?.stages ?? [];
     const now = Date.now();
     const STUCK = 5 * 86400000;
 
     const byStage = new Map<string, { qty: number; ops: number }>();
-    orders.forEach((o: any) => {
+    orders.forEach((o) => {
       const cur = byStage.get(o.stage) ?? { qty: 0, ops: 0 };
       cur.qty += o.quantity ?? 0;
       cur.ops += 1;
       byStage.set(o.stage, cur);
     });
-    const stageRows = stages.map((s: any) => ({
+    const stageRows = stages.map((s) => ({
       ...s,
       qty: byStage.get(s.key)?.qty ?? 0,
       ops: byStage.get(s.key)?.ops ?? 0,
@@ -132,16 +132,16 @@ function WarRoomProducao() {
     const maxQty = Math.max(1, ...stageRows.map((r) => r.qty));
     const bottleneck = [...stageRows].sort((a, b) => b.qty - a.qty)[0];
 
-    const late = orders.filter((o: any) => o.due_date && new Date(o.due_date).getTime() < now);
+    const late = orders.filter((o) => o.due_date && new Date(o.due_date).getTime() < now);
     const stuck = orders.filter(
-      (o: any) => o.stage_updated_at && now - new Date(o.stage_updated_at).getTime() > STUCK,
+      (o) => o.stage_updated_at && now - new Date(o.stage_updated_at).getTime() > STUCK,
     );
 
     const bySupplier = new Map<
       string,
       { name: string; pieces: number; ops: number; secondLine: number; oldest: string | null }
     >();
-    (data?.outsourced ?? []).forEach((s: any) => {
+    (data?.outsourced ?? []).forEach((s) => {
       const key = s.supplier_id ?? "—";
       const cur = bySupplier.get(key) ?? {
         name: s.suppliers?.name ?? "—",
@@ -159,7 +159,7 @@ function WarRoomProducao() {
     const suppliers = [...bySupplier.values()].sort((a, b) => b.pieces - a.pieces);
 
     const filteredProductName = productId
-      ? (allOrders.find((o: any) => o.product_id === productId)?.products?.name ?? null)
+      ? (allOrders.find((o) => o.product_id === productId)?.products?.name ?? null)
       : null;
     return { stageRows, maxQty, bottleneck, late, stuck, suppliers, filteredProductName };
   }, [data, productId]);
@@ -234,7 +234,7 @@ function WarRoomProducao() {
             setor responsável.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {staleBatches.slice(0, 6).map((b: any) => {
+            {staleBatches.slice(0, 6).map((b) => {
               const pct =
                 b.planned_qty > 0 ? Math.round((b.produced_qty / b.planned_qty) * 100) : 0;
               return (
@@ -353,7 +353,7 @@ function WarRoomProducao() {
             </span>
           </div>
           <ul className="space-y-2 max-h-72 overflow-y-auto">
-            {analysis.late.slice(0, 12).map((o: any) => (
+            {analysis.late.slice(0, 12).map((o) => (
               <li key={o.id} className="flex items-center justify-between text-sm gap-3">
                 <div className="min-w-0">
                   <div className="font-mono text-xs">{o.code}</div>
@@ -382,7 +382,7 @@ function WarRoomProducao() {
             </span>
           </div>
           <ul className="space-y-2 max-h-72 overflow-y-auto">
-            {analysis.stuck.slice(0, 12).map((o: any) => (
+            {analysis.stuck.slice(0, 12).map((o) => (
               <li key={o.id} className="flex items-center justify-between text-sm gap-3">
                 <div className="min-w-0">
                   <div className="font-mono text-xs">{o.code}</div>
