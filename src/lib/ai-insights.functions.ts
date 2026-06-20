@@ -148,6 +148,16 @@ ${
   }
 
   if (persona === "pcp") {
+    type Order = {
+      code: string;
+      stage: string;
+      status: string;
+      quantity: number | null;
+      due_date: string | null;
+      stage_updated_at: string | null;
+      products: { name: string | null; sku: string | null } | null;
+    };
+    type Batch = { code: string; status: string; planned_quantity: number | null; produced_quantity: number | null; updated_at: string };
     const [{ data: orders }, { data: batches }] = await Promise.all([
       supabase
         .from("production_orders")
@@ -159,25 +169,27 @@ ${
         .select("code, status, planned_quantity, produced_quantity, updated_at")
         .limit(80),
     ]);
+    const ordersT = (orders ?? []) as unknown as Order[];
+    const batchesT = (batches ?? []) as unknown as Batch[];
     const now = Date.now();
-    const atrasadas = (orders ?? []).filter(
-      (o: any) => o.stage !== "entregue" && o.due_date && new Date(o.due_date).getTime() < now,
+    const atrasadas = ordersT.filter(
+      (o) => o.stage !== "entregue" && o.due_date && new Date(o.due_date).getTime() < now,
     );
-    const paradas = (orders ?? []).filter(
-      (o: any) =>
-        o.stage !== "entregue" && now - new Date(o.stage_updated_at).getTime() > 5 * 86400000,
+    const paradas = ordersT.filter(
+      (o) =>
+        o.stage !== "entregue" && o.stage_updated_at != null && now - new Date(o.stage_updated_at).getTime() > 5 * 86400000,
     );
     const stageMap = new Map<string, number>();
-    (orders ?? [])
-      .filter((o: any) => o.stage !== "entregue")
-      .forEach((o: any) => stageMap.set(o.stage, (stageMap.get(o.stage) ?? 0) + (o.quantity ?? 0)));
+    ordersT
+      .filter((o) => o.stage !== "entregue")
+      .forEach((o) => stageMap.set(o.stage, (stageMap.get(o.stage) ?? 0) + (o.quantity ?? 0)));
     const filas = [...stageMap.entries()].sort((a, b) => b[1] - a[1]);
 
     return `# Contexto · PCP (atualizado ${todayISO})
-- OPs ativas: ${(orders ?? []).filter((o: any) => o.stage !== "entregue").length}
+- OPs ativas: ${ordersT.filter((o) => o.stage !== "entregue").length}
 - OPs atrasadas: ${atrasadas.length}
 - OPs paradas há mais de 5 dias: ${paradas.length}
-- Lotes em produção: ${(batches ?? []).filter((b: any) => b.status === "em_producao").length}
+- Lotes em produção: ${batchesT.filter((b) => b.status === "em_producao").length}
 
 ## Fila por setor (peças)
 ${filas.map(([s, q]) => `- ${s}: ${q}`).join("\n") || "- sem dados"}
@@ -187,7 +199,7 @@ ${
   atrasadas
     .slice(0, 10)
     .map(
-      (o: any) =>
+      (o) =>
         `- \`${o.code}\` · ${o.products?.name ?? "—"} · setor ${o.stage} · vence ${o.due_date}`,
     )
     .join("\n") || "- nenhuma"
@@ -198,7 +210,7 @@ ${
   paradas
     .slice(0, 10)
     .map(
-      (o: any) =>
+      (o) =>
         `- \`${o.code}\` · ${o.products?.name ?? "—"} · ${o.stage} · sem mover desde ${o.stage_updated_at?.slice(0, 10)}`,
     )
     .join("\n") || "- nenhuma"
