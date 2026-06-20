@@ -97,7 +97,7 @@ async function loadEvents(productId: string, createdAt: string): Promise<Event[]
     title: "Produto criado",
     tone: "default",
   });
-  (protos.data ?? []).forEach((p: any) => {
+  (protos.data ?? []).forEach((p: ProtoRow) => {
     ev.push({
       id: `proto-${p.id}`,
       at: p.updated_at ?? p.created_at,
@@ -107,7 +107,7 @@ async function loadEvents(productId: string, createdAt: string): Promise<Event[]
       tone: p.stage === "aprovado" ? "success" : "primary",
     });
   });
-  (sheets.data ?? []).forEach((s: any) => {
+  (sheets.data ?? []).forEach((s: SheetRow) => {
     ev.push({
       id: `sheet-${s.id}`,
       at: s.updated_at ?? s.created_at,
@@ -116,7 +116,7 @@ async function loadEvents(productId: string, createdAt: string): Promise<Event[]
       tone: s.status === "aprovada" ? "success" : "default",
     });
   });
-  (fits.data ?? []).forEach((f: any) => {
+  (fits.data ?? []).forEach((f: FitRow) => {
     ev.push({
       id: `fit-${f.id}`,
       at: f.scheduled_at ?? f.created_at,
@@ -126,7 +126,7 @@ async function loadEvents(productId: string, createdAt: string): Promise<Event[]
       tone: "primary",
     });
   });
-  (ops.data ?? []).forEach((o: any) => {
+  (ops.data ?? []).forEach((o: OpRow) => {
     ev.push({
       id: `op-${o.id}`,
       at: o.created_at,
@@ -136,7 +136,7 @@ async function loadEvents(productId: string, createdAt: string): Promise<Event[]
       tone: "primary",
     });
   });
-  (logs.data ?? []).forEach((l: any) => {
+  (logs.data ?? []).forEach((l: LogRow) => {
     ev.push({
       id: `log-${l.id}`,
       at: l.created_at,
