@@ -67,6 +67,7 @@ type ProductRow = {
 };
 type OrderRow = {
   id: string;
+  code?: string | null;
   product_id?: string | null;
   status?: string | null;
   stage?: string | null;
@@ -77,6 +78,7 @@ type OrderRow = {
 type InventoryRow = {
   id?: string;
   sku?: string | null;
+  name?: string | null;
   balance?: number | null;
   minimum?: number | null;
   [k: string]: unknown;
