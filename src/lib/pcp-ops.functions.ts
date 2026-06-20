@@ -136,7 +136,6 @@ type SupplierWipBucket = {
   supplier_name: string | null;
   second_line_count: number;
   orders: ServiceOrderRow[];
-  [key: string]: unknown;
 };
 
 /** Terceirizados: WIP por fornecedor + detalhamento de OSs abertas. */
