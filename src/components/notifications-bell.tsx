@@ -24,6 +24,34 @@ import { useState } from "react";
 import { show as showSection, CAT_LABEL, type Cat } from "./notifications-filter";
 
 type Dismissal = { alert_key: string; dismissed_until: string | null; resolved: boolean };
+type StageRow = { key: string; sla_stuck_days: number | null };
+type StuckOpRow = { id: string; code: string; stage: string; stage_updated_at: string };
+type OldProtoRow = { id: string; code: string; stage: string; updated_at: string };
+type PCommentRow = {
+  id: string;
+  prototype_id: string;
+  body: string;
+  created_at: string;
+  author_id: string;
+  prototypes: { code: string | null } | null;
+};
+type POCommentRow = {
+  id: string;
+  production_order_id: string;
+  body: string;
+  created_at: string;
+  author_id: string;
+  production_orders: { code: string | null } | null;
+};
+type MktRow = {
+  id: string;
+  kind: string;
+  title: string;
+  body: string | null;
+  link: string | null;
+  created_at: string;
+  read_at: string | null;
+};
 
 export function NotificationsBell() {
   const { user } = useAuth();
