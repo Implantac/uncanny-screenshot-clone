@@ -212,7 +212,7 @@ function OutsourcedPage() {
   );
 }
 
-function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: string | null }) {
+function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: string | null } }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const sent = Number(os.quantity ?? 0);
