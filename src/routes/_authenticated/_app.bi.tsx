@@ -221,24 +221,26 @@ function BI() {
 
   const ranking = useMemo(() => {
     const map = new Map<string, number>();
-    prodOrd.forEach((p: any) => {
-      const name = p.products?.name ?? "Sem produto";
-      map.set(name, (map.get(name) ?? 0) + Number(p.quantity ?? 0));
-    });
+    (prodOrd as Array<{ products: { name: string } | null; quantity: number | null }>).forEach(
+      (p) => {
+        const name = p.products?.name ?? "Sem produto";
+        map.set(name, (map.get(name) ?? 0) + Number(p.quantity ?? 0));
+      },
+    );
     return Array.from(map.entries())
       .map(([p, v]) => ({ p, v }))
       .sort((a, b) => b.v - a.v)
       .slice(0, 5);
   }, [prodOrd]);
 
-  const devByStatus = groupCount(products, (p: any) => p.status);
-  const protoByStage = groupCount(protos, (p: any) => p.stage);
-  const prodByStage = groupCount(prodOrd, (p: any) => p.stage);
-  const prodByStatus = groupCount(prodOrd, (p: any) => p.status);
-  const qualityByResult = groupCount(quality, (q: any) => q.result);
+  const devByStatus = groupCount(products, (p) => p.status);
+  const protoByStage = groupCount(protos, (p) => p.stage);
+  const prodByStage = groupCount(prodOrd, (p) => p.stage);
+  const prodByStatus = groupCount(prodOrd, (p) => p.status);
+  const qualityByResult = groupCount(quality, (q) => q.result);
   const mktByChannel = useMemo(() => {
     const m = new Map<string, number>();
-    campaigns.forEach((c: any) =>
+    campaigns.forEach((c) =>
       m.set(c.channel ?? "—", (m.get(c.channel ?? "—") ?? 0) + Number(c.budget ?? 0)),
     );
     return [...m.entries()]
@@ -246,8 +248,8 @@ function BI() {
       .sort((a, b) => b.v - a.v);
   }, [campaigns]);
   const mktKpis = useMemo(() => {
-    const budget = campaigns.reduce((s, c: any) => s + Number(c.budget ?? 0), 0);
-    const sentValue = ships.reduce((s, x: any) => s + Number(x.value ?? 0), 0);
+    const budget = campaigns.reduce((s, c) => s + Number(c.budget ?? 0), 0);
+    const sentValue = ships.reduce((s, x) => s + Number(x.value ?? 0), 0);
     return { budget, sentValue, campaigns: campaigns.length, ships: ships.length };
   }, [campaigns, ships]);
 
