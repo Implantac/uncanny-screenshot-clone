@@ -38,7 +38,10 @@ export function TrendRadarPanel() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Select value={horizon} onValueChange={(v) => setHorizon(v as any)}>
+          <Select
+            value={horizon}
+            onValueChange={(v) => setHorizon(v as "now" | "next-season" | "next-year")}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
