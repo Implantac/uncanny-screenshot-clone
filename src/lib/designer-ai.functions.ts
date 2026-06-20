@@ -27,11 +27,20 @@ Receba um briefing curto e devolva APENAS JSON válido neste schema:
 }
 Regras: 4-6 cores coerentes (hex válido), 3-5 tecidos com composição real, 3-6 keywords. Sem texto fora do JSON.`;
 
-function extractJson(s: string): any | null {
+type PaletteItem = { name?: unknown; hex?: unknown; usage?: unknown };
+type FabricItem = { name?: unknown; composition?: unknown; why?: unknown };
+type ParsedSuggestion = {
+  mood?: unknown;
+  palette?: PaletteItem[];
+  fabrics?: FabricItem[];
+  refs?: unknown[];
+};
+
+function extractJson(s: string): ParsedSuggestion | null {
   const m = s.match(/\{[\s\S]*\}/);
   if (!m) return null;
   try {
-    return JSON.parse(m[0]);
+    return JSON.parse(m[0]) as ParsedSuggestion;
   } catch {
     return null;
   }
