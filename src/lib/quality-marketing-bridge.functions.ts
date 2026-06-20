@@ -231,9 +231,3 @@ export const getMarketingBridgeAnalysis = createServerFn({ method: "POST" })
     };
   });
 
-// helper para typecheck
-declare module "./quality-marketing-bridge.functions" {
-  interface AggExtras {
-    inspTotal: number;
-  }
-}
