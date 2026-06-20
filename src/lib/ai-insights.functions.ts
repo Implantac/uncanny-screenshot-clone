@@ -291,7 +291,7 @@ ${
   return `# Contexto · Marketing (espelho ERP, atualizado ${todayISO})
 - Receita últimos 7 dias: ${fmt(rev7)}
 - Receita últimos 30 dias: ${fmt(rev30)}
-- Pedidos no período: ${(sales30 ?? []).length}
+- Pedidos no período: ${sales30.length}
 
 ## Top 10 produtos por receita (30d)
 ${topProducts.map(([sku, v]) => `- \`${sku}\` · ${v.units} un · ${fmt(v.revenue)}`).join("\n") || "- sem vendas"}
