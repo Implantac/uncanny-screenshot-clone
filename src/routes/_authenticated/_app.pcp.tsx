@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { PcpMrpPanel } from "@/components/pcp-mrp-panel";
 import { toast } from "sonner";
 
 const STATUS_VALS = ["aguardando", "em_producao", "concluida", "atrasada", "cancelada"] as const;
@@ -685,6 +686,10 @@ function PCP() {
               <Workflow className="size-4 mr-2" />
               O.S. Terceirizados
             </TabsTrigger>
+            <TabsTrigger value="mrp">
+              <Package className="size-4 mr-2" />
+              Materiais (MRP)
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="kanban">
@@ -891,6 +896,10 @@ function PCP() {
               products={products}
               ownerId={user?.id ?? null}
             />
+          </TabsContent>
+
+          <TabsContent value="mrp">
+            <PcpMrpPanel />
           </TabsContent>
         </Tabs>
       )}
