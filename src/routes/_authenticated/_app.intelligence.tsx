@@ -457,8 +457,9 @@ function ProductionTab({
           (o) => o.product_id === p.id && o.status !== "concluida" && o.status !== "cancelada",
         )
         .reduce((s, o) => s + (o.quantity || 0), 0);
-      const stock = stockBySku.get(p.sku) ?? 0;
-      const minStock = minBySku.get(p.sku) ?? Math.round(sold30 * 0.5);
+      const pSku = p.sku ?? "";
+      const stock = stockBySku.get(pSku) ?? 0;
+      const minStock = minBySku.get(pSku) ?? Math.round(sold30 * 0.5);
       const maxStock = Math.max(minStock + 1, Math.round(sold30 * 1.5) || minStock + 10);
       const reorder = Math.round(minStock * 1.4);
       const daily = sold30 / 30;
