@@ -45,7 +45,18 @@ const STAGES_ACTIVE: StageKey[] = ["solicitado", "em_confeccao", "em_prova"];
 export const getDevIntelligence = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<DevIntelligence> => {
-    const sb = context.supabase;
+    // NOTE: `prototype_stage_log` table and several columns referenced below
+    // (prototypes.name, prototypes.stage_updated_at) are not present in the
+    // current generated Database types. Until those tables/columns are
+    // re-introduced, we type the client as `unknown` and rely on runtime
+    // shapes asserted right after the queries.
+    const sb = context.supabase as unknown as {
+      from: (t: string) => {
+        select: (cols: string) => {
+          order?: (col: string, opts?: { ascending: boolean }) => Promise<{ data: unknown[] | null }>;
+        } & Promise<{ data: unknown[] | null }>;
+      };
+    };
 
     const [{ data: logs }, { data: protos }, { data: collections }] =
       await Promise.all([
