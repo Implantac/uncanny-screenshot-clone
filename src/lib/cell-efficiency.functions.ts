@@ -104,7 +104,7 @@ export const getCellEfficiency = createServerFn({ method: "GET" })
 
       cells.push({
         supplierId: sid,
-        supplierName: (supName.get(sid) as string) ?? "Sem nome",
+        supplierName: supName.get(sid) ?? "Sem nome",
         declaredPerDay,
         observedPerDay: Math.round(observedPerDay * 10) / 10,
         efficiencyPct: Math.round(eff),
