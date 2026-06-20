@@ -32,10 +32,10 @@ export const lookupCommandRefs = createServerFn({ method: "POST" })
     ]);
 
     return {
-      products: (products ?? []).map((p: any) => ({
+      products: (products ?? []).map((p) => ({
         sku: p.sku as string,
-        name: p.name as string,
+        name: p.name,
       })),
-      suppliers: (suppliers ?? []).map((s: any) => s.name as string),
+      suppliers: (suppliers ?? []).map((s) => s.name),
     };
   });
