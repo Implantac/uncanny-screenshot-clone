@@ -3,8 +3,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { generateText } from "ai";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
 type Persona = "development" | "pcp" | "marketing" | "command";
+type DB = SupabaseClient<Database>;
 
 const PERSONAS: Record<Persona, { label: string; system: string }> = {
   development: {
