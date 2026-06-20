@@ -877,7 +877,7 @@ function PcpKanban({ orders, products }: any) {
                 </div>
                 <div className="space-y-2 min-h-[40px]">
                   {items.map((o) => {
-                    const p = productMap.get(o.product_id);
+                    const p = productMap.get(o.product_id ?? "");
                     return (
                       <div
                         key={o.id}
@@ -1049,7 +1049,7 @@ function ProductScore({ products, sales, inventory }: any) {
   const scored = (products as ProductRow[])
     .map((p) => {
       const sAgg = salesByProduct.get(p.id) ?? { units: 0, revenue: 0 };
-      const stock = stockBySku.get(p.sku) ?? 0;
+      const stock = stockBySku.get(p.sku ?? "") ?? 0;
       const sellPrice = Number(p.sell_price || 0);
       const costPrice = Number(p.cost_price || 0);
       const margin = sellPrice > 0 ? ((sellPrice - costPrice) / sellPrice) * 100 : 0;
@@ -2103,7 +2103,7 @@ function RestockEngine({
   const rows = useMemo(() => {
     return inventory
       .map((i) => {
-        const velocity = velocityBySku.get(i.sku) ?? 0;
+        const velocity = velocityBySku.get(i.sku ?? "") ?? 0;
         const balance = Number(i.balance || 0);
         const minimum = Number(i.minimum || 0);
         const daysCover = velocity > 0 ? balance / velocity : balance > 0 ? 999 : 0;
@@ -2113,10 +2113,10 @@ function RestockEngine({
         let level: "critical" | "warning" | "ok" = "ok";
         if (balance <= minimum || daysCover < LEAD_TIME) level = "critical";
         else if (daysCover < COVER_TARGET) level = "warning";
-        const product = productBySku.get(i.sku);
+        const product = productBySku.get(i.sku ?? "");
         return { ...i, velocity, daysCover, suggested, level, productName: product?.name };
       })
-      .sort((a: any, b: any) => {
+      .sort((a, b) => {
         const order: Record<string, number> = { critical: 0, warning: 1, ok: 2 };
         if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
         return b.suggested - a.suggested;
