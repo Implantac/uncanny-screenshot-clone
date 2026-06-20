@@ -86,7 +86,7 @@ export function QuickPassButton({
       const { data, error } = await supabase
         .from("production_order_grid")
         .select(
-          "id, quantity, variant_id, product_variants:variant_id(sku, sizes:size_id(name), colors:color_id(name))",
+          "id, quantity, variant_id, product_variants:variant_id(sku, sizes:size_id(label), colors:color_id(name))",
         )
         .eq("production_order_id", orderId);
       if (error) throw error;
