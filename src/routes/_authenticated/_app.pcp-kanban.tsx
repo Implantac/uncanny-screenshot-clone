@@ -24,6 +24,7 @@ import { DelayPredictionPanel } from "@/components/delay-prediction-panel";
 import { LoteReferencesDrawer } from "@/components/lote-references-drawer";
 import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-drawer";
 import { SamEfficiencyPanel } from "@/components/sam-efficiency-panel";
+import { PcpCapacityTocPanel } from "@/components/pcp-capacity-toc-panel";
 import { LoteSplitDialog } from "@/components/lote-split-dialog";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
