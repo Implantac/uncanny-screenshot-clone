@@ -303,7 +303,7 @@ export function QuickPassButton({
                   {gridQ.data?.map((g: GridRow) => {
                     const v = g.product_variants;
                     const label =
-                      [v?.sizes?.name, v?.colors?.name].filter(Boolean).join(" · ") ||
+                      [v?.sizes?.label, v?.colors?.name].filter(Boolean).join(" · ") ||
                       v?.sku ||
                       "—";
                     const sel = gridSel[g.variant_id] ?? 0;
