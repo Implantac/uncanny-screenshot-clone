@@ -34,7 +34,7 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
         .neq("status", "cancelada"),
       supabase
         .from("prototypes")
-        .select("id, code, name, stage, updated_at")
+        .select("id, code, stage, updated_at")
         .eq("owner_id", userId)
         .not("stage", "in", '("aprovado","rejeitado")')
         .lt("updated_at", d7),
@@ -65,7 +65,7 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
       product_id: string | null;
       products: { name: string | null } | { name: string | null }[] | null;
     };
-    type ProtoRow = { id: string; code: string; name: string | null; stage: string; updated_at: string };
+    type ProtoRow = { id: string; code: string; stage: string; updated_at: string };
     type CapaRow = { id: string; title: string | null; severity: string | null; status: string; due_date: string | null };
     type CampRow = { id: string; name: string; status: string; roas: number | null; investment: number | null };
     type CostRow = { product_id: string | null; cost_price: number | null; products: { name: string | null } | { name: string | null }[] | null };
@@ -110,7 +110,7 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
         module: "desenvolvimento",
         severity: days > 21 ? "critica" : days > 14 ? "alta" : "media",
         title: `Protótipo ${p.code} parado`,
-        detail: `${p.name ?? ""} · ${p.stage}`,
+        detail: `${p.stage}`,
         metric: `${days}d sem mover`,
         action: { kind: "open_route", label: "Destravar", route: "/prototipos", refId: p.id },
       });

@@ -119,7 +119,7 @@ export async function buildFashionContext(): Promise<FashionContext> {
     .slice(0, 8)
     .map((p) => ({
       code: p.code,
-      status: p.status,
+      status: p.status ?? "",
       quantity: Number(p.quantity ?? 0),
       due: p.due_date ?? undefined,
     }));
