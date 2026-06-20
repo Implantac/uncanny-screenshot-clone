@@ -38,6 +38,11 @@ export const suggestShipments = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");
     const supabase = context.supabase;
 
+    type ProductRow = { id: string; name: string; sku: string | null; category: string | null };
+    type InfluencerRow = { id: string; nome: string; cidade: string | null; estado: string | null; segmento: string | null; seguidores: number | null; engajamento: number | string | null };
+    type SaleRow = { product_ref: string | null; region: string | null; quantity: number | null; total_value: number | string | null };
+    type HistoryRow = { influencer_id: string; product_id: string; sales_before: number | string | null; sales_after: number | string | null; region: string | null };
+
     const [
       { data: collection },
       { data: products },
@@ -71,11 +76,13 @@ export const suggestShipments = createServerFn({ method: "POST" })
     ]);
 
     if (!collection) throw new Error("Coleção não encontrada");
-    if (!products?.length) return { suggestions: [] };
-    if (!influencers?.length) return { suggestions: [] };
+    const productsT = (products ?? []) as unknown as ProductRow[];
+    const influencersT = (influencers ?? []) as unknown as InfluencerRow[];
+    if (!productsT.length) return { suggestions: [] };
+    if (!influencersT.length) return { suggestions: [] };
 
     const salesByRegion = new Map<string, number>();
-    (sales ?? []).forEach((s: any) => {
+    ((sales ?? []) as unknown as SaleRow[]).forEach((s) => {
       const k = (s.region ?? "—") as string;
       salesByRegion.set(k, (salesByRegion.get(k) ?? 0) + Number(s.total_value ?? 0));
     });
@@ -84,10 +91,10 @@ export const suggestShipments = createServerFn({ method: "POST" })
 ${collection.name} · ${collection.season ?? ""} ${collection.year ?? ""}
 
 # Produtos da coleção (id · sku · nome · categoria)
-${(products ?? []).map((p: any) => `- ${p.id} · \`${p.sku ?? "—"}\` · ${p.name} · ${p.category ?? "—"}`).join("\n")}
+${productsT.map((p) => `- ${p.id} · \`${p.sku ?? "—"}\` · ${p.name} · ${p.category ?? "—"}`).join("\n")}
 
 # Influenciadores (id · nome · cidade/UF · segmento · seguidores · engaj%)
-${(influencers ?? []).map((i: any) => `- ${i.id} · ${i.nome} · ${i.cidade ?? "—"}/${i.estado ?? "—"} · ${i.segmento ?? "—"} · ${i.seguidores} · ${Number(i.engajamento ?? 0).toFixed(1)}`).join("\n")}
+${influencersT.map((i) => `- ${i.id} · ${i.nome} · ${i.cidade ?? "—"}/${i.estado ?? "—"} · ${i.segmento ?? "—"} · ${i.seguidores ?? 0} · ${Number(i.engajamento ?? 0).toFixed(1)}`).join("\n")}
 
 # Receita por região últimos 90 dias
 ${
@@ -100,10 +107,10 @@ ${
 
 # Histórico de envios anteriores (uplift = depois - antes)
 ${
-  (history ?? [])
+  ((history ?? []) as unknown as HistoryRow[])
     .slice(0, 60)
     .map(
-      (h: any) =>
+      (h) =>
         `- inf=${h.influencer_id} prod=${h.product_id} região=${h.region ?? "—"} uplift=${(Number(h.sales_after ?? 0) - Number(h.sales_before ?? 0)).toFixed(0)}`,
     )
     .join("\n") || "- nenhum"
@@ -128,15 +135,15 @@ ${
       /* ignore */
     }
 
-    const pMap = new Map((products ?? []).map((p: any) => [p.id, p]));
-    const iMap = new Map((influencers ?? []).map((i: any) => [i.id, i]));
+    const pMap = new Map<string, ProductRow>(productsT.map((p) => [p.id, p]));
+    const iMap = new Map<string, InfluencerRow>(influencersT.map((i) => [i.id, i]));
 
     const suggestions: ShipmentSuggestion[] = (parsed.suggestions ?? [])
       .filter((s) => pMap.has(s.product_id) && iMap.has(s.influencer_id))
       .slice(0, 8)
       .map((s) => {
-        const p: any = pMap.get(s.product_id);
-        const i: any = iMap.get(s.influencer_id);
+        const p = pMap.get(s.product_id)!;
+        const i = iMap.get(s.influencer_id)!;
         return {
           product_id: s.product_id,
           product_name: p.name,
