@@ -2285,6 +2285,7 @@ export type Database = {
           notes: string | null
           outsourced: boolean
           owner_id: string
+          parent_order_id: string | null
           priority: number
           product_id: string | null
           progress: number
@@ -2305,6 +2306,7 @@ export type Database = {
           notes?: string | null
           outsourced?: boolean
           owner_id: string
+          parent_order_id?: string | null
           priority?: number
           product_id?: string | null
           progress?: number
@@ -2325,6 +2327,7 @@ export type Database = {
           notes?: string | null
           outsourced?: boolean
           owner_id?: string
+          parent_order_id?: string | null
           priority?: number
           product_id?: string | null
           progress?: number
@@ -2337,6 +2340,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "production_orders_parent_order_id_fkey"
+            columns: ["parent_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "production_orders_product_id_fkey"
             columns: ["product_id"]

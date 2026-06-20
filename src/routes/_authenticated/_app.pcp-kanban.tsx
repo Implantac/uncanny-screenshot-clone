@@ -23,6 +23,8 @@ import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { DelayPredictionPanel } from "@/components/delay-prediction-panel";
 import { LoteReferencesDrawer } from "@/components/lote-references-drawer";
 import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-drawer";
+import { SamEfficiencyPanel } from "@/components/sam-efficiency-panel";
+import { LoteSplitDialog } from "@/components/lote-split-dialog";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
@@ -275,6 +277,8 @@ function PcpKanban() {
 
       <DelayPredictionPanel />
 
+      <SamEfficiencyPanel />
+
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-medium">
           <Sparkles className="size-4 text-primary" /> Próxima melhor ação
@@ -493,6 +497,15 @@ function PcpKanban() {
                               ownerId={o.owner_id}
                               stage={col.key}
                             />
+                            {o.quantity > 1 && (
+                              <LoteSplitDialog
+                                orderId={o.id}
+                                orderCode={o.code}
+                                totalQty={o.quantity}
+                                defaultSupplierId={null}
+                                defaultDueDate={o.due_date}
+                              />
+                            )}
                             <span className={`text-[9px] px-1.5 py-0.5 rounded border ${pri.tone}`}>
                               {pri.label}
                             </span>
