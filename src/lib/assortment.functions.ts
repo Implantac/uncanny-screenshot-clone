@@ -202,14 +202,14 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
 
     // OTB (Open-To-Buy) per family: target units (across all channels) − committed via production_orders
     const familyByProduct = new Map<string, string | null>(
-      (cpRows ?? []).map((cp: any) => [cp.product_id, cp.family_id]),
+      ((cpRows ?? []) as CpRow[]).map((cp) => [cp.product_id, cp.family_id]),
     );
     const committedByFamily = new Map<string | null, number>();
-    for (const po of poRows ?? []) {
-      const pid = (po as any).product_id as string | null;
+    for (const po of ((poRows ?? []) as PoRow[])) {
+      const pid = po.product_id;
       if (!pid || !familyByProduct.has(pid)) continue; // outside this collection
       const fid = familyByProduct.get(pid) ?? null;
-      committedByFamily.set(fid, (committedByFamily.get(fid) ?? 0) + Number((po as any).quantity ?? 0));
+      committedByFamily.set(fid, (committedByFamily.get(fid) ?? 0) + Number(po.quantity ?? 0));
     }
     const targetByFamily = new Map<string | null, number>();
     for (const c of cells) {
