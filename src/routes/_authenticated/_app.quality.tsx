@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ShieldCheck, AlertTriangle, Clock, Truck } from "lucide-react";
 import { QualityIntelligencePanel } from "@/components/quality-intelligence-panel";
+import { QualityFpyPanel } from "@/components/quality-fpy-panel";
 import { CapaPanel } from "@/components/capa-panel";
 import { CellEfficiencyPanel } from "@/components/cell-efficiency-panel";
 
@@ -156,6 +157,8 @@ function Quality() {
           </CardHeader>
         </Card>
       </div>
+
+      <QualityFpyPanel />
 
       <QualityIntelligencePanel />
 
