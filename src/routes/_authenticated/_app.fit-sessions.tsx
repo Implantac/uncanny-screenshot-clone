@@ -54,7 +54,7 @@ function Page() {
   const sessions = useQuery({
     queryKey: ["fit-sessions"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("fit_sessions")
         .select("*")
         .order("session_date", { ascending: false });
@@ -67,10 +67,10 @@ function Page() {
     queryKey: ["fit-comments", selected],
     enabled: !!selected,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("fit_session_comments")
         .select("*")
-        .eq("fit_session_id", selected)
+        .eq("fit_session_id", selected!)
         .order("created_at");
       if (error) throw error;
       return (data ?? []) as Comment[];
@@ -79,7 +79,7 @@ function Page() {
 
   const addSession = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("fit_sessions")
         .insert({ owner_id: user!.id, ...sf });
       if (error) throw error;
@@ -94,9 +94,9 @@ function Page() {
 
   const addComment = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("fit_session_comments")
-        .insert({ owner_id: user!.id, fit_session_id: selected, ...cf });
+        .insert({ owner_id: user!.id, fit_session_id: selected!, ...cf });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -107,7 +107,7 @@ function Page() {
 
   const toggle = useMutation({
     mutationFn: async (c: Comment) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("fit_session_comments")
         .update({ resolved: !c.resolved })
         .eq("id", c.id);
@@ -118,10 +118,10 @@ function Page() {
 
   const updateStatus = useMutation({
     mutationFn: async (status: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("fit_sessions")
         .update({ status })
-        .eq("id", selected);
+        .eq("id", selected!);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["fit-sessions"] }),

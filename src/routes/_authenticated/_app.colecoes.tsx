@@ -366,7 +366,7 @@ function ColecoesPage() {
         }
       > = {};
       const now = Date.now();
-      (data ?? []).forEach((o: any) => {
+      (data ?? []).forEach((o) => {
         if (!o.product_id) return;
         const m = (map[o.product_id] ??= { qty: 0, done: 0, stages: {}, late: 0, status: {} });
         m.qty += o.quantity ?? 0;
@@ -445,7 +445,8 @@ function ColecoesPage() {
         .not("product_id", "is", null);
       if (error) throw error;
       const map: Record<string, { any: boolean; approved: boolean }> = {};
-      (data ?? []).forEach((p: any) => {
+      (data ?? []).forEach((p) => {
+        if (!p.product_id) return;
         const e = (map[p.product_id] ??= { any: false, approved: false });
         e.any = true;
         if (p.stage === "aprovado") e.approved = true;
@@ -586,7 +587,7 @@ function ColecoesPage() {
         progress: 0,
         parent_id: c.parent_id,
         cover_path: c.cover_path,
-      } as any);
+      } as never);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -786,7 +787,7 @@ function ColecoesPage() {
         </div>
         <div className="flex gap-2">
           <LinesDialogButton />
-          <CollectionCompareDialog collections={collections as any} />
+          <CollectionCompareDialog collections={collections} />
           <Button onClick={openCreate} className="gap-2">
             <Plus className="size-4" /> Nova coleção
           </Button>
@@ -1727,11 +1728,11 @@ function ColecoesPage() {
                   {selectedProducts.length ? (
                     <div className="space-y-2">
                       {selectedProducts.map((p) => {
-                        const m = (productionByProduct as any)[p.id];
+                        const m = (productionByProduct as Record<string, { qty: number; done: number; stages: Record<string, number>; late: number; status: Record<string, number> }>)[p.id];
                         const pct =
                           m && m.qty > 0 ? Math.min(100, Math.round((m.done / m.qty) * 100)) : 0;
                         const topStage = m
-                          ? Object.entries(m.stages).sort((a: any, b: any) => b[1] - a[1])[0]
+                          ? Object.entries(m.stages).sort((a, b) => Number(b[1]) - Number(a[1]))[0]
                           : null;
                         return (
                           <div
@@ -2000,7 +2001,7 @@ function CollectionDialog({
       if (editing) {
         const { error } = await supabase
           .from("collections")
-          .update(payload as any)
+          .update(payload as never)
           .eq("id", editing.id);
         if (error) throw error;
         if (coverPath && editing.cover_path) {
@@ -2009,7 +2010,7 @@ function CollectionDialog({
       } else {
         const { error } = await supabase
           .from("collections")
-          .insert({ ...payload, owner_id: userId } as any);
+          .insert({ ...payload, owner_id: userId } as never);
         if (error) throw error;
       }
     },
