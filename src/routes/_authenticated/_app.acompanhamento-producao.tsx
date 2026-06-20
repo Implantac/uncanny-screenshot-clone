@@ -1169,12 +1169,12 @@ function AcompanhamentoProducao() {
                   onClick={() => setZoomCol(opened ? null : col.key)}
                   className="px-3 py-2 border-b border-border text-left hover:bg-muted/50 rounded-t-xl"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className={`font-semibold ${tvMode ? "text-base" : "text-sm"}`}>
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <span className={`font-semibold truncate min-w-0 ${tvMode ? "text-sm" : "text-xs"}`}>
                       {col.label}
                     </span>
-                    <span className="text-[10px] tabular-nums text-muted-foreground">
-                      {items.length} · {qty} pç
+                    <span className="shrink-0 whitespace-nowrap text-[10px] tabular-nums text-muted-foreground">
+                      {items.length}·{qty}
                     </span>
                   </div>
                   {lateInCol > 0 && (
