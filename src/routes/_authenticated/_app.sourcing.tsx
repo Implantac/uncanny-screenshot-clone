@@ -55,7 +55,7 @@ function Page() {
   const rfqs = useQuery({
     queryKey: ["rfqs"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("rfq_requests")
         .select("*")
         .order("created_at", { ascending: false });
@@ -68,10 +68,10 @@ function Page() {
     queryKey: ["rfq-quotes", selected],
     enabled: !!selected,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("rfq_quotes")
         .select("*")
-        .eq("rfq_id", selected)
+        .eq("rfq_id", selected!)
         .order("unit_price");
       if (error) throw error;
       return (data ?? []) as Quote[];
@@ -80,7 +80,7 @@ function Page() {
 
   const addRfq = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("rfq_requests")
         .insert({ owner_id: user!.id, ...rfqForm });
       if (error) throw error;
@@ -95,9 +95,9 @@ function Page() {
 
   const addQuote = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("rfq_quotes")
-        .insert({ owner_id: user!.id, rfq_id: selected, ...quoteForm });
+        .insert({ owner_id: user!.id, rfq_id: selected!, ...quoteForm });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -109,9 +109,9 @@ function Page() {
 
   const award = useMutation({
     mutationFn: async (q: Quote) => {
-      await (supabase as any).from("rfq_quotes").update({ awarded: false }).eq("rfq_id", q.rfq_id);
-      await (supabase as any).from("rfq_quotes").update({ awarded: true }).eq("id", q.id);
-      await (supabase as any)
+      await supabase.from("rfq_quotes").update({ awarded: false }).eq("rfq_id", q.rfq_id);
+      await supabase.from("rfq_quotes").update({ awarded: true }).eq("id", q.id);
+      await supabase
         .from("rfq_requests")
         .update({ awarded_quote_id: q.id, status: "decidida" })
         .eq("id", q.rfq_id);

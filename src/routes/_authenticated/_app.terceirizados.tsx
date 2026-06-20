@@ -17,6 +17,15 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+type Supplier = NonNullable<Awaited<ReturnType<typeof listOutsourcedWip>>>[number] & {
+  open_os_count?: number;
+  open_lot_count?: number;
+  distinct_refs?: number;
+  max_days_at_supplier?: number;
+  owner_id?: string;
+};
+type OrderRow = Supplier["orders"][number];
+
 const lineLabel = (line?: string | null) => (line === "segunda_linha" ? "2ª linha" : "1ª linha");
 
 export const Route = createFileRoute("/_authenticated/_app/terceirizados")({
@@ -34,7 +43,7 @@ function OutsourcedPage() {
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
   const totals = (data ?? []).reduce(
-    (acc: any, s: any) => ({
+    (acc: { pieces: number; lots: number; refs: number; suppliers: number }, s: Supplier) => ({
       pieces: acc.pieces + (s.pieces_at_supplier ?? 0),
       lots: acc.lots + (s.open_lot_count ?? 0),
       refs: acc.refs + (s.distinct_refs ?? 0),
@@ -45,7 +54,7 @@ function OutsourcedPage() {
   const criticalSuppliers = useMemo(
     () =>
       (data ?? [])
-        .filter((s: any) => (s.max_days_at_supplier ?? 0) > 15 || (s.second_line_count ?? 0) > 0)
+        .filter((s: Supplier) => (s.max_days_at_supplier ?? 0) > 15 || (s.second_line_count ?? 0) > 0)
         .slice(0, 3),
     [data],
   );
@@ -82,7 +91,7 @@ function OutsourcedPage() {
         <div className="text-sm font-medium">Plano de cobrança</div>
         <div className="mt-1 text-sm text-muted-foreground">
           {criticalSuppliers.length
-            ? `Cobrar ${criticalSuppliers.map((s: any) => s.supplier_name ?? String(s.supplier_id).slice(0, 8)).join(", ")}: há peças antigas ou 2ª linha em campo.`
+            ? `Cobrar ${criticalSuppliers.map((s: Supplier) => s.supplier_name ?? String(s.supplier_id).slice(0, 8)).join(", ")}: há peças antigas ou 2ª linha em campo.`
             : "Nenhuma facção crítica agora. Continue acompanhando dias em casa e recebimentos parciais."}
         </div>
       </div>
@@ -96,19 +105,20 @@ function OutsourcedPage() {
             Nenhuma OS aberta em terceirizados.
           </div>
         )}
-        {data?.map((s: any) => {
-          const isOpen = !!open[s.supplier_id];
+        {data?.map((s: Supplier) => {
+          const sid = s.supplier_id ?? "";
+          const isOpen = !!open[sid];
           const lateDays = s.max_days_at_supplier ?? 0;
           return (
-            <div key={s.supplier_id} className="border-b border-border last:border-0">
+            <div key={sid} className="border-b border-border last:border-0">
               <button
-                onClick={() => setOpen((o) => ({ ...o, [s.supplier_id]: !o[s.supplier_id] }))}
+                onClick={() => setOpen((o) => ({ ...o, [sid]: !o[sid] }))}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/20 text-left"
               >
                 {isOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">
-                    {s.supplier_name ?? s.supplier_id.slice(0, 8)}
+                    {s.supplier_name ?? sid.slice(0, 8)}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {s.open_os_count} OS · {s.open_lot_count} lote(s) · {s.distinct_refs} ref(s)
@@ -151,7 +161,7 @@ function OutsourcedPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {s.orders.map((o: any) => (
+                      {s.orders.map((o: OrderRow) => (
                         <tr key={o.id} className="border-t border-border/50">
                           <td className="py-2 font-mono">{o.code}</td>
                           <td className="py-2">
@@ -203,7 +213,7 @@ function OutsourcedPage() {
   );
 }
 
-function ReturnButton({ os }: { os: any }) {
+function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: string | null } }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const sent = Number(os.quantity ?? 0);
@@ -360,7 +370,7 @@ function ReturnButton({ os }: { os: any }) {
   );
 }
 
-function Kpi({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
+function Kpi({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string | number }) {
   return (
     <div className="glass rounded-xl p-4">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">

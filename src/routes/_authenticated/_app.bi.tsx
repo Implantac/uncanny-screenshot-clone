@@ -168,12 +168,12 @@ function BI() {
   const campaignsQ = useQuery({
     queryKey: ["bi", "campaigns"],
     queryFn: async () =>
-      (await supabase.from("marketing_campaigns").select("status,budget,channel")).data ?? [],
+      (await supabase.from("marketing_campaigns").select("status,investment,channel")).data ?? [],
   });
   const shipsQ = useQuery({
     queryKey: ["bi", "ships"],
     queryFn: async () =>
-      (await supabase.from("influencer_shipments").select("status,value")).data ?? [],
+      (await supabase.from("influencer_shipments").select("status,quantity")).data ?? [],
   });
 
   const orders = useMemo(() => ordersQ.data ?? [], [ordersQ.data]);
@@ -221,33 +221,35 @@ function BI() {
 
   const ranking = useMemo(() => {
     const map = new Map<string, number>();
-    prodOrd.forEach((p: any) => {
-      const name = p.products?.name ?? "Sem produto";
-      map.set(name, (map.get(name) ?? 0) + Number(p.quantity ?? 0));
-    });
+    (prodOrd as Array<{ products: { name: string } | null; quantity: number | null }>).forEach(
+      (p) => {
+        const name = p.products?.name ?? "Sem produto";
+        map.set(name, (map.get(name) ?? 0) + Number(p.quantity ?? 0));
+      },
+    );
     return Array.from(map.entries())
       .map(([p, v]) => ({ p, v }))
       .sort((a, b) => b.v - a.v)
       .slice(0, 5);
   }, [prodOrd]);
 
-  const devByStatus = groupCount(products, (p: any) => p.status);
-  const protoByStage = groupCount(protos, (p: any) => p.stage);
-  const prodByStage = groupCount(prodOrd, (p: any) => p.stage);
-  const prodByStatus = groupCount(prodOrd, (p: any) => p.status);
-  const qualityByResult = groupCount(quality, (q: any) => q.result);
+  const devByStatus = groupCount(products, (p) => p.status);
+  const protoByStage = groupCount(protos, (p) => p.stage);
+  const prodByStage = groupCount(prodOrd, (p) => p.stage);
+  const prodByStatus = groupCount(prodOrd, (p) => p.status);
+  const qualityByResult = groupCount(quality, (q) => q.result);
   const mktByChannel = useMemo(() => {
     const m = new Map<string, number>();
-    campaigns.forEach((c: any) =>
-      m.set(c.channel ?? "—", (m.get(c.channel ?? "—") ?? 0) + Number(c.budget ?? 0)),
+    campaigns.forEach((c) =>
+      m.set(c.channel ?? "—", (m.get(c.channel ?? "—") ?? 0) + Number(c.investment ?? 0)),
     );
     return [...m.entries()]
       .map(([name, v]) => ({ name, v: Math.round(v) }))
       .sort((a, b) => b.v - a.v);
   }, [campaigns]);
   const mktKpis = useMemo(() => {
-    const budget = campaigns.reduce((s, c: any) => s + Number(c.budget ?? 0), 0);
-    const sentValue = ships.reduce((s, x: any) => s + Number(x.value ?? 0), 0);
+    const budget = campaigns.reduce((s, c) => s + Number(c.investment ?? 0), 0);
+    const sentValue = ships.reduce((s, x) => s + Number(x.quantity ?? 0), 0);
     return { budget, sentValue, campaigns: campaigns.length, ships: ships.length };
   }, [campaigns, ships]);
 
@@ -524,9 +526,9 @@ function BI() {
               <div className="text-2xl font-semibold mt-1 tabular-nums">{mktKpis.ships}</div>
             </div>
             <div className="glass rounded-xl p-5">
-              <div className="text-xs text-muted-foreground">Valor enviado</div>
+              <div className="text-xs text-muted-foreground">Peças enviadas</div>
               <div className="text-2xl font-semibold mt-1 tabular-nums">
-                {BRL(mktKpis.sentValue)}
+                {mktKpis.sentValue.toLocaleString("pt-BR")}
               </div>
             </div>
           </div>
