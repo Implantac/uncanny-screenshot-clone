@@ -92,7 +92,7 @@ export function NotificationsBell() {
           .limit(30),
         supabase
           .from("prototypes")
-          .select("id, code, name, stage, updated_at")
+          .select("id, code, stage, updated_at")
           .not("stage", "in", "(aprovado,reprovado)")
           .lt("updated_at", oldProtoCutoff)
           .order("updated_at", { ascending: true })
