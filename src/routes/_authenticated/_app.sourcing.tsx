@@ -97,7 +97,7 @@ function Page() {
     mutationFn: async () => {
       const { error } = await supabase
         .from("rfq_quotes")
-        .insert({ owner_id: user!.id, rfq_id: selected, ...quoteForm });
+        .insert({ owner_id: user!.id, rfq_id: selected!, ...quoteForm });
       if (error) throw error;
     },
     onSuccess: () => {
