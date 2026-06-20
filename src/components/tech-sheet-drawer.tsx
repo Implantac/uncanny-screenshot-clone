@@ -104,7 +104,7 @@ export function TechSheetDrawer({
           {productId && (
             <Link
               to="/ficha-tecnica"
-              search={{ product: productId } as any}
+              search={{ product: productId }}
               className="text-[10px] inline-flex items-center gap-1 px-2 py-1 rounded border border-border hover:bg-muted h-fit"
               title="Abrir ficha completa"
             >
@@ -122,7 +122,7 @@ export function TechSheetDrawer({
               <div className="mt-2">
                 <Link
                   to="/ficha-tecnica"
-                  search={{ product: productId } as any}
+                  search={{ product: productId }}
                   className="text-primary hover:underline text-xs"
                 >
                   Criar ficha técnica →

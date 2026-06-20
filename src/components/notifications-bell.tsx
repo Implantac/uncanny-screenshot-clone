@@ -24,6 +24,34 @@ import { useState } from "react";
 import { show as showSection, CAT_LABEL, type Cat } from "./notifications-filter";
 
 type Dismissal = { alert_key: string; dismissed_until: string | null; resolved: boolean };
+type StageRow = { key: string; sla_stuck_days: number | null };
+type StuckOpRow = { id: string; code: string; stage: string; stage_updated_at: string };
+type OldProtoRow = { id: string; code: string; stage: string; updated_at: string };
+type PCommentRow = {
+  id: string;
+  prototype_id: string;
+  body: string;
+  created_at: string;
+  author_id: string;
+  prototypes: { code: string | null } | null;
+};
+type POCommentRow = {
+  id: string;
+  production_order_id: string;
+  body: string;
+  created_at: string;
+  author_id: string;
+  production_orders: { code: string | null } | null;
+};
+type MktRow = {
+  id: string;
+  kind: string;
+  title: string;
+  body: string | null;
+  link: string | null;
+  created_at: string;
+  read_at: string | null;
+};
 
 export function NotificationsBell() {
   const { user } = useAuth();
@@ -64,7 +92,7 @@ export function NotificationsBell() {
           .limit(30),
         supabase
           .from("prototypes")
-          .select("id, code, name, stage, updated_at")
+          .select("id, code, stage, updated_at")
           .not("stage", "in", "(aprovado,reprovado)")
           .lt("updated_at", oldProtoCutoff)
           .order("updated_at", { ascending: true })
@@ -96,17 +124,17 @@ export function NotificationsBell() {
           : Promise.resolve({ data: [] as Dismissal[] }),
       ]);
       const slaByStage = new Map<string, number>(
-        (stages ?? []).map((s: any) => [s.key, Number(s.sla_stuck_days ?? 3)]),
+        ((stages ?? []) as StageRow[]).map((s) => [s.key, Number(s.sla_stuck_days ?? 3)]),
       );
-      const stuckFiltered = (stuckOps ?? [])
-        .filter((o: any) => {
+      const stuckFiltered = ((stuckOps ?? []) as StuckOpRow[])
+        .filter((o) => {
           const days = (Date.now() - new Date(o.stage_updated_at).getTime()) / 86_400_000;
           return days >= (slaByStage.get(o.stage) ?? 3);
         })
         .slice(0, 8);
       const critical = (inv ?? []).filter((i) => Number(i.balance ?? 0) <= Number(i.minimum ?? 0));
       const comments = [
-        ...((pComments ?? []) as any[])
+        ...((pComments ?? []) as PCommentRow[])
           .filter((c) => c.author_id !== user?.id)
           .map((c) => ({
             kind: "proto" as const,
@@ -115,7 +143,7 @@ export function NotificationsBell() {
             body: c.body,
             when: c.created_at,
           })),
-        ...((poComments ?? []) as any[])
+        ...((poComments ?? []) as POCommentRow[])
           .filter((c) => c.author_id !== user?.id)
           .map((c) => ({
             kind: "op" as const,
@@ -140,10 +168,12 @@ export function NotificationsBell() {
       return {
         critical: critical.filter((i) => !isHidden(`inv:${i.id}`)),
         overdue: (ops ?? []).filter((o) => !isHidden(`op-overdue:${o.id}`)),
-        stuck: stuckFiltered.filter((o: any) => !isHidden(`op-stuck:${o.id}`)),
-        oldProtos: (oldProtos ?? []).filter((p: any) => !isHidden(`proto-stale:${p.id}`)),
+        stuck: stuckFiltered.filter((o) => !isHidden(`op-stuck:${o.id}`)),
+        oldProtos: ((oldProtos ?? []) as OldProtoRow[]).filter(
+          (p) => !isHidden(`proto-stale:${p.id}`),
+        ),
         comments: comments.filter((c) => !isHidden(`comment:${c.id}`)),
-        marketing: ((mkt ?? []) as any[]).filter((m) => !isHidden(`mkt:${m.id}`)),
+        marketing: ((mkt ?? []) as MktRow[]).filter((m) => !isHidden(`mkt:${m.id}`)),
       };
     },
   });
@@ -328,7 +358,7 @@ export function NotificationsBell() {
               </div>
             ))}
           {show("parado") &&
-            data?.stuck.map((o: any) => {
+            data?.stuck.map((o) => {
               const days = Math.floor(
                 (Date.now() - new Date(o.stage_updated_at).getTime()) / 86_400_000,
               );
@@ -353,7 +383,7 @@ export function NotificationsBell() {
               );
             })}
           {show("proto") &&
-            data?.oldProtos.map((p: any) => {
+            data?.oldProtos.map((p) => {
               const days = Math.floor((Date.now() - new Date(p.updated_at).getTime()) / 86_400_000);
               return (
                 <div
@@ -367,7 +397,7 @@ export function NotificationsBell() {
                         Protótipo {p.code} sem evolução
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
-                        {p.name} · {p.stage} há {days} dias
+                        {p.stage} há {days} dias
                       </div>
                     </div>
                   </Link>

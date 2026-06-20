@@ -16,6 +16,18 @@ type Props = {
 
 type Mode = "qty" | "package" | "grid";
 type LineType = "primeira" | "segunda_linha";
+type PackageRow = { id: string; code: string; qty: number; notes: string | null };
+type GridRow = {
+  id: string;
+  quantity: number;
+  variant_id: string;
+  product_variants: {
+    sku: string | null;
+    sizes: { label: string } | null;
+    colors: { name: string } | null;
+  } | null;
+};
+type SupplierRow = { id: string; name: string };
 
 /** Passagem rápida entre setores: por Quantidade, Pacote ou Grade (variante). */
 export function QuickPassButton({
@@ -74,7 +86,7 @@ export function QuickPassButton({
       const { data, error } = await supabase
         .from("production_order_grid")
         .select(
-          "id, quantity, variant_id, product_variants:variant_id(sku, sizes:size_id(name), colors:color_id(name))",
+          "id, quantity, variant_id, product_variants:variant_id(sku, sizes:size_id(label), colors:color_id(name))",
         )
         .eq("production_order_id", orderId);
       if (error) throw error;
@@ -89,7 +101,7 @@ export function QuickPassButton({
       const created_by = u.user?.id ?? null;
 
       if (mode === "package") {
-        const pkg = (packagesQ.data ?? []).find((p: any) => p.id === packageId);
+        const pkg = (packagesQ.data ?? []).find((p: PackageRow) => p.id === packageId);
         if (!pkg) throw new Error("Selecione um pacote");
         const { error } = await supabase.from("service_orders").insert({
           owner_id: ownerId,
@@ -255,7 +267,7 @@ export function QuickPassButton({
                   </div>
                 )}
                 <div className="max-h-40 overflow-auto space-y-1">
-                  {packagesQ.data?.map((p: any) => (
+                  {packagesQ.data?.map((p: PackageRow) => (
                     <button
                       key={p.id}
                       type="button"
@@ -288,10 +300,10 @@ export function QuickPassButton({
                   </div>
                 )}
                 <div className="max-h-40 overflow-auto space-y-1">
-                  {gridQ.data?.map((g: any) => {
+                  {gridQ.data?.map((g: GridRow) => {
                     const v = g.product_variants;
                     const label =
-                      [v?.sizes?.name, v?.colors?.name].filter(Boolean).join(" · ") ||
+                      [v?.sizes?.label, v?.colors?.name].filter(Boolean).join(" · ") ||
                       v?.sku ||
                       "—";
                     const sel = gridSel[g.variant_id] ?? 0;
@@ -342,7 +354,7 @@ export function QuickPassButton({
                 className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
               >
                 <option value="">— Interno —</option>
-                {suppliersQ.data?.map((s: any) => (
+                {suppliersQ.data?.map((s: SupplierRow) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
                   </option>

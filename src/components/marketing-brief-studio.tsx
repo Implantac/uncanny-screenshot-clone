@@ -195,7 +195,7 @@ export function MarketingBriefStudio() {
             Sugestões automáticas pelo lifecycle
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {suggestions.slice(0, 6).map((s: any) => (
+            {suggestions.slice(0, 6).filter((s): s is NonNullable<typeof s> => !!s).map((s) => (
               <button
                 key={`${s.collectionId}:${s.trigger}`}
                 onClick={() => {

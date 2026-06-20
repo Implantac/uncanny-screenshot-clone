@@ -20,7 +20,8 @@ export function TrendRadarPanel() {
   const m = useMutation({
     mutationFn: () =>
       fn({ data: { horizon } }) as Promise<{ signals: TrendSignal[]; brandContext: string }>,
-    onError: (e: any) => toast.error(e?.message ?? "Falha ao escanear tendências"),
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Falha ao escanear tendências"),
   });
 
   const signals = m.data?.signals ?? [];
@@ -37,7 +38,10 @@ export function TrendRadarPanel() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Select value={horizon} onValueChange={(v) => setHorizon(v as any)}>
+          <Select
+            value={horizon}
+            onValueChange={(v) => setHorizon(v as "now" | "next-season" | "next-year")}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>

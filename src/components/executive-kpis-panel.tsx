@@ -125,7 +125,9 @@ export function ExecutiveKpisPanel() {
                     <span className="text-muted-foreground">{k.label}</span>
                     <span
                       className={`font-mono font-semibold ${
-                        "alert" in k && (k as any).alert ? "text-red-400" : "text-foreground"
+                        "alert" in k && (k as { alert?: boolean }).alert
+                          ? "text-red-400"
+                          : "text-foreground"
                       }`}
                     >
                       {k.value}
