@@ -57,9 +57,15 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
         .neq("status", "concluida"),
     ]);
 
+    type SaleRow = { sku: string | null; product_ref: string | null; quantity: number | null; total_value: number | null };
+    type CollectionRow = { id: string; name: string; season: string | null; launch_date: string | null; status: string | null };
+    type ProductRow = { id: string; name: string | null; sku: string | null; collection_id: string | null; status: string | null };
+    type SheetRow = { product_id: string | null; status: string | null };
+    type OpRow = { id: string; product_id: string | null; status: string | null };
+
     // Anchor products: top by revenue with > 1 unit/day
     const byProd = new Map<string, AnchorProduct>();
-    (sales ?? []).forEach((s: any) => {
+    ((sales ?? []) as SaleRow[]).forEach((s) => {
       const k = s.sku ?? s.product_ref ?? "—";
       const cur = byProd.get(k) ?? {
         sku: k,
@@ -79,22 +85,23 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
 
     // Risk per active collection
     const approvedSheetByProd = new Set(
-      (sheets ?? []).filter((s: any) => s.status === "aprovada").map((s: any) => s.product_id),
+      ((sheets ?? []) as SheetRow[]).filter((s) => s.status === "aprovada").map((s) => s.product_id),
     );
     const opsByProd = new Map<string, number>();
-    (ops ?? []).forEach(
-      (o: any) =>
+    ((ops ?? []) as OpRow[]).forEach(
+      (o) =>
         o.product_id && opsByProd.set(o.product_id, (opsByProd.get(o.product_id) ?? 0) + 1),
     );
 
     const now = Date.now();
-    const risks: CollectionRisk[] = (collections ?? [])
-      .filter((c: any) => c.status !== "entregue")
-      .map((c: any) => {
-        const items = (products ?? []).filter((p: any) => p.collection_id === c.id);
-        const approved = items.filter((p: any) => approvedSheetByProd.has(p.id)).length;
+    const risks: CollectionRisk[] = ((collections ?? []) as CollectionRow[])
+      .filter((c) => c.status !== "entregue")
+      .map((c) => {
+        const items = ((products ?? []) as ProductRow[]).filter((p) => p.collection_id === c.id);
+        const approved = items.filter((p) => approvedSheetByProd.has(p.id)).length;
         const pct = items.length ? Math.round((approved / items.length) * 100) : 0;
-        const activeOps = items.reduce((s: number, p: any) => s + (opsByProd.get(p.id) ?? 0), 0);
+        const activeOps = items.reduce((s, p) => s + (opsByProd.get(p.id) ?? 0), 0);
+
         const days = c.launch_date
           ? Math.ceil((new Date(c.launch_date).getTime() - now) / 86400000)
           : null;

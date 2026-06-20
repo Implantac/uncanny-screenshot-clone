@@ -100,7 +100,13 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
       sb.from("production_orders").select("product_id, quantity").not("product_id", "is", null),
     ]);
 
-    const families: FamilyRow[] = (famRows ?? []).map((f: any) => ({
+    type FamRowDB = { id: string; name: string; description: string | null; target_margin_pct: number | null; price_tier: FamilyRow["priceTier"]; display_order: number };
+    type PlanRow = { id: string; channel: Channel; family_id: string | null; target_skus: number | null; target_units: number | null; target_revenue: number | null; target_margin_pct: number | null };
+    type CpRow = { product_id: string; family_id: string | null; channel_exclusive: string[] | null };
+    type ProductRow = { id: string; sku: string };
+    type PoRow = { product_id: string | null; quantity: number | null };
+
+    const families: FamilyRow[] = ((famRows ?? []) as FamRowDB[]).map((f) => ({
       id: f.id,
       name: f.name,
       description: f.description,
@@ -110,7 +116,7 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
     }));
 
     const skuByProduct = new Map(
-      (products ?? []).map((p: any) => [p.id, p.sku as string]),
+      ((products ?? []) as ProductRow[]).map((p) => [p.id, p.sku]),
     );
 
     // Actuals: count distinct SKUs assigned per channel × family.
@@ -122,7 +128,7 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
     const key = (channel: Channel, familyId: string | null) =>
       `${channel}::${familyId ?? "_"}`;
 
-    for (const cp of cpRows ?? []) {
+    for (const cp of ((cpRows ?? []) as CpRow[])) {
       const sku = skuByProduct.get(cp.product_id);
       if (!sku) continue;
       const channels: Channel[] =
@@ -138,8 +144,9 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
     }
 
     const planByKey = new Map(
-      (planRows ?? []).map((p: any) => [key(p.channel, p.family_id), p]),
+      ((planRows ?? []) as PlanRow[]).map((p) => [key(p.channel, p.family_id), p]),
     );
+
 
     const cells: AssortmentCell[] = [];
     const familyIds: (string | null)[] = [...families.map((f) => f.id), null];
@@ -195,14 +202,14 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
 
     // OTB (Open-To-Buy) per family: target units (across all channels) − committed via production_orders
     const familyByProduct = new Map<string, string | null>(
-      (cpRows ?? []).map((cp: any) => [cp.product_id, cp.family_id]),
+      ((cpRows ?? []) as CpRow[]).map((cp) => [cp.product_id, cp.family_id]),
     );
     const committedByFamily = new Map<string | null, number>();
-    for (const po of poRows ?? []) {
-      const pid = (po as any).product_id as string | null;
+    for (const po of ((poRows ?? []) as PoRow[])) {
+      const pid = po.product_id;
       if (!pid || !familyByProduct.has(pid)) continue; // outside this collection
       const fid = familyByProduct.get(pid) ?? null;
-      committedByFamily.set(fid, (committedByFamily.get(fid) ?? 0) + Number((po as any).quantity ?? 0));
+      committedByFamily.set(fid, (committedByFamily.get(fid) ?? 0) + Number(po.quantity ?? 0));
     }
     const targetByFamily = new Map<string | null, number>();
     for (const c of cells) {
@@ -345,9 +352,9 @@ export const upsertAssortmentCell = createServerFn({ method: "POST" })
       const { error } = await sb
         .from("assortment_plan")
         .update(payload)
-        .eq("id", (existing as any).id);
+        .eq("id", (existing as { id: string }).id);
       if (error) throw new Error(error.message);
-      return { id: (existing as any).id as string };
+      return { id: (existing as { id: string }).id };
     }
     const { data: ins, error } = await sb
       .from("assortment_plan")

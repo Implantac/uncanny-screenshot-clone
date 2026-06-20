@@ -71,13 +71,20 @@ export const getCarryOverContext = createServerFn({ method: "GET" })
         sb.from("collection_products").select("product_id, collection_id"),
       ]);
 
-      const productMap = new Map((products ?? []).map((p: any) => [p.id, p]));
-      const collectionMap = new Map((collections ?? []).map((c: any) => [c.id, c]));
+      type CpRow = { id: string; product_id: string; role: CollectionRosterRow["role"]; source_collection_id: string | null; intro_season: string | null; display_order: number; collection_id: string };
+      type CpAllRow = { product_id: string; collection_id: string };
+      type LifecycleRow = { product_id: string; collection_id: string; state: CollectionRosterRow["state"] };
+      type CollectionRow = { id: string; name: string; launch_date: string | null };
+      type ProductRow = { id: string; sku: string; name: string; image_url: string | null; collection_id: string | null };
+      type SaleRow = { sku: string | null; quantity: number | null; total_value: number | null };
+
+      const productMap = new Map(((products ?? []) as ProductRow[]).map((p) => [p.id, p]));
+      const collectionMap = new Map(((collections ?? []) as CollectionRow[]).map((c) => [c.id, c]));
       const stateMap = new Map(
-        (lifecycle ?? []).map((l: any) => [l.product_id, l.state as CollectionRosterRow["state"]]),
+        ((lifecycle ?? []) as LifecycleRow[]).map((l) => [l.product_id, l.state]),
       );
       const salesBySku = new Map<string, { units: number; revenue: number }>();
-      (sales ?? []).forEach((s: any) => {
+      ((sales ?? []) as SaleRow[]).forEach((s) => {
         const k = s.sku ?? "—";
         const cur = salesBySku.get(k) ?? { units: 0, revenue: 0 };
         cur.units += Number(s.quantity ?? 0);
@@ -85,11 +92,11 @@ export const getCarryOverContext = createServerFn({ method: "GET" })
         salesBySku.set(k, cur);
       });
       const lifetimeByProduct = new Map<string, number>();
-      (cpAll ?? []).forEach((r: any) => {
+      ((cpAll ?? []) as CpAllRow[]).forEach((r) => {
         lifetimeByProduct.set(r.product_id, (lifetimeByProduct.get(r.product_id) ?? 0) + 1);
       });
 
-      const roster: CollectionRosterRow[] = (cpRows ?? []).map((r: any) => {
+      const roster: CollectionRosterRow[] = ((cpRows ?? []) as CpRow[]).map((r) => {
         const p = productMap.get(r.product_id);
         return {
           id: r.id,
@@ -109,12 +116,12 @@ export const getCarryOverContext = createServerFn({ method: "GET" })
       const target = collectionMap.get(data.collectionId);
 
       // Candidates: products from other collections, ranked by recent performance.
-      const candidates: CarryOverCandidate[] = (products ?? [])
-        .filter((p: any) => p.collection_id && p.collection_id !== data.collectionId)
-        .map((p: any) => {
+      const candidates: CarryOverCandidate[] = ((products ?? []) as ProductRow[])
+        .filter((p) => p.collection_id && p.collection_id !== data.collectionId)
+        .map((p) => {
           const s = salesBySku.get(p.sku) ?? { units: 0, revenue: 0 };
           const lifetime = lifetimeByProduct.get(p.id) ?? 1;
-          const src = collectionMap.get(p.collection_id);
+          const src = p.collection_id ? collectionMap.get(p.collection_id) : null;
           let suggestedRole: CarryOverCandidate["suggestedRole"] = "carry_over";
           let reason = "Mantém continuidade entre coleções.";
           if (lifetime >= 3 && s.units >= 60) {
@@ -129,7 +136,7 @@ export const getCarryOverContext = createServerFn({ method: "GET" })
             sku: p.sku,
             name: p.name,
             imageUrl: p.image_url ?? null,
-            sourceCollectionId: p.collection_id,
+            sourceCollectionId: p.collection_id ?? "",
             sourceCollectionName: src?.name ?? "—",
             units90d: s.units,
             revenue90d: s.revenue,
