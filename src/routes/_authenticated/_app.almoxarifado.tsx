@@ -136,6 +136,34 @@ function Almoxarifado() {
     },
   });
 
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ["suppliers-leadtime"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("suppliers")
+        .select("id, name, lead_time_days")
+        .order("name");
+      if (error) throw error;
+      return data as SupplierLite[];
+    },
+  });
+  const supplierLeadById = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const s of suppliers) {
+      if (s.lead_time_days != null) m.set(s.id, Number(s.lead_time_days));
+    }
+    return m;
+  }, [suppliers]);
+
+  function leadFor(i: Item) {
+    return i.preferred_supplier_id
+      ? (supplierLeadById.get(i.preferred_supplier_id) ?? DEFAULT_LEAD_TIME_DAYS)
+      : DEFAULT_LEAD_TIME_DAYS;
+  }
+  function safetyFor(i: Item) {
+    return Number(i.safety_days ?? DEFAULT_SAFETY_DAYS);
+  }
+
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("inventory_items").delete().eq("id", id);
@@ -157,7 +185,7 @@ function Almoxarifado() {
   const noPontoPedido = items.filter((i) => {
     const bal = Number(i.balance),
       min = Number(i.minimum);
-    const pp = reorderPoint(Number(i.turnover_30d || 0), min);
+    const pp = reorderPoint(Number(i.turnover_30d || 0), leadFor(i), safetyFor(i), min);
     return bal >= min && bal <= pp && pp > min;
   }).length;
   const totalSaldo = items.reduce((s, i) => s + Number(i.balance || 0), 0);
@@ -168,20 +196,25 @@ function Almoxarifado() {
   }));
   const criticosList = items.filter((i) => Number(i.balance) < Number(i.minimum)).slice(0, 5);
 
-  // Reposição inteligente: usa ponto de pedido (lead-time + segurança) e giro 30d
+  // Reposição inteligente: usa ponto de pedido dinâmico por item (lead-time real + segurança)
   const reposicao = useMemo(() => {
     return items
       .map((i) => {
         const bal = Number(i.balance),
           min = Number(i.minimum),
           max = Number(i.maximum),
-          giro = Number(i.turnover_30d || 0);
-        const pp = reorderPoint(giro, min);
+          giro = Number(i.turnover_30d || 0),
+          lead = leadFor(i),
+          safety = safetyFor(i);
+        const pp = reorderPoint(giro, lead, safety, min);
         const sugerido = max > 0 ? Math.max(0, max - bal) : Math.max(0, pp * 2 - bal);
         const diasCobertura = giro > 0 ? Math.round((bal / giro) * 30) : null;
         const urgencia: "alta" | "media" | null =
           bal < min ? "alta" : bal <= pp && pp > min ? "media" : null;
-        return { ...i, sugerido, diasCobertura, urgencia, pp };
+        const supplierName = i.preferred_supplier_id
+          ? (suppliers.find((s) => s.id === i.preferred_supplier_id)?.name ?? null)
+          : null;
+        return { ...i, sugerido, diasCobertura, urgencia, pp, lead, safety, supplierName };
       })
       .filter((i) => i.urgencia && i.sugerido > 0)
       .sort(
@@ -190,7 +223,8 @@ function Almoxarifado() {
           Number(b.turnover_30d || 0) - Number(a.turnover_30d || 0),
       )
       .slice(0, 6);
-  }, [items]);
+  }, [items, supplierLeadById, suppliers]);
+
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
