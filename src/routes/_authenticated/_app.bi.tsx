@@ -168,12 +168,12 @@ function BI() {
   const campaignsQ = useQuery({
     queryKey: ["bi", "campaigns"],
     queryFn: async () =>
-      (await supabase.from("marketing_campaigns").select("status,budget,channel")).data ?? [],
+      (await supabase.from("marketing_campaigns").select("status,investment,channel")).data ?? [],
   });
   const shipsQ = useQuery({
     queryKey: ["bi", "ships"],
     queryFn: async () =>
-      (await supabase.from("influencer_shipments").select("status,value")).data ?? [],
+      (await supabase.from("influencer_shipments").select("status,quantity")).data ?? [],
   });
 
   const orders = useMemo(() => ordersQ.data ?? [], [ordersQ.data]);
