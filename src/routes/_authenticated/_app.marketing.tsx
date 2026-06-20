@@ -1042,11 +1042,11 @@ function ChartsSection({ rows }: { rows: Campaign[] }) {
           </div>
           <div className="flex items-center gap-3 text-[11px]">
             <span className="inline-flex items-center gap-1.5">
-              <span className="size-2 rounded-sm bg-[#3b82f6]" />
+              <span className="size-2 rounded-sm bg-[var(--chart-1,hsl(217_91%_60%))]" />
               Invest.
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="size-2 rounded-sm bg-[#10b981]" />
+              <span className="size-2 rounded-sm bg-[var(--chart-2,hsl(160_84%_39%))]" />
               Receita
             </span>
             <span className="inline-flex items-center gap-1.5">
