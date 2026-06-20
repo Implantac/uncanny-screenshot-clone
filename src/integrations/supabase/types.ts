@@ -3931,6 +3931,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          lead_time_days: number | null
           name: string
           notes: string | null
           owner_id: string
@@ -3947,6 +3948,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          lead_time_days?: number | null
           name: string
           notes?: string | null
           owner_id: string
@@ -3963,6 +3965,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          lead_time_days?: number | null
           name?: string
           notes?: string | null
           owner_id?: string
