@@ -43,7 +43,7 @@ function OutsourcedPage() {
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
   const totals = (data ?? []).reduce(
-    (acc: any, s: any) => ({
+    (acc: { pieces: number; lots: number; refs: number; suppliers: number }, s: Supplier) => ({
       pieces: acc.pieces + (s.pieces_at_supplier ?? 0),
       lots: acc.lots + (s.open_lot_count ?? 0),
       refs: acc.refs + (s.distinct_refs ?? 0),
@@ -54,7 +54,7 @@ function OutsourcedPage() {
   const criticalSuppliers = useMemo(
     () =>
       (data ?? [])
-        .filter((s: any) => (s.max_days_at_supplier ?? 0) > 15 || (s.second_line_count ?? 0) > 0)
+        .filter((s: Supplier) => (s.max_days_at_supplier ?? 0) > 15 || (s.second_line_count ?? 0) > 0)
         .slice(0, 3),
     [data],
   );
@@ -91,7 +91,7 @@ function OutsourcedPage() {
         <div className="text-sm font-medium">Plano de cobrança</div>
         <div className="mt-1 text-sm text-muted-foreground">
           {criticalSuppliers.length
-            ? `Cobrar ${criticalSuppliers.map((s: any) => s.supplier_name ?? String(s.supplier_id).slice(0, 8)).join(", ")}: há peças antigas ou 2ª linha em campo.`
+            ? `Cobrar ${criticalSuppliers.map((s: Supplier) => s.supplier_name ?? String(s.supplier_id).slice(0, 8)).join(", ")}: há peças antigas ou 2ª linha em campo.`
             : "Nenhuma facção crítica agora. Continue acompanhando dias em casa e recebimentos parciais."}
         </div>
       </div>
@@ -105,7 +105,7 @@ function OutsourcedPage() {
             Nenhuma OS aberta em terceirizados.
           </div>
         )}
-        {data?.map((s: any) => {
+        {data?.map((s: Supplier) => {
           const isOpen = !!open[s.supplier_id];
           const lateDays = s.max_days_at_supplier ?? 0;
           return (
@@ -160,7 +160,7 @@ function OutsourcedPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {s.orders.map((o: any) => (
+                      {s.orders.map((o: OrderRow) => (
                         <tr key={o.id} className="border-t border-border/50">
                           <td className="py-2 font-mono">{o.code}</td>
                           <td className="py-2">
@@ -212,7 +212,7 @@ function OutsourcedPage() {
   );
 }
 
-function ReturnButton({ os }: { os: any }) {
+function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: string | null }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const sent = Number(os.quantity ?? 0);
@@ -369,7 +369,7 @@ function ReturnButton({ os }: { os: any }) {
   );
 }
 
-function Kpi({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
+function Kpi({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string | number }) {
   return (
     <div className="glass rounded-xl p-4">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
