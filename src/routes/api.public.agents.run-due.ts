@@ -50,7 +50,7 @@ export const Route = createFileRoute("/api/public/agents/run-due")({
         if (error) return Response.json({ error: error.message }, { status: 500 });
         if (!due || due.length === 0) return Response.json({ ran: 0 });
 
-        const gateway = createLovableAiGatewayProvider(apiKey);
+        const gateway = createLovableAiGatewayProvider(lovableKey);
         const model = gateway("google/gemini-3-flash-preview");
 
         let okCount = 0;
