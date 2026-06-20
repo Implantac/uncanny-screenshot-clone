@@ -1599,40 +1599,40 @@ function CardLote({
         onDragEnd={onDragEnd}
         className={`w-full text-left p-2 space-y-1 cursor-grab active:cursor-grabbing ${tvMode ? "text-sm" : ""}`}
       >
-        <div className="flex items-center justify-between gap-1">
-          <span className={`font-semibold inline-flex items-center gap-1 ${tvMode ? "text-sm" : "text-xs"}`}>
-            <Package className="size-3" />
-            {o.batch_code ?? o.code}
+        <div className="flex items-center justify-between gap-1 min-w-0">
+          <span className={`font-semibold inline-flex items-center gap-1 min-w-0 truncate ${tvMode ? "text-sm" : "text-[11px]"}`}>
+            <Package className="size-3 shrink-0" />
+            <span className="truncate">{o.batch_code ?? o.code}</span>
           </span>
-          <span className={`text-[9px] px-1.5 py-0.5 rounded border ${STATUS_META[st].cls}`}>
+          <span className={`shrink-0 whitespace-nowrap text-[9px] px-1 py-0.5 rounded border ${STATUS_META[st].cls}`}>
             {STATUS_META[st].label}
           </span>
         </div>
-        <div className={`text-foreground/90 line-clamp-1 ${tvMode ? "text-sm" : "text-[11px]"}`}>
+        <div className={`text-foreground/90 truncate ${tvMode ? "text-sm" : "text-[11px]"}`}>
           {o.product_name ?? "—"}
         </div>
-        <div className="text-[10px] text-muted-foreground line-clamp-1">Ref. {o.product_sku ?? "—"}</div>
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground tabular-nums">
-          <span>
+        <div className="text-[10px] text-muted-foreground truncate">Ref. {o.product_sku ?? "—"}</div>
+        <div className="flex items-center justify-between gap-1 text-[10px] text-muted-foreground tabular-nums min-w-0">
+          <span className="shrink-0">
             {produced}/{o.quantity} pç
           </span>
-          <span className={slaBreached ? "text-red-600 font-semibold" : ""}>
-            {dias}d no setor{slaTargetH ? ` / ${Math.round(slaTargetH / 24)}d` : ""}
+          <span className={`truncate text-right ${slaBreached ? "text-red-600 font-semibold" : ""}`}>
+            {dias}d{slaTargetH ? `/${Math.round(slaTargetH / 24)}d` : ""}
           </span>
         </div>
         <div className="h-1.5 bg-muted rounded overflow-hidden">
           <div className="h-full bg-primary" style={{ width: `${o.progress}%` }} />
         </div>
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between gap-1 text-[10px] min-w-0">
           <span
-            className={`inline-flex items-center gap-1 ${o.outsourced ? "text-amber-600" : "text-emerald-600"}`}
+            className={`inline-flex items-center gap-1 min-w-0 truncate ${o.outsourced ? "text-amber-600" : "text-emerald-600"}`}
           >
-            {o.outsourced ? <Truck className="size-3" /> : <Factory className="size-3" />}
-            {o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}
+            {o.outsourced ? <Truck className="size-3 shrink-0" /> : <Factory className="size-3 shrink-0" />}
+            <span className="truncate">{o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}</span>
           </span>
           {o.due_date && (
-            <span className="text-muted-foreground tabular-nums">
-              prev {new Date(o.due_date).toLocaleDateString("pt-BR")}
+            <span className="shrink-0 text-muted-foreground tabular-nums whitespace-nowrap">
+              {new Date(o.due_date).toLocaleDateString("pt-BR")}
             </span>
           )}
         </div>
