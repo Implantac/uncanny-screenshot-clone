@@ -1030,7 +1030,15 @@ function DevelopmentBoard({ prototypes }: { prototypes: PrototypeRow[] }) {
 }
 
 /* ===================== PRODUCT SCORE (M47/M48) ===================== */
-function ProductScore({ products, sales, inventory }: any) {
+function ProductScore({
+  products,
+  sales,
+  inventory,
+}: {
+  products: ProductRow[];
+  sales: SaleRow[];
+  inventory: InventoryRow[];
+}) {
   // Real aggregates from sales + inventory
   const salesByProduct = new Map<string, { units: number; revenue: number }>();
   for (const s of sales as SaleRow[]) {
