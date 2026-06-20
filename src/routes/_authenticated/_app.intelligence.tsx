@@ -1164,7 +1164,7 @@ function ProductScore({
 }
 
 /* ===================== GEO SALES (M38) ===================== */
-function GeoSales({ b2b, sales = [] }: any) {
+function GeoSales({ b2b, sales = [] }: { b2b: B2BRow[]; sales?: SaleRow[] }) {
   const byUf = new Map<string, number>();
   for (const s of sales as SaleRow[]) {
     const uf = String(s.uf ?? "").toUpperCase();
