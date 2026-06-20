@@ -1264,7 +1264,15 @@ const CHANNEL_LABEL: Record<string, string> = {
   representante: "Representante",
 };
 
-function Attribution({ campaigns, b2b, sales = [] }: any) {
+function Attribution({
+  campaigns,
+  b2b,
+  sales = [],
+}: {
+  campaigns: CampaignRow[];
+  b2b: B2BRow[];
+  sales?: SaleRow[];
+}) {
   const revenueByChannel = new Map<string, number>();
   for (const s of sales as SaleRow[]) {
     const k = String(s.channel ?? "ecommerce");
