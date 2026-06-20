@@ -77,7 +77,7 @@ async function loadDemand(): Promise<Row[]> {
   });
 
   return (products ?? [])
-    .map((p: any) => {
+    .map((p) => {
       const invItem = invBySku.get(p.sku);
       const stock = Number(invItem?.balance ?? 0);
       const minimum = Number(invItem?.minimum ?? 0);
@@ -123,7 +123,10 @@ type StageStat = {
   throughput7d: number;
 };
 
-async function loadLive(): Promise<{ stages: StageStat[]; lateOrders: any[]; recent: any[] }> {
+type LateOrder = { id: string; code: string; stage: string | null; due_date: string | null; products: { name: string } | null };
+type RecentLog = { created_at: string; from_stage: string | null; to_stage: string; quantity: number | null };
+
+async function loadLive(): Promise<{ stages: StageStat[]; lateOrders: LateOrder[]; recent: RecentLog[] }> {
   const since = new Date(Date.now() - 7 * 86400000).toISOString();
   const [{ data: orders }, { data: log }] = await Promise.all([
     supabase
@@ -536,7 +539,7 @@ function LiveTab() {
                   </td>
                 </tr>
               )}
-              {(data?.lateOrders ?? []).map((o: any) => (
+              {(data?.lateOrders ?? []).map((o) => (
                 <tr key={o.id} className="border-t border-border">
                   <td className="px-3 py-1.5 font-medium">{o.code}</td>
                   <td className="px-3 py-1.5 truncate max-w-[160px]">{o.products?.name ?? "—"}</td>
@@ -568,7 +571,7 @@ function LiveTab() {
                   </td>
                 </tr>
               )}
-              {(data?.recent ?? []).map((l: any, i: number) => (
+              {(data?.recent ?? []).map((l, i) => (
                 <tr key={i} className="border-t border-border">
                   <td className="px-3 py-1.5 text-muted-foreground">
                     {new Date(l.created_at).toLocaleString("pt-BR", {
