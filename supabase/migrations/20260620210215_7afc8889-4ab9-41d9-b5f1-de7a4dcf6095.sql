@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Insert prototype comments as author" ON public.prototype_comments;
