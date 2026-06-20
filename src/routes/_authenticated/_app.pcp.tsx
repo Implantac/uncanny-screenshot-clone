@@ -685,6 +685,10 @@ function PCP() {
               <Workflow className="size-4 mr-2" />
               O.S. Terceirizados
             </TabsTrigger>
+            <TabsTrigger value="mrp">
+              <Package className="size-4 mr-2" />
+              Materiais (MRP)
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="kanban">
