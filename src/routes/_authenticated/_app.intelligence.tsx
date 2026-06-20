@@ -1420,7 +1420,7 @@ function InfluencerSuite() {
       const payload = { ...v, owner_id: user.id };
       const { error } = v.id
         ? await supabase.from("influencers").update(payload).eq("id", v.id)
-        : await supabase.from("influencers").insert(payload);
+        : await supabase.from("influencers").insert(payload as never);
       if (error) throw error;
     },
     onSuccess: () => {
