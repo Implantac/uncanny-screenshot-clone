@@ -358,7 +358,7 @@ export function NotificationsBell() {
               </div>
             ))}
           {show("parado") &&
-            data?.stuck.map((o: any) => {
+            data?.stuck.map((o) => {
               const days = Math.floor(
                 (Date.now() - new Date(o.stage_updated_at).getTime()) / 86_400_000,
               );
@@ -383,7 +383,7 @@ export function NotificationsBell() {
               );
             })}
           {show("proto") &&
-            data?.oldProtos.map((p: any) => {
+            data?.oldProtos.map((p) => {
               const days = Math.floor((Date.now() - new Date(p.updated_at).getTime()) / 86_400_000);
               return (
                 <div
