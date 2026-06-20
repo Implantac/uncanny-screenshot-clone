@@ -124,17 +124,17 @@ export function NotificationsBell() {
           : Promise.resolve({ data: [] as Dismissal[] }),
       ]);
       const slaByStage = new Map<string, number>(
-        (stages ?? []).map((s: any) => [s.key, Number(s.sla_stuck_days ?? 3)]),
+        ((stages ?? []) as StageRow[]).map((s) => [s.key, Number(s.sla_stuck_days ?? 3)]),
       );
-      const stuckFiltered = (stuckOps ?? [])
-        .filter((o: any) => {
+      const stuckFiltered = ((stuckOps ?? []) as StuckOpRow[])
+        .filter((o) => {
           const days = (Date.now() - new Date(o.stage_updated_at).getTime()) / 86_400_000;
           return days >= (slaByStage.get(o.stage) ?? 3);
         })
         .slice(0, 8);
       const critical = (inv ?? []).filter((i) => Number(i.balance ?? 0) <= Number(i.minimum ?? 0));
       const comments = [
-        ...((pComments ?? []) as any[])
+        ...((pComments ?? []) as PCommentRow[])
           .filter((c) => c.author_id !== user?.id)
           .map((c) => ({
             kind: "proto" as const,
@@ -143,7 +143,7 @@ export function NotificationsBell() {
             body: c.body,
             when: c.created_at,
           })),
-        ...((poComments ?? []) as any[])
+        ...((poComments ?? []) as POCommentRow[])
           .filter((c) => c.author_id !== user?.id)
           .map((c) => ({
             kind: "op" as const,
@@ -168,10 +168,12 @@ export function NotificationsBell() {
       return {
         critical: critical.filter((i) => !isHidden(`inv:${i.id}`)),
         overdue: (ops ?? []).filter((o) => !isHidden(`op-overdue:${o.id}`)),
-        stuck: stuckFiltered.filter((o: any) => !isHidden(`op-stuck:${o.id}`)),
-        oldProtos: (oldProtos ?? []).filter((p: any) => !isHidden(`proto-stale:${p.id}`)),
+        stuck: stuckFiltered.filter((o) => !isHidden(`op-stuck:${o.id}`)),
+        oldProtos: ((oldProtos ?? []) as OldProtoRow[]).filter(
+          (p) => !isHidden(`proto-stale:${p.id}`),
+        ),
         comments: comments.filter((c) => !isHidden(`comment:${c.id}`)),
-        marketing: ((mkt ?? []) as any[]).filter((m) => !isHidden(`mkt:${m.id}`)),
+        marketing: ((mkt ?? []) as MktRow[]).filter((m) => !isHidden(`mkt:${m.id}`)),
       };
     },
   });
