@@ -54,7 +54,55 @@ import {
   Trash2,
   ShoppingCart,
   PackageSearch,
+  type LucideIcon,
 } from "lucide-react";
+
+type ProductRow = {
+  id: string;
+  sku?: string | null;
+  name?: string | null;
+  sell_price?: number | null;
+  cost_price?: number | null;
+  [k: string]: unknown;
+};
+type OrderRow = {
+  id: string;
+  code?: string | null;
+  product_id?: string | null;
+  status?: string | null;
+  stage?: string | null;
+  progress?: number | null;
+  quantity?: number | null;
+  [k: string]: unknown;
+};
+type InventoryRow = {
+  id?: string;
+  sku?: string | null;
+  name?: string | null;
+  balance?: number | null;
+  minimum?: number | null;
+  [k: string]: unknown;
+};
+type SaleRow = {
+  id?: string;
+  product_id?: string | null;
+  sku?: string | null;
+  sold_at: string;
+  quantity?: number | null;
+  total?: number | null;
+  channel?: string | null;
+  uf?: string | null;
+  [k: string]: unknown;
+};
+type B2BRow = { status?: string | null; total_value?: number | null; [k: string]: unknown };
+type PrototypeRow = {
+  id: string;
+  stage?: string | null;
+  code?: string | null;
+  due_date?: string | null;
+  [k: string]: unknown;
+};
+type CampaignRow = { id: string; [k: string]: unknown };
 import {
   ResponsiveContainer,
   BarChart,
@@ -124,7 +172,7 @@ function KPI({
   label: string;
   value: string;
   hint?: string;
-  icon: any;
+  icon: LucideIcon;
   tone?: string;
 }) {
   return (
@@ -178,12 +226,12 @@ function IntelligencePage() {
   const salesQ = useQuery({
     queryKey: ["intel", "sales"],
     queryFn: async () =>
-      (await (supabase as any).from("sales").select("*").order("sold_at", { ascending: false }))
+      (await supabase.from("sales").select("*").order("sold_at", { ascending: false }))
         .data ?? [],
   });
   const influQ = useQuery({
     queryKey: ["intel", "influencers"],
-    queryFn: async () => (await (supabase as any).from("influencers").select("id")).data ?? [],
+    queryFn: async () => (await supabase.from("influencers").select("id")).data ?? [],
   });
   const supQ = useQuery({
     queryKey: ["intel", "suppliers"],
@@ -357,7 +405,23 @@ function IntelligencePage() {
 }
 
 /* ===================== PRODUÇÃO ===================== */
-function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQChange }: any) {
+function ProductionTab({
+  products,
+  orders,
+  inventory,
+  b2b,
+  sales = [],
+  q,
+  onQChange,
+}: {
+  products: ProductRow[];
+  orders: OrderRow[];
+  inventory: InventoryRow[];
+  b2b: B2BRow[];
+  sales?: SaleRow[];
+  q: string;
+  onQChange: (v: string) => void;
+}) {
   const setQ = onQChange;
   const SIZES = ["PP", "P", "M", "G", "GG"];
   const SIZE_DIST = [0.1, 0.2, 0.35, 0.25, 0.1];
@@ -367,7 +431,7 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQCha
     const DAY = 24 * 60 * 60 * 1000;
     // Sales aggregated by product_id
     const salesByPid = new Map<string, { d7: number; d30: number }>();
-    for (const s of sales as any[]) {
+    for (const s of sales as SaleRow[]) {
       if (!s.product_id) continue;
       const ageDays = (now - new Date(s.sold_at).getTime()) / DAY;
       const qty = Number(s.quantity || 0);
@@ -379,22 +443,25 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQCha
     // Inventory by sku
     const stockBySku = new Map<string, number>();
     const minBySku = new Map<string, number>();
-    for (const i of inventory as any[]) {
-      stockBySku.set(i.sku, (stockBySku.get(i.sku) ?? 0) + Number(i.balance || 0));
-      minBySku.set(i.sku, Math.max(minBySku.get(i.sku) ?? 0, Number(i.minimum || 0)));
+    for (const i of inventory as InventoryRow[]) {
+      const sku = i.sku ?? "";
+      if (!sku) continue;
+      stockBySku.set(sku, (stockBySku.get(sku) ?? 0) + Number(i.balance || 0));
+      minBySku.set(sku, Math.max(minBySku.get(sku) ?? 0, Number(i.minimum || 0)));
     }
 
-    return (products as any[]).map((p) => {
+    return (products as ProductRow[]).map((p) => {
       const sAgg = salesByPid.get(p.id) ?? { d7: 0, d30: 0 };
       const sold30 = sAgg.d30;
       const sold7 = sAgg.d7;
-      const inProd = (orders as any[])
+      const inProd = (orders as OrderRow[])
         .filter(
           (o) => o.product_id === p.id && o.status !== "concluida" && o.status !== "cancelada",
         )
         .reduce((s, o) => s + (o.quantity || 0), 0);
-      const stock = stockBySku.get(p.sku) ?? 0;
-      const minStock = minBySku.get(p.sku) ?? Math.round(sold30 * 0.5);
+      const pSku = p.sku ?? "";
+      const stock = stockBySku.get(pSku) ?? 0;
+      const minStock = minBySku.get(pSku) ?? Math.round(sold30 * 0.5);
       const maxStock = Math.max(minStock + 1, Math.round(sold30 * 1.5) || minStock + 10);
       const reorder = Math.round(minStock * 1.4);
       const daily = sold30 / 30;
@@ -431,8 +498,8 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQCha
     needed: rows.reduce((s, r) => s + r.need, 0),
   };
 
-  const invValue = (inventory as any[]).reduce((s, i) => s + Number(i.balance || 0), 0);
-  const ordersOpen = (b2b as any[]).filter(
+  const invValue = (inventory as InventoryRow[]).reduce((s, i) => s + Number(i.balance || 0), 0);
+  const ordersOpen = (b2b as B2BRow[]).filter(
     (o) => o.status !== "concluida" && o.status !== "cancelado",
   ).length;
 
@@ -616,7 +683,7 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQCha
             <CardDescription>Torre de controle por setor (M44)</CardDescription>
           </CardHeader>
           <CardContent>
-            {(orders as any[]).length === 0 ? (
+            {(orders as OrderRow[]).length === 0 ? (
               <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
                 Sem ordens de produção. Cadastre na aba PCP.
               </div>
@@ -635,11 +702,11 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQCha
                       "Expedição",
                     ] as const;
                     const total =
-                      (orders as any[]).filter(
+                      (orders as OrderRow[]).filter(
                         (o) => o.status !== "concluida" && o.status !== "cancelada",
                       ).length || 1;
                     return sectors.map((name) => {
-                      const inSector = (orders as any[]).filter((o) => inferStage(o) === name);
+                      const inSector = (orders as OrderRow[]).filter((o) => inferStage(o) === name);
                       const alert = inSector.filter((o) => o.status === "atrasada").length;
                       const load = Math.round((inSector.length / total) * 100);
                       return (
@@ -664,11 +731,11 @@ function ProductionTab({ products, orders, inventory, b2b, sales = [], q, onQCha
                 <div className="mt-4 rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
                   <strong className="text-foreground">Centro de Corte (M43):</strong>{" "}
                   {(() => {
-                    const totalQty = (orders as any[]).reduce(
+                    const totalQty = (orders as OrderRow[]).reduce(
                       (s, o) => s + Number(o.quantity || 0),
                       0,
                     );
-                    const done = (orders as any[])
+                    const done = (orders as OrderRow[])
                       .filter((o) => o.status === "concluida")
                       .reduce((s, o) => s + Number(o.quantity || 0), 0);
                     const eff = totalQty > 0 ? Math.round((done / totalQty) * 100) : 0;
@@ -723,7 +790,7 @@ const STAGE_PROGRESS: Record<Stage, number> = {
   Expedição: 92,
   Concluído: 100,
 };
-function inferStage(o: any): Stage {
+function inferStage(o: OrderRow): Stage {
   const s = (o.status || "").toString().toLowerCase();
   if (s === "concluida" || s.includes("conclu")) return "Concluído";
   const p = Number(o.progress || 0);
@@ -739,13 +806,13 @@ function inferStage(o: any): Stage {
   return "Programado";
 }
 
-function PcpKanban({ orders, products }: any) {
+function PcpKanban({ orders, products }: { orders: OrderRow[]; products: ProductRow[] }) {
   const qc = useQueryClient();
   const { isAdmin, isGerente, roles, loading: rolesLoading } = useRoles();
   const canMove = isAdmin || isGerente || roles.includes("comprador");
   const [dragId, setDragId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<string | null>(null);
-  const productMap = new Map((products as any[]).map((p) => [p.id, p]));
+  const productMap = new Map((products as ProductRow[]).map((p) => [p.id, p]));
 
   const move = useMutation({
     mutationFn: async ({ id, stage }: { id: string; stage: Stage }) => {
@@ -759,11 +826,11 @@ function PcpKanban({ orders, products }: any) {
       qc.invalidateQueries({ queryKey: ["intel", "production_orders"] });
       toast.success("Etapa atualizada");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
-  const map = new Map(PCP_STAGES.map((s) => [s, [] as any[]]));
-  (orders as any[]).forEach((o) => map.get(inferStage(o))?.push(o));
+  const map = new Map(PCP_STAGES.map((s) => [s, [] as OrderRow[]]));
+  (orders as OrderRow[]).forEach((o) => map.get(inferStage(o))?.push(o));
 
   return (
     <Card>
@@ -812,7 +879,7 @@ function PcpKanban({ orders, products }: any) {
                 </div>
                 <div className="space-y-2 min-h-[40px]">
                   {items.map((o) => {
-                    const p = productMap.get(o.product_id);
+                    const p = productMap.get(o.product_id ?? "");
                     return (
                       <div
                         key={o.id}
@@ -852,7 +919,7 @@ function PcpKanban({ orders, products }: any) {
 }
 
 /* ===================== DEVELOPMENT (M45/M46) ===================== */
-function DevelopmentBoard({ prototypes }: any) {
+function DevelopmentBoard({ prototypes }: { prototypes: PrototypeRow[] }) {
   const stages = [
     "Pesquisa",
     "Moodboard",
@@ -871,8 +938,8 @@ function DevelopmentBoard({ prototypes }: any) {
     aprovado: "Liberado PCP",
     reprovado: "Ajuste",
   };
-  const cols = new Map(stages.map((s) => [s, [] as any[]]));
-  (prototypes as any[]).forEach((p) => {
+  const cols = new Map(stages.map((s) => [s, [] as PrototypeRow[]]));
+  (prototypes as PrototypeRow[]).forEach((p) => {
     const target = STAGE_MAP[String(p.stage)] ?? "Pesquisa";
     cols.get(target)?.push(p);
   });
@@ -898,11 +965,11 @@ function DevelopmentBoard({ prototypes }: any) {
         <CardHeader>
           <CardTitle>Development Kanban</CardTitle>
           <CardDescription>
-            Pipeline criativo separado da produção · {(prototypes as any[]).length} protótipos
+            Pipeline criativo separado da produção · {(prototypes as PrototypeRow[]).length} protótipos
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {(prototypes as any[]).length === 0 ? (
+          {(prototypes as PrototypeRow[]).length === 0 ? (
             <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
               Nenhum protótipo cadastrado. Crie protótipos na aba Protótipos.
             </div>
@@ -946,7 +1013,7 @@ function DevelopmentBoard({ prototypes }: any) {
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-5">
           {pilotStatuses.map((st) => {
-            const count = (prototypes as any[]).filter(
+            const count = (prototypes as PrototypeRow[]).filter(
               (p) => (pilotMap[String(p.stage)] ?? "Em ajuste") === st,
             ).length;
             return (
@@ -963,10 +1030,18 @@ function DevelopmentBoard({ prototypes }: any) {
 }
 
 /* ===================== PRODUCT SCORE (M47/M48) ===================== */
-function ProductScore({ products, sales, inventory }: any) {
+function ProductScore({
+  products,
+  sales,
+  inventory,
+}: {
+  products: ProductRow[];
+  sales: SaleRow[];
+  inventory: InventoryRow[];
+}) {
   // Real aggregates from sales + inventory
   const salesByProduct = new Map<string, { units: number; revenue: number }>();
-  for (const s of sales as any[]) {
+  for (const s of sales as SaleRow[]) {
     if (!s.product_id) continue;
     const cur = salesByProduct.get(s.product_id) ?? { units: 0, revenue: 0 };
     cur.units += Number(s.quantity || 0);
@@ -974,17 +1049,17 @@ function ProductScore({ products, sales, inventory }: any) {
     salesByProduct.set(s.product_id, cur);
   }
   const stockBySku = new Map<string, number>();
-  for (const i of inventory as any[]) {
+  for (const i of inventory as InventoryRow[]) {
     if (!i.sku) continue;
     stockBySku.set(i.sku, (stockBySku.get(i.sku) ?? 0) + Number(i.balance || 0));
   }
   const maxUnits = Math.max(1, ...Array.from(salesByProduct.values()).map((v) => v.units));
   const maxRevenue = Math.max(1, ...Array.from(salesByProduct.values()).map((v) => v.revenue));
 
-  const scored = (products as any[])
+  const scored = (products as ProductRow[])
     .map((p) => {
       const sAgg = salesByProduct.get(p.id) ?? { units: 0, revenue: 0 };
-      const stock = stockBySku.get(p.sku) ?? 0;
+      const stock = stockBySku.get(p.sku ?? "") ?? 0;
       const sellPrice = Number(p.sell_price || 0);
       const costPrice = Number(p.cost_price || 0);
       const margin = sellPrice > 0 ? ((sellPrice - costPrice) / sellPrice) * 100 : 0;
@@ -1089,9 +1164,16 @@ function ProductScore({ products, sales, inventory }: any) {
 }
 
 /* ===================== GEO SALES (M38) ===================== */
-function GeoSales({ b2b, sales = [] }: any) {
+function GeoSales({
+  b2b,
+  sales = [],
+}: {
+  products?: ProductRow[];
+  b2b: B2BRow[];
+  sales?: SaleRow[];
+}) {
   const byUf = new Map<string, number>();
-  for (const s of sales as any[]) {
+  for (const s of sales as SaleRow[]) {
     const uf = String(s.uf ?? "").toUpperCase();
     if (!uf) continue;
     byUf.set(uf, (byUf.get(uf) ?? 0) + Number(s.quantity || 0));
@@ -1112,7 +1194,7 @@ function GeoSales({ b2b, sales = [] }: any) {
         <CardDescription>
           {data.length === 0
             ? "Sem vendas registradas com UF"
-            : `Aceitação por estado · ${(b2b as any[]).length} pedidos B2B analisados`}
+            : `Aceitação por estado · ${(b2b as B2BRow[]).length} pedidos B2B analisados`}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6 lg:grid-cols-3">
@@ -1182,13 +1264,21 @@ const CHANNEL_LABEL: Record<string, string> = {
   representante: "Representante",
 };
 
-function Attribution({ campaigns, b2b, sales = [] }: any) {
+function Attribution({
+  campaigns,
+  b2b,
+  sales = [],
+}: {
+  campaigns: CampaignRow[];
+  b2b: B2BRow[];
+  sales?: SaleRow[];
+}) {
   const revenueByChannel = new Map<string, number>();
-  for (const s of sales as any[]) {
+  for (const s of sales as SaleRow[]) {
     const k = String(s.channel ?? "ecommerce");
     revenueByChannel.set(k, (revenueByChannel.get(k) ?? 0) + Number(s.total || 0));
   }
-  const b2bRevenue = (b2b as any[]).reduce((s, o) => s + Number(o.total_value || 0), 0);
+  const b2bRevenue = (b2b as B2BRow[]).reduce((s, o) => s + Number(o.total_value || 0), 0);
   if (b2bRevenue > 0) revenueByChannel.set("b2b", (revenueByChannel.get("b2b") ?? 0) + b2bRevenue);
 
   const data = Array.from(revenueByChannel.entries())
@@ -1207,8 +1297,8 @@ function Attribution({ campaigns, b2b, sales = [] }: any) {
           Marketing Attribution Engine
         </CardTitle>
         <CardDescription>
-          Receita real por canal · {(campaigns as any[]).length} campanhas ·{" "}
-          {(sales as any[]).length} vendas · {(b2b as any[]).length} pedidos B2B
+          Receita real por canal · {(campaigns as CampaignRow[]).length} campanhas ·{" "}
+          {(sales as SaleRow[]).length} vendas · {(b2b as B2BRow[]).length} pedidos B2B
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -1234,7 +1324,7 @@ function Attribution({ campaigns, b2b, sales = [] }: any) {
                       <Cell key={i} fill={palette[i % palette.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: any) => BRL(Number(v))} />
+                  <Tooltip formatter={(v: number | string) => BRL(Number(v))} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -1315,7 +1405,7 @@ function InfluencerSuite() {
   const list = useQuery({
     queryKey: ["influencers"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("influencers")
         .select("*")
         .order("created_at", { ascending: false });
@@ -1327,10 +1417,10 @@ function InfluencerSuite() {
   const save = useMutation({
     mutationFn: async (v: Partial<Influencer>) => {
       if (!user) throw new Error("Sem usuário");
-      const payload: any = { ...v, owner_id: user.id };
+      const payload = { ...v, owner_id: user.id };
       const { error } = v.id
-        ? await (supabase as any).from("influencers").update(payload).eq("id", v.id)
-        : await (supabase as any).from("influencers").insert(payload);
+        ? await supabase.from("influencers").update(payload).eq("id", v.id)
+        : await supabase.from("influencers").insert(payload as never);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -1339,12 +1429,12 @@ function InfluencerSuite() {
       setDraft(EMPTY_INF);
       toast.success("Influencer salvo");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("influencers").delete().eq("id", id);
+      const { error } = await supabase.from("influencers").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -1374,7 +1464,7 @@ function InfluencerSuite() {
     setDraft(EMPTY_INF);
     setOpen(true);
   }
-  function field<K extends keyof Influencer>(k: K, v: any) {
+  function field<K extends keyof Influencer>(k: K, v: Influencer[K]) {
     setDraft((d) => ({ ...d, [k]: v }));
   }
 
@@ -1719,7 +1809,7 @@ const CHANNELS = [
   "representante",
 ];
 
-function SalesSuite({ products }: { products: any[] }) {
+function SalesSuite({ products }: { products: ProductRow[] }) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -1728,7 +1818,7 @@ function SalesSuite({ products }: { products: any[] }) {
   const list = useQuery({
     queryKey: ["sales"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("sales")
         .select("*")
         .order("sold_at", { ascending: false });
@@ -1742,7 +1832,7 @@ function SalesSuite({ products }: { products: any[] }) {
       if (!user) throw new Error("Sem usuário");
       const qty = Number(v.quantity || 0),
         price = Number(v.unit_price || 0);
-      const payload: any = {
+      const payload = {
         ...v,
         user_id: user.id,
         quantity: qty,
@@ -1751,8 +1841,8 @@ function SalesSuite({ products }: { products: any[] }) {
         product_id: v.product_id || null,
       };
       const { error } = v.id
-        ? await (supabase as any).from("sales").update(payload).eq("id", v.id)
-        : await (supabase as any).from("sales").insert(payload);
+        ? await supabase.from("sales").update(payload).eq("id", v.id)
+        : await supabase.from("sales").insert(payload);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -1762,12 +1852,12 @@ function SalesSuite({ products }: { products: any[] }) {
       setDraft(EMPTY_SALE);
       toast.success("Venda salva");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const del = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("sales").delete().eq("id", id);
+      const { error } = await supabase.from("sales").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -1796,7 +1886,7 @@ function SalesSuite({ products }: { products: any[] }) {
     setDraft(EMPTY_SALE);
     setOpen(true);
   }
-  function field<K extends keyof Sale>(k: K, v: any) {
+  function field<K extends keyof Sale>(k: K, v: Sale[K]) {
     setDraft((d) => ({ ...d, [k]: v }));
   }
 
@@ -1930,7 +2020,7 @@ function SalesSuite({ products }: { products: any[] }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="channel" />
                   <YAxis />
-                  <Tooltip formatter={(v: any) => BRL(Number(v))} />
+                  <Tooltip formatter={(v: number | string) => BRL(Number(v))} />
                   <Bar dataKey="revenue" fill={palette[0]} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -2005,9 +2095,9 @@ function RestockEngine({
   inventory,
   products,
 }: {
-  sales: any[];
-  inventory: any[];
-  products: any[];
+  sales: SaleRow[];
+  inventory: InventoryRow[];
+  products: ProductRow[];
 }) {
   const WINDOW_DAYS = 30;
   const COVER_TARGET = 30; // dias de cobertura desejados
@@ -2038,7 +2128,7 @@ function RestockEngine({
   const rows = useMemo(() => {
     return inventory
       .map((i) => {
-        const velocity = velocityBySku.get(i.sku) ?? 0;
+        const velocity = velocityBySku.get(i.sku ?? "") ?? 0;
         const balance = Number(i.balance || 0);
         const minimum = Number(i.minimum || 0);
         const daysCover = velocity > 0 ? balance / velocity : balance > 0 ? 999 : 0;
@@ -2048,10 +2138,10 @@ function RestockEngine({
         let level: "critical" | "warning" | "ok" = "ok";
         if (balance <= minimum || daysCover < LEAD_TIME) level = "critical";
         else if (daysCover < COVER_TARGET) level = "warning";
-        const product = productBySku.get(i.sku);
+        const product = productBySku.get(i.sku ?? "");
         return { ...i, velocity, daysCover, suggested, level, productName: product?.name };
       })
-      .sort((a: any, b: any) => {
+      .sort((a, b) => {
         const order: Record<string, number> = { critical: 0, warning: 1, ok: 2 };
         if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
         return b.suggested - a.suggested;
