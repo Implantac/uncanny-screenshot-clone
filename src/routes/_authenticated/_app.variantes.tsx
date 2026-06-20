@@ -387,7 +387,7 @@ function ColorPanel({
                   />
                   <span className="text-sm">{c.name}</span>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => onDelete(c.id)}>
+                <Button variant="ghost" size="icon" aria-label="Excluir cor" onClick={() => onDelete(c.id)}>
                   <Trash2 className="size-4" />
                 </Button>
               </div>

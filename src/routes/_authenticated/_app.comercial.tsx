@@ -272,10 +272,10 @@ function Comercial() {
                   <td className="px-4 py-3 text-right">
                     {user?.id === o.owner_id && (
                       <div className="flex gap-1 justify-end">
-                        <Button size="icon" variant="ghost" onClick={() => openEdit(o)}>
+                        <Button size="icon" variant="ghost" aria-label="Editar pedido" onClick={() => openEdit(o)}>
                           <Pencil className="size-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" onClick={() => del.mutate(o.id)}>
+                        <Button size="icon" variant="ghost" aria-label="Excluir pedido" onClick={() => del.mutate(o.id)}>
                           <Trash2 className="size-4" />
                         </Button>
                       </div>

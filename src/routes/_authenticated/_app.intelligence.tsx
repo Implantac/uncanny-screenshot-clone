@@ -1607,10 +1607,10 @@ function InfluencerSuite() {
                         {Math.round(roi)}%
                       </TableCell>
                       <TableCell className="text-right whitespace-nowrap">
-                        <Button size="icon" variant="ghost" onClick={() => edit(i)}>
+                        <Button size="icon" variant="ghost" aria-label="Editar influenciador" onClick={() => edit(i)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button size="icon" variant="ghost" onClick={() => del.mutate(i.id)}>
+                        <Button size="icon" variant="ghost" aria-label="Excluir influenciador" onClick={() => del.mutate(i.id)}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </TableCell>
@@ -1970,10 +1970,10 @@ function SalesSuite({ products }: { products: any[] }) {
                       {BRL(Number(s.total))}
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap">
-                      <Button size="icon" variant="ghost" onClick={() => edit(s)}>
+                      <Button size="icon" variant="ghost" aria-label="Editar envio" onClick={() => edit(s)}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="icon" variant="ghost" onClick={() => del.mutate(s.id)}>
+                      <Button size="icon" variant="ghost" aria-label="Excluir envio" onClick={() => del.mutate(s.id)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </TableCell>

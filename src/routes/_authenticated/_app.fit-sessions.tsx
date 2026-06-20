@@ -249,7 +249,7 @@ function Page() {
                     {c.pom_label && <p className="text-xs text-muted-foreground">{c.pom_label}</p>}
                     <p className={c.resolved ? "line-through" : ""}>{c.comment}</p>
                   </div>
-                  <Button size="icon" variant="ghost" onClick={() => toggle.mutate(c)}>
+                  <Button size="icon" variant="ghost" aria-label={c.resolved ? "Reabrir comentário" : "Resolver comentário"} onClick={() => toggle.mutate(c)}>
                     <CheckCircle2 className="h-4 w-4" />
                   </Button>
                 </div>
