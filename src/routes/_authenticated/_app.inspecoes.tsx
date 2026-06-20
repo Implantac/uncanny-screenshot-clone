@@ -177,7 +177,7 @@ function InspectionsPage() {
                     <td className="px-3 py-2">{resultBadge(i.result)}</td>
                     <td className="px-3 py-2 text-muted-foreground">{i.inspector ?? "—"}</td>
                     <td className="px-3 py-2 text-right">
-                      <Button variant="ghost" size="icon" onClick={() => del.mutate(i.id)}>
+                      <Button variant="ghost" size="icon" aria-label="Excluir inspeção" onClick={() => del.mutate(i.id)}>
                         <Trash2 className="size-4" />
                       </Button>
                     </td>
