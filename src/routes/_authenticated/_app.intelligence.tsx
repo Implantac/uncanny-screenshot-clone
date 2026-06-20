@@ -806,7 +806,7 @@ function inferStage(o: OrderRow): Stage {
   return "Programado";
 }
 
-function PcpKanban({ orders, products }: any) {
+function PcpKanban({ orders, products }: { orders: OrderRow[]; products: ProductRow[] }) {
   const qc = useQueryClient();
   const { isAdmin, isGerente, roles, loading: rolesLoading } = useRoles();
   const canMove = isAdmin || isGerente || roles.includes("comprador");
