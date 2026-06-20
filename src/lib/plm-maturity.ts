@@ -1,4 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type PublicTable = keyof Database["public"]["Tables"];
+type CountableBuilder = ReturnType<
+  ReturnType<typeof supabase.from<PublicTable>>["select"]
+>;
 
 export type PlmStageStatus = "completa" | "parcial" | "ausente";
 
@@ -26,11 +32,15 @@ export type PlmEnterpriseReadiness = {
 
 type CountResult = { count: number | null };
 
-async function countRows(table: string, query?: (q: any) => any): Promise<number> {
-  const base = supabase.from(table as any).select("id", { count: "exact", head: true });
+async function countRows(
+  table: PublicTable,
+  query?: (q: CountableBuilder) => CountableBuilder,
+): Promise<number> {
+  const base = supabase.from(table).select("id", { count: "exact", head: true }) as CountableBuilder;
   const { count } = (await (query ? query(base) : base)) as CountResult;
   return count ?? 0;
 }
+
 
 function pct(part: number, total: number) {
   if (total <= 0) return 0;
