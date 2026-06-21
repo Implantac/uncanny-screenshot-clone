@@ -24,6 +24,8 @@ import {
 } from "@/components/prototype-adjustments";
 import { toast } from "sonner";
 import { PrototypeApprovalGate } from "@/components/prototype-approval-gate";
+import { PrototypeGatesPanel } from "@/components/prototype-gates-panel";
+import { PrototypeHandoffTimeline } from "@/components/prototype-handoff-timeline";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipo/$id")({
   head: () => ({
@@ -255,6 +257,11 @@ function PrototipoPage() {
 
         {/* Timeline full-page */}
         <div className="space-y-4">
+          <PrototypeGatesPanel prototypeId={proto.id} />
+          <PrototypeHandoffTimeline
+            prototypeId={proto.id}
+            currentSector={proto.current_sector ?? null}
+          />
           {stats.photos.length > 0 && (
             <div>
               <div className="text-sm font-semibold mb-2 flex items-center gap-2">
