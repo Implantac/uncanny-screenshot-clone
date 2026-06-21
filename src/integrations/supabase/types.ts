@@ -1255,6 +1255,62 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_cycle_counts: {
+        Row: {
+          abc_class: string
+          counted_at: string
+          counted_balance: number
+          counted_by: string | null
+          created_at: string
+          expected_balance: number
+          id: string
+          inventory_item_id: string
+          notes: string | null
+          owner_id: string
+          updated_at: string
+          variance: number | null
+          variance_pct: number | null
+        }
+        Insert: {
+          abc_class: string
+          counted_at?: string
+          counted_balance?: number
+          counted_by?: string | null
+          created_at?: string
+          expected_balance?: number
+          id?: string
+          inventory_item_id: string
+          notes?: string | null
+          owner_id: string
+          updated_at?: string
+          variance?: number | null
+          variance_pct?: number | null
+        }
+        Update: {
+          abc_class?: string
+          counted_at?: string
+          counted_balance?: number
+          counted_by?: string | null
+          created_at?: string
+          expected_balance?: number
+          id?: string
+          inventory_item_id?: string
+          notes?: string | null
+          owner_id?: string
+          updated_at?: string
+          variance?: number | null
+          variance_pct?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_cycle_counts_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_items: {
         Row: {
           balance: number
