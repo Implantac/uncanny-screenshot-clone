@@ -274,6 +274,9 @@ function Almoxarifado() {
         </div>
       </div>
 
+      <InventoryScrapsPanel />
+
+
       {items.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
           <div className="rounded-xl border border-border bg-card/50 p-4 col-span-2">
