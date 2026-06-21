@@ -42,6 +42,7 @@ import {
   LabelList,
 } from "recharts";
 import { exportToCsv } from "@/lib/csv";
+import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -308,6 +309,9 @@ function Marketing() {
           )}
         </div>
       </header>
+
+      <PersonaInsightsPanel persona="marketing" />
+
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
