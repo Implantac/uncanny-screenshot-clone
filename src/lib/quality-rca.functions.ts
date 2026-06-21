@@ -10,14 +10,13 @@ export type SupplierDefectRow = {
   critical: number;
   major: number;
   minor: number;
-  recurring_top_defect: string | null;
   reason: string;
 };
 
 /**
  * Ranking de fornecedores × reincidência de defeitos.
  * Considera inspeções dos últimos 90 dias, exige ao menos 3 inspeções p/ entrar.
- * Ordenado pelo "risco": críticos primeiro, depois FPY mais baixo.
+ * Ordenado pelo risco: críticos primeiro, depois FPY mais baixo.
  */
 export const getSupplierDefectRanking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -28,7 +27,7 @@ export const getSupplierDefectRanking = createServerFn({ method: "POST" })
     const { data: insps, error } = await supabase
       .from("quality_inspections")
       .select(
-        "id, supplier_id, result, critical_defects, major_defects, minor_defects, defect_categories, created_at",
+        "supplier_id, result, critical_defects, major_defects, minor_defects, created_at",
       )
       .eq("owner_id", userId)
       .gte("created_at", since)
@@ -46,35 +45,16 @@ export const getSupplierDefectRanking = createServerFn({ method: "POST" })
 
     const agg = new Map<
       string,
-      {
-        total: number;
-        failed: number;
-        critical: number;
-        major: number;
-        minor: number;
-        defects: Map<string, number>;
-      }
+      { total: number; failed: number; critical: number; major: number; minor: number }
     >();
-
     for (const i of insps ?? []) {
       const sid = i.supplier_id as string;
-      const a = agg.get(sid) ?? {
-        total: 0,
-        failed: 0,
-        critical: 0,
-        major: 0,
-        minor: 0,
-        defects: new Map<string, number>(),
-      };
+      const a = agg.get(sid) ?? { total: 0, failed: 0, critical: 0, major: 0, minor: 0 };
       a.total += 1;
       if (i.result === "reprovado" || i.result === "reprovada") a.failed += 1;
       a.critical += Number(i.critical_defects ?? 0);
       a.major += Number(i.major_defects ?? 0);
       a.minor += Number(i.minor_defects ?? 0);
-      const cats = (i.defect_categories ?? []) as string[] | null;
-      for (const d of cats ?? []) {
-        a.defects.set(d, (a.defects.get(d) ?? 0) + 1);
-      }
       agg.set(sid, a);
     }
 
@@ -82,24 +62,15 @@ export const getSupplierDefectRanking = createServerFn({ method: "POST" })
     for (const [sid, a] of agg.entries()) {
       if (a.total < 3) continue;
       const fpy = ((a.total - a.failed) / a.total) * 100;
-      let topDefect: string | null = null;
-      let topCount = 0;
-      for (const [d, c] of a.defects.entries()) {
-        if (c > topCount) {
-          topDefect = d;
-          topCount = c;
-        }
-      }
       const reasonParts: string[] = [];
-      if (a.critical > 0) reasonParts.push(`${a.critical} crítico${a.critical > 1 ? "s" : ""}`);
+      if (a.critical > 0)
+        reasonParts.push(`${a.critical} crítico${a.critical > 1 ? "s" : ""} em 90d`);
       if (fpy < 90) reasonParts.push(`FPY ${Math.round(fpy)}%`);
-      if (topDefect && topCount >= 2)
-        reasonParts.push(`reincidência em "${topDefect}" (${topCount}×)`);
+      if (a.major >= 5) reasonParts.push(`${a.major} defeitos maiores recorrentes`);
       const reason =
         reasonParts.length > 0
           ? reasonParts.join(" · ")
-          : `${a.total} inspeções, sem padrão recorrente`;
-
+          : `${a.total} inspeções, padrão estável`;
       rows.push({
         supplier_id: sid,
         supplier_name: supplierName.get(sid) ?? "—",
@@ -109,7 +80,6 @@ export const getSupplierDefectRanking = createServerFn({ method: "POST" })
         critical: a.critical,
         major: a.major,
         minor: a.minor,
-        recurring_top_defect: topCount >= 2 ? topDefect : null,
         reason,
       });
     }
