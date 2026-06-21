@@ -4561,6 +4561,9 @@ export type Database = {
       }
       tech_sheets: {
         Row: {
+          approval_note: string | null
+          approved_at: string | null
+          approved_by: string | null
           code: string
           content: string | null
           cost_price: number | null
@@ -4576,6 +4579,9 @@ export type Database = {
           version: string
         }
         Insert: {
+          approval_note?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           code: string
           content?: string | null
           cost_price?: number | null
@@ -4591,6 +4597,9 @@ export type Database = {
           version?: string
         }
         Update: {
+          approval_note?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           code?: string
           content?: string | null
           cost_price?: number | null
