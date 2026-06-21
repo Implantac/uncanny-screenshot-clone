@@ -26,6 +26,7 @@ import { LoteReferencesDrawer } from "@/components/lote-references-drawer";
 import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-drawer";
 import { SamEfficiencyPanel } from "@/components/sam-efficiency-panel";
 import { PcpCapacityTocPanel } from "@/components/pcp-capacity-toc-panel";
+import { PcpApsPanel } from "@/components/pcp-aps-panel";
 import { LoteSplitDialog } from "@/components/lote-split-dialog";
 import { useServerFn } from "@tanstack/react-start";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
@@ -306,6 +307,9 @@ function PcpKanban() {
 
       <PersonaInsightsPanel persona="pcp" />
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
+
+      <PcpApsPanel />
+
 
       <DelayPredictionPanel />
 
