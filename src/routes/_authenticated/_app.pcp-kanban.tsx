@@ -20,6 +20,7 @@ import { ProductionOrderCommentsButton } from "@/components/production-order-com
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { QuickPassButton } from "@/components/quick-pass";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
 import { DelayPredictionPanel } from "@/components/delay-prediction-panel";
 import { LoteReferencesDrawer } from "@/components/lote-references-drawer";
 import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-drawer";
@@ -274,6 +275,7 @@ function PcpKanban() {
         />
       </div>
 
+      <PersonaInsightsPanel persona="pcp" />
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
 
       <DelayPredictionPanel />

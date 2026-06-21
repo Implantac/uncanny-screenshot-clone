@@ -6,6 +6,7 @@ import { Sparkles, CheckCircle2, Clock, ImageIcon, AlertTriangle } from "lucide-
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/dev-kanban")({ component: DevKanban });
 
@@ -174,6 +175,8 @@ function DevKanban() {
           </div>
         </div>
       )}
+
+      <PersonaInsightsPanel persona="coord-dev" />
 
       <AICoordinatorPanel
         persona="development"

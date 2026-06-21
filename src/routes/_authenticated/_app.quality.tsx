@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ShieldCheck, AlertTriangle, Clock, Truck, Sliders } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QualityIntelligencePanel } from "@/components/quality-intelligence-panel";
+import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
 import { QualityFpyPanel } from "@/components/quality-fpy-panel";
 import { QualityConqPanel } from "@/components/quality-conq-panel";
 import { QualityParetoPanel } from "@/components/quality-pareto-panel";
@@ -190,6 +191,7 @@ function Quality() {
 
 
 
+      <PersonaInsightsPanel persona="qualidade" />
       <QualityIntelligencePanel />
 
       <CellEfficiencyPanel />
