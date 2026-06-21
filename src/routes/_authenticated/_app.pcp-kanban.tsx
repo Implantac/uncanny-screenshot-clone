@@ -27,6 +27,9 @@ import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-dr
 import { SamEfficiencyPanel } from "@/components/sam-efficiency-panel";
 import { PcpCapacityTocPanel } from "@/components/pcp-capacity-toc-panel";
 import { LoteSplitDialog } from "@/components/lote-split-dialog";
+import { useServerFn } from "@tanstack/react-start";
+import { getRoutingsForProducts } from "@/lib/product-routing.functions";
+
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
@@ -106,6 +109,31 @@ function PcpKanban() {
     refetchInterval: 60_000,
   });
   useRealtime("quality_capa", ["pcp-kanban-open-capa"]);
+
+  // Roteiros (product_routing) por produto, com fallback família → default
+  const fetchRoutings = useServerFn(getRoutingsForProducts);
+  const productIds = useMemo(
+    () => Array.from(new Set(orders.map((o) => o.product_id).filter(Boolean) as string[])),
+    [orders],
+  );
+  const { data: routings } = useQuery({
+    queryKey: ["pcp-kanban-routings", productIds.sort().join(",")],
+    queryFn: () => fetchRoutings({ data: { productIds } }),
+    enabled: productIds.length > 0,
+    staleTime: 5 * 60_000,
+  });
+  const nextStageFor = (order: Order): { key: Stage; label: string } | null => {
+    const routing = order.product_id ? routings?.map[order.product_id] : null;
+    const stages = routing?.stages?.length ? routing.stages : STAGES.map((s) => s.key);
+    const idx = stages.indexOf(order.stage);
+    const nextKey = idx >= 0 && idx < stages.length - 1 ? stages[idx + 1] : null;
+    if (!nextKey) return null;
+    const meta = STAGES.find((s) => s.key === nextKey);
+    return meta ? { key: meta.key, label: meta.label } : { key: nextKey as Stage, label: nextKey };
+  };
+  const routingSourceFor = (productId: string | null) =>
+    (productId && routings?.map[productId]?.source) || null;
+
 
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<Stage | null>(null);
@@ -451,7 +479,9 @@ function PcpKanban() {
                       (Date.now() - new Date(o.stage_updated_at).getTime()) / 3600000,
                     );
                     const pri = PRIORITY[o.priority] ?? PRIORITY[3];
-                    const nextStage = STAGES[STAGES.findIndex((s) => s.key === col.key) + 1];
+                    const nextStage = nextStageFor(o);
+                    const routeSource = routingSourceFor(o.product_id);
+
                     return (
                       <div
                         key={o.id}
@@ -518,10 +548,26 @@ function PcpKanban() {
                           </div>
                         </div>
                         {o.product && (
-                          <div className="text-muted-foreground truncate" title={o.product}>
-                            {o.product}
+                          <div
+                            className="text-muted-foreground truncate flex items-center gap-1"
+                            title={o.product}
+                          >
+                            <span className="truncate">{o.product}</span>
+                            {routeSource && routeSource !== "default" && (
+                              <span
+                                className="text-[9px] px-1 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary shrink-0"
+                                title={
+                                  routeSource === "product"
+                                    ? "Roteiro específico do produto"
+                                    : "Roteiro da família/linha"
+                                }
+                              >
+                                rota {routeSource === "product" ? "produto" : "família"}
+                              </span>
+                            )}
                           </div>
                         )}
+
                         <div className="flex items-center justify-between text-muted-foreground tabular-nums">
                           <span>{o.quantity} pç</span>
                           <span>{o.progress}%</span>
