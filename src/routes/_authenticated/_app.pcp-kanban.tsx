@@ -110,6 +110,31 @@ function PcpKanban() {
   });
   useRealtime("quality_capa", ["pcp-kanban-open-capa"]);
 
+  // Roteiros (product_routing) por produto, com fallback família → default
+  const fetchRoutings = useServerFn(getRoutingsForProducts);
+  const productIds = useMemo(
+    () => Array.from(new Set(orders.map((o) => o.product_id).filter(Boolean) as string[])),
+    [orders],
+  );
+  const { data: routings } = useQuery({
+    queryKey: ["pcp-kanban-routings", productIds.sort().join(",")],
+    queryFn: () => fetchRoutings({ data: { productIds } }),
+    enabled: productIds.length > 0,
+    staleTime: 5 * 60_000,
+  });
+  const nextStageFor = (order: Order): { key: Stage; label: string } | null => {
+    const routing = order.product_id ? routings?.map[order.product_id] : null;
+    const stages = routing?.stages?.length ? routing.stages : STAGES.map((s) => s.key);
+    const idx = stages.indexOf(order.stage);
+    const nextKey = idx >= 0 && idx < stages.length - 1 ? stages[idx + 1] : null;
+    if (!nextKey) return null;
+    const meta = STAGES.find((s) => s.key === nextKey);
+    return meta ? { key: meta.key, label: meta.label } : { key: nextKey as Stage, label: nextKey };
+  };
+  const routingSourceFor = (productId: string | null) =>
+    (productId && routings?.map[productId]?.source) || null;
+
+
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<Stage | null>(null);
   const [mode, setMode] = useState<"ordens" | "lotes">("ordens");
