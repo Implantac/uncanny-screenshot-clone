@@ -143,7 +143,7 @@ export const getCycleCountPlan = createServerFn({ method: "POST" })
 
     const { data: items, error } = await supabase
       .from("inventory_items")
-      .select("id, sku, name, unit, balance, cost_value:notes")
+      .select("id, sku, name, unit, balance")
       .eq("owner_id", userId);
     if (error) throw new Error(error.message);
     const list = (items ?? []) as Array<{
