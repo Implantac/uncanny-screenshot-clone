@@ -308,6 +308,9 @@ function PcpKanban() {
       <PersonaInsightsPanel persona="pcp" />
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
 
+      <PcpApsPanel />
+
+
       <DelayPredictionPanel />
 
       <SamEfficiencyPanel />
