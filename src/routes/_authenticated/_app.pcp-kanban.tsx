@@ -479,7 +479,9 @@ function PcpKanban() {
                       (Date.now() - new Date(o.stage_updated_at).getTime()) / 3600000,
                     );
                     const pri = PRIORITY[o.priority] ?? PRIORITY[3];
-                    const nextStage = STAGES[STAGES.findIndex((s) => s.key === col.key) + 1];
+                    const nextStage = nextStageFor(o);
+                    const routeSource = routingSourceFor(o.product_id);
+
                     return (
                       <div
                         key={o.id}
