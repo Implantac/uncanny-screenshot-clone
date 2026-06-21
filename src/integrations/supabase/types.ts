@@ -1360,6 +1360,130 @@ export type Database = {
           },
         ]
       }
+      inventory_lots: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          inventory_item_id: string
+          lot_code: string
+          notes: string | null
+          owner_id: string
+          quantity: number
+          received_at: string
+          status: string
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          inventory_item_id: string
+          lot_code: string
+          notes?: string | null
+          owner_id: string
+          quantity?: number
+          received_at?: string
+          status?: string
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          inventory_item_id?: string
+          lot_code?: string
+          notes?: string | null
+          owner_id?: string
+          quantity?: number
+          received_at?: string
+          status?: string
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_lots_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_lots_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_scraps: {
+        Row: {
+          cost_value: number | null
+          created_at: string
+          id: string
+          inventory_item_id: string
+          lot_id: string | null
+          notes: string | null
+          owner_id: string
+          production_order_id: string | null
+          quantity: number
+          reason: string
+          registered_by: string | null
+        }
+        Insert: {
+          cost_value?: number | null
+          created_at?: string
+          id?: string
+          inventory_item_id: string
+          lot_id?: string | null
+          notes?: string | null
+          owner_id: string
+          production_order_id?: string | null
+          quantity: number
+          reason: string
+          registered_by?: string | null
+        }
+        Update: {
+          cost_value?: number | null
+          created_at?: string
+          id?: string
+          inventory_item_id?: string
+          lot_id?: string | null
+          notes?: string | null
+          owner_id?: string
+          production_order_id?: string | null
+          quantity?: number
+          reason?: string
+          registered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_scraps_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_scraps_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_lots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_scraps_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_briefs: {
         Row: {
           ai_plan: Json | null
@@ -3558,6 +3682,7 @@ export type Database = {
           created_at: string
           id: string
           inventory_item_id: string
+          lot_id: string | null
           notes: string | null
           owner_id: string
           product_id: string | null
@@ -3572,6 +3697,7 @@ export type Database = {
           created_at?: string
           id?: string
           inventory_item_id: string
+          lot_id?: string | null
           notes?: string | null
           owner_id: string
           product_id?: string | null
@@ -3586,6 +3712,7 @@ export type Database = {
           created_at?: string
           id?: string
           inventory_item_id?: string
+          lot_id?: string | null
           notes?: string | null
           owner_id?: string
           product_id?: string | null
@@ -3602,6 +3729,13 @@ export type Database = {
             columns: ["inventory_item_id"]
             isOneToOne: false
             referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_lots"
             referencedColumns: ["id"]
           },
           {
