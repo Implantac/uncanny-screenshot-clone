@@ -555,16 +555,28 @@ function PcpKanban() {
                           >
                             <span className="truncate">{o.product}</span>
                             {routeSource && routeSource !== "default" && (
-                              <span
-                                className="text-[9px] px-1 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary shrink-0"
-                                title={
-                                  routeSource === "product"
-                                    ? "Roteiro específico do produto"
-                                    : "Roteiro da família/linha"
-                                }
-                              >
-                                rota {routeSource === "product" ? "produto" : "família"}
-                              </span>
+                              <TooltipProvider delayDuration={150}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span
+                                      className="text-[9px] px-1 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary shrink-0 cursor-help"
+                                    >
+                                      rota {routeSource === "product" ? "produto" : "família"}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="text-xs max-w-[220px]">
+                                    <div className="font-medium">
+                                      {routeSource === "product" ? "Roteiro do produto" : "Roteiro da família/linha"}
+                                    </div>
+                                    <div className="opacity-90 mt-0.5">
+                                      Próximo setor:{" "}
+                                      <span className="font-semibold">
+                                        {nextStage ? nextStage.label : "—  fim do roteiro"}
+                                      </span>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             )}
                           </div>
                         )}
