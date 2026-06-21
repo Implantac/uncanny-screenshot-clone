@@ -2790,6 +2790,100 @@ export type Database = {
           },
         ]
       }
+      prototype_gates: {
+        Row: {
+          approver_id: string | null
+          created_at: string
+          decided_at: string | null
+          due_date: string | null
+          gate: Database["public"]["Enums"]["prototype_gate_key"]
+          id: string
+          notes: string | null
+          owner_id: string
+          prototype_id: string
+          status: Database["public"]["Enums"]["prototype_gate_status"]
+          updated_at: string
+        }
+        Insert: {
+          approver_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          due_date?: string | null
+          gate: Database["public"]["Enums"]["prototype_gate_key"]
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          prototype_id: string
+          status?: Database["public"]["Enums"]["prototype_gate_status"]
+          updated_at?: string
+        }
+        Update: {
+          approver_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          due_date?: string | null
+          gate?: Database["public"]["Enums"]["prototype_gate_key"]
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          prototype_id?: string
+          status?: Database["public"]["Enums"]["prototype_gate_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prototype_gates_prototype_id_fkey"
+            columns: ["prototype_id"]
+            isOneToOne: false
+            referencedRelation: "prototypes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prototype_handoff_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event: string
+          from_sector: string | null
+          id: string
+          notes: string | null
+          owner_id: string
+          prototype_id: string
+          to_sector: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event?: string
+          from_sector?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          prototype_id: string
+          to_sector: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event?: string
+          from_sector?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          prototype_id?: string
+          to_sector?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prototype_handoff_events_prototype_id_fkey"
+            columns: ["prototype_id"]
+            isOneToOne: false
+            referencedRelation: "prototypes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prototypes: {
         Row: {
           adjustment_reason: string | null
@@ -4650,6 +4744,13 @@ export type Database = {
         | "concluida"
         | "atrasada"
         | "cancelada"
+      prototype_gate_key:
+        | "conceito"
+        | "modelagem"
+        | "ficha"
+        | "piloto"
+        | "aprovacao"
+      prototype_gate_status: "pendente" | "aprovado" | "reprovado"
       prototype_stage:
         | "solicitado"
         | "em_confeccao"
@@ -4879,6 +4980,14 @@ export const Constants = {
         "atrasada",
         "cancelada",
       ],
+      prototype_gate_key: [
+        "conceito",
+        "modelagem",
+        "ficha",
+        "piloto",
+        "aprovacao",
+      ],
+      prototype_gate_status: ["pendente", "aprovado", "reprovado"],
       prototype_stage: [
         "solicitado",
         "em_confeccao",
