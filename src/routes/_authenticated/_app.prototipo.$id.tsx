@@ -24,6 +24,8 @@ import {
 } from "@/components/prototype-adjustments";
 import { toast } from "sonner";
 import { PrototypeApprovalGate } from "@/components/prototype-approval-gate";
+import { PrototypeGatesPanel } from "@/components/prototype-gates-panel";
+import { PrototypeHandoffTimeline } from "@/components/prototype-handoff-timeline";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipo/$id")({
   head: () => ({
