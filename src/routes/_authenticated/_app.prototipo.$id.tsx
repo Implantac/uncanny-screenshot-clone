@@ -257,6 +257,11 @@ function PrototipoPage() {
 
         {/* Timeline full-page */}
         <div className="space-y-4">
+          <PrototypeGatesPanel prototypeId={proto.id} />
+          <PrototypeHandoffTimeline
+            prototypeId={proto.id}
+            currentSector={proto.current_sector ?? null}
+          />
           {stats.photos.length > 0 && (
             <div>
               <div className="text-sm font-semibold mb-2 flex items-center gap-2">
