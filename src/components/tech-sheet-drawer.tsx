@@ -41,7 +41,7 @@ export function TechSheetDrawer({
       const { data, error } = await supabase
         .from("tech_sheets")
         .select(
-          "id, owner_id, code, version, status, materials_cost, labor_cost, cost_price, overhead_pct, updated_at",
+          "id, owner_id, code, version, status, materials_cost, labor_cost, cost_price, overhead_pct, updated_at, approved_by, approved_at, approval_note",
         )
         .eq("product_id", productId as string)
         .order("status", { ascending: false })
@@ -50,6 +50,19 @@ export function TechSheetDrawer({
         .maybeSingle();
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: approverName } = useQuery({
+    enabled: !!sheet?.approved_by,
+    queryKey: ["profile-name", sheet?.approved_by],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", sheet!.approved_by as string)
+        .maybeSingle();
+      return data?.full_name ?? null;
     },
   });
 
