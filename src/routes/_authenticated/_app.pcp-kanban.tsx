@@ -548,10 +548,26 @@ function PcpKanban() {
                           </div>
                         </div>
                         {o.product && (
-                          <div className="text-muted-foreground truncate" title={o.product}>
-                            {o.product}
+                          <div
+                            className="text-muted-foreground truncate flex items-center gap-1"
+                            title={o.product}
+                          >
+                            <span className="truncate">{o.product}</span>
+                            {routeSource && routeSource !== "default" && (
+                              <span
+                                className="text-[9px] px-1 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary shrink-0"
+                                title={
+                                  routeSource === "product"
+                                    ? "Roteiro específico do produto"
+                                    : "Roteiro da família/linha"
+                                }
+                              >
+                                rota {routeSource === "product" ? "produto" : "família"}
+                              </span>
+                            )}
                           </div>
                         )}
+
                         <div className="flex items-center justify-between text-muted-foreground tabular-nums">
                           <span>{o.quantity} pç</span>
                           <span>{o.progress}%</span>
