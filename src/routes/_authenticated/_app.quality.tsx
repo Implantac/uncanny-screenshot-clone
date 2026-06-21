@@ -11,6 +11,7 @@ import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
 import { QualityFpyPanel } from "@/components/quality-fpy-panel";
 import { QualityConqPanel } from "@/components/quality-conq-panel";
 import { QualityParetoPanel } from "@/components/quality-pareto-panel";
+import { SupplierDefectRcaPanel } from "@/components/supplier-defect-rca-panel";
 import { QualityDevBridgePanel } from "@/components/quality-dev-bridge-panel";
 import { QualityCollectionsBridgePanel } from "@/components/quality-collections-bridge-panel";
 import { QualityMarketingBridgePanel } from "@/components/quality-marketing-bridge-panel";
@@ -178,6 +179,9 @@ function Quality() {
       <QualityConqPanel />
 
       <QualityParetoPanel />
+
+      <SupplierDefectRcaPanel />
+
 
       <QualityDevBridgePanel />
 
