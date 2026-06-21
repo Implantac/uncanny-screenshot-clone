@@ -17,9 +17,15 @@ type OrderRow = {
   notes: string | null;
 };
 
-type ProductRow = { id: string; name: string | null; sku: string | null; family_id?: string | null };
+type ProductRow = {
+  id: string;
+  name: string | null;
+  sku: string | null;
+  product_group: string | null;
+  category: string | null;
+};
 
-const ACTIVE_STATUSES = ["aguardando", "em_producao", "atrasada"];
+const ACTIVE_STATUSES = ["aguardando", "em_producao", "atrasada"] as const;
 const TERMINAL_STAGES = ["entregue"];
 const STALL_HOURS = 4;
 
@@ -27,7 +33,7 @@ const STALL_HOURS = 4;
  * APS: ordena OPs ativas por score composto:
  *   - urgência (proximidade do due_date)
  *   - prioridade (1=baixa..5=alta)
- *   - agrupamento por família/SKU (reduz setup quando setor é o mesmo)
+ *   - agrupamento por família (product_group/category) no mesmo estágio → reduz setup
  *   - tempo parado no estágio atual
  *
  * Retorna lista rankeada com motivo curto (explicabilidade).
@@ -53,22 +59,23 @@ export const getApsSuggestion = createServerFn({ method: "GET" })
     const productIds = Array.from(
       new Set(activeOrders.map((o) => o.product_id).filter(Boolean) as string[]),
     );
-    let products: Record<string, ProductRow> = {};
+    const products: Record<string, ProductRow> = {};
     if (productIds.length) {
       const { data: prods } = await supabase
         .from("products")
-        .select("id, name, sku, family_id")
+        .select("id, name, sku, product_group, category")
         .in("id", productIds);
       for (const p of (prods ?? []) as ProductRow[]) products[p.id] = p;
     }
 
     const now = Date.now();
+    const familyOf = (p: ProductRow | null | undefined) =>
+      p?.product_group ?? p?.category ?? "_";
 
-    // Conta peers por (stage, family) para favorecer agrupamento (menos setup)
     const peerCount = new Map<string, number>();
     for (const o of activeOrders) {
       const p = o.product_id ? products[o.product_id] : null;
-      const key = `${o.stage}|${p?.family_id ?? "_"}`;
+      const key = `${o.stage}|${familyOf(p)}`;
       peerCount.set(key, (peerCount.get(key) ?? 0) + 1);
     }
 
@@ -79,13 +86,11 @@ export const getApsSuggestion = createServerFn({ method: "GET" })
         : 30;
       const urgencyScore = daysToDue <= 0 ? 100 : Math.max(0, 60 - daysToDue * 4);
       const priorityScore = Math.max(0, ((o.priority ?? 3) - 1) * 10);
-      const familyKey = `${o.stage}|${product?.family_id ?? "_"}`;
-      const peers = (peerCount.get(familyKey) ?? 1) - 1;
+      const peers = (peerCount.get(`${o.stage}|${familyOf(product)}`) ?? 1) - 1;
       const setupScore = Math.min(15, peers * 5);
-      const stageMs = o.stage_updated_at
-        ? now - new Date(o.stage_updated_at).getTime()
+      const stallHours = o.stage_updated_at
+        ? (now - new Date(o.stage_updated_at).getTime()) / 3_600_000
         : 0;
-      const stallHours = stageMs / 3_600_000;
       const stallScore = Math.min(25, Math.max(0, (stallHours - 2) * 2));
       const score = urgencyScore + priorityScore + setupScore + stallScore;
 
@@ -94,9 +99,7 @@ export const getApsSuggestion = createServerFn({ method: "GET" })
       else if (daysToDue <= 3) reasons.push(`prazo em ${daysToDue}d`);
       if ((o.priority ?? 3) >= 4) reasons.push("prioridade alta");
       if (peers >= 1)
-        reasons.push(
-          `agrupar com ${peers} OP${peers > 1 ? "s" : ""} mesma família no ${o.stage}`,
-        );
+        reasons.push(`agrupar com ${peers} OP${peers > 1 ? "s" : ""} mesma família em ${o.stage}`);
       if (stallHours >= STALL_HOURS)
         reasons.push(`parado há ${Math.round(stallHours)}h no estágio`);
 
@@ -120,8 +123,7 @@ export const getApsSuggestion = createServerFn({ method: "GET" })
   });
 
 /**
- * Lista OPs paradas há mais de N horas no estágio atual (default 4h),
- * ignorando estágios terminais e status finalizados.
+ * Lista OPs paradas há mais de N horas no estágio atual (default 4h).
  */
 export const getStalledOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -131,9 +133,7 @@ export const getStalledOrders = createServerFn({ method: "GET" })
 
     const { data, error } = await supabase
       .from("production_orders")
-      .select(
-        "id, code, product_id, stage, status, priority, stage_updated_at, due_date",
-      )
+      .select("id, code, product_id, stage, status, priority, stage_updated_at, due_date")
       .eq("owner_id", userId)
       .in("status", ACTIVE_STATUSES)
       .lt("stage_updated_at", threshold)
@@ -145,11 +145,11 @@ export const getStalledOrders = createServerFn({ method: "GET" })
     ) as OrderRow[];
 
     const pids = Array.from(new Set(rows.map((r) => r.product_id).filter(Boolean) as string[]));
-    let products: Record<string, ProductRow> = {};
+    const products: Record<string, ProductRow> = {};
     if (pids.length) {
       const { data: prods } = await supabase
         .from("products")
-        .select("id, name, sku")
+        .select("id, name, sku, product_group, category")
         .in("id", pids);
       for (const p of (prods ?? []) as ProductRow[]) products[p.id] = p;
     }
