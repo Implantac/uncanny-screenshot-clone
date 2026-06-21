@@ -2016,6 +2016,63 @@ export type Database = {
         }
         Relationships: []
       }
+      product_routing: {
+        Row: {
+          created_at: string
+          family_id: string | null
+          id: string
+          notes: string | null
+          owner_id: string
+          product_id: string | null
+          required: boolean
+          sequence: number
+          sla_days: number
+          stage_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          family_id?: string | null
+          id?: string
+          notes?: string | null
+          owner_id: string
+          product_id?: string | null
+          required?: boolean
+          sequence?: number
+          sla_days?: number
+          stage_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          family_id?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          product_id?: string | null
+          required?: boolean
+          sequence?: number
+          sla_days?: number
+          stage_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_routing_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "product_families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_routing_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_size_options: {
         Row: {
           active: boolean
