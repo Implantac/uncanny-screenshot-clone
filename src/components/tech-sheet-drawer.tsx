@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { FileText, ImageIcon, Ruler, Layers, ListChecks, ExternalLink } from "lucide-react";
+import { FileText, ImageIcon, Ruler, Layers, ListChecks, ExternalLink, ShieldCheck } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MaterialsPanel, OperationsPanel, MeasurementsPanel } from "@/components/tech-pack/panels";
 
 type Props = {
@@ -41,7 +42,7 @@ export function TechSheetDrawer({
       const { data, error } = await supabase
         .from("tech_sheets")
         .select(
-          "id, owner_id, code, version, status, materials_cost, labor_cost, cost_price, overhead_pct, updated_at",
+          "id, owner_id, code, version, status, materials_cost, labor_cost, cost_price, overhead_pct, updated_at, approved_by, approved_at, approval_note",
         )
         .eq("product_id", productId as string)
         .order("status", { ascending: false })
@@ -50,6 +51,19 @@ export function TechSheetDrawer({
         .maybeSingle();
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: approverName } = useQuery({
+    enabled: !!sheet?.approved_by,
+    queryKey: ["profile-name", sheet?.approved_by],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", sheet!.approved_by as string)
+        .maybeSingle();
+      return data?.full_name ?? null;
     },
   });
 
@@ -97,6 +111,35 @@ export function TechSheetDrawer({
                   <Badge variant="outline" className="text-[10px]">
                     custo R$ {Number(sheet.cost_price).toFixed(2)}
                   </Badge>
+                )}
+                {sheet.status === "aprovada" && sheet.approved_at && (
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] gap-1 bg-success/10 text-success border-success/30 cursor-help"
+                        >
+                          <ShieldCheck className="size-3" />
+                          {approverName ?? "Aprovada"} ·{" "}
+                          {new Date(sheet.approved_at).toLocaleDateString("pt-BR")}
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" align="start" className="max-w-xs text-xs">
+                        <div className="font-medium">Aprovação registrada</div>
+                        <div className="opacity-70 mt-0.5">
+                          {approverName ? `Por ${approverName}` : "Aprovador não identificado"} em{" "}
+                          {new Date(sheet.approved_at).toLocaleString("pt-BR")}
+                        </div>
+                        {sheet.approval_note && (
+                          <div className="mt-1 italic opacity-80">"{sheet.approval_note}"</div>
+                        )}
+                        <div className="mt-1 opacity-60">
+                          Snapshot imutável gerado automaticamente.
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
             )}
