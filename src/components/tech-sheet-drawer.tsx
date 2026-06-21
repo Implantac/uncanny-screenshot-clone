@@ -112,6 +112,35 @@ export function TechSheetDrawer({
                     custo R$ {Number(sheet.cost_price).toFixed(2)}
                   </Badge>
                 )}
+                {sheet.status === "aprovada" && sheet.approved_at && (
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] gap-1 bg-success/10 text-success border-success/30 cursor-help"
+                        >
+                          <ShieldCheck className="size-3" />
+                          {approverName ?? "Aprovada"} ·{" "}
+                          {new Date(sheet.approved_at).toLocaleDateString("pt-BR")}
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" align="start" className="max-w-xs text-xs">
+                        <div className="font-medium">Aprovação registrada</div>
+                        <div className="opacity-70 mt-0.5">
+                          {approverName ? `Por ${approverName}` : "Aprovador não identificado"} em{" "}
+                          {new Date(sheet.approved_at).toLocaleString("pt-BR")}
+                        </div>
+                        {sheet.approval_note && (
+                          <div className="mt-1 italic opacity-80">"{sheet.approval_note}"</div>
+                        )}
+                        <div className="mt-1 opacity-60">
+                          Snapshot imutável gerado automaticamente.
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
             )}
           </div>
