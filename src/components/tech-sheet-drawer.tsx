@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { FileText, ImageIcon, Ruler, Layers, ListChecks, ExternalLink } from "lucide-react";
+import { FileText, ImageIcon, Ruler, Layers, ListChecks, ExternalLink, ShieldCheck } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MaterialsPanel, OperationsPanel, MeasurementsPanel } from "@/components/tech-pack/panels";
 
 type Props = {
