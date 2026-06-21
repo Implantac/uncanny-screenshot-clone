@@ -71,6 +71,7 @@ import { Route as AuthenticatedAppFinanceiroRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppFichaTecnicaRouteImport } from './routes/_authenticated/_app.ficha-tecnica'
 import { Route as AuthenticatedAppFashionGptRouteImport } from './routes/_authenticated/_app.fashion-gpt'
 import { Route as AuthenticatedAppFashionCalendarRouteImport } from './routes/_authenticated/_app.fashion-calendar'
+import { Route as AuthenticatedAppExecutivoRouteImport } from './routes/_authenticated/_app.executivo'
 import { Route as AuthenticatedAppErpIntegrationRouteImport } from './routes/_authenticated/_app.erp-integration'
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/_app.equipe'
 import { Route as AuthenticatedAppDppRouteImport } from './routes/_authenticated/_app.dpp'
@@ -459,6 +460,12 @@ const AuthenticatedAppFashionCalendarRoute =
     path: '/fashion-calendar',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppExecutivoRoute =
+  AuthenticatedAppExecutivoRouteImport.update({
+    id: '/executivo',
+    path: '/executivo',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppErpIntegrationRoute =
   AuthenticatedAppErpIntegrationRouteImport.update({
     id: '/erp-integration',
@@ -693,6 +700,7 @@ export interface FileRoutesByFullPath {
   '/dpp': typeof AuthenticatedAppDppRoute
   '/equipe': typeof AuthenticatedAppEquipeRoute
   '/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
+  '/executivo': typeof AuthenticatedAppExecutivoRoute
   '/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
   '/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
@@ -790,6 +798,7 @@ export interface FileRoutesByTo {
   '/dpp': typeof AuthenticatedAppDppRoute
   '/equipe': typeof AuthenticatedAppEquipeRoute
   '/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
+  '/executivo': typeof AuthenticatedAppExecutivoRoute
   '/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
   '/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
@@ -889,6 +898,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/dpp': typeof AuthenticatedAppDppRoute
   '/_authenticated/_app/equipe': typeof AuthenticatedAppEquipeRoute
   '/_authenticated/_app/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
+  '/_authenticated/_app/executivo': typeof AuthenticatedAppExecutivoRoute
   '/_authenticated/_app/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
   '/_authenticated/_app/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/_authenticated/_app/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
@@ -989,6 +999,7 @@ export interface FileRouteTypes {
     | '/dpp'
     | '/equipe'
     | '/erp-integration'
+    | '/executivo'
     | '/fashion-calendar'
     | '/fashion-gpt'
     | '/ficha-tecnica'
@@ -1086,6 +1097,7 @@ export interface FileRouteTypes {
     | '/dpp'
     | '/equipe'
     | '/erp-integration'
+    | '/executivo'
     | '/fashion-calendar'
     | '/fashion-gpt'
     | '/ficha-tecnica'
@@ -1184,6 +1196,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/dpp'
     | '/_authenticated/_app/equipe'
     | '/_authenticated/_app/erp-integration'
+    | '/_authenticated/_app/executivo'
     | '/_authenticated/_app/fashion-calendar'
     | '/_authenticated/_app/fashion-gpt'
     | '/_authenticated/_app/ficha-tecnica'
@@ -1701,6 +1714,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppFashionCalendarRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/executivo': {
+      id: '/_authenticated/_app/executivo'
+      path: '/executivo'
+      fullPath: '/executivo'
+      preLoaderRoute: typeof AuthenticatedAppExecutivoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/erp-integration': {
       id: '/_authenticated/_app/erp-integration'
       path: '/erp-integration'
@@ -1990,6 +2010,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppDppRoute: typeof AuthenticatedAppDppRoute
   AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
   AuthenticatedAppErpIntegrationRoute: typeof AuthenticatedAppErpIntegrationRoute
+  AuthenticatedAppExecutivoRoute: typeof AuthenticatedAppExecutivoRoute
   AuthenticatedAppFashionCalendarRoute: typeof AuthenticatedAppFashionCalendarRoute
   AuthenticatedAppFashionGptRoute: typeof AuthenticatedAppFashionGptRoute
   AuthenticatedAppFichaTecnicaRoute: typeof AuthenticatedAppFichaTecnicaRoute
@@ -2080,6 +2101,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppDppRoute: AuthenticatedAppDppRoute,
   AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
   AuthenticatedAppErpIntegrationRoute: AuthenticatedAppErpIntegrationRoute,
+  AuthenticatedAppExecutivoRoute: AuthenticatedAppExecutivoRoute,
   AuthenticatedAppFashionCalendarRoute: AuthenticatedAppFashionCalendarRoute,
   AuthenticatedAppFashionGptRoute: AuthenticatedAppFashionGptRoute,
   AuthenticatedAppFichaTecnicaRoute: AuthenticatedAppFichaTecnicaRoute,
