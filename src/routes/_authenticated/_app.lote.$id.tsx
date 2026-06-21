@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { TechSheetDrawerTrigger } from "@/components/tech-sheet-drawer";
 import { LoteQrButton } from "@/components/lote-qr-button";
+import { BomExplosionDialog } from "@/components/bom-explosion-dialog";
 
 const OCC_KIND_LABEL: Record<string, string> = {
   positiva: "Positiva (+)",
