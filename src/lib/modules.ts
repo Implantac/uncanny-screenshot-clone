@@ -400,6 +400,16 @@ export const MODULES: ModuleDef[] = [
     group: "PCP & Produção",
   },
   {
+    slug: "product-routing",
+    path: "/product-routing",
+    title: "Roteiro Produtivo (BOP)",
+    short: "Sequência por produto",
+    description:
+      "Defina o roteiro de estágios por produto ou família. Jeans usa lavanderia, malha pula — o Kanban respeita esse roteiro.",
+    icon: RouteIcon,
+    group: "PCP & Produção",
+  },
+  {
     slug: "terceirizados",
     path: "/terceirizados",
     title: "Terceirizados",

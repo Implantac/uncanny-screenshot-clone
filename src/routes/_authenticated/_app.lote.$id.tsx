@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { TechSheetDrawerTrigger } from "@/components/tech-sheet-drawer";
 import { LoteQrButton } from "@/components/lote-qr-button";
+import { BomExplosionDialog } from "@/components/bom-explosion-dialog";
 
 const OCC_KIND_LABEL: Record<string, string> = {
   positiva: "Positiva (+)",
@@ -409,7 +410,7 @@ function LotePage() {
                   <Clock className="size-3" /> nesta etapa há {relTime(o.stage_updated_at)}
                 </div>
               )}
-              <div className="grid grid-cols-5 gap-1 pt-1 border-t border-border/60">
+              <div className="grid grid-cols-6 gap-1 pt-1 border-t border-border/60">
                 <RefMenuLink
                   to="/movimentacoes"
                   search={{ op: o.code } as any}
@@ -424,6 +425,7 @@ function LotePage() {
                   productImage={o.products?.image_url}
                   orderCode={o.code}
                 />
+                <BomExplosionDialog productionOrderId={o.id} orderCode={o.code} />
                 <RefMenuLink
                   to="/produtos"
                   search={{ q: o.products?.sku ?? o.code } as any}

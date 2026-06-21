@@ -43,6 +43,7 @@ import { Route as AuthenticatedAppProdutosRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppProdutividadeRouteImport } from './routes/_authenticated/_app.produtividade'
 import { Route as AuthenticatedAppProductSuccessRouteImport } from './routes/_authenticated/_app.product-success'
 import { Route as AuthenticatedAppProductScoreRouteImport } from './routes/_authenticated/_app.product-score'
+import { Route as AuthenticatedAppProductRoutingRouteImport } from './routes/_authenticated/_app.product-routing'
 import { Route as AuthenticatedAppPilotsRouteImport } from './routes/_authenticated/_app.pilots'
 import { Route as AuthenticatedAppPedidosCompraRouteImport } from './routes/_authenticated/_app.pedidos-compra'
 import { Route as AuthenticatedAppPcpStagesRouteImport } from './routes/_authenticated/_app.pcp-stages'
@@ -296,6 +297,12 @@ const AuthenticatedAppProductScoreRoute =
   AuthenticatedAppProductScoreRouteImport.update({
     id: '/product-score',
     path: '/product-score',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppProductRoutingRoute =
+  AuthenticatedAppProductRoutingRouteImport.update({
+    id: '/product-routing',
+    path: '/product-routing',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppPilotsRoute = AuthenticatedAppPilotsRouteImport.update({
@@ -729,6 +736,7 @@ export interface FileRoutesByFullPath {
   '/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
   '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/pilots': typeof AuthenticatedAppPilotsRoute
+  '/product-routing': typeof AuthenticatedAppProductRoutingRoute
   '/product-score': typeof AuthenticatedAppProductScoreRoute
   '/product-success': typeof AuthenticatedAppProductSuccessRoute
   '/produtividade': typeof AuthenticatedAppProdutividadeRoute
@@ -827,6 +835,7 @@ export interface FileRoutesByTo {
   '/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
   '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/pilots': typeof AuthenticatedAppPilotsRoute
+  '/product-routing': typeof AuthenticatedAppProductRoutingRoute
   '/product-score': typeof AuthenticatedAppProductScoreRoute
   '/product-success': typeof AuthenticatedAppProductSuccessRoute
   '/produtividade': typeof AuthenticatedAppProdutividadeRoute
@@ -927,6 +936,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
   '/_authenticated/_app/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/_authenticated/_app/pilots': typeof AuthenticatedAppPilotsRoute
+  '/_authenticated/_app/product-routing': typeof AuthenticatedAppProductRoutingRoute
   '/_authenticated/_app/product-score': typeof AuthenticatedAppProductScoreRoute
   '/_authenticated/_app/product-success': typeof AuthenticatedAppProductSuccessRoute
   '/_authenticated/_app/produtividade': typeof AuthenticatedAppProdutividadeRoute
@@ -1028,6 +1038,7 @@ export interface FileRouteTypes {
     | '/pcp-stages'
     | '/pedidos-compra'
     | '/pilots'
+    | '/product-routing'
     | '/product-score'
     | '/product-success'
     | '/produtividade'
@@ -1126,6 +1137,7 @@ export interface FileRouteTypes {
     | '/pcp-stages'
     | '/pedidos-compra'
     | '/pilots'
+    | '/product-routing'
     | '/product-score'
     | '/product-success'
     | '/produtividade'
@@ -1225,6 +1237,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/pcp-stages'
     | '/_authenticated/_app/pedidos-compra'
     | '/_authenticated/_app/pilots'
+    | '/_authenticated/_app/product-routing'
     | '/_authenticated/_app/product-score'
     | '/_authenticated/_app/product-success'
     | '/_authenticated/_app/produtividade'
@@ -1516,6 +1529,13 @@ declare module '@tanstack/react-router' {
       path: '/product-score'
       fullPath: '/product-score'
       preLoaderRoute: typeof AuthenticatedAppProductScoreRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/product-routing': {
+      id: '/_authenticated/_app/product-routing'
+      path: '/product-routing'
+      fullPath: '/product-routing'
+      preLoaderRoute: typeof AuthenticatedAppProductRoutingRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/pilots': {
@@ -2039,6 +2059,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppPcpStagesRoute: typeof AuthenticatedAppPcpStagesRoute
   AuthenticatedAppPedidosCompraRoute: typeof AuthenticatedAppPedidosCompraRoute
   AuthenticatedAppPilotsRoute: typeof AuthenticatedAppPilotsRoute
+  AuthenticatedAppProductRoutingRoute: typeof AuthenticatedAppProductRoutingRoute
   AuthenticatedAppProductScoreRoute: typeof AuthenticatedAppProductScoreRoute
   AuthenticatedAppProductSuccessRoute: typeof AuthenticatedAppProductSuccessRoute
   AuthenticatedAppProdutividadeRoute: typeof AuthenticatedAppProdutividadeRoute
@@ -2130,6 +2151,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppPcpStagesRoute: AuthenticatedAppPcpStagesRoute,
   AuthenticatedAppPedidosCompraRoute: AuthenticatedAppPedidosCompraRoute,
   AuthenticatedAppPilotsRoute: AuthenticatedAppPilotsRoute,
+  AuthenticatedAppProductRoutingRoute: AuthenticatedAppProductRoutingRoute,
   AuthenticatedAppProductScoreRoute: AuthenticatedAppProductScoreRoute,
   AuthenticatedAppProductSuccessRoute: AuthenticatedAppProductSuccessRoute,
   AuthenticatedAppProdutividadeRoute: AuthenticatedAppProdutividadeRoute,
@@ -2195,13 +2217,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

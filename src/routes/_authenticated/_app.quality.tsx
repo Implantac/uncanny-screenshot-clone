@@ -15,6 +15,7 @@ import { QualityDevBridgePanel } from "@/components/quality-dev-bridge-panel";
 import { QualityCollectionsBridgePanel } from "@/components/quality-collections-bridge-panel";
 import { QualityMarketingBridgePanel } from "@/components/quality-marketing-bridge-panel";
 import { CapaPanel } from "@/components/capa-panel";
+import { CapaEffectivenessPanel } from "@/components/capa-effectiveness-panel";
 import { CellEfficiencyPanel } from "@/components/cell-efficiency-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/quality")({
@@ -308,7 +309,8 @@ function Quality() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="capa">
+        <TabsContent value="capa" className="space-y-4">
+          <CapaEffectivenessPanel />
           <CapaPanel />
         </TabsContent>
       </Tabs>
