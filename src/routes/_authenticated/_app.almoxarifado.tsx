@@ -41,6 +41,7 @@ import {
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
 import { InventoryLotBreakdownButton } from "@/components/inventory-lot-breakdown";
+import { InventoryScrapsPanel } from "@/components/inventory-scraps-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/almoxarifado")({
   validateSearch: zodValidator(
@@ -272,6 +273,9 @@ function Almoxarifado() {
           </Button>
         </div>
       </div>
+
+      <InventoryScrapsPanel />
+
 
       {items.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
