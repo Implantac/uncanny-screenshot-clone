@@ -10,6 +10,8 @@ import {
   Sparkles,
   Check,
   BellOff,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -208,7 +210,35 @@ export function NotificationsBell() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
 
-  const total =
+  // Preferências persistidas: mute por categoria
+  const prefs = useQuery({
+    queryKey: ["notification-prefs", user?.id ?? null],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("notification_preferences")
+        .select("category, muted")
+        .eq("user_id", user!.id);
+      return new Set((data ?? []).filter((r) => r.muted).map((r) => r.category));
+    },
+  });
+  const mutedSet = prefs.data ?? new Set<string>();
+
+  const toggleMute = useMutation({
+    mutationFn: async (category: Cat) => {
+      if (!user?.id) return;
+      const isMuted = mutedSet.has(category);
+      await supabase
+        .from("notification_preferences")
+        .upsert(
+          { user_id: user.id, category, muted: !isMuted },
+          { onConflict: "user_id,category" },
+        );
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notification-prefs"] }),
+  });
+
+  const totalRaw =
     (data?.critical.length ?? 0) +
     (data?.overdue.length ?? 0) +
     (data?.stuck.length ?? 0) +
@@ -217,8 +247,8 @@ export function NotificationsBell() {
     (data?.marketing.length ?? 0);
 
   const [cat, setCat] = useState<Cat>("all");
-  const counts: Record<Cat, number> = {
-    all: total,
+  const rawCounts: Record<Cat, number> = {
+    all: totalRaw,
     estoque: data?.critical.length ?? 0,
     atraso: data?.overdue.length ?? 0,
     parado: data?.stuck.length ?? 0,
@@ -226,7 +256,12 @@ export function NotificationsBell() {
     comentario: data?.comments.length ?? 0,
     marketing: data?.marketing.length ?? 0,
   };
-  const show = (k: Exclude<Cat, "all">) => showSection(cat, k);
+  // Total exibido no badge ignora categorias silenciadas
+  const total = (Object.keys(rawCounts) as Cat[])
+    .filter((k) => k !== "all" && !mutedSet.has(k))
+    .reduce((sum, k) => sum + rawCounts[k], 0);
+  const counts: Record<Cat, number> = { ...rawCounts, all: total };
+  const show = (k: Exclude<Cat, "all">) => !mutedSet.has(k) && showSection(cat, k);
 
   const Actions = ({ alertKey }: { alertKey: string }) => (
     <div className="flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
