@@ -148,6 +148,15 @@ export const MODULES: ModuleDef[] = [
     status: "parcial",
   },
   {
+    slug: "executivo",
+    path: "/executivo",
+    title: "Executivo",
+    short: "Dashboard cruzado",
+    description: "Matriz coleção × KPI com semáforo e leitura IA dos vital few.",
+    icon: LayoutDashboard,
+    group: "Operação",
+  },
+  {
     slug: "fashion-calendar",
     path: "/fashion-calendar",
     title: "Fashion Calendar",
