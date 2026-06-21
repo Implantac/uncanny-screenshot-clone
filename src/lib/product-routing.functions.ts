@@ -131,3 +131,78 @@ export const getRoutingForProduct = createServerFn({ method: "POST" })
     }));
     return { source: "default" as const, steps };
   });
+
+export type ProductRoutingMap = Record<
+  string,
+  { source: "product" | "family" | "default"; stages: string[] }
+>;
+
+export const getRoutingsForProducts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ productIds: z.array(z.string().uuid()).max(500) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const ids = Array.from(new Set(data.productIds));
+    const { data: stagesRows } = await supabase
+      .from("pcp_stages")
+      .select("key, position")
+      .eq("active", true)
+      .order("position");
+    const defaultStages = (stagesRows ?? []).map((s) => s.key as string);
+
+    const result: ProductRoutingMap = {};
+    if (ids.length === 0) return { map: result, defaultStages };
+
+    const { data: products } = await supabase
+      .from("products")
+      .select("id, line_id")
+      .in("id", ids);
+    const familyIds = Array.from(
+      new Set((products ?? []).map((p) => p.line_id).filter(Boolean) as string[]),
+    );
+
+    const [{ data: byProduct }, { data: byFamily }] = await Promise.all([
+      supabase
+        .from("product_routing" as never)
+        .select("product_id, stage_key, sequence")
+        .in("product_id" as never, ids as never)
+        .order("sequence", { ascending: true }),
+      familyIds.length
+        ? supabase
+            .from("product_routing" as never)
+            .select("family_id, stage_key, sequence")
+            .in("family_id" as never, familyIds as never)
+            .order("sequence", { ascending: true })
+        : Promise.resolve({ data: [] as never[] }),
+    ]);
+
+    const productStages = new Map<string, string[]>();
+    for (const r of (byProduct ?? []) as Array<{ product_id: string; stage_key: string }>) {
+      const arr = productStages.get(r.product_id) ?? [];
+      arr.push(r.stage_key);
+      productStages.set(r.product_id, arr);
+    }
+    const familyStages = new Map<string, string[]>();
+    for (const r of (byFamily ?? []) as Array<{ family_id: string; stage_key: string }>) {
+      const arr = familyStages.get(r.family_id) ?? [];
+      arr.push(r.stage_key);
+      familyStages.set(r.family_id, arr);
+    }
+
+    for (const id of ids) {
+      const ps = productStages.get(id);
+      if (ps && ps.length) {
+        result[id] = { source: "product", stages: ps };
+        continue;
+      }
+      const fam = (products ?? []).find((p) => p.id === id)?.line_id ?? null;
+      const fs = fam ? familyStages.get(fam) : null;
+      if (fs && fs.length) {
+        result[id] = { source: "family", stages: fs };
+        continue;
+      }
+      result[id] = { source: "default", stages: defaultStages };
+    }
+    return { map: result, defaultStages };
+  });
+
