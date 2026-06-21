@@ -558,20 +558,29 @@ function PcpKanban() {
                               <TooltipProvider delayDuration={150}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <span
-                                      className="text-[9px] px-1 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary shrink-0 cursor-help"
+                                    <button
+                                      type="button"
+                                      aria-label={`Rota ${routeSource === "product" ? "do produto" : "da família"} — próximo setor ${nextStage?.label ?? "fim do roteiro"}`}
+                                      className="shrink-0 inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium leading-none text-primary cursor-help focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     >
+                                      <span className="size-1 rounded-full bg-primary" aria-hidden />
                                       rota {routeSource === "product" ? "produto" : "família"}
-                                    </span>
+                                    </button>
                                   </TooltipTrigger>
-                                  <TooltipContent side="top" className="text-xs max-w-[220px]">
-                                    <div className="font-medium">
-                                      {routeSource === "product" ? "Roteiro do produto" : "Roteiro da família/linha"}
+                                  <TooltipContent
+                                    side="top"
+                                    align="start"
+                                    sideOffset={6}
+                                    collisionPadding={8}
+                                    className="max-w-[240px] bg-popover text-popover-foreground border border-border shadow-md px-3 py-2"
+                                  >
+                                    <div className="text-[11px] uppercase tracking-wide opacity-60">
+                                      {routeSource === "product" ? "Roteiro do produto" : "Roteiro da família"}
                                     </div>
-                                    <div className="opacity-90 mt-0.5">
-                                      Próximo setor:{" "}
-                                      <span className="font-semibold">
-                                        {nextStage ? nextStage.label : "—  fim do roteiro"}
+                                    <div className="mt-1 flex items-baseline gap-1.5">
+                                      <span className="text-xs opacity-70">Próximo:</span>
+                                      <span className="text-sm font-semibold">
+                                        {nextStage ? nextStage.label : "fim do roteiro"}
                                       </span>
                                     </div>
                                   </TooltipContent>
