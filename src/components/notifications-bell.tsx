@@ -311,22 +311,43 @@ export function NotificationsBell() {
             {total} alerta{total === 1 ? "" : "s"} · passe o mouse para adiar/resolver
           </div>
         </div>
-        <div className="px-2 py-2 border-b border-border flex flex-wrap gap-1">
-          {(Object.keys(CAT_LABEL) as Cat[]).map((k) => (
-            <button
-              key={k}
-              onClick={() => setCat(k)}
-              className={`text-[11px] px-2 py-1 rounded-md inline-flex items-center gap-1 ${
-                cat === k
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted text-muted-foreground"
-              }`}
-            >
-              {CAT_LABEL[k]}
-              {counts[k] > 0 && <span className="tabular-nums opacity-80">{counts[k]}</span>}
-            </button>
-          ))}
+        <div className="px-2 py-2 border-b border-border flex flex-wrap gap-1 items-center">
+          {(Object.keys(CAT_LABEL) as Cat[]).map((k) => {
+            const isMuted = k !== "all" && mutedSet.has(k);
+            return (
+              <div key={k} className="inline-flex items-center">
+                <button
+                  onClick={() => setCat(k)}
+                  className={`text-[11px] px-2 py-1 rounded-md inline-flex items-center gap-1 ${
+                    cat === k
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted text-muted-foreground"
+                  } ${isMuted ? "opacity-40 line-through" : ""}`}
+                >
+                  {CAT_LABEL[k]}
+                  {rawCounts[k] > 0 && (
+                    <span className="tabular-nums opacity-80">{rawCounts[k]}</span>
+                  )}
+                </button>
+                {k !== "all" && (
+                  <button
+                    type="button"
+                    title={isMuted ? "Reativar notificações" : "Silenciar tipo"}
+                    onClick={() => toggleMute.mutate(k)}
+                    className="size-5 ml-0.5 grid place-items-center rounded hover:bg-muted"
+                  >
+                    {isMuted ? (
+                      <VolumeX className="size-3 text-muted-foreground" />
+                    ) : (
+                      <Volume2 className="size-3 text-muted-foreground/60 hover:text-foreground" />
+                    )}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
+
         <div className="max-h-96 overflow-y-auto">
           {(cat === "all" ? total === 0 : counts[cat] === 0) && (
             <div className="px-4 py-8 text-center text-sm text-muted-foreground">
