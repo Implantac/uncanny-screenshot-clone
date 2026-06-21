@@ -27,6 +27,9 @@ import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-dr
 import { SamEfficiencyPanel } from "@/components/sam-efficiency-panel";
 import { PcpCapacityTocPanel } from "@/components/pcp-capacity-toc-panel";
 import { LoteSplitDialog } from "@/components/lote-split-dialog";
+import { useServerFn } from "@tanstack/react-start";
+import { getRoutingsForProducts } from "@/lib/product-routing.functions";
+
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
