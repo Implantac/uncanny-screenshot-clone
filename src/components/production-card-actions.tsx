@@ -108,7 +108,7 @@ export function ProductionCardActions({
           title={`Avançar para ${nextColumnLabel}`}
           onClick={(e) => {
             e.preventDefault();
-            advance.mutate();
+            setGateOpen(true);
           }}
           disabled={advance.isPending}
           className="p-1 rounded hover:bg-primary/10 text-primary disabled:opacity-50"
