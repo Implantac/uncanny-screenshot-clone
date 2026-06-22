@@ -157,7 +157,15 @@ export const predictDelays = createServerFn({ method: "GET" })
           predictedDoneAt,
           predictedDelayHours: predictedDelayH,
           risk,
-          reason: reasonParts.join(" · "),
+          reason: buildAiReason({
+            signals: reasonParts,
+            recommendation:
+              risk === "alto"
+                ? "antecipar etapa-gargalo ou renegociar prazo"
+                : risk === "medio"
+                  ? "monitorar e remover bloqueios"
+                  : null,
+          }),
         };
       });
 
