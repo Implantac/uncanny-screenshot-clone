@@ -225,6 +225,20 @@ export function ProductionCardActions({
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {nextColumnKey && (
+        <StageGateDialog
+          open={gateOpen}
+          onOpenChange={setGateOpen}
+          orderId={order.id}
+          orderCode={order.batch_code ?? order.code}
+          toColumn={nextColumnKey}
+          toLabel={nextColumnLabel ?? nextColumnKey}
+          onConfirm={({ overrideReason }) => advance.mutate({ overrideReason })}
+          pending={advance.isPending}
+        />
+      )}
     </span>
   );
 }
+
