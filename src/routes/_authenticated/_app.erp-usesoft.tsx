@@ -220,6 +220,128 @@ function ErpUsesoftPage() {
   );
 }
 
+type HealthResult = {
+  ok: boolean;
+  version?: string;
+  latency_ms?: number;
+  error?: string;
+};
+
+function ConnectionStatusCard({
+  data,
+  isLoading,
+  isFetching,
+  error,
+  onRetry,
+}: {
+  data: HealthResult | undefined;
+  isLoading: boolean;
+  isFetching: boolean;
+  error: Error | null;
+  onRetry: () => void;
+}) {
+  if (isLoading) {
+    return (
+      <Card className="border-muted">
+        <CardContent className="p-4 flex items-center gap-3 text-sm text-muted-foreground">
+          <RefreshCw className="h-4 w-4 animate-spin" />
+          Verificando conexão com o PostgreSQL do Usesoft…
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const failMsg =
+    error?.message ??
+    (data && !data.ok ? data.error ?? "Falha desconhecida" : null);
+
+  if (failMsg) {
+    const hint = diagnoseError(failMsg);
+    return (
+      <Card className="border-destructive/40 bg-destructive/5">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-destructive text-base">
+            <XCircle className="h-5 w-5" />
+            Sem conexão com o PostgreSQL do ERP Usesoft
+          </CardTitle>
+          <CardDescription className="text-destructive/90">
+            {failMsg}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {hint && (
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">O que verificar: </span>
+              {hint}
+            </p>
+          )}
+          <div className="text-xs text-muted-foreground">
+            Variáveis necessárias no backend:{" "}
+            <code>USESOFT_PG_HOST</code>, <code>USESOFT_PG_PORT</code>,{" "}
+            <code>USESOFT_PG_DATABASE</code>, <code>USESOFT_PG_USER</code>,{" "}
+            <code>USESOFT_PG_PASSWORD</code>.
+          </div>
+          <Button size="sm" variant="outline" onClick={onRetry} disabled={isFetching}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
+            Testar novamente
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (data?.ok) {
+    return (
+      <Card className="border-emerald-500/40 bg-emerald-500/5">
+        <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5" />
+            <div className="text-sm">
+              <div className="font-medium text-emerald-700 dark:text-emerald-400">
+                Conectado ao PostgreSQL do Usesoft
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Latência {data.latency_ms ?? "?"}ms · sessão read-only ·{" "}
+                <span className="font-mono">
+                  {data.version?.split(" ").slice(0, 2).join(" ") ?? "PostgreSQL"}
+                </span>
+              </div>
+            </div>
+          </div>
+          <Button size="sm" variant="ghost" onClick={onRetry} disabled={isFetching}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
+            Re-testar
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return null;
+}
+
+function diagnoseError(msg: string): string | null {
+  const m = msg.toLowerCase();
+  if (m.includes("usesoft_pg_") || m.includes("não configurado") || m.includes("inválido")) {
+    return "Corrija o segredo apontado no backend (apenas IP/DNS no host, sem usuário, '@', porta ou '://').";
+  }
+  if (m.includes("enotfound") || m.includes("dns")) {
+    return "Host não resolvido. Confira USESOFT_PG_HOST (IP ou DNS) e se o servidor está acessível pela internet.";
+  }
+  if (m.includes("econnrefused")) {
+    return "Conexão recusada. Verifique USESOFT_PG_PORT e libere o IP da Lovable Cloud no firewall do ERP.";
+  }
+  if (m.includes("etimedout") || m.includes("timeout")) {
+    return "Tempo esgotado. Provavelmente firewall/VPN bloqueando — libere o acesso à porta do PostgreSQL.";
+  }
+  if (m.includes("password authentication")) {
+    return "Usuário ou senha inválidos. Atualize USESOFT_PG_USER e USESOFT_PG_PASSWORD.";
+  }
+  if (m.includes("database") && m.includes("does not exist")) {
+    return "Banco inexistente. Verifique USESOFT_PG_DATABASE.";
+  }
+  return null;
+
 function Kpi({
   icon,
   label,
