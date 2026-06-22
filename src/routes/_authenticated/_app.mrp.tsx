@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/dialog";
 import { exportToCsv } from "@/lib/csv";
 
-type MrpSearch = { status?: MrpStatus | "all"; q?: string };
+type MrpSearch = { status?: MrpStatus | "all"; q?: string; category?: string };
 
 export const Route = createFileRoute("/_authenticated/_app/mrp")({
   validateSearch: (s: Record<string, unknown>): MrpSearch => {
@@ -55,8 +55,9 @@ export const Route = createFileRoute("/_authenticated/_app/mrp")({
     const status = allowed.includes(s.status as MrpStatus | "all")
       ? (s.status as MrpStatus | "all")
       : undefined;
-    const q = typeof s.q === "string" ? s.q : undefined;
-    return { status, q };
+    const q = typeof s.q === "string" && s.q ? s.q : undefined;
+    const category = typeof s.category === "string" && s.category ? s.category : undefined;
+    return { status, q, category };
   },
   head: () => ({
     meta: [
