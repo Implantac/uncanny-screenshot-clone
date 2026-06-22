@@ -706,15 +706,29 @@ function SalesPanel() {
 function PurchasesPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListPurchases);
+  const syncFn = useServerFn(syncErpPurchases);
+  const statusFn = useServerFn(getErpPurchaseSyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-purchases", search],
     queryFn: () =>
       fn({ data: { search, limit: 200, offset: 0, daysBack: 180 } }),
   });
+  const statusQ = useQuery({ queryKey: ["erp-purchases-sync-status"], queryFn: () => statusFn() });
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const r = await syncFn({ data: { daysBack: 180 } });
+      toast.success(`Compras: ${r.inserted ?? 0} POs espelhados (${r.total_erp} no ERP).`);
+      qc.invalidateQueries({ queryKey: ["erp-purchases-sync-status"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
+    finally { setSyncing(false); }
+  }
   return (
     <TableShell
       title="Compras · últimos 180 dias"
-      description="solpedcom — pedidos de compra por fornecedor."
+      description="solpedcom — pedidos de compra por fornecedor. PCP usa para acompanhar lead time."
       search={search}
       setSearch={setSearch}
       searchPlaceholder="Buscar fornecedor…"
@@ -723,6 +737,14 @@ function PurchasesPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <SyncBar
+        linked={statusQ.data?.linked ?? 0}
+        linkedLabel="PO(s) espelhado(s)"
+        lastSync={statusQ.data?.lastSync ?? null}
+        onSync={handleSync}
+        syncing={syncing}
+        hint="Janela de 180 dias substituída a cada sync."
+      />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
