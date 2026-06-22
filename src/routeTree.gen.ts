@@ -53,7 +53,6 @@ import { Route as AuthenticatedAppPcpKanbanRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppPcpRouteImport } from './routes/_authenticated/_app.pcp'
 import { Route as AuthenticatedAppOndeEstaRouteImport } from './routes/_authenticated/_app.onde-esta'
 import { Route as AuthenticatedAppOmnichannelRouteImport } from './routes/_authenticated/_app.omnichannel'
-import { Route as AuthenticatedAppMrpRouteImport } from './routes/_authenticated/_app.mrp'
 import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_authenticated/_app.movimentacoes'
 import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
 import { Route as AuthenticatedAppMateriaisRouteImport } from './routes/_authenticated/_app.materiais'
@@ -106,6 +105,7 @@ import { Route as AuthenticatedAppApprovalsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
 import { Route as AuthenticatedAppAcompanhamentoProducaoRouteImport } from './routes/_authenticated/_app.acompanhamento-producao'
 import { Route as AuthenticatedAppAbcColecaoRouteImport } from './routes/_authenticated/_app.abc-colecao'
+import { Route as AuthenticatedAppMrpIndexRouteImport } from './routes/_authenticated/_app.mrp.index'
 import { Route as ApiPublicSupplierPortalTokenRouteImport } from './routes/api/public/supplier-portal.$token'
 import { Route as ApiPublicHooksMrpRecalcRouteImport } from './routes/api/public/hooks/mrp-recalc'
 import { Route as ApiPublicHooksMarkLateOpsRouteImport } from './routes/api/public/hooks/mark-late-ops'
@@ -369,11 +369,6 @@ const AuthenticatedAppOmnichannelRoute =
     path: '/omnichannel',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAppMrpRoute = AuthenticatedAppMrpRouteImport.update({
-  id: '/mrp',
-  path: '/mrp',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
 const AuthenticatedAppMovimentacoesRoute =
   AuthenticatedAppMovimentacoesRouteImport.update({
     id: '/movimentacoes',
@@ -675,6 +670,12 @@ const AuthenticatedAppAbcColecaoRoute =
     path: '/abc-colecao',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppMrpIndexRoute =
+  AuthenticatedAppMrpIndexRouteImport.update({
+    id: '/mrp/',
+    path: '/mrp/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const ApiPublicSupplierPortalTokenRoute =
   ApiPublicSupplierPortalTokenRouteImport.update({
     id: '/api/public/supplier-portal/$token',
@@ -735,14 +736,14 @@ const AuthenticatedAppProducaoDoDiaStageRoute =
   } as any)
 const AuthenticatedAppMrpExecutivoRoute =
   AuthenticatedAppMrpExecutivoRouteImport.update({
-    id: '/executivo',
-    path: '/executivo',
-    getParentRoute: () => AuthenticatedAppMrpRoute,
+    id: '/mrp/executivo',
+    path: '/mrp/executivo',
+    getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppMrpBiRoute = AuthenticatedAppMrpBiRouteImport.update({
-  id: '/bi',
-  path: '/bi',
-  getParentRoute: () => AuthenticatedAppMrpRoute,
+  id: '/mrp/bi',
+  path: '/mrp/bi',
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 const AuthenticatedAppLoteIdRoute = AuthenticatedAppLoteIdRouteImport.update({
   id: '/lote/$id',
@@ -821,7 +822,6 @@ export interface FileRoutesByFullPath {
   '/materiais': typeof AuthenticatedAppMateriaisRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
-  '/mrp': typeof AuthenticatedAppMrpRouteWithChildren
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
@@ -872,6 +872,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/hooks/mrp-recalc': typeof ApiPublicHooksMrpRecalcRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
+  '/mrp/': typeof AuthenticatedAppMrpIndexRoute
   '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
 }
 export interface FileRoutesByTo {
@@ -933,7 +934,6 @@ export interface FileRoutesByTo {
   '/materiais': typeof AuthenticatedAppMateriaisRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
-  '/mrp': typeof AuthenticatedAppMrpRouteWithChildren
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
@@ -984,6 +984,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/hooks/mrp-recalc': typeof ApiPublicHooksMrpRecalcRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
+  '/mrp': typeof AuthenticatedAppMrpIndexRoute
   '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
 }
 export interface FileRoutesById {
@@ -1047,7 +1048,6 @@ export interface FileRoutesById {
   '/_authenticated/_app/materiais': typeof AuthenticatedAppMateriaisRoute
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
   '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
-  '/_authenticated/_app/mrp': typeof AuthenticatedAppMrpRouteWithChildren
   '/_authenticated/_app/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/_authenticated/_app/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/_authenticated/_app/pcp': typeof AuthenticatedAppPcpRoute
@@ -1099,6 +1099,7 @@ export interface FileRoutesById {
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/hooks/mrp-recalc': typeof ApiPublicHooksMrpRecalcRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
+  '/_authenticated/_app/mrp/': typeof AuthenticatedAppMrpIndexRoute
   '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
 }
 export interface FileRouteTypes {
@@ -1162,7 +1163,6 @@ export interface FileRouteTypes {
     | '/materiais'
     | '/mobile'
     | '/movimentacoes'
-    | '/mrp'
     | '/omnichannel'
     | '/onde-esta'
     | '/pcp'
@@ -1213,6 +1213,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/hooks/mrp-recalc'
     | '/api/public/supplier-portal/$token'
+    | '/mrp/'
     | '/api/public/product-image/$ownerId/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1274,7 +1275,6 @@ export interface FileRouteTypes {
     | '/materiais'
     | '/mobile'
     | '/movimentacoes'
-    | '/mrp'
     | '/omnichannel'
     | '/onde-esta'
     | '/pcp'
@@ -1325,6 +1325,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/hooks/mrp-recalc'
     | '/api/public/supplier-portal/$token'
+    | '/mrp'
     | '/api/public/product-image/$ownerId/$'
   id:
     | '__root__'
@@ -1387,7 +1388,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/materiais'
     | '/_authenticated/_app/mobile'
     | '/_authenticated/_app/movimentacoes'
-    | '/_authenticated/_app/mrp'
     | '/_authenticated/_app/omnichannel'
     | '/_authenticated/_app/onde-esta'
     | '/_authenticated/_app/pcp'
@@ -1439,6 +1439,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/hooks/mrp-recalc'
     | '/api/public/supplier-portal/$token'
+    | '/_authenticated/_app/mrp/'
     | '/api/public/product-image/$ownerId/$'
   fileRoutesById: FileRoutesById
 }
@@ -1767,13 +1768,6 @@ declare module '@tanstack/react-router' {
       path: '/omnichannel'
       fullPath: '/omnichannel'
       preLoaderRoute: typeof AuthenticatedAppOmnichannelRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/_app/mrp': {
-      id: '/_authenticated/_app/mrp'
-      path: '/mrp'
-      fullPath: '/mrp'
-      preLoaderRoute: typeof AuthenticatedAppMrpRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/movimentacoes': {
@@ -2140,6 +2134,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAbcColecaoRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/mrp/': {
+      id: '/_authenticated/_app/mrp/'
+      path: '/mrp'
+      fullPath: '/mrp/'
+      preLoaderRoute: typeof AuthenticatedAppMrpIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/api/public/supplier-portal/$token': {
       id: '/api/public/supplier-portal/$token'
       path: '/api/public/supplier-portal/$token'
@@ -2212,17 +2213,17 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/_app/mrp/executivo': {
       id: '/_authenticated/_app/mrp/executivo'
-      path: '/executivo'
+      path: '/mrp/executivo'
       fullPath: '/mrp/executivo'
       preLoaderRoute: typeof AuthenticatedAppMrpExecutivoRouteImport
-      parentRoute: typeof AuthenticatedAppMrpRoute
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/mrp/bi': {
       id: '/_authenticated/_app/mrp/bi'
-      path: '/bi'
+      path: '/mrp/bi'
       fullPath: '/mrp/bi'
       preLoaderRoute: typeof AuthenticatedAppMrpBiRouteImport
-      parentRoute: typeof AuthenticatedAppMrpRoute
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/lote/$id': {
       id: '/_authenticated/_app/lote/$id'
@@ -2247,19 +2248,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface AuthenticatedAppMrpRouteChildren {
-  AuthenticatedAppMrpBiRoute: typeof AuthenticatedAppMrpBiRoute
-  AuthenticatedAppMrpExecutivoRoute: typeof AuthenticatedAppMrpExecutivoRoute
-}
-
-const AuthenticatedAppMrpRouteChildren: AuthenticatedAppMrpRouteChildren = {
-  AuthenticatedAppMrpBiRoute: AuthenticatedAppMrpBiRoute,
-  AuthenticatedAppMrpExecutivoRoute: AuthenticatedAppMrpExecutivoRoute,
-}
-
-const AuthenticatedAppMrpRouteWithChildren =
-  AuthenticatedAppMrpRoute._addFileChildren(AuthenticatedAppMrpRouteChildren)
 
 interface AuthenticatedAppQualityRouteChildren {
   AuthenticatedAppQualityCapaRulesRoute: typeof AuthenticatedAppQualityCapaRulesRoute
@@ -2329,7 +2317,6 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMateriaisRoute: typeof AuthenticatedAppMateriaisRoute
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
   AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
-  AuthenticatedAppMrpRoute: typeof AuthenticatedAppMrpRouteWithChildren
   AuthenticatedAppOmnichannelRoute: typeof AuthenticatedAppOmnichannelRoute
   AuthenticatedAppOndeEstaRoute: typeof AuthenticatedAppOndeEstaRoute
   AuthenticatedAppPcpRoute: typeof AuthenticatedAppPcpRoute
@@ -2368,9 +2355,12 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppApontarIdRoute: typeof AuthenticatedAppApontarIdRoute
   AuthenticatedAppLoteIdRoute: typeof AuthenticatedAppLoteIdRoute
+  AuthenticatedAppMrpBiRoute: typeof AuthenticatedAppMrpBiRoute
+  AuthenticatedAppMrpExecutivoRoute: typeof AuthenticatedAppMrpExecutivoRoute
   AuthenticatedAppProducaoDoDiaStageRoute: typeof AuthenticatedAppProducaoDoDiaStageRoute
   AuthenticatedAppPrototipoIdRoute: typeof AuthenticatedAppPrototipoIdRoute
   AuthenticatedAppWarRoomColecaoIdRoute: typeof AuthenticatedAppWarRoomColecaoIdRoute
+  AuthenticatedAppMrpIndexRoute: typeof AuthenticatedAppMrpIndexRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
@@ -2428,7 +2418,6 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMateriaisRoute: AuthenticatedAppMateriaisRoute,
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
   AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
-  AuthenticatedAppMrpRoute: AuthenticatedAppMrpRouteWithChildren,
   AuthenticatedAppOmnichannelRoute: AuthenticatedAppOmnichannelRoute,
   AuthenticatedAppOndeEstaRoute: AuthenticatedAppOndeEstaRoute,
   AuthenticatedAppPcpRoute: AuthenticatedAppPcpRoute,
@@ -2468,10 +2457,13 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppApontarIdRoute: AuthenticatedAppApontarIdRoute,
   AuthenticatedAppLoteIdRoute: AuthenticatedAppLoteIdRoute,
+  AuthenticatedAppMrpBiRoute: AuthenticatedAppMrpBiRoute,
+  AuthenticatedAppMrpExecutivoRoute: AuthenticatedAppMrpExecutivoRoute,
   AuthenticatedAppProducaoDoDiaStageRoute:
     AuthenticatedAppProducaoDoDiaStageRoute,
   AuthenticatedAppPrototipoIdRoute: AuthenticatedAppPrototipoIdRoute,
   AuthenticatedAppWarRoomColecaoIdRoute: AuthenticatedAppWarRoomColecaoIdRoute,
+  AuthenticatedAppMrpIndexRoute: AuthenticatedAppMrpIndexRoute,
 }
 
 const AuthenticatedAppRouteWithChildren =
