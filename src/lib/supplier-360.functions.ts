@@ -88,7 +88,7 @@ export const getSupplier360 = createServerFn({ method: "POST" })
       supabase
         .from("quality_inspections")
         .select(
-          "id, created_at, result, inspection_type, critical_defects, major_defects, minor_defects, defect_categories, production_order_id",
+          "id, created_at, result, inspection_type, critical_defects, major_defects, minor_defects, production_order_id",
         )
         .eq("supplier_id", data.supplier_id)
         .eq("owner_id", userId)
@@ -133,11 +133,12 @@ export const getSupplier360 = createServerFn({ method: "POST" })
     const criticalDefects = insp.reduce((s, i) => s + (i.critical_defects ?? 0), 0);
     const majorDefects = insp.reduce((s, i) => s + (i.major_defects ?? 0), 0);
 
-    // Top defeitos
+    // Top tipos de inspeção reprovados
     const defectCount: Record<string, number> = {};
     for (const i of insp) {
-      const cats = (i.defect_categories ?? []) as string[];
-      for (const c of cats) defectCount[c] = (defectCount[c] ?? 0) + 1;
+      if (i.result !== "reprovado" && i.result !== "reprovada") continue;
+      const key = i.inspection_type ?? "outras";
+      defectCount[key] = (defectCount[key] ?? 0) + 1;
     }
     const topDefects = Object.entries(defectCount)
       .sort((a, b) => b[1] - a[1])
