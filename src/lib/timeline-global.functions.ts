@@ -186,7 +186,7 @@ export const getGlobalTimeline = createServerFn({ method: "POST" })
     if (enabled.has("prototype")) {
       const { data: rows } = await supabase
         .from("prototype_handoff_events")
-        .select("id, created_at, event_type, from_role, to_role, prototype_id, note")
+        .select("id, created_at, event, from_sector, to_sector, prototype_id, notes")
         .eq("owner_id", userId)
         .gte("created_at", sinceIso)
         .order("created_at", { ascending: false })
@@ -197,8 +197,8 @@ export const getGlobalTimeline = createServerFn({ method: "POST" })
           source: "prototype",
           ts: r.created_at,
           actor: null,
-          title: `Protótipo · ${humanize(r.event_type)}`,
-          subtitle: [r.from_role, r.to_role].filter(Boolean).join(" → ") || r.note,
+          title: `Protótipo · ${humanize(r.event)}`,
+          subtitle: [r.from_sector, r.to_sector].filter(Boolean).join(" → ") || r.notes,
           entity: "prototype",
           entity_id: r.prototype_id,
           link: r.prototype_id ? `/prototipo/${r.prototype_id}` : null,
