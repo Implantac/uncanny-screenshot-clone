@@ -94,9 +94,46 @@ function fmtDate(d?: string | null) {
 function ErpUsesoftPage() {
   const health = useServerFn(usesoftHealth);
   const kpis = useServerFn(usesoftKpis);
+  const qc = useQueryClient();
 
   const healthQ = useQuery({ queryKey: ["usesoft-health"], queryFn: () => health() });
   const kpisQ = useQuery({ queryKey: ["usesoft-kpis"], queryFn: () => kpis() });
+
+  const syncCol = useServerFn(syncErpCollections);
+  const syncProd = useServerFn(syncErpProducts);
+  const syncCust = useServerFn(syncErpCustomers);
+  const syncSup = useServerFn(syncErpSuppliers);
+  const syncInv = useServerFn(syncErpInventory);
+  const syncSales = useServerFn(syncErpSales);
+  const syncPur = useServerFn(syncErpPurchases);
+  const [syncingAll, setSyncingAll] = useState(false);
+
+  async function handleSyncAll() {
+    setSyncingAll(true);
+    const steps: Array<[string, () => Promise<{ inserted?: number; updated?: number; total_erp?: number }>]> = [
+      ["Coleções", () => syncCol()],
+      ["Produtos", () => syncProd()],
+      ["Clientes", () => syncCust()],
+      ["Fornecedores", () => syncSup()],
+      ["Estoque", () => syncInv()],
+      ["Vendas (90d)", () => syncSales({ data: { daysBack: 90 } })],
+      ["Compras (180d)", () => syncPur({ data: { daysBack: 180 } })],
+    ];
+    let ok = 0, fail = 0;
+    for (const [label, fn] of steps) {
+      try {
+        const r = await fn();
+        toast.success(`${label}: ${r.inserted ?? 0} criados, ${r.updated ?? 0} atualizados`);
+        ok++;
+      } catch (e) {
+        toast.error(`${label}: ${e instanceof Error ? e.message : "falhou"}`);
+        fail++;
+      }
+    }
+    qc.invalidateQueries();
+    setSyncingAll(false);
+    if (!fail) toast.success(`Sincronização completa — ${ok} etapas OK`);
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -135,6 +172,10 @@ function ErpUsesoftPage() {
             }}
           >
             <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button onClick={handleSyncAll} disabled={syncingAll || !healthQ.data?.ok} size="sm">
+            <PlayCircle className={`h-4 w-4 mr-2 ${syncingAll ? "animate-pulse" : ""}`} />
+            {syncingAll ? "Sincronizando tudo…" : "Sincronizar tudo"}
           </Button>
         </div>
       </header>
