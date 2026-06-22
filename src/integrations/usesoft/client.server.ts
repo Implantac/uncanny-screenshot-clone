@@ -129,13 +129,23 @@ export async function usesoftPing(): Promise<{
     const r = await usesoftQuery<{ version: string }>("SELECT version()");
     return { ok: true, version: r.rows[0]?.version, latency_ms: Date.now() - t0 };
   } catch (e) {
-    const error = (e as Error).message;
-    return {
-      ok: false,
-      error: error.includes("ENOTFOUND")
-        ? "Host do ERP não resolvido. Verifique as credenciais USESOFT_PG_* no backend."
-        : error,
-      latency_ms: Date.now() - t0,
-    };
+    const err = e as Error;
+    const msg = err.message ?? String(err);
+    let friendly = msg;
+    if (err.name === "UsesoftConfigError") {
+      friendly = msg;
+    } else if (msg.includes("ENOTFOUND") || msg.includes("EAI_AGAIN")) {
+      friendly = "Host do ERP não resolvido (DNS). Verifique USESOFT_PG_HOST no backend.";
+    } else if (msg.includes("ECONNREFUSED")) {
+      friendly = "Conexão recusada pelo ERP. Verifique USESOFT_PG_PORT e firewall.";
+    } else if (msg.includes("ETIMEDOUT") || msg.includes("timeout")) {
+      friendly = "Tempo esgotado ao conectar no ERP. Verifique rede/firewall.";
+    } else if (msg.includes("password authentication failed")) {
+      friendly = "Usuário ou senha do ERP inválidos.";
+    } else if (msg.includes("does not exist") && msg.includes("database")) {
+      friendly = "Banco do ERP não existe. Verifique USESOFT_PG_DATABASE.";
+    }
+    return { ok: false, error: friendly, latency_ms: Date.now() - t0 };
   }
+
 }
