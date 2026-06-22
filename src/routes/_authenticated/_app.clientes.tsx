@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Users, Plus, Trash2, Pencil, Mail, Phone, MapPin } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Users, Plus, Trash2, Pencil, Mail, Phone, MapPin, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { syncErpCustomers } from "@/lib/erp-import.functions";
+
 
 export const Route = createFileRoute("/_authenticated/_app/clientes")({
   head: () => ({ meta: [{ title: "Clientes · USE MODA OS" }] }),
