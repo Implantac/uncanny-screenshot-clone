@@ -17,7 +17,9 @@ import {
   AlertTriangle,
   XCircle,
   FileText,
+  Activity,
 } from "lucide-react";
+import { Supplier360Drawer } from "@/components/supplier-360-drawer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -99,6 +101,7 @@ function FornecedoresPage() {
     sample: SupplierSample;
     action: ReviewAction;
   } | null>(null);
+  const [view360Id, setView360Id] = useState<string | null>(null);
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
@@ -458,14 +461,22 @@ function FornecedoresPage() {
                 )}
               </div>
               {s.notes && <p className="text-xs text-muted-foreground line-clamp-2">{s.notes}</p>}
-              {s.owner_id === user?.id && (
-                <div className="flex justify-end gap-1 pt-2 border-t border-border">
-                  <button
-                    onClick={() => generatePortalLink(s.id)}
-                    className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border hover:bg-muted"
-                  >
-                    Link do portal
-                  </button>
+              <div className="flex justify-end gap-1 pt-2 border-t border-border">
+                <button
+                  onClick={() => setView360Id(s.id)}
+                  className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 flex items-center gap-1"
+                  title="Visão 360° do fornecedor"
+                >
+                  <Activity className="size-3" /> 360°
+                </button>
+                {s.owner_id === user?.id && (
+                  <>
+                    <button
+                      onClick={() => generatePortalLink(s.id)}
+                      className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border hover:bg-muted"
+                    >
+                      Link do portal
+                    </button>
                   <button
                     onClick={() => {
                       setEditing(s);
