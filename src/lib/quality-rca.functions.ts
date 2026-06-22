@@ -64,7 +64,6 @@ export const getSupplierDefectRanking = createServerFn({ method: "POST" })
       if (a.total < 3) continue;
       const fpy = ((a.total - a.failed) / a.total) * 100;
       const reasonParts: string[] = [];
-      const reasonParts: string[] = [];
       if (a.critical > 0)
         reasonParts.push(`${a.critical} crítico${a.critical > 1 ? "s" : ""} em 90d`);
       if (fpy < 90) reasonParts.push(`FPY ${Math.round(fpy)}%`);
