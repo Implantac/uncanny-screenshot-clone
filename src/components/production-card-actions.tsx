@@ -26,6 +26,7 @@ import { moveOrderToColumn } from "@/lib/production-tracking.functions";
 import { setProductionProgress } from "@/lib/pcp-quick.functions";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
+import { StageGateDialog } from "@/components/stage-gate-dialog";
 
 export type CardActionOrder = {
   id: string;
@@ -54,6 +55,7 @@ export function ProductionCardActions({
 }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
   const [pointOpen, setPointOpen] = useState(false);
   const [qty, setQty] = useState<string>(
     String(Math.round(((order.progress ?? 0) / 100) * (order.quantity ?? 0))),
@@ -61,10 +63,20 @@ export function ProductionCardActions({
   const [note, setNote] = useState("");
 
   const advance = useMutation({
-    mutationFn: () =>
-      moveOrderToColumn({ data: { orderId: order.id, toColumn: nextColumnKey ?? "" } }),
-    onSuccess: () => {
+    mutationFn: (vars: { overrideReason?: string }) =>
+      moveOrderToColumn({
+        data: {
+          orderId: order.id,
+          toColumn: nextColumnKey ?? "",
+          overrideReason: vars.overrideReason,
+        },
+      }),
+    onSuccess: (r) => {
       toast.success(`Avançado para ${nextColumnLabel}`);
+      if (r?.warnings?.length) {
+        toast.warning(`Atenção: ${r.warnings.map((w) => w.label).join(", ")}`);
+      }
+      setGateOpen(false);
       qc.invalidateQueries({ queryKey: invalidateKey });
     },
     onError: (e: Error) => toast.error(e.message ?? "Falha ao avançar"),
@@ -96,7 +108,7 @@ export function ProductionCardActions({
           title={`Avançar para ${nextColumnLabel}`}
           onClick={(e) => {
             e.preventDefault();
-            advance.mutate();
+            setGateOpen(true);
           }}
           disabled={advance.isPending}
           className="p-1 rounded hover:bg-primary/10 text-primary disabled:opacity-50"
@@ -171,7 +183,7 @@ export function ProductionCardActions({
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
-                advance.mutate();
+                setGateOpen(true);
               }}
             >
               <ArrowRight className="size-3.5" /> Avançar para {nextColumnLabel}
@@ -213,6 +225,20 @@ export function ProductionCardActions({
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {nextColumnKey && (
+        <StageGateDialog
+          open={gateOpen}
+          onOpenChange={setGateOpen}
+          orderId={order.id}
+          orderCode={order.batch_code ?? order.code}
+          toColumn={nextColumnKey}
+          toLabel={nextColumnLabel ?? nextColumnKey}
+          onConfirm={({ overrideReason }) => advance.mutate({ overrideReason })}
+          pending={advance.isPending}
+        />
+      )}
     </span>
   );
 }
+
