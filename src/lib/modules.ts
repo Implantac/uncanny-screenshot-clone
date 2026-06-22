@@ -923,6 +923,15 @@ export const MODULES: ModuleDef[] = [
     group: "Plataforma",
   },
   {
+    slug: "timeline",
+    path: "/timeline",
+    title: "Timeline Global",
+    short: "Tudo o que aconteceu",
+    description: "Feed cronológico unificado: auditoria, estágios, ocorrências, qualidade, protótipos e marketing.",
+    icon: Activity,
+    group: "Plataforma",
+  },
+  {
     slug: "data-lake",
     path: "/data-lake",
     title: "Data Lake",
