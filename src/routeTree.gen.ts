@@ -22,6 +22,7 @@ import { Route as AuthenticatedAppVariantesRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticated/_app.use-ai'
 import { Route as AuthenticatedAppTwinFactoryRouteImport } from './routes/_authenticated/_app.twin-factory'
 import { Route as AuthenticatedAppTrendsRouteImport } from './routes/_authenticated/_app.trends'
+import { Route as AuthenticatedAppTimelineRouteImport } from './routes/_authenticated/_app.timeline'
 import { Route as AuthenticatedAppTerceirizadosRouteImport } from './routes/_authenticated/_app.terceirizados'
 import { Route as AuthenticatedAppTargetCostingRouteImport } from './routes/_authenticated/_app.target-costing'
 import { Route as AuthenticatedAppSustentabilidade360RouteImport } from './routes/_authenticated/_app.sustentabilidade-360'
@@ -175,6 +176,12 @@ const AuthenticatedAppTrendsRoute = AuthenticatedAppTrendsRouteImport.update({
   path: '/trends',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppTimelineRoute =
+  AuthenticatedAppTimelineRouteImport.update({
+    id: '/timeline',
+    path: '/timeline',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppTerceirizadosRoute =
   AuthenticatedAppTerceirizadosRouteImport.update({
     id: '/terceirizados',
@@ -758,6 +765,7 @@ export interface FileRoutesByFullPath {
   '/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/target-costing': typeof AuthenticatedAppTargetCostingRoute
   '/terceirizados': typeof AuthenticatedAppTerceirizadosRoute
+  '/timeline': typeof AuthenticatedAppTimelineRoute
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
@@ -857,6 +865,7 @@ export interface FileRoutesByTo {
   '/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/target-costing': typeof AuthenticatedAppTargetCostingRoute
   '/terceirizados': typeof AuthenticatedAppTerceirizadosRoute
+  '/timeline': typeof AuthenticatedAppTimelineRoute
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/use-ai': typeof AuthenticatedAppUseAiRoute
@@ -958,6 +967,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/_authenticated/_app/target-costing': typeof AuthenticatedAppTargetCostingRoute
   '/_authenticated/_app/terceirizados': typeof AuthenticatedAppTerceirizadosRoute
+  '/_authenticated/_app/timeline': typeof AuthenticatedAppTimelineRoute
   '/_authenticated/_app/trends': typeof AuthenticatedAppTrendsRoute
   '/_authenticated/_app/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
   '/_authenticated/_app/use-ai': typeof AuthenticatedAppUseAiRoute
@@ -1060,6 +1070,7 @@ export interface FileRouteTypes {
     | '/sustentabilidade-360'
     | '/target-costing'
     | '/terceirizados'
+    | '/timeline'
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
@@ -1159,6 +1170,7 @@ export interface FileRouteTypes {
     | '/sustentabilidade-360'
     | '/target-costing'
     | '/terceirizados'
+    | '/timeline'
     | '/trends'
     | '/twin-factory'
     | '/use-ai'
@@ -1259,6 +1271,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/sustentabilidade-360'
     | '/_authenticated/_app/target-costing'
     | '/_authenticated/_app/terceirizados'
+    | '/_authenticated/_app/timeline'
     | '/_authenticated/_app/trends'
     | '/_authenticated/_app/twin-factory'
     | '/_authenticated/_app/use-ai'
@@ -1382,6 +1395,13 @@ declare module '@tanstack/react-router' {
       path: '/trends'
       fullPath: '/trends'
       preLoaderRoute: typeof AuthenticatedAppTrendsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/timeline': {
+      id: '/_authenticated/_app/timeline'
+      path: '/timeline'
+      fullPath: '/timeline'
+      preLoaderRoute: typeof AuthenticatedAppTimelineRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/terceirizados': {
@@ -2081,6 +2101,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppSustentabilidade360Route: typeof AuthenticatedAppSustentabilidade360Route
   AuthenticatedAppTargetCostingRoute: typeof AuthenticatedAppTargetCostingRoute
   AuthenticatedAppTerceirizadosRoute: typeof AuthenticatedAppTerceirizadosRoute
+  AuthenticatedAppTimelineRoute: typeof AuthenticatedAppTimelineRoute
   AuthenticatedAppTrendsRoute: typeof AuthenticatedAppTrendsRoute
   AuthenticatedAppTwinFactoryRoute: typeof AuthenticatedAppTwinFactoryRoute
   AuthenticatedAppUseAiRoute: typeof AuthenticatedAppUseAiRoute
@@ -2174,6 +2195,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
     AuthenticatedAppSustentabilidade360Route,
   AuthenticatedAppTargetCostingRoute: AuthenticatedAppTargetCostingRoute,
   AuthenticatedAppTerceirizadosRoute: AuthenticatedAppTerceirizadosRoute,
+  AuthenticatedAppTimelineRoute: AuthenticatedAppTimelineRoute,
   AuthenticatedAppTrendsRoute: AuthenticatedAppTrendsRoute,
   AuthenticatedAppTwinFactoryRoute: AuthenticatedAppTwinFactoryRoute,
   AuthenticatedAppUseAiRoute: AuthenticatedAppUseAiRoute,
