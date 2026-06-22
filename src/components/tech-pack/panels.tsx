@@ -332,11 +332,12 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
                 <TableHead className="w-24 text-right">SAM (min)</TableHead>
                 <TableHead className="w-28 text-right">R$ / min</TableHead>
                 <TableHead className="w-28 text-right">Custo</TableHead>
+                {canEdit && <TableHead className="w-24 text-center">Ordem</TableHead>}
                 {canEdit && <TableHead className="w-12" />}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((o) => (
+              {data.map((o, idx) => (
                 <TableRow key={o.id}>
                   <TableCell>
                     <EditableText
@@ -396,6 +397,35 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
                   </TableCell>
                   {canEdit && (
                     <TableCell>
+                      <div className="flex items-center justify-center gap-0.5">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-6"
+                          title="Mover para cima"
+                          disabled={idx === 0 || reorder.isPending}
+                          onClick={() => reorder.mutate({ id: o.id, dir: -1 })}
+                        >
+                          <ArrowUp className="size-3.5" />
+                        </Button>
+                        <span className="text-[10px] text-muted-foreground tabular-nums w-4 text-center">
+                          {idx + 1}
+                        </span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-6"
+                          title="Mover para baixo"
+                          disabled={idx === data.length - 1 || reorder.isPending}
+                          onClick={() => reorder.mutate({ id: o.id, dir: 1 })}
+                        >
+                          <ArrowDown className="size-3.5" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
+                  {canEdit && (
+                    <TableCell>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -415,6 +445,7 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
                 <TableCell className="text-right tabular-nums">{totalSam.toFixed(2)}</TableCell>
                 <TableCell />
                 <TableCell className="text-right tabular-nums">{fmt(totalCost)}</TableCell>
+                {canEdit && <TableCell />}
                 {canEdit && <TableCell />}
               </TableRow>
             </TableBody>
