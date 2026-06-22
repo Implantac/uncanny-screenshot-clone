@@ -54,6 +54,7 @@ import {
   Send,
   Flame,
   FolderOpen,
+  Library,
   type LucideIcon,
 } from "lucide-react";
 
