@@ -33,7 +33,7 @@ async function logOk(sb: SB, userId: string, entity: string, ref: string, n: num
   await sb.from("erp_sync_log").insert({
     owner_id: userId, direction: "in", event_type: "sync",
     entity_type: entity, entity_ref: ref,
-    status: "success", records_affected: n, payload,
+    status: "success", records_affected: n, payload: payload as never,
   });
 }
 
