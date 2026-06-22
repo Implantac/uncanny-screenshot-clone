@@ -46,13 +46,14 @@ export const Route = createFileRoute("/api/public/hooks/erp-pull-all")({
           const ownerId = cfg.owner_id as string;
           const ownerResult: Record<string, unknown> = { owner_id: ownerId };
           const steps: Array<[string, () => Promise<unknown>]> = [
+            // ordem: rápidos primeiro (bulk), pesados por último
             ["collections", () => runSyncCollections(supabaseAdmin, ownerId)],
-            ["products", () => runSyncProducts(supabaseAdmin, ownerId)],
-            ["customers", () => runSyncCustomers(supabaseAdmin, ownerId)],
-            ["suppliers", () => runSyncSuppliers(supabaseAdmin, ownerId)],
             ["inventory", () => runSyncInventory(supabaseAdmin, ownerId)],
-            ["sales", () => runSyncSales(supabaseAdmin, ownerId, 90)],
             ["purchases", () => runSyncPurchases(supabaseAdmin, ownerId, 180)],
+            ["sales", () => runSyncSales(supabaseAdmin, ownerId, 90)],
+            ["suppliers", () => runSyncSuppliers(supabaseAdmin, ownerId)],
+            ["customers", () => runSyncCustomers(supabaseAdmin, ownerId)],
+            ["products", () => runSyncProducts(supabaseAdmin, ownerId)],
           ];
           for (const [label, fn] of steps) {
             try {
