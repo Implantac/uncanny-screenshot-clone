@@ -273,12 +273,16 @@ function Kpi({
   sub,
   tone = "default",
   icon,
+  to,
+  search,
 }: {
   label: string;
   value: string;
   sub?: string;
   tone?: "default" | "warning" | "danger" | "info";
   icon?: React.ReactNode;
+  to?: string;
+  search?: Record<string, string>;
 }) {
   const toneCls =
     tone === "warning"
@@ -288,17 +292,27 @@ function Kpi({
         : tone === "info"
           ? "border-blue-500/30"
           : "";
-  return (
-    <div className={`rounded-lg border bg-card p-4 ${toneCls}`}>
+  const body = (
+    <>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{label}</span>
         {icon}
       </div>
       <div className="text-xl font-bold mt-1">{value}</div>
       {sub && <div className="text-[11px] text-muted-foreground mt-0.5">{sub}</div>}
-    </div>
+    </>
   );
+  const cls = `rounded-lg border bg-card p-4 ${toneCls} ${to ? "hover:border-primary/60 hover:shadow-sm transition-all cursor-pointer block text-left" : ""}`;
+  if (to) {
+    return (
+      <Link to={to} search={search as never} className={cls}>
+        {body}
+      </Link>
+    );
+  }
+  return <div className={cls}>{body}</div>;
 }
+
 
 function TopList({
   title,
