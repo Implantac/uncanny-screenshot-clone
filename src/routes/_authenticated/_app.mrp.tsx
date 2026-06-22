@@ -47,7 +47,17 @@ import {
 } from "@/components/ui/dialog";
 import { exportToCsv } from "@/lib/csv";
 
+type MrpSearch = { status?: MrpStatus | "all"; q?: string };
+
 export const Route = createFileRoute("/_authenticated/_app/mrp")({
+  validateSearch: (s: Record<string, unknown>): MrpSearch => {
+    const allowed: Array<MrpStatus | "all"> = ["all", "critico", "atencao", "normal", "excesso"];
+    const status = allowed.includes(s.status as MrpStatus | "all")
+      ? (s.status as MrpStatus | "all")
+      : undefined;
+    const q = typeof s.q === "string" ? s.q : undefined;
+    return { status, q };
+  },
   head: () => ({
     meta: [
       { title: "MRP Inteligente · USE MODA PLM" },
