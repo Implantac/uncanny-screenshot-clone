@@ -14,7 +14,6 @@ import {
   Building2,
   ShoppingCart,
   Truck,
-  Boxes,
 } from "lucide-react";
 import {
   Card,
