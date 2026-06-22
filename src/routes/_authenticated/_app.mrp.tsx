@@ -97,9 +97,29 @@ function MrpPage() {
   const saveCfgFn = useServerFn(saveMrpConfig);
 
   const sp = Route.useSearch();
-  const [search, setSearch] = useState(sp.q ?? "");
-  const [category, setCategory] = useState<string>("all");
-  const [status, setStatus] = useState<string>(sp.status ?? "all");
+  const navigate = useNavigate({ from: Route.fullPath });
+  const search = sp.q ?? "";
+  const category = sp.category ?? "all";
+  const status = sp.status ?? "all";
+
+  const updateSearch = useCallback(
+    (patch: Partial<MrpSearch>) => {
+      navigate({
+        search: (prev) => {
+          const next: MrpSearch = { ...prev, ...patch };
+          if (!next.q) delete next.q;
+          if (!next.status || next.status === "all") delete next.status;
+          if (!next.category || next.category === "all") delete next.category;
+          return next;
+        },
+        replace: true,
+      });
+    },
+    [navigate],
+  );
+  const setSearch = (v: string) => updateSearch({ q: v });
+  const setCategory = (v: string) => updateSearch({ category: v });
+  const setStatus = (v: string) => updateSearch({ status: v as MrpStatus | "all" });
 
   const [cfgOpen, setCfgOpen] = useState(false);
   const [openRow, setOpenRow] = useState<MrpRow | null>(null);
