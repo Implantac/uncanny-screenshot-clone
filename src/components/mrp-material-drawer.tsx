@@ -70,7 +70,11 @@ export function MrpMaterialDrawer({
 
   // sincroniza qty quando row muda
   useMemo(() => {
-    if (row) setQty(row.suggestedPurchase || row.eoq || 0);
+    if (row) {
+      setQty(row.suggestedPurchase || row.eoq || 0);
+      setSl(String(row.serviceLevel));
+      setLt(String(row.leadTimeDays));
+    }
   }, [row]);
 
   const buy = useMutation({
@@ -80,6 +84,22 @@ export function MrpMaterialDrawer({
       toast.success(`Solicitação ${r.code} criada`);
       qc.invalidateQueries({ queryKey: ["mrp"] });
       onClose();
+    },
+    onError: (e) => toast.error((e as Error).message),
+  });
+
+  const saveOverrides = useMutation({
+    mutationFn: () =>
+      overrideFn({
+        data: {
+          inventoryItemId: row!.id,
+          serviceLevel: Number(sl) as 90 | 95 | 97 | 99,
+          leadTimeDays: Number(lt),
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Ajustes salvos · MRP recalculado");
+      qc.invalidateQueries({ queryKey: ["mrp"] });
     },
     onError: (e) => toast.error((e as Error).message),
   });
