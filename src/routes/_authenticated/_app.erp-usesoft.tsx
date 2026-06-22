@@ -50,10 +50,20 @@ import {
  getErpCollectionSyncStatus,
  syncErpProducts,
  getErpProductSyncStatus,
+ syncErpCustomers,
+ getErpCustomerSyncStatus,
+ syncErpSuppliers,
+ getErpSupplierSyncStatus,
+ syncErpInventory,
+ getErpInventorySyncStatus,
+ syncErpSales,
+ getErpSalesSyncStatus,
+ syncErpPurchases,
+ getErpPurchaseSyncStatus,
 } from "@/lib/erp-import.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Download } from "lucide-react";
+import { Download, PlayCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/erp-usesoft")({
   head: () => ({
@@ -84,9 +94,46 @@ function fmtDate(d?: string | null) {
 function ErpUsesoftPage() {
   const health = useServerFn(usesoftHealth);
   const kpis = useServerFn(usesoftKpis);
+  const qc = useQueryClient();
 
   const healthQ = useQuery({ queryKey: ["usesoft-health"], queryFn: () => health() });
   const kpisQ = useQuery({ queryKey: ["usesoft-kpis"], queryFn: () => kpis() });
+
+  const syncCol = useServerFn(syncErpCollections);
+  const syncProd = useServerFn(syncErpProducts);
+  const syncCust = useServerFn(syncErpCustomers);
+  const syncSup = useServerFn(syncErpSuppliers);
+  const syncInv = useServerFn(syncErpInventory);
+  const syncSales = useServerFn(syncErpSales);
+  const syncPur = useServerFn(syncErpPurchases);
+  const [syncingAll, setSyncingAll] = useState(false);
+
+  async function handleSyncAll() {
+    setSyncingAll(true);
+    const steps: Array<[string, () => Promise<{ inserted?: number; updated?: number; total_erp?: number }>]> = [
+      ["Coleções", () => syncCol()],
+      ["Produtos", () => syncProd()],
+      ["Clientes", () => syncCust()],
+      ["Fornecedores", () => syncSup()],
+      ["Estoque", () => syncInv()],
+      ["Vendas (90d)", () => syncSales({ data: { daysBack: 90 } })],
+      ["Compras (180d)", () => syncPur({ data: { daysBack: 180 } })],
+    ];
+    let ok = 0, fail = 0;
+    for (const [label, fn] of steps) {
+      try {
+        const r = await fn();
+        toast.success(`${label}: ${r.inserted ?? 0} criados, ${r.updated ?? 0} atualizados`);
+        ok++;
+      } catch (e) {
+        toast.error(`${label}: ${e instanceof Error ? e.message : "falhou"}`);
+        fail++;
+      }
+    }
+    qc.invalidateQueries();
+    setSyncingAll(false);
+    if (!fail) toast.success(`Sincronização completa — ${ok} etapas OK`);
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -125,6 +172,10 @@ function ErpUsesoftPage() {
             }}
           >
             <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button onClick={handleSyncAll} disabled={syncingAll || !healthQ.data?.ok} size="sm">
+            <PlayCircle className={`h-4 w-4 mr-2 ${syncingAll ? "animate-pulse" : ""}`} />
+            {syncingAll ? "Sincronizando tudo…" : "Sincronizar tudo"}
           </Button>
         </div>
       </header>
@@ -184,6 +235,41 @@ function Kpi({
     </Card>
   );
 }
+
+function SyncBar({
+  linked,
+  linkedLabel,
+  lastSync,
+  onSync,
+  syncing,
+  hint,
+}: {
+  linked: number;
+  linkedLabel: string;
+  lastSync: unknown;
+  onSync: () => void | Promise<void>;
+  syncing: boolean;
+  hint?: string;
+}) {
+  const ls = lastSync as { created_at?: string; records_affected?: number | null } | null;
+  return (
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
+      <div className="text-sm">
+        <div className="font-medium">{linked.toLocaleString("pt-BR")} {linkedLabel}</div>
+        <div className="text-xs text-muted-foreground">
+          {ls && ls.created_at
+            ? `Último sync: ${new Date(ls.created_at).toLocaleString("pt-BR")} — ${ls.records_affected ?? 0} registros`
+            : hint ?? "Nunca sincronizado."}
+        </div>
+      </div>
+      <Button onClick={() => onSync()} disabled={syncing} size="sm">
+        <Download className={`h-4 w-4 mr-2 ${syncing ? "animate-pulse" : ""}`} />
+        {syncing ? "Sincronizando…" : "Sincronizar do ERP"}
+      </Button>
+    </div>
+  );
+}
+
 
 function SearchBar({
   value,
@@ -468,11 +554,25 @@ function ProductsPanel() {
 function InventoryPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListInventory);
+  const syncFn = useServerFn(syncErpInventory);
+  const statusFn = useServerFn(getErpInventorySyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-inventory", search],
     queryFn: () =>
       fn({ data: { search, limit: 200, offset: 0, onlyWithBalance: true } }),
   });
+  const statusQ = useQuery({ queryKey: ["erp-inventory-sync-status"], queryFn: () => statusFn() });
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const r = await syncFn();
+      toast.success(`Estoque: ${r.inserted ?? 0} linhas espelhadas (${r.total_erp} no ERP).`);
+      qc.invalidateQueries({ queryKey: ["erp-inventory-sync-status"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
+    finally { setSyncing(false); }
+  }
   return (
     <TableShell
       title="Estoque (saldo consolidado)"
@@ -485,6 +585,14 @@ function InventoryPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <SyncBar
+        linked={statusQ.data?.linked ?? 0}
+        linkedLabel="SKU(s) espelhados do ERP"
+        lastSync={statusQ.data?.lastSync ?? null}
+        onSync={handleSync}
+        syncing={syncing}
+        hint="Snapshot do saldo de cada SKU (substituído a cada sync)."
+      />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -524,15 +632,29 @@ function InventoryPanel() {
 function SalesPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListSales);
+  const syncFn = useServerFn(syncErpSales);
+  const statusFn = useServerFn(getErpSalesSyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-sales", search],
     queryFn: () =>
       fn({ data: { search, limit: 200, offset: 0, daysBack: 90 } }),
   });
+  const statusQ = useQuery({ queryKey: ["erp-sales-sync-status"], queryFn: () => statusFn() });
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const r = await syncFn({ data: { daysBack: 90 } });
+      toast.success(`Vendas: ${r.inserted ?? 0} itens espelhados (${r.total_erp} no ERP).`);
+      qc.invalidateQueries({ queryKey: ["erp-sales-sync-status"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
+    finally { setSyncing(false); }
+  }
   return (
     <TableShell
       title="Vendas · últimos 90 dias"
-      description="solpedid + solitped — pedidos por data, valor, cliente e quantidade de itens."
+      description="solpedid + solitped — pedidos por data, valor, cliente e quantidade de itens. Marketing usa para best-sellers e tendência."
       search={search}
       setSearch={setSearch}
       searchPlaceholder="Buscar cliente…"
@@ -541,6 +663,14 @@ function SalesPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <SyncBar
+        linked={statusQ.data?.linked ?? 0}
+        linkedLabel="venda(s) espelhada(s)"
+        lastSync={statusQ.data?.lastSync ?? null}
+        onSync={handleSync}
+        syncing={syncing}
+        hint="Janela de 90 dias substituída a cada sync."
+      />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -576,15 +706,29 @@ function SalesPanel() {
 function PurchasesPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListPurchases);
+  const syncFn = useServerFn(syncErpPurchases);
+  const statusFn = useServerFn(getErpPurchaseSyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-purchases", search],
     queryFn: () =>
       fn({ data: { search, limit: 200, offset: 0, daysBack: 180 } }),
   });
+  const statusQ = useQuery({ queryKey: ["erp-purchases-sync-status"], queryFn: () => statusFn() });
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const r = await syncFn({ data: { daysBack: 180 } });
+      toast.success(`Compras: ${r.inserted ?? 0} POs espelhados (${r.total_erp} no ERP).`);
+      qc.invalidateQueries({ queryKey: ["erp-purchases-sync-status"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
+    finally { setSyncing(false); }
+  }
   return (
     <TableShell
       title="Compras · últimos 180 dias"
-      description="solpedcom — pedidos de compra por fornecedor."
+      description="solpedcom — pedidos de compra por fornecedor. PCP usa para acompanhar lead time."
       search={search}
       setSearch={setSearch}
       searchPlaceholder="Buscar fornecedor…"
@@ -593,6 +737,14 @@ function PurchasesPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <SyncBar
+        linked={statusQ.data?.linked ?? 0}
+        linkedLabel="PO(s) espelhado(s)"
+        lastSync={statusQ.data?.lastSync ?? null}
+        onSync={handleSync}
+        syncing={syncing}
+        hint="Janela de 180 dias substituída a cada sync."
+      />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -626,14 +778,29 @@ function PurchasesPanel() {
 function CustomersPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListCustomers);
+  const syncFn = useServerFn(syncErpCustomers);
+  const statusFn = useServerFn(getErpCustomerSyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-customers", search],
     queryFn: () => fn({ data: { search, limit: 200, offset: 0 } }),
   });
+  const statusQ = useQuery({ queryKey: ["erp-customers-sync-status"], queryFn: () => statusFn() });
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const r = await syncFn();
+      toast.success(`Clientes: ${r.inserted ?? 0} criados, ${r.updated ?? 0} atualizados.`);
+      qc.invalidateQueries({ queryKey: ["erp-customers-sync-status"] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
+    finally { setSyncing(false); }
+  }
   return (
     <TableShell
       title="Clientes"
-      description="solclien — clientes ativos."
+      description="solclien — clientes ativos. Marketing usa para campanhas, CRM e segmentação."
       search={search}
       setSearch={setSearch}
       searchPlaceholder="Buscar nome, fantasia ou documento…"
@@ -642,6 +809,13 @@ function CustomersPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <SyncBar
+        linked={statusQ.data?.linked ?? 0}
+        linkedLabel="cliente(s) vinculado(s) ao ERP"
+        lastSync={statusQ.data?.lastSync ?? null}
+        onSync={handleSync}
+        syncing={syncing}
+      />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -678,14 +852,29 @@ function CustomersPanel() {
 function SuppliersPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListSuppliers);
+  const syncFn = useServerFn(syncErpSuppliers);
+  const statusFn = useServerFn(getErpSupplierSyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-suppliers", search],
     queryFn: () => fn({ data: { search, limit: 200, offset: 0 } }),
   });
+  const statusQ = useQuery({ queryKey: ["erp-suppliers-sync-status"], queryFn: () => statusFn() });
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const r = await syncFn();
+      toast.success(`Fornecedores: ${r.inserted ?? 0} criados, ${r.updated ?? 0} atualizados.`);
+      qc.invalidateQueries({ queryKey: ["erp-suppliers-sync-status"] });
+      qc.invalidateQueries({ queryKey: ["suppliers"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
+    finally { setSyncing(false); }
+  }
   return (
     <TableShell
       title="Fornecedores"
-      description="solforne — fornecedores ativos."
+      description="solforne — fornecedores ativos. PCP, Desenvolvimento e RFQ usam para roteirização e cotações."
       search={search}
       setSearch={setSearch}
       searchPlaceholder="Buscar nome, fantasia ou CNPJ…"
@@ -694,6 +883,13 @@ function SuppliersPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <SyncBar
+        linked={statusQ.data?.linked ?? 0}
+        linkedLabel="fornecedor(es) vinculado(s) ao ERP"
+        lastSync={statusQ.data?.lastSync ?? null}
+        onSync={handleSync}
+        syncing={syncing}
+      />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>

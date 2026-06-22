@@ -592,6 +592,9 @@ export type Database = {
           created_at: string
           document: string | null
           email: string | null
+          erp_id: string | null
+          erp_source: string | null
+          erp_synced_at: string | null
           id: string
           name: string
           notes: string | null
@@ -605,6 +608,9 @@ export type Database = {
           created_at?: string
           document?: string | null
           email?: string | null
+          erp_id?: string | null
+          erp_source?: string | null
+          erp_synced_at?: string | null
           id?: string
           name: string
           notes?: string | null
@@ -618,6 +624,9 @@ export type Database = {
           created_at?: string
           document?: string | null
           email?: string | null
+          erp_id?: string | null
+          erp_source?: string | null
+          erp_synced_at?: string | null
           id?: string
           name?: string
           notes?: string | null
@@ -4321,7 +4330,11 @@ export type Database = {
           city: string | null
           contact_name: string | null
           created_at: string
+          document: string | null
           email: string | null
+          erp_id: string | null
+          erp_source: string | null
+          erp_synced_at: string | null
           id: string
           lead_time_days: number | null
           name: string
@@ -4338,7 +4351,11 @@ export type Database = {
           city?: string | null
           contact_name?: string | null
           created_at?: string
+          document?: string | null
           email?: string | null
+          erp_id?: string | null
+          erp_source?: string | null
+          erp_synced_at?: string | null
           id?: string
           lead_time_days?: number | null
           name: string
@@ -4355,7 +4372,11 @@ export type Database = {
           city?: string | null
           contact_name?: string | null
           created_at?: string
+          document?: string | null
           email?: string | null
+          erp_id?: string | null
+          erp_source?: string | null
+          erp_synced_at?: string | null
           id?: string
           lead_time_days?: number | null
           name?: string
