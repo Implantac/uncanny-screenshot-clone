@@ -1105,3 +1105,82 @@ function AiSuggestionsPanel({ sheetId }: { sheetId: string }) {
     </div>
   );
 }
+
+function ApproveTechSheetButton({
+  sheetId,
+  status,
+  isOwner,
+}: {
+  sheetId: string;
+  status: Status;
+  isOwner: boolean;
+}) {
+  const qc = useQueryClient();
+  const approveFn = useServerFn(approveTechSheet);
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const mut = useMutation({
+    mutationFn: () => approveFn({ data: { sheetId, note: note || undefined } }),
+    onSuccess: () => {
+      toast.success("Ficha aprovada — snapshot registrado.");
+      setOpen(false);
+      setNote("");
+      qc.invalidateQueries({ queryKey: ["tech_sheets"] });
+      qc.invalidateQueries({ queryKey: ["tech-sheet-by-product"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Falha ao aprovar."),
+  });
+
+  if (status === "aprovada") {
+    return (
+      <Badge variant="outline" className="bg-success/15 text-success border-success/30 gap-1">
+        <ShieldCheck className="size-3" /> Aprovada
+      </Badge>
+    );
+  }
+  if (!isOwner) return null;
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="default"
+        className="gap-1"
+        onClick={() => setOpen(true)}
+        title="Aprovar ficha (requer admin ou gerente)"
+      >
+        <ShieldCheck className="size-3.5" /> Aprovar ficha
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Aprovar ficha técnica</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 text-sm">
+            <p className="text-muted-foreground text-xs">
+              A aprovação congela a versão atual e registra você como aprovador. Apenas admin ou
+              gerente podem executar.
+            </p>
+            <Label className="text-xs">Nota (opcional)</Label>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Ex.: liberada para corte do lote piloto"
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => mut.mutate()} disabled={mut.isPending} className="gap-1">
+              <ShieldCheck className="size-3.5" />
+              {mut.isPending ? "Aprovando…" : "Confirmar aprovação"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
