@@ -57,7 +57,10 @@ export function MrpMaterialDrawer({
   const qc = useQueryClient();
   const detailFn = useServerFn(getMaterialDetail);
   const buyFn = useServerFn(generatePurchaseSuggestion);
+  const overrideFn = useServerFn(saveMaterialMrpOverrides);
   const [qty, setQty] = useState<number>(row?.suggestedPurchase ?? 0);
+  const [sl, setSl] = useState<string>(String(row?.serviceLevel ?? 95));
+  const [lt, setLt] = useState<string>(String(row?.leadTimeDays ?? 14));
 
   const { data, isLoading } = useQuery({
     queryKey: ["mrp", "detail", row?.id],
