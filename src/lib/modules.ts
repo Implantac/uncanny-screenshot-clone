@@ -121,6 +121,7 @@ export const PRIMARY_SLUGS = new Set<string>([
   "closed-loop",
   "control-tower",
   "product-success",
+  "erp-usesoft",
   "erp-integration",
   "sales-performance",
   "margem",
@@ -703,6 +704,17 @@ export const MODULES: ModuleDef[] = [
   },
 
   // === ERP (Integração) — leitura/espelho ===
+  {
+    slug: "erp-usesoft",
+    path: "/erp-usesoft",
+    title: "ERP Usesoft · Live",
+    short: "Leitura ao vivo",
+    description:
+      "Coleções (grifes), produtos, estoque, vendas, compras, clientes e fornecedores lidos diretamente do banco do Usesoft — read-only.",
+    icon: Database,
+    group: "ERP (Integração)",
+    source: "erp-mirror",
+  },
   {
     slug: "erp-integration",
     path: "/erp-integration",
