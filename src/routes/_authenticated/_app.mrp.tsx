@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/dialog";
 import { exportToCsv } from "@/lib/csv";
 
-type MrpSearch = { status?: MrpStatus | "all"; q?: string };
+type MrpSearch = { status?: MrpStatus | "all"; q?: string; category?: string };
 
 export const Route = createFileRoute("/_authenticated/_app/mrp")({
   validateSearch: (s: Record<string, unknown>): MrpSearch => {
@@ -55,8 +55,9 @@ export const Route = createFileRoute("/_authenticated/_app/mrp")({
     const status = allowed.includes(s.status as MrpStatus | "all")
       ? (s.status as MrpStatus | "all")
       : undefined;
-    const q = typeof s.q === "string" ? s.q : undefined;
-    return { status, q };
+    const q = typeof s.q === "string" && s.q ? s.q : undefined;
+    const category = typeof s.category === "string" && s.category ? s.category : undefined;
+    return { status, q, category };
   },
   head: () => ({
     meta: [
@@ -96,9 +97,29 @@ function MrpPage() {
   const saveCfgFn = useServerFn(saveMrpConfig);
 
   const sp = Route.useSearch();
-  const [search, setSearch] = useState(sp.q ?? "");
-  const [category, setCategory] = useState<string>("all");
-  const [status, setStatus] = useState<string>(sp.status ?? "all");
+  const navigate = useNavigate({ from: Route.fullPath });
+  const search = sp.q ?? "";
+  const category = sp.category ?? "all";
+  const status = sp.status ?? "all";
+
+  const updateSearch = useCallback(
+    (patch: Partial<MrpSearch>) => {
+      navigate({
+        search: (prev: MrpSearch) => {
+          const next: MrpSearch = { ...prev, ...patch };
+          if (!next.q) delete next.q;
+          if (!next.status || next.status === "all") delete next.status;
+          if (!next.category || next.category === "all") delete next.category;
+          return next;
+        },
+        replace: true,
+      });
+    },
+    [navigate],
+  );
+  const setSearch = (v: string) => updateSearch({ q: v });
+  const setCategory = (v: string) => updateSearch({ category: v });
+  const setStatus = (v: string) => updateSearch({ status: v as MrpStatus | "all" });
 
   const [cfgOpen, setCfgOpen] = useState(false);
   const [openRow, setOpenRow] = useState<MrpRow | null>(null);
