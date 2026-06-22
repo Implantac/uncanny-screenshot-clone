@@ -53,6 +53,7 @@ import {
   Tag,
   Send,
   Flame,
+  FolderOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -929,6 +930,16 @@ export const MODULES: ModuleDef[] = [
     short: "Tudo o que aconteceu",
     description: "Feed cronológico unificado: auditoria, estágios, ocorrências, qualidade, protótipos e marketing.",
     icon: Activity,
+    group: "Plataforma",
+  },
+  {
+    slug: "documentos",
+    path: "/documentos",
+    title: "Central de Documentos",
+    short: "Tudo num só lugar",
+    description:
+      "Fichas técnicas, anexos do portal de fornecedor, capas de coleção, moodboards e fotos de produto — filtrável e pesquisável.",
+    icon: FolderOpen,
     group: "Plataforma",
   },
   {
