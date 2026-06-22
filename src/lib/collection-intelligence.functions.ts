@@ -108,20 +108,36 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
           : null;
 
         let risk: CollectionRisk["risk"] = "low";
-        let reason = "Dentro do ritmo esperado.";
+        let reason = buildAiReason({
+          signals: [days !== null ? `lança em ${days}d` : null, `${pct}% fichas aprovadas`, `${activeOps} OPs ativas`],
+          fallback: "dentro do ritmo esperado",
+        });
         if (days !== null && days < 30 && pct < 50) {
           risk = "high";
-          reason = `Faltam ${days}d e só ${pct}% das fichas aprovadas.`;
+          reason = buildAiReason({
+            signals: [`faltam ${days}d`, `${pct}% fichas aprovadas`],
+            recommendation: "priorizar aprovação de fichas e abrir OPs urgentes",
+          });
         } else if (days !== null && days < 60 && pct < 70) {
           risk = "medium";
-          reason = `${pct}% das fichas aprovadas a ${days}d do lançamento.`;
+          reason = buildAiReason({
+            signals: [`${pct}% fichas aprovadas`, `${days}d p/ lançamento`],
+            recommendation: "acelerar aprovações para entrar em produção",
+          });
         } else if (items.length > 0 && activeOps === 0 && (days ?? 999) < 60) {
           risk = "medium";
-          reason = "Sem OPs ativas próximo do lançamento.";
+          reason = buildAiReason({
+            signals: ["sem OPs ativas", `${days}d p/ lançamento`],
+            recommendation: "programar OPs imediatamente",
+          });
         } else if (items.length === 0) {
           risk = "medium";
-          reason = "Coleção sem produtos vinculados.";
+          reason = buildAiReason({
+            signals: ["coleção sem produtos vinculados"],
+            recommendation: "vincular produtos antes de planejar produção",
+          });
         }
+
 
         return {
           id: c.id,
