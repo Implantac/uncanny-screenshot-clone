@@ -15,6 +15,7 @@ import {
   Download,
   Zap,
   ArrowRight,
+  Activity,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
@@ -244,6 +245,11 @@ function Almoxarifado() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" asChild className="gap-2">
+            <Link to="/mrp">
+              <Activity className="size-4" /> MRP Inteligente
+            </Link>
+          </Button>
           <Button
             variant="outline"
             onClick={() =>
