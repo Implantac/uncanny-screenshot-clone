@@ -78,6 +78,7 @@ import { Route as AuthenticatedAppExecutivoRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppErpIntegrationRouteImport } from './routes/_authenticated/_app.erp-integration'
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/_app.equipe'
 import { Route as AuthenticatedAppDppRouteImport } from './routes/_authenticated/_app.dpp'
+import { Route as AuthenticatedAppDocumentosRouteImport } from './routes/_authenticated/_app.documentos'
 import { Route as AuthenticatedAppDevKanbanRouteImport } from './routes/_authenticated/_app.dev-kanban'
 import { Route as AuthenticatedAppDesignerWorkspaceRouteImport } from './routes/_authenticated/_app.designer-workspace'
 import { Route as AuthenticatedAppDataLakeRouteImport } from './routes/_authenticated/_app.data-lake'
@@ -503,6 +504,12 @@ const AuthenticatedAppDppRoute = AuthenticatedAppDppRouteImport.update({
   path: '/dpp',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppDocumentosRoute =
+  AuthenticatedAppDocumentosRouteImport.update({
+    id: '/documentos',
+    path: '/documentos',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppDevKanbanRoute =
   AuthenticatedAppDevKanbanRouteImport.update({
     id: '/dev-kanban',
@@ -725,6 +732,7 @@ export interface FileRoutesByFullPath {
   '/data-lake': typeof AuthenticatedAppDataLakeRoute
   '/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
+  '/documentos': typeof AuthenticatedAppDocumentosRoute
   '/dpp': typeof AuthenticatedAppDppRoute
   '/equipe': typeof AuthenticatedAppEquipeRoute
   '/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
@@ -827,6 +835,7 @@ export interface FileRoutesByTo {
   '/data-lake': typeof AuthenticatedAppDataLakeRoute
   '/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
+  '/documentos': typeof AuthenticatedAppDocumentosRoute
   '/dpp': typeof AuthenticatedAppDppRoute
   '/equipe': typeof AuthenticatedAppEquipeRoute
   '/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
@@ -931,6 +940,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/data-lake': typeof AuthenticatedAppDataLakeRoute
   '/_authenticated/_app/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/_authenticated/_app/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
+  '/_authenticated/_app/documentos': typeof AuthenticatedAppDocumentosRoute
   '/_authenticated/_app/dpp': typeof AuthenticatedAppDppRoute
   '/_authenticated/_app/equipe': typeof AuthenticatedAppEquipeRoute
   '/_authenticated/_app/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
@@ -1036,6 +1046,7 @@ export interface FileRouteTypes {
     | '/data-lake'
     | '/designer-workspace'
     | '/dev-kanban'
+    | '/documentos'
     | '/dpp'
     | '/equipe'
     | '/erp-integration'
@@ -1138,6 +1149,7 @@ export interface FileRouteTypes {
     | '/data-lake'
     | '/designer-workspace'
     | '/dev-kanban'
+    | '/documentos'
     | '/dpp'
     | '/equipe'
     | '/erp-integration'
@@ -1241,6 +1253,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/data-lake'
     | '/_authenticated/_app/designer-workspace'
     | '/_authenticated/_app/dev-kanban'
+    | '/_authenticated/_app/documentos'
     | '/_authenticated/_app/dpp'
     | '/_authenticated/_app/equipe'
     | '/_authenticated/_app/erp-integration'
@@ -1814,6 +1827,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppDppRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/documentos': {
+      id: '/_authenticated/_app/documentos'
+      path: '/documentos'
+      fullPath: '/documentos'
+      preLoaderRoute: typeof AuthenticatedAppDocumentosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/dev-kanban': {
       id: '/_authenticated/_app/dev-kanban'
       path: '/dev-kanban'
@@ -2087,6 +2107,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppDataLakeRoute: typeof AuthenticatedAppDataLakeRoute
   AuthenticatedAppDesignerWorkspaceRoute: typeof AuthenticatedAppDesignerWorkspaceRoute
   AuthenticatedAppDevKanbanRoute: typeof AuthenticatedAppDevKanbanRoute
+  AuthenticatedAppDocumentosRoute: typeof AuthenticatedAppDocumentosRoute
   AuthenticatedAppDppRoute: typeof AuthenticatedAppDppRoute
   AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
   AuthenticatedAppErpIntegrationRoute: typeof AuthenticatedAppErpIntegrationRoute
@@ -2181,6 +2202,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppDesignerWorkspaceRoute:
     AuthenticatedAppDesignerWorkspaceRoute,
   AuthenticatedAppDevKanbanRoute: AuthenticatedAppDevKanbanRoute,
+  AuthenticatedAppDocumentosRoute: AuthenticatedAppDocumentosRoute,
   AuthenticatedAppDppRoute: AuthenticatedAppDppRoute,
   AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
   AuthenticatedAppErpIntegrationRoute: AuthenticatedAppErpIntegrationRoute,

@@ -53,6 +53,7 @@ import {
   Tag,
   Send,
   Flame,
+  FolderOpen,
   type LucideIcon,
 } from "lucide-react";
 
