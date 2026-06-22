@@ -58,7 +58,8 @@ export async function runSyncCollections(supabase: SB, userId: string) {
   let erpRows: Array<{ nnumerogrife: number | string; cdescrigrife: string; cstatusgrife: string | null }> = [];
   try {
     const r = await usesoftQuery<typeof erpRows[number]>(
-      `SELECT nnumerogrife, cdescrigrife, cstatusgrife FROM solgrife ORDER BY cdescrigrife`,
+      `SELECT nnumerogrife, cdescrigrife, cstatusgrife FROM solgrife
+        WHERE COALESCE(cstatusgrife,'A') = 'A' ORDER BY cdescrigrife`,
     );
     erpRows = r.rows;
   } catch (e) {
@@ -111,8 +112,12 @@ export async function runSyncProducts(supabase: SB, userId: string) {
   let erpRows: ErpRow[] = [];
   try {
     const r = await usesoftQuery<ErpRow>(
-      `SELECT nnumeroprodu, ccodigoprodu, ceanprodu, cnomeprodu, cstatusprodu, ncustoprodu, nprcvenprodu, nnumerogrife, cdsccplprodu
-         FROM solprodu WHERE cstatusprodu = 'A' ORDER BY cnomeprodu`,
+      `SELECT p.nnumeroprodu, p.ccodigoprodu, p.ceanprodu, p.cnomeprodu, p.cstatusprodu, p.ncustoprodu, p.nprcvenprodu, p.nnumerogrife, p.cdsccplprodu
+         FROM solprodu p
+         LEFT JOIN solgrife g ON g.nnumerogrife = p.nnumerogrife
+        WHERE p.cstatusprodu = 'A'
+          AND (p.nnumerogrife IS NULL OR COALESCE(g.cstatusgrife,'A') = 'A')
+        ORDER BY p.cnomeprodu`,
     );
     erpRows = r.rows;
   } catch (e) {

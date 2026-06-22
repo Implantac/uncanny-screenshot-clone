@@ -27,8 +27,7 @@ export const Route = createFileRoute("/api/public/hooks/erp-pull-all")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const {
-          runSyncCollections, runSyncProducts, runSyncCustomers, runSyncSuppliers,
-          runSyncInventory, runSyncSales, runSyncPurchases, runSyncProductImages,
+          runSyncCollections, runSyncProducts, runSyncProductImages,
         } = await import("@/lib/erp-sync-runners.server");
 
 
@@ -47,13 +46,8 @@ export const Route = createFileRoute("/api/public/hooks/erp-pull-all")({
           const ownerId = cfg.owner_id as string;
           const ownerResult: Record<string, unknown> = { owner_id: ownerId };
           const steps: Array<[string, () => Promise<unknown>]> = [
-            // ordem: rápidos primeiro (bulk), pesados por último
+            // Sync restrito: apenas coleções e produtos ativos (+ imagens).
             ["collections", () => runSyncCollections(supabaseAdmin, ownerId)],
-            ["inventory", () => runSyncInventory(supabaseAdmin, ownerId)],
-            ["purchases", () => runSyncPurchases(supabaseAdmin, ownerId, 180)],
-            ["sales", () => runSyncSales(supabaseAdmin, ownerId, 90)],
-            ["suppliers", () => runSyncSuppliers(supabaseAdmin, ownerId)],
-            ["customers", () => runSyncCustomers(supabaseAdmin, ownerId)],
             ["products", () => runSyncProducts(supabaseAdmin, ownerId)],
             ["product_images", () => runSyncProductImages(supabaseAdmin, ownerId, 200)],
           ];
