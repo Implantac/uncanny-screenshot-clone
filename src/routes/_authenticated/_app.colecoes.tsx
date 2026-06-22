@@ -2163,6 +2163,47 @@ function CollectionDialog({
               placeholder="#d6c3a1, #6f7f63, #f4ede2"
             />
           </div>
+          <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-3">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Metas da coleção <span className="normal-case opacity-70">(opcional — usadas em /colecao-360)</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Receita (R$)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="100"
+                  value={targetRevenue}
+                  onChange={(e) => setTargetRevenue(e.target.value)}
+                  placeholder="ex: 250000"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Peças</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={targetPieces}
+                  onChange={(e) => setTargetPieces(e.target.value)}
+                  placeholder="ex: 1200"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Margem (%)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={targetMarginPct}
+                  onChange={(e) => setTargetMarginPct(e.target.value)}
+                  placeholder="ex: 55"
+                />
+              </div>
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Data de lançamento</Label>
