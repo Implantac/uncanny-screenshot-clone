@@ -341,6 +341,9 @@ function diagnoseError(msg: string): string | null {
     return "Banco inexistente. Verifique USESOFT_PG_DATABASE.";
   }
   return null;
+}
+
+
 
 function Kpi({
   icon,
