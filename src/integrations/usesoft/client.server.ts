@@ -14,24 +14,74 @@ import { Pool, type QueryResult, type QueryResultRow } from "pg";
 
 let _pool: Pool | undefined;
 
-function getPool(): Pool {
-  if (_pool) return _pool;
+// Hostname válido: IPv4, ou DNS (letras/dígitos/.-), 1–253 chars, sem @ / espaço / aspas.
+const HOST_RE = /^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+const IPV4_RE = /^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/;
+// Nome de banco Postgres: letras, dígitos e _ (sem @ / espaço / aspas / barra).
+const DB_RE = /^[a-zA-Z_][a-zA-Z0-9_$]{0,62}$/;
 
-  const host = process.env.USESOFT_PG_HOST;
-  const portRaw = process.env.USESOFT_PG_PORT;
-  const database = process.env.USESOFT_PG_DATABASE;
-  const user = process.env.USESOFT_PG_USER;
-  const password = process.env.USESOFT_PG_PASSWORD;
+export class UsesoftConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UsesoftConfigError";
+  }
+}
 
-  if (!host || !portRaw || !database || !user || !password) {
-    throw new Error(
-      "Usesoft ERP não configurado. Secrets USESOFT_PG_* ausentes no servidor.",
+export function validateUsesoftEnv(): {
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  password: string;
+} {
+  const host = (process.env.USESOFT_PG_HOST ?? "").trim();
+  const portRaw = (process.env.USESOFT_PG_PORT ?? "").trim();
+  const database = (process.env.USESOFT_PG_DATABASE ?? "").trim();
+  const user = (process.env.USESOFT_PG_USER ?? "").trim();
+  const password = process.env.USESOFT_PG_PASSWORD ?? "";
+
+  const missing: string[] = [];
+  if (!host) missing.push("USESOFT_PG_HOST");
+  if (!portRaw) missing.push("USESOFT_PG_PORT");
+  if (!database) missing.push("USESOFT_PG_DATABASE");
+  if (!user) missing.push("USESOFT_PG_USER");
+  if (!password) missing.push("USESOFT_PG_PASSWORD");
+  if (missing.length) {
+    throw new UsesoftConfigError(
+      `ERP Usesoft não configurado. Configure no backend: ${missing.join(", ")}.`,
     );
   }
 
+  if (!IPV4_RE.test(host) && !HOST_RE.test(host)) {
+    throw new UsesoftConfigError(
+      `USESOFT_PG_HOST inválido ("${host}"). Use apenas o IP ou DNS do servidor (ex.: 177.92.31.138), sem usuário, "@", porta ou "://".`,
+    );
+  }
+
+  const port = Number(portRaw);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new UsesoftConfigError(
+      `USESOFT_PG_PORT inválido ("${portRaw}"). Use um número entre 1 e 65535 (ex.: 5435).`,
+    );
+  }
+
+  if (!DB_RE.test(database)) {
+    throw new UsesoftConfigError(
+      `USESOFT_PG_DATABASE inválido ("${database}"). Use apenas letras, números e "_" (ex.: usesoft).`,
+    );
+  }
+
+  return { host, port, database, user, password };
+}
+
+function getPool(): Pool {
+  if (_pool) return _pool;
+
+  const { host, port, database, user, password } = validateUsesoftEnv();
+
   _pool = new Pool({
     host,
-    port: Number(portRaw),
+    port,
     database,
     user,
     password,
@@ -47,6 +97,7 @@ function getPool(): Pool {
 
   return _pool;
 }
+
 
 const READ_ONLY_RE = /^\s*(--[^\n]*\n|\/\*[\s\S]*?\*\/|\s)*\s*(select|with)\b/i;
 
@@ -78,13 +129,23 @@ export async function usesoftPing(): Promise<{
     const r = await usesoftQuery<{ version: string }>("SELECT version()");
     return { ok: true, version: r.rows[0]?.version, latency_ms: Date.now() - t0 };
   } catch (e) {
-    const error = (e as Error).message;
-    return {
-      ok: false,
-      error: error.includes("ENOTFOUND")
-        ? "Host do ERP não resolvido. Verifique as credenciais USESOFT_PG_* no backend."
-        : error,
-      latency_ms: Date.now() - t0,
-    };
+    const err = e as Error;
+    const msg = err.message ?? String(err);
+    let friendly = msg;
+    if (err.name === "UsesoftConfigError") {
+      friendly = msg;
+    } else if (msg.includes("ENOTFOUND") || msg.includes("EAI_AGAIN")) {
+      friendly = "Host do ERP não resolvido (DNS). Verifique USESOFT_PG_HOST no backend.";
+    } else if (msg.includes("ECONNREFUSED")) {
+      friendly = "Conexão recusada pelo ERP. Verifique USESOFT_PG_PORT e firewall.";
+    } else if (msg.includes("ETIMEDOUT") || msg.includes("timeout")) {
+      friendly = "Tempo esgotado ao conectar no ERP. Verifique rede/firewall.";
+    } else if (msg.includes("password authentication failed")) {
+      friendly = "Usuário ou senha do ERP inválidos.";
+    } else if (msg.includes("does not exist") && msg.includes("database")) {
+      friendly = "Banco do ERP não existe. Verifique USESOFT_PG_DATABASE.";
+    }
+    return { ok: false, error: friendly, latency_ms: Date.now() - t0 };
   }
+
 }
