@@ -656,21 +656,32 @@ export const syncErpSales = createServerFn({ method: "POST" })
       cnomeprodu: string | null;
       nquatdeitped: number | string | null;
       nvltotitped: number | string | null;
+      tipo_nome: string | null;
+      tipo_sigla: string | null;
     };
 
     let erpRows: ErpRow[] = [];
     try {
+      // Filtros aplicados ao ERP para refletir apenas VENDA REAL faturada:
+      //  - tipo gera financeiro: soltpped.cmovfintpped = 'S'
+      //  - exclui "99 - ORDEM DE PRODUÇÃO" (movimento interno de PCP, não venda)
+      //  - exclui pedidos cancelados (cstatuspedid = 'C')
       const r = await usesoftQuery<ErpRow>(
         `SELECT p.nnumeropedid, p.ddatapedid,
                 COALESCE(NULLIF(TRIM(p.cnomecliente),''), c.cnomeclien) AS cliente_nome,
                 i.nnumeroprodu, pr.ccodigoprodu, pr.cnomeprodu,
-                i.nquatdeitped, (COALESCE(i.nprecoitped,0) * COALESCE(i.nquatdeitped,0)) AS nvltotitped
+                i.nquatdeitped, (COALESCE(i.nprecoitped,0) * COALESCE(i.nquatdeitped,0)) AS nvltotitped,
+                t.cnometpped AS tipo_nome, t.csiglatpped AS tipo_sigla
            FROM solpedid p
            JOIN solitped i ON i.nnumeropedid = p.nnumeropedid
+           JOIN soltpped t ON t.nnumerotpped = p.nnumerotpped
            LEFT JOIN solclien c  ON c.nnumeroclien = p.nnumeroclien
            LEFT JOIN solprodu pr ON pr.nnumeroprodu = i.nnumeroprodu
           WHERE p.ddatapedid >= (CURRENT_DATE - ($1::int || ' days')::interval)
-            AND COALESCE(p.cstatuspedid,'') <> 'C'`,
+            AND COALESCE(p.cstatuspedid,'') <> 'C'
+            AND COALESCE(t.cmovfintpped,'N') = 'S'
+            AND COALESCE(t.cnometpped,'') NOT ILIKE '99 -%'
+            AND COALESCE(t.cnometpped,'') NOT ILIKE '%ORDEM DE PRODU%'`,
         [data.daysBack],
       );
       erpRows = r.rows;
@@ -697,10 +708,10 @@ export const syncErpSales = createServerFn({ method: "POST" })
       total_value: Number(r.nvltotitped) || 0,
       customer: r.cliente_nome || null,
       region: null as string | null,
-      channel: "erp",
+      channel: r.tipo_sigla || "erp",
       sold_at: r.ddatapedid ? new Date(r.ddatapedid).toISOString() : null,
       synced_at: now,
-      raw: { pedido: String(r.nnumeropedid) },
+      raw: { pedido: String(r.nnumeropedid), tipo: r.tipo_nome ?? null },
     }));
 
     let inserted = 0;
