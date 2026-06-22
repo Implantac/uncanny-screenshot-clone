@@ -51,7 +51,8 @@ import {
 import { BomTemplatesButton } from "@/components/bom-templates-button";
 import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer";
 import { TechSheetCostAlertsPanel } from "@/components/tech-sheet-cost-alerts-panel";
-import { Camera } from "lucide-react";
+import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
+import { ShieldCheck, Camera } from "lucide-react";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
