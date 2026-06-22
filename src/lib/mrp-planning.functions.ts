@@ -393,4 +393,21 @@ export async function runMrpPlanning(
     });
 
     return { rows, cfg, summary };
+  }
+}
+
+export const computeMrpPlanning = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { category?: string; supplierId?: string; deposit?: string } | undefined) =>
+    z
+      .object({
+        category: z.string().optional(),
+        supplierId: z.string().uuid().optional(),
+        deposit: z.string().optional(),
+      })
+      .parse(i ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    return runMrpPlanning(context.supabase, context.userId, data);
   });
+
