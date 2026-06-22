@@ -1,12 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { syncErpSales } from "@/lib/erp-import.functions";
+import { Button } from "@/components/ui/button";
 import {
   Award,
   BarChart3,
   Loader2,
   PackageX,
+  RefreshCw,
   Sparkles,
   TrendingDown,
   TrendingUp,
@@ -59,9 +63,30 @@ const PCT = (v: number) =>
 function AbcCollectionPage() {
   const listFn = useServerFn(listCollectionsForAbc);
   const abcFn = useServerFn(getCollectionAbc);
+  const syncSalesFn = useServerFn(syncErpSales);
+  const queryClient = useQueryClient();
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [windowDays, setWindowDays] = useState(180);
   const [filterClass, setFilterClass] = useState<AbcClass | "ALL">("ALL");
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function handleRefresh() {
+    if (refreshing) return;
+    setRefreshing(true);
+    const t = toast.loading("Sincronizando vendas do ERP…");
+    try {
+      const res = await syncSalesFn({ data: { daysBack: Math.max(windowDays, 90) } });
+      await queryClient.invalidateQueries({ queryKey: ["abc"] });
+      toast.success(
+        `Curva ABC atualizada · ${res?.inserted ?? 0} vendas sincronizadas`,
+        { id: t },
+      );
+    } catch (e: any) {
+      toast.error(`Falha ao atualizar: ${e?.message ?? "erro desconhecido"}`, { id: t });
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   const collectionsQ = useQuery({
     queryKey: ["abc", "collections"],
@@ -143,6 +168,19 @@ function AbcCollectionPage() {
               <SelectItem value="365">Últimos 365 dias</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            variant="default"
+            title="Sincroniza vendas do ERP e recalcula a curva agora"
+          >
+            {refreshing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {refreshing ? "Atualizando…" : "Atualizar agora"}
+          </Button>
         </div>
       </header>
 
