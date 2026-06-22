@@ -147,6 +147,7 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
             <TableHeader>
               <TableRow>
                 <TableHead>Material</TableHead>
+                <TableHead className="w-40">Almox.</TableHead>
                 <TableHead className="w-20">Un</TableHead>
                 <TableHead className="w-24 text-right">Consumo</TableHead>
                 <TableHead className="w-20 text-right">Perda %</TableHead>
@@ -163,6 +164,14 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                       value={m.name}
                       disabled={!canEdit}
                       onSave={(v) => upd.mutate({ id: m.id, patch: { name: v } })}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <InventoryLinkCell
+                      ownerId={ownerId}
+                      value={m.inventory_item_id}
+                      disabled={!canEdit}
+                      onChange={(id) => upd.mutate({ id: m.id, patch: { inventory_item_id: id } })}
                     />
                   </TableCell>
                   <TableCell>
@@ -211,7 +220,7 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                 </TableRow>
               ))}
               <TableRow className="bg-muted/30 font-medium">
-                <TableCell colSpan={5} className="text-right">
+                <TableCell colSpan={6} className="text-right">
                   Subtotal materiais
                 </TableCell>
                 <TableCell className="text-right tabular-nums">{fmt(total)}</TableCell>
