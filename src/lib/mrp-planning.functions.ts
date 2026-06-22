@@ -118,7 +118,7 @@ export const saveMrpConfig = createServerFn({ method: "POST" })
  * Engine MRP — pure function reutilizável (Copilot, BI, route handlers).
  */
 export async function runMrpPlanning(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   userId: string,
   data: { category?: string; supplierId?: string; deposit?: string } = {},
 ): Promise<{ rows: MrpRow[]; summary: MrpSummary; cfg: MrpConfig }> {
