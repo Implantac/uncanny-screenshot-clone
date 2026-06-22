@@ -1906,6 +1906,24 @@ export type Database = {
         }
         Relationships: []
       }
+      mrp_recalc_queue: {
+        Row: {
+          owner_id: string
+          reason: string | null
+          requested_at: string
+        }
+        Insert: {
+          owner_id: string
+          reason?: string | null
+          requested_at?: string
+        }
+        Update: {
+          owner_id?: string
+          reason?: string | null
+          requested_at?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           category: string
