@@ -188,6 +188,15 @@ export const MODULES: ModuleDef[] = [
     group: "Coleções",
   },
   {
+    slug: "abc-colecao",
+    path: "/abc-colecao",
+    title: "Curva ABC por Coleção",
+    short: "Pareto de receita",
+    description: "Classifica produtos da coleção em A/B/C por receita e aponta cauda e dead stock.",
+    icon: BarChart3,
+    group: "Coleções",
+  },
+  {
     slug: "trends",
     path: "/trends",
     title: "Hub de Tendências",
