@@ -762,3 +762,136 @@ function EditableNum({
     />
   );
 }
+
+/* --------------------------- Inventory link cell -------------------------- */
+type InvItem = { id: string; sku: string | null; name: string; unit: string | null };
+
+function InventoryLinkCell({
+  ownerId,
+  value,
+  disabled,
+  onChange,
+}: {
+  ownerId: string;
+  value: string | null;
+  disabled: boolean;
+  onChange: (id: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+
+  const { data: items = [] } = useQuery({
+    queryKey: ["inventory-items-link", ownerId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("inventory_items")
+        .select("id, sku, name, unit")
+        .eq("owner_id", ownerId)
+        .order("name")
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as InvItem[];
+    },
+    enabled: open,
+    staleTime: 60_000,
+  });
+
+  const { data: current } = useQuery({
+    queryKey: ["inventory-item", value],
+    queryFn: async () => {
+      if (!value) return null;
+      const { data } = await supabase
+        .from("inventory_items")
+        .select("id, sku, name, unit")
+        .eq("id", value)
+        .maybeSingle();
+      return data as InvItem | null;
+    },
+    enabled: !!value,
+  });
+
+  const filtered = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    if (!t) return items.slice(0, 50);
+    return items
+      .filter(
+        (i) =>
+          (i.name?.toLowerCase().includes(t) ?? false) ||
+          (i.sku?.toLowerCase().includes(t) ?? false),
+      )
+      .slice(0, 50);
+  }, [items, q]);
+
+  if (!value && disabled) {
+    return <span className="text-[10px] text-muted-foreground">—</span>;
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <Popover open={open} onOpenChange={(o) => disabled ? null : setOpen(o)}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            disabled={disabled}
+            className="flex-1 min-w-0 text-left text-xs px-2 py-1 rounded border border-transparent hover:border-border disabled:cursor-default flex items-center gap-1"
+            title={current ? `${current.sku ?? ""} · ${current.name}` : "Vincular item do almoxarifado"}
+          >
+            <Link2 className={`size-3 shrink-0 ${current ? "text-primary" : "text-muted-foreground"}`} />
+            <span className="truncate">
+              {current ? (current.sku ?? current.name) : <span className="text-muted-foreground">Vincular…</span>}
+            </span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-72 p-0">
+          <div className="flex items-center border-b px-2">
+            <Search className="size-3.5 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Buscar SKU ou nome…"
+              className="h-8 border-0 focus-visible:ring-0 text-xs"
+              autoFocus
+            />
+          </div>
+          <div className="max-h-64 overflow-y-auto p-1">
+            {filtered.length === 0 ? (
+              <div className="px-2 py-3 text-xs text-muted-foreground">Nada encontrado.</div>
+            ) : (
+              filtered.map((it) => (
+                <button
+                  key={it.id}
+                  type="button"
+                  className="w-full text-left px-2 py-1.5 text-xs rounded hover:bg-muted flex items-center justify-between gap-2"
+                  onClick={() => {
+                    onChange(it.id);
+                    setOpen(false);
+                    setQ("");
+                  }}
+                >
+                  <span className="truncate">
+                    <span className="font-mono text-[10px] text-muted-foreground">{it.sku ?? "—"}</span>{" "}
+                    {it.name}
+                  </span>
+                  {it.unit && (
+                    <span className="text-[10px] text-muted-foreground shrink-0">{it.unit}</span>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
+      {value && !disabled && (
+        <Button
+          size="icon"
+          variant="ghost"
+          className="size-6 shrink-0"
+          onClick={() => onChange(null)}
+          title="Desvincular"
+        >
+          <X className="size-3" />
+        </Button>
+      )}
+    </div>
+  );
+}
