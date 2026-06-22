@@ -162,6 +162,6 @@ export const getErpCollectionSyncStatus = createServerFn({ method: "GET" })
     ]);
     return {
       linked: linkedCount ?? 0,
-      lastSync: lastLog.data ?? null,
+      lastSync: lastLog ?? null,
     };
   });
