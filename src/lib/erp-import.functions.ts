@@ -1,14 +1,11 @@
 /**
  * Sync ERP → PLM (read-only do lado do ERP).
- *
- * Esta camada NUNCA escreve no Usesoft. Lê via `usesoftQuery` (read-only por
- * construção) e faz upsert em tabelas do PLM com chave (owner_id, erp_source, erp_id).
- *
- * Idempotente: rodar 2x não duplica, só refresca `erp_synced_at` + campos
- * mantidos pelo ERP (nome). NÃO sobrescreve campos próprios do PLM
- * (palette, cover_url, description, launch_date, progress) que o time
- * editou depois.
+ * Lê via `usesoftQuery` e faz upsert em tabelas do PLM por (owner_id, erp_source, erp_id).
+ * Não sobrescreve campos próprios do PLM (palette, cover_url, description, etc).
  */
+import type { Database } from "@/integrations/supabase/types";
+type CollectionUpdate = Database["public"]["Tables"]["collections"]["Update"];
+type CollectionStatus = Database["public"]["Enums"]["collection_status"];
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
