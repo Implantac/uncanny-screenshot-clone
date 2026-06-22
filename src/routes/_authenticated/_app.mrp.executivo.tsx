@@ -109,45 +109,62 @@ function MrpExecPage() {
 
       {/* KPI grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi label="Valor em estoque" value={brl(kpis.totalStockValue)} sub={`${kpis.totalSkus} SKUs`} />
+        <Kpi
+          label="Valor em estoque"
+          value={brl(kpis.totalStockValue)}
+          sub={`${kpis.totalSkus} SKUs · abrir MRP`}
+          to="/mrp"
+        />
         <Kpi
           label="Capital parado"
           value={brl(kpis.capitalParado)}
-          sub={`${kpis.capitalParadoPct.toFixed(1)}% do total`}
+          sub={`${kpis.capitalParadoPct.toFixed(1)}% · ver excesso`}
           tone="warning"
           icon={<TrendingDown className="size-4 text-amber-500" />}
+          to="/mrp"
+          search={{ status: "excesso" }}
         />
         <Kpi
           label="Itens críticos"
           value={String(kpis.itemsCritical)}
-          sub={`${kpis.rupturas} em ruptura`}
+          sub={`${kpis.rupturas} em ruptura · ver críticos`}
           tone="danger"
           icon={<AlertTriangle className="size-4 text-destructive" />}
+          to="/mrp"
+          search={{ status: "critico" }}
         />
         <Kpi
           label="Excesso"
           value={String(kpis.itemsExcess)}
-          sub="acima do máximo"
+          sub="acima do máximo · ver lista"
           tone="info"
           icon={<TrendingUp className="size-4 text-blue-500" />}
+          to="/mrp"
+          search={{ status: "excesso" }}
         />
         <Kpi
           label="Cobertura média"
           value={kpis.avgCoverage !== null ? `${kpis.avgCoverage}d` : "—"}
-          sub="dias de estoque"
+          sub="dias · ver em atenção"
+          to="/mrp"
+          search={{ status: "atencao" }}
         />
-        <Kpi label="Giro médio" value={num(kpis.giroMedio, 2)} sub="anual / estoque médio" />
+        <Kpi label="Giro médio" value={num(kpis.giroMedio, 2)} sub="anual / estoque médio" to="/mrp/bi" />
         <Kpi
           label="Compras sugeridas"
           value={brl(kpis.suggestedValue)}
-          sub={`${kpis.suggestedItems} itens`}
+          sub={`${kpis.suggestedItems} itens · planejar`}
+          to="/mrp"
+          search={{ status: "critico" }}
         />
         <Kpi
           label="Fornecedores"
           value={String(kpis.bySupplier.length)}
-          sub="ativos no MRP"
+          sub="ativos · ver BI"
+          to="/mrp/bi"
         />
       </div>
+
 
       {/* Persona selector */}
       <div className="rounded-lg border bg-card p-4">
@@ -256,12 +273,16 @@ function Kpi({
   sub,
   tone = "default",
   icon,
+  to,
+  search,
 }: {
   label: string;
   value: string;
   sub?: string;
   tone?: "default" | "warning" | "danger" | "info";
   icon?: React.ReactNode;
+  to?: string;
+  search?: Record<string, string>;
 }) {
   const toneCls =
     tone === "warning"
@@ -271,17 +292,27 @@ function Kpi({
         : tone === "info"
           ? "border-blue-500/30"
           : "";
-  return (
-    <div className={`rounded-lg border bg-card p-4 ${toneCls}`}>
+  const body = (
+    <>
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{label}</span>
         {icon}
       </div>
       <div className="text-xl font-bold mt-1">{value}</div>
       {sub && <div className="text-[11px] text-muted-foreground mt-0.5">{sub}</div>}
-    </div>
+    </>
   );
+  const cls = `rounded-lg border bg-card p-4 ${toneCls} ${to ? "hover:border-primary/60 hover:shadow-sm transition-all cursor-pointer block text-left" : ""}`;
+  if (to) {
+    return (
+      <Link to={to} search={search as never} className={cls}>
+        {body}
+      </Link>
+    );
+  }
+  return <div className={cls}>{body}</div>;
 }
+
 
 function TopList({
   title,
