@@ -292,3 +292,288 @@ export const usesoftCountProducts = createServerFn({ method: "GET" })
     );
     return { total: Number(r.rows[0]?.total ?? 0) };
   });
+
+// ---- CLIENTES -------------------------------------------------------------
+
+export const usesoftListCustomers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => Pagination.parse(i ?? {}))
+  .handler(async ({ data }): Promise<UsesoftCustomer[]> => {
+    const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
+    const where: string[] = [`c.cstatusclien = 'A'`];
+    const params: unknown[] = [data.limit, data.offset];
+    let p = 3;
+    if (data.search) {
+      where.push(
+        `(LOWER(c.cnomeclien) LIKE LOWER($${p}) OR LOWER(COALESCE(c.cnfantaclien,'')) LIKE LOWER($${p}) OR COALESCE(c.ccnpjclien,'') LIKE $${p} OR COALESCE(c.ccpfclien,'') LIKE $${p})`,
+      );
+      params.push(`%${data.search}%`);
+      p++;
+    }
+    const r = await usesoftQuery(
+      `SELECT c.nnumeroclien, c.ccodigoclien, c.cnomeclien, c.cnfantaclien,
+              c.ctipopeclien, c.ccnpjclien, c.ccpfclien,
+              c.cemailnfecli, c.cendwebclien, c.cfoneclien, c.cstatusclien
+         FROM solclien c
+         WHERE ${where.join(" AND ")}
+         ORDER BY c.cnomeclien
+         LIMIT $1 OFFSET $2`,
+      params,
+    );
+    return r.rows.map((row) => ({
+      id: Number(row.nnumeroclien),
+      codigo: s(row.ccodigoclien),
+      nome: String(row.cnomeclien),
+      nomeFantasia: s(row.cnfantaclien),
+      documento:
+        row.ctipopeclien === "J" ? s(row.ccnpjclien) : s(row.ccpfclien),
+      email: s(row.cemailnfecli) ?? s(row.cendwebclien),
+      telefone: s(row.cfoneclien),
+      cidade: null,
+      uf: null,
+      status: row.cstatusclien === "A" ? "ativo" : "inativo",
+    }));
+  });
+
+// ---- FORNECEDORES ---------------------------------------------------------
+
+export const usesoftListSuppliers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => Pagination.parse(i ?? {}))
+  .handler(async ({ data }): Promise<UsesoftSupplier[]> => {
+    const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
+    const where: string[] = [`f.cstatusforne = 'A'`];
+    const params: unknown[] = [data.limit, data.offset];
+    let p = 3;
+    if (data.search) {
+      where.push(
+        `(LOWER(f.cnomeforne) LIKE LOWER($${p}) OR LOWER(COALESCE(f.cnfantaforne,'')) LIKE LOWER($${p}) OR COALESCE(f.ccnpjforne,'') LIKE $${p})`,
+      );
+      params.push(`%${data.search}%`);
+      p++;
+    }
+    const r = await usesoftQuery(
+      `SELECT f.nnumeroforne, f.ccodigoforne, f.cnomeforne, f.cnfantaforne,
+              f.ctipopeforne, f.ccnpjforne, f.ccpfforne,
+              f.cemailforne, f.cendwebforne, f.cfoneforne, f.cstatusforne
+         FROM solforne f
+         WHERE ${where.join(" AND ")}
+         ORDER BY f.cnomeforne
+         LIMIT $1 OFFSET $2`,
+      params,
+    );
+    return r.rows.map((row) => ({
+      id: Number(row.nnumeroforne),
+      codigo: s(row.ccodigoforne),
+      nome: String(row.cnomeforne),
+      nomeFantasia: s(row.cnfantaforne),
+      documento:
+        row.ctipopeforne === "J" ? s(row.ccnpjforne) : s(row.ccpfforne),
+      email: s(row.cemailforne),
+      telefone: s(row.cfoneforne),
+      cidade: null,
+      uf: null,
+      status: row.cstatusforne === "A" ? "ativo" : "inativo",
+    }));
+  });
+
+// ---- VENDAS (Pedidos) -----------------------------------------------------
+
+const SalesInput = Pagination.extend({
+  daysBack: z.number().int().min(1).max(3650).optional().default(90),
+});
+
+const statusPedidoLabel: Record<string, string> = {
+  A: "Aberto",
+  L: "Liberado",
+  F: "Faturado",
+  C: "Cancelado",
+  P: "Pendente",
+  R: "Reservado",
+  G: "Gerado",
+  N: "Novo",
+};
+
+export const usesoftListSales = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => SalesInput.parse(i ?? {}))
+  .handler(async ({ data }): Promise<UsesoftSale[]> => {
+    const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
+    const where: string[] = [
+      `p.ddatapedid >= (CURRENT_DATE - ($3::int || ' days')::interval)`,
+    ];
+    const params: unknown[] = [data.limit, data.offset, data.daysBack];
+    let pi = 4;
+    if (data.search) {
+      where.push(
+        `(LOWER(COALESCE(p.cnomecliente,'')) LIKE LOWER($${pi}) OR LOWER(COALESCE(c.cnomeclien,'')) LIKE LOWER($${pi}))`,
+      );
+      params.push(`%${data.search}%`);
+      pi++;
+    }
+    const r = await usesoftQuery(
+      `SELECT p.nnumeropedid, p.ddatapedid, p.cstatuspedid, p.nvalorpedid,
+              p.nnumeroclien, p.nnumerorepre,
+              COALESCE(NULLIF(TRIM(p.cnomecliente),''), c.cnomeclien) AS cliente_nome,
+              (SELECT COUNT(*) FROM solitped i WHERE i.nnumeropedid = p.nnumeropedid) AS qtd_itens
+         FROM solpedid p
+         LEFT JOIN solclien c ON c.nnumeroclien = p.nnumeroclien
+         WHERE ${where.join(" AND ")}
+         ORDER BY p.ddatapedid DESC NULLS LAST
+         LIMIT $1 OFFSET $2`,
+      params,
+    );
+    return r.rows.map((row) => {
+      const st = String(row.cstatuspedid ?? "").trim();
+      return {
+        pedidoId: Number(row.nnumeropedid),
+        numero: String(row.nnumeropedid),
+        data: row.ddatapedid ? new Date(row.ddatapedid).toISOString() : null,
+        clienteId: row.nnumeroclien == null ? null : Number(row.nnumeroclien),
+        clienteNome: s(row.cliente_nome),
+        vendedorId: row.nnumerorepre == null ? null : Number(row.nnumerorepre),
+        valorTotal: n(row.nvalorpedid),
+        quantidadeItens: Number(row.qtd_itens ?? 0),
+        status: statusPedidoLabel[st] ?? st ?? null,
+      };
+    });
+  });
+
+// ---- COMPRAS (Pedido de Compra) -------------------------------------------
+
+const statusCompraLabel: Record<string, string> = {
+  A: "Aberto",
+  F: "Faturado",
+  G: "Gerado",
+  N: "Novo",
+  C: "Cancelado",
+  P: "Pendente",
+  R: "Recebido",
+};
+
+export const usesoftListPurchases = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    Pagination.extend({
+      daysBack: z.number().int().min(1).max(3650).optional().default(180),
+    }).parse(i ?? {}),
+  )
+  .handler(async ({ data }): Promise<UsesoftPurchase[]> => {
+    const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
+    const where: string[] = [
+      `p.ddatapedcom >= (CURRENT_DATE - ($3::int || ' days')::interval)`,
+    ];
+    const params: unknown[] = [data.limit, data.offset, data.daysBack];
+    let pi = 4;
+    if (data.search) {
+      where.push(`LOWER(COALESCE(f.cnomeforne,'')) LIKE LOWER($${pi})`);
+      params.push(`%${data.search}%`);
+      pi++;
+    }
+    const r = await usesoftQuery(
+      `SELECT p.nnumeropedcom, p.ddatapedcom, p.cstatuspedcom, p.nvltotpedcom,
+              p.nnumeroforne, f.cnomeforne
+         FROM solpedcom p
+         LEFT JOIN solforne f ON f.nnumeroforne = p.nnumeroforne
+         WHERE ${where.join(" AND ")}
+         ORDER BY p.ddatapedcom DESC NULLS LAST
+         LIMIT $1 OFFSET $2`,
+      params,
+    );
+    return r.rows.map((row) => {
+      const st = String(row.cstatuspedcom ?? "").trim();
+      return {
+        pedidoId: Number(row.nnumeropedcom),
+        numero: String(row.nnumeropedcom),
+        data: row.ddatapedcom ? new Date(row.ddatapedcom).toISOString() : null,
+        fornecedorId:
+          row.nnumeroforne == null ? null : Number(row.nnumeroforne),
+        fornecedorNome: s(row.cnomeforne),
+        valorTotal: n(row.nvltotpedcom),
+        status: statusCompraLabel[st] ?? st ?? null,
+      };
+    });
+  });
+
+// ---- ESTOQUE --------------------------------------------------------------
+
+export const usesoftListInventory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    Pagination.extend({
+      onlyWithBalance: z.boolean().optional().default(true),
+    }).parse(i ?? {}),
+  )
+  .handler(async ({ data }): Promise<UsesoftInventory[]> => {
+    const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
+    const where: string[] = [];
+    const params: unknown[] = [data.limit, data.offset];
+    let pi = 3;
+    if (data.onlyWithBalance) where.push(`saldo.total > 0`);
+    if (data.search) {
+      where.push(
+        `(LOWER(p.cnomeprodu) LIKE LOWER($${pi}) OR LOWER(COALESCE(p.ccodigoprodu,'')) LIKE LOWER($${pi}))`,
+      );
+      params.push(`%${data.search}%`);
+      pi++;
+    }
+    const whereSql = where.length ? "WHERE " + where.join(" AND ") : "";
+    const r = await usesoftQuery(
+      `WITH saldo AS (
+         SELECT nnumeroprodu, SUM(nsaldosaldo) AS total
+           FROM estsaldo
+          GROUP BY nnumeroprodu
+       )
+       SELECT p.nnumeroprodu, p.ccodigoprodu, p.cnomeprodu,
+              COALESCE(saldo.total, 0) AS saldo_total,
+              p.ncustoprodu, p.nprcvenprodu, p.nnumerogrife
+         FROM solprodu p
+         LEFT JOIN saldo ON saldo.nnumeroprodu = p.nnumeroprodu
+         ${whereSql}
+         ORDER BY saldo.total DESC NULLS LAST, p.cnomeprodu
+         LIMIT $1 OFFSET $2`,
+      params,
+    );
+    return r.rows.map((row) => ({
+      produtoId: Number(row.nnumeroprodu),
+      codigo: s(row.ccodigoprodu),
+      nome: String(row.cnomeprodu),
+      saldo: n(row.saldo_total),
+      custoMedio: row.ncustoprodu == null ? null : n(row.ncustoprodu),
+      precoVenda: row.nprcvenprodu == null ? null : n(row.nprcvenprodu),
+      grifeId: row.nnumerogrife == null ? null : Number(row.nnumerogrife),
+    }));
+  });
+
+// ---- KPI GLOBAL -----------------------------------------------------------
+
+export const usesoftKpis = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () => {
+    const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
+    const r = await usesoftQuery<{
+      colecoes: string;
+      produtos: string;
+      clientes: string;
+      fornecedores: string;
+      pedidos_30d: string;
+      compras_30d: string;
+    }>(
+      `SELECT
+         (SELECT COUNT(*) FROM solgrife)::text AS colecoes,
+         (SELECT COUNT(*) FROM solprodu WHERE cstatusprodu='A')::text AS produtos,
+         (SELECT COUNT(*) FROM solclien WHERE cstatusclien='A')::text AS clientes,
+         (SELECT COUNT(*) FROM solforne WHERE cstatusforne='A')::text AS fornecedores,
+         (SELECT COUNT(*) FROM solpedid WHERE ddatapedid >= CURRENT_DATE - INTERVAL '30 days')::text AS pedidos_30d,
+         (SELECT COUNT(*) FROM solpedcom WHERE ddatapedcom >= CURRENT_DATE - INTERVAL '30 days')::text AS compras_30d`,
+    );
+    const row = r.rows[0];
+    return {
+      colecoes: Number(row?.colecoes ?? 0),
+      produtos: Number(row?.produtos ?? 0),
+      clientes: Number(row?.clientes ?? 0),
+      fornecedores: Number(row?.fornecedores ?? 0),
+      pedidos30d: Number(row?.pedidos_30d ?? 0),
+      compras30d: Number(row?.compras_30d ?? 0),
+    };
+  });
