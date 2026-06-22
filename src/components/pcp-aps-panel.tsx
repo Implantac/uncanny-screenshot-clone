@@ -52,11 +52,28 @@ export function PcpApsPanel() {
           <Sparkles className="size-4 text-primary" />
           APS · Sequenciamento e alertas
         </div>
-        {stallCount > 0 && (
-          <Badge variant="outline" className="gap-1 bg-destructive/10 text-destructive border-destructive/30">
-            <AlarmClock className="size-3" /> {stallCount} parado{stallCount > 1 ? "s" : ""} &gt;4h
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          {stallCount > 0 && (
+            <Badge variant="outline" className="gap-1 bg-destructive/10 text-destructive border-destructive/30">
+              <AlarmClock className="size-3" /> {stallCount} parado{stallCount > 1 ? "s" : ""} &gt;4h
+            </Badge>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1 h-7 text-xs"
+            disabled={!aps.data?.length || applyMut.isPending}
+            onClick={() => applyMut.mutate()}
+            title="Persiste a fila como priority nas OPs"
+          >
+            {applyMut.isPending ? (
+              <Loader2 className="size-3 animate-spin" />
+            ) : (
+              <Wand2 className="size-3" />
+            )}
+            Aplicar sequenciamento
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="aps" className="px-4 pb-4">
