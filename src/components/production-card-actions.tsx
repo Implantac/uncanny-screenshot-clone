@@ -55,6 +55,7 @@ export function ProductionCardActions({
 }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
   const [pointOpen, setPointOpen] = useState(false);
   const [qty, setQty] = useState<string>(
     String(Math.round(((order.progress ?? 0) / 100) * (order.quantity ?? 0))),
@@ -62,10 +63,20 @@ export function ProductionCardActions({
   const [note, setNote] = useState("");
 
   const advance = useMutation({
-    mutationFn: () =>
-      moveOrderToColumn({ data: { orderId: order.id, toColumn: nextColumnKey ?? "" } }),
-    onSuccess: () => {
+    mutationFn: (vars: { overrideReason?: string }) =>
+      moveOrderToColumn({
+        data: {
+          orderId: order.id,
+          toColumn: nextColumnKey ?? "",
+          overrideReason: vars.overrideReason,
+        },
+      }),
+    onSuccess: (r) => {
       toast.success(`Avançado para ${nextColumnLabel}`);
+      if (r?.warnings?.length) {
+        toast.warning(`Atenção: ${r.warnings.map((w) => w.label).join(", ")}`);
+      }
+      setGateOpen(false);
       qc.invalidateQueries({ queryKey: invalidateKey });
     },
     onError: (e: Error) => toast.error(e.message ?? "Falha ao avançar"),
