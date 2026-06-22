@@ -2748,6 +2748,9 @@ export type Database = {
           cost_price: number | null
           created_at: string
           description: string | null
+          erp_id: string | null
+          erp_source: string | null
+          erp_synced_at: string | null
           grade: string | null
           id: string
           image_url: string | null
@@ -2770,6 +2773,9 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           description?: string | null
+          erp_id?: string | null
+          erp_source?: string | null
+          erp_synced_at?: string | null
           grade?: string | null
           id?: string
           image_url?: string | null
@@ -2792,6 +2798,9 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           description?: string | null
+          erp_id?: string | null
+          erp_source?: string | null
+          erp_synced_at?: string | null
           grade?: string | null
           id?: string
           image_url?: string | null
