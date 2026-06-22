@@ -102,6 +102,7 @@ import { Route as AuthenticatedAppAttributionRouteImport } from './routes/_authe
 import { Route as AuthenticatedAppApprovalsRouteImport } from './routes/_authenticated/_app.approvals'
 import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
 import { Route as AuthenticatedAppAcompanhamentoProducaoRouteImport } from './routes/_authenticated/_app.acompanhamento-producao'
+import { Route as AuthenticatedAppAbcColecaoRouteImport } from './routes/_authenticated/_app.abc-colecao'
 import { Route as ApiPublicSupplierPortalTokenRouteImport } from './routes/api/public/supplier-portal.$token'
 import { Route as ApiPublicHooksMarkLateOpsRouteImport } from './routes/api/public/hooks/mark-late-ops'
 import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
@@ -643,6 +644,12 @@ const AuthenticatedAppAcompanhamentoProducaoRoute =
     path: '/acompanhamento-producao',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppAbcColecaoRoute =
+  AuthenticatedAppAbcColecaoRouteImport.update({
+    id: '/abc-colecao',
+    path: '/abc-colecao',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const ApiPublicSupplierPortalTokenRoute =
   ApiPublicSupplierPortalTokenRouteImport.update({
     id: '/api/public/supplier-portal/$token',
@@ -709,6 +716,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/copilot': typeof ApiCopilotRoute
   '/dpp/$id': typeof DppIdRoute
+  '/abc-colecao': typeof AuthenticatedAppAbcColecaoRoute
   '/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/approvals': typeof AuthenticatedAppApprovalsRoute
@@ -812,6 +820,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/copilot': typeof ApiCopilotRoute
   '/dpp/$id': typeof DppIdRoute
+  '/abc-colecao': typeof AuthenticatedAppAbcColecaoRoute
   '/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/approvals': typeof AuthenticatedAppApprovalsRoute
@@ -917,6 +926,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/copilot': typeof ApiCopilotRoute
   '/dpp/$id': typeof DppIdRoute
+  '/_authenticated/_app/abc-colecao': typeof AuthenticatedAppAbcColecaoRoute
   '/_authenticated/_app/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
   '/_authenticated/_app/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/_authenticated/_app/approvals': typeof AuthenticatedAppApprovalsRoute
@@ -1023,6 +1033,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/copilot'
     | '/dpp/$id'
+    | '/abc-colecao'
     | '/acompanhamento-producao'
     | '/almoxarifado'
     | '/approvals'
@@ -1126,6 +1137,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/copilot'
     | '/dpp/$id'
+    | '/abc-colecao'
     | '/acompanhamento-producao'
     | '/almoxarifado'
     | '/approvals'
@@ -1230,6 +1242,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/copilot'
     | '/dpp/$id'
+    | '/_authenticated/_app/abc-colecao'
     | '/_authenticated/_app/acompanhamento-producao'
     | '/_authenticated/_app/almoxarifado'
     | '/_authenticated/_app/approvals'
@@ -1995,6 +2008,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAcompanhamentoProducaoRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/abc-colecao': {
+      id: '/_authenticated/_app/abc-colecao'
+      path: '/abc-colecao'
+      fullPath: '/abc-colecao'
+      preLoaderRoute: typeof AuthenticatedAppAbcColecaoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/api/public/supplier-portal/$token': {
       id: '/api/public/supplier-portal/$token'
       path: '/api/public/supplier-portal/$token'
@@ -2084,6 +2104,7 @@ const AuthenticatedAppQualityRouteWithChildren =
   )
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppAbcColecaoRoute: typeof AuthenticatedAppAbcColecaoRoute
   AuthenticatedAppAcompanhamentoProducaoRoute: typeof AuthenticatedAppAcompanhamentoProducaoRoute
   AuthenticatedAppAlmoxarifadoRoute: typeof AuthenticatedAppAlmoxarifadoRoute
   AuthenticatedAppApprovalsRoute: typeof AuthenticatedAppApprovalsRoute
@@ -2177,6 +2198,7 @@ interface AuthenticatedAppRouteChildren {
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppAbcColecaoRoute: AuthenticatedAppAbcColecaoRoute,
   AuthenticatedAppAcompanhamentoProducaoRoute:
     AuthenticatedAppAcompanhamentoProducaoRoute,
   AuthenticatedAppAlmoxarifadoRoute: AuthenticatedAppAlmoxarifadoRoute,
