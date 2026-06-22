@@ -16,8 +16,16 @@ import { toast } from "sonner";
 import {
   getMaterialDetail,
   generatePurchaseSuggestion,
+  saveMaterialMrpOverrides,
 } from "@/lib/mrp-material.functions";
 import type { MrpRow } from "@/lib/mrp-planning.functions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   LineChart,
   Line,
@@ -49,7 +57,10 @@ export function MrpMaterialDrawer({
   const qc = useQueryClient();
   const detailFn = useServerFn(getMaterialDetail);
   const buyFn = useServerFn(generatePurchaseSuggestion);
+  const overrideFn = useServerFn(saveMaterialMrpOverrides);
   const [qty, setQty] = useState<number>(row?.suggestedPurchase ?? 0);
+  const [sl, setSl] = useState<string>(String(row?.serviceLevel ?? 95));
+  const [lt, setLt] = useState<string>(String(row?.leadTimeDays ?? 14));
 
   const { data, isLoading } = useQuery({
     queryKey: ["mrp", "detail", row?.id],
@@ -59,7 +70,11 @@ export function MrpMaterialDrawer({
 
   // sincroniza qty quando row muda
   useMemo(() => {
-    if (row) setQty(row.suggestedPurchase || row.eoq || 0);
+    if (row) {
+      setQty(row.suggestedPurchase || row.eoq || 0);
+      setSl(String(row.serviceLevel));
+      setLt(String(row.leadTimeDays));
+    }
   }, [row]);
 
   const buy = useMutation({
@@ -69,6 +84,22 @@ export function MrpMaterialDrawer({
       toast.success(`Solicitação ${r.code} criada`);
       qc.invalidateQueries({ queryKey: ["mrp"] });
       onClose();
+    },
+    onError: (e) => toast.error((e as Error).message),
+  });
+
+  const saveOverrides = useMutation({
+    mutationFn: () =>
+      overrideFn({
+        data: {
+          inventoryItemId: row!.id,
+          serviceLevel: Number(sl) as 90 | 95 | 97 | 99,
+          leadTimeDays: Number(lt),
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Ajustes salvos · MRP recalculado");
+      qc.invalidateQueries({ queryKey: ["mrp"] });
     },
     onError: (e) => toast.error((e as Error).message),
   });
@@ -159,6 +190,51 @@ export function MrpMaterialDrawer({
               <Stat label="Cobertura" value={row.coverageDays !== null ? `${row.coverageDays}d` : "—"} />
               <Stat label="Capital empatado" value={brl(row.capitalEmpatado)} />
               <Stat label="Giro estoque" value={`${row.turnover.toFixed(1)}×`} />
+            </div>
+
+            <div className="mt-3 rounded-xl border border-border bg-muted/20 p-3">
+              <div className="text-xs font-medium mb-2">Ajustes deste material</div>
+              <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Nível de serviço
+                  </Label>
+                  <Select value={sl} onValueChange={setSl}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="90">90% · Z=1,28</SelectItem>
+                      <SelectItem value="95">95% · Z=1,65</SelectItem>
+                      <SelectItem value="97">97% · Z=1,88</SelectItem>
+                      <SelectItem value="99">99% · Z=2,33</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Lead time (dias)
+                  </Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={lt}
+                    onChange={(e) => setLt(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => saveOverrides.mutate()}
+                  disabled={saveOverrides.isPending}
+                >
+                  {saveOverrides.isPending ? <Loader2 className="size-3.5 animate-spin" /> : "Salvar"}
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-2">
+                Sobrescreve a config global do MRP só para este material. ES = Z × σ × √LT é recalculado.
+              </p>
             </div>
           </TabsContent>
 
