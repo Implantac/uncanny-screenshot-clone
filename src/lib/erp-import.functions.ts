@@ -108,6 +108,8 @@ export const syncErpCollections = createServerFn({ method: "POST" })
         const { error } = await supabase.from("collections").insert({
           owner_id: userId,
           name: nome,
+          season: "ERP",
+          year: new Date().getFullYear(),
           status: newStatus,
           erp_source: ERP_SOURCE,
           erp_id: erpId,
