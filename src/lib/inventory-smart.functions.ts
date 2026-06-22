@@ -67,9 +67,19 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
               : "ok";
       const reason =
         daily <= 0
-          ? "Sem consumo na janela — manter mínimo manual"
-          : `consumo ${daily.toFixed(2)} ${it.unit}/dia · lead ${leadTime}d · segurança ${safetyDays}d → ROP ${rop}` +
-            (currentMin !== rop ? ` (atual ${currentMin})` : "");
+          ? buildAiReason({
+              signals: ["sem consumo na janela"],
+              recommendation: "manter mínimo manual até observar giro",
+            })
+          : buildAiReason({
+              signals: [
+                `consumo ${daily.toFixed(2)} ${it.unit}/dia`,
+                `lead ${leadTime}d`,
+                `segurança ${safetyDays}d`,
+                currentMin !== rop ? `atual ${currentMin}` : null,
+              ],
+              recommendation: `ajustar mínimo p/ ${rop} (ROP)`,
+            });
       return {
         id: it.id,
         sku: it.sku,
