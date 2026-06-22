@@ -111,6 +111,7 @@ export const PRIMARY_SLUGS = new Set<string>([
   "onde-esta",
   "fornecedores",
   "almoxarifado",
+  "mrp",
   "compras",
   "stock-health",
   "marketing",
