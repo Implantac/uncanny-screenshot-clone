@@ -172,14 +172,23 @@ export const getMarketingBridgeAnalysis = createServerFn({ method: "POST" })
       const riskLabel: MarketingQualityRow["riskLabel"] =
         riskScore >= 35 ? "critico" : riskScore >= 15 ? "atencao" : "ok";
 
-      let reason = "Exposição alinhada à qualidade";
+      let reason = buildAiReason({
+        signals: [`FPY ${fpyPct.toFixed(0)}%`, `${a.shipments} envios`],
+        fallback: "exposição alinhada à qualidade",
+      });
       if (riskLabel === "critico") {
-        reason =
-          fpyPct < 80
-            ? `FPY ${fpyPct.toFixed(0)}% com R$ ${a.investment.toFixed(0)} investidos`
-            : `${a.occCount} ocorrências com ${a.shipments} envios a influencers`;
+        reason = buildAiReason({
+          signals:
+            fpyPct < 80
+              ? [`FPY ${fpyPct.toFixed(0)}%`, `R$ ${a.investment.toFixed(0)} investidos`]
+              : [`${a.occCount} ocorrências`, `${a.shipments} envios a influencers`],
+          recommendation: "pausar campanhas até estabilizar qualidade",
+        });
       } else if (riskLabel === "atencao") {
-        reason = `${a.occCount} ocorrências · FPY ${fpyPct.toFixed(0)}%`;
+        reason = buildAiReason({
+          signals: [`${a.occCount} ocorrências`, `FPY ${fpyPct.toFixed(0)}%`],
+          recommendation: "revisar antes de aumentar exposição",
+        });
       }
 
       rows.push({
