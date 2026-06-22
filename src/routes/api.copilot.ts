@@ -3,6 +3,8 @@ import { convertToModelMessages, streamText, tool, stepCountIs, type UIMessage }
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { runMrpPlanning } from "@/lib/mrp-planning.functions";
+import type { Database } from "@/integrations/supabase/types";
 
 const SYSTEM_PROMPT = `Você é o **Copiloto PCP** do USE MODA OS — especialista em planejamento, controle de produção, suprimentos e qualidade para indústria da moda.
 
@@ -15,10 +17,14 @@ Responder perguntas operacionais usando **tools** que consultam os dados reais d
 - \`listMaterialShortages\`: Insumos abaixo do mínimo / cobertura crítica.
 - \`listCriticalOccurrences\`: Ocorrências severas abertas na produção.
 - \`listSupplierIssues\`: Fornecedores com mais ocorrências recentes.
+- \`mrpCriticalItems\`: Itens MRP em status crítico (saldo ≤ ponto de pedido).
+- \`mrpBuySuggestions\`: Sugestões de compra calculadas pelo MRP (LEC + déficit).
+- \`mrpCapitalParado\`: Itens com excesso de estoque ou cobertura > 120 dias.
+- \`mrpSupplierLeadtime\`: Lead time médio por fornecedor.
 
 ## Regras
-1. Antes de responder qualquer pergunta sobre atrasos, riscos, faltas, fornecedores ou ocorrências, chame a tool relevante.
-2. Cite **códigos reais** (OP, SKU, nome do fornecedor) e números (dias de atraso, saldo).
+1. Antes de responder qualquer pergunta sobre atrasos, riscos, faltas, fornecedores, ocorrências, MRP, compras ou estoque, chame a tool relevante.
+2. Cite **códigos reais** (OP, SKU, nome do fornecedor) e números (dias de atraso, saldo, LEC, R$).
 3. Seja conciso e acionável. Liste no máx 5 itens. Use markdown.
 4. Quando a tool retornar lista vazia, diga claramente "sem registros" — não invente.
 5. Sempre em português brasileiro.`;
@@ -184,8 +190,101 @@ function buildTools(supabase: SupabaseClient, userId: string) {
         return { count: items.length, items };
       },
     }),
+    mrpCriticalItems: tool({
+      description: "Itens MRP em status crítico (saldo + em pedido ≤ ponto de pedido). Inclui SKU, saldo, ponto de pedido, sugestão de compra e valor estimado.",
+      inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(10) }),
+      execute: async ({ limit }) => {
+        const { rows } = await runMrpPlanning(supabase as SupabaseClient<Database>, userId);
+        const items = rows
+          .filter((r) => r.status === "critico")
+          .slice(0, limit)
+          .map((r) => ({
+            sku: r.sku,
+            nome: r.name,
+            saldo: r.balance,
+            ponto_pedido: r.reorderPoint,
+            estoque_seguranca: r.safetyStock,
+            em_pedido: r.onOrder,
+            lec: r.eoq,
+            sugestao: r.suggestedPurchase,
+            valor_sugerido: r.suggestedValue,
+            fornecedor: r.supplierName,
+            lead_time: r.leadTimeDays,
+          }));
+        return { count: items.length, items };
+      },
+    }),
+    mrpBuySuggestions: tool({
+      description: "Sugestões de compra calculadas pelo MRP (LEC + déficit até estoque máximo), priorizadas por valor.",
+      inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(10) }),
+      execute: async ({ limit }) => {
+        const { rows, summary } = await runMrpPlanning(supabase as SupabaseClient<Database>, userId);
+        const items = rows
+          .filter((r) => r.suggestedPurchase > 0)
+          .sort((a, b) => b.suggestedValue - a.suggestedValue)
+          .slice(0, limit)
+          .map((r) => ({
+            sku: r.sku,
+            nome: r.name,
+            fornecedor: r.supplierName,
+            qtd: r.suggestedPurchase,
+            unidade: r.unit,
+            valor: r.suggestedValue,
+            lead_time: r.leadTimeDays,
+          }));
+        return {
+          count: items.length,
+          total_itens: summary.suggestedItems,
+          valor_total: summary.suggestedValue,
+          items,
+        };
+      },
+    }),
+    mrpCapitalParado: tool({
+      description: "Itens com excesso de estoque ou cobertura > 120 dias (capital parado).",
+      inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(10) }),
+      execute: async ({ limit }) => {
+        const { rows, summary } = await runMrpPlanning(supabase as SupabaseClient<Database>, userId);
+        const items = rows
+          .filter((r) => r.status === "excesso" || (r.coverageDays !== null && r.coverageDays > 120))
+          .sort((a, b) => b.capitalEmpatado - a.capitalEmpatado)
+          .slice(0, limit)
+          .map((r) => ({
+            sku: r.sku,
+            nome: r.name,
+            saldo: r.balance,
+            maximo: r.maximum,
+            cobertura_dias: r.coverageDays,
+            capital: r.capitalEmpatado,
+            status: r.status,
+          }));
+        return { count: items.length, capital_total: summary.capitalParado, items };
+      },
+    }),
+    mrpSupplierLeadtime: tool({
+      description: "Lead time médio por fornecedor (itens ativos no MRP).",
+      inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(10) }),
+      execute: async ({ limit }) => {
+        const { rows } = await runMrpPlanning(supabase as SupabaseClient<Database>, userId);
+        const m = new Map<string, { name: string; sum: number; n: number; capital: number }>();
+        for (const r of rows) {
+          const key = r.supplierName ?? "(sem fornecedor)";
+          const c = m.get(key) ?? { name: key, sum: 0, n: 0, capital: 0 };
+          c.sum += r.leadTimeDays;
+          c.n += 1;
+          c.capital += r.capitalEmpatado;
+          m.set(key, c);
+        }
+        const items = Array.from(m.values())
+          .map((s) => ({ fornecedor: s.name, itens: s.n, lead_time_medio: Number((s.sum / s.n).toFixed(1)), capital: Number(s.capital.toFixed(2)) }))
+          .sort((a, b) => b.itens - a.itens)
+          .slice(0, limit);
+        return { count: items.length, items };
+      },
+    }),
   };
 }
+
 
 export const Route = createFileRoute("/api/copilot")({
   server: {

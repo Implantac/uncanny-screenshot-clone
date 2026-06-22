@@ -161,6 +161,11 @@ function MrpPage() {
               <ArrowLeft className="size-4" /> Almoxarifado
             </Link>
           </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/mrp/bi">
+              <Activity className="size-4" /> BI MRP
+            </Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"
