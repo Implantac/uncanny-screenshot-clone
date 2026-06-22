@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { buildAiReason } from "@/lib/ai-reason";
 
 export type SupplierDefectRow = {
   supplier_id: string;
@@ -67,10 +68,12 @@ export const getSupplierDefectRanking = createServerFn({ method: "POST" })
         reasonParts.push(`${a.critical} crítico${a.critical > 1 ? "s" : ""} em 90d`);
       if (fpy < 90) reasonParts.push(`FPY ${Math.round(fpy)}%`);
       if (a.major >= 5) reasonParts.push(`${a.major} defeitos maiores recorrentes`);
-      const reason =
-        reasonParts.length > 0
-          ? reasonParts.join(" · ")
-          : `${a.total} inspeções, padrão estável`;
+      const reason = buildAiReason({
+        signals: reasonParts,
+        recommendation:
+          a.critical > 0 || fpy < 80 ? "auditar processo e exigir plano de ação (CAPA)" : null,
+        fallback: `${a.total} inspeções, padrão estável`,
+      });
       rows.push({
         supplier_id: sid,
         supplier_name: supplierName.get(sid) ?? "—",

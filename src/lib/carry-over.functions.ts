@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { buildAiReason } from "@/lib/ai-reason";
 
 export type CarryOverCandidate = {
   productId: string;
@@ -123,13 +124,22 @@ export const getCarryOverContext = createServerFn({ method: "GET" })
           const lifetime = lifetimeByProduct.get(p.id) ?? 1;
           const src = p.collection_id ? collectionMap.get(p.collection_id) : null;
           let suggestedRole: CarryOverCandidate["suggestedRole"] = "carry_over";
-          let reason = "Mantém continuidade entre coleções.";
+          let reason = buildAiReason({
+            signals: [`${lifetime} coleção${lifetime > 1 ? "s" : ""}`, s.units > 0 ? `${s.units} un em 90d` : null],
+            recommendation: "manter para continuidade entre coleções",
+          });
           if (lifetime >= 3 && s.units >= 60) {
             suggestedRole = "nos";
-            reason = `${lifetime} coleções e ${s.units} un em 90d — candidato a NOS.`;
+            reason = buildAiReason({
+              signals: [`${lifetime} coleções`, `${s.units} un em 90d`],
+              recommendation: "promover a NOS (Never Out of Stock)",
+            });
           } else if (s.revenue > 0 && s.units >= 30) {
             suggestedRole = "hero";
-            reason = `${s.units} un · R$ ${Math.round(s.revenue).toLocaleString("pt-BR")} em 90d.`;
+            reason = buildAiReason({
+              signals: [`${s.units} un`, `R$ ${Math.round(s.revenue).toLocaleString("pt-BR")} em 90d`],
+              recommendation: "destacar como hero da próxima coleção",
+            });
           }
           return {
             productId: p.id,

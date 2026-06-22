@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { buildAiReason } from "@/lib/ai-reason";
 
 type Stage =
   | "cad"
@@ -156,7 +157,15 @@ export const predictDelays = createServerFn({ method: "GET" })
           predictedDoneAt,
           predictedDelayHours: predictedDelayH,
           risk,
-          reason: reasonParts.join(" · "),
+          reason: buildAiReason({
+            signals: reasonParts,
+            recommendation:
+              risk === "high"
+                ? "antecipar etapa-gargalo ou renegociar prazo"
+                : risk === "medium"
+                  ? "monitorar e remover bloqueios"
+                  : null,
+          }),
         };
       });
 

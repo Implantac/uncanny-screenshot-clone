@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { buildAiReason } from "@/lib/ai-reason";
 
 export type ScrapByOpRow = {
   production_order_id: string;
@@ -94,8 +95,11 @@ export const getScrapByOrder = createServerFn({ method: "POST" })
         order_quantity: orderQty,
         scrap_pct: Math.round(pct * 10) / 10,
         top_reason: topReason,
-        reason:
-          reasonParts.length > 0 ? reasonParts.join(" · ") : `${a.qty} unidades sucateadas`,
+        reason: buildAiReason({
+          signals: reasonParts,
+          recommendation: pct >= 5 ? "investigar causa raiz e abrir CAPA" : null,
+          fallback: `${a.qty} unidades sucateadas`,
+        }),
       });
     }
 

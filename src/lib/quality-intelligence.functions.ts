@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { buildAiReason } from "@/lib/ai-reason";
 
 export type SupplierQuality = {
   supplierId: string;
@@ -94,9 +95,14 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
         .sort((x, y) => y.count - x.count);
       const topKind = recurringKinds[0];
       const blockSuggested = rate > 8 || a.occurrences >= 5;
-      let reason = `${a.occurrences} ocorrências em ${WINDOW}d`;
-      if (topKind && topKind.count >= 3) reason += ` · ${topKind.count}× ${topKind.kind}`;
-      if (rate > 0) reason += ` · taxa ${rate.toFixed(1)}%`;
+      const reason = buildAiReason({
+        signals: [
+          `${a.occurrences} ocorrências em ${WINDOW}d`,
+          topKind && topKind.count >= 3 ? `${topKind.count}× ${topKind.kind}` : null,
+          rate > 0 ? `taxa ${rate.toFixed(1)}%` : null,
+        ],
+        recommendation: blockSuggested ? "bloquear novos pedidos até CAPA aprovado" : null,
+      });
       suppliersOut.push({
         supplierId: sid,
         supplierName: supMap.get(sid) ?? "—",

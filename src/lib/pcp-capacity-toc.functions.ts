@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { buildAiReason } from "@/lib/ai-reason";
 
 export type StageCapacity = {
   key: string;
@@ -115,16 +116,28 @@ export const getCapacityTocReport = createServerFn({ method: "POST" })
       const utilization = dailyCapacity > 0 ? (dem / (dailyCapacity * 28)) * 100 : dem > 0 ? 200 : 0;
 
       let status: StageCapacity["status"] = "ok";
-      let reason = "Capacidade saudável para a demanda das próximas 4 semanas.";
+      let reason = buildAiReason({
+        signals: [`utilização ${utilization.toFixed(0)}%`, `cobertura ${coverageDays.toFixed(0)}d`],
+        fallback: "capacidade saudável para a demanda das próximas 4 semanas",
+      });
       if (dailyCapacity === 0 && (wipP > 0 || dem > 0)) {
         status = "gargalo";
-        reason = `Sem throughput observado nos últimos 14 dias com ${wipP + dem} peças aguardando.`;
+        reason = buildAiReason({
+          signals: ["sem throughput em 14d", `${wipP + dem} peças aguardando`],
+          recommendation: "investigar parada e redistribuir carga",
+        });
       } else if (utilization >= 100 || coverageDays > 28) {
         status = "gargalo";
-        reason = `Demanda excede capacidade (${utilization.toFixed(0)}% · ${coverageDays.toFixed(0)} dias para drenar).`;
+        reason = buildAiReason({
+          signals: [`${utilization.toFixed(0)}% utilização`, `${coverageDays.toFixed(0)}d p/ drenar`],
+          recommendation: "ampliar capacidade ou postergar OPs não-críticas",
+        });
       } else if (utilization >= 75 || coverageDays > 18) {
         status = "alerta";
-        reason = `Utilização alta (${utilization.toFixed(0)}%). Sem folga para imprevistos.`;
+        reason = buildAiReason({
+          signals: [`${utilization.toFixed(0)}% utilização`, "sem folga para imprevistos"],
+          recommendation: "monitorar e preparar plano de contingência",
+        });
       }
 
       return {
