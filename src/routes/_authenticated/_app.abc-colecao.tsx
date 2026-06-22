@@ -106,6 +106,10 @@ function AbcCollectionPage() {
             <strong>heróis (A)</strong>, os complementares (B) e os candidatos
             a markdown / descontinuação (C).
           </p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Base: vendas reais do ERP (tipos que geram financeiro). Excluídas
+            ordens de produção (tipo 99) e pedidos cancelados.
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Select
