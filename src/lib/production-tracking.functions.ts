@@ -92,11 +92,11 @@ export const moveOrderToColumn = createServerFn({ method: "POST" })
     if (data.overrideReason) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase as any).from("audit_logs").insert({
-        actor_id: userId,
+        user_id: userId,
         action: "pcp.stage_gate_override",
         entity: "production_order",
         entity_id: data.orderId,
-        metadata: {
+        payload: {
           to_stage: target.stage,
           reason: data.overrideReason,
           failed_checks: failed.map((f) => f.key),
