@@ -1,50 +1,49 @@
-# Ficha Técnica Inteligente (Fase 2 do roadmap)
+# MRP Inteligente — Plano de Evolução
 
-Evolução incremental sobre `tech_sheets` + `tech_sheet_versions` (já existem). Nada é reconstruído.
+Já existe base no projeto: `src/lib/pcp-mrp.functions.ts` (explosão BOM × OPs, déficit, em-pedido), `src/components/pcp-mrp-panel.tsx`, `inventory-smart.functions.ts/panel`, `_app.almoxarifado.tsx`, `erp_inventory_mirror`, `erp_purchase_mirror`, `erp_sales_mirror`, `inventory_items` (com `minimum`, `balance`, `last_entry_at`, `last_exit_at`, `turnover_30d`), `stock_movements`, `purchase_orders/items`, `suppliers (lead_time_days)`. Vou **evoluir**, não reconstruir.
 
-## O que muda
+Por escopo e qualidade, entrego em 4 fases (cada fase = entrega funcional ponta-a-ponta com dados reais do ERP). Confirme a fase 1 e sigo nela; depois avançamos.
 
-### 1. Aprovação assinada (rastreabilidade)
-Hoje `tech_sheets.status='aprovada'` muda sem registrar quem/quando.
+## Fase 1 — Engine MRP + Tela MRP enterprise (entrego agora)
+- **Engine `computeMrpPlanning`** (`src/lib/mrp-planning.functions.ts`):
+  consumo diário (saídas 90d / 90), demanda mensal/anual, σ das demandas mensais (12m), nível de serviço configurável (90/95/97/99 → Z), lead time do fornecedor principal, ES = Z·σ·√LT, PP, mínimo, LEC = √(2·D·S/H), máximo = mín + LEC, cobertura, capital empatado, giro, status (CRÍTICO/ATENÇÃO/NORMAL/EXCESSO), sugestão de compra (= máx − atual, mas ≥ LEC). Lê de `inventory_items` + `stock_movements` + `purchase_orders` + `suppliers`.
+- **Config global por owner** (nova tabela `mrp_config`): `service_level_default`, `order_cost_default (S)`, `holding_cost_pct_default (H%)`, `working_days_per_month=22`. Override por item em coluna nova `inventory_items.mrp_overrides jsonb`.
+- **Tela `/almoxarifado/mrp`** (rota nova, dentro do almoxarifado): tabela completa com todos os 16 campos do briefing, filtros (grupo, fornecedor, status, almoxarifado, busca), ordenação, paginação client, exportar Excel/PDF (`xlsxwriter`/`pdf.ts` já existem no projeto).
+- **Cards de dashboard no topo**: valor total estoque, capital parado, itens críticos, em excesso, cobertura média, rupturas, compras sugeridas (qtd e R$).
 
-**Migration** adiciona em `public.tech_sheets`:
-- `approved_by uuid` (FK lógica para auth.users)
-- `approved_at timestamptz`
-- `approval_note text` (motivo/observação opcional)
+## Fase 2 — Drawer lateral do material + alertas + sugestão automática
+- Drawer com abas: Resumo · Estoque · Consumo (gráficos 30/90/180/365d) · Pedidos (POs em aberto) · Produção (OPs e necessidade) · Planejamento (todos os cálculos) · Timeline · Indicadores.
+- Auto-criação de alertas em `marketing_notifications` quando PP atingido, cobertura <10d ou estoque > máximo (reuso de infra existente).
+- Botão **"Gerar Solicitação de Compra"** cria `purchase_orders` com `purchase_order_items` na quantidade sugerida, fornecedor principal e `expected_date = hoje + lead_time`. Registra timeline.
 
-**Trigger** `tech_sheets_stamp_approval`:
-- Quando `status` muda para `'aprovada'`: preenche `approved_by = auth.uid()`, `approved_at = now()`, snapshot automático em `tech_sheet_versions` (label = "Aprovação v{N}").
-- Quando sai de `'aprovada'`: limpa os campos (revogação).
-- Chama `log_audit('tech_sheet', id, 'approved'|'revoked', ...)`.
+## Fase 3 — BI MRP
+- Painel `/almoxarifado/mrp/bi` com Curva ABC (valor de consumo), XYZ (CV = σ/μ), Cobertura, Capital parado, Rupturas histórico, Lead Time por fornecedor, Giro, Top consumos. Reuso de `recharts` e `abc-collection.functions.ts` adaptado.
 
-### 2. Diff visual entre versões
-A serverFn `diffTechSheetVersions` já existe e retorna header/materials/operations/measurements com added/removed/changed. **Falta a UI.**
+## Fase 4 — IA Copilot MRP
+- Extensão do `api.copilot.ts` com tools dedicadas (`mrp_critical_items`, `mrp_buy_suggestions`, `mrp_capital_parado`, `mrp_supplier_leadtime`). Responde com dados reais via gateway Lovable AI (`google/gemini-3-flash-preview`).
 
-**Novo componente** `src/components/tech-sheet-version-diff-dialog.tsx`:
-- Seletor "De versão" × "Para versão" (usa `listTechSheetVersions`).
-- Tabs: Cabeçalho · Materiais · Operações · Medidas.
-- Cada linha: badge verde "adicionado", vermelho "removido", âmbar "alterado" com `de → para` por campo.
-- Acessível pelo botão "Comparar versões" no `tech-sheet-versions-drawer.tsx` já existente.
-
-### 3. Selo de aprovação na ficha
-Em `tech-sheet-drawer.tsx`, quando aprovada, mostrar:
-- Badge "✓ Aprovada por {nome} · {data}" (lê `approved_by` via join com `profiles`).
-- Tooltip com `approval_note`.
+## Eventos / recálculo
+Trigger no Postgres em `stock_movements` já mantém `turnover_30d`/`last_entry_at`/`last_exit_at`. Tudo o resto é derivado on-the-fly por `computeMrpPlanning` (sem materializar) — evita drift e roda em <2s para milhares de itens. Cache via TanStack Query, invalidado pelo cron ERP existente.
 
 ## Detalhes técnicos
+- Tudo server-side em `createServerFn` com `requireSupabaseAuth`.
+- Sem mocks. Itens sem histórico de movimentação aparecem com `consumo_diario=0`, status="NORMAL" e nota visual "sem histórico".
+- Nova migração: tabela `mrp_config` + coluna `inventory_items.mrp_overrides jsonb` + GRANTs.
+- Reaproveita: `inventory_items`, `stock_movements`, `purchase_orders/items`, `suppliers`, `erp_inventory_mirror`, `marketing_notifications`, `pcp-mrp.functions.ts` (renomeio para `mrp-explosion`).
+- Sem duplicar telas: a tela atual de Almoxarifado ganha aba "MRP" em vez de virar rota solta.
 
-- Migration única: `ALTER TABLE` + função/trigger + GRANTs já cobertos (tabela existente).
-- Sem mudança de policy (ownership atual já cobre).
-- Aproveita 100% de `diffTechSheetVersions`, `createTechSheetVersion`, `listTechSheetVersions` em `src/lib/tech-sheet-versions.functions.ts`.
-- Snapshot na aprovação garante o princípio "snapshot imutável" do manifesto.
+## Diagrama de fluxo (Fase 1)
 
-## Arquivos tocados
-- **Migration nova** (tech_sheets approval columns + trigger)
-- `src/components/tech-sheet-version-diff-dialog.tsx` (novo)
-- `src/components/tech-sheet-versions-drawer.tsx` (botão "Comparar")
-- `src/components/tech-sheet-drawer.tsx` (selo de aprovação)
+```text
+ERP cron → erp_inventory_mirror + stock_movements + purchase_orders + suppliers
+                              │
+                              ▼
+                  computeMrpPlanning(serverFn)
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        ▼                     ▼                     ▼
+   Cards dashboard      Tabela MRP            Filtros + export
+```
 
-## Fora deste passo (próximos blocos)
-- Assinatura criptográfica / PDF assinado → quando integrar storage.
-- Validação obrigatória por etapa (gates por bloco) → bloco separado.
-- Status por componente (tecido pendente, aviamento ok) → bloco separado.
+## Pergunta antes de começar
+Quer que eu **comece pela Fase 1 inteira agora** (engine + tabela + cards + config), ou prefere que eu primeiro confirme as **constantes-padrão** (S=R$10, H=3,9%, dias úteis=22, nível serviço=95%) extraídas do seu briefing?
