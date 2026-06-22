@@ -408,24 +408,31 @@ function MrpPage() {
       {/* Tabela */}
       <div className="rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+          <table className="w-full text-sm border-separate border-spacing-0">
+            <thead className="bg-muted/50 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <tr className="border-b border-border">
+                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-border/60 bg-muted/70">Identificação</th>
+                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Demanda</th>
+                <th colSpan={5} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Política de estoque</th>
+                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Saldo & cobertura</th>
+                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Ação</th>
+              </tr>
               <tr>
-                <th className="px-3 py-2 text-left">Código</th>
-                <th className="px-3 py-2 text-left">Descrição</th>
+                <th className="sticky left-0 z-10 bg-muted/70 px-3 py-2 text-left">Código</th>
+                <th className="sticky left-[96px] z-10 bg-muted/70 px-3 py-2 text-left">Descrição</th>
                 <th className="px-3 py-2 text-left">Fornecedor</th>
-                <th className="px-3 py-2 text-right">Estoque</th>
-                <th className="px-3 py-2 text-right">Consumo/d</th>
-                <th className="px-3 py-2 text-right">LT</th>
-                <th className="px-3 py-2 text-right">σ</th>
+                <th className="px-3 py-2 text-right border-l border-border/60">Cons/d</th>
+                <th className="px-3 py-2 text-right">Dem/mês</th>
+                <th className="px-3 py-2 text-right">Dem/ano</th>
+                <th className="px-3 py-2 text-right border-l border-border/60">LT</th>
                 <th className="px-3 py-2 text-right">ES</th>
                 <th className="px-3 py-2 text-right">PP</th>
-                <th className="px-3 py-2 text-right">Mín</th>
                 <th className="px-3 py-2 text-right">LEC</th>
                 <th className="px-3 py-2 text-right">Máx</th>
-                <th className="px-3 py-2 text-right">Cobertura</th>
-                <th className="px-3 py-2 text-right">Capital</th>
-                <th className="px-3 py-2 text-right">Giro</th>
+                <th className="px-3 py-2 text-right border-l border-border/60">Estoque</th>
+                <th className="px-3 py-2 text-left">Saldo × política</th>
+                <th className="px-3 py-2 text-right">Cob</th>
+                <th className="px-3 py-2 text-right border-l border-border/60">Capital</th>
                 <th className="px-3 py-2 text-right">Sugestão</th>
                 <th className="px-3 py-2 text-left">Status</th>
               </tr>
