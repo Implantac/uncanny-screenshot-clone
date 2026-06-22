@@ -9,14 +9,6 @@ type CollectionStatus = Database["public"]["Enums"]["collection_status"];
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type CollectionStatus =
-  | "rascunho"
-  | "desenvolvimento"
-  | "producao"
-  | "lancamento"
-  | "entregue"
-  | "markdown"
-  | "descontinuada";
 
 const ERP_SOURCE = "usesoft";
 
