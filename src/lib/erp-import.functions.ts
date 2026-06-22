@@ -664,7 +664,7 @@ export const syncErpSales = createServerFn({ method: "POST" })
         `SELECT p.nnumeropedid, p.ddatapedid,
                 COALESCE(NULLIF(TRIM(p.cnomecliente),''), c.cnomeclien) AS cliente_nome,
                 i.nnumeroprodu, pr.ccodigoprodu, pr.cnomeprodu,
-                i.nquatdeitped, i.nvltotitped
+                i.nquatdeitped, (COALESCE(i.nprecoitped,0) * COALESCE(i.nquatdeitped,0)) AS nvltotitped
            FROM solpedid p
            JOIN solitped i ON i.nnumeropedid = p.nnumeropedid
            LEFT JOIN solclien c  ON c.nnumeroclien = p.nnumeroclien
