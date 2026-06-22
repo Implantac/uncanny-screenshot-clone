@@ -382,7 +382,12 @@ function FichaTecnicaPage() {
                 />
 
                 <div className="glass rounded-xl p-5">
-                  <div className="flex justify-end mb-3">
+                  <div className="flex justify-end mb-3 gap-2">
+                    <ApproveTechSheetButton
+                      sheetId={selected.id}
+                      status={selected.status}
+                      isOwner={selected.owner_id === user?.id}
+                    />
                     <BomTemplatesButton sheetId={selected.id} ownerId={selected.owner_id} />
                   </div>
                   <Tabs defaultValue="materiais" className="space-y-4">
