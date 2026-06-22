@@ -95,9 +95,11 @@ function MrpPage() {
   const getCfgFn = useServerFn(getMrpConfig);
   const saveCfgFn = useServerFn(saveMrpConfig);
 
-  const [search, setSearch] = useState("");
+  const sp = Route.useSearch();
+  const [search, setSearch] = useState(sp.q ?? "");
   const [category, setCategory] = useState<string>("all");
-  const [status, setStatus] = useState<string>("all");
+  const [status, setStatus] = useState<string>(sp.status ?? "all");
+
   const [cfgOpen, setCfgOpen] = useState(false);
   const [openRow, setOpenRow] = useState<MrpRow | null>(null);
   const alertsFn = useServerFn(syncMrpAlerts);
