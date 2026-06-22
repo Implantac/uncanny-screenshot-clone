@@ -82,6 +82,9 @@ type Collection = {
   season: string | null;
   year: number | null;
   status: string;
+  target_revenue?: number | null;
+  target_pieces?: number | null;
+  target_margin_pct?: number | null;
 };
 type Product = {
   id: string;
@@ -122,7 +125,7 @@ async function loadAll() {
   const results = await Promise.all([
     supabase
       .from("collections")
-      .select("id, name, season, year, status")
+      .select("id, name, season, year, status, target_revenue, target_pieces, target_margin_pct")
       .order("year", { ascending: false })
       .limit(50),
     supabase
