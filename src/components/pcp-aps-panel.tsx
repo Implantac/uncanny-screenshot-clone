@@ -1,16 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ListOrdered, AlarmClock, Loader2, ArrowRight, Sparkles } from "lucide-react";
+import { ListOrdered, AlarmClock, Loader2, ArrowRight, Sparkles, Wand2 } from "lucide-react";
+import { toast } from "sonner";
 import { getApsSuggestion, getStalledOrders } from "@/lib/pcp-aps.functions";
+import { applyApsSequence } from "@/lib/pcp-aps-apply.functions";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type ApsRow = Awaited<ReturnType<typeof getApsSuggestion>>[number];
 type StallRow = Awaited<ReturnType<typeof getStalledOrders>>[number];
 
 export function PcpApsPanel() {
+  const qc = useQueryClient();
   const apsFn = useServerFn(getApsSuggestion);
   const stallFn = useServerFn(getStalledOrders);
+  const applyFn = useServerFn(applyApsSequence);
 
   const aps = useQuery({
     queryKey: ["pcp-aps-suggestion"],
@@ -22,6 +27,21 @@ export function PcpApsPanel() {
     queryFn: () => stallFn() as Promise<StallRow[]>,
     refetchInterval: 60_000,
   });
+
+  const applyMut = useMutation({
+    mutationFn: () =>
+      applyFn({ data: { orderedOpIds: (aps.data ?? []).map((r) => r.id) } }) as Promise<{
+        updated: number;
+        total: number;
+      }>,
+    onSuccess: (r) => {
+      toast.success(`${r.updated}/${r.total} OPs reordenadas conforme APS.`);
+      qc.invalidateQueries({ queryKey: ["pcp-aps-suggestion"] });
+      qc.invalidateQueries({ queryKey: ["production_orders"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Falha ao aplicar sequenciamento"),
+  });
+
 
   const stallCount = stall.data?.length ?? 0;
 
