@@ -25,6 +25,7 @@ const Input = z.object({
   orderId: z.string().uuid(),
   toColumn: z.string().min(1),
   note: z.string().max(500).optional(),
+  overrideReason: z.string().max(500).optional(),
 });
 
 export const moveOrderToColumn = createServerFn({ method: "POST" })
@@ -42,6 +43,22 @@ export const moveOrderToColumn = createServerFn({ method: "POST" })
       .maybeSingle();
     if (e0) throw new Error(e0.message);
     if (!cur || cur.owner_id !== userId) throw new Error("OP não encontrada.");
+
+    // -------- Gates obrigatórios por etapa --------
+    const { evaluateStageGates } = await import("@/lib/pcp-gates.functions");
+    const evalRes = await evaluateStageGates({
+      data: { orderId: data.orderId, toStage: target.stage },
+    });
+    const failed = evalRes.checks.filter((c) => c.blocking && c.status === "fail");
+    if (failed.length > 0 && !data.overrideReason) {
+      const labels = failed.map((f) => f.label).join(", ");
+      const err = new Error(`Gates bloquearam o avanço para ${target.stage}: ${labels}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (err as any).code = "STAGE_GATE_BLOCKED";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (err as any).gateChecks = evalRes.checks;
+      throw err;
+    }
 
     const update: Record<string, unknown> = { stage: target.stage };
     if (typeof target.outsourced === "boolean") update.outsourced = target.outsourced;
@@ -61,16 +78,34 @@ export const moveOrderToColumn = createServerFn({ method: "POST" })
       .eq("owner_id", userId);
     if (error) throw new Error(error.message);
 
-    // Nota opcional (o trigger já registra a passagem; aqui só adicionamos contexto)
-    if (data.note) {
+    if (data.note || data.overrideReason) {
       await supabase.from("production_stage_log").insert({
         order_id: data.orderId,
         owner_id: userId,
         from_stage: cur.stage,
         to_stage: target.stage,
-        note: data.note,
+        note: data.overrideReason
+          ? `⚠️ OVERRIDE: ${data.overrideReason}${data.note ? ` — ${data.note}` : ""}`
+          : (data.note ?? null),
       } as never);
     }
+    if (data.overrideReason) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).from("audit_logs").insert({
+        actor_id: userId,
+        action: "pcp.stage_gate_override",
+        entity: "production_order",
+        entity_id: data.orderId,
+        metadata: {
+          to_stage: target.stage,
+          reason: data.overrideReason,
+          failed_checks: failed.map((f) => f.key),
+        },
+      });
+    }
 
-    return { ok: true };
+    return {
+      ok: true,
+      warnings: evalRes.checks.filter((c) => c.status === "warn"),
+    };
   });
