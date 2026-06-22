@@ -50,7 +50,7 @@ import { exportToCsv } from "@/lib/csv";
 
 type MrpSearch = { status?: MrpStatus | "all"; q?: string; category?: string };
 
-export const Route = createFileRoute("/_authenticated/_app/mrp")({
+export const Route = createFileRoute("/_authenticated/_app/mrp/")({
   validateSearch: (s: Record<string, unknown>): MrpSearch => {
     const allowed: Array<MrpStatus | "all"> = ["all", "critico", "atencao", "normal", "excesso"];
     const status = allowed.includes(s.status as MrpStatus | "all")
