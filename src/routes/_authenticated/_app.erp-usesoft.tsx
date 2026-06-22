@@ -236,6 +236,40 @@ function Kpi({
   );
 }
 
+function SyncBar({
+  linked,
+  linkedLabel,
+  lastSync,
+  onSync,
+  syncing,
+  hint,
+}: {
+  linked: number;
+  linkedLabel: string;
+  lastSync: { created_at: string; records_affected: number | null } | null;
+  onSync: () => void | Promise<void>;
+  syncing: boolean;
+  hint?: string;
+}) {
+  return (
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
+      <div className="text-sm">
+        <div className="font-medium">{linked.toLocaleString("pt-BR")} {linkedLabel}</div>
+        <div className="text-xs text-muted-foreground">
+          {lastSync
+            ? `Último sync: ${new Date(lastSync.created_at).toLocaleString("pt-BR")} — ${lastSync.records_affected ?? 0} registros`
+            : hint ?? "Nunca sincronizado."}
+        </div>
+      </div>
+      <Button onClick={() => onSync()} disabled={syncing} size="sm">
+        <Download className={`h-4 w-4 mr-2 ${syncing ? "animate-pulse" : ""}`} />
+        {syncing ? "Sincronizando…" : "Sincronizar do ERP"}
+      </Button>
+    </div>
+  );
+}
+
+
 function SearchBar({
   value,
   onChange,
