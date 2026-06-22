@@ -93,15 +93,28 @@ function ClientesPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Cadastro de clientes B2B e varejo.</p>
         </div>
-        <Button
-          onClick={() => {
-            setEditing(null);
-            setOpen(true);
-          }}
-          className="gap-2"
-        >
-          <Plus className="size-4" /> Novo Cliente
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleSyncErp}
+            disabled={syncing}
+            className="gap-2"
+            title="Puxa clientes ativos do ERP agora, sem esperar o cron"
+          >
+            {syncing ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+            Sincronizar ERP
+          </Button>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+            }}
+            className="gap-2"
+          >
+            <Plus className="size-4" /> Novo Cliente
+          </Button>
+        </div>
+
       </div>
 
       {isLoading ? (
