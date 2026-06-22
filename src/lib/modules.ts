@@ -205,6 +205,15 @@ export const MODULES: ModuleDef[] = [
     icon: Compass,
     group: "Coleções",
   },
+  {
+    slug: "biblioteca",
+    path: "/biblioteca",
+    title: "Biblioteca de Referências",
+    short: "Catálogo global",
+    description: "Acervo navegável de produtos e protótipos com filtros por categoria, estação, cor e coleção. Base para novas referências.",
+    icon: Library,
+    group: "Coleções",
+  },
 
   // === Desenvolvimento ===
   {

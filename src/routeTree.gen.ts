@@ -96,6 +96,7 @@ import { Route as AuthenticatedAppCapacityRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppCampaignsRouteImport } from './routes/_authenticated/_app.campaigns'
 import { Route as AuthenticatedAppCadeia360RouteImport } from './routes/_authenticated/_app.cadeia-360'
 import { Route as AuthenticatedAppCadRouteImport } from './routes/_authenticated/_app.cad'
+import { Route as AuthenticatedAppBibliotecaRouteImport } from './routes/_authenticated/_app.biblioteca'
 import { Route as AuthenticatedAppBiRouteImport } from './routes/_authenticated/_app.bi'
 import { Route as AuthenticatedAppAuditRouteImport } from './routes/_authenticated/_app.audit'
 import { Route as AuthenticatedAppAttributionRouteImport } from './routes/_authenticated/_app.attribution'
@@ -610,6 +611,12 @@ const AuthenticatedAppCadRoute = AuthenticatedAppCadRouteImport.update({
   path: '/cad',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppBibliotecaRoute =
+  AuthenticatedAppBibliotecaRouteImport.update({
+    id: '/biblioteca',
+    path: '/biblioteca',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppBiRoute = AuthenticatedAppBiRouteImport.update({
   id: '/bi',
   path: '/bi',
@@ -723,6 +730,7 @@ export interface FileRoutesByFullPath {
   '/attribution': typeof AuthenticatedAppAttributionRoute
   '/audit': typeof AuthenticatedAppAuditRoute
   '/bi': typeof AuthenticatedAppBiRoute
+  '/biblioteca': typeof AuthenticatedAppBibliotecaRoute
   '/cad': typeof AuthenticatedAppCadRoute
   '/cadeia-360': typeof AuthenticatedAppCadeia360Route
   '/campaigns': typeof AuthenticatedAppCampaignsRoute
@@ -827,6 +835,7 @@ export interface FileRoutesByTo {
   '/attribution': typeof AuthenticatedAppAttributionRoute
   '/audit': typeof AuthenticatedAppAuditRoute
   '/bi': typeof AuthenticatedAppBiRoute
+  '/biblioteca': typeof AuthenticatedAppBibliotecaRoute
   '/cad': typeof AuthenticatedAppCadRoute
   '/cadeia-360': typeof AuthenticatedAppCadeia360Route
   '/campaigns': typeof AuthenticatedAppCampaignsRoute
@@ -933,6 +942,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/attribution': typeof AuthenticatedAppAttributionRoute
   '/_authenticated/_app/audit': typeof AuthenticatedAppAuditRoute
   '/_authenticated/_app/bi': typeof AuthenticatedAppBiRoute
+  '/_authenticated/_app/biblioteca': typeof AuthenticatedAppBibliotecaRoute
   '/_authenticated/_app/cad': typeof AuthenticatedAppCadRoute
   '/_authenticated/_app/cadeia-360': typeof AuthenticatedAppCadeia360Route
   '/_authenticated/_app/campaigns': typeof AuthenticatedAppCampaignsRoute
@@ -1040,6 +1050,7 @@ export interface FileRouteTypes {
     | '/attribution'
     | '/audit'
     | '/bi'
+    | '/biblioteca'
     | '/cad'
     | '/cadeia-360'
     | '/campaigns'
@@ -1144,6 +1155,7 @@ export interface FileRouteTypes {
     | '/attribution'
     | '/audit'
     | '/bi'
+    | '/biblioteca'
     | '/cad'
     | '/cadeia-360'
     | '/campaigns'
@@ -1249,6 +1261,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/attribution'
     | '/_authenticated/_app/audit'
     | '/_authenticated/_app/bi'
+    | '/_authenticated/_app/biblioteca'
     | '/_authenticated/_app/cad'
     | '/_authenticated/_app/cadeia-360'
     | '/_authenticated/_app/campaigns'
@@ -1966,6 +1979,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppCadRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/biblioteca': {
+      id: '/_authenticated/_app/biblioteca'
+      path: '/biblioteca'
+      fullPath: '/biblioteca'
+      preLoaderRoute: typeof AuthenticatedAppBibliotecaRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/bi': {
       id: '/_authenticated/_app/bi'
       path: '/bi'
@@ -2111,6 +2131,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAttributionRoute: typeof AuthenticatedAppAttributionRoute
   AuthenticatedAppAuditRoute: typeof AuthenticatedAppAuditRoute
   AuthenticatedAppBiRoute: typeof AuthenticatedAppBiRoute
+  AuthenticatedAppBibliotecaRoute: typeof AuthenticatedAppBibliotecaRoute
   AuthenticatedAppCadRoute: typeof AuthenticatedAppCadRoute
   AuthenticatedAppCadeia360Route: typeof AuthenticatedAppCadeia360Route
   AuthenticatedAppCampaignsRoute: typeof AuthenticatedAppCampaignsRoute
@@ -2206,6 +2227,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAttributionRoute: AuthenticatedAppAttributionRoute,
   AuthenticatedAppAuditRoute: AuthenticatedAppAuditRoute,
   AuthenticatedAppBiRoute: AuthenticatedAppBiRoute,
+  AuthenticatedAppBibliotecaRoute: AuthenticatedAppBibliotecaRoute,
   AuthenticatedAppCadRoute: AuthenticatedAppCadRoute,
   AuthenticatedAppCadeia360Route: AuthenticatedAppCadeia360Route,
   AuthenticatedAppCampaignsRoute: AuthenticatedAppCampaignsRoute,
