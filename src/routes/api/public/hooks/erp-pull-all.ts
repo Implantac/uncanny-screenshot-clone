@@ -28,6 +28,7 @@ export const Route = createFileRoute("/api/public/hooks/erp-pull-all")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const {
           runSyncCollections, runSyncProducts, runSyncProductImages,
+          runSyncCustomers, runSyncSuppliers,
         } = await import("@/lib/erp-sync-runners.server");
 
 
