@@ -168,6 +168,19 @@ function AbcCollectionPage() {
               <SelectItem value="365">Últimos 365 dias</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            variant="default"
+            title="Sincroniza vendas do ERP e recalcula a curva agora"
+          >
+            {refreshing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            {refreshing ? "Atualizando…" : "Atualizar agora"}
+          </Button>
         </div>
       </header>
 
