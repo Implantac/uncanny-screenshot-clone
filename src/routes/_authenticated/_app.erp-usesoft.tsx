@@ -632,15 +632,29 @@ function InventoryPanel() {
 function SalesPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListSales);
+  const syncFn = useServerFn(syncErpSales);
+  const statusFn = useServerFn(getErpSalesSyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-sales", search],
     queryFn: () =>
       fn({ data: { search, limit: 200, offset: 0, daysBack: 90 } }),
   });
+  const statusQ = useQuery({ queryKey: ["erp-sales-sync-status"], queryFn: () => statusFn() });
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const r = await syncFn({ data: { daysBack: 90 } });
+      toast.success(`Vendas: ${r.inserted ?? 0} itens espelhados (${r.total_erp} no ERP).`);
+      qc.invalidateQueries({ queryKey: ["erp-sales-sync-status"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
+    finally { setSyncing(false); }
+  }
   return (
     <TableShell
       title="Vendas · últimos 90 dias"
-      description="solpedid + solitped — pedidos por data, valor, cliente e quantidade de itens."
+      description="solpedid + solitped — pedidos por data, valor, cliente e quantidade de itens. Marketing usa para best-sellers e tendência."
       search={search}
       setSearch={setSearch}
       searchPlaceholder="Buscar cliente…"
@@ -649,6 +663,14 @@ function SalesPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <SyncBar
+        linked={statusQ.data?.linked ?? 0}
+        linkedLabel="venda(s) espelhada(s)"
+        lastSync={statusQ.data?.lastSync ?? null}
+        onSync={handleSync}
+        syncing={syncing}
+        hint="Janela de 90 dias substituída a cada sync."
+      />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
