@@ -54,6 +54,7 @@ import {
   Send,
   Flame,
   FolderOpen,
+  Library,
   type LucideIcon,
 } from "lucide-react";
 
@@ -203,6 +204,15 @@ export const MODULES: ModuleDef[] = [
     short: "Moodboard e paleta",
     description: "Referências visuais, paleta e mood do catálogo.",
     icon: Compass,
+    group: "Coleções",
+  },
+  {
+    slug: "biblioteca",
+    path: "/biblioteca",
+    title: "Biblioteca de Referências",
+    short: "Catálogo global",
+    description: "Acervo navegável de produtos e protótipos com filtros por categoria, estação, cor e coleção. Base para novas referências.",
+    icon: Library,
     group: "Coleções",
   },
 
