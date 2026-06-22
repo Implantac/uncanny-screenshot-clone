@@ -164,6 +164,15 @@ function MrpPage() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => runAlerts.mutate()}
+            disabled={runAlerts.isPending}
+          >
+            {runAlerts.isPending ? <Loader2 className="size-4 animate-spin" /> : <Bell className="size-4" />}{" "}
+            Gerar alertas
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() =>
               exportToCsv(
                 "mrp-planejamento",
