@@ -142,6 +142,15 @@ function MrpPage() {
 
   const rows = data?.rows ?? [];
   const summary = data?.summary;
+  const holdingPct = (cfg?.holding_cost_pct ?? 3.9) / 100;
+  const annualHoldingCost = useMemo(
+    () => rows.reduce((acc, r) => acc + r.capitalEmpatado * holdingPct, 0),
+    [rows, holdingPct],
+  );
+  const annualDemandTotal = useMemo(
+    () => rows.reduce((acc, r) => acc + r.annualDemand, 0),
+    [rows],
+  );
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
