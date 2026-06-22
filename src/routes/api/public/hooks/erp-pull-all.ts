@@ -47,10 +47,12 @@ export const Route = createFileRoute("/api/public/hooks/erp-pull-all")({
           const ownerId = cfg.owner_id as string;
           const ownerResult: Record<string, unknown> = { owner_id: ownerId };
           const steps: Array<[string, () => Promise<unknown>]> = [
-            // Sync restrito: apenas coleções e produtos ativos (+ imagens).
+            // Sync restrito: somente cadastros ativos do ERP.
             ["collections", () => runSyncCollections(supabaseAdmin, ownerId)],
             ["products", () => runSyncProducts(supabaseAdmin, ownerId)],
             ["product_images", () => runSyncProductImages(supabaseAdmin, ownerId, 200)],
+            ["customers", () => runSyncCustomers(supabaseAdmin, ownerId)],
+            ["suppliers", () => runSyncSuppliers(supabaseAdmin, ownerId)],
           ];
           for (const [label, fn] of steps) {
             try {
