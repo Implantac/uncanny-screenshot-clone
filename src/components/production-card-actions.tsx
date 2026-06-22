@@ -26,6 +26,7 @@ import { moveOrderToColumn } from "@/lib/production-tracking.functions";
 import { setProductionProgress } from "@/lib/pcp-quick.functions";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
+import { StageGateDialog } from "@/components/stage-gate-dialog";
 
 export type CardActionOrder = {
   id: string;
