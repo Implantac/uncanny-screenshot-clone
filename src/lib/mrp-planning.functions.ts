@@ -113,21 +113,14 @@ export const saveMrpConfig = createServerFn({ method: "POST" })
   });
 
 /**
- * Engine MRP — calcula tudo on-the-fly a partir de dados reais.
+ * Engine MRP — pure function reutilizável (Copilot, BI, route handlers).
  */
-export const computeMrpPlanning = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((i: { category?: string; supplierId?: string; deposit?: string } | undefined) =>
-    z
-      .object({
-        category: z.string().optional(),
-        supplierId: z.string().uuid().optional(),
-        deposit: z.string().optional(),
-      })
-      .parse(i ?? {}),
-  )
-  .handler(async ({ data, context }): Promise<{ rows: MrpRow[]; summary: MrpSummary; cfg: MrpConfig }> => {
-    const { supabase, userId } = context;
+export async function runMrpPlanning(
+  supabase: { from: (t: string) => any },
+  userId: string,
+  data: { category?: string; supplierId?: string; deposit?: string } = {},
+): Promise<{ rows: MrpRow[]; summary: MrpSummary; cfg: MrpConfig }> {
+    {
 
     // 1) Config
     const { data: cfgRow } = await supabase
