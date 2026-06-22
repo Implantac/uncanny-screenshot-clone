@@ -68,10 +68,12 @@ function AbcCollectionPage() {
     queryFn: () => listFn(),
   });
 
-  // auto-select first collection
-  if (!collectionId && collectionsQ.data && collectionsQ.data.length > 0) {
-    setCollectionId(collectionsQ.data[0].id);
-  }
+  // auto-select first collection (em useEffect para evitar setState durante render)
+  useEffect(() => {
+    if (!collectionId && collectionsQ.data && collectionsQ.data.length > 0) {
+      setCollectionId(collectionsQ.data[0].id);
+    }
+  }, [collectionId, collectionsQ.data]);
 
   const abcQ = useQuery({
     queryKey: ["abc", "data", collectionId, windowDays],
