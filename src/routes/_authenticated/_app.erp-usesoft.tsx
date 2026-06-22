@@ -246,18 +246,19 @@ function SyncBar({
 }: {
   linked: number;
   linkedLabel: string;
-  lastSync: { created_at: string; records_affected: number | null } | null | unknown;
+  lastSync: unknown;
   onSync: () => void | Promise<void>;
   syncing: boolean;
   hint?: string;
 }) {
+  const ls = lastSync as { created_at?: string; records_affected?: number | null } | null;
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
       <div className="text-sm">
         <div className="font-medium">{linked.toLocaleString("pt-BR")} {linkedLabel}</div>
         <div className="text-xs text-muted-foreground">
-          {lastSync
-            ? `Último sync: ${new Date(lastSync.created_at).toLocaleString("pt-BR")} — ${lastSync.records_affected ?? 0} registros`
+          {ls && ls.created_at
+            ? `Último sync: ${new Date(ls.created_at).toLocaleString("pt-BR")} — ${ls.records_affected ?? 0} registros`
             : hint ?? "Nunca sincronizado."}
         </div>
       </div>
