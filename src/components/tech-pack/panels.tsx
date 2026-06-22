@@ -32,11 +32,24 @@ type Operation = {
   id: string;
   name: string;
   machine: string | null;
+  responsible_role: string | null;
   sam: number;
   rate_per_min: number;
   total_cost: number;
   position: number;
 };
+
+const RESPONSIBLE_ROLES = [
+  "Corte",
+  "Costura",
+  "Acabamento",
+  "Bordado/Silk",
+  "Qualidade",
+  "Modelagem",
+  "Pilotagem",
+  "Terceiro",
+  "Expedição",
+];
 
 type Measurement = {
   id: string;
@@ -232,6 +245,7 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
         tech_sheet_id: sheetId,
         name: "Nova operação",
         machine: "",
+        responsible_role: null,
         sam: 0,
         rate_per_min: 0,
         position: data.length,
@@ -291,6 +305,7 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
               <TableRow>
                 <TableHead>Operação</TableHead>
                 <TableHead className="w-32">Máquina</TableHead>
+                <TableHead className="w-40">Responsável</TableHead>
                 <TableHead className="w-24 text-right">SAM (min)</TableHead>
                 <TableHead className="w-28 text-right">R$ / min</TableHead>
                 <TableHead className="w-28 text-right">Custo</TableHead>
@@ -313,6 +328,31 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
                       disabled={!canEdit}
                       onSave={(v) => upd.mutate({ id: o.id, patch: { machine: v } })}
                     />
+                  </TableCell>
+                  <TableCell>
+                    {canEdit ? (
+                      <select
+                        value={o.responsible_role ?? ""}
+                        onChange={(e) =>
+                          upd.mutate({
+                            id: o.id,
+                            patch: { responsible_role: e.target.value || null },
+                          })
+                        }
+                        className="w-full h-7 rounded-md border border-border bg-background px-2 text-xs"
+                      >
+                        <option value="">—</option>
+                        {RESPONSIBLE_ROLES.map((r) => (
+                          <option key={r} value={r}>
+                            {r}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">
+                        {o.responsible_role ?? "—"}
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <EditableNum
@@ -346,7 +386,7 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
                 </TableRow>
               ))}
               <TableRow className="bg-muted/30 font-medium">
-                <TableCell colSpan={2} className="text-right">
+                <TableCell colSpan={3} className="text-right">
                   Totais
                 </TableCell>
                 <TableCell className="text-right tabular-nums">{totalSam.toFixed(2)}</TableCell>
