@@ -523,6 +523,9 @@ export type Database = {
           cover_url: string | null
           created_at: string
           description: string | null
+          erp_id: string | null
+          erp_source: string | null
+          erp_synced_at: string | null
           id: string
           launch_date: string | null
           name: string
@@ -542,6 +545,9 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          erp_id?: string | null
+          erp_source?: string | null
+          erp_synced_at?: string | null
           id?: string
           launch_date?: string | null
           name: string
@@ -561,6 +567,9 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          erp_id?: string | null
+          erp_source?: string | null
+          erp_synced_at?: string | null
           id?: string
           launch_date?: string | null
           name?: string
