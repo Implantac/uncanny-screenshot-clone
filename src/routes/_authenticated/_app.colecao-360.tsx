@@ -125,7 +125,7 @@ async function loadAll() {
   const results = await Promise.all([
     supabase
       .from("collections")
-      .select("id, name, season, year, status, target_revenue, target_pieces, target_margin_pct")
+      .select("*")
       .order("year", { ascending: false })
       .limit(50),
     supabase
