@@ -16,6 +16,7 @@ import {
   Loader2,
   Bell,
   FileText,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
