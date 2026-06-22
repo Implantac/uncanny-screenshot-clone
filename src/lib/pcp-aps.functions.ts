@@ -114,7 +114,16 @@ export const getApsSuggestion = createServerFn({ method: "GET" })
         days_to_due: daysToDue,
         stall_hours: Math.round(stallHours * 10) / 10,
         score: Math.round(score),
-        reason: reasons.length ? reasons.join(" · ") : "fila normal",
+        reason: buildAiReason({
+          signals: reasons,
+          recommendation:
+            stallHours >= STALL_HOURS
+              ? "destravar antes de sequenciar próximas OPs"
+              : peers >= 1
+                ? "agrupar para reduzir setup"
+                : null,
+          fallback: "fila normal",
+        }),
       };
     });
 
