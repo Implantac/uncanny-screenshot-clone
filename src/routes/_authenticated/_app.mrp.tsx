@@ -384,9 +384,9 @@ function Card({
   );
 }
 
-function Row({ r }: { r: MrpRow }) {
+function Row({ r, onOpen }: { r: MrpRow; onOpen: () => void }) {
   return (
-    <tr className="border-t border-border hover:bg-muted/30">
+    <tr className="border-t border-border hover:bg-muted/30 cursor-pointer" onClick={onOpen}>
       <td className="px-3 py-2 font-mono text-xs">{r.sku}</td>
       <td className="px-3 py-2">
         <div className="font-medium">{r.name}</div>
