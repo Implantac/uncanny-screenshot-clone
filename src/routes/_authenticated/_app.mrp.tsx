@@ -17,6 +17,7 @@ import {
   Bell,
   FileText,
   Sparkles,
+  Link2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -214,6 +215,22 @@ function MrpPage() {
           >
             {runAlerts.isPending ? <Loader2 className="size-4 animate-spin" /> : <Bell className="size-4" />}{" "}
             Gerar alertas
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(window.location.href);
+                toast.success("Link copiado", {
+                  description: "URL com filtros atuais na área de transferência.",
+                });
+              } catch {
+                toast.error("Não foi possível copiar o link");
+              }
+            }}
+          >
+            <Link2 className="size-4" /> Copiar link
           </Button>
           <Button
             variant="outline"
