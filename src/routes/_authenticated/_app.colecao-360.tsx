@@ -82,6 +82,9 @@ type Collection = {
   season: string | null;
   year: number | null;
   status: string;
+  target_revenue?: number | null;
+  target_pieces?: number | null;
+  target_margin_pct?: number | null;
 };
 type Product = {
   id: string;
@@ -122,7 +125,7 @@ async function loadAll() {
   const results = await Promise.all([
     supabase
       .from("collections")
-      .select("id, name, season, year, status")
+      .select("id, name, season, year, status, target_revenue, target_pieces, target_margin_pct")
       .order("year", { ascending: false })
       .limit(50),
     supabase
@@ -1124,8 +1127,22 @@ function Metric({
 }
 
 function MetaMood({ c }: { c: CollectionAggregate }) {
-  const goal = c.investment > 0 ? c.investment * 1.5 : Math.max(c.revenue * 1.2, 50000);
+  const targetRevenue = (c.collection as { target_revenue?: number | null }).target_revenue ?? null;
+  const targetPieces = (c.collection as { target_pieces?: number | null }).target_pieces ?? null;
+  const targetMargin =
+    (c.collection as { target_margin_pct?: number | null }).target_margin_pct ?? null;
+  const hasManualGoal = targetRevenue != null && targetRevenue > 0;
+  const goal = hasManualGoal
+    ? Number(targetRevenue)
+    : c.investment > 0
+      ? c.investment * 1.5
+      : Math.max(c.revenue * 1.2, 50000);
   const pct = goal > 0 ? Math.min(100, (c.revenue / goal) * 100) : 0;
+  const piecesPct =
+    targetPieces && targetPieces > 0
+      ? Math.min(100, (c.unitsSold / targetPieces) * 100)
+      : null;
+  const marginGap = targetMargin != null ? c.margin - Number(targetMargin) : null;
   const moodKey =
     c.avanco >= 80 && c.semPiloto === 0
       ? "confiante"
@@ -1167,6 +1184,11 @@ function MetaMood({ c }: { c: CollectionAggregate }) {
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-2">
           <Target className="size-3.5 text-primary" /> Meta de receita
+          {!hasManualGoal && (
+            <span className="ml-auto text-[10px] normal-case tracking-normal text-muted-foreground/70">
+              estimativa
+            </span>
+          )}
         </div>
         <div className="flex items-baseline justify-between">
           <div className="text-2xl font-semibold tabular-nums">{fmt(c.revenue)}</div>
@@ -1178,19 +1200,45 @@ function MetaMood({ c }: { c: CollectionAggregate }) {
             style={{ width: `${pct}%` }}
           />
         </div>
-        <div className="text-[10px] text-muted-foreground mt-1 tabular-nums">
-          {pct.toFixed(0)}% da meta · faltam {fmt(Math.max(0, goal - c.revenue))}
-        </div>
+        {(piecesPct != null || marginGap != null) && (
+          <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+            {piecesPct != null && (
+              <div className="rounded bg-muted/30 px-2 py-1.5">
+                <div className="text-muted-foreground">Peças</div>
+                <div className="tabular-nums font-medium">
+                  {c.unitsSold} / {targetPieces}
+                  <span className="text-muted-foreground ml-1">({piecesPct.toFixed(0)}%)</span>
+                </div>
+              </div>
+            )}
+            {marginGap != null && (
+              <div className="rounded bg-muted/30 px-2 py-1.5">
+                <div className="text-muted-foreground">Margem vs meta</div>
+                <div
+                  className={`tabular-nums font-medium ${marginGap >= 0 ? "text-success" : "text-destructive"}`}
+                >
+                  {marginGap >= 0 ? "+" : ""}
+                  {marginGap.toFixed(1)} p.p.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {!hasManualGoal && (
+          <p className="mt-2 text-[10px] text-muted-foreground/70">
+            Defina <b>meta de receita</b> em /colecoes para usar a meta real do time.
+          </p>
+        )}
       </div>
       <div className="rounded-xl border border-border bg-card p-4">
-        <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-2">
-          <Heart className="size-3.5 text-primary" /> Mood da coleção
+        <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+          Mood do time
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-4xl">{m.emoji}</div>
-          <div className="min-w-0">
+          <div className="text-3xl">{m.emoji}</div>
+          <div>
             <div className={`text-sm font-semibold ${m.tone}`}>{m.label}</div>
-            <div className="text-xs text-muted-foreground leading-relaxed">{m.msg}</div>
+            <div className="text-xs text-muted-foreground">{m.msg}</div>
           </div>
         </div>
       </div>

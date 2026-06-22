@@ -109,6 +109,9 @@ type Collection = {
   parent?: { id: string; name: string } | null;
   cover_path: string | null;
   created_at: string;
+  target_revenue?: number | null;
+  target_pieces?: number | null;
+  target_margin_pct?: number | null;
 };
 
 type ProductRef = {
@@ -1926,6 +1929,9 @@ function CollectionDialog({
   const [launchDate, setLaunchDate] = useState("");
   const [progress, setProgress] = useState(0);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [targetRevenue, setTargetRevenue] = useState<string>("");
+  const [targetPieces, setTargetPieces] = useState<string>("");
+  const [targetMarginPct, setTargetMarginPct] = useState<string>("");
 
   const resetForm = useCallback(() => {
     setName("");
@@ -1938,6 +1944,9 @@ function CollectionDialog({
     setLaunchDate("");
     setProgress(0);
     setCoverFile(null);
+    setTargetRevenue("");
+    setTargetPieces("");
+    setTargetMarginPct("");
   }, [defaultParentId]);
 
   useEffect(() => {
@@ -1953,6 +1962,11 @@ function CollectionDialog({
       setLaunchDate(editing.launch_date || "");
       setProgress(editing.progress);
       setCoverFile(null);
+      setTargetRevenue(editing.target_revenue != null ? String(editing.target_revenue) : "");
+      setTargetPieces(editing.target_pieces != null ? String(editing.target_pieces) : "");
+      setTargetMarginPct(
+        editing.target_margin_pct != null ? String(editing.target_margin_pct) : "",
+      );
       return;
     }
     resetForm();
@@ -1995,6 +2009,9 @@ function CollectionDialog({
         launch_date: launchDate || null,
         progress,
         parent_id: parentId === "none" ? null : parentId,
+        target_revenue: targetRevenue.trim() === "" ? null : Number(targetRevenue),
+        target_pieces: targetPieces.trim() === "" ? null : Number(targetPieces),
+        target_margin_pct: targetMarginPct.trim() === "" ? null : Number(targetMarginPct),
         ...(coverPath !== undefined ? { cover_path: coverPath } : {}),
       };
 
@@ -2145,6 +2162,47 @@ function CollectionDialog({
               onChange={(event) => setPaletteStr(event.target.value)}
               placeholder="#d6c3a1, #6f7f63, #f4ede2"
             />
+          </div>
+          <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-3">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Metas da coleção <span className="normal-case opacity-70">(opcional — usadas em /colecao-360)</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Receita (R$)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="100"
+                  value={targetRevenue}
+                  onChange={(e) => setTargetRevenue(e.target.value)}
+                  placeholder="ex: 250000"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Peças</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={targetPieces}
+                  onChange={(e) => setTargetPieces(e.target.value)}
+                  placeholder="ex: 1200"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Margem (%)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={targetMarginPct}
+                  onChange={(e) => setTargetMarginPct(e.target.value)}
+                  placeholder="ex: 55"
+                />
+              </div>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">

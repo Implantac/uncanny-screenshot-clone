@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Layers3, Scissors, Ruler, Wallet } from "lucide-react";
+import { Plus, Trash2, Layers3, Scissors, Ruler, Wallet, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -277,6 +277,29 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
     },
   });
 
+  const reorder = useMutation({
+    mutationFn: async ({ id, dir }: { id: string; dir: -1 | 1 }) => {
+      const idx = data.findIndex((o) => o.id === id);
+      const swapIdx = idx + dir;
+      if (idx < 0 || swapIdx < 0 || swapIdx >= data.length) return;
+      const a = data[idx];
+      const b = data[swapIdx];
+      // troca posições em lote
+      const { error: e1 } = await supabase
+        .from("tech_sheet_operations")
+        .update({ position: b.position })
+        .eq("id", a.id);
+      if (e1) throw e1;
+      const { error: e2 } = await supabase
+        .from("tech_sheet_operations")
+        .update({ position: a.position })
+        .eq("id", b.id);
+      if (e2) throw e2;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["ts-ops", sheetId] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const totalSam = data.reduce((s, o) => s + Number(o.sam || 0), 0);
   const totalCost = data.reduce((s, o) => s + Number(o.total_cost || 0), 0);
 
@@ -309,11 +332,12 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
                 <TableHead className="w-24 text-right">SAM (min)</TableHead>
                 <TableHead className="w-28 text-right">R$ / min</TableHead>
                 <TableHead className="w-28 text-right">Custo</TableHead>
+                {canEdit && <TableHead className="w-24 text-center">Ordem</TableHead>}
                 {canEdit && <TableHead className="w-12" />}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((o) => (
+              {data.map((o, idx) => (
                 <TableRow key={o.id}>
                   <TableCell>
                     <EditableText
@@ -373,6 +397,35 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
                   </TableCell>
                   {canEdit && (
                     <TableCell>
+                      <div className="flex items-center justify-center gap-0.5">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-6"
+                          title="Mover para cima"
+                          disabled={idx === 0 || reorder.isPending}
+                          onClick={() => reorder.mutate({ id: o.id, dir: -1 })}
+                        >
+                          <ArrowUp className="size-3.5" />
+                        </Button>
+                        <span className="text-[10px] text-muted-foreground tabular-nums w-4 text-center">
+                          {idx + 1}
+                        </span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-6"
+                          title="Mover para baixo"
+                          disabled={idx === data.length - 1 || reorder.isPending}
+                          onClick={() => reorder.mutate({ id: o.id, dir: 1 })}
+                        >
+                          <ArrowDown className="size-3.5" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
+                  {canEdit && (
+                    <TableCell>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -392,6 +445,7 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
                 <TableCell className="text-right tabular-nums">{totalSam.toFixed(2)}</TableCell>
                 <TableCell />
                 <TableCell className="text-right tabular-nums">{fmt(totalCost)}</TableCell>
+                {canEdit && <TableCell />}
                 {canEdit && <TableCell />}
               </TableRow>
             </TableBody>
