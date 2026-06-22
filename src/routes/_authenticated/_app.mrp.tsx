@@ -142,6 +142,15 @@ function MrpPage() {
 
   const rows = data?.rows ?? [];
   const summary = data?.summary;
+  const holdingPct = (cfg?.holding_cost_pct ?? 3.9) / 100;
+  const annualHoldingCost = useMemo(
+    () => rows.reduce((acc, r) => acc + r.capitalEmpatado * holdingPct, 0),
+    [rows, holdingPct],
+  );
+  const annualDemandTotal = useMemo(
+    () => rows.reduce((acc, r) => acc + r.annualDemand, 0),
+    [rows],
+  );
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -312,7 +321,7 @@ function MrpPage() {
       </header>
 
       {/* Dashboard cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
         <Card
           label="Valor em estoque"
           value={brl(summary?.totalStockValue ?? 0)}
@@ -323,6 +332,16 @@ function MrpPage() {
           value={brl(summary?.capitalParado ?? 0)}
           icon={<TrendingDown className="size-4 text-amber-500" />}
           tone="warning"
+        />
+        <Card
+          label="Custo armazenagem/ano"
+          value={brl(annualHoldingCost)}
+          tone="warning"
+        />
+        <Card
+          label="Demanda anual (un)"
+          value={num(annualDemandTotal)}
+          tone="default"
         />
         <Card
           label="Críticos"
@@ -340,12 +359,6 @@ function MrpPage() {
           label="Cobertura média"
           value={summary?.avgCoverage !== null && summary?.avgCoverage !== undefined ? `${summary.avgCoverage}d` : "—"}
           tone="default"
-        />
-        <Card
-          label="Rupturas"
-          value={String(summary?.rupturas ?? 0)}
-          icon={<PackageX className="size-4 text-destructive" />}
-          tone="danger"
         />
         <Card
           label="Compras sugeridas"
@@ -395,24 +408,31 @@ function MrpPage() {
       {/* Tabela */}
       <div className="rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+          <table className="w-full text-sm border-separate border-spacing-0">
+            <thead className="bg-muted/50 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <tr className="border-b border-border">
+                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-border/60 bg-muted/70">Identificação</th>
+                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Demanda</th>
+                <th colSpan={5} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Política de estoque</th>
+                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Saldo & cobertura</th>
+                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Ação</th>
+              </tr>
               <tr>
-                <th className="px-3 py-2 text-left">Código</th>
-                <th className="px-3 py-2 text-left">Descrição</th>
+                <th className="sticky left-0 z-10 bg-muted/70 px-3 py-2 text-left">Código</th>
+                <th className="sticky left-[96px] z-10 bg-muted/70 px-3 py-2 text-left">Descrição</th>
                 <th className="px-3 py-2 text-left">Fornecedor</th>
-                <th className="px-3 py-2 text-right">Estoque</th>
-                <th className="px-3 py-2 text-right">Consumo/d</th>
-                <th className="px-3 py-2 text-right">LT</th>
-                <th className="px-3 py-2 text-right">σ</th>
+                <th className="px-3 py-2 text-right border-l border-border/60">Cons/d</th>
+                <th className="px-3 py-2 text-right">Dem/mês</th>
+                <th className="px-3 py-2 text-right">Dem/ano</th>
+                <th className="px-3 py-2 text-right border-l border-border/60">LT</th>
                 <th className="px-3 py-2 text-right">ES</th>
                 <th className="px-3 py-2 text-right">PP</th>
-                <th className="px-3 py-2 text-right">Mín</th>
                 <th className="px-3 py-2 text-right">LEC</th>
                 <th className="px-3 py-2 text-right">Máx</th>
-                <th className="px-3 py-2 text-right">Cobertura</th>
-                <th className="px-3 py-2 text-right">Capital</th>
-                <th className="px-3 py-2 text-right">Giro</th>
+                <th className="px-3 py-2 text-right border-l border-border/60">Estoque</th>
+                <th className="px-3 py-2 text-left">Saldo × política</th>
+                <th className="px-3 py-2 text-right">Cob</th>
+                <th className="px-3 py-2 text-right border-l border-border/60">Capital</th>
                 <th className="px-3 py-2 text-right">Sugestão</th>
                 <th className="px-3 py-2 text-left">Status</th>
               </tr>
@@ -489,32 +509,89 @@ function Card({
 }
 
 function Row({ r, onOpen }: { r: MrpRow; onOpen: () => void }) {
+  // Barra: escala = max(maximum, balance, reorderPoint) * 1.1
+  const scale = Math.max(r.maximum, r.balance, r.reorderPoint, 1) * 1.1;
+  const pct = (n: number) => `${Math.min(100, (n / scale) * 100)}%`;
+  const barTone =
+    r.status === "critico"
+      ? "bg-destructive"
+      : r.status === "atencao"
+        ? "bg-amber-500"
+        : r.status === "excesso"
+          ? "bg-blue-500"
+          : "bg-emerald-500";
+  const accent =
+    r.status === "critico"
+      ? "border-l-destructive"
+      : r.status === "atencao"
+        ? "border-l-amber-500"
+        : r.status === "excesso"
+          ? "border-l-blue-500"
+          : "border-l-emerald-500";
   return (
-    <tr className="border-t border-border hover:bg-muted/30 cursor-pointer" onClick={onOpen}>
-      <td className="px-3 py-2 font-mono text-xs">{r.sku}</td>
-      <td className="px-3 py-2">
-        <div className="font-medium">{r.name}</div>
+    <tr
+      className={`border-t border-border hover:bg-muted/30 cursor-pointer border-l-2 ${accent}`}
+      onClick={onOpen}
+    >
+      <td className="sticky left-0 z-10 bg-background hover:bg-muted/30 px-3 py-2 font-mono text-xs">{r.sku}</td>
+      <td className="sticky left-[96px] z-10 bg-background hover:bg-muted/30 px-3 py-2">
+        <div className="font-medium truncate max-w-[200px]">{r.name}</div>
         {!r.hasHistory && (
           <div className="text-[10px] text-muted-foreground">sem histórico de saída</div>
         )}
       </td>
-      <td className="px-3 py-2 text-muted-foreground">{r.supplierName ?? "—"}</td>
-      <td className="px-3 py-2 text-right tabular-nums">{num(r.balance)}</td>
-      <td className="px-3 py-2 text-right tabular-nums">{num(r.dailyConsumption, 1)}</td>
-      <td className="px-3 py-2 text-right tabular-nums">{r.leadTimeDays}d</td>
-      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{num(r.stdDev, 1)}</td>
+      <td className="px-3 py-2 text-muted-foreground text-xs">{r.supplierName ?? "—"}</td>
+      <td className="px-3 py-2 text-right tabular-nums border-l border-border/40">{num(r.dailyConsumption, 1)}</td>
+      <td className="px-3 py-2 text-right tabular-nums">{num(r.monthlyDemand)}</td>
+      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{num(r.annualDemand)}</td>
+      <td className="px-3 py-2 text-right tabular-nums border-l border-border/40">{r.leadTimeDays}d</td>
       <td className="px-3 py-2 text-right tabular-nums">{num(r.safetyStock)}</td>
       <td className="px-3 py-2 text-right tabular-nums font-medium">{num(r.reorderPoint)}</td>
-      <td className="px-3 py-2 text-right tabular-nums">{num(r.minimum)}</td>
       <td className="px-3 py-2 text-right tabular-nums">{num(r.eoq)}</td>
       <td className="px-3 py-2 text-right tabular-nums">{num(r.maximum)}</td>
+      <td className="px-3 py-2 text-right tabular-nums font-semibold border-l border-border/40">{num(r.balance)}</td>
+      <td className="px-3 py-2 w-[160px]">
+        <div className="relative h-2 rounded-full bg-muted overflow-visible">
+          {/* zona até PP = vermelho claro, PP→Máx = verde claro, >Máx = azul claro */}
+          <div
+            className="absolute inset-y-0 left-0 bg-destructive/15 rounded-l-full"
+            style={{ width: pct(r.reorderPoint) }}
+          />
+          <div
+            className="absolute inset-y-0 bg-emerald-500/15"
+            style={{ left: pct(r.reorderPoint), width: `calc(${pct(r.maximum)} - ${pct(r.reorderPoint)})` }}
+          />
+          {/* marcador Saldo */}
+          <div
+            className={`absolute -top-0.5 h-3 w-1 rounded-sm ${barTone}`}
+            style={{ left: `calc(${pct(r.balance)} - 2px)` }}
+            title={`Saldo ${num(r.balance)}`}
+          />
+          {/* marcador PP (linha) */}
+          <div
+            className="absolute -top-1 h-4 w-px bg-foreground/60"
+            style={{ left: pct(r.reorderPoint) }}
+            title={`PP ${num(r.reorderPoint)}`}
+          />
+          {/* marcador Máx */}
+          <div
+            className="absolute -top-1 h-4 w-px bg-foreground/40"
+            style={{ left: pct(r.maximum) }}
+            title={`Máx ${num(r.maximum)}`}
+          />
+        </div>
+        <div className="flex justify-between text-[9px] text-muted-foreground mt-1 tabular-nums">
+          <span>0</span>
+          <span>PP {num(r.reorderPoint)}</span>
+          <span>Máx {num(r.maximum)}</span>
+        </div>
+      </td>
       <td className="px-3 py-2 text-right tabular-nums">
         {r.coverageDays !== null ? `${r.coverageDays}d` : "—"}
       </td>
-      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
+      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground border-l border-border/40">
         {brl(r.capitalEmpatado)}
       </td>
-      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{r.turnover.toFixed(1)}</td>
       <td className="px-3 py-2 text-right tabular-nums">
         {r.suggestedPurchase > 0 ? (
           <div>
@@ -527,7 +604,7 @@ function Row({ r, onOpen }: { r: MrpRow; onOpen: () => void }) {
       </td>
       <td className="px-3 py-2">
         <span
-          className={`text-[10px] px-2 py-0.5 rounded-full border ${STATUS_CLASS[r.status]} uppercase tracking-wide font-medium`}
+          className={`text-[10px] px-2 py-0.5 rounded-full border ${STATUS_CLASS[r.status]} uppercase tracking-wide font-medium whitespace-nowrap`}
         >
           {STATUS_LABEL[r.status]}
         </span>
