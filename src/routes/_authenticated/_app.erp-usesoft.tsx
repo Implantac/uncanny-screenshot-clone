@@ -49,6 +49,7 @@ import {
  syncErpCollections,
  getErpCollectionSyncStatus,
  syncErpProducts,
+ syncErpProductImages,
  getErpProductSyncStatus,
  syncErpCustomers,
  getErpCustomerSyncStatus,
@@ -590,9 +591,11 @@ function ProductsPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListProducts);
   const syncFn = useServerFn(syncErpProducts);
+  const syncImgFn = useServerFn(syncErpProductImages);
   const statusFn = useServerFn(getErpProductSyncStatus);
   const qc = useQueryClient();
   const [syncing, setSyncing] = useState(false);
+  const [syncingImg, setSyncingImg] = useState(false);
 
   const q = useQuery({
     queryKey: ["usesoft-products", search],
@@ -646,11 +649,32 @@ function ProductsPanel() {
               : "Nunca sincronizado. Sincronize coleções primeiro para auto-vincular produtos por grife."}
           </div>
         </div>
-        <Button onClick={handleSync} disabled={syncing} size="sm">
-          <Download className={`h-4 w-4 mr-2 ${syncing ? "animate-pulse" : ""}`} />
-          {syncing ? "Sincronizando…" : "Sincronizar do ERP"}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={async () => {
+              setSyncingImg(true);
+              try {
+                const res = await syncImgFn({ data: { limit: 200 } });
+                toast.success(`Imagens: ${res.uploaded} enviadas, ${res.skipped} ignoradas (${res.pending} pendentes neste lote).`);
+                qc.invalidateQueries({ queryKey: ["products"] });
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Falha ao sincronizar imagens");
+              } finally { setSyncingImg(false); }
+            }}
+            disabled={syncingImg}
+            size="sm"
+            variant="outline"
+          >
+            <Download className={`h-4 w-4 mr-2 ${syncingImg ? "animate-pulse" : ""}`} />
+            {syncingImg ? "Imagens…" : "Sincronizar imagens (lote 200)"}
+          </Button>
+          <Button onClick={handleSync} disabled={syncing} size="sm">
+            <Download className={`h-4 w-4 mr-2 ${syncing ? "animate-pulse" : ""}`} />
+            {syncing ? "Sincronizando…" : "Sincronizar do ERP"}
+          </Button>
+        </div>
       </div>
+
 
       <div className="overflow-x-auto">
         <Table>

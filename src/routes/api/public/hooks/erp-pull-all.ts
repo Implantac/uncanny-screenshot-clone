@@ -28,8 +28,9 @@ export const Route = createFileRoute("/api/public/hooks/erp-pull-all")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const {
           runSyncCollections, runSyncProducts, runSyncCustomers, runSyncSuppliers,
-          runSyncInventory, runSyncSales, runSyncPurchases,
+          runSyncInventory, runSyncSales, runSyncPurchases, runSyncProductImages,
         } = await import("@/lib/erp-sync-runners.server");
+
 
         const { data: configs, error: cfgErr } = await supabaseAdmin
           .from("erp_integration_config")
@@ -54,6 +55,7 @@ export const Route = createFileRoute("/api/public/hooks/erp-pull-all")({
             ["suppliers", () => runSyncSuppliers(supabaseAdmin, ownerId)],
             ["customers", () => runSyncCustomers(supabaseAdmin, ownerId)],
             ["products", () => runSyncProducts(supabaseAdmin, ownerId)],
+            ["product_images", () => runSyncProductImages(supabaseAdmin, ownerId, 200)],
           ];
           for (const [label, fn] of steps) {
             try {
