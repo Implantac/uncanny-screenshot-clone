@@ -932,6 +932,16 @@ export const MODULES: ModuleDef[] = [
     group: "Plataforma",
   },
   {
+    slug: "copilot",
+    path: "/copilot",
+    title: "Copiloto PCP",
+    short: "Chat com seus dados",
+    description:
+      "Pergunte sobre OPs atrasadas, riscos, faltas de insumo, ocorrências críticas e fornecedores — IA consulta os dados reais via tools.",
+    icon: Bot,
+    group: "Inteligência",
+  },
+  {
     slug: "data-lake",
     path: "/data-lake",
     title: "Data Lake",
