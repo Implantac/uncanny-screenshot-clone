@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Layers3, Scissors, Ruler, Wallet } from "lucide-react";
+import { Plus, Trash2, Layers3, Scissors, Ruler, Wallet, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -275,6 +275,29 @@ export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
       qc.invalidateQueries({ queryKey: ["ts-ops", sheetId] });
       qc.invalidateQueries({ queryKey: ["tech_sheets"] });
     },
+  });
+
+  const reorder = useMutation({
+    mutationFn: async ({ id, dir }: { id: string; dir: -1 | 1 }) => {
+      const idx = data.findIndex((o) => o.id === id);
+      const swapIdx = idx + dir;
+      if (idx < 0 || swapIdx < 0 || swapIdx >= data.length) return;
+      const a = data[idx];
+      const b = data[swapIdx];
+      // troca posições em lote
+      const { error: e1 } = await supabase
+        .from("tech_sheet_operations")
+        .update({ position: b.position })
+        .eq("id", a.id);
+      if (e1) throw e1;
+      const { error: e2 } = await supabase
+        .from("tech_sheet_operations")
+        .update({ position: a.position })
+        .eq("id", b.id);
+      if (e2) throw e2;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["ts-ops", sheetId] }),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const totalSam = data.reduce((s, o) => s + Number(o.sam || 0), 0);
