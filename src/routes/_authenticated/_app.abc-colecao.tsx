@@ -63,9 +63,30 @@ const PCT = (v: number) =>
 function AbcCollectionPage() {
   const listFn = useServerFn(listCollectionsForAbc);
   const abcFn = useServerFn(getCollectionAbc);
+  const syncSalesFn = useServerFn(syncErpSales);
+  const queryClient = useQueryClient();
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [windowDays, setWindowDays] = useState(180);
   const [filterClass, setFilterClass] = useState<AbcClass | "ALL">("ALL");
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function handleRefresh() {
+    if (refreshing) return;
+    setRefreshing(true);
+    const t = toast.loading("Sincronizando vendas do ERP…");
+    try {
+      const res = await syncSalesFn({ data: { daysBack: Math.max(windowDays, 90) } });
+      await queryClient.invalidateQueries({ queryKey: ["abc"] });
+      toast.success(
+        `Curva ABC atualizada · ${res?.imported ?? 0} vendas sincronizadas`,
+        { id: t },
+      );
+    } catch (e: any) {
+      toast.error(`Falha ao atualizar: ${e?.message ?? "erro desconhecido"}`, { id: t });
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   const collectionsQ = useQuery({
     queryKey: ["abc", "collections"],
