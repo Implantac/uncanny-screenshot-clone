@@ -203,12 +203,14 @@ export const syncErpProducts = createServerFn({ method: "POST" })
     let erpRows: ErpRow[] = [];
     try {
       const r = await usesoftQuery<ErpRow>(
-        `SELECT nnumeroprodu, ccodigoprodu, ceanprodu, cnomeprodu,
-                cstatusprodu, ncustoprodu, nprcvenprodu,
-                nnumerogrife, cdsccplprodu
-           FROM solprodu
-          WHERE cstatusprodu = 'A'
-          ORDER BY cnomeprodu`,
+        `SELECT p.nnumeroprodu, p.ccodigoprodu, p.ceanprodu, p.cnomeprodu,
+                p.cstatusprodu, p.ncustoprodu, p.nprcvenprodu,
+                p.nnumerogrife, p.cdsccplprodu
+           FROM solprodu p
+           LEFT JOIN solgrife g ON g.nnumerogrife = p.nnumerogrife
+          WHERE p.cstatusprodu = 'A'
+            AND (p.nnumerogrife IS NULL OR COALESCE(g.cstatusgrife,'A') = 'A')
+          ORDER BY p.cnomeprodu`,
       );
       erpRows = r.rows;
     } catch (e: unknown) {
