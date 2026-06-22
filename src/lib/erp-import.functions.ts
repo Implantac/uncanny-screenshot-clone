@@ -851,3 +851,13 @@ export const getErpPurchaseSyncStatus = createServerFn({ method: "GET" })
   .handler(async ({ context }) =>
     statusFor(context.supabase as never, context.userId, "erp_purchase_mirror", "purchases"));
 
+export const syncErpProductImages = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { limit?: number } | undefined) => data ?? {})
+  .handler(async ({ data, context }) => {
+    const { runSyncProductImages } = await import("@/lib/erp-sync-runners.server");
+    const limit = Math.min(Math.max(Number(data?.limit) || 100, 1), 500);
+    return runSyncProductImages(context.supabase as never, context.userId, limit);
+  });
+
+

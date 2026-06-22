@@ -416,3 +416,102 @@ export async function runSyncPurchases(supabase: SB, userId: string, daysBack = 
   await logOk(supabase, userId, "purchases", "solpedcom", inserted, summary);
   return summary;
 }
+
+// ------------------------------------------------------------ PRODUCT IMAGES
+/**
+ * Importa imagens de produtos do ERP (estfotpr.cfotobase64) para o bucket
+ * `product-images` e atualiza products.image_url. Processa em lotes.
+ */
+export async function runSyncProductImages(
+  supabase: SB,
+  userId: string,
+  limit = 100,
+) {
+  const startedAt = new Date().toISOString();
+
+  const { data: pending, error: selErr } = await supabase
+    .from("products")
+    .select("id, erp_id")
+    .eq("owner_id", userId)
+    .eq("erp_source", ERP_SOURCE)
+    .is("image_url", null)
+    .not("erp_id", "is", null)
+    .limit(limit);
+  if (selErr) {
+    await logErr(supabase, userId, "product_images", "products", selErr.message);
+    throw new Error(selErr.message);
+  }
+  if (!pending || pending.length === 0) {
+    const summary = { pending: 0, uploaded: 0, skipped: 0, started_at: startedAt, finished_at: new Date().toISOString() };
+    await logOk(supabase, userId, "product_images", "estfotpr", 0, summary);
+    return summary;
+  }
+  const erpIds = pending.map((p) => Number(p.erp_id)).filter((n) => Number.isFinite(n));
+  const idByErp = new Map(pending.map((p) => [String(p.erp_id), p.id as string]));
+
+  type PhotoRow = { nnumeroprodu: number | string; cnomefotpr: string; cfotobase64: string };
+  let photos: PhotoRow[] = [];
+  try {
+    const r = await usesoftQuery<PhotoRow>(
+      `SELECT DISTINCT ON (nnumeroprodu) nnumeroprodu, cnomefotpr, cfotobase64
+         FROM estfotpr
+        WHERE nnumeroprodu = ANY($1::bigint[])
+          AND cfotobase64 IS NOT NULL
+          AND length(cfotobase64) > 100
+        ORDER BY nnumeroprodu, cprincfotweb DESC, cutilfotptweb DESC, nnumerofotpr ASC`,
+      [erpIds],
+    );
+    photos = r.rows;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Falha ao ler ERP";
+    await logErr(supabase, userId, "product_images", "estfotpr", msg);
+    throw new Error(msg);
+  }
+
+  let uploaded = 0, skipped = 0;
+  const errors: string[] = [];
+
+  await mapPool(photos, 8, async (row) => {
+    const erpId = String(row.nnumeroprodu);
+    const productId = idByErp.get(erpId);
+    if (!productId) { skipped++; return; }
+    const raw = row.cfotobase64.includes(",") ? row.cfotobase64.split(",").pop()! : row.cfotobase64;
+    let bytes: Uint8Array;
+    try {
+      const bin = atob(raw.replace(/\s+/g, ""));
+      bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    } catch {
+      skipped++; return;
+    }
+    if (bytes.length < 200) { skipped++; return; }
+    let ext = "jpg", mime = "image/jpeg";
+    if (bytes[0] === 0x89 && bytes[1] === 0x50) { ext = "png"; mime = "image/png"; }
+    else if (bytes[0] === 0x47 && bytes[1] === 0x49) { ext = "gif"; mime = "image/gif"; }
+    else if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[8] === 0x57) { ext = "webp"; mime = "image/webp"; }
+
+    const path = `${userId}/erp/${erpId}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("product-images")
+      .upload(path, bytes, { contentType: mime, upsert: true, cacheControl: "31536000" });
+    if (upErr) {
+      errors.push(`${erpId}: ${upErr.message}`);
+      skipped++; return;
+    }
+    const url = `/api/public/product-image/${userId}/erp/${erpId}.${ext}`;
+    const { error: updErr } = await supabase
+      .from("products")
+      .update({ image_url: url })
+      .eq("id", productId);
+    if (updErr) { errors.push(`${erpId}: ${updErr.message}`); skipped++; return; }
+    uploaded++;
+  });
+
+  const summary = {
+    pending: pending.length, found_photos: photos.length,
+    uploaded, skipped, errors: errors.slice(0, 5),
+    started_at: startedAt, finished_at: new Date().toISOString(),
+  };
+  await logOk(supabase, userId, "product_images", "estfotpr", uploaded, summary);
+  return summary;
+}
