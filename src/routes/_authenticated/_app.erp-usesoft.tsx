@@ -50,10 +50,20 @@ import {
  getErpCollectionSyncStatus,
  syncErpProducts,
  getErpProductSyncStatus,
+ syncErpCustomers,
+ getErpCustomerSyncStatus,
+ syncErpSuppliers,
+ getErpSupplierSyncStatus,
+ syncErpInventory,
+ getErpInventorySyncStatus,
+ syncErpSales,
+ getErpSalesSyncStatus,
+ syncErpPurchases,
+ getErpPurchaseSyncStatus,
 } from "@/lib/erp-import.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Download } from "lucide-react";
+import { Download, PlayCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/erp-usesoft")({
   head: () => ({
