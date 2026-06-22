@@ -778,14 +778,29 @@ function PurchasesPanel() {
 function CustomersPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListCustomers);
+  const syncFn = useServerFn(syncErpCustomers);
+  const statusFn = useServerFn(getErpCustomerSyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-customers", search],
     queryFn: () => fn({ data: { search, limit: 200, offset: 0 } }),
   });
+  const statusQ = useQuery({ queryKey: ["erp-customers-sync-status"], queryFn: () => statusFn() });
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const r = await syncFn();
+      toast.success(`Clientes: ${r.inserted ?? 0} criados, ${r.updated ?? 0} atualizados.`);
+      qc.invalidateQueries({ queryKey: ["erp-customers-sync-status"] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
+    finally { setSyncing(false); }
+  }
   return (
     <TableShell
       title="Clientes"
-      description="solclien — clientes ativos."
+      description="solclien — clientes ativos. Marketing usa para campanhas, CRM e segmentação."
       search={search}
       setSearch={setSearch}
       searchPlaceholder="Buscar nome, fantasia ou documento…"
@@ -794,6 +809,13 @@ function CustomersPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <SyncBar
+        linked={statusQ.data?.linked ?? 0}
+        linkedLabel="cliente(s) vinculado(s) ao ERP"
+        lastSync={statusQ.data?.lastSync ?? null}
+        onSync={handleSync}
+        syncing={syncing}
+      />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
