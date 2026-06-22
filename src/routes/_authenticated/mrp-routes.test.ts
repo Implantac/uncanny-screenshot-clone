@@ -56,7 +56,7 @@ describe("MRP routes — independência e layout não-compartilhado", () => {
   });
 
   it("routeTree.gen.ts registra as três rotas como entradas distintas", () => {
-    const tree = readFileSync(resolve(ROUTES_DIR, "..", "routeTree.gen.ts"), "utf8");
+    const tree = readFileSync(resolve(ROUTES_DIR, "..", "..", "routeTree.gen.ts"), "utf8");
     expect(tree).toContain("AuthenticatedAppMrpIndexRoute");
     expect(tree).toContain("AuthenticatedAppMrpExecutivoRoute");
     expect(tree).toContain("AuthenticatedAppMrpBiRoute");
