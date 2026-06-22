@@ -932,6 +932,16 @@ export const MODULES: ModuleDef[] = [
     group: "Plataforma",
   },
   {
+    slug: "documentos",
+    path: "/documentos",
+    title: "Central de Documentos",
+    short: "Tudo num só lugar",
+    description:
+      "Fichas técnicas, anexos do portal de fornecedor, capas de coleção, moodboards e fotos de produto — filtrável e pesquisável.",
+    icon: FolderOpen,
+    group: "Plataforma",
+  },
+  {
     slug: "copilot",
     path: "/copilot",
     title: "Copiloto PCP",
