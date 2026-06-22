@@ -129,10 +129,10 @@ export async function runSyncProducts(supabase: SB, userId: string) {
   const byErp = new Map((existing ?? []).map((p) => [String(p.erp_id), p]));
   let inserted = 0, updated = 0, skipped = 0;
   const now = new Date().toISOString();
-  for (const row of erpRows) {
+  const counts = await mapPool(erpRows, 25, async (row) => {
     const erpId = String(row.nnumeroprodu);
     const nome = String(row.cnomeprodu ?? "").trim();
-    if (!nome) { skipped++; continue; }
+    if (!nome) return "skipped" as const;
     const sku = (row.ccodigoprodu ? String(row.ccodigoprodu).trim() : "") || `ERP-${erpId}`;
     const custo = row.ncustoprodu == null ? 0 : Number(row.ncustoprodu) || 0;
     const preco = row.nprcvenprodu == null ? 0 : Number(row.nprcvenprodu) || 0;
@@ -145,16 +145,20 @@ export async function runSyncProducts(supabase: SB, userId: string) {
       if ((found.sell_price ?? 0) !== preco) patch.sell_price = preco;
       if (collectionId && found.collection_id !== collectionId) patch.collection_id = collectionId;
       const { error } = await supabase.from("products").update(patch).eq("id", found.id as string);
-      if (!error) updated++; else skipped++;
-    } else {
-      const newStatus: ProductStatus = "producao";
-      const { error } = await supabase.from("products").insert({
-        owner_id: userId, name: nome, sku, status: newStatus, cost_price: custo, sell_price: preco,
-        collection_id: collectionId, description: row.cdsccplprodu ? String(row.cdsccplprodu) : null,
-        erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
-      });
-      if (!error) inserted++; else skipped++;
+      return error ? ("skipped" as const) : ("updated" as const);
     }
+    const newStatus: ProductStatus = "producao";
+    const { error } = await supabase.from("products").insert({
+      owner_id: userId, name: nome, sku, status: newStatus, cost_price: custo, sell_price: preco,
+      collection_id: collectionId, description: row.cdsccplprodu ? String(row.cdsccplprodu) : null,
+      erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
+    });
+    return error ? ("skipped" as const) : ("inserted" as const);
+  });
+  for (const c of counts) {
+    if (c === "inserted") inserted++;
+    else if (c === "updated") updated++;
+    else skipped++;
   }
   const summary = { total_erp: erpRows.length, inserted, updated, skipped, started_at: startedAt, finished_at: new Date().toISOString() };
   await logOk(supabase, userId, "products", "solprodu", inserted + updated, summary);
