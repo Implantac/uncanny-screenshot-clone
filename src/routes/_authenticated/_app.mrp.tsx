@@ -206,7 +206,48 @@ function MrpPage() {
             }
             disabled={!filtered.length}
           >
-            <Download className="size-4" /> Exportar
+            <Download className="size-4" /> Exportar CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!filtered.length}
+            onClick={async () => {
+              const { default: jsPDF } = await import("jspdf");
+              const { default: autoTable } = await import("jspdf-autotable");
+              const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+              doc.setFontSize(14);
+              doc.text("MRP — Planejamento de Materiais", 40, 40);
+              doc.setFontSize(9);
+              doc.text(
+                `Gerado em ${new Date().toLocaleString("pt-BR")} · ${filtered.length} itens · Valor: ${brl(summary?.totalStockValue ?? 0)} · Sugerido: ${brl(summary?.suggestedValue ?? 0)}`,
+                40,
+                58,
+              );
+              autoTable(doc, {
+                startY: 72,
+                head: [["Código", "Descrição", "Fornec.", "Saldo", "PP", "Mín", "LEC", "Máx", "Cob (d)", "Sug.", "Status"]],
+                body: filtered.map((r) => [
+                  r.sku,
+                  r.name.slice(0, 38),
+                  (r.supplierName ?? "").slice(0, 18),
+                  num(r.balance),
+                  num(r.reorderPoint),
+                  num(r.minimum),
+                  num(r.eoq),
+                  num(r.maximum),
+                  r.coverageDays ?? "—",
+                  num(r.suggestedPurchase),
+                  STATUS_LABEL[r.status],
+                ]),
+                styles: { fontSize: 8, cellPadding: 3 },
+                headStyles: { fillColor: [30, 30, 30] },
+                columnStyles: { 1: { cellWidth: 150 } },
+              });
+              doc.save(`mrp-planejamento-${new Date().toISOString().slice(0, 10)}.pdf`);
+            }}
+          >
+            <FileText className="size-4" /> PDF
           </Button>
           <Button size="sm" variant="outline" onClick={() => setCfgOpen(true)}>
             <Settings2 className="size-4" /> Parâmetros
