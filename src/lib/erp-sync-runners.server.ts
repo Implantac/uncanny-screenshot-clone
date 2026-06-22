@@ -58,7 +58,8 @@ export async function runSyncCollections(supabase: SB, userId: string) {
   let erpRows: Array<{ nnumerogrife: number | string; cdescrigrife: string; cstatusgrife: string | null }> = [];
   try {
     const r = await usesoftQuery<typeof erpRows[number]>(
-      `SELECT nnumerogrife, cdescrigrife, cstatusgrife FROM solgrife ORDER BY cdescrigrife`,
+      `SELECT nnumerogrife, cdescrigrife, cstatusgrife FROM solgrife
+        WHERE COALESCE(cstatusgrife,'A') = 'A' ORDER BY cdescrigrife`,
     );
     erpRows = r.rows;
   } catch (e) {
