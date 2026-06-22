@@ -4561,6 +4561,7 @@ export type Database = {
           owner_id: string
           position: number
           rate_per_min: number
+          responsible_role: string | null
           sam: number
           tech_sheet_id: string
           total_cost: number | null
@@ -4575,6 +4576,7 @@ export type Database = {
           owner_id: string
           position?: number
           rate_per_min?: number
+          responsible_role?: string | null
           sam?: number
           tech_sheet_id: string
           total_cost?: number | null
@@ -4589,6 +4591,7 @@ export type Database = {
           owner_id?: string
           position?: number
           rate_per_min?: number
+          responsible_role?: string | null
           sam?: number
           tech_sheet_id?: string
           total_cost?: number | null
