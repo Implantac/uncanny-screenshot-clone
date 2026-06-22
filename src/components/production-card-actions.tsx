@@ -183,7 +183,7 @@ export function ProductionCardActions({
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
-                advance.mutate();
+                setGateOpen(true);
               }}
             >
               <ArrowRight className="size-3.5" /> Avançar para {nextColumnLabel}
