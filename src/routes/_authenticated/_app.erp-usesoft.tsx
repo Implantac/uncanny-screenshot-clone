@@ -46,8 +46,10 @@ import {
   usesoftListInventory,
 } from "@/lib/usesoft.functions";
 import {
-  syncErpCollections,
-  getErpCollectionSyncStatus,
+ syncErpCollections,
+ getErpCollectionSyncStatus,
+ syncErpProducts,
+ getErpProductSyncStatus,
 } from "@/lib/erp-import.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
