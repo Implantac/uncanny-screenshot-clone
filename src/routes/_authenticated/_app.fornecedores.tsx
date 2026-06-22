@@ -486,20 +486,26 @@ function FornecedoresPage() {
                   >
                     <Pencil className="size-3.5" />
                   </button>
-                  <button
-                    onClick={() => confirm("Remover este fornecedor?") && deleteMut.mutate(s.id)}
-                    className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </div>
-              )}
+                    <button
+                      onClick={() => confirm("Remover este fornecedor?") && deleteMut.mutate(s.id)}
+                      className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           ))}
         </div>
       )}
 
       <SupplierDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} />
+      <Supplier360Drawer
+        supplierId={view360Id}
+        open={!!view360Id}
+        onOpenChange={(v) => !v && setView360Id(null)}
+      />
       <ReviewSampleDialog
         review={reviewing}
         onOpenChange={(v) => !v && setReviewing(null)}
