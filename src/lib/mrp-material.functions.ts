@@ -2,6 +2,64 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+const Z_TABLE: Record<number, number> = { 90: 1.28, 95: 1.65, 97: 1.88, 99: 2.33 };
+
+/**
+ * Persiste overrides MRP por material (nível de serviço + lead time).
+ * Grava em inventory_items.mrp_overrides (JSONB) — já é consumido por runMrpPlanning.
+ */
+export const saveMaterialMrpOverrides = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (i: { inventoryItemId: string; serviceLevel?: number | null; leadTimeDays?: number | null }) =>
+      z
+        .object({
+          inventoryItemId: z.string().uuid(),
+          serviceLevel: z
+            .number()
+            .refine((v) => [90, 95, 97, 99].includes(v))
+            .nullable()
+            .optional(),
+          leadTimeDays: z.number().int().min(1).max(365).nullable().optional(),
+        })
+        .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: cur, error: cErr } = await supabase
+      .from("inventory_items")
+      .select("mrp_overrides")
+      .eq("owner_id", userId)
+      .eq("id", data.inventoryItemId)
+      .single();
+    if (cErr) throw new Error(cErr.message);
+
+    const overrides = { ...((cur.mrp_overrides ?? {}) as Record<string, number>) };
+
+    if (data.serviceLevel === null) {
+      delete overrides.service_level;
+      delete overrides.z;
+    } else if (typeof data.serviceLevel === "number") {
+      overrides.service_level = data.serviceLevel;
+      overrides.z = Z_TABLE[data.serviceLevel] ?? 1.65;
+    }
+
+    if (data.leadTimeDays === null) {
+      delete overrides.lead_time_days;
+    } else if (typeof data.leadTimeDays === "number") {
+      overrides.lead_time_days = data.leadTimeDays;
+    }
+
+    const { error: uErr } = await supabase
+      .from("inventory_items")
+      .update({ mrp_overrides: overrides })
+      .eq("owner_id", userId)
+      .eq("id", data.inventoryItemId);
+    if (uErr) throw new Error(uErr.message);
+
+    return { ok: true, overrides };
+  });
+
 export type MaterialDetail = {
   item: {
     id: string;
