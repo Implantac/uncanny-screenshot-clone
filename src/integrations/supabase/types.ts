@@ -1331,6 +1331,7 @@ export type Database = {
       }
       inventory_items: {
         Row: {
+          avg_unit_cost: number | null
           balance: number
           category: Database["public"]["Enums"]["inventory_category"]
           color_internal: string | null
@@ -1344,6 +1345,7 @@ export type Database = {
           last_exit_at: string | null
           maximum: number
           minimum: number
+          mrp_overrides: Json
           name: string
           notes: string | null
           owner_id: string
@@ -1360,6 +1362,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avg_unit_cost?: number | null
           balance?: number
           category?: Database["public"]["Enums"]["inventory_category"]
           color_internal?: string | null
@@ -1373,6 +1376,7 @@ export type Database = {
           last_exit_at?: string | null
           maximum?: number
           minimum?: number
+          mrp_overrides?: Json
           name: string
           notes?: string | null
           owner_id: string
@@ -1389,6 +1393,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avg_unit_cost?: number | null
           balance?: number
           category?: Database["public"]["Enums"]["inventory_category"]
           color_internal?: string | null
@@ -1402,6 +1407,7 @@ export type Database = {
           last_exit_at?: string | null
           maximum?: number
           minimum?: number
+          mrp_overrides?: Json
           name?: string
           notes?: string | null
           owner_id?: string
@@ -1864,6 +1870,39 @@ export type Database = {
           push_token?: string | null
           updated_at?: string
           user_name?: string
+        }
+        Relationships: []
+      }
+      mrp_config: {
+        Row: {
+          created_at: string
+          history_days: number
+          holding_cost_pct: number
+          order_cost: number
+          owner_id: string
+          service_level: number
+          updated_at: string
+          working_days_per_month: number
+        }
+        Insert: {
+          created_at?: string
+          history_days?: number
+          holding_cost_pct?: number
+          order_cost?: number
+          owner_id: string
+          service_level?: number
+          updated_at?: string
+          working_days_per_month?: number
+        }
+        Update: {
+          created_at?: string
+          history_days?: number
+          holding_cost_pct?: number
+          order_cost?: number
+          owner_id?: string
+          service_level?: number
+          updated_at?: string
+          working_days_per_month?: number
         }
         Relationships: []
       }
