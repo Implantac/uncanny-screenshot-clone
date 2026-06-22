@@ -14,6 +14,7 @@ import {
   ShoppingCart,
   ArrowLeft,
   Loader2,
+  Bell,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -23,6 +24,8 @@ import {
   type MrpRow,
   type MrpStatus,
 } from "@/lib/mrp-planning.functions";
+import { syncMrpAlerts } from "@/lib/mrp-material.functions";
+import { MrpMaterialDrawer } from "@/components/mrp-material-drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
