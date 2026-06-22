@@ -111,6 +111,7 @@ export const PRIMARY_SLUGS = new Set<string>([
   "onde-esta",
   "fornecedores",
   "almoxarifado",
+  "mrp",
   "compras",
   "stock-health",
   "marketing",
@@ -497,6 +498,34 @@ export const MODULES: ModuleDef[] = [
     icon: ShoppingCart,
     group: "Cadeia (PLM)",
     status: "parcial",
+  },
+  {
+    slug: "mrp",
+    path: "/mrp",
+    title: "MRP Inteligente",
+    short: "Mín · Máx · LEC · PP",
+    description:
+      "Estoque mínimo/máximo, LEC, ponto de pedido e sugestão automática de compras com nível de serviço por material.",
+    icon: Gauge,
+    group: "Cadeia (PLM)",
+  },
+  {
+    slug: "mrp-executivo",
+    path: "/mrp/executivo",
+    title: "MRP Executivo",
+    short: "Leitura IA do MRP",
+    description: "Visão executiva do MRP com cobertura, capital empatado e copiloto IA.",
+    icon: Brain,
+    group: "Cadeia (PLM)",
+  },
+  {
+    slug: "mrp-bi",
+    path: "/mrp/bi",
+    title: "MRP · BI",
+    short: "Curva ABC/XYZ",
+    description: "Inteligência analítica do MRP: ABC/XYZ, giro, ruptura e excesso por categoria.",
+    icon: BarChart3,
+    group: "Cadeia (PLM)",
   },
 
   // === Marketing (de produto) ===
