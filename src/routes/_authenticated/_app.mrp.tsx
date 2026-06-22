@@ -87,6 +87,13 @@ function MrpPage() {
   const [category, setCategory] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [cfgOpen, setCfgOpen] = useState(false);
+  const [openRow, setOpenRow] = useState<MrpRow | null>(null);
+  const alertsFn = useServerFn(syncMrpAlerts);
+  const runAlerts = useMutation({
+    mutationFn: () => alertsFn({}),
+    onSuccess: (r) => toast.success(`${r.created} alerta(s) MRP gerado(s)`),
+    onError: (e) => toast.error((e as Error).message),
+  });
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ["mrp", "planning"],
