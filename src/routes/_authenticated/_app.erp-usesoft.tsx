@@ -553,11 +553,25 @@ function ProductsPanel() {
 function InventoryPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListInventory);
+  const syncFn = useServerFn(syncErpInventory);
+  const statusFn = useServerFn(getErpInventorySyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-inventory", search],
     queryFn: () =>
       fn({ data: { search, limit: 200, offset: 0, onlyWithBalance: true } }),
   });
+  const statusQ = useQuery({ queryKey: ["erp-inventory-sync-status"], queryFn: () => statusFn() });
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const r = await syncFn();
+      toast.success(`Estoque: ${r.inserted ?? 0} linhas espelhadas (${r.total_erp} no ERP).`);
+      qc.invalidateQueries({ queryKey: ["erp-inventory-sync-status"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
+    finally { setSyncing(false); }
+  }
   return (
     <TableShell
       title="Estoque (saldo consolidado)"
@@ -570,6 +584,14 @@ function InventoryPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <SyncBar
+        linked={statusQ.data?.linked ?? 0}
+        linkedLabel="SKU(s) espelhados do ERP"
+        lastSync={statusQ.data?.lastSync ?? null}
+        onSync={handleSync}
+        syncing={syncing}
+        hint="Snapshot do saldo de cada SKU (substituído a cada sync)."
+      />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
