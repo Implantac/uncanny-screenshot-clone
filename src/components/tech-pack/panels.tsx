@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Layers3, Scissors, Ruler, Wallet, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Layers3, Scissors, Ruler, Wallet, ArrowUp, ArrowDown, Link2, X, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -26,7 +27,9 @@ type Material = {
   unit_cost: number;
   total_cost: number;
   position: number;
+  inventory_item_id: string | null;
 };
+
 
 type Operation = {
   id: string;
