@@ -321,7 +321,7 @@ function MrpPage() {
       </header>
 
       {/* Dashboard cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
         <Card
           label="Valor em estoque"
           value={brl(summary?.totalStockValue ?? 0)}
@@ -332,6 +332,16 @@ function MrpPage() {
           value={brl(summary?.capitalParado ?? 0)}
           icon={<TrendingDown className="size-4 text-amber-500" />}
           tone="warning"
+        />
+        <Card
+          label="Custo armazenagem/ano"
+          value={brl(annualHoldingCost)}
+          tone="warning"
+        />
+        <Card
+          label="Demanda anual (un)"
+          value={num(annualDemandTotal)}
+          tone="default"
         />
         <Card
           label="Críticos"
@@ -349,12 +359,6 @@ function MrpPage() {
           label="Cobertura média"
           value={summary?.avgCoverage !== null && summary?.avgCoverage !== undefined ? `${summary.avgCoverage}d` : "—"}
           tone="default"
-        />
-        <Card
-          label="Rupturas"
-          value={String(summary?.rupturas ?? 0)}
-          icon={<PackageX className="size-4 text-destructive" />}
-          tone="danger"
         />
         <Card
           label="Compras sugeridas"
