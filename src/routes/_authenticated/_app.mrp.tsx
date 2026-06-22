@@ -330,7 +330,7 @@ function MrpPage() {
                 </tr>
               )}
               {filtered.map((r) => (
-                <Row key={r.id} r={r} />
+                <Row key={r.id} r={r} onOpen={() => setOpenRow(r)} />
               ))}
             </tbody>
           </table>
