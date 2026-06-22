@@ -78,7 +78,7 @@ function AbcCollectionPage() {
       const res = await syncSalesFn({ data: { daysBack: Math.max(windowDays, 90) } });
       await queryClient.invalidateQueries({ queryKey: ["abc"] });
       toast.success(
-        `Curva ABC atualizada · ${res?.imported ?? 0} vendas sincronizadas`,
+        `Curva ABC atualizada · ${res?.inserted ?? 0} vendas sincronizadas`,
         { id: t },
       );
     } catch (e: any) {
