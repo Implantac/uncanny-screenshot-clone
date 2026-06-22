@@ -268,10 +268,39 @@ function TableShell({
 function CollectionsPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListCollections);
+  const syncFn = useServerFn(syncErpCollections);
+  const statusFn = useServerFn(getErpCollectionSyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
+
   const q = useQuery({
     queryKey: ["usesoft-collections", search],
     queryFn: () => fn({ data: { search, limit: 200, offset: 0 } }),
   });
+  const statusQ = useQuery({
+    queryKey: ["erp-collections-sync-status"],
+    queryFn: () => statusFn(),
+  });
+
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const res = await syncFn();
+      toast.success(
+        `Sincronização concluída: ${res.inserted} criadas, ${res.updated} atualizadas (${res.total_erp} no ERP).`,
+      );
+      qc.invalidateQueries({ queryKey: ["erp-collections-sync-status"] });
+      qc.invalidateQueries({ queryKey: ["collections"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao sincronizar");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  const linked = statusQ.data?.linked ?? 0;
+  const lastSync = statusQ.data?.lastSync;
+
   return (
     <TableShell
       title="Coleções (Grifes)"
@@ -284,6 +313,22 @@ function CollectionsPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
+        <div className="text-sm">
+          <div className="font-medium">
+            {linked} coleção(ões) vinculada(s) ao ERP
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {lastSync
+              ? `Último sync: ${new Date(lastSync.created_at).toLocaleString("pt-BR")} — ${lastSync.records_affected ?? 0} registros`
+              : "Nunca sincronizado. ERP é fonte da verdade (read-only)."}
+          </div>
+        </div>
+        <Button onClick={handleSync} disabled={syncing} size="sm">
+          <Download className={`h-4 w-4 mr-2 ${syncing ? "animate-pulse" : ""}`} />
+          {syncing ? "Sincronizando…" : "Sincronizar do ERP"}
+        </Button>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
