@@ -537,6 +537,9 @@ export type Database = {
           status_change_reason: string | null
           status_changed_at: string
           status_changed_by: string | null
+          target_margin_pct: number | null
+          target_pieces: number | null
+          target_revenue: number | null
           updated_at: string
           year: number
         }
@@ -559,6 +562,9 @@ export type Database = {
           status_change_reason?: string | null
           status_changed_at?: string
           status_changed_by?: string | null
+          target_margin_pct?: number | null
+          target_pieces?: number | null
+          target_revenue?: number | null
           updated_at?: string
           year: number
         }
@@ -581,6 +587,9 @@ export type Database = {
           status_change_reason?: string | null
           status_changed_at?: string
           status_changed_by?: string | null
+          target_margin_pct?: number | null
+          target_pieces?: number | null
+          target_revenue?: number | null
           updated_at?: string
           year?: number
         }
