@@ -13,6 +13,7 @@ import { Route as TrustRouteImport } from './routes/trust'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as DppIdRouteImport } from './routes/dpp.$id'
+import { Route as ApiCopilotRouteImport } from './routes/api.copilot'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/_app.index'
@@ -127,6 +128,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const DppIdRoute = DppIdRouteImport.update({
   id: '/dpp/$id',
   path: '/dpp/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCopilotRoute = ApiCopilotRouteImport.update({
+  id: '/api/copilot',
+  path: '/api/copilot',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -688,6 +694,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/trust': typeof TrustRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/copilot': typeof ApiCopilotRoute
   '/dpp/$id': typeof DppIdRoute
   '/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
@@ -788,6 +795,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/trust': typeof TrustRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/copilot': typeof ApiCopilotRoute
   '/dpp/$id': typeof DppIdRoute
   '/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
@@ -890,6 +898,7 @@ export interface FileRoutesById {
   '/trust': typeof TrustRoute
   '/_authenticated/_app': typeof AuthenticatedAppRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/api/copilot': typeof ApiCopilotRoute
   '/dpp/$id': typeof DppIdRoute
   '/_authenticated/_app/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
   '/_authenticated/_app/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
@@ -993,6 +1002,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/trust'
     | '/api/chat'
+    | '/api/copilot'
     | '/dpp/$id'
     | '/acompanhamento-producao'
     | '/almoxarifado'
@@ -1093,6 +1103,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/trust'
     | '/api/chat'
+    | '/api/copilot'
     | '/dpp/$id'
     | '/acompanhamento-producao'
     | '/almoxarifado'
@@ -1194,6 +1205,7 @@ export interface FileRouteTypes {
     | '/trust'
     | '/_authenticated/_app'
     | '/api/chat'
+    | '/api/copilot'
     | '/dpp/$id'
     | '/_authenticated/_app/acompanhamento-producao'
     | '/_authenticated/_app/almoxarifado'
@@ -1296,6 +1308,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   TrustRoute: typeof TrustRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiCopilotRoute: typeof ApiCopilotRoute
   DppIdRoute: typeof DppIdRoute
   PortalFornecedorTokenRoute: typeof PortalFornecedorTokenRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
@@ -1332,6 +1345,13 @@ declare module '@tanstack/react-router' {
       path: '/dpp/$id'
       fullPath: '/dpp/$id'
       preLoaderRoute: typeof DppIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/copilot': {
+      id: '/api/copilot'
+      path: '/api/copilot'
+      fullPath: '/api/copilot'
+      preLoaderRoute: typeof ApiCopilotRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -2229,6 +2249,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   TrustRoute: TrustRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiCopilotRoute: ApiCopilotRoute,
   DppIdRoute: DppIdRoute,
   PortalFornecedorTokenRoute: PortalFornecedorTokenRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
@@ -2239,13 +2260,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
