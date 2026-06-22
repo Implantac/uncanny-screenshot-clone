@@ -191,10 +191,10 @@ export async function runSyncCustomers(supabase: SB, userId: string) {
   const byErp = new Map((existing ?? []).map((c) => [String(c.erp_id), c]));
   let inserted = 0, updated = 0, skipped = 0;
   const now = new Date().toISOString();
-  for (const row of erpRows) {
+  const counts = await mapPool(erpRows, 25, async (row) => {
     const erpId = String(row.nnumeroclien);
     const nome = String(row.cnomeclien ?? "").trim();
-    if (!nome) { skipped++; continue; }
+    if (!nome) return "skipped" as const;
     const doc = (row.ctipopeclien === "J" ? row.ccnpjclien : row.ccpfclien) || null;
     const email = row.cemailnfecli || row.cendwebclien || null;
     const phone = row.cfoneclien || null;
@@ -206,15 +206,15 @@ export async function runSyncCustomers(supabase: SB, userId: string) {
       if ((found.email ?? null) !== email) patch.email = email;
       if ((found.phone ?? null) !== phone) patch.phone = phone;
       const { error } = await supabase.from("customers").update(patch).eq("id", found.id as string);
-      if (!error) updated++; else skipped++;
-    } else {
-      const { error } = await supabase.from("customers").insert({
-        owner_id: userId, name: nome, document: doc, email, phone,
-        erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
-      });
-      if (!error) inserted++; else skipped++;
+      return error ? ("skipped" as const) : ("updated" as const);
     }
-  }
+    const { error } = await supabase.from("customers").insert({
+      owner_id: userId, name: nome, document: doc, email, phone,
+      erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
+    });
+    return error ? ("skipped" as const) : ("inserted" as const);
+  });
+  for (const c of counts) { if (c === "inserted") inserted++; else if (c === "updated") updated++; else skipped++; }
   const summary = { total_erp: erpRows.length, inserted, updated, skipped, started_at: startedAt, finished_at: new Date().toISOString() };
   await logOk(supabase, userId, "customers", "solclien", inserted + updated, summary);
   return summary;
