@@ -6,8 +6,11 @@
 import type { Database } from "@/integrations/supabase/types";
 type CollectionUpdate = Database["public"]["Tables"]["collections"]["Update"];
 type CollectionStatus = Database["public"]["Enums"]["collection_status"];
+type ProductUpdate = Database["public"]["Tables"]["products"]["Update"];
+type ProductStatus = Database["public"]["Enums"]["product_status"];
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
 
 
 const ERP_SOURCE = "usesoft";
