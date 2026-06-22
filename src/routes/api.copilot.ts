@@ -3,6 +3,8 @@ import { convertToModelMessages, streamText, tool, stepCountIs, type UIMessage }
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { runMrpPlanning } from "@/lib/mrp-planning.functions";
+import type { Database } from "@/integrations/supabase/types";
 
 const SYSTEM_PROMPT = `Você é o **Copiloto PCP** do USE MODA OS — especialista em planejamento, controle de produção, suprimentos e qualidade para indústria da moda.
 
