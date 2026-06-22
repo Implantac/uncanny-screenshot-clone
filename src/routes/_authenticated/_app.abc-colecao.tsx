@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Award,
   BarChart3,
@@ -68,10 +68,12 @@ function AbcCollectionPage() {
     queryFn: () => listFn(),
   });
 
-  // auto-select first collection
-  if (!collectionId && collectionsQ.data && collectionsQ.data.length > 0) {
-    setCollectionId(collectionsQ.data[0].id);
-  }
+  // auto-select first collection (em useEffect para evitar setState durante render)
+  useEffect(() => {
+    if (!collectionId && collectionsQ.data && collectionsQ.data.length > 0) {
+      setCollectionId(collectionsQ.data[0].id);
+    }
+  }, [collectionId, collectionsQ.data]);
 
   const abcQ = useQuery({
     queryKey: ["abc", "data", collectionId, windowDays],
@@ -103,6 +105,10 @@ function AbcCollectionPage() {
             Pareto de receita por produto. Identifica os{" "}
             <strong>heróis (A)</strong>, os complementares (B) e os candidatos
             a markdown / descontinuação (C).
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Base: vendas reais do ERP (tipos que geram financeiro). Excluídas
+            ordens de produção (tipo 99) e pedidos cancelados.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

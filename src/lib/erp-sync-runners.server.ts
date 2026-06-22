@@ -325,19 +325,27 @@ export async function runSyncSales(supabase: SB, userId: string, daysBack = 90) 
     nnumeropedid: number | string; ddatapedid: string | null; cliente_nome: string | null;
     nnumeroprodu: number | string | null; ccodigoprodu: string | null; cnomeprodu: string | null;
     nquatdeitped: number | string | null; nvltotitped: number | string | null;
+    tipo_nome: string | null; tipo_sigla: string | null;
   };
   let erpRows: ErpRow[] = [];
   try {
+    // Apenas VENDA REAL: tipo gera financeiro (cmovfintpped='S') e não é OP (99).
     const r = await usesoftQuery<ErpRow>(
       `SELECT p.nnumeropedid, p.ddatapedid,
               COALESCE(NULLIF(TRIM(p.cnomecliente),''), c.cnomeclien) AS cliente_nome,
               i.nnumeroprodu, pr.ccodigoprodu, pr.cnomeprodu,
-              i.nquatdeitped, (COALESCE(i.nprecoitped,0) * COALESCE(i.nquatdeitped,0)) AS nvltotitped
-         FROM solpedid p JOIN solitped i ON i.nnumeropedid = p.nnumeropedid
+              i.nquatdeitped, (COALESCE(i.nprecoitped,0) * COALESCE(i.nquatdeitped,0)) AS nvltotitped,
+              t.cnometpped AS tipo_nome, t.csiglatpped AS tipo_sigla
+         FROM solpedid p
+         JOIN solitped i ON i.nnumeropedid = p.nnumeropedid
+         JOIN soltpped t ON t.nnumerotpped = p.nnumerotpped
          LEFT JOIN solclien c ON c.nnumeroclien = p.nnumeroclien
          LEFT JOIN solprodu pr ON pr.nnumeroprodu = i.nnumeroprodu
         WHERE p.ddatapedid >= (CURRENT_DATE - ($1::int || ' days')::interval)
-          AND COALESCE(p.cstatuspedid,'') <> 'C'`,
+          AND COALESCE(p.cstatuspedid,'') <> 'C'
+          AND COALESCE(t.cmovfintpped,'N') = 'S'
+          AND COALESCE(t.cnometpped,'') NOT ILIKE '99 -%'
+          AND COALESCE(t.cnometpped,'') NOT ILIKE '%ORDEM DE PRODU%'`,
       [daysBack],
     );
     erpRows = r.rows;
@@ -357,10 +365,10 @@ export async function runSyncSales(supabase: SB, userId: string, daysBack = 90) 
     total_value: Number(r.nvltotitped) || 0,
     customer: r.cliente_nome || null,
     region: null as string | null,
-    channel: "erp",
+    channel: r.tipo_sigla || "erp",
     sold_at: r.ddatapedid ? new Date(r.ddatapedid).toISOString() : null,
     synced_at: now,
-    raw: { pedido: String(r.nnumeropedid) },
+    raw: { pedido: String(r.nnumeropedid), tipo: r.tipo_nome ?? null },
   }));
   let inserted = 0;
   for (let i = 0; i < batch.length; i += 500) {
