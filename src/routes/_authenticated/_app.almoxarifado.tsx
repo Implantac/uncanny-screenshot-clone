@@ -15,6 +15,7 @@ import {
   Download,
   Zap,
   ArrowRight,
+  Activity,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
