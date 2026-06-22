@@ -44,6 +44,14 @@ Tudo aqui é "ligar fio solto": o dado/lógica já existe, falta UI ou conexão.
 
 ---
 
+## 🌊 Onda 2 — PLM Core (esforço M) ✅ CONCLUÍDA
+
+- 2.1 Aprovar ficha: `approveTechSheet`/`unapproveTechSheet` (admin/gerente via `has_role`) + botão no header de `/ficha-tecnica` com dialog de nota.
+- 2.2 Diff de versões: `diffTechSheetVersions` + `DiffView` no `tech-sheet-versions-drawer` (já estava entregue).
+- 2.3 BOM ↔ Almoxarifado: coluna "Almox." em `MaterialsPanel` com popover de busca por SKU/nome (usa `tech_sheet_materials.inventory_item_id`).
+- 2.4 APS loop: `applyApsSequence` persiste `priority` 5→1 conforme ranking; botão "Aplicar sequenciamento" no `pcp-aps-panel` com toast.
+
+---
 ## 🌊 Onda 2 — PLM Core (esforço M)
 
 ### 2.1 Botão "Aprovar Ficha Técnica" funcional

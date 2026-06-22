@@ -51,7 +51,8 @@ import {
 import { BomTemplatesButton } from "@/components/bom-templates-button";
 import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer";
 import { TechSheetCostAlertsPanel } from "@/components/tech-sheet-cost-alerts-panel";
-import { Camera } from "lucide-react";
+import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
+import { ShieldCheck, Camera } from "lucide-react";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -382,7 +383,12 @@ function FichaTecnicaPage() {
                 />
 
                 <div className="glass rounded-xl p-5">
-                  <div className="flex justify-end mb-3">
+                  <div className="flex justify-end mb-3 gap-2">
+                    <ApproveTechSheetButton
+                      sheetId={selected.id}
+                      status={selected.status}
+                      isOwner={selected.owner_id === user?.id}
+                    />
                     <BomTemplatesButton sheetId={selected.id} ownerId={selected.owner_id} />
                   </div>
                   <Tabs defaultValue="materiais" className="space-y-4">
@@ -1099,3 +1105,82 @@ function AiSuggestionsPanel({ sheetId }: { sheetId: string }) {
     </div>
   );
 }
+
+function ApproveTechSheetButton({
+  sheetId,
+  status,
+  isOwner,
+}: {
+  sheetId: string;
+  status: Status;
+  isOwner: boolean;
+}) {
+  const qc = useQueryClient();
+  const approveFn = useServerFn(approveTechSheet);
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const mut = useMutation({
+    mutationFn: () => approveFn({ data: { sheetId, note: note || undefined } }),
+    onSuccess: () => {
+      toast.success("Ficha aprovada — snapshot registrado.");
+      setOpen(false);
+      setNote("");
+      qc.invalidateQueries({ queryKey: ["tech_sheets"] });
+      qc.invalidateQueries({ queryKey: ["tech-sheet-by-product"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Falha ao aprovar."),
+  });
+
+  if (status === "aprovada") {
+    return (
+      <Badge variant="outline" className="bg-success/15 text-success border-success/30 gap-1">
+        <ShieldCheck className="size-3" /> Aprovada
+      </Badge>
+    );
+  }
+  if (!isOwner) return null;
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="default"
+        className="gap-1"
+        onClick={() => setOpen(true)}
+        title="Aprovar ficha (requer admin ou gerente)"
+      >
+        <ShieldCheck className="size-3.5" /> Aprovar ficha
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Aprovar ficha técnica</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 text-sm">
+            <p className="text-muted-foreground text-xs">
+              A aprovação congela a versão atual e registra você como aprovador. Apenas admin ou
+              gerente podem executar.
+            </p>
+            <Label className="text-xs">Nota (opcional)</Label>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Ex.: liberada para corte do lote piloto"
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => mut.mutate()} disabled={mut.isPending} className="gap-1">
+              <ShieldCheck className="size-3.5" />
+              {mut.isPending ? "Aprovando…" : "Confirmar aprovação"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+

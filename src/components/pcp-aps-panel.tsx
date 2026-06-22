@@ -1,16 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ListOrdered, AlarmClock, Loader2, ArrowRight, Sparkles } from "lucide-react";
+import { ListOrdered, AlarmClock, Loader2, ArrowRight, Sparkles, Wand2 } from "lucide-react";
+import { toast } from "sonner";
 import { getApsSuggestion, getStalledOrders } from "@/lib/pcp-aps.functions";
+import { applyApsSequence } from "@/lib/pcp-aps-apply.functions";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type ApsRow = Awaited<ReturnType<typeof getApsSuggestion>>[number];
 type StallRow = Awaited<ReturnType<typeof getStalledOrders>>[number];
 
 export function PcpApsPanel() {
+  const qc = useQueryClient();
   const apsFn = useServerFn(getApsSuggestion);
   const stallFn = useServerFn(getStalledOrders);
+  const applyFn = useServerFn(applyApsSequence);
 
   const aps = useQuery({
     queryKey: ["pcp-aps-suggestion"],
@@ -23,6 +28,21 @@ export function PcpApsPanel() {
     refetchInterval: 60_000,
   });
 
+  const applyMut = useMutation({
+    mutationFn: () =>
+      applyFn({ data: { orderedOpIds: (aps.data ?? []).map((r) => r.id) } }) as Promise<{
+        updated: number;
+        total: number;
+      }>,
+    onSuccess: (r) => {
+      toast.success(`${r.updated}/${r.total} OPs reordenadas conforme APS.`);
+      qc.invalidateQueries({ queryKey: ["pcp-aps-suggestion"] });
+      qc.invalidateQueries({ queryKey: ["production_orders"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "Falha ao aplicar sequenciamento"),
+  });
+
+
   const stallCount = stall.data?.length ?? 0;
 
   return (
@@ -32,11 +52,28 @@ export function PcpApsPanel() {
           <Sparkles className="size-4 text-primary" />
           APS · Sequenciamento e alertas
         </div>
-        {stallCount > 0 && (
-          <Badge variant="outline" className="gap-1 bg-destructive/10 text-destructive border-destructive/30">
-            <AlarmClock className="size-3" /> {stallCount} parado{stallCount > 1 ? "s" : ""} &gt;4h
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          {stallCount > 0 && (
+            <Badge variant="outline" className="gap-1 bg-destructive/10 text-destructive border-destructive/30">
+              <AlarmClock className="size-3" /> {stallCount} parado{stallCount > 1 ? "s" : ""} &gt;4h
+            </Badge>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1 h-7 text-xs"
+            disabled={!aps.data?.length || applyMut.isPending}
+            onClick={() => applyMut.mutate()}
+            title="Persiste a fila como priority nas OPs"
+          >
+            {applyMut.isPending ? (
+              <Loader2 className="size-3 animate-spin" />
+            ) : (
+              <Wand2 className="size-3" />
+            )}
+            Aplicar sequenciamento
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="aps" className="px-4 pb-4">
