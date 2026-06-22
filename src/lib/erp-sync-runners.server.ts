@@ -246,10 +246,10 @@ export async function runSyncSuppliers(supabase: SB, userId: string) {
   const byErp = new Map((existing ?? []).map((s) => [String(s.erp_id), s]));
   let inserted = 0, updated = 0, skipped = 0;
   const now = new Date().toISOString();
-  for (const row of erpRows) {
+  const counts = await mapPool(erpRows, 25, async (row) => {
     const erpId = String(row.nnumeroforne);
     const nome = String(row.cnomeforne ?? "").trim();
-    if (!nome) { skipped++; continue; }
+    if (!nome) return "skipped" as const;
     const doc = (row.ctipopeforne === "J" ? row.ccnpjforne : row.ccpfforne) || null;
     const email = row.cemailforne || null;
     const phone = row.cfoneforne || null;
@@ -261,15 +261,15 @@ export async function runSyncSuppliers(supabase: SB, userId: string) {
       if ((found.email ?? null) !== email) patch.email = email;
       if ((found.phone ?? null) !== phone) patch.phone = phone;
       const { error } = await supabase.from("suppliers").update(patch).eq("id", found.id as string);
-      if (!error) updated++; else skipped++;
-    } else {
-      const { error } = await supabase.from("suppliers").insert({
-        owner_id: userId, name: nome, document: doc, email, phone, active: true,
-        erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
-      });
-      if (!error) inserted++; else skipped++;
+      return error ? ("skipped" as const) : ("updated" as const);
     }
-  }
+    const { error } = await supabase.from("suppliers").insert({
+      owner_id: userId, name: nome, document: doc, email, phone, active: true,
+      erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
+    });
+    return error ? ("skipped" as const) : ("inserted" as const);
+  });
+  for (const c of counts) { if (c === "inserted") inserted++; else if (c === "updated") updated++; else skipped++; }
   const summary = { total_erp: erpRows.length, inserted, updated, skipped, started_at: startedAt, finished_at: new Date().toISOString() };
   await logOk(supabase, userId, "suppliers", "solforne", inserted + updated, summary);
   return summary;
