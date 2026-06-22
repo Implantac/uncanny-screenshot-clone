@@ -53,6 +53,7 @@ import { Route as AuthenticatedAppPcpKanbanRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppPcpRouteImport } from './routes/_authenticated/_app.pcp'
 import { Route as AuthenticatedAppOndeEstaRouteImport } from './routes/_authenticated/_app.onde-esta'
 import { Route as AuthenticatedAppOmnichannelRouteImport } from './routes/_authenticated/_app.omnichannel'
+import { Route as AuthenticatedAppMrpRouteImport } from './routes/_authenticated/_app.mrp'
 import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_authenticated/_app.movimentacoes'
 import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
 import { Route as AuthenticatedAppMateriaisRouteImport } from './routes/_authenticated/_app.materiais'
@@ -365,6 +366,11 @@ const AuthenticatedAppOmnichannelRoute =
     path: '/omnichannel',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppMrpRoute = AuthenticatedAppMrpRouteImport.update({
+  id: '/mrp',
+  path: '/mrp',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppMovimentacoesRoute =
   AuthenticatedAppMovimentacoesRouteImport.update({
     id: '/movimentacoes',
@@ -796,6 +802,7 @@ export interface FileRoutesByFullPath {
   '/materiais': typeof AuthenticatedAppMateriaisRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
+  '/mrp': typeof AuthenticatedAppMrpRoute
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
@@ -904,6 +911,7 @@ export interface FileRoutesByTo {
   '/materiais': typeof AuthenticatedAppMateriaisRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
+  '/mrp': typeof AuthenticatedAppMrpRoute
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
@@ -1014,6 +1022,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/materiais': typeof AuthenticatedAppMateriaisRoute
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
   '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
+  '/_authenticated/_app/mrp': typeof AuthenticatedAppMrpRoute
   '/_authenticated/_app/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/_authenticated/_app/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/_authenticated/_app/pcp': typeof AuthenticatedAppPcpRoute
@@ -1125,6 +1134,7 @@ export interface FileRouteTypes {
     | '/materiais'
     | '/mobile'
     | '/movimentacoes'
+    | '/mrp'
     | '/omnichannel'
     | '/onde-esta'
     | '/pcp'
@@ -1233,6 +1243,7 @@ export interface FileRouteTypes {
     | '/materiais'
     | '/mobile'
     | '/movimentacoes'
+    | '/mrp'
     | '/omnichannel'
     | '/onde-esta'
     | '/pcp'
@@ -1342,6 +1353,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/materiais'
     | '/_authenticated/_app/mobile'
     | '/_authenticated/_app/movimentacoes'
+    | '/_authenticated/_app/mrp'
     | '/_authenticated/_app/omnichannel'
     | '/_authenticated/_app/onde-esta'
     | '/_authenticated/_app/pcp'
@@ -1717,6 +1729,13 @@ declare module '@tanstack/react-router' {
       path: '/omnichannel'
       fullPath: '/omnichannel'
       preLoaderRoute: typeof AuthenticatedAppOmnichannelRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/mrp': {
+      id: '/_authenticated/_app/mrp'
+      path: '/mrp'
+      fullPath: '/mrp'
+      preLoaderRoute: typeof AuthenticatedAppMrpRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/movimentacoes': {
@@ -2238,6 +2257,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMateriaisRoute: typeof AuthenticatedAppMateriaisRoute
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
   AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
+  AuthenticatedAppMrpRoute: typeof AuthenticatedAppMrpRoute
   AuthenticatedAppOmnichannelRoute: typeof AuthenticatedAppOmnichannelRoute
   AuthenticatedAppOndeEstaRoute: typeof AuthenticatedAppOndeEstaRoute
   AuthenticatedAppPcpRoute: typeof AuthenticatedAppPcpRoute
@@ -2336,6 +2356,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMateriaisRoute: AuthenticatedAppMateriaisRoute,
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
   AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
+  AuthenticatedAppMrpRoute: AuthenticatedAppMrpRoute,
   AuthenticatedAppOmnichannelRoute: AuthenticatedAppOmnichannelRoute,
   AuthenticatedAppOndeEstaRoute: AuthenticatedAppOndeEstaRoute,
   AuthenticatedAppPcpRoute: AuthenticatedAppPcpRoute,
