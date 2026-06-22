@@ -116,6 +116,7 @@ import { Route as AuthenticatedAppPrototipoIdRouteImport } from './routes/_authe
 import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes/_authenticated/_app.producao-do-dia.$stage'
 import { Route as AuthenticatedAppLoteIdRouteImport } from './routes/_authenticated/_app.lote.$id'
 import { Route as AuthenticatedAppApontarIdRouteImport } from './routes/_authenticated/_app.apontar.$id'
+import { Route as ApiPublicProductImageOwnerIdSplatRouteImport } from './routes/api/public/product-image/$ownerId.$'
 
 const TrustRoute = TrustRouteImport.update({
   id: '/trust',
@@ -729,6 +730,12 @@ const AuthenticatedAppApontarIdRoute =
     path: '/apontar/$id',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const ApiPublicProductImageOwnerIdSplatRoute =
+  ApiPublicProductImageOwnerIdSplatRouteImport.update({
+    id: '/api/public/product-image/$ownerId/$',
+    path: '/api/public/product-image/$ownerId/$',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedAppIndexRoute
@@ -836,6 +843,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
+  '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedAppIndexRoute
@@ -943,6 +951,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
+  '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1053,6 +1062,7 @@ export interface FileRoutesById {
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
+  '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1162,6 +1172,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/supplier-portal/$token'
+    | '/api/public/product-image/$ownerId/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1269,6 +1280,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/supplier-portal/$token'
+    | '/api/public/product-image/$ownerId/$'
   id:
     | '__root__'
     | '/_authenticated'
@@ -1378,6 +1390,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/supplier-portal/$token'
+    | '/api/public/product-image/$ownerId/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1393,6 +1406,7 @@ export interface RootRouteChildren {
   ApiPublicHooksErpPullAllRoute: typeof ApiPublicHooksErpPullAllRoute
   ApiPublicHooksMarkLateOpsRoute: typeof ApiPublicHooksMarkLateOpsRoute
   ApiPublicSupplierPortalTokenRoute: typeof ApiPublicSupplierPortalTokenRoute
+  ApiPublicProductImageOwnerIdSplatRoute: typeof ApiPublicProductImageOwnerIdSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2146,6 +2160,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppApontarIdRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/api/public/product-image/$ownerId/$': {
+      id: '/api/public/product-image/$ownerId/$'
+      path: '/api/public/product-image/$ownerId/$'
+      fullPath: '/api/public/product-image/$ownerId/$'
+      preLoaderRoute: typeof ApiPublicProductImageOwnerIdSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -2387,7 +2408,19 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksErpPullAllRoute: ApiPublicHooksErpPullAllRoute,
   ApiPublicHooksMarkLateOpsRoute: ApiPublicHooksMarkLateOpsRoute,
   ApiPublicSupplierPortalTokenRoute: ApiPublicSupplierPortalTokenRoute,
+  ApiPublicProductImageOwnerIdSplatRoute:
+    ApiPublicProductImageOwnerIdSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
