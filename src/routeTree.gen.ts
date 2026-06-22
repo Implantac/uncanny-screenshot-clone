@@ -115,6 +115,7 @@ import { Route as AuthenticatedAppWarRoomColecaoIdRouteImport } from './routes/_
 import { Route as AuthenticatedAppQualityCapaRulesRouteImport } from './routes/_authenticated/_app.quality.capa-rules'
 import { Route as AuthenticatedAppPrototipoIdRouteImport } from './routes/_authenticated/_app.prototipo.$id'
 import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes/_authenticated/_app.producao-do-dia.$stage'
+import { Route as AuthenticatedAppMrpBiRouteImport } from './routes/_authenticated/_app.mrp.bi'
 import { Route as AuthenticatedAppLoteIdRouteImport } from './routes/_authenticated/_app.lote.$id'
 import { Route as AuthenticatedAppApontarIdRouteImport } from './routes/_authenticated/_app.apontar.$id'
 import { Route as ApiPublicProductImageOwnerIdSplatRouteImport } from './routes/api/public/product-image/$ownerId.$'
@@ -725,6 +726,11 @@ const AuthenticatedAppProducaoDoDiaStageRoute =
     path: '/producao-do-dia/$stage',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppMrpBiRoute = AuthenticatedAppMrpBiRouteImport.update({
+  id: '/bi',
+  path: '/bi',
+  getParentRoute: () => AuthenticatedAppMrpRoute,
+} as any)
 const AuthenticatedAppLoteIdRoute = AuthenticatedAppLoteIdRouteImport.update({
   id: '/lote/$id',
   path: '/lote/$id',
@@ -802,7 +808,7 @@ export interface FileRoutesByFullPath {
   '/materiais': typeof AuthenticatedAppMateriaisRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
-  '/mrp': typeof AuthenticatedAppMrpRoute
+  '/mrp': typeof AuthenticatedAppMrpRouteWithChildren
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
@@ -841,6 +847,7 @@ export interface FileRoutesByFullPath {
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
+  '/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
   '/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
@@ -911,7 +918,7 @@ export interface FileRoutesByTo {
   '/materiais': typeof AuthenticatedAppMateriaisRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
-  '/mrp': typeof AuthenticatedAppMrpRoute
+  '/mrp': typeof AuthenticatedAppMrpRouteWithChildren
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
@@ -950,6 +957,7 @@ export interface FileRoutesByTo {
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
+  '/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
   '/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
@@ -1022,7 +1030,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/materiais': typeof AuthenticatedAppMateriaisRoute
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
   '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
-  '/_authenticated/_app/mrp': typeof AuthenticatedAppMrpRoute
+  '/_authenticated/_app/mrp': typeof AuthenticatedAppMrpRouteWithChildren
   '/_authenticated/_app/omnichannel': typeof AuthenticatedAppOmnichannelRoute
   '/_authenticated/_app/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/_authenticated/_app/pcp': typeof AuthenticatedAppPcpRoute
@@ -1062,6 +1070,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/_app/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/_authenticated/_app/lote/$id': typeof AuthenticatedAppLoteIdRoute
+  '/_authenticated/_app/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/_authenticated/_app/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/_authenticated/_app/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
   '/_authenticated/_app/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
@@ -1173,6 +1182,7 @@ export interface FileRouteTypes {
     | '/portal/fornecedor/$token'
     | '/apontar/$id'
     | '/lote/$id'
+    | '/mrp/bi'
     | '/producao-do-dia/$stage'
     | '/prototipo/$id'
     | '/quality/capa-rules'
@@ -1282,6 +1292,7 @@ export interface FileRouteTypes {
     | '/portal/fornecedor/$token'
     | '/apontar/$id'
     | '/lote/$id'
+    | '/mrp/bi'
     | '/producao-do-dia/$stage'
     | '/prototipo/$id'
     | '/quality/capa-rules'
@@ -1393,6 +1404,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/'
     | '/_authenticated/_app/apontar/$id'
     | '/_authenticated/_app/lote/$id'
+    | '/_authenticated/_app/mrp/bi'
     | '/_authenticated/_app/producao-do-dia/$stage'
     | '/_authenticated/_app/prototipo/$id'
     | '/_authenticated/_app/quality/capa-rules'
@@ -2165,6 +2177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppProducaoDoDiaStageRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/mrp/bi': {
+      id: '/_authenticated/_app/mrp/bi'
+      path: '/bi'
+      fullPath: '/mrp/bi'
+      preLoaderRoute: typeof AuthenticatedAppMrpBiRouteImport
+      parentRoute: typeof AuthenticatedAppMrpRoute
+    }
     '/_authenticated/_app/lote/$id': {
       id: '/_authenticated/_app/lote/$id'
       path: '/lote/$id'
@@ -2188,6 +2207,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedAppMrpRouteChildren {
+  AuthenticatedAppMrpBiRoute: typeof AuthenticatedAppMrpBiRoute
+}
+
+const AuthenticatedAppMrpRouteChildren: AuthenticatedAppMrpRouteChildren = {
+  AuthenticatedAppMrpBiRoute: AuthenticatedAppMrpBiRoute,
+}
+
+const AuthenticatedAppMrpRouteWithChildren =
+  AuthenticatedAppMrpRoute._addFileChildren(AuthenticatedAppMrpRouteChildren)
 
 interface AuthenticatedAppQualityRouteChildren {
   AuthenticatedAppQualityCapaRulesRoute: typeof AuthenticatedAppQualityCapaRulesRoute
@@ -2257,7 +2287,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMateriaisRoute: typeof AuthenticatedAppMateriaisRoute
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
   AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
-  AuthenticatedAppMrpRoute: typeof AuthenticatedAppMrpRoute
+  AuthenticatedAppMrpRoute: typeof AuthenticatedAppMrpRouteWithChildren
   AuthenticatedAppOmnichannelRoute: typeof AuthenticatedAppOmnichannelRoute
   AuthenticatedAppOndeEstaRoute: typeof AuthenticatedAppOndeEstaRoute
   AuthenticatedAppPcpRoute: typeof AuthenticatedAppPcpRoute
@@ -2356,7 +2386,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMateriaisRoute: AuthenticatedAppMateriaisRoute,
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
   AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
-  AuthenticatedAppMrpRoute: AuthenticatedAppMrpRoute,
+  AuthenticatedAppMrpRoute: AuthenticatedAppMrpRouteWithChildren,
   AuthenticatedAppOmnichannelRoute: AuthenticatedAppOmnichannelRoute,
   AuthenticatedAppOndeEstaRoute: AuthenticatedAppOndeEstaRoute,
   AuthenticatedAppPcpRoute: AuthenticatedAppPcpRoute,
