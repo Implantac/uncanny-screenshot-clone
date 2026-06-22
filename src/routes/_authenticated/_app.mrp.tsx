@@ -350,6 +350,7 @@ function MrpPage() {
         onSave={(v) => saveCfg.mutate(v)}
         saving={saveCfg.isPending}
       />
+      <MrpMaterialDrawer row={openRow} onClose={() => setOpenRow(null)} />
     </div>
   );
 }
