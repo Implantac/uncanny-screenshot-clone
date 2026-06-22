@@ -86,15 +86,15 @@ export const syncErpCollections = createServerFn({ method: "POST" })
       const found = existingByErpId.get(erpId);
       if (found) {
         // Só atualiza name (cadastro do ERP) e timestamp; preserva campos PLM.
-        const patch: Record<string, unknown> = { erp_synced_at: now };
+        const patch: CollectionUpdate = { erp_synced_at: now };
         if (found.name !== nome) patch.name = nome;
-        // Se o ERP desativou e o PLM ainda está em rascunho/desenvolvimento,
+        // Se o ERP desativou e o PLM ainda está em briefing/desenvolvimento,
         // marcamos como descontinuada. Nunca rebaixa um lançamento ativo.
         if (
           !ativa &&
-          (found.status === "rascunho" || found.status === "desenvolvimento")
+          (found.status === "briefing" || found.status === "desenvolvimento")
         ) {
-          patch.status = "descontinuada" satisfies CollectionStatus;
+          patch.status = "descontinuada";
         }
         const { error } = await supabase
           .from("collections")
@@ -103,11 +103,12 @@ export const syncErpCollections = createServerFn({ method: "POST" })
         if (!error) updated++;
         else skipped++;
       } else {
-        // Nova coleção espelhada do ERP — começa em "rascunho" para o PLM trabalhar.
+        // Nova coleção espelhada do ERP — começa em "briefing" para o PLM trabalhar.
+        const newStatus: CollectionStatus = ativa ? "briefing" : "descontinuada";
         const { error } = await supabase.from("collections").insert({
           owner_id: userId,
           name: nome,
-          status: (ativa ? "rascunho" : "descontinuada") satisfies CollectionStatus,
+          status: newStatus,
           erp_source: ERP_SOURCE,
           erp_id: erpId,
           erp_synced_at: now,
