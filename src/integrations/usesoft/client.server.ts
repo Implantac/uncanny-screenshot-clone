@@ -72,19 +72,19 @@ export async function usesoftPing(): Promise<{
   version?: string;
   latency_ms?: number;
   error?: string;
-  diag?: { host?: string; port?: string; database?: string; user?: string };
 }> {
   const t0 = Date.now();
-  const diag = {
-    host: process.env.USESOFT_PG_HOST?.slice(0, 30),
-    port: process.env.USESOFT_PG_PORT,
-    database: process.env.USESOFT_PG_DATABASE,
-    user: process.env.USESOFT_PG_USER?.slice(0, 4) + "***",
-  };
   try {
     const r = await usesoftQuery<{ version: string }>("SELECT version()");
-    return { ok: true, version: r.rows[0]?.version, latency_ms: Date.now() - t0, diag };
+    return { ok: true, version: r.rows[0]?.version, latency_ms: Date.now() - t0 };
   } catch (e) {
-    return { ok: false, error: (e as Error).message, latency_ms: Date.now() - t0, diag };
+    const error = (e as Error).message;
+    return {
+      ok: false,
+      error: error.includes("ENOTFOUND")
+        ? "Host do ERP não resolvido. Verifique as credenciais USESOFT_PG_* no backend."
+        : error,
+      latency_ms: Date.now() - t0,
+    };
   }
 }
