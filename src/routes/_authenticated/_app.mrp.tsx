@@ -16,6 +16,7 @@ import {
   Loader2,
   Bell,
   FileText,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -165,6 +166,11 @@ function MrpPage() {
           <Button variant="outline" size="sm" asChild>
             <Link to="/mrp/bi">
               <Activity className="size-4" /> BI MRP
+            </Link>
+          </Button>
+          <Button variant="default" size="sm" asChild>
+            <Link to="/mrp/executivo">
+              <Sparkles className="size-4" /> Executivo IA
             </Link>
           </Button>
           <Button

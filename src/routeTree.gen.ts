@@ -115,6 +115,7 @@ import { Route as AuthenticatedAppWarRoomColecaoIdRouteImport } from './routes/_
 import { Route as AuthenticatedAppQualityCapaRulesRouteImport } from './routes/_authenticated/_app.quality.capa-rules'
 import { Route as AuthenticatedAppPrototipoIdRouteImport } from './routes/_authenticated/_app.prototipo.$id'
 import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes/_authenticated/_app.producao-do-dia.$stage'
+import { Route as AuthenticatedAppMrpExecutivoRouteImport } from './routes/_authenticated/_app.mrp.executivo'
 import { Route as AuthenticatedAppMrpBiRouteImport } from './routes/_authenticated/_app.mrp.bi'
 import { Route as AuthenticatedAppLoteIdRouteImport } from './routes/_authenticated/_app.lote.$id'
 import { Route as AuthenticatedAppApontarIdRouteImport } from './routes/_authenticated/_app.apontar.$id'
@@ -726,6 +727,12 @@ const AuthenticatedAppProducaoDoDiaStageRoute =
     path: '/producao-do-dia/$stage',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppMrpExecutivoRoute =
+  AuthenticatedAppMrpExecutivoRouteImport.update({
+    id: '/executivo',
+    path: '/executivo',
+    getParentRoute: () => AuthenticatedAppMrpRoute,
+  } as any)
 const AuthenticatedAppMrpBiRoute = AuthenticatedAppMrpBiRouteImport.update({
   id: '/bi',
   path: '/bi',
@@ -848,6 +855,7 @@ export interface FileRoutesByFullPath {
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/mrp/bi': typeof AuthenticatedAppMrpBiRoute
+  '/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
   '/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
@@ -958,6 +966,7 @@ export interface FileRoutesByTo {
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/mrp/bi': typeof AuthenticatedAppMrpBiRoute
+  '/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
   '/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
@@ -1071,6 +1080,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/_authenticated/_app/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/_authenticated/_app/mrp/bi': typeof AuthenticatedAppMrpBiRoute
+  '/_authenticated/_app/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
   '/_authenticated/_app/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
   '/_authenticated/_app/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
   '/_authenticated/_app/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
@@ -1183,6 +1193,7 @@ export interface FileRouteTypes {
     | '/apontar/$id'
     | '/lote/$id'
     | '/mrp/bi'
+    | '/mrp/executivo'
     | '/producao-do-dia/$stage'
     | '/prototipo/$id'
     | '/quality/capa-rules'
@@ -1293,6 +1304,7 @@ export interface FileRouteTypes {
     | '/apontar/$id'
     | '/lote/$id'
     | '/mrp/bi'
+    | '/mrp/executivo'
     | '/producao-do-dia/$stage'
     | '/prototipo/$id'
     | '/quality/capa-rules'
@@ -1405,6 +1417,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/apontar/$id'
     | '/_authenticated/_app/lote/$id'
     | '/_authenticated/_app/mrp/bi'
+    | '/_authenticated/_app/mrp/executivo'
     | '/_authenticated/_app/producao-do-dia/$stage'
     | '/_authenticated/_app/prototipo/$id'
     | '/_authenticated/_app/quality/capa-rules'
@@ -2177,6 +2190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppProducaoDoDiaStageRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/mrp/executivo': {
+      id: '/_authenticated/_app/mrp/executivo'
+      path: '/executivo'
+      fullPath: '/mrp/executivo'
+      preLoaderRoute: typeof AuthenticatedAppMrpExecutivoRouteImport
+      parentRoute: typeof AuthenticatedAppMrpRoute
+    }
     '/_authenticated/_app/mrp/bi': {
       id: '/_authenticated/_app/mrp/bi'
       path: '/bi'
@@ -2210,10 +2230,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAppMrpRouteChildren {
   AuthenticatedAppMrpBiRoute: typeof AuthenticatedAppMrpBiRoute
+  AuthenticatedAppMrpExecutivoRoute: typeof AuthenticatedAppMrpExecutivoRoute
 }
 
 const AuthenticatedAppMrpRouteChildren: AuthenticatedAppMrpRouteChildren = {
   AuthenticatedAppMrpBiRoute: AuthenticatedAppMrpBiRoute,
+  AuthenticatedAppMrpExecutivoRoute: AuthenticatedAppMrpExecutivoRoute,
 }
 
 const AuthenticatedAppMrpRouteWithChildren =
