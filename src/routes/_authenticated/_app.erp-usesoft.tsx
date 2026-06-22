@@ -46,8 +46,10 @@ import {
   usesoftListInventory,
 } from "@/lib/usesoft.functions";
 import {
-  syncErpCollections,
-  getErpCollectionSyncStatus,
+ syncErpCollections,
+ getErpCollectionSyncStatus,
+ syncErpProducts,
+ getErpProductSyncStatus,
 } from "@/lib/erp-import.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -368,11 +370,40 @@ function CollectionsPanel() {
 function ProductsPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListProducts);
+  const syncFn = useServerFn(syncErpProducts);
+  const statusFn = useServerFn(getErpProductSyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
+
   const q = useQuery({
     queryKey: ["usesoft-products", search],
     queryFn: () =>
       fn({ data: { search, limit: 200, offset: 0, onlyActive: true } }),
   });
+  const statusQ = useQuery({
+    queryKey: ["erp-products-sync-status"],
+    queryFn: () => statusFn(),
+  });
+
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const res = await syncFn();
+      toast.success(
+        `Produtos sincronizados: ${res.inserted} criados, ${res.updated} atualizados (${res.total_erp} no ERP).`,
+      );
+      qc.invalidateQueries({ queryKey: ["erp-products-sync-status"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao sincronizar produtos");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  const linked = statusQ.data?.linked ?? 0;
+  const lastSync = statusQ.data?.lastSync;
+
   return (
     <TableShell
       title="Produtos"
@@ -385,6 +416,23 @@ function ProductsPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
+        <div className="text-sm">
+          <div className="font-medium">
+            {linked} produto(s) vinculado(s) ao ERP
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {lastSync
+              ? `Último sync: ${new Date(lastSync.created_at).toLocaleString("pt-BR")} — ${lastSync.records_affected ?? 0} registros`
+              : "Nunca sincronizado. Sincronize coleções primeiro para auto-vincular produtos por grife."}
+          </div>
+        </div>
+        <Button onClick={handleSync} disabled={syncing} size="sm">
+          <Download className={`h-4 w-4 mr-2 ${syncing ? "animate-pulse" : ""}`} />
+          {syncing ? "Sincronizando…" : "Sincronizar do ERP"}
+        </Button>
+      </div>
+
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
