@@ -41,6 +41,7 @@ export const syncErpCollections = createServerFn({ method: "POST" })
       }>(
         `SELECT nnumerogrife, cdescrigrife, cstatusgrife
            FROM solgrife
+          WHERE COALESCE(cstatusgrife,'A') = 'A'
           ORDER BY cdescrigrife`,
       );
       erpRows = r.rows;
