@@ -1,49 +1,136 @@
-# MRP Inteligente — Plano de Evolução
+## Visão geral
 
-Já existe base no projeto: `src/lib/pcp-mrp.functions.ts` (explosão BOM × OPs, déficit, em-pedido), `src/components/pcp-mrp-panel.tsx`, `inventory-smart.functions.ts/panel`, `_app.almoxarifado.tsx`, `erp_inventory_mirror`, `erp_purchase_mirror`, `erp_sales_mirror`, `inventory_items` (com `minimum`, `balance`, `last_entry_at`, `last_exit_at`, `turnover_30d`), `stock_movements`, `purchase_orders/items`, `suppliers (lead_time_days)`. Vou **evoluir**, não reconstruir.
+A auditoria identificou **20 features parciais** — todas evoluem código já existente (zero telas novas, zero recursos de ERP). Plano em **4 ondas progressivas**, começando por 6 quick wins de alto impacto.
 
-Por escopo e qualidade, entrego em 4 fases (cada fase = entrega funcional ponta-a-ponta com dados reais do ERP). Confirme a fase 1 e sigo nela; depois avançamos.
+---
 
-## Fase 1 — Engine MRP + Tela MRP enterprise (entrego agora)
-- **Engine `computeMrpPlanning`** (`src/lib/mrp-planning.functions.ts`):
-  consumo diário (saídas 90d / 90), demanda mensal/anual, σ das demandas mensais (12m), nível de serviço configurável (90/95/97/99 → Z), lead time do fornecedor principal, ES = Z·σ·√LT, PP, mínimo, LEC = √(2·D·S/H), máximo = mín + LEC, cobertura, capital empatado, giro, status (CRÍTICO/ATENÇÃO/NORMAL/EXCESSO), sugestão de compra (= máx − atual, mas ≥ LEC). Lê de `inventory_items` + `stock_movements` + `purchase_orders` + `suppliers`.
-- **Config global por owner** (nova tabela `mrp_config`): `service_level_default`, `order_cost_default (S)`, `holding_cost_pct_default (H%)`, `working_days_per_month=22`. Override por item em coluna nova `inventory_items.mrp_overrides jsonb`.
-- **Tela `/almoxarifado/mrp`** (rota nova, dentro do almoxarifado): tabela completa com todos os 16 campos do briefing, filtros (grupo, fornecedor, status, almoxarifado, busca), ordenação, paginação client, exportar Excel/PDF (`xlsxwriter`/`pdf.ts` já existem no projeto).
-- **Cards de dashboard no topo**: valor total estoque, capital parado, itens críticos, em excesso, cobertura média, rupturas, compras sugeridas (qtd e R$).
+## 🌊 Onda 1 — Quick Wins (esforço S, alto impacto)
 
-## Fase 2 — Drawer lateral do material + alertas + sugestão automática
-- Drawer com abas: Resumo · Estoque · Consumo (gráficos 30/90/180/365d) · Pedidos (POs em aberto) · Produção (OPs e necessidade) · Planejamento (todos os cálculos) · Timeline · Indicadores.
-- Auto-criação de alertas em `marketing_notifications` quando PP atingido, cobertura <10d ou estoque > máximo (reuso de infra existente).
-- Botão **"Gerar Solicitação de Compra"** cria `purchase_orders` com `purchase_order_items` na quantidade sugerida, fornecedor principal e `expected_date = hoje + lead_time`. Registra timeline.
+Tudo aqui é "ligar fio solto": o dado/lógica já existe, falta UI ou conexão.
 
-## Fase 3 — BI MRP
-- Painel `/almoxarifado/mrp/bi` com Curva ABC (valor de consumo), XYZ (CV = σ/μ), Cobertura, Capital parado, Rupturas histórico, Lead Time por fornecedor, Giro, Top consumos. Reuso de `recharts` e `abc-collection.functions.ts` adaptado.
+### 1.1 Meta de receita real em `/colecao-360`
+- `colecao-360.tsx:1133` usa `investment × 1.5` hardcoded.
+- Incluir `target_revenue, target_pieces, target_margin_pct` na query de coleções.
+- Substituir o cálculo pelo campo real; fallback ao cálculo só quando `target_revenue` é null.
+- Adicionar inputs desses 3 campos no formulário de edição em `/colecoes`.
 
-## Fase 4 — IA Copilot MRP
-- Extensão do `api.copilot.ts` com tools dedicadas (`mrp_critical_items`, `mrp_buy_suggestions`, `mrp_capital_parado`, `mrp_supplier_leadtime`). Responde com dados reais via gateway Lovable AI (`google/gemini-3-flash-preview`).
+### 1.2 `scrap_reason` em sucata/refugo
+- Migration: adicionar `scrap_reason text` em `stock_movements`.
+- Enum sugerido: `corte`, `costura`, `acabamento`, `defeito_mp`, `manuseio`, `outro`.
+- Dropdown no formulário de ajuste de estoque; filtro novo em `inventory-scraps-panel`.
 
-## Eventos / recálculo
-Trigger no Postgres em `stock_movements` já mantém `turnover_30d`/`last_entry_at`/`last_exit_at`. Tudo o resto é derivado on-the-fly por `computeMrpPlanning` (sem materializar) — evita drift e roda em <2s para milhares de itens. Cache via TanStack Query, invalidado pelo cron ERP existente.
+### 1.3 UI de Preferências de Notificação
+- Tabela `notification_preferences` já existe.
+- Novo drawer em `notifications-bell.tsx` com toggles por categoria (qualidade, produção, marketing, compras, sistema).
+- Persistir em `notification_preferences`; filtro do bell passa a ler do banco em vez de `useState` local.
+- Resolve simultaneamente item 17 (filtro persistido).
 
-## Detalhes técnicos
-- Tudo server-side em `createServerFn` com `requireSupabaseAuth`.
-- Sem mocks. Itens sem histórico de movimentação aparecem com `consumo_diario=0`, status="NORMAL" e nota visual "sem histórico".
-- Nova migração: tabela `mrp_config` + coluna `inventory_items.mrp_overrides jsonb` + GRANTs.
-- Reaproveita: `inventory_items`, `stock_movements`, `purchase_orders/items`, `suppliers`, `erp_inventory_mirror`, `marketing_notifications`, `pcp-mrp.functions.ts` (renomeio para `mrp-explosion`).
-- Sem duplicar telas: a tela atual de Almoxarifado ganha aba "MRP" em vez de virar rota solta.
+### 1.4 RCA por Fornecedor — render check
+- `supplier-defect-rca-panel.tsx` existe mas pode não estar renderizado.
+- Adicionar como aba "Reincidência" em `/fornecedores` e card em `/quality`.
+- Se faltar query consolidada, finalizar `quality-rca.functions.ts`.
 
-## Diagrama de fluxo (Fase 1)
+### 1.5 Cartela de Cores Mestre em `/biblioteca`
+- Nova aba "Cores" lendo `product_color_options` agrupado por coleção/temporada.
+- Filtros: temporada, família, status (ativa/descontinuada).
+- Botão "promover para padrão" marca cor como reutilizável.
 
-```text
-ERP cron → erp_inventory_mirror + stock_movements + purchase_orders + suppliers
-                              │
-                              ▼
-                  computeMrpPlanning(serverFn)
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-   Cards dashboard      Tabela MRP            Filtros + export
-```
+### 1.6 Drag-and-drop em operações da Ficha Técnica
+- `tech_sheet_operations.position` já existe.
+- `@dnd-kit/sortable` (já instalado em outras telas) nas linhas de operação.
+- Mutation `update position` em lote ao soltar.
 
-## Pergunta antes de começar
-Quer que eu **comece pela Fase 1 inteira agora** (engine + tabela + cards + config), ou prefere que eu primeiro confirme as **constantes-padrão** (S=R$10, H=3,9%, dias úteis=22, nível serviço=95%) extraídas do seu briefing?
+**Entrega Onda 1:** 6 features concluídas, 1 migration, ~8 arquivos editados.
+
+---
+
+## 🌊 Onda 2 — PLM Core (esforço M)
+
+### 2.1 Botão "Aprovar Ficha Técnica" funcional
+- Server function `approveTechSheet` que escreve `approved_by = auth.uid()`, `approved_at = now()`.
+- RLS policy: só `engenharia` ou `admin` aprovam (via `has_role`).
+- Botão "Aprovar" no `tech-sheet-drawer` com confirmação; bloqueia edição após aprovação.
+
+### 2.2 Diff lado-a-lado entre versões de Ficha Técnica
+- Em `tech-sheet-versions-drawer`: seletor "Comparar com versão X".
+- Server function `diffTechSheetVersions(v1, v2)` retornando linhas added/removed/changed para materiais e operações.
+- UI de duas colunas com highlight visual (verde/vermelho/amarelo).
+
+### 2.3 Link BOM ↔ Almoxarifado
+- Migration: `tech_sheet_materials.inventory_item_id uuid REFERENCES inventory_items(id)`.
+- Combobox de busca de item do almoxarifado na linha da BOM.
+- Habilita futuras features de rastreabilidade MP→produto e custeio real.
+
+### 2.4 APS — fechar o loop "Aplicar sequenciamento"
+- Confirmar/implementar botão em `pcp-aps-panel` que persiste `priority` ordenada das OPs no banco.
+- Toast com resumo: "X OPs reordenadas conforme APS".
+
+**Entrega Onda 2:** 4 features, 1 migration, ~10 arquivos.
+
+---
+
+## 🌊 Onda 3 — Operação Real (esforço M)
+
+### 3.1 Ponto de Reposição Dinâmico em `/compras`
+- Server function `computeReorderPoints()`: `turnover_30d × supplier.lead_time_days × safety_factor`.
+- Coluna nova na tabela de compras: `Reposição Sugerida` vs `Saldo Atual` vs `Mínimo Manual`.
+- IA-explica o motivo de cada sugestão (consistente com regra "IA é especialista").
+
+### 3.2 FEFO com lot/expires reais
+- Migration: `stock_movements.lot_number text, expires_at date`.
+- Inputs no formulário de entrada de estoque.
+- `inventory-fefo.functions.ts` passa a ordenar por `expires_at` real (hoje usa fallback).
+
+### 3.3 Capacidade com dimensão Facção
+- Em `/capacity`, toggle "Interna | Facção | Combinada".
+- Modo Facção lê `supplier_capacity` agrupado por fornecedor terceirizado.
+- Bloco de alerta quando facção próxima do limite.
+
+### 3.4 Mapa SVG do Brasil em `/geo-sales`
+- Substituir grid de divs por SVG real de UFs (paths públicos do IBGE).
+- `fill` dinâmico pelo heatmap de receita já calculado.
+- Hover mostra UF + receita + variação.
+
+**Entrega Onda 3:** 4 features, 1 migration, ~8 arquivos.
+
+---
+
+## 🌊 Onda 4 — Polimento & Testes (mix)
+
+### 4.1 Aprovações com roteamento por papel
+- Tabela `approval_rules(entity_type, stage, required_role)`.
+- Server function de aprovação valida `has_role(auth.uid(), required_role)`.
+- UI mínima de configuração em `/security-center`.
+
+### 4.2 Influencer ROI com mapeamento explícito
+- Coluna `influencers.external_code`.
+- Tela de mapeamento simples (modal): vincular handle ↔ código do ERP.
+- Janela de tempo configurável (7/14/30 dias) para baseline antes/depois.
+
+### 4.3 E2E coverage de fluxos críticos
+- Specs Playwright: aprovar ficha técnica, criar OP via MRP, CAPA por inspeção reprovada, lifecycle de coleção.
+
+### 4.4 (Opcional/futuro) `/showroom` lookbook e `/mobile` PWA offline
+- Esforço L — fica como backlog após Onda 4. Hoje servem como vitrine; usuário não está bloqueado.
+
+---
+
+## 📋 Detalhes técnicos
+
+**Migrations necessárias:** 4 (scrap_reason, inventory_item_id na BOM, lot/expires em stock_movements, approval_rules + external_code). Todas pequenas, todas com `GRANT` + RLS conforme padrão do projeto.
+
+**Server functions novas:** `approveTechSheet`, `diffTechSheetVersions`, `computeReorderPoints`, `applyApsSequence`, `evaluateApprovalRule`.
+
+**Componentes reutilizados:** `@dnd-kit/sortable`, `tech-sheet-drawer`, `notifications-bell`, `supplier-defect-rca-panel`, `inventory-scraps-panel` — nenhuma biblioteca nova.
+
+**Filosofia respeitada:**
+- Zero telas novas; só evolução de existentes.
+- Nada de financeiro/fiscal — ERP segue como fonte para receita real, espelhos só leem.
+- Máx 2 cliques: drawer de preferências, toggle de capacidade, dropdown de scrap_reason.
+- IA explica (ponto de reposição vem com motivo, APS já tem score+motivo).
+
+---
+
+## ❓ Antes de começar
+
+Quer que eu execute **Onda 1 inteira agora** (6 quick wins, ~1 commit), ou prefere ir item-a-item para revisar cada um? Também posso reordenar prioridades se algum item específico for mais urgente para você.
