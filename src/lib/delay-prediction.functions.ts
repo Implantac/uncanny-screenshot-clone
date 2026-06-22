@@ -160,9 +160,9 @@ export const predictDelays = createServerFn({ method: "GET" })
           reason: buildAiReason({
             signals: reasonParts,
             recommendation:
-              risk === "alto"
+              risk === "high"
                 ? "antecipar etapa-gargalo ou renegociar prazo"
-                : risk === "medio"
+                : risk === "medium"
                   ? "monitorar e remover bloqueios"
                   : null,
           }),
