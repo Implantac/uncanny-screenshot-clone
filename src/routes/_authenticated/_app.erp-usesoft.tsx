@@ -180,6 +180,14 @@ function ErpUsesoftPage() {
         </div>
       </header>
 
+      <ConnectionStatusCard
+        data={healthQ.data}
+        isLoading={healthQ.isLoading}
+        isFetching={healthQ.isFetching}
+        error={healthQ.error as Error | null}
+        onRetry={() => healthQ.refetch()}
+      />
+
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <Kpi icon={<Tag className="h-4 w-4" />} label="Coleções (Grifes)" value={kpisQ.data?.colecoes} />
         <Kpi icon={<Package className="h-4 w-4" />} label="Produtos ativos" value={kpisQ.data?.produtos} />
