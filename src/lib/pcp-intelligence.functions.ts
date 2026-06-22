@@ -190,7 +190,14 @@ export const getPcpIntelligence = createServerFn({ method: "GET" })
           order_code: lateOrder.code,
           order_id: lateOrder.id,
           pieces: lateOrder.quantity_remaining,
-          reason: `${over.supplier_name} a ${over.occupancy_pct}% — ${target.supplier_name} a ${target.occupancy_pct}% (folga ${Math.max(0, 100 - target.occupancy_pct)}%)`,
+          reason: buildAiReason({
+            signals: [
+              `${over.supplier_name} a ${over.occupancy_pct}%`,
+              `${target.supplier_name} a ${target.occupancy_pct}%`,
+              `folga ${Math.max(0, 100 - target.occupancy_pct)}%`,
+            ],
+            recommendation: `realocar OP ${lateOrder.code} para liberar gargalo`,
+          }),
         });
       }
     });
