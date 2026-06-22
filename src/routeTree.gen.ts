@@ -81,6 +81,7 @@ import { Route as AuthenticatedAppDppRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAppDevKanbanRouteImport } from './routes/_authenticated/_app.dev-kanban'
 import { Route as AuthenticatedAppDesignerWorkspaceRouteImport } from './routes/_authenticated/_app.designer-workspace'
 import { Route as AuthenticatedAppDataLakeRouteImport } from './routes/_authenticated/_app.data-lake'
+import { Route as AuthenticatedAppCopilotRouteImport } from './routes/_authenticated/_app.copilot'
 import { Route as AuthenticatedAppControlTowerRouteImport } from './routes/_authenticated/_app.control-tower'
 import { Route as AuthenticatedAppComprasRouteImport } from './routes/_authenticated/_app.compras'
 import { Route as AuthenticatedAppComercialRouteImport } from './routes/_authenticated/_app.comercial'
@@ -520,6 +521,11 @@ const AuthenticatedAppDataLakeRoute =
     path: '/data-lake',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppCopilotRoute = AuthenticatedAppCopilotRouteImport.update({
+  id: '/copilot',
+  path: '/copilot',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppControlTowerRoute =
   AuthenticatedAppControlTowerRouteImport.update({
     id: '/control-tower',
@@ -715,6 +721,7 @@ export interface FileRoutesByFullPath {
   '/comercial': typeof AuthenticatedAppComercialRoute
   '/compras': typeof AuthenticatedAppComprasRoute
   '/control-tower': typeof AuthenticatedAppControlTowerRoute
+  '/copilot': typeof AuthenticatedAppCopilotRoute
   '/data-lake': typeof AuthenticatedAppDataLakeRoute
   '/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
@@ -816,6 +823,7 @@ export interface FileRoutesByTo {
   '/comercial': typeof AuthenticatedAppComercialRoute
   '/compras': typeof AuthenticatedAppComprasRoute
   '/control-tower': typeof AuthenticatedAppControlTowerRoute
+  '/copilot': typeof AuthenticatedAppCopilotRoute
   '/data-lake': typeof AuthenticatedAppDataLakeRoute
   '/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
@@ -919,6 +927,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/comercial': typeof AuthenticatedAppComercialRoute
   '/_authenticated/_app/compras': typeof AuthenticatedAppComprasRoute
   '/_authenticated/_app/control-tower': typeof AuthenticatedAppControlTowerRoute
+  '/_authenticated/_app/copilot': typeof AuthenticatedAppCopilotRoute
   '/_authenticated/_app/data-lake': typeof AuthenticatedAppDataLakeRoute
   '/_authenticated/_app/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/_authenticated/_app/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
@@ -1023,6 +1032,7 @@ export interface FileRouteTypes {
     | '/comercial'
     | '/compras'
     | '/control-tower'
+    | '/copilot'
     | '/data-lake'
     | '/designer-workspace'
     | '/dev-kanban'
@@ -1124,6 +1134,7 @@ export interface FileRouteTypes {
     | '/comercial'
     | '/compras'
     | '/control-tower'
+    | '/copilot'
     | '/data-lake'
     | '/designer-workspace'
     | '/dev-kanban'
@@ -1226,6 +1237,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/comercial'
     | '/_authenticated/_app/compras'
     | '/_authenticated/_app/control-tower'
+    | '/_authenticated/_app/copilot'
     | '/_authenticated/_app/data-lake'
     | '/_authenticated/_app/designer-workspace'
     | '/_authenticated/_app/dev-kanban'
@@ -1823,6 +1835,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppDataLakeRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/copilot': {
+      id: '/_authenticated/_app/copilot'
+      path: '/copilot'
+      fullPath: '/copilot'
+      preLoaderRoute: typeof AuthenticatedAppCopilotRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/control-tower': {
       id: '/_authenticated/_app/control-tower'
       path: '/control-tower'
@@ -2064,6 +2083,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppComercialRoute: typeof AuthenticatedAppComercialRoute
   AuthenticatedAppComprasRoute: typeof AuthenticatedAppComprasRoute
   AuthenticatedAppControlTowerRoute: typeof AuthenticatedAppControlTowerRoute
+  AuthenticatedAppCopilotRoute: typeof AuthenticatedAppCopilotRoute
   AuthenticatedAppDataLakeRoute: typeof AuthenticatedAppDataLakeRoute
   AuthenticatedAppDesignerWorkspaceRoute: typeof AuthenticatedAppDesignerWorkspaceRoute
   AuthenticatedAppDevKanbanRoute: typeof AuthenticatedAppDevKanbanRoute
@@ -2156,6 +2176,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppComercialRoute: AuthenticatedAppComercialRoute,
   AuthenticatedAppComprasRoute: AuthenticatedAppComprasRoute,
   AuthenticatedAppControlTowerRoute: AuthenticatedAppControlTowerRoute,
+  AuthenticatedAppCopilotRoute: AuthenticatedAppCopilotRoute,
   AuthenticatedAppDataLakeRoute: AuthenticatedAppDataLakeRoute,
   AuthenticatedAppDesignerWorkspaceRoute:
     AuthenticatedAppDesignerWorkspaceRoute,
