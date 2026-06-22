@@ -436,7 +436,7 @@ export const syncErpCustomers = createServerFn({ method: "POST" })
 
       const found = existingByErpId.get(erpId);
       if (found) {
-        const patch: Record<string, unknown> = { erp_synced_at: now };
+        const patch: CustomerUpdate = { erp_synced_at: now };
         if (found.name !== nome) patch.name = nome;
         if ((found.document ?? null) !== doc) patch.document = doc;
         if ((found.email ?? null) !== email) patch.email = email;
