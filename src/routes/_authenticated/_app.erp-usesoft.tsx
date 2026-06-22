@@ -852,14 +852,29 @@ function CustomersPanel() {
 function SuppliersPanel() {
   const [search, setSearch] = useState("");
   const fn = useServerFn(usesoftListSuppliers);
+  const syncFn = useServerFn(syncErpSuppliers);
+  const statusFn = useServerFn(getErpSupplierSyncStatus);
+  const qc = useQueryClient();
+  const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-suppliers", search],
     queryFn: () => fn({ data: { search, limit: 200, offset: 0 } }),
   });
+  const statusQ = useQuery({ queryKey: ["erp-suppliers-sync-status"], queryFn: () => statusFn() });
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const r = await syncFn();
+      toast.success(`Fornecedores: ${r.inserted ?? 0} criados, ${r.updated ?? 0} atualizados.`);
+      qc.invalidateQueries({ queryKey: ["erp-suppliers-sync-status"] });
+      qc.invalidateQueries({ queryKey: ["suppliers"] });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
+    finally { setSyncing(false); }
+  }
   return (
     <TableShell
       title="Fornecedores"
-      description="solforne — fornecedores ativos."
+      description="solforne — fornecedores ativos. PCP, Desenvolvimento e RFQ usam para roteirização e cotações."
       search={search}
       setSearch={setSearch}
       searchPlaceholder="Buscar nome, fantasia ou CNPJ…"
@@ -868,6 +883,13 @@ function SuppliersPanel() {
       empty={(q.data ?? []).length === 0}
       error={q.error as Error | null}
     >
+      <SyncBar
+        linked={statusQ.data?.linked ?? 0}
+        linkedLabel="fornecedor(es) vinculado(s) ao ERP"
+        lastSync={statusQ.data?.lastSync ?? null}
+        onSync={handleSync}
+        syncing={syncing}
+      />
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
