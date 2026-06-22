@@ -191,6 +191,51 @@ export function MrpMaterialDrawer({
               <Stat label="Capital empatado" value={brl(row.capitalEmpatado)} />
               <Stat label="Giro estoque" value={`${row.turnover.toFixed(1)}×`} />
             </div>
+
+            <div className="mt-3 rounded-xl border border-border bg-muted/20 p-3">
+              <div className="text-xs font-medium mb-2">Ajustes deste material</div>
+              <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Nível de serviço
+                  </Label>
+                  <Select value={sl} onValueChange={setSl}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="90">90% · Z=1,28</SelectItem>
+                      <SelectItem value="95">95% · Z=1,65</SelectItem>
+                      <SelectItem value="97">97% · Z=1,88</SelectItem>
+                      <SelectItem value="99">99% · Z=2,33</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Lead time (dias)
+                  </Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={lt}
+                    onChange={(e) => setLt(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => saveOverrides.mutate()}
+                  disabled={saveOverrides.isPending}
+                >
+                  {saveOverrides.isPending ? <Loader2 className="size-3.5 animate-spin" /> : "Salvar"}
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-2">
+                Sobrescreve a config global do MRP só para este material. ES = Z × σ × √LT é recalculado.
+              </p>
+            </div>
           </TabsContent>
 
           <TabsContent value="consumo" className="mt-4">
