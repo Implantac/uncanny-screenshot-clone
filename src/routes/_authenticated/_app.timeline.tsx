@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
-  ArrowRight,
   CheckCircle2,
   ClipboardCheck,
   ExternalLink,
