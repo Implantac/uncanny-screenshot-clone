@@ -654,7 +654,7 @@ export const syncErpSales = createServerFn({ method: "POST" })
       nnumeroprodu: number | string | null;
       ccodigoprodu: string | null;
       cnomeprodu: string | null;
-      nquantitped: number | string | null;
+      nquatdeitped: number | string | null;
       nvltotitped: number | string | null;
     };
 
