@@ -109,45 +109,62 @@ function MrpExecPage() {
 
       {/* KPI grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi label="Valor em estoque" value={brl(kpis.totalStockValue)} sub={`${kpis.totalSkus} SKUs`} />
+        <Kpi
+          label="Valor em estoque"
+          value={brl(kpis.totalStockValue)}
+          sub={`${kpis.totalSkus} SKUs · abrir MRP`}
+          to="/mrp"
+        />
         <Kpi
           label="Capital parado"
           value={brl(kpis.capitalParado)}
-          sub={`${kpis.capitalParadoPct.toFixed(1)}% do total`}
+          sub={`${kpis.capitalParadoPct.toFixed(1)}% · ver excesso`}
           tone="warning"
           icon={<TrendingDown className="size-4 text-amber-500" />}
+          to="/mrp"
+          search={{ status: "excesso" }}
         />
         <Kpi
           label="Itens críticos"
           value={String(kpis.itemsCritical)}
-          sub={`${kpis.rupturas} em ruptura`}
+          sub={`${kpis.rupturas} em ruptura · ver críticos`}
           tone="danger"
           icon={<AlertTriangle className="size-4 text-destructive" />}
+          to="/mrp"
+          search={{ status: "critico" }}
         />
         <Kpi
           label="Excesso"
           value={String(kpis.itemsExcess)}
-          sub="acima do máximo"
+          sub="acima do máximo · ver lista"
           tone="info"
           icon={<TrendingUp className="size-4 text-blue-500" />}
+          to="/mrp"
+          search={{ status: "excesso" }}
         />
         <Kpi
           label="Cobertura média"
           value={kpis.avgCoverage !== null ? `${kpis.avgCoverage}d` : "—"}
-          sub="dias de estoque"
+          sub="dias · ver em atenção"
+          to="/mrp"
+          search={{ status: "atencao" }}
         />
-        <Kpi label="Giro médio" value={num(kpis.giroMedio, 2)} sub="anual / estoque médio" />
+        <Kpi label="Giro médio" value={num(kpis.giroMedio, 2)} sub="anual / estoque médio" to="/mrp/bi" />
         <Kpi
           label="Compras sugeridas"
           value={brl(kpis.suggestedValue)}
-          sub={`${kpis.suggestedItems} itens`}
+          sub={`${kpis.suggestedItems} itens · planejar`}
+          to="/mrp"
+          search={{ status: "critico" }}
         />
         <Kpi
           label="Fornecedores"
           value={String(kpis.bySupplier.length)}
-          sub="ativos no MRP"
+          sub="ativos · ver BI"
+          to="/mrp/bi"
         />
       </div>
+
 
       {/* Persona selector */}
       <div className="rounded-lg border bg-card p-4">
