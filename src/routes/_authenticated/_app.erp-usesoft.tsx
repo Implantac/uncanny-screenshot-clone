@@ -246,7 +246,7 @@ function SyncBar({
 }: {
   linked: number;
   linkedLabel: string;
-  lastSync: { created_at: string; records_affected: number | null } | null;
+  lastSync: { created_at: string; records_affected: number | null } | null | unknown;
   onSync: () => void | Promise<void>;
   syncing: boolean;
   hint?: string;
