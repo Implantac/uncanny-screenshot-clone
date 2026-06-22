@@ -693,7 +693,7 @@ export const syncErpSales = createServerFn({ method: "POST" })
       erp_sale_id: `${r.nnumeropedid}-${idx}`,
       sku: r.ccodigoprodu || (r.nnumeroprodu ? `ERP-${r.nnumeroprodu}` : null),
       product_ref: r.cnomeprodu || null,
-      quantity: Number(r.nquantitped) || 0,
+      quantity: Number(r.nquatdeitped) || 0,
       total_value: Number(r.nvltotitped) || 0,
       customer: r.cliente_nome || null,
       region: null as string | null,
