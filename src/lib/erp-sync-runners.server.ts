@@ -37,6 +37,21 @@ async function logOk(sb: SB, userId: string, entity: string, ref: string, n: num
   });
 }
 
+/** Roda `task` para cada item de `items` com até `concurrency` em paralelo. */
+async function mapPool<T, R>(items: T[], concurrency: number, task: (item: T, idx: number) => Promise<R>): Promise<R[]> {
+  const ret: R[] = new Array(items.length);
+  let i = 0;
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (true) {
+      const idx = i++;
+      if (idx >= items.length) return;
+      ret[idx] = await task(items[idx], idx);
+    }
+  });
+  await Promise.all(workers);
+  return ret;
+}
+
 // ---------------------------------------------------------------- COLLECTIONS
 export async function runSyncCollections(supabase: SB, userId: string) {
   const startedAt = new Date().toISOString();
