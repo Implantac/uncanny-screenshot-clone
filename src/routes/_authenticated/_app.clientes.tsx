@@ -44,6 +44,21 @@ function ClientesPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
+  const syncCustomersFn = useServerFn(syncErpCustomers);
+  const [syncing, setSyncing] = useState(false);
+
+  async function handleSyncErp() {
+    setSyncing(true);
+    try {
+      const r = await syncCustomersFn();
+      toast.success(`ERP: ${r.inserted ?? 0} criados, ${r.updated ?? 0} atualizados.`);
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao sincronizar com ERP");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["customers"],
