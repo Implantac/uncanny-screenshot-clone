@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Users, Plus, Trash2, Pencil, Mail, Phone, MapPin } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Users, Plus, Trash2, Pencil, Mail, Phone, MapPin, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { syncErpCustomers } from "@/lib/erp-import.functions";
+
 
 export const Route = createFileRoute("/_authenticated/_app/clientes")({
   head: () => ({ meta: [{ title: "Clientes · USE MODA OS" }] }),
@@ -41,6 +44,21 @@ function ClientesPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
+  const syncCustomersFn = useServerFn(syncErpCustomers);
+  const [syncing, setSyncing] = useState(false);
+
+  async function handleSyncErp() {
+    setSyncing(true);
+    try {
+      const r = await syncCustomersFn();
+      toast.success(`ERP: ${r.inserted ?? 0} criados, ${r.updated ?? 0} atualizados.`);
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao sincronizar com ERP");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["customers"],
@@ -75,15 +93,28 @@ function ClientesPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Cadastro de clientes B2B e varejo.</p>
         </div>
-        <Button
-          onClick={() => {
-            setEditing(null);
-            setOpen(true);
-          }}
-          className="gap-2"
-        >
-          <Plus className="size-4" /> Novo Cliente
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleSyncErp}
+            disabled={syncing}
+            className="gap-2"
+            title="Puxa clientes ativos do ERP agora, sem esperar o cron"
+          >
+            {syncing ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+            Sincronizar ERP
+          </Button>
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+            }}
+            className="gap-2"
+          >
+            <Plus className="size-4" /> Novo Cliente
+          </Button>
+        </div>
+
       </div>
 
       {isLoading ? (
