@@ -14,6 +14,7 @@ import {
   ShoppingCart,
   ArrowLeft,
   Loader2,
+  Bell,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -23,6 +24,8 @@ import {
   type MrpRow,
   type MrpStatus,
 } from "@/lib/mrp-planning.functions";
+import { syncMrpAlerts } from "@/lib/mrp-material.functions";
+import { MrpMaterialDrawer } from "@/components/mrp-material-drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -84,6 +87,13 @@ function MrpPage() {
   const [category, setCategory] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
   const [cfgOpen, setCfgOpen] = useState(false);
+  const [openRow, setOpenRow] = useState<MrpRow | null>(null);
+  const alertsFn = useServerFn(syncMrpAlerts);
+  const runAlerts = useMutation({
+    mutationFn: () => alertsFn({}),
+    onSuccess: (r) => toast.success(`${r.created} alerta(s) MRP gerado(s)`),
+    onError: (e) => toast.error((e as Error).message),
+  });
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ["mrp", "planning"],
@@ -150,6 +160,15 @@ function MrpPage() {
             <Link to="/almoxarifado">
               <ArrowLeft className="size-4" /> Almoxarifado
             </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => runAlerts.mutate()}
+            disabled={runAlerts.isPending}
+          >
+            {runAlerts.isPending ? <Loader2 className="size-4 animate-spin" /> : <Bell className="size-4" />}{" "}
+            Gerar alertas
           </Button>
           <Button
             variant="outline"
@@ -311,7 +330,7 @@ function MrpPage() {
                 </tr>
               )}
               {filtered.map((r) => (
-                <Row key={r.id} r={r} />
+                <Row key={r.id} r={r} onOpen={() => setOpenRow(r)} />
               ))}
             </tbody>
           </table>
@@ -331,6 +350,7 @@ function MrpPage() {
         onSave={(v) => saveCfg.mutate(v)}
         saving={saveCfg.isPending}
       />
+      <MrpMaterialDrawer row={openRow} onClose={() => setOpenRow(null)} />
     </div>
   );
 }
@@ -365,9 +385,9 @@ function Card({
   );
 }
 
-function Row({ r }: { r: MrpRow }) {
+function Row({ r, onOpen }: { r: MrpRow; onOpen: () => void }) {
   return (
-    <tr className="border-t border-border hover:bg-muted/30">
+    <tr className="border-t border-border hover:bg-muted/30 cursor-pointer" onClick={onOpen}>
       <td className="px-3 py-2 font-mono text-xs">{r.sku}</td>
       <td className="px-3 py-2">
         <div className="font-medium">{r.name}</div>
