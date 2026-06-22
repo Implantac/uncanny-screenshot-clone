@@ -654,7 +654,7 @@ export const syncErpSales = createServerFn({ method: "POST" })
       nnumeroprodu: number | string | null;
       ccodigoprodu: string | null;
       cnomeprodu: string | null;
-      nquantitped: number | string | null;
+      nquatdeitped: number | string | null;
       nvltotitped: number | string | null;
     };
 
@@ -664,7 +664,7 @@ export const syncErpSales = createServerFn({ method: "POST" })
         `SELECT p.nnumeropedid, p.ddatapedid,
                 COALESCE(NULLIF(TRIM(p.cnomecliente),''), c.cnomeclien) AS cliente_nome,
                 i.nnumeroprodu, pr.ccodigoprodu, pr.cnomeprodu,
-                i.nquantitped, i.nvltotitped
+                i.nquatdeitped, (COALESCE(i.nprecoitped,0) * COALESCE(i.nquatdeitped,0)) AS nvltotitped
            FROM solpedid p
            JOIN solitped i ON i.nnumeropedid = p.nnumeropedid
            LEFT JOIN solclien c  ON c.nnumeroclien = p.nnumeroclien
@@ -693,7 +693,7 @@ export const syncErpSales = createServerFn({ method: "POST" })
       erp_sale_id: `${r.nnumeropedid}-${idx}`,
       sku: r.ccodigoprodu || (r.nnumeroprodu ? `ERP-${r.nnumeroprodu}` : null),
       product_ref: r.cnomeprodu || null,
-      quantity: Number(r.nquantitped) || 0,
+      quantity: Number(r.nquatdeitped) || 0,
       total_value: Number(r.nvltotitped) || 0,
       customer: r.cliente_nome || null,
       region: null as string | null,
