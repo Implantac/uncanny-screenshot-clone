@@ -105,7 +105,7 @@ function MrpPage() {
   const updateSearch = useCallback(
     (patch: Partial<MrpSearch>) => {
       navigate({
-        search: (prev) => {
+        search: (prev: MrpSearch) => {
           const next: MrpSearch = { ...prev, ...patch };
           if (!next.q) delete next.q;
           if (!next.status || next.status === "all") delete next.status;
