@@ -29,6 +29,8 @@ import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { TechSheetDrawerTrigger } from "@/components/tech-sheet-drawer";
 import { LoteQrButton } from "@/components/lote-qr-button";
 import { BomExplosionDialog } from "@/components/bom-explosion-dialog";
+import { LoteSplitDialog } from "@/components/lote-split-dialog";
+import { LotePassagensPanel } from "@/components/lote-passagens-panel";
 
 const OCC_KIND_LABEL: Record<string, string> = {
   positiva: "Positiva (+)",
@@ -393,6 +395,13 @@ function LotePage() {
                     {o.suppliers?.name ?? "—"}
                   </div>
                 </div>
+                <LoteSplitDialog
+                  orderId={o.id}
+                  orderCode={o.code}
+                  totalQty={Number(o.quantity ?? 0)}
+                  defaultSupplierId={o.supplier_id ?? null}
+                  defaultDueDate={o.due_date ?? null}
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Badge
@@ -481,6 +490,18 @@ function LotePage() {
           )}
         </div>
       </div>
+
+      <LotePassagensPanel
+        orderIds={orderIds}
+        openOrders={orders.map((o) => ({
+          id: o.id,
+          stage: o.stage,
+          stage_updated_at: o.stage_updated_at,
+          quantity: o.quantity,
+        }))}
+        logs={logs}
+        ownerId={batch?.owner_id ?? orders[0]?.owner_id ?? null}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass rounded-xl p-4">
