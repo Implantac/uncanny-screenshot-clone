@@ -1392,6 +1392,13 @@ export type Database = {
             referencedRelation: "inventory_items"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "inventory_cycle_counts_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items_available"
+            referencedColumns: ["inventory_item_id"]
+          },
         ]
       }
       inventory_items: {
@@ -1560,6 +1567,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "inventory_lots_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items_available"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
             foreignKeyName: "inventory_lots_supplier_id_fkey"
             columns: ["supplier_id"]
             isOneToOne: false
@@ -1615,6 +1629,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "inventory_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_scraps_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items_available"
+            referencedColumns: ["inventory_item_id"]
           },
           {
             foreignKeyName: "inventory_scraps_lot_id_fkey"
@@ -1892,6 +1913,83 @@ export type Database = {
             columns: ["preferred_supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_reservations: {
+        Row: {
+          created_at: string
+          id: string
+          inventory_item_id: string
+          notes: string | null
+          owner_id: string
+          production_order_id: string
+          qty_consumed: number
+          qty_required: number
+          qty_reserved: number
+          status: Database["public"]["Enums"]["material_reservation_status"]
+          tech_sheet_material_id: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inventory_item_id: string
+          notes?: string | null
+          owner_id: string
+          production_order_id: string
+          qty_consumed?: number
+          qty_required?: number
+          qty_reserved?: number
+          status?: Database["public"]["Enums"]["material_reservation_status"]
+          tech_sheet_material_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inventory_item_id?: string
+          notes?: string | null
+          owner_id?: string
+          production_order_id?: string
+          qty_consumed?: number
+          qty_required?: number
+          qty_reserved?: number
+          status?: Database["public"]["Enums"]["material_reservation_status"]
+          tech_sheet_material_id?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_reservations_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items_available"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "material_reservations_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_reservations_tech_sheet_material_id_fkey"
+            columns: ["tech_sheet_material_id"]
+            isOneToOne: false
+            referencedRelation: "tech_sheet_materials"
             referencedColumns: ["id"]
           },
         ]
@@ -3303,6 +3401,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "purchase_order_items_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items_available"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
             foreignKeyName: "purchase_order_items_purchase_order_id_fkey"
             columns: ["purchase_order_id"]
             isOneToOne: false
@@ -4239,6 +4344,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "stock_movements_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items_available"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
             foreignKeyName: "stock_movements_lot_id_fkey"
             columns: ["lot_id"]
             isOneToOne: false
@@ -4781,6 +4893,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tech_sheet_materials_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items_available"
+            referencedColumns: ["inventory_item_id"]
+          },
+          {
             foreignKeyName: "tech_sheet_materials_tech_sheet_id_fkey"
             columns: ["tech_sheet_id"]
             isOneToOne: false
@@ -5081,6 +5200,16 @@ export type Database = {
       }
     }
     Views: {
+      inventory_items_available: {
+        Row: {
+          available: number | null
+          balance: number | null
+          committed: number | null
+          inventory_item_id: string | null
+          owner_id: string | null
+        }
+        Relationships: []
+      }
       v_supplier_wip: {
         Row: {
           distinct_refs: number | null
@@ -5126,6 +5255,10 @@ export type Database = {
           _payload?: Json
         }
         Returns: string
+      }
+      production_orders_generate_reservations: {
+        Args: { _order_id: string }
+        Returns: number
       }
       recompute_abc_class: {
         Args: { _owner: string }
@@ -5181,6 +5314,7 @@ export type Database = {
         | "markdown"
         | "descontinuada"
       inventory_category: "tecido" | "aviamento" | "acabado" | "outros"
+      material_reservation_status: "ativa" | "consumida" | "liberada"
       product_abc_class: "A" | "B" | "C"
       product_lifecycle_state:
         | "planned"
@@ -5428,6 +5562,7 @@ export const Constants = {
         "descontinuada",
       ],
       inventory_category: ["tecido", "aviamento", "acabado", "outros"],
+      material_reservation_status: ["ativa", "consumida", "liberada"],
       product_abc_class: ["A", "B", "C"],
       product_lifecycle_state: [
         "planned",

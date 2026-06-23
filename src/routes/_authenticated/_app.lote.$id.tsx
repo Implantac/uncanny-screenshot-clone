@@ -170,8 +170,9 @@ function LotePage() {
   const productIds = Array.from(new Set(orders.map((o) => o.product_id).filter(Boolean)));
   const { data: materialsNeeded = [] } = useQuery({
     enabled: productIds.length > 0,
-    queryKey: ["lote-materials", productIds.join(",")],
+    queryKey: ["lote-materials", productIds.join(","), orderIds.join(",")],
     queryFn: async () => {
+
       const { data: sheets, error: e1 } = await supabase
         .from("tech_sheets")
         .select("id, product_id, status")
@@ -189,13 +190,38 @@ function LotePage() {
       const invIds = Array.from(
         new Set((mats ?? []).map((m) => m.inventory_item_id).filter(Boolean)),
       );
-      const { data: inv } = invIds.length
-        ? await supabase
-            .from("inventory_items")
-            .select("id, name, sku, unit, balance, minimum, photo_url")
-            .in("id", invIds as string[])
-        : { data: [] as any[] };
+      const [{ data: inv }, { data: avail }, { data: reservs }] = await Promise.all([
+        invIds.length
+          ? supabase
+              .from("inventory_items")
+              .select("id, name, sku, unit, balance, minimum, photo_url")
+              .in("id", invIds as string[])
+          : Promise.resolve({ data: [] as any[] }),
+        invIds.length
+          ? supabase
+              .from("inventory_items_available" as any)
+              .select("inventory_item_id, available, committed")
+              .in("inventory_item_id", invIds as string[])
+          : Promise.resolve({ data: [] as any[] }),
+        invIds.length && orderIds.length
+          ? supabase
+              .from("material_reservations")
+              .select("inventory_item_id, qty_reserved, qty_consumed, status")
+              .in("inventory_item_id", invIds as string[])
+              .in("production_order_id", orderIds)
+              .eq("status", "ativa")
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
       const invMap = new Map((inv ?? []).map((i: any) => [i.id, i]));
+      const availMap = new Map((avail ?? []).map((a: any) => [a.inventory_item_id, a]));
+      const reservByItem = new Map<string, number>();
+      for (const r of reservs ?? []) {
+        const open = Math.max(0, Number(r.qty_reserved || 0) - Number(r.qty_consumed || 0));
+        reservByItem.set(
+          r.inventory_item_id,
+          (reservByItem.get(r.inventory_item_id) ?? 0) + open,
+        );
+      }
       // aggregate per inventory_item_id (or name when no link)
       const agg = new Map<string, any>();
       for (const m of mats ?? []) {
@@ -207,6 +233,7 @@ function LotePage() {
         const need = Number(m.consumption || 0) * (1 + Number(m.loss_pct || 0) / 100) * totalQty;
         const key = m.inventory_item_id ?? `name:${m.name}`;
         const inv = m.inventory_item_id ? invMap.get(m.inventory_item_id) : null;
+        const av = m.inventory_item_id ? availMap.get(m.inventory_item_id) : null;
         const cur = agg.get(key) ?? {
           key,
           inventory_item_id: m.inventory_item_id,
@@ -215,6 +242,10 @@ function LotePage() {
           unit: m.unit || inv?.unit || "un",
           photo_url: inv?.photo_url ?? null,
           balance: inv ? Number(inv.balance || 0) : null,
+          available: av ? Number(av.available || 0) : inv ? Number(inv.balance || 0) : null,
+          reservedForLote: m.inventory_item_id
+            ? (reservByItem.get(m.inventory_item_id) ?? 0)
+            : 0,
           minimum: inv ? Number(inv.minimum || 0) : null,
           needed: 0,
           cost: 0,
@@ -226,6 +257,7 @@ function LotePage() {
       return Array.from(agg.values()).sort((a, b) => b.needed - a.needed);
     },
   });
+
 
   const summary = useMemo(() => {
     const total = orders.reduce((s, o) => s + (o.quantity ?? 0), 0);
@@ -519,11 +551,13 @@ function LotePage() {
             <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
               {materialsNeeded.map((m: any) => {
                 const linked = m.balance !== null;
-                const missing = linked && m.needed > m.balance;
+                const avail = m.available ?? m.balance ?? 0;
+                const missing = linked && m.needed > avail;
                 const cobertura =
                   linked && m.needed > 0
-                    ? Math.min(100, Math.round((m.balance / m.needed) * 100))
+                    ? Math.min(100, Math.round((avail / m.needed) * 100))
                     : null;
+                const reservedHere = Number(m.reservedForLote || 0);
                 return (
                   <div
                     key={m.key}
@@ -544,9 +578,14 @@ function LotePage() {
                       <div className="text-[11px] text-muted-foreground truncate">
                         {m.sku ? `${m.sku} · ` : ""}precisa {m.needed.toFixed(2)} {m.unit}
                         {linked
-                          ? ` · tem ${m.balance.toFixed(2)} ${m.unit}`
+                          ? ` · disp. ${avail.toFixed(2)} ${m.unit} (saldo ${Number(m.balance).toFixed(2)})`
                           : " · não vinculado ao estoque"}
                       </div>
+                      {reservedHere > 0 && (
+                        <div className="text-[11px] text-primary mt-0.5">
+                          ✓ reservado p/ este lote: {reservedHere.toFixed(2)} {m.unit}
+                        </div>
+                      )}
                     </div>
                     <div className="text-right">
                       {linked ? (
@@ -559,7 +598,7 @@ function LotePage() {
                           }
                         >
                           {missing
-                            ? `faltam ${(m.needed - m.balance).toFixed(1)} ${m.unit}`
+                            ? `faltam ${(m.needed - avail).toFixed(1)} ${m.unit}`
                             : `${cobertura}% coberto`}
                         </Badge>
                       ) : (
@@ -571,6 +610,7 @@ function LotePage() {
                   </div>
                 );
               })}
+
             </div>
           )}
         </div>
