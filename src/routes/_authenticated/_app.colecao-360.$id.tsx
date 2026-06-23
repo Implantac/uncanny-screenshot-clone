@@ -27,6 +27,11 @@ import {
   Gauge,
   CalendarClock,
   Plus,
+  Palette,
+  Grid3x3,
+  Recycle,
+  Megaphone,
+  Award,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
