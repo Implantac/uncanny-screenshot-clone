@@ -40,7 +40,11 @@ import {
   Trash2,
   Save,
   ShoppingCart,
+  CheckCircle2,
+  AlertTriangle,
+  Lightbulb,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as RcTooltip } from "recharts";
 import { cn } from "@/lib/utils";
 
