@@ -25,6 +25,24 @@ export const REORDER_DEFAULTS = {
   safety_days: 7,
 } as const;
 
+/** Faixas realistas — validadas no servidor e exibidas no painel. */
+export const REORDER_LIMITS = {
+  service_factor_z: { min: 0, max: 4, label: "Fator Z (0 a 4 · até 99.99% de serviço)" },
+  cost_per_order: { min: 0, max: 100_000, label: "Custo do pedido S (R$ 0 a 100.000)" },
+  holding_cost_annual: {
+    min: 0,
+    max: 10_000,
+    label: "Custo armazenagem H (R$/un/ano · 0 a 10.000)",
+  },
+  safety_days: { min: 0, max: 365, label: "Dias de segurança (0 a 365)" },
+  lead_time_days: { min: 1, max: 365, label: "Lead time fornecedor (1 a 365 dias)" },
+  daily_avg_sales: { min: 0, max: 100_000, label: "Consumo médio diário (0 a 100.000)" },
+} as const;
+
+function inRange(n: number, min: number, max: number): boolean {
+  return Number.isFinite(n) && n >= min && n <= max;
+}
+
 /** Aceita valor numérico finito > 0; caso contrário, devolve o fallback. */
 function pickPositive(v: unknown, fallback: number): number {
   const n = typeof v === "string" ? Number(v) : (v as number);
@@ -37,15 +55,24 @@ function pickNonNeg(v: unknown, fallback: number): number {
   return Number.isFinite(n) && (n as number) >= 0 ? (n as number) : fallback;
 }
 
-/** Normaliza overrides — protege contra jsonb corrompido, strings ou NaN. */
+/** Normaliza overrides — protege contra jsonb corrompido, strings ou NaN; clampa para faixa realista. */
 export function resolveReorderParams(
   overrides: unknown,
 ): { Z: number; S: number; H: number } {
   const ov = (overrides && typeof overrides === "object" ? overrides : {}) as ReorderOverrides;
+  const Z = pickPositive(ov.service_factor_z, REORDER_DEFAULTS.service_factor_z);
+  const S = pickNonNeg(ov.cost_per_order, REORDER_DEFAULTS.cost_per_order);
+  const H = pickNonNeg(ov.holding_cost_annual, REORDER_DEFAULTS.holding_cost_annual);
   return {
-    Z: pickPositive(ov.service_factor_z, REORDER_DEFAULTS.service_factor_z),
-    S: pickNonNeg(ov.cost_per_order, REORDER_DEFAULTS.cost_per_order),
-    H: pickNonNeg(ov.holding_cost_annual, REORDER_DEFAULTS.holding_cost_annual),
+    Z: inRange(Z, REORDER_LIMITS.service_factor_z.min, REORDER_LIMITS.service_factor_z.max)
+      ? Z
+      : REORDER_DEFAULTS.service_factor_z,
+    S: inRange(S, REORDER_LIMITS.cost_per_order.min, REORDER_LIMITS.cost_per_order.max)
+      ? S
+      : REORDER_DEFAULTS.cost_per_order,
+    H: inRange(H, REORDER_LIMITS.holding_cost_annual.min, REORDER_LIMITS.holding_cost_annual.max)
+      ? H
+      : REORDER_DEFAULTS.holding_cost_annual,
   };
 }
 
@@ -60,15 +87,46 @@ export const updateReorderParams = createServerFn({ method: "POST" })
       holdingCostAnnual?: number | null;
       safetyDays?: number | null;
     }) =>
-      z
-        .object({
-          itemId: z.string().uuid(),
-          serviceFactorZ: z.number().min(0).max(5).nullable().optional(),
-          costPerOrder: z.number().min(0).nullable().optional(),
-          holdingCostAnnual: z.number().min(0).nullable().optional(),
-          safetyDays: z.number().int().min(0).max(365).nullable().optional(),
-        })
-        .parse(i),
+        z
+          .object({
+            itemId: z.string().uuid(),
+            serviceFactorZ: z
+              .number()
+              .min(REORDER_LIMITS.service_factor_z.min, {
+                message: `Z deve ser ≥ ${REORDER_LIMITS.service_factor_z.min}`,
+              })
+              .max(REORDER_LIMITS.service_factor_z.max, {
+                message: `Z deve ser ≤ ${REORDER_LIMITS.service_factor_z.max} (acima disso superestima estoque)`,
+              })
+              .nullable()
+              .optional(),
+            costPerOrder: z
+              .number()
+              .min(REORDER_LIMITS.cost_per_order.min)
+              .max(REORDER_LIMITS.cost_per_order.max, {
+                message: `Custo do pedido deve ser ≤ R$ ${REORDER_LIMITS.cost_per_order.max.toLocaleString("pt-BR")}`,
+              })
+              .nullable()
+              .optional(),
+            holdingCostAnnual: z
+              .number()
+              .min(REORDER_LIMITS.holding_cost_annual.min)
+              .max(REORDER_LIMITS.holding_cost_annual.max, {
+                message: `Custo anual de armazenagem deve ser ≤ R$ ${REORDER_LIMITS.holding_cost_annual.max.toLocaleString("pt-BR")}/un`,
+              })
+              .nullable()
+              .optional(),
+            safetyDays: z
+              .number()
+              .int()
+              .min(REORDER_LIMITS.safety_days.min)
+              .max(REORDER_LIMITS.safety_days.max, {
+                message: `Dias de segurança deve ser ≤ ${REORDER_LIMITS.safety_days.max}`,
+              })
+              .nullable()
+              .optional(),
+          })
+          .parse(i),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -165,13 +223,39 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
       const sigma = Math.sqrt(variance);
 
       const { Z, S, H } = resolveReorderParams(it.mrp_overrides);
+      const warnings: string[] = [];
       const leadTimeRaw = Number(it.suppliers?.lead_time_days);
-      const leadTime = Number.isFinite(leadTimeRaw) && leadTimeRaw > 0 ? leadTimeRaw : 14;
+      const leadTimeValid =
+        Number.isFinite(leadTimeRaw) &&
+        inRange(leadTimeRaw, REORDER_LIMITS.lead_time_days.min, REORDER_LIMITS.lead_time_days.max);
+      const leadTime = leadTimeValid ? leadTimeRaw : 14;
+      if (it.suppliers && Number.isFinite(leadTimeRaw) && !leadTimeValid) {
+        warnings.push(
+          `Lead time do fornecedor (${leadTimeRaw}d) fora da faixa ${REORDER_LIMITS.lead_time_days.min}–${REORDER_LIMITS.lead_time_days.max}d; usando 14d.`,
+        );
+      }
       const safetyDaysRaw = Number(it.safety_days);
       const safetyDays =
-        Number.isFinite(safetyDaysRaw) && safetyDaysRaw >= 0
+        Number.isFinite(safetyDaysRaw) &&
+        inRange(safetyDaysRaw, REORDER_LIMITS.safety_days.min, REORDER_LIMITS.safety_days.max)
           ? safetyDaysRaw
           : REORDER_DEFAULTS.safety_days;
+      if (
+        Number.isFinite(safetyDaysRaw) &&
+        !inRange(safetyDaysRaw, REORDER_LIMITS.safety_days.min, REORDER_LIMITS.safety_days.max)
+      ) {
+        warnings.push(
+          `Dias de segurança (${safetyDaysRaw}) fora de 0–${REORDER_LIMITS.safety_days.max}; usando ${REORDER_DEFAULTS.safety_days}.`,
+        );
+      }
+      if (
+        dailyAvg >
+        REORDER_LIMITS.daily_avg_sales.max
+      ) {
+        warnings.push(
+          `Consumo médio (${dailyAvg.toFixed(0)}/dia) acima de ${REORDER_LIMITS.daily_avg_sales.max}; revise movimentos de saída.`,
+        );
+      }
 
       const safetyStockStat = Z * sigma * Math.sqrt(leadTime);
       const safetyStockDet = dailyAvg * safetyDays;
@@ -246,6 +330,7 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
         needsOrder,
         status,
         reason,
+        warnings,
       };
     });
 

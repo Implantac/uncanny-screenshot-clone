@@ -18,6 +18,7 @@ import {
   registerCycleCount,
   updateReorderParams,
   REORDER_DEFAULTS,
+  REORDER_LIMITS,
 } from "@/lib/inventory-smart.functions";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -78,22 +79,48 @@ export function InventorySmartPanel() {
     setFormSafetyDays(String(it.safetyDays ?? 7));
   };
 
+  const parseField = (raw: string, fallback: number) => {
+    const trimmed = raw.trim();
+    if (trimmed === "") return { value: fallback, empty: true, invalid: false };
+    const n = Number(trimmed.replace(",", "."));
+    if (!Number.isFinite(n)) return { value: fallback, empty: false, invalid: true };
+    return { value: n, empty: false, invalid: false };
+  };
+
+  const validateRange = (
+    raw: string,
+    limit: { min: number; max: number; label: string },
+    fallback: number,
+  ): string | null => {
+    const p = parseField(raw, fallback);
+    if (p.empty) return null;
+    if (p.invalid) return "Valor inválido — informe um número.";
+    if (p.value < limit.min || p.value > limit.max)
+      return `Fora da faixa: ${limit.min} a ${limit.max}. ${limit.label}`;
+    return null;
+  };
+
+  const errZ = validateRange(formZ, REORDER_LIMITS.service_factor_z, REORDER_DEFAULTS.service_factor_z);
+  const errS = validateRange(formS, REORDER_LIMITS.cost_per_order, REORDER_DEFAULTS.cost_per_order);
+  const errH = validateRange(
+    formH,
+    REORDER_LIMITS.holding_cost_annual,
+    REORDER_DEFAULTS.holding_cost_annual,
+  );
+  const errSafety = validateRange(formSafetyDays, REORDER_LIMITS.safety_days, REORDER_DEFAULTS.safety_days);
+  const hasErrors = !!(errZ || errS || errH || errSafety);
+
   const saveParams = useMutation({
     mutationFn: () => {
-      const parseNum = (raw: string, fallback: number, min = 0) => {
-        const trimmed = raw.trim();
-        if (trimmed === "") return fallback;
-        const n = Number(trimmed);
-        if (!Number.isFinite(n) || n < min) return fallback;
-        return n;
-      };
+      if (hasErrors) throw new Error("Corrija os campos destacados antes de salvar.");
+      const pick = (raw: string, fallback: number) => parseField(raw, fallback).value;
       return paramsFn({
         data: {
           itemId: paramsTarget!.id,
-          serviceFactorZ: parseNum(formZ, REORDER_DEFAULTS.service_factor_z, 0),
-          costPerOrder: parseNum(formS, REORDER_DEFAULTS.cost_per_order, 0),
-          holdingCostAnnual: parseNum(formH, REORDER_DEFAULTS.holding_cost_annual, 0),
-          safetyDays: Math.floor(parseNum(formSafetyDays, REORDER_DEFAULTS.safety_days, 0)),
+          serviceFactorZ: pick(formZ, REORDER_DEFAULTS.service_factor_z),
+          costPerOrder: pick(formS, REORDER_DEFAULTS.cost_per_order),
+          holdingCostAnnual: pick(formH, REORDER_DEFAULTS.holding_cost_annual),
+          safetyDays: Math.floor(pick(formSafetyDays, REORDER_DEFAULTS.safety_days)),
         },
       });
     },
@@ -268,6 +295,13 @@ export function InventorySmartPanel() {
                       </span>
                     </div>
                   ) : null}
+                  {it.warnings && it.warnings.length > 0 ? (
+                    <div className="rounded-md border border-destructive/40 bg-destructive/5 px-2.5 py-1.5 text-[11px] text-destructive space-y-0.5">
+                      {it.warnings.map((w, i) => (
+                        <div key={i}>⚠ {w}</div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -418,58 +452,100 @@ export function InventorySmartPanel() {
                   <Input
                     type="number"
                     step="0.01"
-                    min={0}
+                    min={REORDER_LIMITS.service_factor_z.min}
+                    max={REORDER_LIMITS.service_factor_z.max}
                     value={formZ}
                     placeholder={String(REORDER_DEFAULTS.service_factor_z)}
                     onChange={(e) => setFormZ(e.target.value)}
+                    aria-invalid={!!errZ}
+                    className={errZ ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
-                  <div className="text-[10px] text-muted-foreground mt-0.5">
-                    1.28=90% · 1.65=95% · 2.33=99% · vazio = {REORDER_DEFAULTS.service_factor_z}
-                  </div>
+                  {errZ ? (
+                    <div className="text-[10px] text-destructive mt-0.5">{errZ}</div>
+                  ) : (
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      1.28=90% · 1.65=95% · 2.33=99% · faixa {REORDER_LIMITS.service_factor_z.min}–
+                      {REORDER_LIMITS.service_factor_z.max}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs font-medium">Dias de segurança (fallback)</label>
                   <Input
                     type="number"
                     step="1"
-                    min={0}
+                    min={REORDER_LIMITS.safety_days.min}
+                    max={REORDER_LIMITS.safety_days.max}
                     value={formSafetyDays}
                     placeholder={String(REORDER_DEFAULTS.safety_days)}
                     onChange={(e) => setFormSafetyDays(e.target.value)}
+                    aria-invalid={!!errSafety}
+                    className={errSafety ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
+                  {errSafety ? (
+                    <div className="text-[10px] text-destructive mt-0.5">{errSafety}</div>
+                  ) : (
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      faixa {REORDER_LIMITS.safety_days.min}–{REORDER_LIMITS.safety_days.max} dias
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs font-medium">Custo por pedido (S)</label>
                   <Input
                     type="number"
                     step="0.01"
-                    min={0}
+                    min={REORDER_LIMITS.cost_per_order.min}
+                    max={REORDER_LIMITS.cost_per_order.max}
                     value={formS}
                     placeholder="0,00"
                     onChange={(e) => setFormS(e.target.value)}
+                    aria-invalid={!!errS}
+                    className={errS ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
-                  <div className="text-[10px] text-muted-foreground mt-0.5">R$ operacional · vazio desativa LEC</div>
+                  {errS ? (
+                    <div className="text-[10px] text-destructive mt-0.5">{errS}</div>
+                  ) : (
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      R$ operacional · vazio desativa LEC
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs font-medium">Custo anual armazenagem (H)</label>
                   <Input
                     type="number"
                     step="0.01"
-                    min={0}
+                    min={REORDER_LIMITS.holding_cost_annual.min}
+                    max={REORDER_LIMITS.holding_cost_annual.max}
                     value={formH}
                     placeholder="0,00"
                     onChange={(e) => setFormH(e.target.value)}
+                    aria-invalid={!!errH}
+                    className={errH ? "border-destructive focus-visible:ring-destructive" : ""}
                   />
-                  <div className="text-[10px] text-muted-foreground mt-0.5">R$ por unidade/ano</div>
+                  {errH ? (
+                    <div className="text-[10px] text-destructive mt-0.5">{errH}</div>
+                  ) : (
+                    <div className="text-[10px] text-muted-foreground mt-0.5">R$ por unidade/ano</div>
+                  )}
                 </div>
               </div>
+              {hasErrors ? (
+                <div className="rounded-md border border-destructive/40 bg-destructive/5 px-2.5 py-1.5 text-[11px] text-destructive">
+                  Corrija os campos destacados antes de salvar. Valores fora das faixas realistas distorcem ROP e LEC.
+                </div>
+              ) : null}
             </div>
           ) : null}
           <DialogFooter>
             <Button variant="outline" onClick={() => setParamsTarget(null)}>
               Cancelar
             </Button>
-            <Button onClick={() => saveParams.mutate()} disabled={saveParams.isPending}>
+            <Button
+              onClick={() => saveParams.mutate()}
+              disabled={saveParams.isPending || hasErrors}
+            >
               {saveParams.isPending ? <Loader2 className="size-3 mr-1 animate-spin" /> : null}
               Salvar
             </Button>
