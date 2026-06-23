@@ -329,23 +329,43 @@ function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: stri
                 className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
               />
             </label>
-            <label className="block text-[10px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1">
-                <Minus className="size-3" />
-                Perda no retorno (opcional)
-              </span>
-              <input
-                type="number"
-                min={0}
-                value={loss}
-                onChange={(e) => setLoss(Math.max(0, Number(e.target.value) || 0))}
-                placeholder="0"
-                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
-              />
-              <span className="text-[9px] text-muted-foreground">
-                Gera ocorrência negativa na OP.
-              </span>
-            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block text-[10px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <Minus className="size-3" />
+                  Perdidas
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={loss}
+                  onChange={(e) => setLoss(Math.max(0, Number(e.target.value) || 0))}
+                  placeholder="0"
+                  className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
+                />
+                <span className="text-[9px] text-muted-foreground">Peças extraviadas.</span>
+              </label>
+              <label className="block text-[10px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <AlertTriangle className="size-3" />
+                  Com defeito
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={defect}
+                  onChange={(e) => setDefect(Math.max(0, Number(e.target.value) || 0))}
+                  placeholder="0"
+                  className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
+                />
+                <span className="text-[9px] text-muted-foreground">2ª linha / refugo.</span>
+              </label>
+            </div>
+            {(loss > 0 || defect > 0) && (
+              <div className="text-[9px] text-muted-foreground -mt-1">
+                Gera ocorrência negativa na OP ({loss + defect} pç).
+              </div>
+            )}
             <label className="block text-[10px] text-muted-foreground">
               Observação
               <input
