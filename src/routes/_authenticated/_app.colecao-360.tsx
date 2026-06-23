@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
 import {
@@ -24,10 +25,23 @@ import {
   RefreshCw,
   Boxes,
   Gauge,
+  CalendarClock,
+  Plus,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { Target, Heart } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import {
+  listCollectionMilestones,
+  initCollectionTimeline,
+  markMilestoneDone,
+  upsertMilestone,
+  STAGE_LABELS,
+} from "@/lib/collection-timeline.functions";
 
 export const Route = createFileRoute("/_authenticated/_app/colecao-360")({
   head: () => ({
