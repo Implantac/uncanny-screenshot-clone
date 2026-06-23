@@ -77,29 +77,22 @@ Tudo aqui é "ligar fio solto": o dado/lógica já existe, falta UI ou conexão.
 
 ---
 
-## 🌊 Onda 3 — Operação Real (esforço M)
+## 🌊 Onda 3 — Operação Real (esforço M) — EM ANDAMENTO
 
-### 3.1 Ponto de Reposição Dinâmico em `/compras`
-- Server function `computeReorderPoints()`: `turnover_30d × supplier.lead_time_days × safety_factor`.
-- Coluna nova na tabela de compras: `Reposição Sugerida` vs `Saldo Atual` vs `Mínimo Manual`.
-- IA-explica o motivo de cada sugestão (consistente com regra "IA é especialista").
+### 3.1 Ponto de Reposição Dinâmico — ✅ integrado em `/compras`
+- `InventorySmartPanel` (já existente em `/almoxarifado`) agora também aparece em `/compras`, com ROP dinâmico, ABC e contagem cíclica + motivo gerado pela IA.
 
-### 3.2 FEFO com lot/expires reais
-- Migration: `stock_movements.lot_number text, expires_at date`.
-- Inputs no formulário de entrada de estoque.
-- `inventory-fefo.functions.ts` passa a ordenar por `expires_at` real (hoje usa fallback).
+### 3.2 FEFO com lot/expires reais — ✅ migration aplicada
+- `stock_movements` ganhou `lot_number text` e `expires_at date` + índice parcial por item/validade. `inventory-fefo.functions.ts` já ordena por `inventory_lots.expires_at`. Inputs no formulário de entrada virão na próxima onda de polimento.
 
-### 3.3 Capacidade com dimensão Facção
-- Em `/capacity`, toggle "Interna | Facção | Combinada".
-- Modo Facção lê `supplier_capacity` agrupado por fornecedor terceirizado.
-- Bloco de alerta quando facção próxima do limite.
+### 3.3 Capacidade com dimensão Facção — ✅ toggle entregue
+- Em `/capacity`, novo toggle "Combinada | Interna | Facção" no header (persistido em URL `?scope=`). Interno = OPs sem `supplier_id`; Facção = OPs com fornecedor terceirizado. Todos os KPIs, carga e ranking de fornecedores respeitam o escopo.
 
-### 3.4 Mapa SVG do Brasil em `/geo-sales`
+### 3.4 Mapa SVG do Brasil em `/geo-sales` — ⏳ pendente
 - Substituir grid de divs por SVG real de UFs (paths públicos do IBGE).
-- `fill` dinâmico pelo heatmap de receita já calculado.
-- Hover mostra UF + receita + variação.
+- `fill` dinâmico pelo heatmap de receita já calculado; hover mostra UF + receita + variação.
 
-**Entrega Onda 3:** 4 features, 1 migration, ~8 arquivos.
+**Entrega Onda 3 (parcial):** 3 de 4 itens, 1 migration, 2 arquivos editados.
 
 ---
 
