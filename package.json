@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
+    "build": "node scripts/check-no-mocks.mjs && vite build",
+    "build:dev": "node scripts/check-no-mocks.mjs && vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "check:no-mocks": "node scripts/check-no-mocks.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {
