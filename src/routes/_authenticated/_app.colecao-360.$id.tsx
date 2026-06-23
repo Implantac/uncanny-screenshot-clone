@@ -505,16 +505,7 @@ function Colecao360() {
             ))}
           </div>
 
-          {current && (
-            <Tabs defaultValue="visao" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="visao">
-                  <Compass className="size-3.5 mr-1.5" /> Visão 360º
-                </TabsTrigger>
-                <TabsTrigger value="time-action">
-                  <CalendarClock className="size-3.5 mr-1.5" /> Time & Action
-                </TabsTrigger>
-              </TabsList>
+          {current && <CollectionTabs current={current} navigate={navigate} />}
 
               <TabsContent value="visao" className="space-y-4">
               {/* Pipeline visual */}
