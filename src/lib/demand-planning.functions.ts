@@ -67,6 +67,8 @@ type DemandRow = {
   abcClass: "A" | "B" | "C" | null;
   supplierId: string | null;
   supplierName: string | null;
+  supplierMinOrderValue: number | null;
+  supplierMinOrderQty: number | null;
   costPrice: number;
   annualDemand: number;
   monthFactor: number;
