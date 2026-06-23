@@ -1,0 +1,1 @@
+REVOKE SELECT (token_hash) ON public.supplier_portal_tokens FROM authenticated, anon;
