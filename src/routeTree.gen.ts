@@ -18,6 +18,7 @@ import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/_app.index'
 import { Route as PortalFornecedorTokenRouteImport } from './routes/portal.fornecedor.$token'
+import { Route as ApiPublicErpSyncSectorsRouteImport } from './routes/api/public/erp-sync-sectors'
 import { Route as AuthenticatedAppWarRoomProducaoRouteImport } from './routes/_authenticated/_app.war-room-producao'
 import { Route as AuthenticatedAppVariantesRouteImport } from './routes/_authenticated/_app.variantes'
 import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticated/_app.use-ai'
@@ -168,6 +169,11 @@ const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
 const PortalFornecedorTokenRoute = PortalFornecedorTokenRouteImport.update({
   id: '/portal/fornecedor/$token',
   path: '/portal/fornecedor/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicErpSyncSectorsRoute = ApiPublicErpSyncSectorsRouteImport.update({
+  id: '/api/public/erp-sync-sectors',
+  path: '/api/public/erp-sync-sectors',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAppWarRoomProducaoRoute =
@@ -894,6 +900,7 @@ export interface FileRoutesByFullPath {
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
+  '/api/public/erp-sync-sectors': typeof ApiPublicErpSyncSectorsRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/colecao-360/$id': typeof AuthenticatedAppColecao360IdRoute
@@ -1011,6 +1018,7 @@ export interface FileRoutesByTo {
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
+  '/api/public/erp-sync-sectors': typeof ApiPublicErpSyncSectorsRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/colecao-360/$id': typeof AuthenticatedAppColecao360IdRoute
@@ -1130,6 +1138,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/use-ai': typeof AuthenticatedAppUseAiRoute
   '/_authenticated/_app/variantes': typeof AuthenticatedAppVariantesRoute
   '/_authenticated/_app/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
+  '/api/public/erp-sync-sectors': typeof ApiPublicErpSyncSectorsRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/_app/apontar/$id': typeof AuthenticatedAppApontarIdRoute
@@ -1250,6 +1259,7 @@ export interface FileRouteTypes {
     | '/use-ai'
     | '/variantes'
     | '/war-room-producao'
+    | '/api/public/erp-sync-sectors'
     | '/portal/fornecedor/$token'
     | '/apontar/$id'
     | '/colecao-360/$id'
@@ -1367,6 +1377,7 @@ export interface FileRouteTypes {
     | '/use-ai'
     | '/variantes'
     | '/war-room-producao'
+    | '/api/public/erp-sync-sectors'
     | '/portal/fornecedor/$token'
     | '/apontar/$id'
     | '/colecao-360/$id'
@@ -1485,6 +1496,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/use-ai'
     | '/_authenticated/_app/variantes'
     | '/_authenticated/_app/war-room-producao'
+    | '/api/public/erp-sync-sectors'
     | '/portal/fornecedor/$token'
     | '/_authenticated/_app/'
     | '/_authenticated/_app/apontar/$id'
@@ -1513,6 +1525,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiCopilotRoute: typeof ApiCopilotRoute
   DppIdRoute: typeof DppIdRoute
+  ApiPublicErpSyncSectorsRoute: typeof ApiPublicErpSyncSectorsRoute
   PortalFornecedorTokenRoute: typeof PortalFornecedorTokenRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
   ApiPublicErpSyncPublicIdRoute: typeof ApiPublicErpSyncPublicIdRoute
@@ -1586,6 +1599,13 @@ declare module '@tanstack/react-router' {
       path: '/portal/fornecedor/$token'
       fullPath: '/portal/fornecedor/$token'
       preLoaderRoute: typeof PortalFornecedorTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/erp-sync-sectors': {
+      id: '/api/public/erp-sync-sectors'
+      path: '/api/public/erp-sync-sectors'
+      fullPath: '/api/public/erp-sync-sectors'
+      preLoaderRoute: typeof ApiPublicErpSyncSectorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_app/war-room-producao': {
@@ -2607,6 +2627,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiCopilotRoute: ApiCopilotRoute,
   DppIdRoute: DppIdRoute,
+  ApiPublicErpSyncSectorsRoute: ApiPublicErpSyncSectorsRoute,
   PortalFornecedorTokenRoute: PortalFornecedorTokenRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
   ApiPublicErpSyncPublicIdRoute: ApiPublicErpSyncPublicIdRoute,
