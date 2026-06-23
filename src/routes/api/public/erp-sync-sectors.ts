@@ -131,6 +131,25 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
         const sectorByPedido = new Map<number, string>();
         for (const r of erpRes.rows) sectorByPedido.set(Number(r.nnumeropedid), r.cdescrisetin);
 
+        if (url.searchParams.get("debug") === "1") {
+          return Response.json({
+            erpRows: erpRes.rows,
+            linked: linked.map((l) => ({
+              code: l.code,
+              stage: l.stage,
+              pedido_id: l.pedido_id,
+              erp_sector: sectorByPedido.get(l.pedido_id) ?? null,
+              normalized: sectorByPedido.get(l.pedido_id)
+                ? normalize(sectorByPedido.get(l.pedido_id)!)
+                : null,
+              mapped: sectorByPedido.get(l.pedido_id)
+                ? STAGE_BY_SECTOR[normalize(sectorByPedido.get(l.pedido_id)!)] ?? null
+                : null,
+            })),
+          });
+        }
+
+
         let updated = 0;
         let okCount = 0;
         let unmapped = 0;
