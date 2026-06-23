@@ -94,9 +94,9 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
         const erpRes = await usesoftQuery<ErpItem>(
           `
           WITH recent_ped AS (
-            -- Apenas O.C. Cliente (tipo 99 — Ordem de Produção), em produção.
-            -- Identificamos o tipo pelo nome ("99 -..." ou contém "ORDEM DE PRODU")
-            -- na tabela soltpped para não depender de ID hardcoded.
+            -- Apenas O.C. Cliente (tipo 99 - Ordem de Producao), em producao.
+            -- Identificamos o tipo pelo nome ("99 -..." ou contem "ORDEM DE PRODU")
+            -- na tabela soltpped para nao depender de ID hardcoded.
             SELECT p.nnumeropedid, p.ncodigopedid, p.cliente, p.ddataentrega
               FROM pedidos p
               JOIN soltpped t ON t.nnumerotpped = p.nnumerotpped
