@@ -47,6 +47,13 @@ import {
   upsertMilestone,
   STAGE_LABELS,
 } from "@/lib/collection-timeline.functions";
+import { CollectionMoodboard } from "@/components/collection-moodboard";
+import { CarryOverPanel } from "@/components/carry-over-panel";
+import { AssortmentPanel } from "@/components/assortment-panel";
+import { ChannelMixPanel } from "@/components/channel-mix-panel";
+import { CollectionIntelligencePanel } from "@/components/collection-intelligence-panel";
+import { LaunchingWeekPanel } from "@/components/launching-week-panel";
+import { QualityCollectionsBridgePanel } from "@/components/quality-collections-bridge-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/colecao-360/$id")({
   head: () => ({
