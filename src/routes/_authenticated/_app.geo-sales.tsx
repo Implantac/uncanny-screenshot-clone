@@ -155,27 +155,126 @@ function GeoSales() {
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <MapPin className="size-4 text-primary" />
-          <span className="font-medium">Mapa de calor por UF</span>
+        <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <MapPin className="size-4 text-primary" />
+            <span className="font-medium">Mapa de calor por UF</span>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span>Baixo</span>
+            {[0.1, 0.3, 0.55, 0.85].map((t) => (
+              <span
+                key={t}
+                className="inline-block w-4 h-3 rounded-sm border border-border"
+                style={{ background: heatFill(t * maxRevenue) }}
+              />
+            ))}
+            <span>Alto</span>
+            {selectedUf && (
+              <button
+                type="button"
+                onClick={() => setSelectedUf(undefined)}
+                className="ml-2 px-2 py-0.5 rounded border border-border hover:bg-muted/50"
+              >
+                Limpar seleção
+              </button>
+            )}
+          </div>
         </div>
         {isLoading ? (
           <div className="text-muted-foreground">Carregando…</div>
         ) : (
-          <div className="grid grid-cols-6 md:grid-cols-9 gap-2">
-            {UFS.map((u) => {
-              const s = stats.find((x) => x.uf === u) ?? { uf: u, revenue: 0, qty: 0, orders: 0 };
-              return (
-                <div
-                  key={u}
-                  className={`rounded-lg p-3 ${heat(s.revenue)}`}
-                  title={`${u}: R$ ${s.revenue.toFixed(2)} • ${s.qty} pç`}
-                >
-                  <div className="font-mono font-semibold">{u}</div>
-                  <div className="text-[10px] opacity-80">{s.qty} pç</div>
+          <div className="grid md:grid-cols-[2fr_1fr] gap-4 items-start">
+            <div className="relative">
+              <svg
+                viewBox={BRAZIL_VIEWBOX}
+                className="w-full h-auto max-h-[520px]"
+                role="img"
+                aria-label="Mapa de calor de receita por UF do Brasil"
+              >
+                {BRAZIL_PATHS.map((p) => {
+                  const s = statsByUf.get(p.uf);
+                  const rev = s?.revenue ?? 0;
+                  const isActive = activeUf === p.uf;
+                  const isSelected = selectedUf === p.uf;
+                  return (
+                    <path
+                      key={p.uf}
+                      d={p.d}
+                      fill={heatFill(rev)}
+                      stroke={isSelected ? "hsl(var(--ring))" : "hsl(var(--border))"}
+                      strokeWidth={isSelected ? 1.5 : isActive ? 1 : 0.5}
+                      className="cursor-pointer transition-opacity hover:opacity-80 focus:outline-none"
+                      tabIndex={0}
+                      onMouseEnter={() => setHoverUf(p.uf)}
+                      onMouseLeave={() => setHoverUf((cur) => (cur === p.uf ? null : cur))}
+                      onFocus={() => setHoverUf(p.uf)}
+                      onBlur={() => setHoverUf((cur) => (cur === p.uf ? null : cur))}
+                      onClick={() => setSelectedUf(selectedUf === p.uf ? undefined : p.uf)}
+                    >
+                      <title>{`${p.uf} · ${p.name} — ${rev.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })}`}</title>
+                    </path>
+                  );
+                })}
+              </svg>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/20 p-4 text-sm min-h-[180px]">
+              {activeUf && activeStat ? (
+                <div className="space-y-2">
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-mono text-lg font-semibold">{activeUf}</span>
+                    <span className="text-xs text-muted-foreground">{activeName}</span>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Receita 90d</div>
+                    <div className="text-xl font-semibold text-primary">
+                      {activeStat.revenue.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                        maximumFractionDigits: 0,
+                      })}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-xs text-muted-foreground">Peças</div>
+                      <div className="font-medium">{activeStat.qty.toLocaleString("pt-BR")}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Pedidos</div>
+                      <div className="font-medium">{activeStat.orders}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Share</div>
+                      <div className="font-medium">
+                        {totalRev > 0 ? Math.round((activeStat.revenue / totalRev) * 100) : 0}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Ticket médio</div>
+                      <div className="font-medium">
+                        {activeStat.orders > 0
+                          ? (activeStat.revenue / activeStat.orders).toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                              maximumFractionDigits: 0,
+                            })
+                          : "—"}
+                      </div>
+                    </div>
+                  </div>
+                  {selectedUf === activeUf && (
+                    <div className="text-[11px] text-muted-foreground pt-1">
+                      UF fixada na URL · compartilhe o link
+                    </div>
+                  )}
                 </div>
-              );
-            })}
+              ) : (
+                <div className="text-muted-foreground text-sm">
+                  Passe o mouse ou clique em um estado para ver o resumo.
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
