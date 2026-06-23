@@ -989,16 +989,20 @@ function Stage({
   value,
   sub,
   to,
+  search,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number;
   sub: string;
   to: string;
+  search?: Record<string, unknown>;
 }) {
   return (
     <Link
-      to={to}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      to={to as any}
+      search={search}
       className="flex-1 min-w-[110px] rounded-lg border border-border bg-muted/20 p-3 hover:border-primary transition-colors"
     >
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -1053,12 +1057,14 @@ function WarKPI({
   icon,
   tone,
   to,
+  search,
 }: {
   label: string;
   value: number;
   icon: React.ReactNode;
   tone: "red" | "yellow" | "green" | "primary" | "neutral";
   to: string;
+  search?: Record<string, unknown>;
 }) {
   const tones = {
     red: "border-destructive/40 text-destructive",
@@ -1069,7 +1075,9 @@ function WarKPI({
   };
   return (
     <Link
-      to={to}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      to={to as any}
+      search={search}
       className={`rounded-lg border bg-muted/10 p-2.5 hover:bg-muted/30 transition-colors ${tones[tone]}`}
     >
       <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -1081,15 +1089,54 @@ function WarKPI({
   );
 }
 
-function Shortcut({ to, label }: { to: string; label: string }) {
+function Shortcut({
+  to,
+  label,
+  params,
+  icon,
+}: {
+  to: string;
+  label: string;
+  params?: Record<string, unknown>;
+  icon?: React.ReactNode;
+}) {
   return (
     <Link
-      to={to}
-      className="rounded-lg border border-border bg-card px-3 py-2 text-sm hover:border-primary hover:bg-muted/30 transition-colors flex items-center justify-between"
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      to={to as any}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      params={params as any}
+      className="rounded-lg border border-border bg-card px-3 py-2 text-sm hover:border-primary hover:bg-muted/30 transition-colors flex items-center justify-between gap-2"
     >
-      <span>{label}</span>
-      <ArrowRight className="size-3 text-muted-foreground" />
+      <span className="inline-flex items-center gap-1.5 truncate">
+        {icon}
+        {label}
+      </span>
+      <ArrowRight className="size-3 text-muted-foreground shrink-0" />
     </Link>
+  );
+}
+
+function ShortcutPlain({
+  href,
+  label,
+  icon,
+}: {
+  href: string;
+  label: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      className="rounded-lg border border-border bg-card px-3 py-2 text-sm hover:border-primary hover:bg-muted/30 transition-colors flex items-center justify-between gap-2"
+    >
+      <span className="inline-flex items-center gap-1.5 truncate">
+        {icon}
+        {label}
+      </span>
+      <ArrowRight className="size-3 text-muted-foreground shrink-0" />
+    </a>
   );
 }
 
