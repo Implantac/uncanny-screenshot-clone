@@ -2,11 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
-import { Sparkles, CheckCircle2, Clock, ImageIcon, AlertTriangle } from "lucide-react";
+import { Sparkles, CheckCircle2, Clock, ImageIcon, AlertTriangle, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
+import { PageHeader } from "@/components/ui/page-header";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/_app/dev-kanban")({ component: DevKanban });
 
