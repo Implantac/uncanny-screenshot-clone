@@ -206,7 +206,11 @@ async function loadAll() {
 }
 
 function Colecao360() {
+  const { id: routeId } = useParams({ from: "/_authenticated/_app/colecao-360/$id" });
+  const navigate = useNavigate({ from: "/colecao-360/$id" });
   useRealtime("production_orders", ["colecao-360"]);
+  useRealtime("prototypes", ["colecao-360"]);
+  useRealtime("prototype_gates", ["colecao-360"]);
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["colecao-360"],
     queryFn: loadAll,
@@ -222,8 +226,7 @@ function Colecao360() {
   const sheets = useMemo(() => data?.sheets ?? [], [data?.sheets]);
   const campaigns = useMemo(() => data?.campaigns ?? [], [data?.campaigns]);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const currentId = selectedId ?? collections[0]?.id ?? null;
+  const currentId = routeId;
 
   const summary = useMemo(() => {
     return collections.map((c) => {
