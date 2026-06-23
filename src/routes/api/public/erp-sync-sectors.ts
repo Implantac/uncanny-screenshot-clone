@@ -128,14 +128,17 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
         // 2) OPs existentes no PLM com marker item.
         const { data: existing, error: exErr } = await supabaseAdmin
           .from("production_orders")
-          .select("id, stage, notes")
+          .select("id, code, stage, notes")
           .eq("owner_id", ownerId);
         if (exErr) return Response.json({ error: exErr.message }, { status: 500 });
 
         const byMarker = new Map<string, { id: string; stage: Stage }>();
+        const byCode = new Map<string, { id: string; stage: Stage }>();
         for (const o of existing ?? []) {
+          const ref = { id: o.id, stage: o.stage as Stage };
           const m = (o.notes ?? "").match(/\[erp:pedido:(\d+):item:(\d+)\]/);
-          if (m) byMarker.set(`${m[1]}:${m[2]}`, { id: o.id, stage: o.stage as Stage });
+          if (m) byMarker.set(`${m[1]}:${m[2]}`, ref);
+          if (o.code) byCode.set(o.code, ref);
         }
 
         let inserted = 0;
