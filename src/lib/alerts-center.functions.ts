@@ -82,7 +82,7 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
       supabase.from("pcp_stages").select("key, sla_stuck_days").eq("owner_id", userId),
       supabase
         .from("prototypes")
-        .select("id, code, name, stage, updated_at")
+        .select("id, code, stage, updated_at")
         .eq("owner_id", userId)
         .not("stage", "in", "(aprovado,reprovado)")
         .lt("updated_at", oldProtoCutoff)
