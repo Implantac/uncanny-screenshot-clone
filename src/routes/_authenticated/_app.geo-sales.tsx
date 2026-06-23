@@ -1,11 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
+import { z } from "zod";
+import { zodValidator } from "@tanstack/zod-adapter";
+import { BRAZIL_VIEWBOX, BRAZIL_PATHS } from "@/lib/brazil-map-paths";
+
+const searchSchema = z.object({ uf: z.string().length(2).optional().catch(undefined) });
 
 export const Route = createFileRoute("/_authenticated/_app/geo-sales")({
   component: GeoSales,
+  validateSearch: zodValidator(searchSchema),
 });
 
 const UFS = [
