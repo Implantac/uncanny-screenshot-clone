@@ -44,11 +44,61 @@ export function InventorySmartPanel() {
   const applyFn = useServerFn(applyReorderSuggestion);
   const cycleFn = useServerFn(getCycleCountPlan);
   const regFn = useServerFn(registerCycleCount);
+  const paramsFn = useServerFn(updateReorderParams);
 
   const rop = useQuery({
     queryKey: ["inv-smart", "rop"],
     queryFn: () => ropFn({ data: { windowDays: 60 } }),
     refetchInterval: 60_000,
+  });
+  const cycle = useQuery({
+    queryKey: ["inv-smart", "cycle"],
+    queryFn: () => cycleFn({ data: { windowDays: 90 } }),
+    refetchInterval: 120_000,
+  });
+
+  const apply = useMutation({
+    mutationFn: (v: { itemId: string; minimum: number; maximum: number }) =>
+      applyFn({ data: v }),
+    onSuccess: () => {
+      toast.success("Mínimo/máximo atualizados");
+      qc.invalidateQueries({ queryKey: ["inv-smart"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  type RopItem = NonNullable<typeof rop.data>["items"][number];
+  const [paramsTarget, setParamsTarget] = useState<RopItem | null>(null);
+  const [formZ, setFormZ] = useState("");
+  const [formS, setFormS] = useState("");
+  const [formH, setFormH] = useState("");
+  const [formSafetyDays, setFormSafetyDays] = useState("");
+
+  const openParams = (it: RopItem) => {
+    setParamsTarget(it);
+    setFormZ(String(it.serviceFactorZ ?? 1.65));
+    setFormS(String(it.costPerOrder ?? 0));
+    setFormH(String(it.holdingCostAnnual ?? 0));
+    setFormSafetyDays(String(it.safetyDays ?? 7));
+  };
+
+  const saveParams = useMutation({
+    mutationFn: () =>
+      paramsFn({
+        data: {
+          itemId: paramsTarget!.id,
+          serviceFactorZ: Number(formZ) || 0,
+          costPerOrder: Number(formS) || 0,
+          holdingCostAnnual: Number(formH) || 0,
+          safetyDays: Math.max(0, Math.floor(Number(formSafetyDays) || 0)),
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Parâmetros atualizados — recalculando…");
+      setParamsTarget(null);
+      qc.invalidateQueries({ queryKey: ["inv-smart"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
   const cycle = useQuery({
     queryKey: ["inv-smart", "cycle"],
