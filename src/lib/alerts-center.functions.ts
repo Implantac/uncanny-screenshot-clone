@@ -238,7 +238,7 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         category: "proto",
         severity,
         title: `Protótipo ${p.code} sem evolução`,
-        detail: `${p.name ?? ""} · ${p.stage} há ${days}d`,
+        detail: `${p.stage} há ${days}d`,
         why: "Protótipo paralisado atrasa o lançamento da coleção inteira.",
         link: "/prototipos",
         ts: p.updated_at as string,
