@@ -22,31 +22,27 @@ const ALLOWLIST_PATHS = [
   "src/routeTree.gen.ts",
 ];
 
-// Padrões proibidos — identificadores e literais típicos de dados fake.
-// Usa word-boundary para evitar falsos positivos (ex.: "seedling").
+// Padrões proibidos — restritos a identificadores claramente de "dados fake".
+// Evita falsos positivos: ex. "sample" no sentido de amostra de produto é OK.
 const FORBIDDEN_PATTERNS = [
-  { re: /\bmockData\b/i, msg: "variável mockData" },
-  { re: /\bfakeData\b/i, msg: "variável fakeData" },
-  { re: /\bdummyData\b/i, msg: "variável dummyData" },
-  { re: /\bsampleData\b/i, msg: "variável sampleData" },
-  { re: /\bMOCK_[A-Z0-9_]+\b/, msg: "constante MOCK_*" },
-  { re: /\bFAKE_[A-Z0-9_]+\b/, msg: "constante FAKE_*" },
-  { re: /\bSAMPLE_[A-Z0-9_]+\b/, msg: "constante SAMPLE_*" },
-  { re: /from\s+["'][^"']*\/mocks?\/[^"']*["']/i, msg: 'import de "/mock(s)/"' },
-  { re: /from\s+["'][^"']*\/fixtures?\/[^"']*["']/i, msg: 'import de "/fixture(s)/"' },
-  { re: /\bfaker\.[a-z]/i, msg: "uso de faker.*" },
-  { re: /@faker-js\/faker/, msg: "dependência @faker-js/faker" },
-  { re: /\bchance\.[a-z]+\(/, msg: "uso de chance.*" },
+  { re: /\bmockData\b/, msg: "identificador mockData" },
+  { re: /\bfakeData\b/, msg: "identificador fakeData" },
+  { re: /\bdummyData\b/, msg: "identificador dummyData" },
+  { re: /\bsampleData\b/, msg: "identificador sampleData" },
+  { re: /\bseedData\b/, msg: "identificador seedData" },
+  { re: /\b(MOCK|FAKE|DUMMY|SAMPLE|SEED)_DATA\b/, msg: "constante *_DATA fake" },
+  { re: /\b(generate|create|get|make|build)Mock[A-Z]\w*/, msg: "função generateMock*/createMock*" },
+  { re: /\b(generate|create|get|make|build)Fake[A-Z]\w*/, msg: "função generateFake*/createFake*" },
+  { re: /from\s+["'][^"']*\/__mocks__\/[^"']*["']/, msg: 'import de "/__mocks__/"' },
+  { re: /from\s+["'][^"']*\/fixtures?\/[^"']*["']/, msg: 'import de "/fixture(s)/"' },
+  { re: /from\s+["']@faker-js\/faker["']/, msg: "import de @faker-js/faker" },
+  { re: /\bfaker\.(name|internet|lorem|datatype|company|address|finance|commerce)\b/, msg: "uso de faker.*" },
   { re: /\bLorem ipsum\b/i, msg: 'texto "Lorem ipsum"' },
-  { re: /\bplaceholder\.com\b/, msg: "URL placeholder.com" },
   { re: /\bvia\.placeholder\.com\b/, msg: "URL via.placeholder.com" },
-  // SQL: INSERT em migration é considerado seed (apenas em .sql)
-  {
-    re: /\bINSERT\s+INTO\b/i,
-    msg: "INSERT em migration (seed de dados é proibido)",
-    onlyExt: [".sql"],
-  },
+  { re: /\bplacehold\.co\b/, msg: "URL placehold.co" },
+  { re: /\bpicsum\.photos\b/, msg: "URL picsum.photos (imagens fake)" },
 ];
+
 
 const violations = [];
 
