@@ -159,10 +159,24 @@ function Prototipos() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,name,image_url")
+        .select("id,name,image_url,collection_id")
         .order("name");
       if (error) throw error;
-      return data as (Ref & { image_url: string | null })[];
+      return data as (Ref & { image_url: string | null; collection_id: string | null })[];
+    },
+  });
+
+  const { data: collectionRef } = useQuery({
+    queryKey: ["collection-ref", collectionId],
+    enabled: !!collectionId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("collections")
+        .select("id,name,season,year")
+        .eq("id", collectionId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
     },
   });
 
