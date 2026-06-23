@@ -223,13 +223,39 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
       const sigma = Math.sqrt(variance);
 
       const { Z, S, H } = resolveReorderParams(it.mrp_overrides);
+      const warnings: string[] = [];
       const leadTimeRaw = Number(it.suppliers?.lead_time_days);
-      const leadTime = Number.isFinite(leadTimeRaw) && leadTimeRaw > 0 ? leadTimeRaw : 14;
+      const leadTimeValid =
+        Number.isFinite(leadTimeRaw) &&
+        inRange(leadTimeRaw, REORDER_LIMITS.lead_time_days.min, REORDER_LIMITS.lead_time_days.max);
+      const leadTime = leadTimeValid ? leadTimeRaw : 14;
+      if (it.suppliers && Number.isFinite(leadTimeRaw) && !leadTimeValid) {
+        warnings.push(
+          `Lead time do fornecedor (${leadTimeRaw}d) fora da faixa ${REORDER_LIMITS.lead_time_days.min}–${REORDER_LIMITS.lead_time_days.max}d; usando 14d.`,
+        );
+      }
       const safetyDaysRaw = Number(it.safety_days);
       const safetyDays =
-        Number.isFinite(safetyDaysRaw) && safetyDaysRaw >= 0
+        Number.isFinite(safetyDaysRaw) &&
+        inRange(safetyDaysRaw, REORDER_LIMITS.safety_days.min, REORDER_LIMITS.safety_days.max)
           ? safetyDaysRaw
           : REORDER_DEFAULTS.safety_days;
+      if (
+        Number.isFinite(safetyDaysRaw) &&
+        !inRange(safetyDaysRaw, REORDER_LIMITS.safety_days.min, REORDER_LIMITS.safety_days.max)
+      ) {
+        warnings.push(
+          `Dias de segurança (${safetyDaysRaw}) fora de 0–${REORDER_LIMITS.safety_days.max}; usando ${REORDER_DEFAULTS.safety_days}.`,
+        );
+      }
+      if (
+        dailyAvg >
+        REORDER_LIMITS.daily_avg_sales.max
+      ) {
+        warnings.push(
+          `Consumo médio (${dailyAvg.toFixed(0)}/dia) acima de ${REORDER_LIMITS.daily_avg_sales.max}; revise movimentos de saída.`,
+        );
+      }
 
       const safetyStockStat = Z * sigma * Math.sqrt(leadTime);
       const safetyStockDet = dailyAvg * safetyDays;
