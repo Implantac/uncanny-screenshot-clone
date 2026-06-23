@@ -87,15 +87,46 @@ export const updateReorderParams = createServerFn({ method: "POST" })
       holdingCostAnnual?: number | null;
       safetyDays?: number | null;
     }) =>
-      z
-        .object({
-          itemId: z.string().uuid(),
-          serviceFactorZ: z.number().min(0).max(5).nullable().optional(),
-          costPerOrder: z.number().min(0).nullable().optional(),
-          holdingCostAnnual: z.number().min(0).nullable().optional(),
-          safetyDays: z.number().int().min(0).max(365).nullable().optional(),
-        })
-        .parse(i),
+        z
+          .object({
+            itemId: z.string().uuid(),
+            serviceFactorZ: z
+              .number()
+              .min(REORDER_LIMITS.service_factor_z.min, {
+                message: `Z deve ser ≥ ${REORDER_LIMITS.service_factor_z.min}`,
+              })
+              .max(REORDER_LIMITS.service_factor_z.max, {
+                message: `Z deve ser ≤ ${REORDER_LIMITS.service_factor_z.max} (acima disso superestima estoque)`,
+              })
+              .nullable()
+              .optional(),
+            costPerOrder: z
+              .number()
+              .min(REORDER_LIMITS.cost_per_order.min)
+              .max(REORDER_LIMITS.cost_per_order.max, {
+                message: `Custo do pedido deve ser ≤ R$ ${REORDER_LIMITS.cost_per_order.max.toLocaleString("pt-BR")}`,
+              })
+              .nullable()
+              .optional(),
+            holdingCostAnnual: z
+              .number()
+              .min(REORDER_LIMITS.holding_cost_annual.min)
+              .max(REORDER_LIMITS.holding_cost_annual.max, {
+                message: `Custo anual de armazenagem deve ser ≤ R$ ${REORDER_LIMITS.holding_cost_annual.max.toLocaleString("pt-BR")}/un`,
+              })
+              .nullable()
+              .optional(),
+            safetyDays: z
+              .number()
+              .int()
+              .min(REORDER_LIMITS.safety_days.min)
+              .max(REORDER_LIMITS.safety_days.max, {
+                message: `Dias de segurança deve ser ≤ ${REORDER_LIMITS.safety_days.max}`,
+              })
+              .nullable()
+              .optional(),
+          })
+          .parse(i),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
