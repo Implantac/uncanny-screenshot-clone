@@ -301,6 +301,62 @@ export type Database = {
           },
         ]
       }
+      collection_milestones: {
+        Row: {
+          actual_date: string | null
+          collection_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          planned_date: string | null
+          position: number
+          responsible_user_id: string | null
+          sla_days: number | null
+          stage: Database["public"]["Enums"]["collection_milestone_stage"]
+          status: Database["public"]["Enums"]["collection_milestone_status"]
+          updated_at: string
+        }
+        Insert: {
+          actual_date?: string | null
+          collection_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          planned_date?: string | null
+          position?: number
+          responsible_user_id?: string | null
+          sla_days?: number | null
+          stage: Database["public"]["Enums"]["collection_milestone_stage"]
+          status?: Database["public"]["Enums"]["collection_milestone_status"]
+          updated_at?: string
+        }
+        Update: {
+          actual_date?: string | null
+          collection_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          planned_date?: string | null
+          position?: number
+          responsible_user_id?: string | null
+          sla_days?: number | null
+          stage?: Database["public"]["Enums"]["collection_milestone_stage"]
+          status?: Database["public"]["Enums"]["collection_milestone_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_milestones_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collection_moodboard: {
         Row: {
           caption: string | null
@@ -1352,6 +1408,7 @@ export type Database = {
           internal_color: string | null
           last_entry_at: string | null
           last_exit_at: string | null
+          lead_time_days: number | null
           maximum: number
           minimum: number
           mrp_overrides: Json
@@ -1383,6 +1440,7 @@ export type Database = {
           internal_color?: string | null
           last_entry_at?: string | null
           last_exit_at?: string | null
+          lead_time_days?: number | null
           maximum?: number
           minimum?: number
           mrp_overrides?: Json
@@ -1414,6 +1472,7 @@ export type Database = {
           internal_color?: string | null
           last_entry_at?: string | null
           last_exit_at?: string | null
+          lead_time_days?: number | null
           maximum?: number
           minimum?: number
           mrp_overrides?: Json
@@ -3261,6 +3320,7 @@ export type Database = {
           notes: string | null
           owner_id: string
           status: Database["public"]["Enums"]["purchase_order_status"]
+          suggested_order_date: string | null
           supplier_id: string | null
           total_value: number
           updated_at: string
@@ -3273,6 +3333,7 @@ export type Database = {
           notes?: string | null
           owner_id: string
           status?: Database["public"]["Enums"]["purchase_order_status"]
+          suggested_order_date?: string | null
           supplier_id?: string | null
           total_value?: number
           updated_at?: string
@@ -3285,6 +3346,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           status?: Database["public"]["Enums"]["purchase_order_status"]
+          suggested_order_date?: string | null
           supplier_id?: string | null
           total_value?: number
           updated_at?: string
@@ -3968,6 +4030,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           due_at: string | null
+          expected_return_date: string | null
           from_stage: string | null
           id: string
           kind: Database["public"]["Enums"]["service_order_kind"]
@@ -3976,6 +4039,8 @@ export type Database = {
           owner_id: string
           package_id: string | null
           production_order_id: string
+          qty_defect: number
+          qty_lost: number
           qty_received: number
           quantity: number
           received_at: string | null
@@ -3991,6 +4056,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           due_at?: string | null
+          expected_return_date?: string | null
           from_stage?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["service_order_kind"]
@@ -3999,6 +4065,8 @@ export type Database = {
           owner_id: string
           package_id?: string | null
           production_order_id: string
+          qty_defect?: number
+          qty_lost?: number
           qty_received?: number
           quantity?: number
           received_at?: string | null
@@ -4014,6 +4082,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           due_at?: string | null
+          expected_return_date?: string | null
           from_stage?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["service_order_kind"]
@@ -4022,6 +4091,8 @@ export type Database = {
           owner_id?: string
           package_id?: string | null
           production_order_id?: string
+          qty_defect?: number
+          qty_lost?: number
           qty_received?: number
           quantity?: number
           received_at?: string | null
@@ -4652,6 +4723,7 @@ export type Database = {
       tech_sheet_materials: {
         Row: {
           consumption: number
+          consumption_by_size: Json | null
           created_at: string
           id: string
           inventory_item_id: string | null
@@ -4668,6 +4740,7 @@ export type Database = {
         }
         Insert: {
           consumption?: number
+          consumption_by_size?: Json | null
           created_at?: string
           id?: string
           inventory_item_id?: string | null
@@ -4684,6 +4757,7 @@ export type Database = {
         }
         Update: {
           consumption?: number
+          consumption_by_size?: Json | null
           created_at?: string
           id?: string
           inventory_item_id?: string | null
@@ -5077,6 +5151,19 @@ export type Database = {
         | "faturado"
         | "cancelado"
       campaign_status: "programada" | "ativa" | "pausada" | "concluida"
+      collection_milestone_stage:
+        | "briefing"
+        | "moodboard"
+        | "tech_pack"
+        | "piloto"
+        | "aprovacao"
+        | "producao"
+        | "lancamento"
+      collection_milestone_status:
+        | "pendente"
+        | "em_andamento"
+        | "concluido"
+        | "atrasado"
       collection_product_role:
         | "hero"
         | "carry_over"
@@ -5307,6 +5394,21 @@ export const Constants = {
         "cancelado",
       ],
       campaign_status: ["programada", "ativa", "pausada", "concluida"],
+      collection_milestone_stage: [
+        "briefing",
+        "moodboard",
+        "tech_pack",
+        "piloto",
+        "aprovacao",
+        "producao",
+        "lancamento",
+      ],
+      collection_milestone_status: [
+        "pendente",
+        "em_andamento",
+        "concluido",
+        "atrasado",
+      ],
       collection_product_role: [
         "hero",
         "carry_over",

@@ -23,6 +23,7 @@ type Material = {
   name: string;
   unit: string;
   consumption: number;
+  consumption_by_size: Record<string, number> | null;
   loss_pct: number;
   unit_cost: number;
   total_cost: number;
@@ -182,11 +183,23 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                     />
                   </TableCell>
                   <TableCell className="text-right">
-                    <EditableNum
-                      value={m.consumption}
-                      disabled={!canEdit}
-                      onSave={(v) => upd.mutate({ id: m.id, patch: { consumption: v } })}
-                    />
+                    <div className="flex items-center justify-end gap-1">
+                      <EditableNum
+                        value={m.consumption}
+                        disabled={!canEdit}
+                        onSave={(v) => upd.mutate({ id: m.id, patch: { consumption: v } })}
+                      />
+                      <SizeConsumptionPopover
+                        value={m.consumption_by_size}
+                        disabled={!canEdit}
+                        onSave={(v: Record<string, number> | null) =>
+                          upd.mutate({
+                            id: m.id,
+                            patch: { consumption_by_size: v } as Partial<Material>,
+                          })
+                        }
+                      />
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <EditableNum
@@ -895,3 +908,81 @@ function InventoryLinkCell({
     </div>
   );
 }
+
+function SizeConsumptionPopover({
+  value,
+  disabled,
+  onSave,
+}: {
+  value: Record<string, number> | null;
+  disabled: boolean;
+  onSave: (v: Record<string, number> | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const initial = useMemo(() => {
+    if (!value || Object.keys(value).length === 0) return "";
+    return Object.entries(value)
+      .map(([k, v]) => `${k}:${v}`)
+      .join(", ");
+  }, [value]);
+  const [text, setText] = useState(initial);
+  const active = !!value && Object.keys(value).length > 0;
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          size="icon"
+          variant={active ? "default" : "ghost"}
+          className="size-6 shrink-0 text-[10px]"
+          disabled={disabled}
+          title="Consumo por tamanho"
+          onClick={() => setText(initial)}
+        >
+          <Ruler className="size-3" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 space-y-2">
+        <div className="text-xs font-semibold">Consumo por tamanho</div>
+        <p className="text-[11px] text-muted-foreground">
+          Formato: <code>P:1.2, M:1.35, G:1.5, GG:1.7</code>. Sobrepõe o consumo médio para cada
+          tamanho na grade. Deixe em branco para usar a média.
+        </p>
+        <Input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="P:1.2, M:1.35, G:1.5"
+          className="h-8 text-xs font-mono"
+        />
+        <div className="flex justify-end gap-1">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              onSave(null);
+              setOpen(false);
+            }}
+          >
+            Limpar
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              const parsed: Record<string, number> = {};
+              for (const pair of text.split(/[,;\n]/)) {
+                const [k, v] = pair.split(":").map((s) => s.trim());
+                if (!k || !v) continue;
+                const n = Number(v.replace(",", "."));
+                if (Number.isFinite(n) && n > 0) parsed[k] = n;
+              }
+              onSave(Object.keys(parsed).length > 0 ? parsed : null);
+              setOpen(false);
+            }}
+          >
+            Salvar
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+

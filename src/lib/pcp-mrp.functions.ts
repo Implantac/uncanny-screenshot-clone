@@ -58,7 +58,7 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
     // 3) Materiais das fichas (apenas com inventory_item_id — só planejamos o que está cadastrado)
     const { data: mats, error: mErr } = await supabase
       .from("tech_sheet_materials")
-      .select("tech_sheet_id, inventory_item_id, consumption, loss_pct, unit, name")
+      .select("tech_sheet_id, inventory_item_id, consumption, consumption_by_size, loss_pct, unit, name")
       .eq("owner_id", userId)
       .in("tech_sheet_id", sheetIds)
       .not("inventory_item_id", "is", null);
@@ -70,13 +70,34 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
       matsBySheet.set(m.tech_sheet_id, arr);
     }
 
-    // 4) Explode: para cada OP, multiplica consumo × (1+perda) × quantidade
+    // 3.5) Grade Tam×Cor por OP — só carregada se alguma ficha tiver consumption_by_size
+    const anyBySize = (mats ?? []).some(
+      (m) => m.consumption_by_size && Object.keys(m.consumption_by_size as object).length > 0,
+    );
+    const qtyBySizeByOp = new Map<string, Map<string, number>>();
+    if (anyBySize) {
+      const opIds = opsList.map((o) => o.id);
+      const { data: gridRows } = await supabase
+        .from("production_order_grid")
+        .select("production_order_id, quantity, product_variants(product_size_options(label))")
+        .in("production_order_id", opIds);
+      for (const r of gridRows ?? []) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const label = (r as any).product_variants?.product_size_options?.label as string | undefined;
+        if (!label || !r.production_order_id) continue;
+        const m = qtyBySizeByOp.get(r.production_order_id) ?? new Map<string, number>();
+        m.set(label, (m.get(label) ?? 0) + Number(r.quantity ?? 0));
+        qtyBySizeByOp.set(r.production_order_id, m);
+      }
+    }
+
+    // 4) Explode: consumo (por tamanho quando disponível) × (1+perda)
     type Need = {
       inventoryItemId: string;
       required: number;
       unit: string;
       name: string;
-      contributingOps: { code: string; qty: number }[];
+      contributingOps: { code: string; qty: number; due?: string | null }[];
     };
     const needs = new Map<string, Need>();
     for (const op of opsList) {
@@ -84,10 +105,19 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
       const sheetId = sheetByProduct.get(op.product_id);
       if (!sheetId) continue;
       const matsList = matsBySheet.get(sheetId) ?? [];
+      const sizeMap = qtyBySizeByOp.get(op.id);
       for (const m of matsList) {
         if (!m.inventory_item_id) continue;
-        const perPiece = Number(m.consumption ?? 0) * (1 + Number(m.loss_pct ?? 0) / 100);
-        const reqQty = perPiece * Number(op.quantity);
+        const bySize = m.consumption_by_size as Record<string, number> | null;
+        let base = 0;
+        if (bySize && sizeMap && sizeMap.size > 0) {
+          for (const [label, qty] of sizeMap) {
+            base += Number(bySize[label] ?? m.consumption ?? 0) * qty;
+          }
+        } else {
+          base = Number(m.consumption ?? 0) * Number(op.quantity);
+        }
+        const reqQty = base * (1 + Number(m.loss_pct ?? 0) / 100);
         if (reqQty <= 0) continue;
         const cur = needs.get(m.inventory_item_id) ?? {
           inventoryItemId: m.inventory_item_id,
@@ -97,21 +127,36 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
           contributingOps: [],
         };
         cur.required += reqQty;
-        cur.contributingOps.push({ code: op.code, qty: reqQty });
+        cur.contributingOps.push({ code: op.code, qty: reqQty, due: op.due_date });
         needs.set(m.inventory_item_id, cur);
       }
     }
     if (needs.size === 0) return { items: [], totalSkus: 0, totalOps: opsList.length };
 
-    // 5) Estoque atual
+    // 5) Estoque atual + lead time
     const itemIds = Array.from(needs.keys());
     const { data: inv, error: iErr } = await supabase
       .from("inventory_items")
-      .select("id, sku, name, balance, unit, minimum")
+      .select("id, sku, name, balance, unit, minimum, lead_time_days, safety_days, preferred_supplier_id")
       .eq("owner_id", userId)
       .in("id", itemIds);
     if (iErr) throw new Error(iErr.message);
     const invById = new Map((inv ?? []).map((i) => [i.id, i]));
+
+    // 5.1) Lead time do fornecedor preferido (fallback)
+    const supplierIds = Array.from(
+      new Set((inv ?? []).map((i) => i.preferred_supplier_id).filter((v): v is string => !!v)),
+    );
+    const supplierLead = new Map<string, number>();
+    if (supplierIds.length > 0) {
+      const { data: sups } = await supabase
+        .from("suppliers")
+        .select("id, lead_time_days")
+        .in("id", supplierIds);
+      for (const s of sups ?? []) {
+        if (s.lead_time_days) supplierLead.set(s.id, Number(s.lead_time_days));
+      }
+    }
 
     // 6) Em pedido (purchase_order_items de POs ainda não recebidos)
     const { data: poItems, error: poErr } = await supabase
@@ -133,13 +178,44 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
       );
     }
 
-    // 7) Consolida deficit
+    // 7) Consolida deficit + data-alvo de compra
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const items = Array.from(needs.values())
       .map((n) => {
         const inv = invById.get(n.inventoryItemId);
         const balance = Number(inv?.balance ?? 0);
         const ordered = onOrder.get(n.inventoryItemId) ?? 0;
         const deficit = Math.max(0, n.required - balance - ordered);
+
+        // Lead time efetivo: item → fornecedor preferido → fallback 15
+        const leadTime =
+          Number(inv?.lead_time_days ?? 0) ||
+          (inv?.preferred_supplier_id ? supplierLead.get(inv.preferred_supplier_id) ?? 0 : 0) ||
+          15;
+        const safety = Number(inv?.safety_days ?? 7);
+
+        // Menor due_date entre as OPs contribuintes
+        const earliestDue = n.contributingOps
+          .map((o) => o.due)
+          .filter((d): d is string => Boolean(d))
+          .sort()[0];
+
+        let latestOrderDate: string | null = null;
+        let urgencia: "vencido" | "critico" | "atencao" | "ok" = "ok";
+        if (deficit > 0 && earliestDue) {
+          const due = new Date(earliestDue);
+          const target = new Date(due.getTime() - (leadTime + safety) * 86400000);
+          latestOrderDate = target.toISOString().slice(0, 10);
+          const diff = Math.round((target.getTime() - today.getTime()) / 86400000);
+          if (diff < 0) urgencia = "vencido";
+          else if (diff <= 3) urgencia = "critico";
+          else if (diff <= 7) urgencia = "atencao";
+          else urgencia = "ok";
+        } else if (deficit > 0) {
+          urgencia = "atencao";
+        }
+
         return {
           inventoryItemId: n.inventoryItemId,
           sku: inv?.sku ?? "—",
@@ -149,6 +225,10 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
           balance,
           onOrder: ordered,
           deficit: Number(deficit.toFixed(3)),
+          leadTimeDays: leadTime,
+          safetyDays: safety,
+          latestOrderDate,
+          urgencia,
           coveragePct: n.required > 0
             ? Math.min(100, Math.round(((balance + ordered) / n.required) * 100))
             : 100,
@@ -158,7 +238,11 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
             .map((o) => ({ code: o.code, qty: Number(o.qty.toFixed(2)) })),
         };
       })
-      .sort((a, b) => b.deficit - a.deficit);
+      .sort((a, b) => {
+        const rank = { vencido: 0, critico: 1, atencao: 2, ok: 3 } as const;
+        if (rank[a.urgencia] !== rank[b.urgencia]) return rank[a.urgencia] - rank[b.urgencia];
+        return b.deficit - a.deficit;
+      });
 
     return {
       items,

@@ -25,6 +25,7 @@ import {
   Activity,
   Percent,
   Calendar,
+  CalendarClock,
   Award,
   LineChart,
   PackageSearch,
@@ -106,6 +107,8 @@ export const PRIMARY_SLUGS = new Set<string>([
   "capacity",
   "pcp-stages",
   "terceirizados",
+  "faccoes",
+  "time-and-action",
   "war-room-producao",
   "acompanhamento-producao",
   "onde-esta",
@@ -537,6 +540,26 @@ export const MODULES: ModuleDef[] = [
       "Sugestão de compras por fornecedor em matriz cor × tamanho, com Z dinâmico por classe ABC e sazonalidade mensal.",
     icon: Sparkles,
     group: "Cadeia (PLM)",
+  },
+  {
+    slug: "faccoes",
+    path: "/faccoes",
+    title: "Facção 360°",
+    short: "Perda, defeito, lead time",
+    description:
+      "Painel consolidado das oficinas externas — OS abertas, atrasadas, índice de perda/defeito e lead time real (90 dias).",
+    icon: Factory,
+    group: "Cadeia (PLM)",
+  },
+  {
+    slug: "time-and-action",
+    path: "/time-and-action",
+    title: "Time & Action",
+    short: "Cronograma de coleção",
+    description:
+      "Cronograma de desenvolvimento da coleção do briefing ao lançamento, com SLA por etapa e desvio real × planejado.",
+    icon: CalendarClock,
+    group: "Desenvolvimento",
   },
 
   // === Marketing (de produto) ===

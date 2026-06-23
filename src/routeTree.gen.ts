@@ -24,6 +24,7 @@ import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAppTwinFactoryRouteImport } from './routes/_authenticated/_app.twin-factory'
 import { Route as AuthenticatedAppTrendsRouteImport } from './routes/_authenticated/_app.trends'
 import { Route as AuthenticatedAppTimelineRouteImport } from './routes/_authenticated/_app.timeline'
+import { Route as AuthenticatedAppTimeAndActionRouteImport } from './routes/_authenticated/_app.time-and-action'
 import { Route as AuthenticatedAppTerceirizadosRouteImport } from './routes/_authenticated/_app.terceirizados'
 import { Route as AuthenticatedAppTargetCostingRouteImport } from './routes/_authenticated/_app.target-costing'
 import { Route as AuthenticatedAppSustentabilidade360RouteImport } from './routes/_authenticated/_app.sustentabilidade-360'
@@ -74,6 +75,7 @@ import { Route as AuthenticatedAppFinanceiroRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppFichaTecnicaRouteImport } from './routes/_authenticated/_app.ficha-tecnica'
 import { Route as AuthenticatedAppFashionGptRouteImport } from './routes/_authenticated/_app.fashion-gpt'
 import { Route as AuthenticatedAppFashionCalendarRouteImport } from './routes/_authenticated/_app.fashion-calendar'
+import { Route as AuthenticatedAppFaccoesRouteImport } from './routes/_authenticated/_app.faccoes'
 import { Route as AuthenticatedAppExecutivoRouteImport } from './routes/_authenticated/_app.executivo'
 import { Route as AuthenticatedAppErpUsesoftRouteImport } from './routes/_authenticated/_app.erp-usesoft'
 import { Route as AuthenticatedAppErpIntegrationRouteImport } from './routes/_authenticated/_app.erp-integration'
@@ -198,6 +200,12 @@ const AuthenticatedAppTimelineRoute =
   AuthenticatedAppTimelineRouteImport.update({
     id: '/timeline',
     path: '/timeline',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppTimeAndActionRoute =
+  AuthenticatedAppTimeAndActionRouteImport.update({
+    id: '/time-and-action',
+    path: '/time-and-action',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppTerceirizadosRoute =
@@ -492,6 +500,11 @@ const AuthenticatedAppFashionCalendarRoute =
     path: '/fashion-calendar',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppFaccoesRoute = AuthenticatedAppFaccoesRouteImport.update({
+  id: '/faccoes',
+  path: '/faccoes',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppExecutivoRoute =
   AuthenticatedAppExecutivoRouteImport.update({
     id: '/executivo',
@@ -809,6 +822,7 @@ export interface FileRoutesByFullPath {
   '/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
   '/erp-usesoft': typeof AuthenticatedAppErpUsesoftRoute
   '/executivo': typeof AuthenticatedAppExecutivoRoute
+  '/faccoes': typeof AuthenticatedAppFaccoesRoute
   '/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
   '/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
@@ -859,6 +873,7 @@ export interface FileRoutesByFullPath {
   '/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/target-costing': typeof AuthenticatedAppTargetCostingRoute
   '/terceirizados': typeof AuthenticatedAppTerceirizadosRoute
+  '/time-and-action': typeof AuthenticatedAppTimeAndActionRoute
   '/timeline': typeof AuthenticatedAppTimelineRoute
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
@@ -922,6 +937,7 @@ export interface FileRoutesByTo {
   '/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
   '/erp-usesoft': typeof AuthenticatedAppErpUsesoftRoute
   '/executivo': typeof AuthenticatedAppExecutivoRoute
+  '/faccoes': typeof AuthenticatedAppFaccoesRoute
   '/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
   '/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
@@ -972,6 +988,7 @@ export interface FileRoutesByTo {
   '/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/target-costing': typeof AuthenticatedAppTargetCostingRoute
   '/terceirizados': typeof AuthenticatedAppTerceirizadosRoute
+  '/time-and-action': typeof AuthenticatedAppTimeAndActionRoute
   '/timeline': typeof AuthenticatedAppTimelineRoute
   '/trends': typeof AuthenticatedAppTrendsRoute
   '/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
@@ -1037,6 +1054,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
   '/_authenticated/_app/erp-usesoft': typeof AuthenticatedAppErpUsesoftRoute
   '/_authenticated/_app/executivo': typeof AuthenticatedAppExecutivoRoute
+  '/_authenticated/_app/faccoes': typeof AuthenticatedAppFaccoesRoute
   '/_authenticated/_app/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
   '/_authenticated/_app/fashion-gpt': typeof AuthenticatedAppFashionGptRoute
   '/_authenticated/_app/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
@@ -1087,6 +1105,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/sustentabilidade-360': typeof AuthenticatedAppSustentabilidade360Route
   '/_authenticated/_app/target-costing': typeof AuthenticatedAppTargetCostingRoute
   '/_authenticated/_app/terceirizados': typeof AuthenticatedAppTerceirizadosRoute
+  '/_authenticated/_app/time-and-action': typeof AuthenticatedAppTimeAndActionRoute
   '/_authenticated/_app/timeline': typeof AuthenticatedAppTimelineRoute
   '/_authenticated/_app/trends': typeof AuthenticatedAppTrendsRoute
   '/_authenticated/_app/twin-factory': typeof AuthenticatedAppTwinFactoryRoute
@@ -1153,6 +1172,7 @@ export interface FileRouteTypes {
     | '/erp-integration'
     | '/erp-usesoft'
     | '/executivo'
+    | '/faccoes'
     | '/fashion-calendar'
     | '/fashion-gpt'
     | '/ficha-tecnica'
@@ -1203,6 +1223,7 @@ export interface FileRouteTypes {
     | '/sustentabilidade-360'
     | '/target-costing'
     | '/terceirizados'
+    | '/time-and-action'
     | '/timeline'
     | '/trends'
     | '/twin-factory'
@@ -1266,6 +1287,7 @@ export interface FileRouteTypes {
     | '/erp-integration'
     | '/erp-usesoft'
     | '/executivo'
+    | '/faccoes'
     | '/fashion-calendar'
     | '/fashion-gpt'
     | '/ficha-tecnica'
@@ -1316,6 +1338,7 @@ export interface FileRouteTypes {
     | '/sustentabilidade-360'
     | '/target-costing'
     | '/terceirizados'
+    | '/time-and-action'
     | '/timeline'
     | '/trends'
     | '/twin-factory'
@@ -1380,6 +1403,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/erp-integration'
     | '/_authenticated/_app/erp-usesoft'
     | '/_authenticated/_app/executivo'
+    | '/_authenticated/_app/faccoes'
     | '/_authenticated/_app/fashion-calendar'
     | '/_authenticated/_app/fashion-gpt'
     | '/_authenticated/_app/ficha-tecnica'
@@ -1430,6 +1454,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/sustentabilidade-360'
     | '/_authenticated/_app/target-costing'
     | '/_authenticated/_app/terceirizados'
+    | '/_authenticated/_app/time-and-action'
     | '/_authenticated/_app/timeline'
     | '/_authenticated/_app/trends'
     | '/_authenticated/_app/twin-factory'
@@ -1578,6 +1603,13 @@ declare module '@tanstack/react-router' {
       path: '/timeline'
       fullPath: '/timeline'
       preLoaderRoute: typeof AuthenticatedAppTimelineRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/time-and-action': {
+      id: '/_authenticated/_app/time-and-action'
+      path: '/time-and-action'
+      fullPath: '/time-and-action'
+      preLoaderRoute: typeof AuthenticatedAppTimeAndActionRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/terceirizados': {
@@ -1928,6 +1960,13 @@ declare module '@tanstack/react-router' {
       path: '/fashion-calendar'
       fullPath: '/fashion-calendar'
       preLoaderRoute: typeof AuthenticatedAppFashionCalendarRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/faccoes': {
+      id: '/_authenticated/_app/faccoes'
+      path: '/faccoes'
+      fullPath: '/faccoes'
+      preLoaderRoute: typeof AuthenticatedAppFaccoesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/executivo': {
@@ -2317,6 +2356,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppErpIntegrationRoute: typeof AuthenticatedAppErpIntegrationRoute
   AuthenticatedAppErpUsesoftRoute: typeof AuthenticatedAppErpUsesoftRoute
   AuthenticatedAppExecutivoRoute: typeof AuthenticatedAppExecutivoRoute
+  AuthenticatedAppFaccoesRoute: typeof AuthenticatedAppFaccoesRoute
   AuthenticatedAppFashionCalendarRoute: typeof AuthenticatedAppFashionCalendarRoute
   AuthenticatedAppFashionGptRoute: typeof AuthenticatedAppFashionGptRoute
   AuthenticatedAppFichaTecnicaRoute: typeof AuthenticatedAppFichaTecnicaRoute
@@ -2367,6 +2407,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppSustentabilidade360Route: typeof AuthenticatedAppSustentabilidade360Route
   AuthenticatedAppTargetCostingRoute: typeof AuthenticatedAppTargetCostingRoute
   AuthenticatedAppTerceirizadosRoute: typeof AuthenticatedAppTerceirizadosRoute
+  AuthenticatedAppTimeAndActionRoute: typeof AuthenticatedAppTimeAndActionRoute
   AuthenticatedAppTimelineRoute: typeof AuthenticatedAppTimelineRoute
   AuthenticatedAppTrendsRoute: typeof AuthenticatedAppTrendsRoute
   AuthenticatedAppTwinFactoryRoute: typeof AuthenticatedAppTwinFactoryRoute
@@ -2419,6 +2460,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppErpIntegrationRoute: AuthenticatedAppErpIntegrationRoute,
   AuthenticatedAppErpUsesoftRoute: AuthenticatedAppErpUsesoftRoute,
   AuthenticatedAppExecutivoRoute: AuthenticatedAppExecutivoRoute,
+  AuthenticatedAppFaccoesRoute: AuthenticatedAppFaccoesRoute,
   AuthenticatedAppFashionCalendarRoute: AuthenticatedAppFashionCalendarRoute,
   AuthenticatedAppFashionGptRoute: AuthenticatedAppFashionGptRoute,
   AuthenticatedAppFichaTecnicaRoute: AuthenticatedAppFichaTecnicaRoute,
@@ -2470,6 +2512,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
     AuthenticatedAppSustentabilidade360Route,
   AuthenticatedAppTargetCostingRoute: AuthenticatedAppTargetCostingRoute,
   AuthenticatedAppTerceirizadosRoute: AuthenticatedAppTerceirizadosRoute,
+  AuthenticatedAppTimeAndActionRoute: AuthenticatedAppTimeAndActionRoute,
   AuthenticatedAppTimelineRoute: AuthenticatedAppTimelineRoute,
   AuthenticatedAppTrendsRoute: AuthenticatedAppTrendsRoute,
   AuthenticatedAppTwinFactoryRoute: AuthenticatedAppTwinFactoryRoute,
