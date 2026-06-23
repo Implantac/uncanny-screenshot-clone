@@ -483,6 +483,12 @@ export function NotificationsBell() {
               </div>
             ))}
         </div>
+        <Link
+          to="/alertas"
+          className="block px-4 py-2 border-t border-border text-xs text-center text-primary hover:bg-muted"
+        >
+          Ver Central de Alertas completa →
+        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   );
