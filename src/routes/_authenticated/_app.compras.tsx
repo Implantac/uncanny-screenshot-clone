@@ -105,6 +105,8 @@ function Compras() {
         />
       </div>
 
+      <InventorySmartPanel />
+
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-3 border-b border-border font-medium">Necessidade de compra</div>
         <table className="w-full text-sm">
