@@ -25,6 +25,7 @@ import {
   Activity,
   Percent,
   Calendar,
+  CalendarClock,
   Award,
   LineChart,
   PackageSearch,
