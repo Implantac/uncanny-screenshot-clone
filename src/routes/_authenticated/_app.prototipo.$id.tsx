@@ -88,11 +88,12 @@ function PrototipoPage() {
       const { data, error } = await supabase
         .from("prototypes")
         .select(
-          "id, code, stage, notes, due_date, created_at, current_sector, needs_adjustment, product_id, supplier_id, products(name, sku, image_url), suppliers(name)",
+          "id, code, stage, notes, due_date, created_at, current_sector, needs_adjustment, product_id, supplier_id, products(name, sku, image_url, collection_id), suppliers(name)",
         )
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return data as any;
     },
   });
