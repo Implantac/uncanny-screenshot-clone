@@ -39,13 +39,15 @@ type Stage = {
 };
 
 const DEFAULT_SEEDS = [
-  { key: "cad", label: "CAD / Modelagem", color: "#a78bfa" },
-  { key: "corte", label: "Corte", color: "#f59e0b" },
-  { key: "costura", label: "Costura", color: "#22d3ee" },
-  { key: "acabamento", label: "Acabamento", color: "#34d399" },
-  { key: "qualidade", label: "Qualidade", color: "#60a5fa" },
-  { key: "expedicao", label: "Expedição", color: "#60a5fa" },
-  { key: "entregue", label: "Entregue", color: "#22c55e" },
+  { key: "compras", label: "Compras", color: "#6366f1" },
+  { key: "corte", label: "Corte", color: "#3b82f6" },
+  { key: "bordado", label: "Bordado", color: "#8b5cf6" },
+  { key: "bordado_terc", label: "Bordado Terceirizado", color: "#a78bfa" },
+  { key: "silk", label: "Silk", color: "#ec4899" },
+  { key: "silk_terc", label: "Silk Terceirizado", color: "#f472b6" },
+  { key: "costura", label: "Costura", color: "#10b981" },
+  { key: "costura_terc", label: "Costura Terceirizado", color: "#34d399" },
+  { key: "acabamento", label: "Acabamento", color: "#f59e0b" },
 ];
 
 function PcpStagesPage() {

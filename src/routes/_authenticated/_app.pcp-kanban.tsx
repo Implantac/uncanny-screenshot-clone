@@ -38,7 +38,17 @@ import { getRoutingsForProducts } from "@/lib/product-routing.functions";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
-type Stage = "cad" | "corte" | "costura" | "acabamento" | "qualidade" | "expedicao" | "entregue";
+type Stage =
+  | "compras"
+  | "corte"
+  | "bordado"
+  | "bordado_terc"
+  | "silk"
+  | "silk_terc"
+  | "costura"
+  | "costura_terc"
+  | "acabamento"
+  | "entregue";
 type Order = {
   id: string;
   owner_id: string;
@@ -56,12 +66,15 @@ type Order = {
 };
 
 const STAGES: { key: Stage; label: string; hint: string }[] = [
-  { key: "cad", label: "CAD / Modelagem", hint: "Ficha técnica & encaixe" },
+  { key: "compras", label: "Compras", hint: "Insumos & matéria-prima" },
   { key: "corte", label: "Corte", hint: "Risco e enfesto" },
-  { key: "costura", label: "Costura", hint: "Confecção" },
-  { key: "acabamento", label: "Acabamento", hint: "Arremate & passadoria" },
-  { key: "qualidade", label: "Qualidade", hint: "Inspeção" },
-  { key: "expedicao", label: "Expedição", hint: "Embalagem & envio" },
+  { key: "bordado", label: "Bordado", hint: "Bordado interno" },
+  { key: "bordado_terc", label: "Bordado Terceirizado", hint: "Bordado externo" },
+  { key: "silk", label: "Silk", hint: "Estamparia interna" },
+  { key: "silk_terc", label: "Silk Terceirizado", hint: "Estamparia externa" },
+  { key: "costura", label: "Costura", hint: "Confecção interna" },
+  { key: "costura_terc", label: "Costura Terceirizado", hint: "Confecção externa" },
+  { key: "acabamento", label: "Acabamento", hint: "Arremate & expedição" },
   { key: "entregue", label: "Entregue", hint: "Concluído" },
 ];
 
@@ -257,7 +270,7 @@ function PcpKanban() {
 
   const summary = useMemo(() => {
     const wip = orders
-      .filter((o) => o.stage !== "entregue" && o.stage !== "cad")
+      .filter((o) => o.stage !== "entregue")
       .reduce((s, o) => s + o.quantity, 0);
     const late = orders.filter((o) => {
       const d = daysTo(o.due_date);
@@ -277,7 +290,7 @@ function PcpKanban() {
       oldest: number;
     } | null = null;
     for (const col of STAGES) {
-      if (col.key === "entregue" || col.key === "cad") continue;
+      if (col.key === "entregue") continue;
       const items = orders.filter((o) => o.stage === col.key);
       if (items.length < 2) continue;
       const days = items.map((o) => (now - new Date(o.stage_updated_at).getTime()) / 86400000);
@@ -295,9 +308,9 @@ function PcpKanban() {
   const move = (id: string, stage: Stage) => {
     const o = orders.find((x) => x.id === id);
     if (!o || o.stage === stage) return;
-    // Gate de qualidade — bloqueia passagem para Expedição/Entregue quando há CAPA aberta.
-    if ((stage === "expedicao" || stage === "entregue") && openCapaOrderIds.has(id)) {
-      toast.error(`${o.code} tem CAPA de qualidade aberta — resolva antes de expedir.`, {
+    // Gate de qualidade — bloqueia entrega quando há CAPA aberta.
+    if (stage === "entregue" && openCapaOrderIds.has(id)) {
+      toast.error(`${o.code} tem CAPA de qualidade aberta — resolva antes de entregar.`, {
         action: { label: "Ver CAPA", onClick: () => window.open(`/quality`, "_self") },
       });
       return;

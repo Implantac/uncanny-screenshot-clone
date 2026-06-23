@@ -5341,6 +5341,12 @@ export type Database = {
         | "qualidade"
         | "expedicao"
         | "entregue"
+        | "compras"
+        | "bordado"
+        | "bordado_terc"
+        | "silk"
+        | "silk_terc"
+        | "costura_terc"
       production_status:
         | "aguardando"
         | "em_producao"
@@ -5592,6 +5598,12 @@ export const Constants = {
         "qualidade",
         "expedicao",
         "entregue",
+        "compras",
+        "bordado",
+        "bordado_terc",
+        "silk",
+        "silk_terc",
+        "costura_terc",
       ],
       production_status: [
         "aguardando",
