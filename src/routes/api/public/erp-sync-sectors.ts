@@ -1,7 +1,12 @@
 /**
- * Sincronização global ERP → PLM dos setores das OPs ativas.
- * Protegido por CRON_SECRET (header x-cron-secret). Read-only no ERP;
- * atualiza apenas production_orders.stage no PLM.
+ * Sincronização global ERP → PLM (item por item).
+ *
+ * Para cada item (indpcpip) de pedido ativo no ERP Usesoft:
+ *  - se a OP não existe no PLM (marker [erp:pedido:<P>:item:<I>]), cria;
+ *  - se existe mas o stage diverge do setor atual no ERP, atualiza.
+ *
+ * Read-only no ERP. Escreve apenas em production_orders.
+ * Protegido por CRON_SECRET (header x-cron-secret).
  */
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -22,10 +27,13 @@ const STAGE_BY_SECTOR: Record<string, Stage> = {
   corte: "corte",
   bordado: "bordado",
   "bordado terceirizado": "bordado_terc",
+  "bordado terceirizada": "bordado_terc",
   silk: "silk",
   "silk terceirizado": "silk_terc",
+  "silk terceirizada": "silk_terc",
   costura: "costura",
   "costura terceirizado": "costura_terc",
+  "costura terceirizada": "costura_terc",
   acabamento: "acabamento",
   expedicao: "entregue",
   expedicão: "entregue",
@@ -35,10 +43,16 @@ const STAGE_BY_SECTOR: Record<string, Stage> = {
 const normalize = (s: string) =>
   s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 
-const extractErpPedidoId = (notes: string | null): number | null => {
-  if (!notes) return null;
-  const m = notes.match(/\[erp:pedido:(\d+)/i);
-  return m ? Number(m[1]) : null;
+type ErpItem = {
+  nnumeropcpip: number;
+  nnumeroitped: number;
+  nnumeropedid: number;
+  nnumeroprodu: number;
+  nquatdepcpip: string | number | null;
+  setor: string | null;
+  ncodigopedid: string | null;
+  cliente: string | null;
+  ddataentrega: string | null;
 };
 
 export const Route = createFileRoute("/api/public/erp-sync-sectors")({
@@ -52,154 +66,169 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
         }
 
         const url = new URL(request.url);
-        if (url.searchParams.get("probe") === "1") {
-          const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
-          const r = await usesoftQuery(
-            `SELECT ip.nnumeropedid, st.nsequenpcpst, st.cfinalipcpst,
-                    st.dentradpcpst, st.denviopcpst, s.cdescrisetin
-               FROM indpcpip ip
-               JOIN indpcpst st ON st.nnumeropcpip = ip.nnumeropcpip
-               JOIN indsetin s ON s.nnumerosetin = st.nnumerosetin
-              WHERE ip.nnumeropedid IN (59650, 59743)
-              ORDER BY ip.nnumeropedid, ip.nnumeropcpip, st.nsequenpcpst`,
-          );
-          return Response.json({ rows: r.rows });
-        }
-
+        const dryRun = url.searchParams.get("dry") === "1";
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
 
-
-        const { data: orders, error } = await supabaseAdmin
+        // Owner único do tenant (single-tenant atualmente).
+        const { data: ownerRow } = await supabaseAdmin
           .from("production_orders")
-          .select("id, owner_id, code, stage, notes, status")
-          .not("status", "in", "(concluida,cancelada)");
-        if (error) return Response.json({ error: error.message }, { status: 500 });
-
-        type Item = {
-          id: string;
-          owner_id: string;
-          code: string;
-          stage: Stage;
-          pedido_id: number;
-        };
-        const linked: Item[] = [];
-        let noLink = 0;
-        for (const o of orders ?? []) {
-          const pid = extractErpPedidoId(o.notes);
-          if (pid == null) {
-            noLink++;
-            continue;
-          }
-          linked.push({
-            id: o.id,
-            owner_id: o.owner_id,
-            code: o.code,
-            stage: o.stage as Stage,
-            pedido_id: pid,
-          });
+          .select("owner_id")
+          .limit(1)
+          .maybeSingle();
+        const ownerId = ownerRow?.owner_id;
+        if (!ownerId) {
+          return Response.json({ error: "Sem owner_id base — crie ao menos uma OP." }, { status: 400 });
         }
 
-        if (linked.length === 0) {
-          return Response.json({ checked: 0, updated: 0, no_link: noLink, divergences: [] });
-        }
-
-        const pedidoIds = Array.from(new Set(linked.map((l) => l.pedido_id)));
-
-        const erpRes = await usesoftQuery<{ nnumeropedid: number; cdescrisetin: string }>(
+        // 1) Todos os itens ativos do ERP (setor atual = última sequência não finalizada com entrada).
+        // OPs realmente abertas no PCP do ERP: status 'U' (em produção) e
+        // entrega não vencida há mais de 180 dias (descarta lixo histórico).
+        // Sobrescreva o status via ?status=U,A ou a janela via ?days=N.
+        const days = Math.max(1, Math.min(3650, Number(url.searchParams.get("days") ?? "180")));
+        const statusesParam = (url.searchParams.get("status") ?? "U")
+          .split(",")
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean);
+        const erpRes = await usesoftQuery<ErpItem>(
           `
-          WITH items AS (
-            SELECT DISTINCT ip.nnumeropcpip, ip.nnumeropedid
-              FROM indpcpip ip
-             WHERE ip.nnumeropedid = ANY($1::int[])
+          WITH recent_ped AS (
+            SELECT nnumeropedid, ncodigopedid, cliente, ddataentrega
+              FROM pedidos
+             WHERE cstatuspedid = ANY($2::text[])
+               AND ddataentrega >= CURRENT_DATE - ($1 || ' days')::interval
           ),
-          ranked AS (
-            SELECT i.nnumeropedid,
-                   st.nnumerosetin,
-                   ROW_NUMBER() OVER (
-                     PARTITION BY i.nnumeropedid
-                     ORDER BY st.nsequenpcpst DESC
-                   ) AS rn
-              FROM items i
-              JOIN indpcpst st ON st.nnumeropcpip = i.nnumeropcpip
+          active AS (
+            SELECT st.nnumeropcpip, st.nnumerosetin,
+                   ROW_NUMBER() OVER (PARTITION BY st.nnumeropcpip
+                                       ORDER BY st.nsequenpcpst DESC) AS rn
+              FROM indpcpst st
              WHERE st.cfinalipcpst = 'N'
                AND st.dentradpcpst IS NOT NULL
+          ),
+          cur AS (
+            SELECT a.nnumeropcpip, s.cdescrisetin AS setor
+              FROM active a
+              JOIN indsetin s ON s.nnumerosetin = a.nnumerosetin
+             WHERE a.rn = 1
           )
-          SELECT r.nnumeropedid, s.cdescrisetin
-            FROM ranked r
-            JOIN indsetin s ON s.nnumerosetin = r.nnumerosetin
-           WHERE r.rn = 1
+          SELECT ip.nnumeropcpip, ip.nnumeroitped, ip.nnumeropedid,
+                 ip.nnumeroprodu, ip.nquatdepcpip, c.setor,
+                 p.ncodigopedid, p.cliente, p.ddataentrega
+            FROM cur c
+            JOIN indpcpip ip ON ip.nnumeropcpip = c.nnumeropcpip
+            JOIN recent_ped p ON p.nnumeropedid = ip.nnumeropedid
+           ORDER BY ip.nnumeropedid, ip.nnumeropcpip
           `,
-          [pedidoIds],
+          [String(days), statusesParam],
         );
+        const erpItems = erpRes.rows;
 
-        const sectorByPedido = new Map<number, string>();
-        for (const r of erpRes.rows) sectorByPedido.set(Number(r.nnumeropedid), r.cdescrisetin);
+        // 2) OPs existentes no PLM com marker item.
+        const { data: existing, error: exErr } = await supabaseAdmin
+          .from("production_orders")
+          .select("id, code, stage, notes")
+          .eq("owner_id", ownerId);
+        if (exErr) return Response.json({ error: exErr.message }, { status: 500 });
 
-        if (url.searchParams.get("debug") === "1") {
-          return Response.json({
-            erpRows: erpRes.rows,
-            linked: linked.map((l) => ({
-              code: l.code,
-              stage: l.stage,
-              pedido_id: l.pedido_id,
-              erp_sector: sectorByPedido.get(l.pedido_id) ?? null,
-              normalized: sectorByPedido.get(l.pedido_id)
-                ? normalize(sectorByPedido.get(l.pedido_id)!)
-                : null,
-              mapped: sectorByPedido.get(l.pedido_id)
-                ? STAGE_BY_SECTOR[normalize(sectorByPedido.get(l.pedido_id)!)] ?? null
-                : null,
-            })),
-          });
+        const byMarker = new Map<string, { id: string; stage: Stage }>();
+        const byCode = new Map<string, { id: string; stage: Stage }>();
+        for (const o of existing ?? []) {
+          const ref = { id: o.id, stage: o.stage as Stage };
+          const m = (o.notes ?? "").match(/\[erp:pedido:(\d+):item:(\d+)\]/);
+          if (m) byMarker.set(`${m[1]}:${m[2]}`, ref);
+          if (o.code) byCode.set(o.code, ref);
         }
 
-
+        let inserted = 0;
         let updated = 0;
         let okCount = 0;
         let unmapped = 0;
-        let erpMissing = 0;
-        const divergences: Array<{
-          code: string;
-          from: Stage;
-          to: Stage;
-          sector: string;
-        }> = [];
+        const unmappedSectors = new Set<string>();
+        const divergences: Array<{ code: string; from?: Stage; to: Stage; sector: string }> = [];
 
-        for (const it of linked) {
-          const sector = sectorByPedido.get(it.pedido_id);
-          if (!sector) {
-            erpMissing++;
-            continue;
-          }
-          const target = STAGE_BY_SECTOR[normalize(sector)];
+        for (const it of erpItems) {
+          const setor = (it.setor ?? "").trim();
+          const target = STAGE_BY_SECTOR[normalize(setor)];
           if (!target) {
             unmapped++;
+            unmappedSectors.add(setor);
             continue;
           }
-          if (target === it.stage) {
-            okCount++;
+          const key = `${it.nnumeropedid}:${it.nnumeroitped}`;
+          const ex = byMarker.get(key);
+          if (ex) {
+            if (ex.stage === target) {
+              okCount++;
+            } else {
+              if (!dryRun) {
+                await supabaseAdmin
+                  .from("production_orders")
+                  .update({ stage: target })
+                  .eq("id", ex.id);
+              }
+              updated++;
+              divergences.push({ code: key, from: ex.stage, to: target, sector: setor });
+            }
             continue;
           }
-          const { error: uerr } = await supabaseAdmin
-            .from("production_orders")
-            .update({ stage: target })
-            .eq("id", it.id);
-          if (!uerr) {
-            updated++;
-            divergences.push({ code: it.code, from: it.stage, to: target, sector });
+
+          // Inserir nova OP (com fallback dedupe por code para evitar duplicatas
+          // de OPs legadas que não tinham marker `:item:` nas notas).
+          const code = `${it.ncodigopedid?.trim() || it.nnumeropedid}/${it.nnumeroitped}`;
+          const exByCode = byCode.get(code);
+          if (exByCode) {
+            if (exByCode.stage === target) {
+              okCount++;
+            } else {
+              if (!dryRun) {
+                await supabaseAdmin
+                  .from("production_orders")
+                  .update({ stage: target })
+                  .eq("id", exByCode.id);
+              }
+              updated++;
+              divergences.push({ code, from: exByCode.stage, to: target, sector: setor });
+            }
+            continue;
           }
+
+          const qty = Math.max(0, Math.round(Number(it.nquatdepcpip ?? 0)));
+          const marker = `[erp:pedido:${it.nnumeropedid}:item:${it.nnumeroitped}]`;
+          const notes = `Importada do ERP Usesoft (pedido ${it.nnumeropedid}, código ${it.ncodigopedid ?? "?"}, item ${it.nnumeroitped}). Cliente: ${(it.cliente ?? "").trim()}. Produto ERP ${it.nnumeroprodu}. Setor atual: ${setor}. ${marker}`;
+          const due = it.ddataentrega ? new Date(it.ddataentrega).toISOString().slice(0, 10) : null;
+
+          if (!dryRun) {
+            const { error: insErr } = await supabaseAdmin.from("production_orders").insert({
+              owner_id: ownerId,
+              code,
+              quantity: qty,
+              status: "aguardando",
+              stage: target,
+              notes,
+              due_date: due,
+            });
+            if (insErr) {
+              return Response.json(
+                { error: `Falha ao inserir ${code}: ${insErr.message}`, partial: { inserted, updated } },
+                { status: 500 },
+              );
+            }
+          }
+          inserted++;
+          divergences.push({ code, to: target, sector: setor });
         }
 
         return Response.json({
-          checked: linked.length,
-          ok: okCount,
+          dry_run: dryRun,
+          erp_items: erpItems.length,
+          inserted,
           updated,
-          no_link: noLink,
-          erp_missing: erpMissing,
+          ok: okCount,
           unmapped,
-          divergences,
+          unmapped_sectors: [...unmappedSectors],
+          divergences: divergences.slice(0, 50),
         });
       },
     },
