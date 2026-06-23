@@ -99,6 +99,8 @@ function ExecutivoPage() {
         </Select>
       </header>
 
+      <WarRoomPanel />
+
       <ExecutiveKpisPanel />
 
       <Card className="p-4">
