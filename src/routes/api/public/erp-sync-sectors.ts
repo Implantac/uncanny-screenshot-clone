@@ -174,8 +174,26 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
             continue;
           }
 
-          // Inserir nova OP
+          // Inserir nova OP (com fallback dedupe por code para evitar duplicatas
+          // de OPs legadas que não tinham marker `:item:` nas notas).
           const code = `${it.ncodigopedid?.trim() || it.nnumeropedid}/${it.nnumeroitped}`;
+          const exByCode = byCode.get(code);
+          if (exByCode) {
+            if (exByCode.stage === target) {
+              okCount++;
+            } else {
+              if (!dryRun) {
+                await supabaseAdmin
+                  .from("production_orders")
+                  .update({ stage: target })
+                  .eq("id", exByCode.id);
+              }
+              updated++;
+              divergences.push({ code, from: exByCode.stage, to: target, sector: setor });
+            }
+            continue;
+          }
+
           const qty = Math.max(0, Math.round(Number(it.nquatdepcpip ?? 0)));
           const marker = `[erp:pedido:${it.nnumeropedid}:item:${it.nnumeroitped}]`;
           const notes = `Importada do ERP Usesoft (pedido ${it.nnumeropedid}, código ${it.ncodigopedid ?? "?"}, item ${it.nnumeroitped}). Cliente: ${(it.cliente ?? "").trim()}. Produto ERP ${it.nnumeroprodu}. Setor atual: ${setor}. ${marker}`;
