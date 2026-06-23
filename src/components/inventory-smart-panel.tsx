@@ -17,6 +17,7 @@ import {
   getCycleCountPlan,
   registerCycleCount,
   updateReorderParams,
+  REORDER_DEFAULTS,
 } from "@/lib/inventory-smart.functions";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -78,16 +79,24 @@ export function InventorySmartPanel() {
   };
 
   const saveParams = useMutation({
-    mutationFn: () =>
-      paramsFn({
+    mutationFn: () => {
+      const parseNum = (raw: string, fallback: number, min = 0) => {
+        const trimmed = raw.trim();
+        if (trimmed === "") return fallback;
+        const n = Number(trimmed);
+        if (!Number.isFinite(n) || n < min) return fallback;
+        return n;
+      };
+      return paramsFn({
         data: {
           itemId: paramsTarget!.id,
-          serviceFactorZ: Number(formZ) || 0,
-          costPerOrder: Number(formS) || 0,
-          holdingCostAnnual: Number(formH) || 0,
-          safetyDays: Math.max(0, Math.floor(Number(formSafetyDays) || 0)),
+          serviceFactorZ: parseNum(formZ, REORDER_DEFAULTS.service_factor_z, 0),
+          costPerOrder: parseNum(formS, REORDER_DEFAULTS.cost_per_order, 0),
+          holdingCostAnnual: parseNum(formH, REORDER_DEFAULTS.holding_cost_annual, 0),
+          safetyDays: Math.floor(parseNum(formSafetyDays, REORDER_DEFAULTS.safety_days, 0)),
         },
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success("Parâmetros atualizados — recalculando…");
       setParamsTarget(null);
@@ -409,11 +418,13 @@ export function InventorySmartPanel() {
                   <Input
                     type="number"
                     step="0.01"
+                    min={0}
                     value={formZ}
+                    placeholder={String(REORDER_DEFAULTS.service_factor_z)}
                     onChange={(e) => setFormZ(e.target.value)}
                   />
                   <div className="text-[10px] text-muted-foreground mt-0.5">
-                    1.28=90% · 1.65=95% · 2.33=99%
+                    1.28=90% · 1.65=95% · 2.33=99% · vazio = {REORDER_DEFAULTS.service_factor_z}
                   </div>
                 </div>
                 <div>
@@ -421,7 +432,9 @@ export function InventorySmartPanel() {
                   <Input
                     type="number"
                     step="1"
+                    min={0}
                     value={formSafetyDays}
+                    placeholder={String(REORDER_DEFAULTS.safety_days)}
                     onChange={(e) => setFormSafetyDays(e.target.value)}
                   />
                 </div>
@@ -430,17 +443,21 @@ export function InventorySmartPanel() {
                   <Input
                     type="number"
                     step="0.01"
+                    min={0}
                     value={formS}
+                    placeholder="0,00"
                     onChange={(e) => setFormS(e.target.value)}
                   />
-                  <div className="text-[10px] text-muted-foreground mt-0.5">R$ operacional</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">R$ operacional · vazio desativa LEC</div>
                 </div>
                 <div>
                   <label className="text-xs font-medium">Custo anual armazenagem (H)</label>
                   <Input
                     type="number"
                     step="0.01"
+                    min={0}
                     value={formH}
+                    placeholder="0,00"
                     onChange={(e) => setFormH(e.target.value)}
                   />
                   <div className="text-[10px] text-muted-foreground mt-0.5">R$ por unidade/ano</div>

@@ -17,6 +17,39 @@ type ReorderOverrides = {
   holding_cost_annual?: number;
 };
 
+/** Defaults aplicados sempre que mrp_overrides estiver vazio ou inválido. */
+export const REORDER_DEFAULTS = {
+  service_factor_z: 1.65, // 95% de nível de serviço
+  cost_per_order: 0,
+  holding_cost_annual: 0,
+  safety_days: 7,
+} as const;
+
+/** Aceita valor numérico finito > 0; caso contrário, devolve o fallback. */
+function pickPositive(v: unknown, fallback: number): number {
+  const n = typeof v === "string" ? Number(v) : (v as number);
+  return Number.isFinite(n) && (n as number) > 0 ? (n as number) : fallback;
+}
+
+/** Aceita valor numérico finito >= 0; caso contrário, devolve o fallback. */
+function pickNonNeg(v: unknown, fallback: number): number {
+  const n = typeof v === "string" ? Number(v) : (v as number);
+  return Number.isFinite(n) && (n as number) >= 0 ? (n as number) : fallback;
+}
+
+/** Normaliza overrides — protege contra jsonb corrompido, strings ou NaN. */
+export function resolveReorderParams(
+  overrides: unknown,
+): { Z: number; S: number; H: number } {
+  const ov = (overrides && typeof overrides === "object" ? overrides : {}) as ReorderOverrides;
+  return {
+    Z: pickPositive(ov.service_factor_z, REORDER_DEFAULTS.service_factor_z),
+    S: pickNonNeg(ov.cost_per_order, REORDER_DEFAULTS.cost_per_order),
+    H: pickNonNeg(ov.holding_cost_annual, REORDER_DEFAULTS.holding_cost_annual),
+  };
+}
+
+
 export const updateReorderParams = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -46,10 +79,16 @@ export const updateReorderParams = createServerFn({ method: "POST" })
       .eq("owner_id", userId)
       .single();
     if (rErr) throw new Error(rErr.message);
-    const overrides = { ...((cur?.mrp_overrides as ReorderOverrides) ?? {}) };
-    if (data.serviceFactorZ != null) overrides.service_factor_z = data.serviceFactorZ;
-    if (data.costPerOrder != null) overrides.cost_per_order = data.costPerOrder;
-    if (data.holdingCostAnnual != null) overrides.holding_cost_annual = data.holdingCostAnnual;
+    const raw = cur?.mrp_overrides;
+    const base =
+      raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as ReorderOverrides) : {};
+    const overrides: ReorderOverrides = { ...base };
+    if (data.serviceFactorZ != null && Number.isFinite(data.serviceFactorZ))
+      overrides.service_factor_z = data.serviceFactorZ;
+    if (data.costPerOrder != null && Number.isFinite(data.costPerOrder))
+      overrides.cost_per_order = data.costPerOrder;
+    if (data.holdingCostAnnual != null && Number.isFinite(data.holdingCostAnnual))
+      overrides.holding_cost_annual = data.holdingCostAnnual;
     const patch: { mrp_overrides: ReorderOverrides; safety_days?: number } = {
       mrp_overrides: overrides,
     };
@@ -125,12 +164,14 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
           : 0;
       const sigma = Math.sqrt(variance);
 
-      const ov = (it.mrp_overrides ?? {}) as ReorderOverrides;
-      const Z = Number(ov.service_factor_z ?? 1.65);
-      const S = Number(ov.cost_per_order ?? 0);
-      const H = Number(ov.holding_cost_annual ?? 0);
-      const leadTime = Number(it.suppliers?.lead_time_days ?? 14);
-      const safetyDays = Number(it.safety_days ?? 7);
+      const { Z, S, H } = resolveReorderParams(it.mrp_overrides);
+      const leadTimeRaw = Number(it.suppliers?.lead_time_days);
+      const leadTime = Number.isFinite(leadTimeRaw) && leadTimeRaw > 0 ? leadTimeRaw : 14;
+      const safetyDaysRaw = Number(it.safety_days);
+      const safetyDays =
+        Number.isFinite(safetyDaysRaw) && safetyDaysRaw >= 0
+          ? safetyDaysRaw
+          : REORDER_DEFAULTS.safety_days;
 
       const safetyStockStat = Z * sigma * Math.sqrt(leadTime);
       const safetyStockDet = dailyAvg * safetyDays;
