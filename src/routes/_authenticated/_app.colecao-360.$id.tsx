@@ -485,7 +485,9 @@ function Colecao360() {
             {summary.map((s) => (
               <button
                 key={s.collection.id}
-                onClick={() => setSelectedId(s.collection.id)}
+                onClick={() =>
+                  navigate({ to: "/colecao-360/$id", params: { id: s.collection.id } })
+                }
                 className={`flex-shrink-0 px-4 py-2.5 rounded-lg border text-left transition-colors ${
                   s.collection.id === current?.collection.id
                     ? "border-primary bg-primary/10"
