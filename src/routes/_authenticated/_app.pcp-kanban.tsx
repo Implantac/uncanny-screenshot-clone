@@ -207,10 +207,46 @@ function PcpKanban() {
     onSettled: () => qc.invalidateQueries({ queryKey: ["pcp-kanban"] }),
   });
 
-  const filtered = useMemo(
-    () => (batchFilter ? orders.filter((o) => (o.batch_code ?? "—") === batchFilter) : orders),
-    [orders, batchFilter],
-  );
+  const filtered = useMemo(() => {
+    const term = filterSearch.trim().toLowerCase();
+    const now = Date.now();
+    const idleMinH =
+      filterIdle === "1d" ? 24 : filterIdle === "3d" ? 72 : filterIdle === "5d" ? 120 : 0;
+    return orders.filter((o) => {
+      if (batchFilter && (o.batch_code ?? "—") !== batchFilter) return false;
+      if (filterStages.size > 0 && !filterStages.has(o.stage)) return false;
+      if (filterPriorities.size > 0 && !filterPriorities.has(o.priority)) return false;
+      if (filterCapa && !openCapaOrderIds.has(o.id)) return false;
+      if (filterSla !== "all") {
+        const d = daysTo(o.due_date);
+        const overdue = d !== null && d < 0 && o.stage !== "entregue";
+        const soon = d !== null && d >= 0 && d <= 3 && o.stage !== "entregue";
+        if (filterSla === "overdue" && !overdue) return false;
+        if (filterSla === "soon" && !soon) return false;
+        if (filterSla === "ontime" && (overdue || soon || d === null)) return false;
+      }
+      if (idleMinH > 0) {
+        const h = (now - new Date(o.stage_updated_at).getTime()) / 3600000;
+        if (h < idleMinH) return false;
+      }
+      if (term) {
+        const hay = `${o.code} ${o.product ?? ""} ${o.batch_code ?? ""} ${o.supplier ?? ""}`.toLowerCase();
+        if (!hay.includes(term)) return false;
+      }
+      return true;
+    });
+  }, [
+    orders,
+    batchFilter,
+    filterStages,
+    filterPriorities,
+    filterSla,
+    filterIdle,
+    filterSearch,
+    filterCapa,
+    openCapaOrderIds,
+  ]);
+
 
   const grouped = useMemo(() => {
     const m = new Map<Stage, Order[]>();
