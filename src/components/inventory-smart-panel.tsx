@@ -32,11 +32,6 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-const STATUS_VARIANT: Record<string, "destructive" | "secondary" | "outline"> = {
-  critico: "destructive",
-  rever: "secondary",
-  ok: "outline",
-};
 
 export function InventorySmartPanel() {
   const qc = useQueryClient();
