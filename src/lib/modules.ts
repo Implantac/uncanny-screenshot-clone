@@ -538,6 +538,26 @@ export const MODULES: ModuleDef[] = [
     icon: Sparkles,
     group: "Cadeia (PLM)",
   },
+  {
+    slug: "faccoes",
+    path: "/faccoes",
+    title: "Facção 360°",
+    short: "Perda, defeito, lead time",
+    description:
+      "Painel consolidado das oficinas externas — OS abertas, atrasadas, índice de perda/defeito e lead time real (90 dias).",
+    icon: Factory,
+    group: "Cadeia (PLM)",
+  },
+  {
+    slug: "time-and-action",
+    path: "/time-and-action",
+    title: "Time & Action",
+    short: "Cronograma de coleção",
+    description:
+      "Cronograma de desenvolvimento da coleção do briefing ao lançamento, com SLA por etapa e desvio real × planejado.",
+    icon: CalendarClock,
+    group: "Desenvolvimento (PLM)",
+  },
 
   // === Marketing (de produto) ===
   {
