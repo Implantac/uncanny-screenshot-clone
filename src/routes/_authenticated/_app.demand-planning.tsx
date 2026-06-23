@@ -116,16 +116,88 @@ function RecalcAbcButton() {
 
 /* =================== Sugestão de compras =================== */
 
+type AbcFilter = "all" | "A" | "B" | "C";
+
+function buildOrderItemsFromGroup(group: any) {
+  return group.products.flatMap((p: any) =>
+    p.rows.flatMap((row: any) =>
+      p.cols
+        .map((col: any) => ({
+          description: `${p.productSku} · ${p.productName} · ${row.name} · ${col.label}`,
+          quantity: p.matrix[row.id]?.[col.id] ?? 0,
+          unitPrice: 0,
+        }))
+        .filter((it: any) => it.quantity > 0),
+    ),
+  );
+}
+
+function filterGroupByAbc(group: any, abc: AbcFilter) {
+  if (abc === "all") return group;
+  const products = group.products.filter((p: any) => p.abcClass === abc);
+  if (products.length === 0) return null;
+  const totalQty = products.reduce((s: number, p: any) => s + p.totalQty, 0);
+  const totalCost = products.reduce((s: number, p: any) => s + p.totalCost, 0);
+  return { ...group, products, totalQty, totalCost };
+}
+
 function PurchaseBySupplierPanel() {
   const fn = useServerFn(getPurchaseSuggestionsBySupplier);
+  const batchFn = useServerFn(generatePurchaseOrdersBatch);
+  const qc = useQueryClient();
+  const router = useRouter();
   const { data, isLoading } = useQuery({
     queryKey: ["dp-purchase"],
     queryFn: () => fn(),
   });
 
+  const [abc, setAbc] = useState<AbcFilter>("all");
+  const [onlyMeetingMin, setOnlyMeetingMin] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const allGroups = data?.groups ?? [];
+  const groups = useMemo(() => {
+    return allGroups
+      .map((g: any) => filterGroupByAbc(g, abc))
+      .filter(Boolean)
+      .filter((g: any) => !onlyMeetingMin || (g.meetsMinValue && g.meetsMinQty));
+  }, [allGroups, abc, onlyMeetingMin]);
+
+  const totalSelected = useMemo(() => {
+    return groups
+      .filter((g: any) => selected.has(g.supplierId ?? "_no_supplier"))
+      .reduce(
+        (acc: { qty: number; cost: number; count: number }, g: any) => ({
+          qty: acc.qty + g.totalQty,
+          cost: acc.cost + g.totalCost,
+          count: acc.count + 1,
+        }),
+        { qty: 0, cost: 0, count: 0 },
+      );
+  }, [groups, selected]);
+
+  const batchM = useMutation({
+    mutationFn: () => {
+      const orders = groups
+        .filter((g: any) => selected.has(g.supplierId ?? "_no_supplier"))
+        .map((g: any) => ({
+          supplierId: g.supplierId,
+          items: buildOrderItemsFromGroup(g),
+        }))
+        .filter((o: any) => o.items.length > 0);
+      return batchFn({ data: { orders } });
+    },
+    onSuccess: (r) => {
+      toast.success(`${r.created.length} pedido(s) criado(s) em rascunho`);
+      setSelected(new Set());
+      qc.invalidateQueries({ queryKey: ["dp-purchase"] });
+      router.navigate({ to: "/pedidos-compra" });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao gerar pedidos em lote"),
+  });
+
   if (isLoading) return <div className="text-sm text-muted-foreground">Calculando demanda por SKU…</div>;
-  const groups = data?.groups ?? [];
-  if (groups.length === 0)
+  if (allGroups.length === 0)
     return (
       <Card className="p-8 text-center">
         <Factory className="size-8 mx-auto text-muted-foreground mb-2" />
@@ -136,16 +208,94 @@ function PurchaseBySupplierPanel() {
       </Card>
     );
 
+  const toggleSel = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelected(new Set(groups.map((g: any) => g.supplierId ?? "_no_supplier")));
+  };
+
   return (
     <div className="space-y-4">
-      {groups.map((g) => (
-        <SupplierCard key={g.supplierId ?? "_n"} group={g} />
-      ))}
+      <Card className="p-3 flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Classe ABC:</span>
+          {(["all", "A", "B", "C"] as AbcFilter[]).map((k) => (
+            <button
+              key={k}
+              onClick={() => setAbc(k)}
+              className={cn(
+                "h-7 px-2.5 rounded-md text-xs font-medium border transition",
+                abc === k
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:bg-muted",
+              )}
+            >
+              {k === "all" ? "Todas" : k}
+            </button>
+          ))}
+        </div>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+          <Checkbox checked={onlyMeetingMin} onCheckedChange={(v) => setOnlyMeetingMin(Boolean(v))} />
+          Só fornecedores que atingem o mínimo
+        </label>
+        <div className="ml-auto flex items-center gap-2">
+          <Button size="sm" variant="ghost" onClick={selectAll} disabled={groups.length === 0}>
+            Selecionar todos ({groups.length})
+          </Button>
+          <Button
+            size="sm"
+            disabled={totalSelected.count === 0 || batchM.isPending}
+            onClick={() => batchM.mutate()}
+          >
+            <ShoppingCart className="size-4 mr-1.5" />
+            Gerar {totalSelected.count > 0 ? `${totalSelected.count} ` : ""}pedido(s)
+            {totalSelected.count > 0 && (
+              <span className="ml-1.5 text-[11px] opacity-80">
+                · {totalSelected.qty.toLocaleString("pt-BR")} pç ·{" "}
+                {totalSelected.cost.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </span>
+            )}
+          </Button>
+        </div>
+      </Card>
+
+      {groups.length === 0 ? (
+        <Card className="p-6 text-sm text-muted-foreground text-center">
+          Nenhum fornecedor corresponde aos filtros atuais.
+        </Card>
+      ) : (
+        groups.map((g: any) => {
+          const id = g.supplierId ?? "_no_supplier";
+          return (
+            <SupplierCard
+              key={id}
+              group={g}
+              selected={selected.has(id)}
+              onToggleSelected={() => toggleSel(id)}
+            />
+          );
+        })
+      )}
     </div>
   );
 }
 
-function SupplierCard({ group }: { group: any }) {
+function SupplierCard({
+  group,
+  selected,
+  onToggleSelected,
+}: {
+  group: any;
+  selected: boolean;
+  onToggleSelected: () => void;
+}) {
   const fn = useServerFn(generatePurchaseOrderFromSuggestion);
   const router = useRouter();
   const qc = useQueryClient();
@@ -154,17 +304,7 @@ function SupplierCard({ group }: { group: any }) {
       fn({
         data: {
           supplierId: group.supplierId,
-          items: group.products.flatMap((p: any) =>
-            p.rows.flatMap((row: any) =>
-              p.cols
-                .map((col: any) => ({
-                  description: `${p.productSku} · ${p.productName} · ${row.name} · ${col.label}`,
-                  quantity: p.matrix[row.id]?.[col.id] ?? 0,
-                  unitPrice: 0,
-                }))
-                .filter((it: any) => it.quantity > 0),
-            ),
-          ),
+          items: buildOrderItemsFromGroup(group),
         },
       }),
     onSuccess: (r) => {
@@ -175,17 +315,46 @@ function SupplierCard({ group }: { group: any }) {
     onError: (e: any) => toast.error(e?.message ?? "Falha ao gerar pedido"),
   });
 
+  const meetsMin = group.meetsMinValue && group.meetsMinQty;
+  const hasMin = group.minOrderValue != null || group.minOrderQty != null;
+
   return (
-    <Card className="p-5">
+    <Card className={cn("p-5 transition", selected && "ring-2 ring-primary/40")}>
       <header className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="size-9 rounded-md bg-primary/10 grid place-items-center text-sm font-semibold text-primary">
-              {(group.supplierName ?? "?").slice(0, 2).toUpperCase()}
+        <div className="flex items-center gap-3">
+          <Checkbox checked={selected} onCheckedChange={onToggleSelected} />
+          <div className="size-9 rounded-md bg-primary/10 grid place-items-center text-sm font-semibold text-primary">
+            {(group.supplierName ?? "?").slice(0, 2).toUpperCase()}
+          </div>
+          <div>
+            <div className="font-semibold text-base flex items-center gap-2 flex-wrap">
+              {group.supplierName}
+              {hasMin &&
+                (meetsMin ? (
+                  <Badge variant="outline" className="border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="size-3 mr-1" /> Mínimo atingido
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <AlertTriangle className="size-3 mr-1" />
+                    {group.gapValue > 0
+                      ? `Faltam ${group.gapValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
+                      : `Faltam ${group.gapQty} pç`}
+                  </Badge>
+                ))}
             </div>
-            <div>
-              <div className="font-semibold text-base">{group.supplierName}</div>
-              <div className="text-xs text-muted-foreground">{group.products.length} produto(s) com ROP atingido</div>
+            <div className="text-xs text-muted-foreground">
+              {group.products.length} produto(s) com ROP atingido
+              {hasMin && group.minOrderValue != null && (
+                <>
+                  {" · mín. "}
+                  {Number(group.minOrderValue).toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
+                </>
+              )}
+              {hasMin && group.minOrderQty != null && <> · {group.minOrderQty} pç mín.</>}
             </div>
           </div>
         </div>
@@ -198,10 +367,17 @@ function SupplierCard({ group }: { group: any }) {
             </div>
           </div>
           <Button size="sm" onClick={() => m.mutate()} disabled={m.isPending}>
-            <ShoppingCart className="size-4 mr-1.5" /> Gerar pedido de compra
+            <ShoppingCart className="size-4 mr-1.5" /> Gerar pedido
           </Button>
         </div>
       </header>
+
+      {group.reason && (
+        <div className="mb-4 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground flex items-start gap-2">
+          <Lightbulb className="size-3.5 mt-0.5 shrink-0 text-amber-500" />
+          <span>{group.reason}</span>
+        </div>
+      )}
 
       <div className="space-y-5">
         {group.products.map((p: any) => (
