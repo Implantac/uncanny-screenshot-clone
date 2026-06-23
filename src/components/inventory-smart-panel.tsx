@@ -189,47 +189,80 @@ export function InventorySmartPanel() {
               {rop.data.items.slice(0, 25).map((it) => (
                 <div
                   key={it.id}
-                  className="rounded-lg border border-border/50 p-2.5 text-xs flex items-start gap-3"
+                  className="rounded-lg border border-border/50 p-2.5 text-xs flex flex-col gap-2"
                 >
-                  <Badge
-                    variant={STATUS_VARIANT[it.status]}
-                    className="h-5 text-[10px] uppercase shrink-0"
-                  >
-                    {it.status}
-                  </Badge>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">
-                      {it.sku} · {it.name}
+                  <div className="flex items-start gap-3">
+                    <Badge
+                      variant={it.needsOrder ? "destructive" : "outline"}
+                      className="h-5 text-[10px] uppercase shrink-0"
+                    >
+                      {it.needsOrder ? "Emitir Pedido" : "Estoque Ok"}
+                    </Badge>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">
+                        {it.sku} · {it.name}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{it.reason}</div>
+                      <div className="text-[11px] mt-1 flex gap-3 flex-wrap">
+                        <span>
+                          Saldo: <b>{it.balance}</b> {it.unit}
+                        </span>
+                        <span>
+                          ROP: <b>{it.rop}</b> · SS: <b>{it.safetyStock}</b>
+                        </span>
+                        <span>
+                          LEC: <b>{it.eoq > 0 ? it.eoq : "—"}</b>
+                        </span>
+                        <span className="text-muted-foreground">
+                          Lead {it.leadTimeDays}d · {it.supplier ?? "sem fornecedor"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">{it.reason}</div>
-                    <div className="text-[11px] mt-1 flex gap-3 flex-wrap">
-                      <span>
-                        Saldo: <b>{it.balance}</b> {it.unit}
-                      </span>
-                      <span>
-                        Mín atual: <b>{it.currentMin}</b> → sugerido <b>{it.suggestedMin}</b>
-                      </span>
-                      <span className="text-muted-foreground">
-                        Máx: {it.suggestedMax} · {it.supplier ?? "sem fornecedor"}
-                      </span>
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-[11px]"
+                        onClick={() => openParams(it)}
+                        title="Editar Z, custo do pedido e custo de armazenagem"
+                      >
+                        <Sliders className="size-3 mr-1" /> params
+                      </Button>
+                      {it.currentMin !== it.suggestedMin && it.dailyConsumption > 0 ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[11px]"
+                          onClick={() =>
+                            apply.mutate({
+                              itemId: it.id,
+                              minimum: it.suggestedMin,
+                              maximum: it.suggestedMax,
+                            })
+                          }
+                          disabled={apply.isPending}
+                        >
+                          <Check className="size-3 mr-1" /> aplicar
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
-                  {it.currentMin !== it.suggestedMin && it.dailyConsumption > 0 ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-[11px] shrink-0"
-                      onClick={() =>
-                        apply.mutate({
-                          itemId: it.id,
-                          minimum: it.suggestedMin,
-                          maximum: it.suggestedMax,
-                        })
-                      }
-                      disabled={apply.isPending}
-                    >
-                      <Check className="size-3 mr-1" /> aplicar
-                    </Button>
+                  {it.needsOrder && it.eoq > 0 ? (
+                    <div className="rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-[11px] flex items-center gap-2">
+                      <Sparkles className="size-3 text-primary shrink-0" />
+                      <span>
+                        Sugestão de compra ideal: comprar <b>{it.eoq}</b> {it.unit} para otimizar
+                        custo de pedido vs. armazenagem (LEC).
+                      </span>
+                    </div>
+                  ) : it.needsOrder ? (
+                    <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-1.5 text-[11px] flex items-center gap-2">
+                      <Sparkles className="size-3 text-amber-600 shrink-0" />
+                      <span>
+                        Defina <b>custo do pedido (S)</b> e <b>custo anual de armazenagem (H)</b>{" "}
+                        em <i>params</i> para calcular o LEC.
+                      </span>
+                    </div>
                   ) : null}
                 </div>
               ))}
