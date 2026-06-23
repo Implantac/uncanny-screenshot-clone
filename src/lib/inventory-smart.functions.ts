@@ -17,6 +17,39 @@ type ReorderOverrides = {
   holding_cost_annual?: number;
 };
 
+/** Defaults aplicados sempre que mrp_overrides estiver vazio ou inválido. */
+export const REORDER_DEFAULTS = {
+  service_factor_z: 1.65, // 95% de nível de serviço
+  cost_per_order: 0,
+  holding_cost_annual: 0,
+  safety_days: 7,
+} as const;
+
+/** Aceita valor numérico finito > 0; caso contrário, devolve o fallback. */
+function pickPositive(v: unknown, fallback: number): number {
+  const n = typeof v === "string" ? Number(v) : (v as number);
+  return Number.isFinite(n) && (n as number) > 0 ? (n as number) : fallback;
+}
+
+/** Aceita valor numérico finito >= 0; caso contrário, devolve o fallback. */
+function pickNonNeg(v: unknown, fallback: number): number {
+  const n = typeof v === "string" ? Number(v) : (v as number);
+  return Number.isFinite(n) && (n as number) >= 0 ? (n as number) : fallback;
+}
+
+/** Normaliza overrides — protege contra jsonb corrompido, strings ou NaN. */
+export function resolveReorderParams(
+  overrides: unknown,
+): { Z: number; S: number; H: number } {
+  const ov = (overrides && typeof overrides === "object" ? overrides : {}) as ReorderOverrides;
+  return {
+    Z: pickPositive(ov.service_factor_z, REORDER_DEFAULTS.service_factor_z),
+    S: pickNonNeg(ov.cost_per_order, REORDER_DEFAULTS.cost_per_order),
+    H: pickNonNeg(ov.holding_cost_annual, REORDER_DEFAULTS.holding_cost_annual),
+  };
+}
+
+
 export const updateReorderParams = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
