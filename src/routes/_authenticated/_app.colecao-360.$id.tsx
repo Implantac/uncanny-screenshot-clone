@@ -719,7 +719,7 @@ function CollectionTabs({
                       <span className="truncate">
                         <span className="text-muted-foreground text-xs">{p.sku}</span> · {p.name}
                       </span>
-                      <span className="text-xs text-muted-foreground">{p.status}</span>
+                      <span className="text-xs text-muted-foreground">Sem venda</span>
                     </li>
                   ))}
                 </ul>
