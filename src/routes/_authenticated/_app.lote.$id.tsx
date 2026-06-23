@@ -551,11 +551,13 @@ function LotePage() {
             <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
               {materialsNeeded.map((m: any) => {
                 const linked = m.balance !== null;
-                const missing = linked && m.needed > m.balance;
+                const avail = m.available ?? m.balance ?? 0;
+                const missing = linked && m.needed > avail;
                 const cobertura =
                   linked && m.needed > 0
-                    ? Math.min(100, Math.round((m.balance / m.needed) * 100))
+                    ? Math.min(100, Math.round((avail / m.needed) * 100))
                     : null;
+                const reservedHere = Number(m.reservedForLote || 0);
                 return (
                   <div
                     key={m.key}
@@ -576,9 +578,14 @@ function LotePage() {
                       <div className="text-[11px] text-muted-foreground truncate">
                         {m.sku ? `${m.sku} · ` : ""}precisa {m.needed.toFixed(2)} {m.unit}
                         {linked
-                          ? ` · tem ${m.balance.toFixed(2)} ${m.unit}`
+                          ? ` · disp. ${avail.toFixed(2)} ${m.unit} (saldo ${Number(m.balance).toFixed(2)})`
                           : " · não vinculado ao estoque"}
                       </div>
+                      {reservedHere > 0 && (
+                        <div className="text-[11px] text-primary mt-0.5">
+                          ✓ reservado p/ este lote: {reservedHere.toFixed(2)} {m.unit}
+                        </div>
+                      )}
                     </div>
                     <div className="text-right">
                       {linked ? (
@@ -591,7 +598,7 @@ function LotePage() {
                           }
                         >
                           {missing
-                            ? `faltam ${(m.needed - m.balance).toFixed(1)} ${m.unit}`
+                            ? `faltam ${(m.needed - avail).toFixed(1)} ${m.unit}`
                             : `${cobertura}% coberto`}
                         </Badge>
                       ) : (
@@ -603,6 +610,7 @@ function LotePage() {
                   </div>
                 );
               })}
+
             </div>
           )}
         </div>
