@@ -5,10 +5,64 @@ import { z } from "zod";
 
 /**
  * Reposição dinâmica + ABC + Contagem cíclica.
- * ROP = (consumo_diario * lead_time) + safety_stock
- * safety_stock = consumo_diario * safety_days
- * EOQ simplificado: cobertura 30d além do ROP.
+ * Safety stock estatístico = Z * σ_diário * √leadTime
+ * ROP = (consumo_diário * leadTime) + safety_stock
+ * EOQ (LEC) = √((2 * D_anual * S) / H)  — quando S e H disponíveis em mrp_overrides
+ * Fallback: cobertura 30d acima do ROP.
  */
+
+type ReorderOverrides = {
+  service_factor_z?: number;
+  cost_per_order?: number;
+  holding_cost_annual?: number;
+};
+
+export const updateReorderParams = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (i: {
+      itemId: string;
+      serviceFactorZ?: number | null;
+      costPerOrder?: number | null;
+      holdingCostAnnual?: number | null;
+      safetyDays?: number | null;
+    }) =>
+      z
+        .object({
+          itemId: z.string().uuid(),
+          serviceFactorZ: z.number().min(0).max(5).nullable().optional(),
+          costPerOrder: z.number().min(0).nullable().optional(),
+          holdingCostAnnual: z.number().min(0).nullable().optional(),
+          safetyDays: z.number().int().min(0).max(365).nullable().optional(),
+        })
+        .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: cur, error: rErr } = await supabase
+      .from("inventory_items")
+      .select("mrp_overrides")
+      .eq("id", data.itemId)
+      .eq("owner_id", userId)
+      .single();
+    if (rErr) throw new Error(rErr.message);
+    const overrides = { ...((cur?.mrp_overrides as ReorderOverrides) ?? {}) };
+    if (data.serviceFactorZ != null) overrides.service_factor_z = data.serviceFactorZ;
+    if (data.costPerOrder != null) overrides.cost_per_order = data.costPerOrder;
+    if (data.holdingCostAnnual != null) overrides.holding_cost_annual = data.holdingCostAnnual;
+    const patch: { mrp_overrides: ReorderOverrides; safety_days?: number } = {
+      mrp_overrides: overrides,
+    };
+    if (data.safetyDays != null) patch.safety_days = data.safetyDays;
+    const { error } = await supabase
+      .from("inventory_items")
+      .update(patch)
+      .eq("id", data.itemId)
+      .eq("owner_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i?: { windowDays?: number }) =>
@@ -21,12 +75,17 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
     const { data: items, error } = await supabase
       .from("inventory_items")
       .select(
-        "id, sku, name, unit, category, balance, minimum, maximum, safety_days, preferred_supplier_id, suppliers:preferred_supplier_id(name,lead_time_days)",
+        "id, sku, name, unit, category, balance, minimum, maximum, safety_days, mrp_overrides, avg_unit_cost, preferred_supplier_id, suppliers:preferred_supplier_id(name,lead_time_days)",
       )
       .eq("owner_id", userId);
     if (error) throw new Error(error.message);
     const list = items ?? [];
-    if (list.length === 0) return { items: [], windowDays: data.windowDays };
+    if (list.length === 0)
+      return {
+        items: [],
+        windowDays: data.windowDays,
+        counts: { critico: 0, rever: 0, ok: 0 },
+      };
 
     const ids = list.map((i) => i.id);
     const { data: moves, error: mErr } = await supabase
@@ -38,48 +97,88 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
       .gte("created_at", since);
     if (mErr) throw new Error(mErr.message);
 
-    const consByItem = new Map<string, number>();
+    const dailyMap = new Map<string, Map<string, number>>();
     for (const m of moves ?? []) {
-      consByItem.set(
-        m.inventory_item_id,
-        (consByItem.get(m.inventory_item_id) ?? 0) + Number(m.quantity ?? 0),
-      );
+      const d = new Date(m.created_at).toISOString().slice(0, 10);
+      let perDay = dailyMap.get(m.inventory_item_id);
+      if (!perDay) {
+        perDay = new Map();
+        dailyMap.set(m.inventory_item_id, perDay);
+      }
+      perDay.set(d, (perDay.get(d) ?? 0) + Number(m.quantity ?? 0));
     }
 
     const rows = list.map((it: any) => {
-      const totalCons = consByItem.get(it.id) ?? 0;
-      const daily = totalCons / data.windowDays;
+      const perDay = dailyMap.get(it.id) ?? new Map<string, number>();
+      const totalDays = data.windowDays;
+      const series: number[] = [];
+      const now = Date.now();
+      for (let k = 0; k < totalDays; k++) {
+        const d = new Date(now - k * 86400_000).toISOString().slice(0, 10);
+        series.push(perDay.get(d) ?? 0);
+      }
+      const totalCons = series.reduce((a, b) => a + b, 0);
+      const dailyAvg = totalCons / totalDays;
+      const variance =
+        series.length > 1
+          ? series.reduce((s, x) => s + (x - dailyAvg) ** 2, 0) / (series.length - 1)
+          : 0;
+      const sigma = Math.sqrt(variance);
+
+      const ov = (it.mrp_overrides ?? {}) as ReorderOverrides;
+      const Z = Number(ov.service_factor_z ?? 1.65);
+      const S = Number(ov.cost_per_order ?? 0);
+      const H = Number(ov.holding_cost_annual ?? 0);
       const leadTime = Number(it.suppliers?.lead_time_days ?? 14);
       const safetyDays = Number(it.safety_days ?? 7);
-      const safetyStock = daily * safetyDays;
-      const rop = Math.ceil(daily * leadTime + safetyStock);
-      const target = Math.ceil(rop + daily * 30); // cobertura 30d acima do ROP
+
+      const safetyStockStat = Z * sigma * Math.sqrt(leadTime);
+      const safetyStockDet = dailyAvg * safetyDays;
+      const safetyStock =
+        sigma > 0 ? Math.max(safetyStockStat, safetyStockDet * 0.5) : safetyStockDet;
+
+      const rop = Math.ceil(dailyAvg * leadTime + safetyStock);
+
+      const annualDemand = dailyAvg * 365;
+      const eoq =
+        S > 0 && H > 0 && annualDemand > 0 ? Math.sqrt((2 * annualDemand * S) / H) : 0;
+      const eoqCeil = eoq > 0 ? Math.ceil(eoq) : 0;
+      const target = eoqCeil > 0 ? rop + eoqCeil : Math.ceil(rop + dailyAvg * 30);
+
       const balance = Number(it.balance ?? 0);
       const currentMin = Number(it.minimum ?? 0);
       const deltaMin = rop - currentMin;
+      const needsOrder = balance <= rop && dailyAvg > 0;
       const status: "ok" | "rever" | "critico" =
-        balance <= 0
+        balance <= 0 && dailyAvg > 0
           ? "critico"
-          : balance < rop
+          : needsOrder
             ? "critico"
             : Math.abs(deltaMin) > Math.max(2, rop * 0.25)
               ? "rever"
               : "ok";
+
+      const sigmaPart = sigma > 0 ? `σ ${sigma.toFixed(2)}` : "σ ~0";
+      const eoqPart = eoqCeil > 0 ? `LEC ${eoqCeil}` : "LEC: defina S e H";
       const reason =
-        daily <= 0
+        dailyAvg <= 0
           ? buildAiReason({
               signals: ["sem consumo na janela"],
               recommendation: "manter mínimo manual até observar giro",
             })
           : buildAiReason({
               signals: [
-                `consumo ${daily.toFixed(2)} ${it.unit}/dia`,
+                `consumo ${dailyAvg.toFixed(2)} ${it.unit}/dia`,
                 `lead ${leadTime}d`,
-                `segurança ${safetyDays}d`,
-                currentMin !== rop ? `atual ${currentMin}` : null,
+                `Z ${Z}`,
+                sigmaPart,
+                eoqPart,
               ],
-              recommendation: `ajustar mínimo p/ ${rop} (ROP)`,
+              recommendation: needsOrder
+                ? `emitir pedido — comprar ${eoqCeil > 0 ? eoqCeil : Math.ceil(rop)} ${it.unit}`
+                : `ajustar mínimo p/ ${rop} (ROP)`,
             });
+
       return {
         id: it.id,
         sku: it.sku,
@@ -91,10 +190,19 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
         suggestedMin: rop,
         suggestedMax: target,
         deltaMin,
-        dailyConsumption: Number(daily.toFixed(3)),
+        dailyConsumption: Number(dailyAvg.toFixed(3)),
+        sigmaDaily: Number(sigma.toFixed(3)),
         leadTimeDays: leadTime,
         safetyDays,
+        safetyStock: Math.ceil(safetyStock),
+        rop,
+        eoq: eoqCeil,
+        annualDemand: Math.round(annualDemand),
+        serviceFactorZ: Z,
+        costPerOrder: S,
+        holdingCostAnnual: H,
         supplier: it.suppliers?.name ?? null,
+        needsOrder,
         status,
         reason,
       };

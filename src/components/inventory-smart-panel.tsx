@@ -1,12 +1,22 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Boxes, TrendingDown, ClipboardCheck, Check, Loader2, RefreshCw } from "lucide-react";
+import {
+  Boxes,
+  TrendingDown,
+  ClipboardCheck,
+  Check,
+  Loader2,
+  RefreshCw,
+  Sliders,
+  Sparkles,
+} from "lucide-react";
 import {
   getDynamicReorderSuggestions,
   applyReorderSuggestion,
   getCycleCountPlan,
   registerCycleCount,
+  updateReorderParams,
 } from "@/lib/inventory-smart.functions";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -22,11 +32,6 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-const STATUS_VARIANT: Record<string, "destructive" | "secondary" | "outline"> = {
-  critico: "destructive",
-  rever: "secondary",
-  ok: "outline",
-};
 
 export function InventorySmartPanel() {
   const qc = useQueryClient();
@@ -34,6 +39,7 @@ export function InventorySmartPanel() {
   const applyFn = useServerFn(applyReorderSuggestion);
   const cycleFn = useServerFn(getCycleCountPlan);
   const regFn = useServerFn(registerCycleCount);
+  const paramsFn = useServerFn(updateReorderParams);
 
   const rop = useQuery({
     queryKey: ["inv-smart", "rop"],
@@ -55,6 +61,42 @@ export function InventorySmartPanel() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  type RopItem = NonNullable<typeof rop.data>["items"][number];
+  const [paramsTarget, setParamsTarget] = useState<RopItem | null>(null);
+  const [formZ, setFormZ] = useState("");
+  const [formS, setFormS] = useState("");
+  const [formH, setFormH] = useState("");
+  const [formSafetyDays, setFormSafetyDays] = useState("");
+
+  const openParams = (it: RopItem) => {
+    setParamsTarget(it);
+    setFormZ(String(it.serviceFactorZ ?? 1.65));
+    setFormS(String(it.costPerOrder ?? 0));
+    setFormH(String(it.holdingCostAnnual ?? 0));
+    setFormSafetyDays(String(it.safetyDays ?? 7));
+  };
+
+  const saveParams = useMutation({
+    mutationFn: () =>
+      paramsFn({
+        data: {
+          itemId: paramsTarget!.id,
+          serviceFactorZ: Number(formZ) || 0,
+          costPerOrder: Number(formS) || 0,
+          holdingCostAnnual: Number(formH) || 0,
+          safetyDays: Math.max(0, Math.floor(Number(formSafetyDays) || 0)),
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Parâmetros atualizados — recalculando…");
+      setParamsTarget(null);
+      qc.invalidateQueries({ queryKey: ["inv-smart"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
 
   const [countTarget, setCountTarget] = useState<{
     itemId: string;
@@ -142,47 +184,80 @@ export function InventorySmartPanel() {
               {rop.data.items.slice(0, 25).map((it) => (
                 <div
                   key={it.id}
-                  className="rounded-lg border border-border/50 p-2.5 text-xs flex items-start gap-3"
+                  className="rounded-lg border border-border/50 p-2.5 text-xs flex flex-col gap-2"
                 >
-                  <Badge
-                    variant={STATUS_VARIANT[it.status]}
-                    className="h-5 text-[10px] uppercase shrink-0"
-                  >
-                    {it.status}
-                  </Badge>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">
-                      {it.sku} · {it.name}
+                  <div className="flex items-start gap-3">
+                    <Badge
+                      variant={it.needsOrder ? "destructive" : "outline"}
+                      className="h-5 text-[10px] uppercase shrink-0"
+                    >
+                      {it.needsOrder ? "Emitir Pedido" : "Estoque Ok"}
+                    </Badge>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">
+                        {it.sku} · {it.name}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{it.reason}</div>
+                      <div className="text-[11px] mt-1 flex gap-3 flex-wrap">
+                        <span>
+                          Saldo: <b>{it.balance}</b> {it.unit}
+                        </span>
+                        <span>
+                          ROP: <b>{it.rop}</b> · SS: <b>{it.safetyStock}</b>
+                        </span>
+                        <span>
+                          LEC: <b>{it.eoq > 0 ? it.eoq : "—"}</b>
+                        </span>
+                        <span className="text-muted-foreground">
+                          Lead {it.leadTimeDays}d · {it.supplier ?? "sem fornecedor"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">{it.reason}</div>
-                    <div className="text-[11px] mt-1 flex gap-3 flex-wrap">
-                      <span>
-                        Saldo: <b>{it.balance}</b> {it.unit}
-                      </span>
-                      <span>
-                        Mín atual: <b>{it.currentMin}</b> → sugerido <b>{it.suggestedMin}</b>
-                      </span>
-                      <span className="text-muted-foreground">
-                        Máx: {it.suggestedMax} · {it.supplier ?? "sem fornecedor"}
-                      </span>
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-[11px]"
+                        onClick={() => openParams(it)}
+                        title="Editar Z, custo do pedido e custo de armazenagem"
+                      >
+                        <Sliders className="size-3 mr-1" /> params
+                      </Button>
+                      {it.currentMin !== it.suggestedMin && it.dailyConsumption > 0 ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[11px]"
+                          onClick={() =>
+                            apply.mutate({
+                              itemId: it.id,
+                              minimum: it.suggestedMin,
+                              maximum: it.suggestedMax,
+                            })
+                          }
+                          disabled={apply.isPending}
+                        >
+                          <Check className="size-3 mr-1" /> aplicar
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
-                  {it.currentMin !== it.suggestedMin && it.dailyConsumption > 0 ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-[11px] shrink-0"
-                      onClick={() =>
-                        apply.mutate({
-                          itemId: it.id,
-                          minimum: it.suggestedMin,
-                          maximum: it.suggestedMax,
-                        })
-                      }
-                      disabled={apply.isPending}
-                    >
-                      <Check className="size-3 mr-1" /> aplicar
-                    </Button>
+                  {it.needsOrder && it.eoq > 0 ? (
+                    <div className="rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-[11px] flex items-center gap-2">
+                      <Sparkles className="size-3 text-primary shrink-0" />
+                      <span>
+                        Sugestão de compra ideal: comprar <b>{it.eoq}</b> {it.unit} para otimizar
+                        custo de pedido vs. armazenagem (LEC).
+                      </span>
+                    </div>
+                  ) : it.needsOrder ? (
+                    <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-1.5 text-[11px] flex items-center gap-2">
+                      <Sparkles className="size-3 text-amber-600 shrink-0" />
+                      <span>
+                        Defina <b>custo do pedido (S)</b> e <b>custo anual de armazenagem (H)</b>{" "}
+                        em <i>params</i> para calcular o LEC.
+                      </span>
+                    </div>
                   ) : null}
                 </div>
               ))}
@@ -299,6 +374,87 @@ export function InventorySmartPanel() {
             >
               {register.isPending ? <Loader2 className="size-3 animate-spin" /> : null}
               Registrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!paramsTarget} onOpenChange={(o) => !o && setParamsTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Parâmetros de reposição</DialogTitle>
+            <DialogDescription>
+              {paramsTarget?.sku} · {paramsTarget?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {paramsTarget ? (
+            <div className="space-y-3 text-sm">
+              <div className="rounded-md bg-muted/40 p-2.5 text-[11px] space-y-0.5">
+                <div>
+                  Consumo médio: <b>{paramsTarget.dailyConsumption}</b> {paramsTarget.unit}/dia ·
+                  σ <b>{paramsTarget.sigmaDaily}</b>
+                </div>
+                <div>
+                  Lead time fornecedor: <b>{paramsTarget.leadTimeDays}d</b> · Demanda anual estim.:{" "}
+                  <b>{paramsTarget.annualDemand}</b>
+                </div>
+                <div>
+                  ROP atual: <b>{paramsTarget.rop}</b> · SS: <b>{paramsTarget.safetyStock}</b> ·
+                  LEC: <b>{paramsTarget.eoq > 0 ? paramsTarget.eoq : "—"}</b>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium">Fator de serviço Z</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formZ}
+                    onChange={(e) => setFormZ(e.target.value)}
+                  />
+                  <div className="text-[10px] text-muted-foreground mt-0.5">
+                    1.28=90% · 1.65=95% · 2.33=99%
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Dias de segurança (fallback)</label>
+                  <Input
+                    type="number"
+                    step="1"
+                    value={formSafetyDays}
+                    onChange={(e) => setFormSafetyDays(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Custo por pedido (S)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formS}
+                    onChange={(e) => setFormS(e.target.value)}
+                  />
+                  <div className="text-[10px] text-muted-foreground mt-0.5">R$ operacional</div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Custo anual armazenagem (H)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formH}
+                    onChange={(e) => setFormH(e.target.value)}
+                  />
+                  <div className="text-[10px] text-muted-foreground mt-0.5">R$ por unidade/ano</div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setParamsTarget(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => saveParams.mutate()} disabled={saveParams.isPending}>
+              {saveParams.isPending ? <Loader2 className="size-3 mr-1 animate-spin" /> : null}
+              Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
