@@ -270,7 +270,7 @@ function PcpKanban() {
 
   const summary = useMemo(() => {
     const wip = orders
-      .filter((o) => o.stage !== "entregue" && o.stage !== "cad")
+      .filter((o) => o.stage !== "entregue")
       .reduce((s, o) => s + o.quantity, 0);
     const late = orders.filter((o) => {
       const d = daysTo(o.due_date);
@@ -290,7 +290,7 @@ function PcpKanban() {
       oldest: number;
     } | null = null;
     for (const col of STAGES) {
-      if (col.key === "entregue" || col.key === "cad") continue;
+      if (col.key === "entregue") continue;
       const items = orders.filter((o) => o.stage === col.key);
       if (items.length < 2) continue;
       const days = items.map((o) => (now - new Date(o.stage_updated_at).getTime()) / 86400000);
@@ -308,9 +308,9 @@ function PcpKanban() {
   const move = (id: string, stage: Stage) => {
     const o = orders.find((x) => x.id === id);
     if (!o || o.stage === stage) return;
-    // Gate de qualidade — bloqueia passagem para Expedição/Entregue quando há CAPA aberta.
-    if ((stage === "expedicao" || stage === "entregue") && openCapaOrderIds.has(id)) {
-      toast.error(`${o.code} tem CAPA de qualidade aberta — resolva antes de expedir.`, {
+    // Gate de qualidade — bloqueia entrega quando há CAPA aberta.
+    if (stage === "entregue" && openCapaOrderIds.has(id)) {
+      toast.error(`${o.code} tem CAPA de qualidade aberta — resolva antes de entregar.`, {
         action: { label: "Ver CAPA", onClick: () => window.open(`/quality`, "_self") },
       });
       return;
