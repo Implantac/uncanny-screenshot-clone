@@ -557,7 +557,7 @@ export const MODULES: ModuleDef[] = [
     description:
       "Cronograma de desenvolvimento da coleção do briefing ao lançamento, com SLA por etapa e desvio real × planejado.",
     icon: CalendarClock,
-    group: "Desenvolvimento (PLM)",
+    group: "Desenvolvimento",
   },
 
   // === Marketing (de produto) ===
