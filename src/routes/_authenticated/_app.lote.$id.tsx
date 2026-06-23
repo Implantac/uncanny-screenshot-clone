@@ -491,6 +491,18 @@ function LotePage() {
         </div>
       </div>
 
+      <LotePassagensPanel
+        orderIds={orderIds}
+        openOrders={orders.map((o) => ({
+          id: o.id,
+          stage: o.stage,
+          stage_updated_at: o.stage_updated_at,
+          quantity: o.quantity,
+        }))}
+        logs={logs}
+        ownerId={batch?.owner_id ?? orders[0]?.owner_id ?? null}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass rounded-xl p-4">
           <div className="text-sm font-semibold mb-3 flex items-center gap-2">
