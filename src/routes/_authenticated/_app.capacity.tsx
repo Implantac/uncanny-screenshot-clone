@@ -1,14 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
+import { z } from "zod";
+import { zodValidator } from "@tanstack/zod-adapter";
 import { Factory, Clock, CheckCircle2, AlertTriangle, Gauge, Activity } from "lucide-react";
 import { CapacitySimulator } from "@/components/capacity-simulator";
 import { PcpIntelligencePanel } from "@/components/pcp-intelligence-panel";
 import { SupplierCapacityEditor } from "@/components/supplier-capacity-editor";
 
+const searchSchema = z.object({
+  scope: z.enum(["all", "interna", "faccao"]).default("all").catch("all"),
+});
+
 export const Route = createFileRoute("/_authenticated/_app/capacity")({
   component: Capacity,
+  validateSearch: zodValidator(searchSchema),
 });
 
 type Order = {
