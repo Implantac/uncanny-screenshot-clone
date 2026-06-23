@@ -94,9 +94,12 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
         const erpRes = await usesoftQuery<ErpItem>(
           `
           WITH recent_ped AS (
+            -- Apenas O.C. Cliente (tipo 99 — Ordem de Produção), em produção.
+            -- nnumerotpped = 49199 = "99 - ORDEM DE PRODUÇÃO" no cadastro de tipos.
             SELECT nnumeropedid, ncodigopedid, cliente, ddataentrega
               FROM pedidos
              WHERE cstatuspedid = ANY($2::text[])
+               AND nnumerotpped = 49199
                AND ddataentrega >= CURRENT_DATE - ($1 || ' days')::interval
           ),
           active AS (
