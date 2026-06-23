@@ -2817,6 +2817,9 @@ export type Database = {
       }
       products: {
         Row: {
+          abc_class: Database["public"]["Enums"]["product_abc_class"] | null
+          abc_revenue_12m: number | null
+          abc_updated_at: string | null
           category: string | null
           collection_id: string | null
           colors: string[] | null
@@ -2842,6 +2845,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          abc_class?: Database["public"]["Enums"]["product_abc_class"] | null
+          abc_revenue_12m?: number | null
+          abc_updated_at?: string | null
           category?: string | null
           collection_id?: string | null
           colors?: string[] | null
@@ -2867,6 +2873,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          abc_class?: Database["public"]["Enums"]["product_abc_class"] | null
+          abc_revenue_12m?: number | null
+          abc_updated_at?: string | null
           category?: string | null
           collection_id?: string | null
           colors?: string[] | null
@@ -3811,6 +3820,50 @@ export type Database = {
           },
         ]
       }
+      seasonality_curves: {
+        Row: {
+          created_at: string
+          id: string
+          multipliers: Json
+          notes: string | null
+          owner_id: string
+          product_id: string | null
+          scope: string
+          scope_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          multipliers?: Json
+          notes?: string | null
+          owner_id: string
+          product_id?: string | null
+          scope: string
+          scope_value?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          multipliers?: Json
+          notes?: string | null
+          owner_id?: string
+          product_id?: string | null
+          scope?: string
+          scope_value?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasonality_curves_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sector_messages: {
         Row: {
           author_name: string | null
@@ -4006,6 +4059,50 @@ export type Database = {
             columns: ["variant_id"]
             isOneToOne: false
             referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      size_grids: {
+        Row: {
+          created_at: string
+          distribution: Json
+          id: string
+          notes: string | null
+          owner_id: string
+          product_id: string | null
+          scope: string
+          scope_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          distribution?: Json
+          id?: string
+          notes?: string | null
+          owner_id: string
+          product_id?: string | null
+          scope: string
+          scope_value?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          distribution?: Json
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          product_id?: string | null
+          scope?: string
+          scope_value?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "size_grids_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -4950,6 +5047,15 @@ export type Database = {
         }
         Returns: string
       }
+      recompute_abc_class: {
+        Args: { _owner: string }
+        Returns: {
+          a_count: number
+          b_count: number
+          c_count: number
+          total: number
+        }[]
+      }
     }
     Enums: {
       account_status: "pendente" | "pago" | "atrasado" | "cancelado"
@@ -4982,6 +5088,7 @@ export type Database = {
         | "markdown"
         | "descontinuada"
       inventory_category: "tecido" | "aviamento" | "acabado" | "outros"
+      product_abc_class: "A" | "B" | "C"
       product_lifecycle_state:
         | "planned"
         | "active"
@@ -5213,6 +5320,7 @@ export const Constants = {
         "descontinuada",
       ],
       inventory_category: ["tecido", "aviamento", "acabado", "outros"],
+      product_abc_class: ["A", "B", "C"],
       product_lifecycle_state: [
         "planned",
         "active",

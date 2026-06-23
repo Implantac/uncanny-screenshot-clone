@@ -112,6 +112,7 @@ export const PRIMARY_SLUGS = new Set<string>([
   "fornecedores",
   "almoxarifado",
   "mrp",
+  "demand-planning",
   "compras",
   "stock-health",
   "marketing",
@@ -525,6 +526,16 @@ export const MODULES: ModuleDef[] = [
     short: "Curva ABC/XYZ",
     description: "Inteligência analítica do MRP: ABC/XYZ, giro, ruptura e excesso por categoria.",
     icon: BarChart3,
+    group: "Cadeia (PLM)",
+  },
+  {
+    slug: "demand-planning",
+    path: "/demand-planning",
+    title: "Demand Planning",
+    short: "Grade × ABC × Sazonalidade",
+    description:
+      "Sugestão de compras por fornecedor em matriz cor × tamanho, com Z dinâmico por classe ABC e sazonalidade mensal.",
+    icon: Sparkles,
     group: "Cadeia (PLM)",
   },
 

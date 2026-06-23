@@ -82,6 +82,7 @@ import { Route as AuthenticatedAppDppRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAppDocumentosRouteImport } from './routes/_authenticated/_app.documentos'
 import { Route as AuthenticatedAppDevKanbanRouteImport } from './routes/_authenticated/_app.dev-kanban'
 import { Route as AuthenticatedAppDesignerWorkspaceRouteImport } from './routes/_authenticated/_app.designer-workspace'
+import { Route as AuthenticatedAppDemandPlanningRouteImport } from './routes/_authenticated/_app.demand-planning'
 import { Route as AuthenticatedAppDataLakeRouteImport } from './routes/_authenticated/_app.data-lake'
 import { Route as AuthenticatedAppCopilotRouteImport } from './routes/_authenticated/_app.copilot'
 import { Route as AuthenticatedAppControlTowerRouteImport } from './routes/_authenticated/_app.control-tower'
@@ -537,6 +538,12 @@ const AuthenticatedAppDesignerWorkspaceRoute =
     path: '/designer-workspace',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppDemandPlanningRoute =
+  AuthenticatedAppDemandPlanningRouteImport.update({
+    id: '/demand-planning',
+    path: '/demand-planning',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppDataLakeRoute =
   AuthenticatedAppDataLakeRouteImport.update({
     id: '/data-lake',
@@ -793,6 +800,7 @@ export interface FileRoutesByFullPath {
   '/control-tower': typeof AuthenticatedAppControlTowerRoute
   '/copilot': typeof AuthenticatedAppCopilotRoute
   '/data-lake': typeof AuthenticatedAppDataLakeRoute
+  '/demand-planning': typeof AuthenticatedAppDemandPlanningRoute
   '/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
   '/documentos': typeof AuthenticatedAppDocumentosRoute
@@ -905,6 +913,7 @@ export interface FileRoutesByTo {
   '/control-tower': typeof AuthenticatedAppControlTowerRoute
   '/copilot': typeof AuthenticatedAppCopilotRoute
   '/data-lake': typeof AuthenticatedAppDataLakeRoute
+  '/demand-planning': typeof AuthenticatedAppDemandPlanningRoute
   '/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
   '/documentos': typeof AuthenticatedAppDocumentosRoute
@@ -1019,6 +1028,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/control-tower': typeof AuthenticatedAppControlTowerRoute
   '/_authenticated/_app/copilot': typeof AuthenticatedAppCopilotRoute
   '/_authenticated/_app/data-lake': typeof AuthenticatedAppDataLakeRoute
+  '/_authenticated/_app/demand-planning': typeof AuthenticatedAppDemandPlanningRoute
   '/_authenticated/_app/designer-workspace': typeof AuthenticatedAppDesignerWorkspaceRoute
   '/_authenticated/_app/dev-kanban': typeof AuthenticatedAppDevKanbanRoute
   '/_authenticated/_app/documentos': typeof AuthenticatedAppDocumentosRoute
@@ -1134,6 +1144,7 @@ export interface FileRouteTypes {
     | '/control-tower'
     | '/copilot'
     | '/data-lake'
+    | '/demand-planning'
     | '/designer-workspace'
     | '/dev-kanban'
     | '/documentos'
@@ -1246,6 +1257,7 @@ export interface FileRouteTypes {
     | '/control-tower'
     | '/copilot'
     | '/data-lake'
+    | '/demand-planning'
     | '/designer-workspace'
     | '/dev-kanban'
     | '/documentos'
@@ -1359,6 +1371,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/control-tower'
     | '/_authenticated/_app/copilot'
     | '/_authenticated/_app/data-lake'
+    | '/_authenticated/_app/demand-planning'
     | '/_authenticated/_app/designer-workspace'
     | '/_authenticated/_app/dev-kanban'
     | '/_authenticated/_app/documentos'
@@ -1973,6 +1986,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppDesignerWorkspaceRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/demand-planning': {
+      id: '/_authenticated/_app/demand-planning'
+      path: '/demand-planning'
+      fullPath: '/demand-planning'
+      preLoaderRoute: typeof AuthenticatedAppDemandPlanningRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/data-lake': {
       id: '/_authenticated/_app/data-lake'
       path: '/data-lake'
@@ -2288,6 +2308,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppControlTowerRoute: typeof AuthenticatedAppControlTowerRoute
   AuthenticatedAppCopilotRoute: typeof AuthenticatedAppCopilotRoute
   AuthenticatedAppDataLakeRoute: typeof AuthenticatedAppDataLakeRoute
+  AuthenticatedAppDemandPlanningRoute: typeof AuthenticatedAppDemandPlanningRoute
   AuthenticatedAppDesignerWorkspaceRoute: typeof AuthenticatedAppDesignerWorkspaceRoute
   AuthenticatedAppDevKanbanRoute: typeof AuthenticatedAppDevKanbanRoute
   AuthenticatedAppDocumentosRoute: typeof AuthenticatedAppDocumentosRoute
@@ -2388,6 +2409,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppControlTowerRoute: AuthenticatedAppControlTowerRoute,
   AuthenticatedAppCopilotRoute: AuthenticatedAppCopilotRoute,
   AuthenticatedAppDataLakeRoute: AuthenticatedAppDataLakeRoute,
+  AuthenticatedAppDemandPlanningRoute: AuthenticatedAppDemandPlanningRoute,
   AuthenticatedAppDesignerWorkspaceRoute:
     AuthenticatedAppDesignerWorkspaceRoute,
   AuthenticatedAppDevKanbanRoute: AuthenticatedAppDevKanbanRoute,
