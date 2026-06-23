@@ -95,7 +95,7 @@ export const getBOMExplosion = createServerFn({ method: "POST" })
 
     const { data: materials } = await supabase
       .from("tech_sheet_materials")
-      .select("id, name, inventory_item_id, consumption, loss_pct, unit, unit_cost")
+      .select("id, name, inventory_item_id, consumption, consumption_by_size, loss_pct, unit, unit_cost")
       .eq("tech_sheet_id", sheet.id);
 
     const matList = materials ?? [];
@@ -111,7 +111,19 @@ export const getBOMExplosion = createServerFn({ method: "POST" })
     const lines: BOMLine[] = matList.map((m) => {
       const consumo = Number(m.consumption ?? 0);
       const loss = Number(m.loss_pct ?? 0);
-      const necessidade = consumo * (1 + loss / 100) * qtyTotal;
+      // BOM por tamanho: se consumption_by_size existir, soma cons[label] × qty[label]
+      const bySize = (m as { consumption_by_size?: Record<string, number> | null })
+        .consumption_by_size;
+      let necessidadeBase = 0;
+      if (bySize && qtyBySize.size > 0) {
+        for (const [label, qty] of qtyBySize) {
+          const cs = Number(bySize[label] ?? consumo);
+          necessidadeBase += cs * qty;
+        }
+      } else {
+        necessidadeBase = consumo * qtyTotal;
+      }
+      const necessidade = necessidadeBase * (1 + loss / 100);
       const unit_cost = Number(m.unit_cost ?? 0);
       const total_cost = necessidade * unit_cost;
       const inv = m.inventory_item_id ? invMap.get(m.inventory_item_id) : null;
