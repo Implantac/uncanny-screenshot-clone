@@ -160,6 +160,8 @@ type ServiceOrderRow = {
   production_order_id: string | null;
   quantity: number | null;
   qty_received: number | null;
+  qty_lost: number | null;
+  qty_defect: number | null;
   sent_at: string | null;
   due_at: string | null;
   status: string;
