@@ -79,16 +79,24 @@ export function InventorySmartPanel() {
   };
 
   const saveParams = useMutation({
-    mutationFn: () =>
-      paramsFn({
+    mutationFn: () => {
+      const parseNum = (raw: string, fallback: number, min = 0) => {
+        const trimmed = raw.trim();
+        if (trimmed === "") return fallback;
+        const n = Number(trimmed);
+        if (!Number.isFinite(n) || n < min) return fallback;
+        return n;
+      };
+      return paramsFn({
         data: {
           itemId: paramsTarget!.id,
-          serviceFactorZ: Number(formZ) || 0,
-          costPerOrder: Number(formS) || 0,
-          holdingCostAnnual: Number(formH) || 0,
-          safetyDays: Math.max(0, Math.floor(Number(formSafetyDays) || 0)),
+          serviceFactorZ: parseNum(formZ, REORDER_DEFAULTS.service_factor_z, 0),
+          costPerOrder: parseNum(formS, REORDER_DEFAULTS.cost_per_order, 0),
+          holdingCostAnnual: parseNum(formH, REORDER_DEFAULTS.holding_cost_annual, 0),
+          safetyDays: Math.floor(parseNum(formSafetyDays, REORDER_DEFAULTS.safety_days, 0)),
         },
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success("Parâmetros atualizados — recalculando…");
       setParamsTarget(null);
