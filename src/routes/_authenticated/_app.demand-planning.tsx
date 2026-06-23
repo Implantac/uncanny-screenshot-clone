@@ -95,7 +95,7 @@ function RecalcAbcButton() {
   const fn = useServerFn(recomputeAbcClass);
   const qc = useQueryClient();
   const m = useMutation({
-    mutationFn: () => fn({ data: {} }),
+    mutationFn: () => fn(),
     onSuccess: (r) => {
       toast.success(`ABC recalculado · A:${r.a} B:${r.b} C:${r.c}`);
       qc.invalidateQueries({ queryKey: ["dp-purchase"] });
@@ -115,7 +115,7 @@ function PurchaseBySupplierPanel() {
   const fn = useServerFn(getPurchaseSuggestionsBySupplier);
   const { data, isLoading } = useQuery({
     queryKey: ["dp-purchase"],
-    queryFn: () => fn({ data: {} }),
+    queryFn: () => fn(),
   });
 
   if (isLoading) return <div className="text-sm text-muted-foreground">Calculando demanda por SKU…</div>;
