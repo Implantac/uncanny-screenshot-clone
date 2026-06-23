@@ -300,10 +300,20 @@ function Prototipos() {
   const productName = (id: string | null) => products.find((p) => p.id === id)?.name ?? "—";
   const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "—";
 
+  const productsInCollection = useMemo(() => {
+    if (!collectionId) return null;
+    const ids = new Set(
+      products.filter((p) => p.collection_id === collectionId).map((p) => p.id),
+    );
+    return ids;
+  }, [collectionId, products]);
+
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     return items.filter((p) => {
       if (stageFilter !== "all" && p.stage !== stageFilter) return false;
+      if (productsInCollection && (!p.product_id || !productsInCollection.has(p.product_id)))
+        return false;
       if (!term) return true;
       return (
         p.code.toLowerCase().includes(term) ||
@@ -312,7 +322,7 @@ function Prototipos() {
       );
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, q, stageFilter, products, suppliers]);
+  }, [items, q, stageFilter, products, suppliers, productsInCollection]);
 
   function exportSpec(p: Prototype) {
     const spec = {
