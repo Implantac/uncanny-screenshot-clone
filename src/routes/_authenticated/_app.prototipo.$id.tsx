@@ -173,13 +173,24 @@ function PrototipoPage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-5 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <Link to="/prototipos">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="size-4 mr-1" />
             Protótipos
           </Button>
         </Link>
+        {proto.products?.collection_id && (
+          <Link
+            to="/colecao-360/$id"
+            params={{ id: proto.products.collection_id }}
+          >
+            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10">
+              <Compass className="size-4 mr-1" />
+              Ver Coleção 360º
+            </Button>
+          </Link>
+        )}
         <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
           {STAGE_LABEL[proto.stage] ?? proto.stage}
         </Badge>
