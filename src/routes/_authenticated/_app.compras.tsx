@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { ShoppingCart, AlertTriangle, Package, TrendingDown } from "lucide-react";
+import { InventorySmartPanel } from "@/components/inventory-smart-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/compras")({ component: Compras });
 
