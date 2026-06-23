@@ -29,6 +29,8 @@ import { ProductionOccurrenceButton } from "@/components/production-occurrence";
 import { TechSheetDrawerTrigger } from "@/components/tech-sheet-drawer";
 import { LoteQrButton } from "@/components/lote-qr-button";
 import { BomExplosionDialog } from "@/components/bom-explosion-dialog";
+import { LoteSplitDialog } from "@/components/lote-split-dialog";
+import { LotePassagensPanel } from "@/components/lote-passagens-panel";
 
 const OCC_KIND_LABEL: Record<string, string> = {
   positiva: "Positiva (+)",
