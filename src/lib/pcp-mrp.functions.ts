@@ -58,7 +58,7 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
     // 3) Materiais das fichas (apenas com inventory_item_id — só planejamos o que está cadastrado)
     const { data: mats, error: mErr } = await supabase
       .from("tech_sheet_materials")
-      .select("tech_sheet_id, inventory_item_id, consumption, loss_pct, unit, name")
+      .select("tech_sheet_id, inventory_item_id, consumption, consumption_by_size, loss_pct, unit, name")
       .eq("owner_id", userId)
       .in("tech_sheet_id", sheetIds)
       .not("inventory_item_id", "is", null);
@@ -70,13 +70,34 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
       matsBySheet.set(m.tech_sheet_id, arr);
     }
 
-    // 4) Explode: para cada OP, multiplica consumo × (1+perda) × quantidade
+    // 3.5) Grade Tam×Cor por OP — só carregada se alguma ficha tiver consumption_by_size
+    const anyBySize = (mats ?? []).some(
+      (m) => m.consumption_by_size && Object.keys(m.consumption_by_size as object).length > 0,
+    );
+    const qtyBySizeByOp = new Map<string, Map<string, number>>();
+    if (anyBySize) {
+      const opIds = opsList.map((o) => o.id);
+      const { data: gridRows } = await supabase
+        .from("production_order_grid")
+        .select("production_order_id, quantity, product_variants(product_size_options(label))")
+        .in("production_order_id", opIds);
+      for (const r of gridRows ?? []) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const label = (r as any).product_variants?.product_size_options?.label as string | undefined;
+        if (!label || !r.production_order_id) continue;
+        const m = qtyBySizeByOp.get(r.production_order_id) ?? new Map<string, number>();
+        m.set(label, (m.get(label) ?? 0) + Number(r.quantity ?? 0));
+        qtyBySizeByOp.set(r.production_order_id, m);
+      }
+    }
+
+    // 4) Explode: consumo (por tamanho quando disponível) × (1+perda)
     type Need = {
       inventoryItemId: string;
       required: number;
       unit: string;
       name: string;
-      contributingOps: { code: string; qty: number }[];
+      contributingOps: { code: string; qty: number; due?: string | null }[];
     };
     const needs = new Map<string, Need>();
     for (const op of opsList) {
@@ -84,10 +105,19 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
       const sheetId = sheetByProduct.get(op.product_id);
       if (!sheetId) continue;
       const matsList = matsBySheet.get(sheetId) ?? [];
+      const sizeMap = qtyBySizeByOp.get(op.id);
       for (const m of matsList) {
         if (!m.inventory_item_id) continue;
-        const perPiece = Number(m.consumption ?? 0) * (1 + Number(m.loss_pct ?? 0) / 100);
-        const reqQty = perPiece * Number(op.quantity);
+        const bySize = m.consumption_by_size as Record<string, number> | null;
+        let base = 0;
+        if (bySize && sizeMap && sizeMap.size > 0) {
+          for (const [label, qty] of sizeMap) {
+            base += Number(bySize[label] ?? m.consumption ?? 0) * qty;
+          }
+        } else {
+          base = Number(m.consumption ?? 0) * Number(op.quantity);
+        }
+        const reqQty = base * (1 + Number(m.loss_pct ?? 0) / 100);
         if (reqQty <= 0) continue;
         const cur = needs.get(m.inventory_item_id) ?? {
           inventoryItemId: m.inventory_item_id,
@@ -97,7 +127,7 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
           contributingOps: [],
         };
         cur.required += reqQty;
-        cur.contributingOps.push({ code: op.code, qty: reqQty });
+        cur.contributingOps.push({ code: op.code, qty: reqQty, due: op.due_date });
         needs.set(m.inventory_item_id, cur);
       }
     }
