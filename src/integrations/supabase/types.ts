@@ -4506,6 +4506,8 @@ export type Database = {
           erp_synced_at: string | null
           id: string
           lead_time_days: number | null
+          min_order_qty: number | null
+          min_order_value: number | null
           name: string
           notes: string | null
           owner_id: string
@@ -4527,6 +4529,8 @@ export type Database = {
           erp_synced_at?: string | null
           id?: string
           lead_time_days?: number | null
+          min_order_qty?: number | null
+          min_order_value?: number | null
           name: string
           notes?: string | null
           owner_id: string
@@ -4548,6 +4552,8 @@ export type Database = {
           erp_synced_at?: string | null
           id?: string
           lead_time_days?: number | null
+          min_order_qty?: number | null
+          min_order_value?: number | null
           name?: string
           notes?: string | null
           owner_id?: string

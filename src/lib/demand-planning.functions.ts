@@ -67,6 +67,8 @@ type DemandRow = {
   abcClass: "A" | "B" | "C" | null;
   supplierId: string | null;
   supplierName: string | null;
+  supplierMinOrderValue: number | null;
+  supplierMinOrderQty: number | null;
   costPrice: number;
   annualDemand: number;
   monthFactor: number;
@@ -154,7 +156,7 @@ export const getDemandPlanning = createServerFn({ method: "POST" })
     const { data: items } = await supabase
       .from("inventory_items")
       .select(
-        "id, product_id, balance, mrp_overrides, preferred_supplier_id, suppliers:preferred_supplier_id(name, lead_time_days)",
+        "id, product_id, balance, mrp_overrides, preferred_supplier_id, suppliers:preferred_supplier_id(name, lead_time_days, min_order_value, min_order_qty)",
       )
       .eq("owner_id", userId)
       .in("product_id", productIds);
@@ -291,6 +293,10 @@ export const getDemandPlanning = createServerFn({ method: "POST" })
         abcClass: klass,
         supplierId,
         supplierName: supplier?.name ?? null,
+        supplierMinOrderValue:
+          supplier?.min_order_value != null ? Number(supplier.min_order_value) : null,
+        supplierMinOrderQty:
+          supplier?.min_order_qty != null ? Number(supplier.min_order_qty) : null,
         costPrice,
         annualDemand: Math.round(annualUnits),
         monthFactor,
@@ -320,7 +326,7 @@ export const getPurchaseSuggestionsBySupplier = createServerFn({ method: "POST" 
         abcClass: "A" | "B" | "C" | null;
         cols: { id: string; label: string }[];
         rows: { id: string; name: string; hex: string | null }[];
-        matrix: Record<string, Record<string, number>>; // colorId -> sizeId -> eoq
+        matrix: Record<string, Record<string, number>>;
         totalQty: number;
         totalCost: number;
         monthFactor: number;
@@ -329,6 +335,14 @@ export const getPurchaseSuggestionsBySupplier = createServerFn({ method: "POST" 
       }>;
       totalQty: number;
       totalCost: number;
+      minOrderValue: number | null;
+      minOrderQty: number | null;
+      meetsMinValue: boolean;
+      meetsMinQty: boolean;
+      gapValue: number;
+      gapQty: number;
+      classMix: { A: number; B: number; C: number; U: number };
+      reason: string;
     };
 
     const groups = new Map<string, SupplierGroup>();
@@ -345,11 +359,18 @@ export const getPurchaseSuggestionsBySupplier = createServerFn({ method: "POST" 
           products: [],
           totalQty: 0,
           totalCost: 0,
+          minOrderValue: p.supplierMinOrderValue,
+          minOrderQty: p.supplierMinOrderQty,
+          meetsMinValue: true,
+          meetsMinQty: true,
+          gapValue: 0,
+          gapQty: 0,
+          classMix: { A: 0, B: 0, C: 0, U: 0 },
+          reason: "",
         };
         groups.set(key, g);
       }
 
-      // Build matrix
       const colsMap = new Map<string, string>();
       const rowsMap = new Map<string, { name: string; hex: string | null }>();
       const matrix: Record<string, Record<string, number>> = {};
@@ -381,11 +402,105 @@ export const getPurchaseSuggestionsBySupplier = createServerFn({ method: "POST" 
       });
       g.totalQty += prodQty;
       g.totalCost += prodCost;
+      const cls = p.abcClass ?? "U";
+      g.classMix[cls as "A" | "B" | "C" | "U"] += prodQty;
+    }
+
+    // Compute minimum-order status + AI-style supplier-level reason
+    for (const g of groups.values()) {
+      g.meetsMinValue = g.minOrderValue == null || g.totalCost >= g.minOrderValue;
+      g.meetsMinQty = g.minOrderQty == null || g.totalQty >= g.minOrderQty;
+      g.gapValue = g.minOrderValue == null ? 0 : Math.max(0, g.minOrderValue - g.totalCost);
+      g.gapQty = g.minOrderQty == null ? 0 : Math.max(0, g.minOrderQty - g.totalQty);
+
+      const parts: string[] = [];
+      const dominant = (["A", "B", "C"] as const).reduce(
+        (acc, k) => (g.classMix[k] > g.classMix[acc] ? k : acc),
+        "C" as "A" | "B" | "C",
+      );
+      parts.push(
+        g.classMix[dominant] > 0
+          ? `Predomínio Classe ${dominant} (${Math.round((g.classMix[dominant] * 100) / Math.max(1, g.totalQty))}% do volume)`
+          : "Sem produtos ABC classificados",
+      );
+      if (!g.meetsMinValue) {
+        parts.push(
+          `falta ${g.gapValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} para o mínimo`,
+        );
+      } else if (g.minOrderValue != null) {
+        parts.push("mínimo de faturamento atingido");
+      }
+      if (!g.meetsMinQty) parts.push(`faltam ${g.gapQty} pç para o mínimo`);
+      g.reason = parts.join(" · ");
     }
 
     return {
       groups: Array.from(groups.values()).sort((a, b) => b.totalQty - a.totalQty),
     };
+  });
+
+export const generatePurchaseOrdersBatch = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (i: {
+      orders: Array<{
+        supplierId: string | null;
+        items: Array<{ description: string; quantity: number; unitPrice: number }>;
+      }>;
+    }) =>
+      z
+        .object({
+          orders: z
+            .array(
+              z.object({
+                supplierId: z.string().uuid().nullable(),
+                items: z
+                  .array(
+                    z.object({
+                      description: z.string().min(1).max(300),
+                      quantity: z.number().positive(),
+                      unitPrice: z.number().min(0),
+                    }),
+                  )
+                  .min(1),
+              }),
+            )
+            .min(1)
+            .max(50),
+        })
+        .parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const created: Array<{ id: string; code: string; supplierId: string | null }> = [];
+    for (const order of data.orders) {
+      const code = `OC-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+      const total = order.items.reduce((s, it) => s + it.quantity * it.unitPrice, 0);
+      const { data: po, error } = await context.supabase
+        .from("purchase_orders")
+        .insert({
+          owner_id: context.userId,
+          supplier_id: order.supplierId,
+          code,
+          status: "rascunho",
+          total_value: total,
+          notes: "Gerado em lote pelo Demand Planning",
+        })
+        .select("id")
+        .single();
+      if (error) throw new Error(error.message);
+      const { error: iErr } = await context.supabase.from("purchase_order_items").insert(
+        order.items.map((it) => ({
+          owner_id: context.userId,
+          purchase_order_id: po!.id,
+          description: it.description,
+          quantity: it.quantity,
+          unit_price: it.unitPrice,
+        })),
+      );
+      if (iErr) throw new Error(iErr.message);
+      created.push({ id: po!.id, code, supplierId: order.supplierId });
+    }
+    return { created };
   });
 
 export const generatePurchaseOrderFromSuggestion = createServerFn({ method: "POST" })
