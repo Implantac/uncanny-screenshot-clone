@@ -154,7 +154,7 @@ export const getDemandPlanning = createServerFn({ method: "POST" })
     const { data: items } = await supabase
       .from("inventory_items")
       .select(
-        "id, product_id, balance, mrp_overrides, preferred_supplier_id, suppliers:preferred_supplier_id(name, lead_time_days)",
+        "id, product_id, balance, mrp_overrides, preferred_supplier_id, suppliers:preferred_supplier_id(name, lead_time_days, min_order_value, min_order_qty)",
       )
       .eq("owner_id", userId)
       .in("product_id", productIds);
