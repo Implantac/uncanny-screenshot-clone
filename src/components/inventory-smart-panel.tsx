@@ -100,21 +100,8 @@ export function InventorySmartPanel() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-  const cycle = useQuery({
-    queryKey: ["inv-smart", "cycle"],
-    queryFn: () => cycleFn({ data: { windowDays: 90 } }),
-    refetchInterval: 120_000,
-  });
 
-  const apply = useMutation({
-    mutationFn: (v: { itemId: string; minimum: number; maximum: number }) =>
-      applyFn({ data: v }),
-    onSuccess: () => {
-      toast.success("Mínimo/máximo atualizados");
-      qc.invalidateQueries({ queryKey: ["inv-smart"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
+
 
   const [countTarget, setCountTarget] = useState<{
     itemId: string;
