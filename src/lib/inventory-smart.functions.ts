@@ -50,7 +50,9 @@ export const updateReorderParams = createServerFn({ method: "POST" })
     if (data.serviceFactorZ != null) overrides.service_factor_z = data.serviceFactorZ;
     if (data.costPerOrder != null) overrides.cost_per_order = data.costPerOrder;
     if (data.holdingCostAnnual != null) overrides.holding_cost_annual = data.holdingCostAnnual;
-    const patch: Record<string, unknown> = { mrp_overrides: overrides };
+    const patch: { mrp_overrides: ReorderOverrides; safety_days?: number } = {
+      mrp_overrides: overrides,
+    };
     if (data.safetyDays != null) patch.safety_days = data.safetyDays;
     const { error } = await supabase
       .from("inventory_items")
