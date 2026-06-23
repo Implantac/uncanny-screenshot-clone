@@ -295,6 +295,13 @@ export function InventorySmartPanel() {
                       </span>
                     </div>
                   ) : null}
+                  {it.warnings && it.warnings.length > 0 ? (
+                    <div className="rounded-md border border-destructive/40 bg-destructive/5 px-2.5 py-1.5 text-[11px] text-destructive space-y-0.5">
+                      {it.warnings.map((w, i) => (
+                        <div key={i}>⚠ {w}</div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
