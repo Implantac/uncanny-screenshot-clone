@@ -1,12 +1,22 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Boxes, TrendingDown, ClipboardCheck, Check, Loader2, RefreshCw } from "lucide-react";
+import {
+  Boxes,
+  TrendingDown,
+  ClipboardCheck,
+  Check,
+  Loader2,
+  RefreshCw,
+  Sliders,
+  Sparkles,
+} from "lucide-react";
 import {
   getDynamicReorderSuggestions,
   applyReorderSuggestion,
   getCycleCountPlan,
   registerCycleCount,
+  updateReorderParams,
 } from "@/lib/inventory-smart.functions";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
