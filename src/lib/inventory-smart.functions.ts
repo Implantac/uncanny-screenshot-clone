@@ -79,10 +79,16 @@ export const updateReorderParams = createServerFn({ method: "POST" })
       .eq("owner_id", userId)
       .single();
     if (rErr) throw new Error(rErr.message);
-    const overrides = { ...((cur?.mrp_overrides as ReorderOverrides) ?? {}) };
-    if (data.serviceFactorZ != null) overrides.service_factor_z = data.serviceFactorZ;
-    if (data.costPerOrder != null) overrides.cost_per_order = data.costPerOrder;
-    if (data.holdingCostAnnual != null) overrides.holding_cost_annual = data.holdingCostAnnual;
+    const raw = cur?.mrp_overrides;
+    const base =
+      raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as ReorderOverrides) : {};
+    const overrides: ReorderOverrides = { ...base };
+    if (data.serviceFactorZ != null && Number.isFinite(data.serviceFactorZ))
+      overrides.service_factor_z = data.serviceFactorZ;
+    if (data.costPerOrder != null && Number.isFinite(data.costPerOrder))
+      overrides.cost_per_order = data.costPerOrder;
+    if (data.holdingCostAnnual != null && Number.isFinite(data.holdingCostAnnual))
+      overrides.holding_cost_annual = data.holdingCostAnnual;
     const patch: { mrp_overrides: ReorderOverrides; safety_days?: number } = {
       mrp_overrides: overrides,
     };
