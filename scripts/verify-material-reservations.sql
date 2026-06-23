@@ -64,7 +64,9 @@ BEGIN
       (v_item_b, v_owner, 'TEST-B-' || substr(v_item_b::text,1,6), 'TEST Aviam B',  'un', 50);
 
   INSERT INTO public.tech_sheets(id, owner_id, product_id, code, version, status, overhead_pct)
-    VALUES (v_sheet, v_owner, v_product, 'TS-TEST-' || substr(v_sheet::text,1,6), 'v1.0', 'aprovada', 0);
+    VALUES (v_sheet, v_owner, v_product, 'TS-TEST-' || substr(v_sheet::text,1,6), 'v1.0', 'rascunho', 0);
+  UPDATE public.tech_sheets SET status = 'aprovada' WHERE id = v_sheet;
+
 
   -- BOM: A → 2 m × (1+10%) por peça | B → 4 un × (1+0%) por peça
   INSERT INTO public.tech_sheet_materials(owner_id, tech_sheet_id, inventory_item_id, name, consumption, unit, loss_pct, unit_cost)
