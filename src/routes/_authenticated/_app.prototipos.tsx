@@ -60,6 +60,7 @@ export const Route = createFileRoute("/_authenticated/_app/prototipos")({
         "all",
       ).default("all"),
       productId: fallback(z.string().regex(UUID_RE).optional(), undefined),
+      collectionId: fallback(z.string().regex(UUID_RE).optional(), undefined),
     }),
   ),
   head: () => ({
@@ -108,12 +109,17 @@ function Prototipos() {
   useRealtime("prototypes", ["prototypes"]);
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { q, stage: stageFilter, productId: deepProductId } = search;
+  const { q, stage: stageFilter, productId: deepProductId, collectionId } = search;
   const setQ = (v: string) =>
     navigate({ search: (p: typeof search) => ({ ...p, q: v }), replace: true });
   const setStageFilter = (v: string) =>
     navigate({
       search: (p: typeof search) => ({ ...p, stage: v as typeof search.stage }),
+      replace: true,
+    });
+  const clearCollectionFilter = () =>
+    navigate({
+      search: (p: typeof search) => ({ ...p, collectionId: undefined }),
       replace: true,
     });
   const [open, setOpen] = useState(false);
@@ -153,10 +159,24 @@ function Prototipos() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,name,image_url")
+        .select("id,name,image_url,collection_id")
         .order("name");
       if (error) throw error;
-      return data as (Ref & { image_url: string | null })[];
+      return data as (Ref & { image_url: string | null; collection_id: string | null })[];
+    },
+  });
+
+  const { data: collectionRef } = useQuery({
+    queryKey: ["collection-ref", collectionId],
+    enabled: !!collectionId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("collections")
+        .select("id,name,season,year")
+        .eq("id", collectionId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -280,10 +300,20 @@ function Prototipos() {
   const productName = (id: string | null) => products.find((p) => p.id === id)?.name ?? "—";
   const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "—";
 
+  const productsInCollection = useMemo(() => {
+    if (!collectionId) return null;
+    const ids = new Set(
+      products.filter((p) => p.collection_id === collectionId).map((p) => p.id),
+    );
+    return ids;
+  }, [collectionId, products]);
+
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     return items.filter((p) => {
       if (stageFilter !== "all" && p.stage !== stageFilter) return false;
+      if (productsInCollection && (!p.product_id || !productsInCollection.has(p.product_id)))
+        return false;
       if (!term) return true;
       return (
         p.code.toLowerCase().includes(term) ||
@@ -292,7 +322,7 @@ function Prototipos() {
       );
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, q, stageFilter, products, suppliers]);
+  }, [items, q, stageFilter, products, suppliers, productsInCollection]);
 
   function exportSpec(p: Prototype) {
     const spec = {
@@ -339,6 +369,36 @@ function Prototipos() {
           Nova solicitação
         </Button>
       </div>
+
+      {collectionId && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 flex items-center justify-between gap-3 text-sm">
+          <div className="inline-flex items-center gap-2 min-w-0">
+            <Sparkles className="size-3.5 text-primary shrink-0" />
+            <span className="truncate">
+              Filtrando por coleção:{" "}
+              <b>
+                {collectionRef?.name ?? "—"}
+                {collectionRef?.season && ` · ${collectionRef.season}`}
+                {collectionRef?.year && ` ${collectionRef.year}`}
+              </b>
+            </span>
+            <Link
+              to="/colecao-360/$id"
+              params={{ id: collectionId }}
+              className="text-xs text-primary hover:underline shrink-0"
+            >
+              Abrir 360º →
+            </Link>
+          </div>
+          <button
+            onClick={clearCollectionFilter}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <X className="size-3" /> Limpar
+          </button>
+        </div>
+      )}
+
 
       {isLoading ? (
         <p className="text-muted-foreground">Carregando…</p>

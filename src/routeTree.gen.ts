@@ -122,6 +122,7 @@ import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes
 import { Route as AuthenticatedAppMrpExecutivoRouteImport } from './routes/_authenticated/_app.mrp.executivo'
 import { Route as AuthenticatedAppMrpBiRouteImport } from './routes/_authenticated/_app.mrp.bi'
 import { Route as AuthenticatedAppLoteIdRouteImport } from './routes/_authenticated/_app.lote.$id'
+import { Route as AuthenticatedAppColecao360IdRouteImport } from './routes/_authenticated/_app.colecao-360.$id'
 import { Route as AuthenticatedAppApontarIdRouteImport } from './routes/_authenticated/_app.apontar.$id'
 import { Route as ApiPublicProductImageOwnerIdSplatRouteImport } from './routes/api/public/product-image/$ownerId.$'
 
@@ -770,6 +771,12 @@ const AuthenticatedAppLoteIdRoute = AuthenticatedAppLoteIdRouteImport.update({
   path: '/lote/$id',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppColecao360IdRoute =
+  AuthenticatedAppColecao360IdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAppColecao360Route,
+  } as any)
 const AuthenticatedAppApontarIdRoute =
   AuthenticatedAppApontarIdRouteImport.update({
     id: '/apontar/$id',
@@ -806,7 +813,7 @@ export interface FileRoutesByFullPath {
   '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/clientes': typeof AuthenticatedAppClientesRoute
   '/closed-loop': typeof AuthenticatedAppClosedLoopRoute
-  '/colecao-360': typeof AuthenticatedAppColecao360Route
+  '/colecao-360': typeof AuthenticatedAppColecao360RouteWithChildren
   '/colecoes': typeof AuthenticatedAppColecoesRoute
   '/comercial': typeof AuthenticatedAppComercialRoute
   '/compras': typeof AuthenticatedAppComprasRoute
@@ -882,6 +889,7 @@ export interface FileRoutesByFullPath {
   '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
+  '/colecao-360/$id': typeof AuthenticatedAppColecao360IdRoute
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
@@ -921,7 +929,7 @@ export interface FileRoutesByTo {
   '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/clientes': typeof AuthenticatedAppClientesRoute
   '/closed-loop': typeof AuthenticatedAppClosedLoopRoute
-  '/colecao-360': typeof AuthenticatedAppColecao360Route
+  '/colecao-360': typeof AuthenticatedAppColecao360RouteWithChildren
   '/colecoes': typeof AuthenticatedAppColecoesRoute
   '/comercial': typeof AuthenticatedAppComercialRoute
   '/compras': typeof AuthenticatedAppComprasRoute
@@ -997,6 +1005,7 @@ export interface FileRoutesByTo {
   '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
+  '/colecao-360/$id': typeof AuthenticatedAppColecao360IdRoute
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
@@ -1038,7 +1047,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/_authenticated/_app/clientes': typeof AuthenticatedAppClientesRoute
   '/_authenticated/_app/closed-loop': typeof AuthenticatedAppClosedLoopRoute
-  '/_authenticated/_app/colecao-360': typeof AuthenticatedAppColecao360Route
+  '/_authenticated/_app/colecao-360': typeof AuthenticatedAppColecao360RouteWithChildren
   '/_authenticated/_app/colecoes': typeof AuthenticatedAppColecoesRoute
   '/_authenticated/_app/comercial': typeof AuthenticatedAppComercialRoute
   '/_authenticated/_app/compras': typeof AuthenticatedAppComprasRoute
@@ -1115,6 +1124,7 @@ export interface FileRoutesById {
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/_app/apontar/$id': typeof AuthenticatedAppApontarIdRoute
+  '/_authenticated/_app/colecao-360/$id': typeof AuthenticatedAppColecao360IdRoute
   '/_authenticated/_app/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/_authenticated/_app/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/_authenticated/_app/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
@@ -1232,6 +1242,7 @@ export interface FileRouteTypes {
     | '/war-room-producao'
     | '/portal/fornecedor/$token'
     | '/apontar/$id'
+    | '/colecao-360/$id'
     | '/lote/$id'
     | '/mrp/bi'
     | '/mrp/executivo'
@@ -1347,6 +1358,7 @@ export interface FileRouteTypes {
     | '/war-room-producao'
     | '/portal/fornecedor/$token'
     | '/apontar/$id'
+    | '/colecao-360/$id'
     | '/lote/$id'
     | '/mrp/bi'
     | '/mrp/executivo'
@@ -1464,6 +1476,7 @@ export interface FileRouteTypes {
     | '/portal/fornecedor/$token'
     | '/_authenticated/_app/'
     | '/_authenticated/_app/apontar/$id'
+    | '/_authenticated/_app/colecao-360/$id'
     | '/_authenticated/_app/lote/$id'
     | '/_authenticated/_app/mrp/bi'
     | '/_authenticated/_app/mrp/executivo'
@@ -2291,6 +2304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppLoteIdRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/colecao-360/$id': {
+      id: '/_authenticated/_app/colecao-360/$id'
+      path: '/$id'
+      fullPath: '/colecao-360/$id'
+      preLoaderRoute: typeof AuthenticatedAppColecao360IdRouteImport
+      parentRoute: typeof AuthenticatedAppColecao360Route
+    }
     '/_authenticated/_app/apontar/$id': {
       id: '/_authenticated/_app/apontar/$id'
       path: '/apontar/$id'
@@ -2307,6 +2327,20 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedAppColecao360RouteChildren {
+  AuthenticatedAppColecao360IdRoute: typeof AuthenticatedAppColecao360IdRoute
+}
+
+const AuthenticatedAppColecao360RouteChildren: AuthenticatedAppColecao360RouteChildren =
+  {
+    AuthenticatedAppColecao360IdRoute: AuthenticatedAppColecao360IdRoute,
+  }
+
+const AuthenticatedAppColecao360RouteWithChildren =
+  AuthenticatedAppColecao360Route._addFileChildren(
+    AuthenticatedAppColecao360RouteChildren,
+  )
 
 interface AuthenticatedAppQualityRouteChildren {
   AuthenticatedAppQualityCapaRulesRoute: typeof AuthenticatedAppQualityCapaRulesRoute
@@ -2340,7 +2374,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppCentroDeCorteRoute: typeof AuthenticatedAppCentroDeCorteRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
   AuthenticatedAppClosedLoopRoute: typeof AuthenticatedAppClosedLoopRoute
-  AuthenticatedAppColecao360Route: typeof AuthenticatedAppColecao360Route
+  AuthenticatedAppColecao360Route: typeof AuthenticatedAppColecao360RouteWithChildren
   AuthenticatedAppColecoesRoute: typeof AuthenticatedAppColecoesRoute
   AuthenticatedAppComercialRoute: typeof AuthenticatedAppComercialRoute
   AuthenticatedAppComprasRoute: typeof AuthenticatedAppComprasRoute
@@ -2443,7 +2477,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCentroDeCorteRoute: AuthenticatedAppCentroDeCorteRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
   AuthenticatedAppClosedLoopRoute: AuthenticatedAppClosedLoopRoute,
-  AuthenticatedAppColecao360Route: AuthenticatedAppColecao360Route,
+  AuthenticatedAppColecao360Route: AuthenticatedAppColecao360RouteWithChildren,
   AuthenticatedAppColecoesRoute: AuthenticatedAppColecoesRoute,
   AuthenticatedAppComercialRoute: AuthenticatedAppComercialRoute,
   AuthenticatedAppComprasRoute: AuthenticatedAppComprasRoute,

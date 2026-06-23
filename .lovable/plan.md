@@ -1,32 +1,24 @@
-# Evolução PLM/PCP — 4 frentes industriais ✅ CONCLUÍDO
+# Protótipos & Coleções 360° — ✅ CONCLUÍDO
 
-Status final: todas as 4 frentes implementadas, validadas (`tsc --noEmit` = 0 erros, `check-no-mocks` ok) e em produção. Findings de segurança relacionados também corrigidos.
+Ciclo fechado: o usuário agora navega Briefing → Protótipo → Aprovação → OP → Lançamento → Sell-through → Carry-over numa única rota com deep-link.
 
----
+## 7 ajustes entregues
 
-## Frente 1 — BOM com consumo por tamanho ✅
-- `tech_sheet_materials.consumption_by_size jsonb` (fallback para `consumption`)
-- `src/lib/bom-explosion.functions.ts` + `src/lib/pcp-mrp.functions.ts` explodem por grade
-- UI ficha técnica com mini-tabela "Consumo por tamanho"
+1. ✅ **`/colecao-360/$id` com URL paramétrica** — `_app.colecao-360.$id.tsx`. Rota antiga `_app.colecao-360.tsx` virou redirect que abre a coleção mais recente.
+2. ✅ **CTA "Ver Coleção 360º" no detalhe do protótipo** — `_app.prototipo.$id.tsx`. Botão aparece quando o protótipo tem produto vinculado a uma coleção.
+3. ✅ **Filtro `collectionId` em `/prototipos`** — search schema + memo `productsInCollection` + banner "Filtrando por coleção X · Abrir 360º / Limpar".
+4. ✅ **Realtime de protótipos + gates em colecao-360** — `useRealtime("prototypes")` e `useRealtime("prototype_gates")` ao lado do existente de OPs.
+5. ✅ **Painéis existentes plugados em abas** — 7 tabs: Visão 360º · Time & Action · Moodboard · Assortment & Mix · Carry-over · Qualidade · Lançamento. Componentes reaproveitados sem duplicar (`CollectionMoodboard`, `AssortmentPanel`, `ChannelMixPanel`, `CarryOverPanel`, `QualityCollectionsBridgePanel`, `LaunchingWeekPanel`, `CollectionIntelligencePanel`).
+6. ✅ **Sell-through fecha o loop** — KPI virou botão que troca para a aba Carry-over.
+7. ✅ **Shortcuts cruzados corrigidos** — "Curva ABC da coleção" e "War Room" adicionados; pipeline "Protótipos" passa `collectionId` na URL.
 
-## Frente 2 — MRP com lead time real ✅
-- `inventory_items.lead_time_days`, `suppliers.default_lead_time_days`, `purchase_orders.suggested_order_date`
-- `pcp-mrp.functions.ts` calcula `latestOrderDate` + `urgencia ∈ vencido|critico|atencao|ok`
-- `pcp-mrp-panel.tsx` com coluna "Comprar até" + badge
+## Validações
+- `bunx tsc --noEmit` → 0 erros
+- `node scripts/check-no-mocks.mjs` → ok
+- Sem migration (todas as tabelas necessárias já existiam)
+- Zero breaking change nas rotas atuais (links antigos para `/colecao-360` redirecionam para `/colecao-360/$lastId`)
 
-## Frente 3 — Time & Action ✅
-- Tabela `collection_milestones` (stage/planned/actual/responsável/status/sla)
-- Trigger `collections_sync_milestone_actual` espelha mudanças de status
-- `src/lib/collection-timeline.functions.ts` + rota `_app.time-and-action.tsx`
-- Alertas integrados ao `alerts-panel`
-
-## Frente 4 — Facção 360° ✅
-- Colunas em `service_orders` (expected_return_date, qty_lost, qty_defect)
-- `src/lib/facao-360.functions.ts` calcula KPIs (atrasadas, perda, defeito, lead time, ranking + IA)
-- Rota `_app.faccoes.tsx` com cards + drawer de OS
-
----
-
-## Segurança correlata ✅
-- `production_order_comments_cross_tenant_insert` — política permissiva removida
-- `supplier_portal_tokens_hash_readable` — SELECT da coluna `token_hash` revogado de `authenticated`/`anon`
+## Próximas evoluções possíveis (a discutir)
+- Lote & Passagens de setor (rastreabilidade aprofundada)
+- Ocorrências & CAPA inteligente (causa raiz / Pareto)
+- Sala de Guerra / Exec Dashboard global
