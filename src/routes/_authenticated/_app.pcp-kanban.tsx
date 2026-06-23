@@ -321,6 +321,8 @@ function PcpKanban() {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
+      <ErpSectorSyncPanel />
+
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">PCP — Passagem por setores</h1>
