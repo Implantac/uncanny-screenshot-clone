@@ -383,6 +383,87 @@ export function InventorySmartPanel() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!paramsTarget} onOpenChange={(o) => !o && setParamsTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Parâmetros de reposição</DialogTitle>
+            <DialogDescription>
+              {paramsTarget?.sku} · {paramsTarget?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {paramsTarget ? (
+            <div className="space-y-3 text-sm">
+              <div className="rounded-md bg-muted/40 p-2.5 text-[11px] space-y-0.5">
+                <div>
+                  Consumo médio: <b>{paramsTarget.dailyConsumption}</b> {paramsTarget.unit}/dia ·
+                  σ <b>{paramsTarget.sigmaDaily}</b>
+                </div>
+                <div>
+                  Lead time fornecedor: <b>{paramsTarget.leadTimeDays}d</b> · Demanda anual estim.:{" "}
+                  <b>{paramsTarget.annualDemand}</b>
+                </div>
+                <div>
+                  ROP atual: <b>{paramsTarget.rop}</b> · SS: <b>{paramsTarget.safetyStock}</b> ·
+                  LEC: <b>{paramsTarget.eoq > 0 ? paramsTarget.eoq : "—"}</b>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium">Fator de serviço Z</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formZ}
+                    onChange={(e) => setFormZ(e.target.value)}
+                  />
+                  <div className="text-[10px] text-muted-foreground mt-0.5">
+                    1.28=90% · 1.65=95% · 2.33=99%
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Dias de segurança (fallback)</label>
+                  <Input
+                    type="number"
+                    step="1"
+                    value={formSafetyDays}
+                    onChange={(e) => setFormSafetyDays(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Custo por pedido (S)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formS}
+                    onChange={(e) => setFormS(e.target.value)}
+                  />
+                  <div className="text-[10px] text-muted-foreground mt-0.5">R$ operacional</div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium">Custo anual armazenagem (H)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formH}
+                    onChange={(e) => setFormH(e.target.value)}
+                  />
+                  <div className="text-[10px] text-muted-foreground mt-0.5">R$ por unidade/ano</div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setParamsTarget(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => saveParams.mutate()} disabled={saveParams.isPending}>
+              {saveParams.isPending ? <Loader2 className="size-3 mr-1 animate-spin" /> : null}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
