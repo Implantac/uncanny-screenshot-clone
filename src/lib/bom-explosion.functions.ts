@@ -45,13 +45,21 @@ export const getBOMExplosion = createServerFn({ method: "POST" })
     const orderQty = Number(order.quantity ?? 0);
     const productName = (order as { products?: { name?: string | null } | null }).products?.name ?? null;
 
-    // explode pela grade real se existir
+    // explode pela grade real se existir (Tam×Cor)
     const { data: gridRows } = await supabase
       .from("production_order_grid")
-      .select("quantity")
+      .select("quantity, variant_id, product_variants(size_id, product_size_options(label))")
       .eq("production_order_id", data.productionOrderId);
     const gridTotal = (gridRows ?? []).reduce((s, r) => s + Number(r.quantity ?? 0), 0);
     const qtyTotal = gridTotal > 0 ? gridTotal : orderQty;
+    // Quantidade agregada por label de tamanho (P, M, G…) — base do BOM por tamanho
+    const qtyBySize = new Map<string, number>();
+    for (const r of gridRows ?? []) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const label = (r as any).product_variants?.product_size_options?.label as string | undefined;
+      if (!label) continue;
+      qtyBySize.set(label, (qtyBySize.get(label) ?? 0) + Number(r.quantity ?? 0));
+    }
 
     if (!order.product_id) {
       return {
