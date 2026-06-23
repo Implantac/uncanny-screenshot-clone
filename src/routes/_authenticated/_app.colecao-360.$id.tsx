@@ -1002,7 +1002,8 @@ function Stage({
     <Link
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       to={to as any}
-      search={search}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      search={search as any}
       className="flex-1 min-w-[110px] rounded-lg border border-border bg-muted/20 p-3 hover:border-primary transition-colors"
     >
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
