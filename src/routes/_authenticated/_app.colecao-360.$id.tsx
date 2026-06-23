@@ -43,7 +43,7 @@ import {
   STAGE_LABELS,
 } from "@/lib/collection-timeline.functions";
 
-export const Route = createFileRoute("/_authenticated/_app/colecao-360")({
+export const Route = createFileRoute("/_authenticated/_app/colecao-360/$id")({
   head: () => ({
     meta: [
       { title: "Coleção 360º · USE MODA PLM" },
