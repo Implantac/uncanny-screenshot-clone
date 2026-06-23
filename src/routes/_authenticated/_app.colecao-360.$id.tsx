@@ -1078,7 +1078,8 @@ function WarKPI({
     <Link
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       to={to as any}
-      search={search}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      search={search as any}
       className={`rounded-lg border bg-muted/10 p-2.5 hover:bg-muted/30 transition-colors ${tones[tone]}`}
     >
       <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
