@@ -236,6 +236,8 @@ function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: stri
         .from("service_orders")
         .update({
           qty_received: totalReceived,
+          qty_lost: (Number(os.qty_lost) || 0) + loss,
+          qty_defect: (Number(os.qty_defect) || 0) + defect,
           status: "recebida",
           received_at: new Date().toISOString(),
           kind,
@@ -244,16 +246,21 @@ function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: stri
         .eq("id", os.id);
       if (error) throw error;
 
-      if (loss > 0 && os.production_order_id && os.owner_id) {
+      if ((loss > 0 || defect > 0) && os.production_order_id && os.owner_id) {
+        const affected = loss + defect;
+        const parts = [
+          loss > 0 ? `${loss} perda(s)` : null,
+          defect > 0 ? `${defect} defeito(s)` : null,
+        ].filter(Boolean).join(" + ");
         await supabase.from("production_occurrences").insert({
           owner_id: os.owner_id,
           order_id: os.production_order_id,
           kind: "negativa",
           sector: os.to_stage,
           responsible_id: u.user?.id ?? null,
-          affected_qty: loss,
+          affected_qty: affected,
           status: "aberta",
-          description: `Perda no retorno do terceirizado (OS ${os.code})${notes ? " — " + notes : ""}`,
+          description: `Retorno do terceirizado (OS ${os.code}): ${parts}${notes ? " — " + notes : ""}`,
         });
       }
       return { kind };
