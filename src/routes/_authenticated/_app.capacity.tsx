@@ -51,7 +51,7 @@ function Capacity() {
   const navigate = useNavigate({ from: "/_authenticated/_app/capacity" });
   const { scope } = Route.useSearch();
   const setScope = (v: "all" | "interna" | "faccao") =>
-    navigate({ search: (prev) => ({ ...prev, scope: v }), replace: true });
+    navigate({ search: (prev: { scope: "all" | "interna" | "faccao" }) => ({ ...prev, scope: v }), replace: true });
   const allOrders = useMemo(() => data?.orders ?? [], [data?.orders]);
   const orders = useMemo(() => {
     if (scope === "interna") return allOrders.filter((o) => !o.supplier_id);
