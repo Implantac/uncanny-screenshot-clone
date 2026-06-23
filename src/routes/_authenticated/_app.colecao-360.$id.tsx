@@ -507,240 +507,309 @@ function Colecao360() {
 
           {current && <CollectionTabs current={current} navigate={navigate} />}
 
-              <TabsContent value="visao" className="space-y-4">
-              {/* Pipeline visual */}
-              <div className="rounded-xl border border-border bg-card p-4">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
-                  Pipeline da coleção
-                </div>
-                <div className="flex items-stretch gap-2 overflow-x-auto">
-                  <Stage
-                    icon={<Sparkles className="size-4" />}
-                    label="Protótipos"
-                    value={current.protoCount}
-                    sub={`${current.protoApproved} aprovados`}
-                    to="/prototipos"
-                  />
-                  <Arrow />
-                  <Stage
-                    icon={<Layers className="size-4" />}
-                    label="Produtos"
-                    value={current.productCount}
-                    sub="liberados"
-                    to="/produtos"
-                  />
-                  <Arrow />
-                  <Stage
-                    icon={<Scissors className="size-4" />}
-                    label="OPs ativas"
-                    value={current.opsActive}
-                    sub={`${current.opsDone} entregues`}
-                    to="/pcp-kanban"
-                  />
-                  <Arrow />
-                  <Stage
-                    icon={<Factory className="size-4" />}
-                    label="Produzido"
-                    value={current.producedQty}
-                    sub="unidades"
-                    to="/twin-factory"
-                  />
-                  <Arrow />
-                  <Stage
-                    icon={<Package className="size-4" />}
-                    label="Vendido"
-                    value={current.unitsSold}
-                    sub="unidades"
-                    to="/sales-performance"
-                  />
-                </div>
-              </div>
-
-              {/* IA Coordenador — diagnóstico em linguagem natural */}
-              <InvestmentResult c={current} />
-
-              <DigitalTwinAggregate c={current} />
-
-              <MetaMood c={current} />
-
-              <div className="grid md:grid-cols-2 gap-3">
-                <CoordinatorBriefing c={current} />
-                <AICoordinatorPanel
-                  persona="marketing"
-                  title={`Marketing · ${current.collection.name}`}
-                  question={`Para a coleção "${current.collection.name}" (${current.productCount} produtos, receita R$ ${Math.round(current.revenue)}, sell-through ${Math.round(current.sellThrough)}%), quais são as 3 ações de marketing mais eficazes para os próximos 14 dias? Justifique cada uma.`}
-                />
-              </div>
-
-              {/* Sala de Guerra — sinais operacionais */}
-              <div className="rounded-xl border border-border bg-card p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <Radio className="size-3.5 text-primary" /> Sala de Guerra
-                  </div>
-                  <div className="text-[10px] text-muted-foreground">
-                    Avanço da produção:{" "}
-                    <span className="font-semibold text-foreground tabular-nums">
-                      {Math.round(current.avanco)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
-                  <WarKPI
-                    label="Sem piloto aprovado"
-                    value={current.semPiloto}
-                    icon={<FileWarning className="size-3.5" />}
-                    tone={current.semPiloto > 0 ? "red" : "green"}
-                    to="/prototipos"
-                  />
-                  <WarKPI
-                    label="Sem ficha técnica"
-                    value={current.semFicha}
-                    icon={<FileWarning className="size-3.5" />}
-                    tone={current.semFicha > 0 ? "red" : "green"}
-                    to="/tech-sheets"
-                  />
-                  <WarKPI
-                    label="Protótipos pendentes"
-                    value={current.protoPendentes}
-                    icon={<Sparkles className="size-3.5" />}
-                    tone={current.protoPendentes > 5 ? "yellow" : "neutral"}
-                    to="/dev-kanban"
-                  />
-                  <WarKPI
-                    label="OPs aguardando"
-                    value={current.opsAguardando}
-                    icon={<Clock className="size-3.5" />}
-                    tone={current.opsAguardando > 0 ? "yellow" : "green"}
-                    to="/pcp-kanban"
-                  />
-                  <WarKPI
-                    label="Liberados p/ PCP"
-                    value={current.liberadosPCP}
-                    icon={<CheckCircle2 className="size-3.5" />}
-                    tone="primary"
-                    to="/pcp-kanban"
-                  />
-                  <WarKPI
-                    label="OPs em atraso"
-                    value={Math.max(
-                      0,
-                      current.opsActive - current.liberadosPCP - current.opsAguardando,
-                    )}
-                    icon={<AlertTriangle className="size-3.5" />}
-                    tone="neutral"
-                    to="/twin-factory"
-                  />
-                </div>
-                <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full bg-primary transition-all"
-                    style={{ width: `${Math.min(100, current.avanco)}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Champions e críticos */}
-              {(current.champions.length > 0 || current.criticos.length > 0) && (
-                <div className="grid md:grid-cols-2 gap-3">
-                  <div className="rounded-xl border border-success/30 bg-card p-4">
-                    <div className="text-xs uppercase tracking-wider text-success mb-2 flex items-center gap-1.5">
-                      <TrendingUp className="size-3.5" /> Campeões da coleção
-                    </div>
-                    {current.champions.length === 0 ? (
-                      <div className="text-xs text-muted-foreground">Sem dados de venda.</div>
-                    ) : (
-                      <ul className="space-y-1.5">
-                        {current.champions.map(({ p, rev }) => (
-                          <li key={p.id} className="flex items-center justify-between text-sm">
-                            <span className="truncate">
-                              <span className="text-muted-foreground text-xs">{p.sku}</span> ·{" "}
-                              {p.name}
-                            </span>
-                            <span className="tabular-nums font-medium">
-                              R$ {(rev / 1000).toFixed(1)}k
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                  <div className="rounded-xl border border-destructive/30 bg-card p-4">
-                    <div className="text-xs uppercase tracking-wider text-destructive mb-2 flex items-center gap-1.5">
-                      <AlertTriangle className="size-3.5" /> Críticos (sem venda)
-                    </div>
-                    {current.criticos.length === 0 ? (
-                      <div className="text-xs text-muted-foreground">
-                        Todos os produtos têm venda.
-                      </div>
-                    ) : (
-                      <ul className="space-y-1.5">
-                        {current.criticos.map(({ p }) => (
-                          <li key={p.id} className="flex items-center justify-between text-sm">
-                            <span className="truncate">
-                              <span className="text-muted-foreground text-xs">{p.sku}</span> ·{" "}
-                              {p.name}
-                            </span>
-                            <span className="text-xs text-muted-foreground">{p.status}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* KPIs financeiros */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <KPI
-                  label="Receita"
-                  value={`R$ ${(current.revenue / 1000).toFixed(1)}k`}
-                  icon={<DollarSign className="size-4" />}
-                  tone="primary"
-                />
-                <KPI
-                  label="Margem média"
-                  value={`${Math.round(current.margin)}%`}
-                  icon={<Percent className="size-4" />}
-                  tone={current.margin >= 40 ? "green" : current.margin >= 20 ? "yellow" : "red"}
-                />
-                <KPI
-                  label="Sell-through"
-                  value={`${Math.round(current.sellThrough)}%`}
-                  icon={<TrendingUp className="size-4" />}
-                  tone={
-                    current.sellThrough >= 70
-                      ? "green"
-                      : current.sellThrough >= 40
-                        ? "yellow"
-                        : "red"
-                  }
-                />
-                <KPI
-                  label="Status"
-                  value={current.collection.status}
-                  icon={<Compass className="size-4" />}
-                  tone="primary"
-                />
-              </div>
-
-              {/* Atalhos cruzados */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <Shortcut to="/colecoes" label="Editar coleção" />
-                <Shortcut to="/product-score" label="Score por produto" />
-                <Shortcut to="/profitability" label="Rentabilidade (ERP)" />
-                <Shortcut to="/marketing" label="Marketing da coleção" />
-              </div>
-              </TabsContent>
-
-              <TabsContent value="time-action" className="space-y-4">
-                <CollectionTimelineTab collectionId={current.collection.id} />
-              </TabsContent>
-            </Tabs>
-          )}
         </>
       )}
     </div>
+  );
+}
+
+function CollectionTabs({
+  current,
+  navigate,
+}: {
+  current: CollectionAggregate;
+  navigate: ReturnType<typeof useNavigate>;
+}) {
+  const [tab, setTab] = useState("visao");
+  const collectionId = current.collection.id;
+
+  return (
+    <Tabs value={tab} onValueChange={setTab} className="space-y-4">
+      <TabsList className="flex-wrap h-auto">
+        <TabsTrigger value="visao">
+          <Compass className="size-3.5 mr-1.5" /> Visão 360º
+        </TabsTrigger>
+        <TabsTrigger value="time-action">
+          <CalendarClock className="size-3.5 mr-1.5" /> Time & Action
+        </TabsTrigger>
+        <TabsTrigger value="moodboard">
+          <Palette className="size-3.5 mr-1.5" /> Moodboard
+        </TabsTrigger>
+        <TabsTrigger value="assortment">
+          <Grid3x3 className="size-3.5 mr-1.5" /> Assortment & Mix
+        </TabsTrigger>
+        <TabsTrigger value="carry-over">
+          <Recycle className="size-3.5 mr-1.5" /> Carry-over
+        </TabsTrigger>
+        <TabsTrigger value="qualidade">
+          <CheckCircle2 className="size-3.5 mr-1.5" /> Qualidade
+        </TabsTrigger>
+        <TabsTrigger value="lancamento">
+          <Megaphone className="size-3.5 mr-1.5" /> Lançamento
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="visao" className="space-y-4">
+        {/* Pipeline visual */}
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
+            Pipeline da coleção
+          </div>
+          <div className="flex items-stretch gap-2 overflow-x-auto">
+            <Stage
+              icon={<Sparkles className="size-4" />}
+              label="Protótipos"
+              value={current.protoCount}
+              sub={`${current.protoApproved} aprovados`}
+              to="/prototipos"
+              search={{ collectionId }}
+            />
+            <Arrow />
+            <Stage
+              icon={<Layers className="size-4" />}
+              label="Produtos"
+              value={current.productCount}
+              sub="liberados"
+              to="/produtos"
+            />
+            <Arrow />
+            <Stage
+              icon={<Scissors className="size-4" />}
+              label="OPs ativas"
+              value={current.opsActive}
+              sub={`${current.opsDone} entregues`}
+              to="/pcp-kanban"
+            />
+            <Arrow />
+            <Stage
+              icon={<Factory className="size-4" />}
+              label="Produzido"
+              value={current.producedQty}
+              sub="unidades"
+              to="/twin-factory"
+            />
+            <Arrow />
+            <Stage
+              icon={<Package className="size-4" />}
+              label="Vendido"
+              value={current.unitsSold}
+              sub="unidades"
+              to="/sales-performance"
+            />
+          </div>
+        </div>
+
+        <InvestmentResult c={current} />
+        <DigitalTwinAggregate c={current} />
+        <MetaMood c={current} />
+
+        <div className="grid md:grid-cols-2 gap-3">
+          <CoordinatorBriefing c={current} />
+          <AICoordinatorPanel
+            persona="marketing"
+            title={`Marketing · ${current.collection.name}`}
+            question={`Para a coleção "${current.collection.name}" (${current.productCount} produtos, receita R$ ${Math.round(current.revenue)}, sell-through ${Math.round(current.sellThrough)}%), quais são as 3 ações de marketing mais eficazes para os próximos 14 dias? Justifique cada uma.`}
+          />
+        </div>
+
+        {/* Sala de Guerra — sinais operacionais */}
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Radio className="size-3.5 text-primary" /> Sala de Guerra
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              Avanço da produção:{" "}
+              <span className="font-semibold text-foreground tabular-nums">
+                {Math.round(current.avanco)}%
+              </span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
+            <WarKPI
+              label="Sem piloto aprovado"
+              value={current.semPiloto}
+              icon={<FileWarning className="size-3.5" />}
+              tone={current.semPiloto > 0 ? "red" : "green"}
+              to="/prototipos"
+              search={{ collectionId }}
+            />
+            <WarKPI
+              label="Sem ficha técnica"
+              value={current.semFicha}
+              icon={<FileWarning className="size-3.5" />}
+              tone={current.semFicha > 0 ? "red" : "green"}
+              to="/tech-sheets"
+            />
+            <WarKPI
+              label="Protótipos pendentes"
+              value={current.protoPendentes}
+              icon={<Sparkles className="size-3.5" />}
+              tone={current.protoPendentes > 5 ? "yellow" : "neutral"}
+              to="/dev-kanban"
+            />
+            <WarKPI
+              label="OPs aguardando"
+              value={current.opsAguardando}
+              icon={<Clock className="size-3.5" />}
+              tone={current.opsAguardando > 0 ? "yellow" : "green"}
+              to="/pcp-kanban"
+            />
+            <WarKPI
+              label="Liberados p/ PCP"
+              value={current.liberadosPCP}
+              icon={<CheckCircle2 className="size-3.5" />}
+              tone="primary"
+              to="/pcp-kanban"
+            />
+            <WarKPI
+              label="OPs em atraso"
+              value={Math.max(
+                0,
+                current.opsActive - current.liberadosPCP - current.opsAguardando,
+              )}
+              icon={<AlertTriangle className="size-3.5" />}
+              tone="neutral"
+              to="/twin-factory"
+            />
+          </div>
+          <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all"
+              style={{ width: `${Math.min(100, current.avanco)}%` }}
+            />
+          </div>
+        </div>
+
+        {(current.champions.length > 0 || current.criticos.length > 0) && (
+          <div className="grid md:grid-cols-2 gap-3">
+            <div className="rounded-xl border border-success/30 bg-card p-4">
+              <div className="text-xs uppercase tracking-wider text-success mb-2 flex items-center gap-1.5">
+                <TrendingUp className="size-3.5" /> Campeões da coleção
+              </div>
+              {current.champions.length === 0 ? (
+                <div className="text-xs text-muted-foreground">Sem dados de venda.</div>
+              ) : (
+                <ul className="space-y-1.5">
+                  {current.champions.map(({ p, rev }) => (
+                    <li key={p.id} className="flex items-center justify-between text-sm">
+                      <span className="truncate">
+                        <span className="text-muted-foreground text-xs">{p.sku}</span> · {p.name}
+                      </span>
+                      <span className="tabular-nums font-medium">
+                        R$ {(rev / 1000).toFixed(1)}k
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="rounded-xl border border-destructive/30 bg-card p-4">
+              <div className="text-xs uppercase tracking-wider text-destructive mb-2 flex items-center gap-1.5">
+                <AlertTriangle className="size-3.5" /> Críticos (sem venda)
+              </div>
+              {current.criticos.length === 0 ? (
+                <div className="text-xs text-muted-foreground">
+                  Todos os produtos têm venda.
+                </div>
+              ) : (
+                <ul className="space-y-1.5">
+                  {current.criticos.map(({ p }) => (
+                    <li key={p.id} className="flex items-center justify-between text-sm">
+                      <span className="truncate">
+                        <span className="text-muted-foreground text-xs">{p.sku}</span> · {p.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{p.status}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* KPIs financeiros */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <KPI
+            label="Receita"
+            value={`R$ ${(current.revenue / 1000).toFixed(1)}k`}
+            icon={<DollarSign className="size-4" />}
+            tone="primary"
+          />
+          <KPI
+            label="Margem média"
+            value={`${Math.round(current.margin)}%`}
+            icon={<Percent className="size-4" />}
+            tone={current.margin >= 40 ? "green" : current.margin >= 20 ? "yellow" : "red"}
+          />
+          <button
+            onClick={() => setTab("carry-over")}
+            className={`rounded-xl border p-4 bg-card text-left hover:bg-muted/30 transition-colors ${
+              current.sellThrough >= 70
+                ? "border-success/40 text-success"
+                : current.sellThrough >= 40
+                  ? "border-warning/40 text-warning"
+                  : "border-destructive/40 text-destructive"
+            }`}
+            title="Decidir carry-over / repique / NOS"
+          >
+            <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+              <TrendingUp className="size-4" /> Sell-through
+            </div>
+            <div className="mt-1 text-2xl font-semibold">
+              {Math.round(current.sellThrough)}%
+            </div>
+            <div className="mt-1 text-[10px] text-muted-foreground inline-flex items-center gap-1">
+              Decidir carry-over <ArrowRight className="size-3" />
+            </div>
+          </button>
+          <KPI
+            label="Status"
+            value={current.collection.status}
+            icon={<Compass className="size-4" />}
+            tone="primary"
+          />
+        </div>
+
+        {/* Inteligência cruzada (painéis já existentes) */}
+        <CollectionIntelligencePanel />
+        <LaunchingWeekPanel />
+
+        {/* Atalhos cruzados */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <Shortcut to="/colecoes" label="Editar coleção" />
+          <Shortcut to="/product-score" label="Score por produto" />
+          <ShortcutPlain href="/abc-colecao" label="Curva ABC da coleção" icon={<Award className="size-3" />} />
+          <Shortcut to="/war-room-colecao/$id" params={{ id: collectionId }} label="War Room" />
+          <Shortcut to="/marketing" label="Marketing da coleção" />
+        </div>
+      </TabsContent>
+
+      <TabsContent value="time-action" className="space-y-4">
+        <CollectionTimelineTab collectionId={collectionId} />
+      </TabsContent>
+
+      <TabsContent value="moodboard" className="space-y-4">
+        <CollectionMoodboard collectionId={collectionId} />
+      </TabsContent>
+
+      <TabsContent value="assortment" className="space-y-4">
+        <AssortmentPanel collectionId={collectionId} />
+        <ChannelMixPanel collectionId={collectionId} />
+      </TabsContent>
+
+      <TabsContent value="carry-over" className="space-y-4">
+        <CarryOverPanel collectionId={collectionId} />
+      </TabsContent>
+
+      <TabsContent value="qualidade" className="space-y-4">
+        <QualityCollectionsBridgePanel />
+      </TabsContent>
+
+      <TabsContent value="lancamento" className="space-y-4">
+        <LaunchingWeekPanel />
+      </TabsContent>
+    </Tabs>
   );
 }
 
