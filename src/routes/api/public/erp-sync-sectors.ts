@@ -54,13 +54,18 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
         const url = new URL(request.url);
         if (url.searchParams.get("probe") === "1") {
           const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
-          const cols = await usesoftQuery(
-            `SELECT table_name, column_name FROM information_schema.columns
-              WHERE table_schema='public' AND table_name IN ('indsetin','indpcpst','indpcpip')
-              ORDER BY table_name, ordinal_position`,
+          const r = await usesoftQuery(
+            `SELECT ip.nnumeropedid, st.nsequenpcpst, st.cfinalipcpst,
+                    st.dentradpcpst, st.denviopcpst, s.cdescrisetin
+               FROM indpcpip ip
+               JOIN indpcpst st ON st.nnumeropcpip = ip.nnumeropcpip
+               JOIN indsetin s ON s.nnumerosetin = st.nnumerosetin
+              WHERE ip.nnumeropedid IN (59650, 59743)
+              ORDER BY ip.nnumeropedid, ip.nnumeropcpip, st.nsequenpcpst`,
           );
-          return Response.json({ cols: cols.rows });
+          return Response.json({ rows: r.rows });
         }
+
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
