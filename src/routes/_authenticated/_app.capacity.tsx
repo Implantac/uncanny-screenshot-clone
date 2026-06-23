@@ -92,11 +92,37 @@ function Capacity() {
 
   const overloaded = bySupplier.filter((s) => s.late > 0 || s.avgProgress < 45).slice(0, 3);
 
+  const scopeOptions: Array<{ key: "all" | "interna" | "faccao"; label: string }> = [
+    { key: "all", label: "Combinada" },
+    { key: "interna", label: "Interna" },
+    { key: "faccao", label: "Facção" },
+  ];
+  const internalCount = allOrders.filter((o) => !o.supplier_id).length;
+  const factionCount = allOrders.filter((o) => !!o.supplier_id).length;
+
   return (
     <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Capacidade de Produção</h1>
-        <p className="text-sm text-muted-foreground">OEE, WIP, atrasos e carga por fornecedor.</p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Capacidade de Produção</h1>
+          <p className="text-sm text-muted-foreground">OEE, WIP, atrasos e carga por fornecedor.</p>
+        </div>
+        <div className="inline-flex rounded-md border border-border bg-card p-1 text-xs">
+          {scopeOptions.map((opt) => {
+            const count = opt.key === "interna" ? internalCount : opt.key === "faccao" ? factionCount : allOrders.length;
+            const active = scope === opt.key;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => setScope(opt.key)}
+                className={`px-3 py-1.5 rounded ${active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted/50"}`}
+              >
+                {opt.label} <span className="ml-1 opacity-70">{count}</span>
+              </button>
+            );
+          })}
+        </div>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
