@@ -221,6 +221,7 @@ function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: stri
   const pending = Math.max(0, sent - received);
   const [qty, setQty] = useState<number>(pending);
   const [loss, setLoss] = useState<number>(0);
+  const [defect, setDefect] = useState<number>(0);
   const [notes, setNotes] = useState("");
 
   const submit = useMutation({
