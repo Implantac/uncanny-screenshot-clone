@@ -50,8 +50,20 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
           return new Response("Unauthorized", { status: 401 });
         }
 
+        const url = new URL(request.url);
+        if (url.searchParams.get("probe") === "1") {
+          const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
+          const cols = await usesoftQuery(
+            `SELECT table_name, column_name FROM information_schema.columns
+              WHERE table_schema='public' AND table_name IN ('indsetin','indpcpst','indpcpip')
+              ORDER BY table_name, ordinal_position`,
+          );
+          return Response.json({ cols: cols.rows });
+        }
+
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
+
 
         const { data: orders, error } = await supabaseAdmin
           .from("production_orders")
