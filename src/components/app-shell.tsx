@@ -185,13 +185,25 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Link
                   to={m.path}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors",
+                    "group/nav relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 transition-colors duration-150",
                     isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+                      : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                   )}
                 >
-                  <Icon className={cn("size-4", isActive && "text-primary")} />
+                  <span
+                    className={cn(
+                      "absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[2px] rounded-full bg-primary transition-opacity",
+                      isActive ? "opacity-100" : "opacity-0",
+                    )}
+                    aria-hidden
+                  />
+                  <Icon
+                    className={cn(
+                      "size-4 transition-colors",
+                      isActive ? "text-primary" : "text-sidebar-foreground/60 group-hover/nav:text-sidebar-foreground",
+                    )}
+                  />
                   <span className="truncate flex-1">{m.title}</span>
                   {isErp && (
                     <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
