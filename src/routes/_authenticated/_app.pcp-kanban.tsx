@@ -13,7 +13,9 @@ import {
   X,
   Sparkles,
   FileText,
+  Filter,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { ProductionOrderCommentsButton } from "@/components/production-order-comments";
@@ -149,6 +151,31 @@ function PcpKanban() {
     orderCode: string;
   } | null>(null);
 
+  // Filtros avançados
+  const [filterStages, setFilterStages] = useState<Set<Stage>>(new Set());
+  const [filterPriorities, setFilterPriorities] = useState<Set<number>>(new Set());
+  const [filterSla, setFilterSla] = useState<"all" | "overdue" | "soon" | "ontime">("all");
+  const [filterIdle, setFilterIdle] = useState<"all" | "1d" | "3d" | "5d">("all");
+  const [filterSearch, setFilterSearch] = useState("");
+  const [filterCapa, setFilterCapa] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const toggleSet = <T,>(s: Set<T>, v: T): Set<T> => {
+    const n = new Set(s);
+    if (n.has(v)) n.delete(v);
+    else n.add(v);
+    return n;
+  };
+
+  const activeFilterCount =
+    filterStages.size +
+    filterPriorities.size +
+    (filterSla !== "all" ? 1 : 0) +
+    (filterIdle !== "all" ? 1 : 0) +
+    (filterSearch.trim() ? 1 : 0) +
+    (filterCapa ? 1 : 0);
+
+
   const update = useMutation({
     mutationFn: async (
       patch: { id: string } & Partial<Pick<Order, "stage" | "priority" | "due_date" | "progress">>,
@@ -180,10 +207,46 @@ function PcpKanban() {
     onSettled: () => qc.invalidateQueries({ queryKey: ["pcp-kanban"] }),
   });
 
-  const filtered = useMemo(
-    () => (batchFilter ? orders.filter((o) => (o.batch_code ?? "—") === batchFilter) : orders),
-    [orders, batchFilter],
-  );
+  const filtered = useMemo(() => {
+    const term = filterSearch.trim().toLowerCase();
+    const now = Date.now();
+    const idleMinH =
+      filterIdle === "1d" ? 24 : filterIdle === "3d" ? 72 : filterIdle === "5d" ? 120 : 0;
+    return orders.filter((o) => {
+      if (batchFilter && (o.batch_code ?? "—") !== batchFilter) return false;
+      if (filterStages.size > 0 && !filterStages.has(o.stage)) return false;
+      if (filterPriorities.size > 0 && !filterPriorities.has(o.priority)) return false;
+      if (filterCapa && !openCapaOrderIds.has(o.id)) return false;
+      if (filterSla !== "all") {
+        const d = daysTo(o.due_date);
+        const overdue = d !== null && d < 0 && o.stage !== "entregue";
+        const soon = d !== null && d >= 0 && d <= 3 && o.stage !== "entregue";
+        if (filterSla === "overdue" && !overdue) return false;
+        if (filterSla === "soon" && !soon) return false;
+        if (filterSla === "ontime" && (overdue || soon || d === null)) return false;
+      }
+      if (idleMinH > 0) {
+        const h = (now - new Date(o.stage_updated_at).getTime()) / 3600000;
+        if (h < idleMinH) return false;
+      }
+      if (term) {
+        const hay = `${o.code} ${o.product ?? ""} ${o.batch_code ?? ""} ${o.supplier ?? ""}`.toLowerCase();
+        if (!hay.includes(term)) return false;
+      }
+      return true;
+    });
+  }, [
+    orders,
+    batchFilter,
+    filterStages,
+    filterPriorities,
+    filterSla,
+    filterIdle,
+    filterSearch,
+    filterCapa,
+    openCapaOrderIds,
+  ]);
+
 
   const grouped = useMemo(() => {
     const m = new Map<Stage, Order[]>();
@@ -284,7 +347,194 @@ function PcpKanban() {
         </div>
       </header>
 
+      <div className="rounded-xl border border-border bg-card">
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((v) => !v)}
+            className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded border border-border hover:bg-muted"
+            aria-expanded={filtersOpen}
+          >
+            <Filter className="size-3.5" />
+            Filtros
+            {activeFilterCount > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] tabular-nums">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+          <input
+            type="search"
+            value={filterSearch}
+            onChange={(e) => setFilterSearch(e.target.value)}
+            placeholder="Buscar OP, produto, lote, fornecedor…"
+            className="flex-1 min-w-[180px] h-8 text-xs px-2 rounded border border-border bg-background"
+            aria-label="Buscar"
+          />
+          <button
+            type="button"
+            onClick={() => setFilterSla(filterSla === "overdue" ? "all" : "overdue")}
+            className={`text-[11px] px-2 py-1 rounded border ${filterSla === "overdue" ? "bg-destructive/15 text-destructive border-destructive/40" : "border-border hover:bg-muted"}`}
+          >
+            Atrasadas
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterSla(filterSla === "soon" ? "all" : "soon")}
+            className={`text-[11px] px-2 py-1 rounded border ${filterSla === "soon" ? "bg-orange-500/15 text-orange-500 border-orange-500/40" : "border-border hover:bg-muted"}`}
+          >
+            Vence ≤3d
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterIdle(filterIdle === "3d" ? "all" : "3d")}
+            className={`text-[11px] px-2 py-1 rounded border ${filterIdle === "3d" ? "bg-warning/15 text-warning border-warning/40" : "border-border hover:bg-muted"}`}
+            title="Cards parados há mais de 3 dias no setor atual"
+          >
+            Parado &gt;3d
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const urgent = new Set<number>([1, 2]);
+              const same =
+                filterPriorities.size === 2 &&
+                filterPriorities.has(1) &&
+                filterPriorities.has(2);
+              setFilterPriorities(same ? new Set() : urgent);
+            }}
+            className={`text-[11px] px-2 py-1 rounded border ${filterPriorities.has(1) && filterPriorities.has(2) ? "bg-orange-500/15 text-orange-500 border-orange-500/40" : "border-border hover:bg-muted"}`}
+          >
+            Urgente / Alta
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterCapa((v) => !v)}
+            className={`text-[11px] px-2 py-1 rounded border inline-flex items-center gap-1 ${filterCapa ? "bg-destructive/15 text-destructive border-destructive/40" : "border-border hover:bg-muted"}`}
+            title="Apenas OPs com CAPA de qualidade aberta"
+          >
+            <AlertTriangle className="size-3" /> CAPA aberta
+          </button>
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setFilterStages(new Set());
+                setFilterPriorities(new Set());
+                setFilterSla("all");
+                setFilterIdle("all");
+                setFilterSearch("");
+                setFilterCapa(false);
+              }}
+              className="text-[11px] px-2 py-1 rounded border border-border hover:bg-muted text-muted-foreground inline-flex items-center gap-1"
+            >
+              <X className="size-3" /> Limpar
+            </button>
+          )}
+          <span className="ml-auto text-[11px] tabular-nums text-muted-foreground">
+            {filtered.length} / {orders.length} OPs
+          </span>
+        </div>
+
+        {filtersOpen && (
+          <div className="border-t border-border px-3 py-3 space-y-3">
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">
+                Setor
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {STAGES.map((s) => {
+                  const on = filterStages.has(s.key);
+                  return (
+                    <button
+                      key={s.key}
+                      type="button"
+                      onClick={() => setFilterStages((cur) => toggleSet(cur, s.key))}
+                      className={`text-[11px] px-2 py-1 rounded border ${on ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
+                    >
+                      {s.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">
+                Prioridade
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {[1, 2, 3, 4, 5].map((p) => {
+                  const on = filterPriorities.has(p);
+                  const meta = PRIORITY[p];
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setFilterPriorities((cur) => toggleSet(cur, p))}
+                      className={`text-[11px] px-2 py-1 rounded border ${on ? meta.tone : "border-border hover:bg-muted"}`}
+                    >
+                      P{p} · {meta.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">
+                  SLA / Prazo
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(
+                    [
+                      ["all", "Todos"],
+                      ["overdue", "Atrasadas"],
+                      ["soon", "Vence ≤3d"],
+                      ["ontime", "Em dia"],
+                    ] as const
+                  ).map(([k, label]) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => setFilterSla(k)}
+                      className={`text-[11px] px-2 py-1 rounded border ${filterSla === k ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">
+                  Tempo parado no setor
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(
+                    [
+                      ["all", "Todos"],
+                      ["1d", ">1d"],
+                      ["3d", ">3d"],
+                      ["5d", ">5d"],
+                    ] as const
+                  ).map(([k, label]) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => setFilterIdle(k)}
+                      className={`text-[11px] px-2 py-1 rounded border ${filterIdle === k ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+
         <KPI label="Ordens" value={summary.total} icon={<Factory className="size-4" />} />
         <KPI
           label="WIP (peças)"
