@@ -79,22 +79,48 @@ export function InventorySmartPanel() {
     setFormSafetyDays(String(it.safetyDays ?? 7));
   };
 
+  const parseField = (raw: string, fallback: number) => {
+    const trimmed = raw.trim();
+    if (trimmed === "") return { value: fallback, empty: true, invalid: false };
+    const n = Number(trimmed.replace(",", "."));
+    if (!Number.isFinite(n)) return { value: fallback, empty: false, invalid: true };
+    return { value: n, empty: false, invalid: false };
+  };
+
+  const validateRange = (
+    raw: string,
+    limit: { min: number; max: number; label: string },
+    fallback: number,
+  ): string | null => {
+    const p = parseField(raw, fallback);
+    if (p.empty) return null;
+    if (p.invalid) return "Valor inválido — informe um número.";
+    if (p.value < limit.min || p.value > limit.max)
+      return `Fora da faixa: ${limit.min} a ${limit.max}. ${limit.label}`;
+    return null;
+  };
+
+  const errZ = validateRange(formZ, REORDER_LIMITS.service_factor_z, REORDER_DEFAULTS.service_factor_z);
+  const errS = validateRange(formS, REORDER_LIMITS.cost_per_order, REORDER_DEFAULTS.cost_per_order);
+  const errH = validateRange(
+    formH,
+    REORDER_LIMITS.holding_cost_annual,
+    REORDER_DEFAULTS.holding_cost_annual,
+  );
+  const errSafety = validateRange(formSafetyDays, REORDER_LIMITS.safety_days, REORDER_DEFAULTS.safety_days);
+  const hasErrors = !!(errZ || errS || errH || errSafety);
+
   const saveParams = useMutation({
     mutationFn: () => {
-      const parseNum = (raw: string, fallback: number, min = 0) => {
-        const trimmed = raw.trim();
-        if (trimmed === "") return fallback;
-        const n = Number(trimmed);
-        if (!Number.isFinite(n) || n < min) return fallback;
-        return n;
-      };
+      if (hasErrors) throw new Error("Corrija os campos destacados antes de salvar.");
+      const pick = (raw: string, fallback: number) => parseField(raw, fallback).value;
       return paramsFn({
         data: {
           itemId: paramsTarget!.id,
-          serviceFactorZ: parseNum(formZ, REORDER_DEFAULTS.service_factor_z, 0),
-          costPerOrder: parseNum(formS, REORDER_DEFAULTS.cost_per_order, 0),
-          holdingCostAnnual: parseNum(formH, REORDER_DEFAULTS.holding_cost_annual, 0),
-          safetyDays: Math.floor(parseNum(formSafetyDays, REORDER_DEFAULTS.safety_days, 0)),
+          serviceFactorZ: pick(formZ, REORDER_DEFAULTS.service_factor_z),
+          costPerOrder: pick(formS, REORDER_DEFAULTS.cost_per_order),
+          holdingCostAnnual: pick(formH, REORDER_DEFAULTS.holding_cost_annual),
+          safetyDays: Math.floor(pick(formSafetyDays, REORDER_DEFAULTS.safety_days)),
         },
       });
     },
