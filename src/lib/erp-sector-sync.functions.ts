@@ -22,6 +22,7 @@ type Stage =
   | "entregue";
 
 const STAGE_BY_SECTOR: Record<string, Stage> = {
+  compras: "compras",
   corte: "corte",
   bordado: "bordado",
   "bordado terceirizado": "bordado_terc",
