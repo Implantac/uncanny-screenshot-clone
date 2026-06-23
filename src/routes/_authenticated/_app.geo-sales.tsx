@@ -83,9 +83,17 @@ async function loadGeo(): Promise<UFStat[]> {
 
 function GeoSales() {
   const { data: stats = [], isLoading } = useQuery({ queryKey: ["geo-sales"], queryFn: loadGeo });
+  const navigate = useNavigate({ from: "/_authenticated/_app/geo-sales" });
+  const { uf: selectedUf } = Route.useSearch();
+  const [hoverUf, setHoverUf] = useState<string | null>(null);
   const maxRevenue = useMemo(() => Math.max(1, ...stats.map((s) => s.revenue)), [stats]);
   const sorted = useMemo(() => [...stats].sort((a, b) => b.revenue - a.revenue), [stats]);
   const totalRev = useMemo(() => stats.reduce((a, s) => a + s.revenue, 0), [stats]);
+  const statsByUf = useMemo(() => {
+    const m = new Map<string, UFStat>();
+    stats.forEach((s) => m.set(s.uf, s));
+    return m;
+  }, [stats]);
 
   const byRegion = useMemo(
     () =>
@@ -99,14 +107,23 @@ function GeoSales() {
     [stats],
   );
 
-  const heat = (v: number) => {
+  const heatFill = (v: number) => {
     const t = v / maxRevenue;
-    if (t === 0) return "bg-muted/40 text-muted-foreground";
-    if (t < 0.15) return "bg-primary/15 text-foreground";
-    if (t < 0.4) return "bg-primary/35 text-foreground";
-    if (t < 0.7) return "bg-primary/60 text-primary-foreground";
-    return "bg-primary text-primary-foreground";
+    if (t === 0) return "hsl(var(--muted) / 0.5)";
+    if (t < 0.15) return "hsl(var(--primary) / 0.15)";
+    if (t < 0.4) return "hsl(var(--primary) / 0.4)";
+    if (t < 0.7) return "hsl(var(--primary) / 0.7)";
+    return "hsl(var(--primary))";
   };
+
+  const activeUf = hoverUf ?? selectedUf ?? null;
+  const activeStat = activeUf ? statsByUf.get(activeUf) : null;
+  const activeName = activeUf ? BRAZIL_PATHS.find((p) => p.uf === activeUf)?.name ?? activeUf : null;
+  const setSelectedUf = (uf: string | undefined) =>
+    navigate({
+      search: (prev: { uf?: string }) => ({ ...prev, uf }),
+      replace: true,
+    });
 
   return (
     <div className="p-6 space-y-6">
