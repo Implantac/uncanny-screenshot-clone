@@ -330,6 +330,7 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
         needsOrder,
         status,
         reason,
+        warnings,
       };
     });
 
