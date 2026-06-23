@@ -95,12 +95,17 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
           `
           WITH recent_ped AS (
             -- Apenas O.C. Cliente (tipo 99 — Ordem de Produção), em produção.
-            -- nnumerotpped = 49199 = "99 - ORDEM DE PRODUÇÃO" no cadastro de tipos.
-            SELECT nnumeropedid, ncodigopedid, cliente, ddataentrega
-              FROM pedidos
-             WHERE cstatuspedid = ANY($2::text[])
-               AND nnumerotpped = 49199
-               AND ddataentrega >= CURRENT_DATE - ($1 || ' days')::interval
+            -- Identificamos o tipo pelo nome ("99 -..." ou contém "ORDEM DE PRODU")
+            -- na tabela soltpped para não depender de ID hardcoded.
+            SELECT p.nnumeropedid, p.ncodigopedid, p.cliente, p.ddataentrega
+              FROM pedidos p
+              JOIN soltpped t ON t.nnumerotpped = p.nnumerotpped
+             WHERE p.cstatuspedid = ANY($2::text[])
+               AND (
+                     COALESCE(t.cnometpped,'') ILIKE '99 -%'
+                  OR COALESCE(t.cnometpped,'') ILIKE '%ORDEM DE PRODU%'
+                   )
+               AND p.ddataentrega >= CURRENT_DATE - ($1 || ' days')::interval
           ),
           active AS (
             SELECT st.nnumeropcpip, st.nnumerosetin,
