@@ -83,7 +83,7 @@ async function loadGeo(): Promise<UFStat[]> {
 
 function GeoSales() {
   const { data: stats = [], isLoading } = useQuery({ queryKey: ["geo-sales"], queryFn: loadGeo });
-  const navigate = useNavigate({ from: "/_authenticated/_app/geo-sales" });
+  const navigate = useNavigate({ from: Route.fullPath });
   const { uf: selectedUf } = Route.useSearch();
   const [hoverUf, setHoverUf] = useState<string | null>(null);
   const maxRevenue = useMemo(() => Math.max(1, ...stats.map((s) => s.revenue)), [stats]);
