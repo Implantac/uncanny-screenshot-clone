@@ -395,6 +395,13 @@ function LotePage() {
                     {o.suppliers?.name ?? "—"}
                   </div>
                 </div>
+                <LoteSplitDialog
+                  orderId={o.id}
+                  orderCode={o.code}
+                  totalQty={Number(o.quantity ?? 0)}
+                  defaultSupplierId={o.supplier_id ?? null}
+                  defaultDueDate={o.due_date ?? null}
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Badge
