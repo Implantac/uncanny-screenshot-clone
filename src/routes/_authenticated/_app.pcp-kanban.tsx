@@ -151,6 +151,31 @@ function PcpKanban() {
     orderCode: string;
   } | null>(null);
 
+  // Filtros avançados
+  const [filterStages, setFilterStages] = useState<Set<Stage>>(new Set());
+  const [filterPriorities, setFilterPriorities] = useState<Set<number>>(new Set());
+  const [filterSla, setFilterSla] = useState<"all" | "overdue" | "soon" | "ontime">("all");
+  const [filterIdle, setFilterIdle] = useState<"all" | "1d" | "3d" | "5d">("all");
+  const [filterSearch, setFilterSearch] = useState("");
+  const [filterCapa, setFilterCapa] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const toggleSet = <T,>(s: Set<T>, v: T): Set<T> => {
+    const n = new Set(s);
+    if (n.has(v)) n.delete(v);
+    else n.add(v);
+    return n;
+  };
+
+  const activeFilterCount =
+    filterStages.size +
+    filterPriorities.size +
+    (filterSla !== "all" ? 1 : 0) +
+    (filterIdle !== "all" ? 1 : 0) +
+    (filterSearch.trim() ? 1 : 0) +
+    (filterCapa ? 1 : 0);
+
+
   const update = useMutation({
     mutationFn: async (
       patch: { id: string } & Partial<Pick<Order, "stage" | "priority" | "due_date" | "progress">>,
