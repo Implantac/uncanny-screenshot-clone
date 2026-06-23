@@ -48,7 +48,7 @@ async function load() {
 
 function Capacity() {
   const { data, isLoading } = useQuery({ queryKey: ["capacity"], queryFn: load });
-  const navigate = useNavigate({ from: "/_authenticated/_app/capacity" });
+  const navigate = useNavigate({ from: Route.fullPath });
   const { scope } = Route.useSearch();
   const setScope = (v: "all" | "interna" | "faccao") =>
     navigate({ search: (prev: { scope: "all" | "interna" | "faccao" }) => ({ ...prev, scope: v }), replace: true });
