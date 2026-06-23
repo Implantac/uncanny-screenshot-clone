@@ -133,15 +133,30 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
     }
     if (needs.size === 0) return { items: [], totalSkus: 0, totalOps: opsList.length };
 
-    // 5) Estoque atual
+    // 5) Estoque atual + lead time
     const itemIds = Array.from(needs.keys());
     const { data: inv, error: iErr } = await supabase
       .from("inventory_items")
-      .select("id, sku, name, balance, unit, minimum")
+      .select("id, sku, name, balance, unit, minimum, lead_time_days, safety_days, preferred_supplier_id")
       .eq("owner_id", userId)
       .in("id", itemIds);
     if (iErr) throw new Error(iErr.message);
     const invById = new Map((inv ?? []).map((i) => [i.id, i]));
+
+    // 5.1) Lead time do fornecedor preferido (fallback)
+    const supplierIds = Array.from(
+      new Set((inv ?? []).map((i) => i.preferred_supplier_id).filter((v): v is string => !!v)),
+    );
+    const supplierLead = new Map<string, number>();
+    if (supplierIds.length > 0) {
+      const { data: sups } = await supabase
+        .from("suppliers")
+        .select("id, lead_time_days")
+        .in("id", supplierIds);
+      for (const s of sups ?? []) {
+        if (s.lead_time_days) supplierLead.set(s.id, Number(s.lead_time_days));
+      }
+    }
 
     // 6) Em pedido (purchase_order_items de POs ainda não recebidos)
     const { data: poItems, error: poErr } = await supabase
@@ -163,13 +178,44 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
       );
     }
 
-    // 7) Consolida deficit
+    // 7) Consolida deficit + data-alvo de compra
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const items = Array.from(needs.values())
       .map((n) => {
         const inv = invById.get(n.inventoryItemId);
         const balance = Number(inv?.balance ?? 0);
         const ordered = onOrder.get(n.inventoryItemId) ?? 0;
         const deficit = Math.max(0, n.required - balance - ordered);
+
+        // Lead time efetivo: item → fornecedor preferido → fallback 15
+        const leadTime =
+          Number(inv?.lead_time_days ?? 0) ||
+          (inv?.preferred_supplier_id ? supplierLead.get(inv.preferred_supplier_id) ?? 0 : 0) ||
+          15;
+        const safety = Number(inv?.safety_days ?? 7);
+
+        // Menor due_date entre as OPs contribuintes
+        const earliestDue = n.contributingOps
+          .map((o) => o.due)
+          .filter((d): d is string => Boolean(d))
+          .sort()[0];
+
+        let latestOrderDate: string | null = null;
+        let urgencia: "vencido" | "critico" | "atencao" | "ok" = "ok";
+        if (deficit > 0 && earliestDue) {
+          const due = new Date(earliestDue);
+          const target = new Date(due.getTime() - (leadTime + safety) * 86400000);
+          latestOrderDate = target.toISOString().slice(0, 10);
+          const diff = Math.round((target.getTime() - today.getTime()) / 86400000);
+          if (diff < 0) urgencia = "vencido";
+          else if (diff <= 3) urgencia = "critico";
+          else if (diff <= 7) urgencia = "atencao";
+          else urgencia = "ok";
+        } else if (deficit > 0) {
+          urgencia = "atencao";
+        }
+
         return {
           inventoryItemId: n.inventoryItemId,
           sku: inv?.sku ?? "—",
@@ -179,6 +225,10 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
           balance,
           onOrder: ordered,
           deficit: Number(deficit.toFixed(3)),
+          leadTimeDays: leadTime,
+          safetyDays: safety,
+          latestOrderDate,
+          urgencia,
           coveragePct: n.required > 0
             ? Math.min(100, Math.round(((balance + ordered) / n.required) * 100))
             : 100,
@@ -188,7 +238,11 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
             .map((o) => ({ code: o.code, qty: Number(o.qty.toFixed(2)) })),
         };
       })
-      .sort((a, b) => b.deficit - a.deficit);
+      .sort((a, b) => {
+        const rank = { vencido: 0, critico: 1, atencao: 2, ok: 3 } as const;
+        if (rank[a.urgencia] !== rank[b.urgencia]) return rank[a.urgencia] - rank[b.urgencia];
+        return b.deficit - a.deficit;
+      });
 
     return {
       items,
