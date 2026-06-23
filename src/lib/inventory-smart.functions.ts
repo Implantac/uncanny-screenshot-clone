@@ -164,12 +164,14 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
           : 0;
       const sigma = Math.sqrt(variance);
 
-      const ov = (it.mrp_overrides ?? {}) as ReorderOverrides;
-      const Z = Number(ov.service_factor_z ?? 1.65);
-      const S = Number(ov.cost_per_order ?? 0);
-      const H = Number(ov.holding_cost_annual ?? 0);
-      const leadTime = Number(it.suppliers?.lead_time_days ?? 14);
-      const safetyDays = Number(it.safety_days ?? 7);
+      const { Z, S, H } = resolveReorderParams(it.mrp_overrides);
+      const leadTimeRaw = Number(it.suppliers?.lead_time_days);
+      const leadTime = Number.isFinite(leadTimeRaw) && leadTimeRaw > 0 ? leadTimeRaw : 14;
+      const safetyDaysRaw = Number(it.safety_days);
+      const safetyDays =
+        Number.isFinite(safetyDaysRaw) && safetyDaysRaw >= 0
+          ? safetyDaysRaw
+          : REORDER_DEFAULTS.safety_days;
 
       const safetyStockStat = Z * sigma * Math.sqrt(leadTime);
       const safetyStockDet = dailyAvg * safetyDays;
