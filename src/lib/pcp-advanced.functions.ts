@@ -206,7 +206,8 @@ export const getSamEfficiency = createServerFn({ method: "POST" })
       let hint: string;
       if (sam === 0) {
         status = "sem_sam";
-        hint = "Sem SAM cadastrado na ficha técnica — impossível calcular eficiência.";
+        hint =
+          "Falta o tempo padrão de costura (SAM — minutos para produzir 1 peça) na ficha técnica. Sem ele não dá para comparar tempo previsto x tempo real e medir a eficiência da OP.";
       } else if (producedQty === 0) {
         status = "em_curso";
         hint = "OP ainda não iniciou apontamento.";
