@@ -91,6 +91,7 @@ import { Route as AuthenticatedAppControlTowerRouteImport } from './routes/_auth
 import { Route as AuthenticatedAppComprasRouteImport } from './routes/_authenticated/_app.compras'
 import { Route as AuthenticatedAppComercialRouteImport } from './routes/_authenticated/_app.comercial'
 import { Route as AuthenticatedAppColecoesRouteImport } from './routes/_authenticated/_app.colecoes'
+import { Route as AuthenticatedAppColecao360RouteImport } from './routes/_authenticated/_app.colecao-360'
 import { Route as AuthenticatedAppClosedLoopRouteImport } from './routes/_authenticated/_app.closed-loop'
 import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/_app.clientes'
 import { Route as AuthenticatedAppCentroDeCorteRouteImport } from './routes/_authenticated/_app.centro-de-corte'
@@ -591,6 +592,12 @@ const AuthenticatedAppColecoesRoute =
     path: '/colecoes',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppColecao360Route =
+  AuthenticatedAppColecao360RouteImport.update({
+    id: '/colecao-360',
+    path: '/colecao-360',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppClosedLoopRoute =
   AuthenticatedAppClosedLoopRouteImport.update({
     id: '/closed-loop',
@@ -766,9 +773,9 @@ const AuthenticatedAppLoteIdRoute = AuthenticatedAppLoteIdRouteImport.update({
 } as any)
 const AuthenticatedAppColecao360IdRoute =
   AuthenticatedAppColecao360IdRouteImport.update({
-    id: '/colecao-360/$id',
-    path: '/colecao-360/$id',
-    getParentRoute: () => AuthenticatedAppRoute,
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAppColecao360Route,
   } as any)
 const AuthenticatedAppApontarIdRoute =
   AuthenticatedAppApontarIdRouteImport.update({
@@ -806,6 +813,7 @@ export interface FileRoutesByFullPath {
   '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/clientes': typeof AuthenticatedAppClientesRoute
   '/closed-loop': typeof AuthenticatedAppClosedLoopRoute
+  '/colecao-360': typeof AuthenticatedAppColecao360RouteWithChildren
   '/colecoes': typeof AuthenticatedAppColecoesRoute
   '/comercial': typeof AuthenticatedAppComercialRoute
   '/compras': typeof AuthenticatedAppComprasRoute
@@ -921,6 +929,7 @@ export interface FileRoutesByTo {
   '/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/clientes': typeof AuthenticatedAppClientesRoute
   '/closed-loop': typeof AuthenticatedAppClosedLoopRoute
+  '/colecao-360': typeof AuthenticatedAppColecao360RouteWithChildren
   '/colecoes': typeof AuthenticatedAppColecoesRoute
   '/comercial': typeof AuthenticatedAppComercialRoute
   '/compras': typeof AuthenticatedAppComprasRoute
@@ -1038,6 +1047,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/centro-de-corte': typeof AuthenticatedAppCentroDeCorteRoute
   '/_authenticated/_app/clientes': typeof AuthenticatedAppClientesRoute
   '/_authenticated/_app/closed-loop': typeof AuthenticatedAppClosedLoopRoute
+  '/_authenticated/_app/colecao-360': typeof AuthenticatedAppColecao360RouteWithChildren
   '/_authenticated/_app/colecoes': typeof AuthenticatedAppColecoesRoute
   '/_authenticated/_app/comercial': typeof AuthenticatedAppComercialRoute
   '/_authenticated/_app/compras': typeof AuthenticatedAppComprasRoute
@@ -1156,6 +1166,7 @@ export interface FileRouteTypes {
     | '/centro-de-corte'
     | '/clientes'
     | '/closed-loop'
+    | '/colecao-360'
     | '/colecoes'
     | '/comercial'
     | '/compras'
@@ -1271,6 +1282,7 @@ export interface FileRouteTypes {
     | '/centro-de-corte'
     | '/clientes'
     | '/closed-loop'
+    | '/colecao-360'
     | '/colecoes'
     | '/comercial'
     | '/compras'
@@ -1387,6 +1399,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/centro-de-corte'
     | '/_authenticated/_app/clientes'
     | '/_authenticated/_app/closed-loop'
+    | '/_authenticated/_app/colecao-360'
     | '/_authenticated/_app/colecoes'
     | '/_authenticated/_app/comercial'
     | '/_authenticated/_app/compras'
@@ -2074,6 +2087,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppColecoesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/colecao-360': {
+      id: '/_authenticated/_app/colecao-360'
+      path: '/colecao-360'
+      fullPath: '/colecao-360'
+      preLoaderRoute: typeof AuthenticatedAppColecao360RouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/closed-loop': {
       id: '/_authenticated/_app/closed-loop'
       path: '/closed-loop'
@@ -2286,10 +2306,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/_app/colecao-360/$id': {
       id: '/_authenticated/_app/colecao-360/$id'
-      path: '/colecao-360/$id'
+      path: '/$id'
       fullPath: '/colecao-360/$id'
       preLoaderRoute: typeof AuthenticatedAppColecao360IdRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+      parentRoute: typeof AuthenticatedAppColecao360Route
     }
     '/_authenticated/_app/apontar/$id': {
       id: '/_authenticated/_app/apontar/$id'
@@ -2307,6 +2327,20 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedAppColecao360RouteChildren {
+  AuthenticatedAppColecao360IdRoute: typeof AuthenticatedAppColecao360IdRoute
+}
+
+const AuthenticatedAppColecao360RouteChildren: AuthenticatedAppColecao360RouteChildren =
+  {
+    AuthenticatedAppColecao360IdRoute: AuthenticatedAppColecao360IdRoute,
+  }
+
+const AuthenticatedAppColecao360RouteWithChildren =
+  AuthenticatedAppColecao360Route._addFileChildren(
+    AuthenticatedAppColecao360RouteChildren,
+  )
 
 interface AuthenticatedAppQualityRouteChildren {
   AuthenticatedAppQualityCapaRulesRoute: typeof AuthenticatedAppQualityCapaRulesRoute
@@ -2340,6 +2374,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppCentroDeCorteRoute: typeof AuthenticatedAppCentroDeCorteRoute
   AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRoute
   AuthenticatedAppClosedLoopRoute: typeof AuthenticatedAppClosedLoopRoute
+  AuthenticatedAppColecao360Route: typeof AuthenticatedAppColecao360RouteWithChildren
   AuthenticatedAppColecoesRoute: typeof AuthenticatedAppColecoesRoute
   AuthenticatedAppComercialRoute: typeof AuthenticatedAppComercialRoute
   AuthenticatedAppComprasRoute: typeof AuthenticatedAppComprasRoute
@@ -2415,7 +2450,6 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppWarRoomProducaoRoute: typeof AuthenticatedAppWarRoomProducaoRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppApontarIdRoute: typeof AuthenticatedAppApontarIdRoute
-  AuthenticatedAppColecao360IdRoute: typeof AuthenticatedAppColecao360IdRoute
   AuthenticatedAppLoteIdRoute: typeof AuthenticatedAppLoteIdRoute
   AuthenticatedAppMrpBiRoute: typeof AuthenticatedAppMrpBiRoute
   AuthenticatedAppMrpExecutivoRoute: typeof AuthenticatedAppMrpExecutivoRoute
@@ -2443,6 +2477,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppCentroDeCorteRoute: AuthenticatedAppCentroDeCorteRoute,
   AuthenticatedAppClientesRoute: AuthenticatedAppClientesRoute,
   AuthenticatedAppClosedLoopRoute: AuthenticatedAppClosedLoopRoute,
+  AuthenticatedAppColecao360Route: AuthenticatedAppColecao360RouteWithChildren,
   AuthenticatedAppColecoesRoute: AuthenticatedAppColecoesRoute,
   AuthenticatedAppComercialRoute: AuthenticatedAppComercialRoute,
   AuthenticatedAppComprasRoute: AuthenticatedAppComprasRoute,
@@ -2520,7 +2555,6 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppWarRoomProducaoRoute: AuthenticatedAppWarRoomProducaoRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppApontarIdRoute: AuthenticatedAppApontarIdRoute,
-  AuthenticatedAppColecao360IdRoute: AuthenticatedAppColecao360IdRoute,
   AuthenticatedAppLoteIdRoute: AuthenticatedAppLoteIdRoute,
   AuthenticatedAppMrpBiRoute: AuthenticatedAppMrpBiRoute,
   AuthenticatedAppMrpExecutivoRoute: AuthenticatedAppMrpExecutivoRoute,

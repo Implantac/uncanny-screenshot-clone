@@ -60,6 +60,7 @@ export const Route = createFileRoute("/_authenticated/_app/prototipos")({
         "all",
       ).default("all"),
       productId: fallback(z.string().regex(UUID_RE).optional(), undefined),
+      collectionId: fallback(z.string().regex(UUID_RE).optional(), undefined),
     }),
   ),
   head: () => ({
