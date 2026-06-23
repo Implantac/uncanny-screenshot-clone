@@ -151,15 +151,24 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-feature-settings: "cv11", "ss01";
-    /* Prevent any rogue horizontal overflow across the app */
+    font-feature-settings: "cv11", "ss01", "ss03";
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     -webkit-text-size-adjust: 100%;
   }
   body {
     min-width: 0;
   }
-  /* All media fluid by default */
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+  h1 { letter-spacing: -0.022em; }
+  h2 { letter-spacing: -0.018em; }
+
   img,
   video,
   canvas,
@@ -167,12 +176,45 @@
     max-width: 100%;
     height: auto;
   }
-  /* Smooth horizontal scroll on wrapped tables / scroll containers */
   .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
   }
-  /* Tablet & mobile: any data table scrolls horizontally instead of breaking layout */
+
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--foreground) 14%, transparent);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background-color 0.2s ease;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in oklab, var(--foreground) 26%, transparent);
+    background-clip: padding-box;
+  }
+
+  :focus-visible {
+    outline: none;
+  }
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    box-shadow:
+      0 0 0 2px var(--background),
+      0 0 0 4px color-mix(in oklab, var(--ring) 60%, transparent);
+    outline: none;
+  }
+
   @media (max-width: 1024px) {
     table {
       display: block;
@@ -182,14 +224,13 @@
       -webkit-overflow-scrolling: touch;
     }
   }
-  /* Mobile: minimum touch target + scale down very large headings */
   @media (max-width: 640px) {
     button,
     [role="button"],
     a.btn,
     input[type="button"],
     input[type="submit"] {
-      min-height: 36px;
+      min-height: 40px;
     }
     .text-3xl {
       font-size: 1.5rem;
@@ -203,11 +244,19 @@
   ::selection {
     background-color: oklch(0.7 0.18 50 / 0.35);
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
 }
 
 @utility glass {
-  background: color-mix(in oklab, var(--card) 70%, transparent);
-  backdrop-filter: blur(12px);
+  background: color-mix(in oklab, var(--card) 72%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
   border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
 }
 
@@ -216,6 +265,44 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+@utility card-hover {
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease;
+  &:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
+    box-shadow: var(--shadow-elevated);
+  }
+}
+
+@utility shimmer {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--foreground) 6%, transparent);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--foreground) 10%, transparent),
+      transparent
+    );
+    transform: translateX(-100%);
+    animation: shimmer-sweep 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer-sweep {
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 #lovable-badge {
