@@ -23,6 +23,7 @@ type Material = {
   name: string;
   unit: string;
   consumption: number;
+  consumption_by_size: Record<string, number> | null;
   loss_pct: number;
   unit_cost: number;
   total_cost: number;
