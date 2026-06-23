@@ -192,7 +192,7 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                       <SizeConsumptionPopover
                         value={m.consumption_by_size}
                         disabled={!canEdit}
-                        onSave={(v) =>
+                        onSave={(v: Record<string, number> | null) =>
                           upd.mutate({
                             id: m.id,
                             patch: { consumption_by_size: v } as Partial<Material>,
