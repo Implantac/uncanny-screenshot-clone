@@ -1,81 +1,24 @@
-# Protótipos & Coleções 360° — Fechar o ciclo
+# Protótipos & Coleções 360° — ✅ CONCLUÍDO
 
-A auditoria mostrou que **tudo existe** (12 painéis ricos, kanban, gates, handoff, carry-over, assortment, moodboard, war room, milestones). O problema é **fragmentação**: metade dos painéis vive em `colecoes.tsx`, outros em `marketing.tsx` / `quality.tsx`, e a rota `colecao-360` não tem ID na URL nem realtime de protótipos. O ciclo Briefing → Protótipo → OP → Lançamento → Sell-through → Carry-over nunca fecha numa tela só.
+Ciclo fechado: o usuário agora navega Briefing → Protótipo → Aprovação → OP → Lançamento → Sell-through → Carry-over numa única rota com deep-link.
 
-Este plano **não cria features novas** — só conecta as existentes. Zero duplicação, zero mock, preserva todas as rotas atuais.
+## 7 ajustes entregues
 
----
+1. ✅ **`/colecao-360/$id` com URL paramétrica** — `_app.colecao-360.$id.tsx`. Rota antiga `_app.colecao-360.tsx` virou redirect que abre a coleção mais recente.
+2. ✅ **CTA "Ver Coleção 360º" no detalhe do protótipo** — `_app.prototipo.$id.tsx`. Botão aparece quando o protótipo tem produto vinculado a uma coleção.
+3. ✅ **Filtro `collectionId` em `/prototipos`** — search schema + memo `productsInCollection` + banner "Filtrando por coleção X · Abrir 360º / Limpar".
+4. ✅ **Realtime de protótipos + gates em colecao-360** — `useRealtime("prototypes")` e `useRealtime("prototype_gates")` ao lado do existente de OPs.
+5. ✅ **Painéis existentes plugados em abas** — 7 tabs: Visão 360º · Time & Action · Moodboard · Assortment & Mix · Carry-over · Qualidade · Lançamento. Componentes reaproveitados sem duplicar (`CollectionMoodboard`, `AssortmentPanel`, `ChannelMixPanel`, `CarryOverPanel`, `QualityCollectionsBridgePanel`, `LaunchingWeekPanel`, `CollectionIntelligencePanel`).
+6. ✅ **Sell-through fecha o loop** — KPI virou botão que troca para a aba Carry-over.
+7. ✅ **Shortcuts cruzados corrigidos** — "Curva ABC da coleção" e "War Room" adicionados; pipeline "Protótipos" passa `collectionId` na URL.
 
-## Frente única — 7 ajustes cirúrgicos
+## Validações
+- `bunx tsc --noEmit` → 0 erros
+- `node scripts/check-no-mocks.mjs` → ok
+- Sem migration (todas as tabelas necessárias já existiam)
+- Zero breaking change nas rotas atuais (links antigos para `/colecao-360` redirecionam para `/colecao-360/$lastId`)
 
-### 1. `colecao-360` ganha `:id` na URL
-- Rota vira `/colecao-360/$id` (mantém `/colecao-360` como redirect para a coleção mais recente).
-- Substitui o `useState` local pelo param da URL.
-- Habilita deep-link de notificações, war room, protótipo, etc.
-
-### 2. Botão "Ver Coleção 360°" no detalhe do protótipo
-- Em `_app.prototipo.$id.tsx` (header, ao lado de "← Protótipos"), adicionar CTA que navega para `/colecao-360/$id` usando `proto.products?.collection_id`.
-- Fluxo inverso passa a existir.
-
-### 3. Filtro `collectionId` em `_app.prototipos.tsx`
-- Adicionar `collectionId` ao search schema (querystring).
-- Aplicar no `filtered` memo.
-- Pipeline de protótipos em `colecao-360` passa a linkar `/prototipos?collectionId=...`.
-- Banner "Filtrando por coleção X · limpar".
-
-### 4. Realtime de protótipos em `colecao-360`
-- Adicionar `useRealtime("prototypes", ["colecao-360", id])` ao lado do existente de `production_orders`.
-- KPI `semPiloto` e pipeline atualizam ao vivo quando gate é aprovado.
-
-### 5. Plugar painéis existentes na rota 360° (sem duplicar)
-Importar em `_app.colecao-360.$id.tsx`, passando `collectionId`:
-- `CollectionIntelligencePanel` — na aba Visão 360°
-- `LaunchingWeekPanel` — na aba Visão 360° (semana de lançamento)
-- `QualityCollectionsBridgePanel` — na aba Visão 360°
-- `MarketingBriefStudio` — nova aba "Marketing" (passar `collectionId`)
-- `CarryOverPanel` — nova aba "Carry-over"
-- `AssortmentPanel` + `ChannelMixPanel` — nova aba "Assortment & Mix"
-- `CollectionMoodboard` — nova aba "Moodboard"
-
-Tabs resultantes: **Visão 360° · Time & Action · Moodboard · Assortment · Marketing · Carry-over**.
-
-> Se algum painel não aceita `collectionId` como prop hoje, adicionar a prop (opcional) e usar como filtro — mantém todos os call sites atuais funcionando.
-
-### 6. Sell-through fecha o loop → CTA Carry-over
-- No card KPI Sell-through (`colecao-360`), adicionar botão "Decidir carry-over" que muda para a aba Carry-over da mesma coleção.
-
-### 7. Corrigir shortcut ABC + adicionar shortcuts cruzados
-- Trocar shortcut "Rentabilidade" para apontar `/abc-colecao?collectionId=...` (atualmente vai para `/profitability`).
-- Adicionar shortcut "War Room" e "Ficha Técnica das peças da coleção".
-
----
-
-## Detalhes técnicos
-
-**Rota nova:** `src/routes/_authenticated/_app.colecao-360.$id.tsx` (renomear o arquivo atual; manter `_app.colecao-360.tsx` como redirect para `/colecao-360/$lastId` ou para `/colecoes` se não houver).
-
-**Querystring filter no Tanstack Router:**
-```ts
-validateSearch: z.object({
-  collectionId: z.string().uuid().optional(),
-})
-```
-
-**Realtime adicional:**
-```ts
-useRealtime("prototypes", ["colecao-360", id]);
-useRealtime("prototype_gates", ["colecao-360", id]);
-```
-
-**Props opcionais nos painéis** (`CollectionIntelligencePanel`, `MarketingBriefStudio`, `LaunchingWeekPanel`, `QualityCollectionsBridgePanel`): adicionar `collectionId?: string` quando ausente. Default = comportamento atual (todas as coleções). Quando passado = filtra. Zero breaking change.
-
-**Sem migration** — só código. As tabelas `prototypes`, `collections`, `collection_milestones`, `carry_over_decisions`, etc. já têm tudo necessário.
-
-**Validações finais:**
-- `bunx tsc --noEmit` = 0 erros
-- `npm run check:no-mocks` ok
-- Smoke manual via Playwright: navegar protótipo → 360° → carry-over → voltar.
-
----
-
-Aprovar para começar?
+## Próximas evoluções possíveis (a discutir)
+- Lote & Passagens de setor (rastreabilidade aprofundada)
+- Ocorrências & CAPA inteligente (causa raiz / Pareto)
+- Sala de Guerra / Exec Dashboard global
