@@ -1,137 +1,97 @@
-## Visão geral
+## Demand Planning + Grade de Estoque (evolução do almoxarifado inteligente)
 
-A auditoria identificou **20 features parciais** — todas evoluem código já existente (zero telas novas, zero recursos de ERP). Plano em **4 ondas progressivas**, começando por 6 quick wins de alto impacto.
-
----
-
-## 🌊 Onda 1 — Quick Wins (esforço S, alto impacto)
-
-Tudo aqui é "ligar fio solto": o dado/lógica já existe, falta UI ou conexão.
-
-### 1.1 Meta de receita real em `/colecao-360`
-- `colecao-360.tsx:1133` usa `investment × 1.5` hardcoded.
-- Incluir `target_revenue, target_pieces, target_margin_pct` na query de coleções.
-- Substituir o cálculo pelo campo real; fallback ao cálculo só quando `target_revenue` é null.
-- Adicionar inputs desses 3 campos no formulário de edição em `/colecoes`.
-
-### 1.2 `scrap_reason` em sucata/refugo
-- Migration: adicionar `scrap_reason text` em `stock_movements`.
-- Enum sugerido: `corte`, `costura`, `acabamento`, `defeito_mp`, `manuseio`, `outro`.
-- Dropdown no formulário de ajuste de estoque; filtro novo em `inventory-scraps-panel`.
-
-### 1.3 UI de Preferências de Notificação
-- Tabela `notification_preferences` já existe.
-- Novo drawer em `notifications-bell.tsx` com toggles por categoria (qualidade, produção, marketing, compras, sistema).
-- Persistir em `notification_preferences`; filtro do bell passa a ler do banco em vez de `useState` local.
-- Resolve simultaneamente item 17 (filtro persistido).
-
-### 1.4 RCA por Fornecedor — render check
-- `supplier-defect-rca-panel.tsx` existe mas pode não estar renderizado.
-- Adicionar como aba "Reincidência" em `/fornecedores` e card em `/quality`.
-- Se faltar query consolidada, finalizar `quality-rca.functions.ts`.
-
-### 1.5 Cartela de Cores Mestre em `/biblioteca`
-- Nova aba "Cores" lendo `product_color_options` agrupado por coleção/temporada.
-- Filtros: temporada, família, status (ativa/descontinuada).
-- Botão "promover para padrão" marca cor como reutilizável.
-
-### 1.6 Drag-and-drop em operações da Ficha Técnica
-- `tech_sheet_operations.position` já existe.
-- `@dnd-kit/sortable` (já instalado em outras telas) nas linhas de operação.
-- Mutation `update position` em lote ao soltar.
-
-**Entrega Onda 1:** 6 features concluídas, 1 migration, ~8 arquivos editados.
+Reaproveita 100% do que já existe (`inventory-smart.functions.ts`, `inventory-smart-panel.tsx`, ROP/EOQ/Z, `product_variants`, `suppliers`, `sales`/`erp_sales_mirror`, `purchase_orders`). Nada é removido — adicionamos camadas: ABC automático, grade por categoria, sazonalidade mensal e um **painel de compras agrupado por fornecedor com matriz cor × tamanho**.
 
 ---
 
-## 🌊 Onda 2 — PLM Core (esforço M) ✅ CONCLUÍDA
+### 1) Banco (1 migration única)
 
-- 2.1 Aprovar ficha: `approveTechSheet`/`unapproveTechSheet` (admin/gerente via `has_role`) + botão no header de `/ficha-tecnica` com dialog de nota.
-- 2.2 Diff de versões: `diffTechSheetVersions` + `DiffView` no `tech-sheet-versions-drawer` (já estava entregue).
-- 2.3 BOM ↔ Almoxarifado: coluna "Almox." em `MaterialsPanel` com popover de busca por SKU/nome (usa `tech_sheet_materials.inventory_item_id`).
-- 2.4 APS loop: `applyApsSequence` persiste `priority` 5→1 conforme ranking; botão "Aplicar sequenciamento" no `pcp-aps-panel` com toast.
+Novas tabelas + 1 coluna em `products`:
 
----
-## 🌊 Onda 2 — PLM Core (esforço M)
+- `products.abc_class` enum `product_abc_class` (`A`,`B`,`C`) — nullable, calculado pelo job.
+- `products.abc_revenue_12m numeric` — cache do faturamento usado no ranking.
+- `products.abc_updated_at timestamptz`.
+- `size_grids` — grade padrão de vendas por categoria/grupo.  
+  Campos: `owner_id`, `scope` (`category` | `product_group` | `product`), `scope_value text`, `product_id uuid null`, `distribution jsonb` (`{"P":0.10,"M":0.40,"G":0.40,"GG":0.10}`), `notes`.  
+  Unique: `(owner_id, scope, scope_value, product_id)`.
+- `seasonality_curves` — multiplicador mensal por escopo.  
+  Campos: `owner_id`, `scope`, `scope_value`, `multipliers jsonb` (`{"1":0.5,...,"12":1.2}`), `notes`.  
+  Unique igual.
 
-### 2.1 Botão "Aprovar Ficha Técnica" funcional
-- Server function `approveTechSheet` que escreve `approved_by = auth.uid()`, `approved_at = now()`.
-- RLS policy: só `engenharia` ou `admin` aprovam (via `has_role`).
-- Botão "Aprovar" no `tech-sheet-drawer` com confirmação; bloqueia edição após aprovação.
+Função `public.recompute_abc_class(_owner uuid)` (SECURITY DEFINER) — soma `sales.total_value` (fallback `erp_sales_mirror.total_value`) dos últimos 365d, ranqueia por receita, marca top 20% = A, 30% = B, 50% = C. Atualiza `products.abc_class/abc_revenue_12m/abc_updated_at`.
 
-### 2.2 Diff lado-a-lado entre versões de Ficha Técnica
-- Em `tech-sheet-versions-drawer`: seletor "Comparar com versão X".
-- Server function `diffTechSheetVersions(v1, v2)` retornando linhas added/removed/changed para materiais e operações.
-- UI de duas colunas com highlight visual (verde/vermelho/amarelo).
+Grants padrão `authenticated`/`service_role` em ambas as tabelas + RLS `auth.uid() = owner_id`. Função executável por `authenticated`.
 
-### 2.3 Link BOM ↔ Almoxarifado
-- Migration: `tech_sheet_materials.inventory_item_id uuid REFERENCES inventory_items(id)`.
-- Combobox de busca de item do almoxarifado na linha da BOM.
-- Habilita futuras features de rastreabilidade MP→produto e custeio real.
-
-### 2.4 APS — fechar o loop "Aplicar sequenciamento"
-- Confirmar/implementar botão em `pcp-aps-panel` que persiste `priority` ordenada das OPs no banco.
-- Toast com resumo: "X OPs reordenadas conforme APS".
-
-**Entrega Onda 2:** 4 features, 1 migration, ~10 arquivos.
+Não tocar em tabelas existentes além da coluna em `products` (compatível, default NULL).
 
 ---
 
-## 🌊 Onda 3 — Operação Real (esforço M) — EM ANDAMENTO
+### 2) Lógica (server functions, em arquivos novos)
 
-### 3.1 Ponto de Reposição Dinâmico — ✅ integrado em `/compras`
-- `InventorySmartPanel` (já existente em `/almoxarifado`) agora também aparece em `/compras`, com ROP dinâmico, ABC e contagem cíclica + motivo gerado pela IA.
+`src/lib/demand-planning.functions.ts`:
 
-### 3.2 FEFO com lot/expires reais — ✅ migration aplicada
-- `stock_movements` ganhou `lot_number text` e `expires_at date` + índice parcial por item/validade. `inventory-fefo.functions.ts` já ordena por `inventory_lots.expires_at`. Inputs no formulário de entrada virão na próxima onda de polimento.
+- `recomputeAbcClass()` → `select` na função SQL acima, devolve contagem por classe.
+- `getSeasonalityFactor(productId, month)` → resolve cascata `product → product_group → category → 1.0`. Helper puro server-side.
+- `getDemandPlanningByVariant({ productId? })` — para cada variant ativa:
+  - puxa `annualDemand` e `dailyAvg` do pai (consumo via `sales`/`erp_sales_mirror` ou, na falta, do `stock_movements` do item de almoxarifado vinculado);
+  - aplica % da grade resolvida (variant.size → distribution[size]);
+  - aplica fator de sazonalidade do mês corrente em `dailyAvg`;
+  - Z dinâmico por `abc_class` (A=1.65, B=1.41, C=1.28; default 1.65);
+  - calcula `safetyStock`, `ROP`, `LEC` (S/H vindos de `mrp_overrides` do produto, com defaults atuais);
+  - status `Emitir Pedido` se `variant_balance ≤ ROP` (balance via `production_order_grid`/saldo do almoxarifado ligado ao SKU; quando ausente, balance=0).
+- `getPurchaseSuggestionsBySupplier()` — agrupa variantes em `Emitir Pedido` por `products.preferred_supplier_id` (fallback `suppliers` via `inventory_items.preferred_supplier_id` do pai). Retorna por fornecedor:
+  ```
+  { supplier, products: [{ product, rows:[color], cols:[size], matrix:{[colorId]:{[sizeId]:lec}}, totalQty, totalCost }], totalQty, totalCost }
+  ```
 
-### 3.3 Capacidade com dimensão Facção — ✅ toggle entregue
-- Em `/capacity`, novo toggle "Combinada | Interna | Facção" no header (persistido em URL `?scope=`). Interno = OPs sem `supplier_id`; Facção = OPs com fornecedor terceirizado. Todos os KPIs, carga e ranking de fornecedores respeitam o escopo.
-
-### 3.4 Mapa SVG do Brasil em `/geo-sales` — ⏳ pendente
-- Substituir grid de divs por SVG real de UFs (paths públicos do IBGE).
-- `fill` dinâmico pelo heatmap de receita já calculado; hover mostra UF + receita + variação.
-
-**Entrega Onda 3 (parcial):** 3 de 4 itens, 1 migration, 2 arquivos editados.
-
----
-
-## 🌊 Onda 4 — Polimento & Testes (mix)
-
-### 4.1 Aprovações com roteamento por papel
-- Tabela `approval_rules(entity_type, stage, required_role)`.
-- Server function de aprovação valida `has_role(auth.uid(), required_role)`.
-- UI mínima de configuração em `/security-center`.
-
-### 4.2 Influencer ROI com mapeamento explícito
-- Coluna `influencers.external_code`.
-- Tela de mapeamento simples (modal): vincular handle ↔ código do ERP.
-- Janela de tempo configurável (7/14/30 dias) para baseline antes/depois.
-
-### 4.3 E2E coverage de fluxos críticos
-- Specs Playwright: aprovar ficha técnica, criar OP via MRP, CAPA por inspeção reprovada, lifecycle de coleção.
-
-### 4.4 (Opcional/futuro) `/showroom` lookbook e `/mobile` PWA offline
-- Esforço L — fica como backlog após Onda 4. Hoje servem como vitrine; usuário não está bloqueado.
+`src/lib/size-grids.functions.ts` + `src/lib/seasonality.functions.ts`: CRUD simples (`list`, `upsert`, `delete`) com `requireSupabaseAuth`, validação Zod (soma da distribuição ≈ 1; multiplicadores 0–5 com aviso fora da faixa).
 
 ---
 
-## 📋 Detalhes técnicos
+### 3) UI (rotas e componentes novos, sem remover nada)
 
-**Migrations necessárias:** 4 (scrap_reason, inventory_item_id na BOM, lot/expires em stock_movements, approval_rules + external_code). Todas pequenas, todas com `GRANT` + RLS conforme padrão do projeto.
+Reaproveita design tokens, `glass`, `Badge`, `Tabs`, `Dialog`, sonner. Mantém `inventory-smart-panel.tsx` intacto.
 
-**Server functions novas:** `approveTechSheet`, `diffTechSheetVersions`, `computeReorderPoints`, `applyApsSequence`, `evaluateApprovalRule`.
+- **Nova rota** `src/routes/_authenticated/_app.demand-planning.tsx` com 3 abas:
+  1. **Sugestão de compras por fornecedor** (default).
+     - Lista de cards por fornecedor (logo/inicial, total peças, custo total, badge se atingir/atinge mínimo do fornecedor caso configurado).
+     - Para cada produto pai dentro do card: matriz **linhas=cor × colunas=tamanho** com o LEC por SKU, célula vazia quando variant não existe; linha total e coluna total; rodapé com `Total peças`, `Custo total`, botão **"Gerar pedido de compra"** (cria `purchase_orders` + `purchase_order_items` aproveitando o fluxo existente).
+  2. **Grade padrão** — editor por categoria/grupo: tabela com tamanhos como colunas; input % por tamanho; soma destacada em verde quando =100%, vermelha caso ≠. Salva em `size_grids`.
+  3. **Sazonalidade** — 12 inputs (Jan–Dez), preview gráfico em barras com Recharts (já existe no projeto), com pré-sets ("verão", "inverno", "neutro"). Salva em `seasonality_curves`.
+- **Painel adicional** dentro de `inventory-smart-panel.tsx`: badge mostrando a classe ABC do pai (A/B/C) e o Z aplicado, com tooltip "ABC recalculado em <data>". Botão "Recalcular ABC" no header da aba "Reposição".
+- **Item no menu lateral**: adicionar entrada "Demand Planning" em `app-sidebar.tsx` (ou equivalente) abaixo de "Almoxarifado".
 
-**Componentes reutilizados:** `@dnd-kit/sortable`, `tech-sheet-drawer`, `notifications-bell`, `supplier-defect-rca-panel`, `inventory-scraps-panel` — nenhuma biblioteca nova.
-
-**Filosofia respeitada:**
-- Zero telas novas; só evolução de existentes.
-- Nada de financeiro/fiscal — ERP segue como fonte para receita real, espelhos só leem.
-- Máx 2 cliques: drawer de preferências, toggle de capacidade, dropdown de scrap_reason.
-- IA explica (ponto de reposição vem com motivo, APS já tem score+motivo).
+UX: máx 2 cliques para emitir pedido (card → "Gerar pedido"). Matriz editável só na aba "Grade padrão" — na sugestão é read-only. IA explica o porquê em cada card ("Z 1.65 (classe A) · sazonalidade jun 1.8 × · LEC otimizado").
 
 ---
 
-## ❓ Antes de começar
+### 4) Integrações com o que já existe
 
-Quer que eu execute **Onda 1 inteira agora** (6 quick wins, ~1 commit), ou prefere ir item-a-item para revisar cada um? Também posso reordenar prioridades se algum item específico for mais urgente para você.
+- `inventory-smart.functions.ts` continua sendo a fonte para itens de almoxarifado (matérias-primas). Demand Planning trata produtos acabados/SKUs.
+- Reutiliza `applyReorderSuggestion`/`updateReorderParams` (S, H) — agora ao nível do produto pai.
+- Geração de pedido reusa `purchase_orders` + `purchase_order_items` (trigger `purchase_orders_to_financial_account` já existente cria a conta a pagar automaticamente quando aprovado).
+- Notificações: nada novo — usa `marketing_notifications` apenas se já existir um canal para PCP.
+
+---
+
+### 5) Validações (consistentes com a faixa atual)
+
+- `service_factor_z`: 0–4 (default por classe).
+- `holding_cost_annual`: 0–10.000.
+- `lead_time_days`: 1–365.
+- `daily_avg_sales`: 0–100.000.
+- Distribuição de grade: cada tamanho 0–1; soma 0,95–1,05 (aviso fora).
+- Multiplicador sazonal: 0–5 (aviso >3).
+- Erros aparecem inline no painel já criado.
+
+---
+
+### Entregáveis
+
+1. 1 migration (tabelas + coluna + função SQL + grants + RLS).
+2. 3 arquivos `.functions.ts` (demand-planning, size-grids, seasonality).
+3. 1 rota nova + 3 componentes (`PurchaseBySupplierPanel`, `SizeGridEditor`, `SeasonalityEditor`).
+4. Pequena evolução do `inventory-smart-panel.tsx` (badge ABC + botão recalcular).
+5. Item no menu lateral.
+
+Nada existente é removido; o módulo atual continua funcional para matérias-primas.
