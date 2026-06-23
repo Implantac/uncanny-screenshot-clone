@@ -315,6 +315,7 @@ function Quality() {
         </TabsContent>
 
         <TabsContent value="capa" className="space-y-4">
+          <OccurrencesParetoPanel windowDays={60} />
           <CapaEffectivenessPanel />
           <CapaPanel />
         </TabsContent>
