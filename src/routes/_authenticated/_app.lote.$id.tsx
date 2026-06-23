@@ -170,8 +170,9 @@ function LotePage() {
   const productIds = Array.from(new Set(orders.map((o) => o.product_id).filter(Boolean)));
   const { data: materialsNeeded = [] } = useQuery({
     enabled: productIds.length > 0,
-    queryKey: ["lote-materials", productIds.join(",")],
+    queryKey: ["lote-materials", productIds.join(","), orderIds.join(",")],
     queryFn: async () => {
+
       const { data: sheets, error: e1 } = await supabase
         .from("tech_sheets")
         .select("id, product_id, status")
