@@ -34,6 +34,8 @@ import { LoteSplitDialog } from "@/components/lote-split-dialog";
 import { useServerFn } from "@tanstack/react-start";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { getRoutingsForProducts } from "@/lib/product-routing.functions";
+import { ErpSectorSyncPanel } from "@/components/erp-sector-sync-panel";
+
 
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
@@ -321,6 +323,8 @@ function PcpKanban() {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
+      <ErpSectorSyncPanel />
+
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">PCP — Passagem por setores</h1>
