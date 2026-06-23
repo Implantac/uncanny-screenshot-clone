@@ -370,6 +370,36 @@ function Prototipos() {
         </Button>
       </div>
 
+      {collectionId && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 flex items-center justify-between gap-3 text-sm">
+          <div className="inline-flex items-center gap-2 min-w-0">
+            <Sparkles className="size-3.5 text-primary shrink-0" />
+            <span className="truncate">
+              Filtrando por coleção:{" "}
+              <b>
+                {collectionRef?.name ?? "—"}
+                {collectionRef?.season && ` · ${collectionRef.season}`}
+                {collectionRef?.year && ` ${collectionRef.year}`}
+              </b>
+            </span>
+            <Link
+              to="/colecao-360/$id"
+              params={{ id: collectionId }}
+              className="text-xs text-primary hover:underline shrink-0"
+            >
+              Abrir 360º →
+            </Link>
+          </div>
+          <button
+            onClick={clearCollectionFilter}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <X className="size-3" /> Limpar
+          </button>
+        </div>
+      )}
+
+
       {isLoading ? (
         <p className="text-muted-foreground">Carregando…</p>
       ) : (
