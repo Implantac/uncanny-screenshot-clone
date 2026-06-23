@@ -293,6 +293,10 @@ export const getDemandPlanning = createServerFn({ method: "POST" })
         abcClass: klass,
         supplierId,
         supplierName: supplier?.name ?? null,
+        supplierMinOrderValue:
+          supplier?.min_order_value != null ? Number(supplier.min_order_value) : null,
+        supplierMinOrderQty:
+          supplier?.min_order_qty != null ? Number(supplier.min_order_qty) : null,
         costPrice,
         annualDemand: Math.round(annualUnits),
         monthFactor,
