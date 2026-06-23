@@ -794,12 +794,12 @@ function CollectionTabs({
       </TabsContent>
 
       <TabsContent value="assortment" className="space-y-4">
-        <AssortmentPanel collectionId={collectionId} />
+        <AssortmentPanel collectionId={collectionId} collectionName={current.collection.name} />
         <ChannelMixPanel collectionId={collectionId} />
       </TabsContent>
 
       <TabsContent value="carry-over" className="space-y-4">
-        <CarryOverPanel collectionId={collectionId} />
+        <CarryOverPanel collectionId={collectionId} collectionName={current.collection.name} />
       </TabsContent>
 
       <TabsContent value="qualidade" className="space-y-4">
