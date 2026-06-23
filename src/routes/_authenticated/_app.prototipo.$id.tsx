@@ -12,6 +12,7 @@ import {
   Tag,
   Factory,
   Clock,
+  Compass,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
