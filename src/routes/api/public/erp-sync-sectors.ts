@@ -119,7 +119,7 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
                    st.nnumerosetin,
                    ROW_NUMBER() OVER (
                      PARTITION BY i.nnumeropedid
-                     ORDER BY st.nsequenpcpst
+                     ORDER BY st.nsequenpcpst DESC
                    ) AS rn
               FROM items i
               JOIN indpcpst st ON st.nnumeropcpip = i.nnumeropcpip
