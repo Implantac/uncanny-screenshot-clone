@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   getPurchaseSuggestionsBySupplier,
   generatePurchaseOrderFromSuggestion,
+  generatePurchaseOrdersBatch,
   recomputeAbcClass,
   ABC_SERVICE_LEVEL,
 } from "@/lib/demand-planning.functions";
