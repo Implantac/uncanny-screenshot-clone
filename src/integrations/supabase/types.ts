@@ -4013,9 +4013,11 @@ export type Database = {
       stock_movements: {
         Row: {
           created_at: string
+          expires_at: string | null
           id: string
           inventory_item_id: string
           lot_id: string | null
+          lot_number: string | null
           notes: string | null
           owner_id: string
           product_id: string | null
@@ -4028,9 +4030,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          expires_at?: string | null
           id?: string
           inventory_item_id: string
           lot_id?: string | null
+          lot_number?: string | null
           notes?: string | null
           owner_id: string
           product_id?: string | null
@@ -4043,9 +4047,11 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          expires_at?: string | null
           id?: string
           inventory_item_id?: string
           lot_id?: string | null
+          lot_number?: string | null
           notes?: string | null
           owner_id?: string
           product_id?: string | null

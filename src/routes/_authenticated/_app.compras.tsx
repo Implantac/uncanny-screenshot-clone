@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { ShoppingCart, AlertTriangle, Package, TrendingDown } from "lucide-react";
+import { InventorySmartPanel } from "@/components/inventory-smart-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/compras")({ component: Compras });
 
@@ -103,6 +104,8 @@ function Compras() {
           icon={<TrendingDown className="size-4" />}
         />
       </div>
+
+      <InventorySmartPanel />
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-3 border-b border-border font-medium">Necessidade de compra</div>
