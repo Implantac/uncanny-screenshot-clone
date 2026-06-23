@@ -418,11 +418,13 @@ export function InventorySmartPanel() {
                   <Input
                     type="number"
                     step="0.01"
+                    min={0}
                     value={formZ}
+                    placeholder={String(REORDER_DEFAULTS.service_factor_z)}
                     onChange={(e) => setFormZ(e.target.value)}
                   />
                   <div className="text-[10px] text-muted-foreground mt-0.5">
-                    1.28=90% · 1.65=95% · 2.33=99%
+                    1.28=90% · 1.65=95% · 2.33=99% · vazio = {REORDER_DEFAULTS.service_factor_z}
                   </div>
                 </div>
                 <div>
@@ -430,7 +432,9 @@ export function InventorySmartPanel() {
                   <Input
                     type="number"
                     step="1"
+                    min={0}
                     value={formSafetyDays}
+                    placeholder={String(REORDER_DEFAULTS.safety_days)}
                     onChange={(e) => setFormSafetyDays(e.target.value)}
                   />
                 </div>
@@ -439,17 +443,21 @@ export function InventorySmartPanel() {
                   <Input
                     type="number"
                     step="0.01"
+                    min={0}
                     value={formS}
+                    placeholder="0,00"
                     onChange={(e) => setFormS(e.target.value)}
                   />
-                  <div className="text-[10px] text-muted-foreground mt-0.5">R$ operacional</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">R$ operacional · vazio desativa LEC</div>
                 </div>
                 <div>
                   <label className="text-xs font-medium">Custo anual armazenagem (H)</label>
                   <Input
                     type="number"
                     step="0.01"
+                    min={0}
                     value={formH}
+                    placeholder="0,00"
                     onChange={(e) => setFormH(e.target.value)}
                   />
                   <div className="text-[10px] text-muted-foreground mt-0.5">R$ por unidade/ano</div>
