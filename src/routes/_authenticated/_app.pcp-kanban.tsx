@@ -34,6 +34,8 @@ import { LoteSplitDialog } from "@/components/lote-split-dialog";
 import { useServerFn } from "@tanstack/react-start";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { getRoutingsForProducts } from "@/lib/product-routing.functions";
+import { ErpSectorSyncPanel } from "@/components/erp-sector-sync-panel";
+
 
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
