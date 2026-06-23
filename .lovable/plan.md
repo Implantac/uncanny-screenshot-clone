@@ -1,10 +1,13 @@
 # Plano evolutivo USE MODA PLM
 
 ## ✅ Concluído
-- **Protótipos & Coleções 360°** — ciclo briefing→aprovação→OP→lançamento→carry-over fechado em `/colecao-360/$id` com 7 abas, deep-link a partir do protótipo, filtro por coleção em `/prototipos` e CTA sell-through→carry-over.
-- **Lote & Passagens de setor** — `LotePassagensPanel` agrega `production_stage_log`, mostra dwell médio por setor, gargalo atual, SLA realizado vs configurado (`pcp_stages.sla_stuck_days`) e peça mais parada; split de OP exposto direto no card de cada OP do lote.
-- **Segurança** — `token_hash` de `supplier_portal_tokens` revogado para `authenticated`/`anon` (só `service_role` lê).
+- **Protótipos & Coleções 360°** — ciclo briefing→aprovação→OP→lançamento→carry-over fechado em `/colecao-360/$id`.
+- **Lote & Passagens de setor** — `LotePassagensPanel` (dwell médio, SLA por setor, gargalo atual, peça mais parada) e split de OP no card de cada referência do lote.
+- **Ocorrências & CAPA inteligente** — `OccurrencesParetoPanel` (top setores, top fornecedores, gate de produtos reincidentes) plugado na aba CAPA, em cima de `CapaEffectivenessPanel` + `CapaPanel`.
+- **Sala de Guerra / Exec Dashboard** — `WarRoomPanel` (gargalos cross-módulo, push p/ mobile) agora encabeça `/executivo`, junto a `ExecutiveKpisPanel`, matriz Coleção×KPI e leitura "Vital Few" por IA.
+- **Segurança** — `supplier_portal_tokens.token_hash` revogado para `authenticated`/`anon`.
 
-## Próximas frentes
-1. **Ocorrências & CAPA inteligente** — causa raiz, Pareto setor/fornecedor, efetividade CAPA, gate de reincidência.
-2. **Sala de Guerra / Exec Dashboard** — torre executiva: SLA coleção, gargalo global, risco financeiro, decisões registradas.
+## Próximas frentes possíveis
+- Marketing × Comercial loop (sell-in/sell-out → próximo brief).
+- IA conversacional contextual por persona (PCP, Marketing, Comercial, Direção).
+- Almoxarifado: contagem cíclica orientada por giro/ABC + reserva por OP.
