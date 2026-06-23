@@ -69,7 +69,7 @@ export const Route = createFileRoute("/_authenticated/_app/colecao-360/$id")({
 });
 
 type CollectionAggregate = {
-  collection: { id: string; name: string };
+  collection: Collection;
   productCount: number;
   protoCount: number;
   protoApproved: number;
