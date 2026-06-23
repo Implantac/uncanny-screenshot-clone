@@ -160,6 +160,8 @@ type ServiceOrderRow = {
   production_order_id: string | null;
   quantity: number | null;
   qty_received: number | null;
+  qty_lost: number | null;
+  qty_defect: number | null;
   sent_at: string | null;
   due_at: string | null;
   status: string;
@@ -192,7 +194,7 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
       supabase
         .from("service_orders")
         .select(
-          "id, code, supplier_id, production_order_id, quantity, qty_received, sent_at, due_at, status, from_stage, to_stage, line_type, variant_id, package_id, suppliers(name), production_orders(code, batch_code), product_variants(sku, color, size), production_packages(code)",
+          "id, code, supplier_id, production_order_id, quantity, qty_received, qty_lost, qty_defect, sent_at, due_at, status, from_stage, to_stage, line_type, variant_id, package_id, suppliers(name), production_orders(code, batch_code), product_variants(sku, color, size), production_packages(code)",
         )
         .eq("owner_id", userId)
         .in("status", ["enviada", "em_andamento"])

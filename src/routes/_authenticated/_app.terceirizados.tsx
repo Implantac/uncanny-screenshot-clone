@@ -221,6 +221,7 @@ function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: stri
   const pending = Math.max(0, sent - received);
   const [qty, setQty] = useState<number>(pending);
   const [loss, setLoss] = useState<number>(0);
+  const [defect, setDefect] = useState<number>(0);
   const [notes, setNotes] = useState("");
 
   const submit = useMutation({
@@ -235,6 +236,8 @@ function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: stri
         .from("service_orders")
         .update({
           qty_received: totalReceived,
+          qty_lost: (Number(os.qty_lost) || 0) + loss,
+          qty_defect: (Number(os.qty_defect) || 0) + defect,
           status: "recebida",
           received_at: new Date().toISOString(),
           kind,
@@ -243,16 +246,21 @@ function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: stri
         .eq("id", os.id);
       if (error) throw error;
 
-      if (loss > 0 && os.production_order_id && os.owner_id) {
+      if ((loss > 0 || defect > 0) && os.production_order_id && os.owner_id) {
+        const affected = loss + defect;
+        const parts = [
+          loss > 0 ? `${loss} perda(s)` : null,
+          defect > 0 ? `${defect} defeito(s)` : null,
+        ].filter(Boolean).join(" + ");
         await supabase.from("production_occurrences").insert({
           owner_id: os.owner_id,
           order_id: os.production_order_id,
           kind: "negativa",
           sector: os.to_stage,
           responsible_id: u.user?.id ?? null,
-          affected_qty: loss,
+          affected_qty: affected,
           status: "aberta",
-          description: `Perda no retorno do terceirizado (OS ${os.code})${notes ? " — " + notes : ""}`,
+          description: `Retorno do terceirizado (OS ${os.code}): ${parts}${notes ? " — " + notes : ""}`,
         });
       }
       return { kind };
@@ -321,23 +329,43 @@ function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: stri
                 className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
               />
             </label>
-            <label className="block text-[10px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1">
-                <Minus className="size-3" />
-                Perda no retorno (opcional)
-              </span>
-              <input
-                type="number"
-                min={0}
-                value={loss}
-                onChange={(e) => setLoss(Math.max(0, Number(e.target.value) || 0))}
-                placeholder="0"
-                className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
-              />
-              <span className="text-[9px] text-muted-foreground">
-                Gera ocorrência negativa na OP.
-              </span>
-            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block text-[10px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <Minus className="size-3" />
+                  Perdidas
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={loss}
+                  onChange={(e) => setLoss(Math.max(0, Number(e.target.value) || 0))}
+                  placeholder="0"
+                  className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
+                />
+                <span className="text-[9px] text-muted-foreground">Peças extraviadas.</span>
+              </label>
+              <label className="block text-[10px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <AlertTriangle className="size-3" />
+                  Com defeito
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={defect}
+                  onChange={(e) => setDefect(Math.max(0, Number(e.target.value) || 0))}
+                  placeholder="0"
+                  className="w-full mt-0.5 text-xs bg-background border border-border rounded px-2 py-1"
+                />
+                <span className="text-[9px] text-muted-foreground">2ª linha / refugo.</span>
+              </label>
+            </div>
+            {(loss > 0 || defect > 0) && (
+              <div className="text-[9px] text-muted-foreground -mt-1">
+                Gera ocorrência negativa na OP ({loss + defect} pç).
+              </div>
+            )}
             <label className="block text-[10px] text-muted-foreground">
               Observação
               <input
