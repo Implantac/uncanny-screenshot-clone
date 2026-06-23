@@ -117,7 +117,7 @@ export const verifyErpSectorSync = createServerFn({ method: "POST" })
 
     const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
 
-    type ErpRow = { nnumeropedid: number; cnomesetin: string };
+    type ErpRow = { nnumeropedid: number; cdescrisetin: string };
     let erpRows: ErpRow[] = [];
     try {
       const r = await usesoftQuery<ErpRow>(
@@ -139,7 +139,7 @@ export const verifyErpSectorSync = createServerFn({ method: "POST" })
            WHERE st.cfinalipcpst = 'N'
              AND st.dentradpcpst IS NOT NULL
         )
-        SELECT r.nnumeropedid, s.cnomesetin
+        SELECT r.nnumeropedid, s.cdescrisetin
           FROM ranked r
           JOIN indsetin s ON s.nnumerosetin = r.nnumerosetin
          WHERE r.rn = 1
@@ -158,7 +158,7 @@ export const verifyErpSectorSync = createServerFn({ method: "POST" })
     }
 
     const erpByPedido = new Map<number, string>();
-    for (const er of erpRows) erpByPedido.set(Number(er.nnumeropedid), er.cnomesetin);
+    for (const er of erpRows) erpByPedido.set(Number(er.nnumeropedid), er.cdescrisetin);
 
     for (const { row, pedidoId } of linked) {
       const sectorName = erpByPedido.get(pedidoId) ?? null;

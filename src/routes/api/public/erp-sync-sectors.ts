@@ -101,7 +101,7 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
 
         const pedidoIds = Array.from(new Set(linked.map((l) => l.pedido_id)));
 
-        const erpRes = await usesoftQuery<{ nnumeropedid: number; cnomesetin: string }>(
+        const erpRes = await usesoftQuery<{ nnumeropedid: number; cdescrisetin: string }>(
           `
           WITH items AS (
             SELECT DISTINCT ip.nnumeropcpip, ip.nnumeropedid
@@ -120,7 +120,7 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
              WHERE st.cfinalipcpst = 'N'
                AND st.dentradpcpst IS NOT NULL
           )
-          SELECT r.nnumeropedid, s.cnomesetin
+          SELECT r.nnumeropedid, s.cdescrisetin
             FROM ranked r
             JOIN indsetin s ON s.nnumerosetin = r.nnumerosetin
            WHERE r.rn = 1
@@ -129,7 +129,7 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
         );
 
         const sectorByPedido = new Map<number, string>();
-        for (const r of erpRes.rows) sectorByPedido.set(Number(r.nnumeropedid), r.cnomesetin);
+        for (const r of erpRes.rows) sectorByPedido.set(Number(r.nnumeropedid), r.cdescrisetin);
 
         let updated = 0;
         let okCount = 0;
