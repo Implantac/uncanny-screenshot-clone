@@ -38,7 +38,17 @@ import { getRoutingsForProducts } from "@/lib/product-routing.functions";
 
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
 
-type Stage = "cad" | "corte" | "costura" | "acabamento" | "qualidade" | "expedicao" | "entregue";
+type Stage =
+  | "compras"
+  | "corte"
+  | "bordado"
+  | "bordado_terc"
+  | "silk"
+  | "silk_terc"
+  | "costura"
+  | "costura_terc"
+  | "acabamento"
+  | "entregue";
 type Order = {
   id: string;
   owner_id: string;
@@ -56,12 +66,15 @@ type Order = {
 };
 
 const STAGES: { key: Stage; label: string; hint: string }[] = [
-  { key: "cad", label: "CAD / Modelagem", hint: "Ficha técnica & encaixe" },
+  { key: "compras", label: "Compras", hint: "Insumos & matéria-prima" },
   { key: "corte", label: "Corte", hint: "Risco e enfesto" },
-  { key: "costura", label: "Costura", hint: "Confecção" },
-  { key: "acabamento", label: "Acabamento", hint: "Arremate & passadoria" },
-  { key: "qualidade", label: "Qualidade", hint: "Inspeção" },
-  { key: "expedicao", label: "Expedição", hint: "Embalagem & envio" },
+  { key: "bordado", label: "Bordado", hint: "Bordado interno" },
+  { key: "bordado_terc", label: "Bordado Terceirizado", hint: "Bordado externo" },
+  { key: "silk", label: "Silk", hint: "Estamparia interna" },
+  { key: "silk_terc", label: "Silk Terceirizado", hint: "Estamparia externa" },
+  { key: "costura", label: "Costura", hint: "Confecção interna" },
+  { key: "costura_terc", label: "Costura Terceirizado", hint: "Confecção externa" },
+  { key: "acabamento", label: "Acabamento", hint: "Arremate & expedição" },
   { key: "entregue", label: "Entregue", hint: "Concluído" },
 ];
 
