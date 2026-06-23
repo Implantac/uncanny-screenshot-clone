@@ -75,6 +75,7 @@ export function PcpMrpPanel() {
                 <th className="text-right px-2 py-2">Estoque</th>
                 <th className="text-right px-2 py-2">Em pedido</th>
                 <th className="text-right px-2 py-2">Falta</th>
+                <th className="text-left px-2 py-2">Comprar até</th>
                 <th className="text-left px-2 py-2">Cobertura</th>
               </tr>
             </thead>
@@ -83,6 +84,25 @@ export function PcpMrpPanel() {
                 const pct = it.coveragePct;
                 const tone =
                   pct >= 100 ? "bg-emerald-500" : pct >= 50 ? "bg-amber-500" : "bg-destructive";
+                const urg = (it as { urgencia?: string }).urgencia ?? "ok";
+                const urgTone =
+                  urg === "vencido"
+                    ? "bg-destructive/15 text-destructive border-destructive/30"
+                    : urg === "critico"
+                      ? "bg-amber-500/15 text-amber-600 border-amber-500/30"
+                      : urg === "atencao"
+                        ? "bg-amber-500/10 text-amber-700 border-amber-500/20"
+                        : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+                const urgLabel =
+                  urg === "vencido"
+                    ? "Vencido"
+                    : urg === "critico"
+                      ? "≤ 3 dias"
+                      : urg === "atencao"
+                        ? "≤ 7 dias"
+                        : "OK";
+                const latest = (it as { latestOrderDate?: string | null }).latestOrderDate;
+                const lt = (it as { leadTimeDays?: number }).leadTimeDays;
                 return (
                   <tr key={it.inventoryItemId} className="border-t border-border">
                     <td className="px-3 py-2">
@@ -102,7 +122,24 @@ export function PcpMrpPanel() {
                     <td className={`px-2 py-2 text-right tabular-nums font-semibold ${it.deficit > 0 ? "text-destructive" : "text-emerald-500"}`}>
                       {it.deficit > 0 ? it.deficit : "—"}
                     </td>
-                    <td className="px-2 py-2 w-[140px]">
+                    <td className="px-2 py-2">
+                      {it.deficit > 0 ? (
+                        <div className="space-y-0.5">
+                          <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded border ${urgTone}`}>
+                            {urgLabel}
+                          </span>
+                          {latest && (
+                            <div className="text-[10px] text-muted-foreground tabular-nums">
+                              {new Date(latest).toLocaleDateString("pt-BR")}
+                              {lt ? ` · LT ${lt}d` : ""}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 w-[120px]">
                       <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                         <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
                       </div>
