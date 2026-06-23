@@ -183,11 +183,23 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                     />
                   </TableCell>
                   <TableCell className="text-right">
-                    <EditableNum
-                      value={m.consumption}
-                      disabled={!canEdit}
-                      onSave={(v) => upd.mutate({ id: m.id, patch: { consumption: v } })}
-                    />
+                    <div className="flex items-center justify-end gap-1">
+                      <EditableNum
+                        value={m.consumption}
+                        disabled={!canEdit}
+                        onSave={(v) => upd.mutate({ id: m.id, patch: { consumption: v } })}
+                      />
+                      <SizeConsumptionPopover
+                        value={m.consumption_by_size}
+                        disabled={!canEdit}
+                        onSave={(v) =>
+                          upd.mutate({
+                            id: m.id,
+                            patch: { consumption_by_size: v } as Partial<Material>,
+                          })
+                        }
+                      />
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <EditableNum
