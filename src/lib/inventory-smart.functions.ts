@@ -25,6 +25,24 @@ export const REORDER_DEFAULTS = {
   safety_days: 7,
 } as const;
 
+/** Faixas realistas — validadas no servidor e exibidas no painel. */
+export const REORDER_LIMITS = {
+  service_factor_z: { min: 0, max: 4, label: "Fator Z (0 a 4 · até 99.99% de serviço)" },
+  cost_per_order: { min: 0, max: 100_000, label: "Custo do pedido S (R$ 0 a 100.000)" },
+  holding_cost_annual: {
+    min: 0,
+    max: 10_000,
+    label: "Custo armazenagem H (R$/un/ano · 0 a 10.000)",
+  },
+  safety_days: { min: 0, max: 365, label: "Dias de segurança (0 a 365)" },
+  lead_time_days: { min: 1, max: 365, label: "Lead time fornecedor (1 a 365 dias)" },
+  daily_avg_sales: { min: 0, max: 100_000, label: "Consumo médio diário (0 a 100.000)" },
+} as const;
+
+function inRange(n: number, min: number, max: number): boolean {
+  return Number.isFinite(n) && n >= min && n <= max;
+}
+
 /** Aceita valor numérico finito > 0; caso contrário, devolve o fallback. */
 function pickPositive(v: unknown, fallback: number): number {
   const n = typeof v === "string" ? Number(v) : (v as number);
@@ -37,15 +55,24 @@ function pickNonNeg(v: unknown, fallback: number): number {
   return Number.isFinite(n) && (n as number) >= 0 ? (n as number) : fallback;
 }
 
-/** Normaliza overrides — protege contra jsonb corrompido, strings ou NaN. */
+/** Normaliza overrides — protege contra jsonb corrompido, strings ou NaN; clampa para faixa realista. */
 export function resolveReorderParams(
   overrides: unknown,
 ): { Z: number; S: number; H: number } {
   const ov = (overrides && typeof overrides === "object" ? overrides : {}) as ReorderOverrides;
+  const Z = pickPositive(ov.service_factor_z, REORDER_DEFAULTS.service_factor_z);
+  const S = pickNonNeg(ov.cost_per_order, REORDER_DEFAULTS.cost_per_order);
+  const H = pickNonNeg(ov.holding_cost_annual, REORDER_DEFAULTS.holding_cost_annual);
   return {
-    Z: pickPositive(ov.service_factor_z, REORDER_DEFAULTS.service_factor_z),
-    S: pickNonNeg(ov.cost_per_order, REORDER_DEFAULTS.cost_per_order),
-    H: pickNonNeg(ov.holding_cost_annual, REORDER_DEFAULTS.holding_cost_annual),
+    Z: inRange(Z, REORDER_LIMITS.service_factor_z.min, REORDER_LIMITS.service_factor_z.max)
+      ? Z
+      : REORDER_DEFAULTS.service_factor_z,
+    S: inRange(S, REORDER_LIMITS.cost_per_order.min, REORDER_LIMITS.cost_per_order.max)
+      ? S
+      : REORDER_DEFAULTS.cost_per_order,
+    H: inRange(H, REORDER_LIMITS.holding_cost_annual.min, REORDER_LIMITS.holding_cost_annual.max)
+      ? H
+      : REORDER_DEFAULTS.holding_cost_annual,
   };
 }
 
