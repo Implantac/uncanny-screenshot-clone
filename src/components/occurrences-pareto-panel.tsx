@@ -6,7 +6,7 @@ import {
   Truck,
   AlertTriangle,
   ArrowUpRight,
-  X,
+  
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
