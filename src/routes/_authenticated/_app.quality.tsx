@@ -17,6 +17,7 @@ import { QualityCollectionsBridgePanel } from "@/components/quality-collections-
 import { QualityMarketingBridgePanel } from "@/components/quality-marketing-bridge-panel";
 import { CapaPanel } from "@/components/capa-panel";
 import { CapaEffectivenessPanel } from "@/components/capa-effectiveness-panel";
+import { OccurrencesParetoPanel } from "@/components/occurrences-pareto-panel";
 import { CellEfficiencyPanel } from "@/components/cell-efficiency-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/quality")({
@@ -314,6 +315,7 @@ function Quality() {
         </TabsContent>
 
         <TabsContent value="capa" className="space-y-4">
+          <OccurrencesParetoPanel windowDays={60} />
           <CapaEffectivenessPanel />
           <CapaPanel />
         </TabsContent>

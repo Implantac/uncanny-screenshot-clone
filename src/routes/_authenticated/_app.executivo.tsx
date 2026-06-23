@@ -20,6 +20,7 @@ import {
   type CollectionRow,
 } from "@/lib/executive-cross-kpis.functions";
 import { ExecutiveKpisPanel } from "@/components/executive-kpis-panel";
+import { WarRoomPanel } from "@/components/war-room-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/executivo")({
   head: () => ({
@@ -97,6 +98,8 @@ function ExecutivoPage() {
           </SelectContent>
         </Select>
       </header>
+
+      <WarRoomPanel />
 
       <ExecutiveKpisPanel />
 
