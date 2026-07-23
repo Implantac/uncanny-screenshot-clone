@@ -34,7 +34,7 @@ import { ProductTimelineCollab } from "@/components/product-timeline-collab";
 
 import { ProductGallery } from "@/components/product-gallery";
 import { SkuPerformancePanel } from "@/components/sku-performance-panel";
-import { StageGateBadge } from "@/components/stage-gate-badge";
+import { StageGatePanel } from "@/components/stage-gate-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
   head: ({ params }) => ({
@@ -182,7 +182,7 @@ function ProductWorkspace() {
         description={`${product.sku} · ${product.category ?? "sem categoria"}`}
         actions={
           <div className="flex flex-wrap items-center gap-1.5">
-            <StageGateBadge productId={product.id} />
+            <StageGatePanel productId={product.id} />
             <Badge variant="outline" className="capitalize">
               {product.status}
             </Badge>

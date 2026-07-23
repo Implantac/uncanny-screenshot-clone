@@ -2162,6 +2162,56 @@ export type Database = {
         }
         Relationships: []
       }
+      product_approvals: {
+        Row: {
+          approver_id: string | null
+          created_at: string
+          decided_at: string | null
+          decision: string
+          gate_key: string
+          id: string
+          note: string | null
+          owner_id: string
+          product_id: string
+          required_role: Database["public"]["Enums"]["app_role"] | null
+          updated_at: string
+        }
+        Insert: {
+          approver_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string
+          gate_key: string
+          id?: string
+          note?: string | null
+          owner_id: string
+          product_id: string
+          required_role?: Database["public"]["Enums"]["app_role"] | null
+          updated_at?: string
+        }
+        Update: {
+          approver_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string
+          gate_key?: string
+          id?: string
+          note?: string | null
+          owner_id?: string
+          product_id?: string
+          required_role?: Database["public"]["Enums"]["app_role"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_approvals_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_color_options: {
         Row: {
           active: boolean
