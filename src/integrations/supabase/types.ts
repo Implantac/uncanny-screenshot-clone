@@ -5233,6 +5233,13 @@ export type Database = {
       }
     }
     Functions: {
+      can_advance_product: {
+        Args: {
+          _product_id: string
+          _target: Database["public"]["Enums"]["product_lifecycle_state"]
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -5255,6 +5262,14 @@ export type Database = {
           _payload?: Json
         }
         Returns: string
+      }
+      product_gate_status: {
+        Args: { _product_id: string }
+        Returns: {
+          detail: string
+          ok: boolean
+          requirement: string
+        }[]
       }
       production_orders_generate_reservations: {
         Args: { _order_id: string }
