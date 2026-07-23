@@ -448,6 +448,8 @@ function ProductWorkspace() {
         <TabsContent value="timeline">
           <div className="rounded-xl border border-border bg-card p-4">
             <ProductTimeline productId={product.id} createdAt={product.created_at} />
+            <ProductTimelineCollab productId={product.id} />
+
           </div>
         </TabsContent>
       </Tabs>
