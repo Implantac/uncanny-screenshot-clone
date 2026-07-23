@@ -5210,6 +5210,23 @@ export type Database = {
         }
         Relationships: []
       }
+      v_product_events: {
+        Row: {
+          actor_email: string | null
+          detail: string | null
+          event_id: string | null
+          event_type: string | null
+          occurred_at: string | null
+          owner_id: string | null
+          product_id: string | null
+          ref_id: string | null
+          ref_table: string | null
+          severity: string | null
+          source: string | null
+          title: string | null
+        }
+        Relationships: []
+      }
       v_supplier_wip: {
         Row: {
           distinct_refs: number | null
