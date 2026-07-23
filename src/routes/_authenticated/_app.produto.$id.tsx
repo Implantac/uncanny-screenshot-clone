@@ -180,6 +180,7 @@ function ProductWorkspace() {
         description={`${product.sku} · ${product.category ?? "sem categoria"}`}
         actions={
           <div className="flex flex-wrap items-center gap-1.5">
+            <StageGateBadge productId={product.id} />
             <Badge variant="outline" className="capitalize">
               {product.status}
             </Badge>
