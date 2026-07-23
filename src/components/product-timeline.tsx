@@ -104,35 +104,71 @@ function toneClass(severity: string) {
   }
 }
 
+const PAGE_SIZE = 100;
+
 export function ProductTimeline({ productId }: { productId: string; createdAt?: string }) {
   const [filter, setFilter] = useState<string>("all");
-  const { data, isLoading, error } = useQuery({
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["v-product-events", productId],
-    queryFn: async () => {
-      const { data, error } = await supabase
+    initialPageParam: null as string | null,
+    queryFn: async ({ pageParam }) => {
+      let q = supabase
         .from("v_product_events")
         .select(
           "event_id, product_id, occurred_at, source, event_type, title, detail, severity, ref_table, ref_id, actor_email",
         )
         .eq("product_id", productId)
         .order("occurred_at", { ascending: false })
-        .limit(200);
+        .order("event_id", { ascending: false })
+        .limit(PAGE_SIZE);
+      if (pageParam) q = q.lt("occurred_at", pageParam);
+      const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as EventRow[];
     },
+    getNextPageParam: (last) =>
+      last.length < PAGE_SIZE ? undefined : last[last.length - 1]?.occurred_at ?? undefined,
     staleTime: 30_000,
   });
 
+  const all = useMemo<EventRow[]>(
+    () => (data?.pages ?? []).flat(),
+    [data],
+  );
+
   const sources = useMemo(() => {
     const set = new Set<string>();
-    (data ?? []).forEach((e) => set.add(e.source));
+    all.forEach((e) => set.add(e.source));
     return Array.from(set);
-  }, [data]);
+  }, [all]);
 
   const filtered = useMemo(
-    () => (filter === "all" ? data ?? [] : (data ?? []).filter((e) => e.source === filter)),
-    [data, filter],
+    () => (filter === "all" ? all : all.filter((e) => e.source === filter)),
+    [all, filter],
   );
+
+  useEffect(() => {
+    if (!hasNextPage || isFetchingNextPage) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) fetchNextPage();
+      },
+      { rootMargin: "200px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, filter]);
 
   return (
     <div className="space-y-4">
@@ -146,9 +182,10 @@ export function ProductTimeline({ productId }: { productId: string; createdAt?: 
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {data && (
+          {all.length > 0 && (
             <Badge variant="outline" className="font-mono">
-              {filtered.length}/{data.length}
+              {filtered.length}/{all.length}
+              {hasNextPage ? "+" : ""}
             </Badge>
           )}
           <Select value={filter} onValueChange={setFilter}>
@@ -212,8 +249,37 @@ export function ProductTimeline({ productId }: { productId: string; createdAt?: 
               </li>
             );
           })}
+
+          <li className="pt-2">
+            <div ref={sentinelRef} />
+            {hasNextPage ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full h-8 text-xs"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="size-3 animate-spin mr-1.5" /> Carregando…
+                  </>
+                ) : (
+                  "Carregar mais eventos"
+                )}
+              </Button>
+            ) : (
+              <div className="text-[10px] text-muted-foreground text-center">
+                Fim do histórico
+              </div>
+            )}
+          </li>
         </ol>
       )}
+    </div>
+  );
+}
     </div>
   );
 }
