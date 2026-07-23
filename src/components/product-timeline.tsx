@@ -111,6 +111,8 @@ const PAGE_SIZE = 100;
 export function ProductTimeline({ productId }: { productId: string; createdAt?: string }) {
   const [filter, setFilter] = useState<string>("all");
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
 
   const {
     data,
