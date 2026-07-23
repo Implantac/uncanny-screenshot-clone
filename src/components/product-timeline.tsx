@@ -280,6 +280,3 @@ export function ProductTimeline({ productId }: { productId: string; createdAt?: 
     </div>
   );
 }
-    </div>
-  );
-}
