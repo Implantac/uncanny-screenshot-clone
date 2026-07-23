@@ -231,65 +231,87 @@ export function ProductTimeline({ productId }: { productId: string; createdAt?: 
           Sem eventos registrados ainda.
         </div>
       ) : (
-        <ol className="relative border-l border-border ml-2 pl-4 space-y-3 max-h-[560px] overflow-y-auto pr-1">
-          {filtered.map((e) => {
-            const tone = toneClass(e.severity);
-            const meta = SOURCE_META[e.source];
-            return (
-              <li key={e.event_id} className="relative">
-                <span
-                  className={`absolute -left-[1.4rem] top-0.5 size-5 rounded-full grid place-items-center border ${tone}`}
+        <div
+          ref={scrollRef}
+          className="max-h-[560px] overflow-y-auto pr-1"
+        >
+          <div
+            className="relative border-l border-border ml-2"
+            style={{ height: `${rowVirtualizer.getTotalSize() + 56}px` }}
+          >
+            {rowVirtualizer.getVirtualItems().map((vi) => {
+              const e = filtered[vi.index];
+              if (!e) return null;
+              const tone = toneClass(e.severity);
+              const meta = SOURCE_META[e.source];
+              return (
+                <div
+                  key={vi.key}
+                  data-index={vi.index}
+                  ref={rowVirtualizer.measureElement}
+                  className="absolute left-0 right-0 pl-4 pb-3"
+                  style={{ transform: `translateY(${vi.start}px)` }}
                 >
-                  {iconFor(e)}
-                </span>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <div className="text-sm font-medium leading-tight">{e.title}</div>
-                  {meta && (
-                    <Badge variant="outline" className="text-[10px] py-0 h-4">
-                      {meta.label}
-                    </Badge>
-                  )}
-                </div>
-                {e.detail && (
-                  <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                    {e.detail}
+                  <div className="relative">
+                    <span
+                      className={`absolute -left-[1.4rem] top-0.5 size-5 rounded-full grid place-items-center border ${tone}`}
+                    >
+                      {iconFor(e)}
+                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <div className="text-sm font-medium leading-tight">{e.title}</div>
+                      {meta && (
+                        <Badge variant="outline" className="text-[10px] py-0 h-4">
+                          {meta.label}
+                        </Badge>
+                      )}
+                    </div>
+                    {e.detail && (
+                      <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                        {e.detail}
+                      </div>
+                    )}
+                    <div className="text-[10px] text-muted-foreground mt-0.5 font-mono flex items-center gap-2">
+                      {new Date(e.occurred_at).toLocaleString("pt-BR")}
+                      {e.actor_email && <span>· {e.actor_email}</span>}
+                    </div>
                   </div>
-                )}
-                <div className="text-[10px] text-muted-foreground mt-0.5 font-mono flex items-center gap-2">
-                  {new Date(e.occurred_at).toLocaleString("pt-BR")}
-                  {e.actor_email && <span>· {e.actor_email}</span>}
                 </div>
-              </li>
-            );
-          })}
+              );
+            })}
 
-          <li className="pt-2">
-            <div ref={sentinelRef} />
-            {hasNextPage ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-full h-8 text-xs"
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
-              >
-                {isFetchingNextPage ? (
-                  <>
-                    <Loader2 className="size-3 animate-spin mr-1.5" /> Carregando…
-                  </>
-                ) : (
-                  "Carregar mais eventos"
-                )}
-              </Button>
-            ) : (
-              <div className="text-[10px] text-muted-foreground text-center">
-                Fim do histórico
-              </div>
-            )}
-          </li>
-        </ol>
+            <div
+              className="absolute left-0 right-0 pl-4 pt-2"
+              style={{ top: `${rowVirtualizer.getTotalSize()}px` }}
+            >
+              <div ref={sentinelRef} />
+              {hasNextPage ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full h-8 text-xs"
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? (
+                    <>
+                      <Loader2 className="size-3 animate-spin mr-1.5" /> Carregando…
+                    </>
+                  ) : (
+                    "Carregar mais eventos"
+                  )}
+                </Button>
+              ) : (
+                <div className="text-[10px] text-muted-foreground text-center">
+                  Fim do histórico
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
+
     </div>
   );
 }
