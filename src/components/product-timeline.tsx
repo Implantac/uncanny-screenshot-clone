@@ -160,6 +160,14 @@ export function ProductTimeline({ productId }: { productId: string; createdAt?: 
     [all, filter],
   );
 
+  const rowVirtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 88,
+    overscan: 8,
+    getItemKey: (i) => filtered[i]?.event_id ?? i,
+  });
+
   useEffect(() => {
     if (!hasNextPage || isFetchingNextPage) return;
     const el = sentinelRef.current;
@@ -168,11 +176,12 @@ export function ProductTimeline({ productId }: { productId: string; createdAt?: 
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) fetchNextPage();
       },
-      { rootMargin: "200px" },
+      { root: scrollRef.current, rootMargin: "400px" },
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, filter]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, filter, filtered.length]);
+
 
   return (
     <div className="space-y-4">
