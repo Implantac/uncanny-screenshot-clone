@@ -120,6 +120,7 @@ import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.a
 import { Route as AuthenticatedAppWarRoomColecaoIdRouteImport } from './routes/_authenticated/_app.war-room-colecao.$id'
 import { Route as AuthenticatedAppQualityCapaRulesRouteImport } from './routes/_authenticated/_app.quality.capa-rules'
 import { Route as AuthenticatedAppPrototipoIdRouteImport } from './routes/_authenticated/_app.prototipo.$id'
+import { Route as AuthenticatedAppProdutoIdRouteImport } from './routes/_authenticated/_app.produto.$id'
 import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes/_authenticated/_app.producao-do-dia.$stage'
 import { Route as AuthenticatedAppMrpExecutivoRouteImport } from './routes/_authenticated/_app.mrp.executivo'
 import { Route as AuthenticatedAppMrpBiRouteImport } from './routes/_authenticated/_app.mrp.bi'
@@ -761,6 +762,12 @@ const AuthenticatedAppPrototipoIdRoute =
     path: '/prototipo/$id',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppProdutoIdRoute =
+  AuthenticatedAppProdutoIdRouteImport.update({
+    id: '/produto/$id',
+    path: '/produto/$id',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppProducaoDoDiaStageRoute =
   AuthenticatedAppProducaoDoDiaStageRouteImport.update({
     id: '/producao-do-dia/$stage',
@@ -908,6 +915,7 @@ export interface FileRoutesByFullPath {
   '/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
+  '/produto/$id': typeof AuthenticatedAppProdutoIdRoute
   '/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
   '/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
   '/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
@@ -1026,6 +1034,7 @@ export interface FileRoutesByTo {
   '/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
   '/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
+  '/produto/$id': typeof AuthenticatedAppProdutoIdRoute
   '/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
   '/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
   '/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
@@ -1147,6 +1156,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/_authenticated/_app/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
   '/_authenticated/_app/producao-do-dia/$stage': typeof AuthenticatedAppProducaoDoDiaStageRoute
+  '/_authenticated/_app/produto/$id': typeof AuthenticatedAppProdutoIdRoute
   '/_authenticated/_app/prototipo/$id': typeof AuthenticatedAppPrototipoIdRoute
   '/_authenticated/_app/quality/capa-rules': typeof AuthenticatedAppQualityCapaRulesRoute
   '/_authenticated/_app/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
@@ -1267,6 +1277,7 @@ export interface FileRouteTypes {
     | '/mrp/bi'
     | '/mrp/executivo'
     | '/producao-do-dia/$stage'
+    | '/produto/$id'
     | '/prototipo/$id'
     | '/quality/capa-rules'
     | '/war-room-colecao/$id'
@@ -1385,6 +1396,7 @@ export interface FileRouteTypes {
     | '/mrp/bi'
     | '/mrp/executivo'
     | '/producao-do-dia/$stage'
+    | '/produto/$id'
     | '/prototipo/$id'
     | '/quality/capa-rules'
     | '/war-room-colecao/$id'
@@ -1505,6 +1517,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/mrp/bi'
     | '/_authenticated/_app/mrp/executivo'
     | '/_authenticated/_app/producao-do-dia/$stage'
+    | '/_authenticated/_app/produto/$id'
     | '/_authenticated/_app/prototipo/$id'
     | '/_authenticated/_app/quality/capa-rules'
     | '/_authenticated/_app/war-room-colecao/$id'
@@ -2315,6 +2328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppPrototipoIdRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/produto/$id': {
+      id: '/_authenticated/_app/produto/$id'
+      path: '/produto/$id'
+      fullPath: '/produto/$id'
+      preLoaderRoute: typeof AuthenticatedAppProdutoIdRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/producao-do-dia/$stage': {
       id: '/_authenticated/_app/producao-do-dia/$stage'
       path: '/producao-do-dia/$stage'
@@ -2494,6 +2514,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMrpBiRoute: typeof AuthenticatedAppMrpBiRoute
   AuthenticatedAppMrpExecutivoRoute: typeof AuthenticatedAppMrpExecutivoRoute
   AuthenticatedAppProducaoDoDiaStageRoute: typeof AuthenticatedAppProducaoDoDiaStageRoute
+  AuthenticatedAppProdutoIdRoute: typeof AuthenticatedAppProdutoIdRoute
   AuthenticatedAppPrototipoIdRoute: typeof AuthenticatedAppPrototipoIdRoute
   AuthenticatedAppWarRoomColecaoIdRoute: typeof AuthenticatedAppWarRoomColecaoIdRoute
   AuthenticatedAppMrpIndexRoute: typeof AuthenticatedAppMrpIndexRoute
@@ -2601,6 +2622,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMrpExecutivoRoute: AuthenticatedAppMrpExecutivoRoute,
   AuthenticatedAppProducaoDoDiaStageRoute:
     AuthenticatedAppProducaoDoDiaStageRoute,
+  AuthenticatedAppProdutoIdRoute: AuthenticatedAppProdutoIdRoute,
   AuthenticatedAppPrototipoIdRoute: AuthenticatedAppPrototipoIdRoute,
   AuthenticatedAppWarRoomColecaoIdRoute: AuthenticatedAppWarRoomColecaoIdRoute,
   AuthenticatedAppMrpIndexRoute: AuthenticatedAppMrpIndexRoute,
@@ -2641,13 +2663,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
