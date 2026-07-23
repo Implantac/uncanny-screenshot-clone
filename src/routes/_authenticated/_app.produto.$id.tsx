@@ -433,8 +433,8 @@ function ProductWorkspace() {
             <SkuPerformancePanel
               productId={product.id}
               variants={[]}
-              colors={product.colors ?? []}
-              sizes={product.sizes ?? []}
+              colors={[]}
+              sizes={[]}
             />
           </div>
         </TabsContent>
