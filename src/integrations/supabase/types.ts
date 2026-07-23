@@ -2544,6 +2544,107 @@ export type Database = {
           },
         ]
       }
+      product_timeline_attachments: {
+        Row: {
+          comment_id: string | null
+          created_at: string
+          event_id: string | null
+          file_name: string
+          id: string
+          mime_type: string | null
+          owner_id: string
+          product_id: string
+          size_bytes: number | null
+          storage_path: string
+          uploaded_by: string
+        }
+        Insert: {
+          comment_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          file_name: string
+          id?: string
+          mime_type?: string | null
+          owner_id: string
+          product_id: string
+          size_bytes?: number | null
+          storage_path: string
+          uploaded_by: string
+        }
+        Update: {
+          comment_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          file_name?: string
+          id?: string
+          mime_type?: string | null
+          owner_id?: string
+          product_id?: string
+          size_bytes?: number | null
+          storage_path?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_timeline_attachments_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "product_timeline_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_timeline_attachments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_timeline_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          event_id: string | null
+          event_source: string | null
+          id: string
+          owner_id: string
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          event_id?: string | null
+          event_source?: string | null
+          id?: string
+          owner_id: string
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          event_id?: string | null
+          event_source?: string | null
+          id?: string
+          owner_id?: string
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_timeline_comments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_variants: {
         Row: {
           active: boolean
@@ -2601,6 +2702,38 @@ export type Database = {
             columns: ["size_id"]
             isOneToOne: false
             referencedRelation: "product_size_options"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_watchers: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_watchers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]

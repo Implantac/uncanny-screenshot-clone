@@ -1,71 +1,95 @@
-# Evolução USE Fashion → Enterprise Fashion OS
+# USE Fashion — Plano de Evolução (Ondas 2 → 6)
 
-**Princípio absoluto:** evoluir, nunca reconstruir. Nenhuma rota removida, nenhuma tabela renomeada, nenhuma tecnologia trocada. Cada onda entrega valor visível e roda em produção antes da próxima começar.
+O que já foi entregue nas ondas anteriores permanece intacto:
 
-## Estado atual (auditoria resumida)
+- **Onda 0 — Auditoria + Product Workspace** (`/produto/$id` como agregador de 11 painéis existentes).
+- **Onda 1 — Workflow Engine + Stage Gates** (`product_gate_status`, `can_advance_product`, trigger de auditoria, `StageGateBadge` no Workspace).
+- **Onda 2 (parcial) — Timeline unificada** (`v_product_events` com 12 fontes + `<ProductTimeline>` virtualizada com infinite scroll).
 
-O sistema já cobre 100+ rotas em 12 domínios. O que existe funciona; o que falta é **conexão entre módulos** e **regras de negócio que atravessam setores**.
+Este plano cobre o que falta, sem quebrar nada.
 
-| Domínio | O que existe (reusar) | Gap enterprise (evoluir) |
-|---|---|---|
-| **Produto** | `products`, `/produtos`, `/produto/$id` (workspace criado na última turn), `product_lifecycle`, `product_families`, `product_lines` | Workspace ainda é agregador visual — falta contrato de estados e transições |
-| **Engenharia / Ficha** | `tech_sheets` + materials/operations/measurements + versões imutáveis + snapshot em aprovação | Sem gate obrigatório antes de OP; custo propaga mas não bloqueia |
-| **Protótipos** | `prototypes`, `prototype_gates` (gate → stage promotion), handoff timeline | Gates existem mas não conversam com o workflow global do produto |
-| **PCP / Produção** | `production_orders` com stages Compras→…→Acabamento, kanban, APS, MRP, reservas de material, ERP sector sync (890+ OPs reais) | OPs podem ser criadas sem ficha aprovada — trigger só reserva material *se* houver ficha |
-| **Qualidade** | `quality_inspections`, `quality_capa` + auto-CAPA por inspeção reprovada e envio a influenciador | CAPA não bloqueia liberação do produto |
-| **Suppliers / Compras** | `suppliers`, `supplier_capabilities`, `supplier_capacity`, `supplier_compliance`, portal com token, `purchase_orders` → financeiro + estoque | Compliance vencido não bloqueia PO |
-| **MRP** | `mrp_recalc_queue` + triggers de estoque/ERP + `mrp-recalc` hook | OK — reusar |
-| **Marketing** | `marketing_briefs` auto-criado no `lancamento`, `marketing_campaigns`, ROI por SKU | OK — reusar |
-| **BI / IA** | 20+ painéis (`ai-coordinator`, `persona-insights`, `dev-intelligence`, `pcp-intelligence`, `quality-intelligence`, `marketing-intelligence`, `executive-kpis`) via Lovable AI Gateway | IA hoje é **reativa** (usuário clica → gera). Falta camada **contínua** que grava sugestões |
-| **Timeline / Audit** | `audit_logs` + `log_audit()` SECURITY DEFINER, `ProductTimeline` component, `production_stage_log`, `prototype_handoff_events`, `tech_sheet_versions` | Cada domínio tem sua timeline — falta view unificada por produto |
-| **Alertas** | `alerts-center` (18) agrega 6 fontes | OK — plugar workflow engine como 7ª fonte |
-| **Segurança** | RLS + GRANT em toda tabela pública, `has_role`, `has_sector`, findings recorrentes já corrigidos | Manter — cada nova tabela segue o padrão |
+---
 
-**Duplicações detectadas (não reconstruir, consolidar aos poucos):**
-- `_app.pcp-kanban.tsx` e `_app.dev-kanban.tsx` compartilham drag-and-drop → extrair `useKanbanDnd` hook em onda 4.
-- `product-timeline.tsx` e `prototype-timeline.tsx` têm mesmo shape → unificar em onda 3 sem quebrar assinatura pública.
+## Onda 2 — Timeline & Colaboração (completar)
 
-## Ondas de entrega
+**Objetivo:** transformar a Timeline em canal ativo, não só histórico.
 
-Cada onda é fechada, testável, publicável. Nada depende da próxima.
+- Comentários por evento (thread leve reutilizando `prototype_comments` como padrão) escopados por `product_id`.
+- Anexos por evento (bucket `product-timeline` privado).
+- Filtro por setor + intervalo de datas + busca textual (server-side na view).
+- Assinaturas de eventos → toca `push_notifications` para quem seguiu o produto.
+- Botão "Seguir produto" (nova tabela `product_watchers`).
 
-### Onda 1 — Workflow Engine + Stage Gates (fundação)
-Nova tabela `product_workflow_states` + `product_stage_gates` + função `can_advance_product(product_id, target_state)` que valida requisitos (BOM, ficha aprovada, custo, medidas, protótipo aprovado, fornecedor, compliance vigente). Trigger em `product_lifecycle` chama `can_advance_product` antes de transitar. Novo componente `<StageGateBadge>` no `_app.produto.$id.tsx` mostra requisitos verdes/pendentes. **Reusa** `product_lifecycle` já existente — só adiciona validação.
+Sem novas rotas — tudo dentro do `Product Workspace › Timeline`.
 
-### Onda 2 — Timeline unificada por produto
-View `v_product_events` UNION ALL sobre `audit_logs`, `production_stage_log`, `prototype_handoff_events`, `tech_sheet_versions`, `stock_movements` filtrando por `product_id`. Aba "Timeline" do workspace passa a ler dela em vez de agregar client-side. Cada evento traz who/when/what/old→new. Zero nova UI — só troca a fonte.
+## Onda 3 — Stage Gates ampliados + Approvals
 
-### Onda 3 — Workspace conectado (evolução do aggregator atual)
-Adicionar ao `_app.produto.$id.tsx`:
-- Header "Próximo passo" calculado do workflow engine (onda 1).
-- KPIs contextuais (margem real vs alvo, dias no estágio, blockers ativos).
-- Aba "Suppliers" listando fornecedores capazes (via `supplier_capabilities`) + compliance status.
-- Aba "MRP" mostrando faltas para este SKU vindo do `mrp_recalc_queue`.
-- Deep-links contextuais: cada aba abre o módulo original com filtro pré-aplicado.
+**Objetivo:** transformar Gates em fluxo de aprovação real.
 
-### Onda 4 — AI Contínua
-Nova tabela `ai_recommendations(product_id, kind, severity, title, rationale, suggested_action, created_at, dismissed_at)`. Cron `/api/public/hooks/ai-scan` roda a cada 6h, itera produtos ativos, chama Gateway (`google/gemini-2.5-flash`) com contexto (margem, lead time, qualidade, vendas) e grava sugestões. Widget "Recomendações IA" no workspace + integração com Central de Alertas (fonte 7). Reusa `createLovableAiGatewayProvider`.
+- Adicionar 3 gates críticos ao `product_gate_status`:
+  - **Grade de tamanhos definida** (`product_size_options`).
+  - **Rota de produção definida** (`product_routing`).
+  - **Meta de custo respeitada** (`product_target_costs` vs `tech_sheets.cost_price`).
+- Nova tabela `product_approvals(product_id, gate_key, required_role, approver_id, decision, note, decided_at)`.
+- Cada gate reprovado abre uma tarefa nomeada com responsável (usa `user_roles`).
+- Painel `StageGateBadge` vira `StageGatePanel` expansível dentro do Workspace, mostrando bloqueios com CTA "resolver agora".
+- Nada de rota nova; substituição in-place do componente atual.
 
-### Onda 5 — Contextual UX
-- Wizard "Novo produto" (4 passos: identidade → ficha → protótipo → fornecedor) usando os fluxos que já existem, apenas encadeados.
-- Command palette (`command-palette.tsx` já existe) ganha ações contextuais por produto.
-- Extrair `useKanbanDnd` compartilhado entre PCP e Dev kanban.
+## Onda 4 — Cost Cockpit + AI Insights por Produto
 
-### Onda 6 — Endurecimento enterprise
-- Audit log obrigatório em cada mutation nova (via trigger, padrão já usado em `tech_sheets_stamp_approval`).
-- Permissões por estágio: `has_sector` estendido para verificar responsabilidade de aprovação.
-- Acessibilidade: revisar contraste + navegação por teclado nas telas de workspace/kanban.
+**Objetivo:** margem viva ao lado do produto.
 
-## Regras invioláveis durante toda a execução
+- View `v_product_cost_snapshot` (custo BOM + operações + overhead + reservas ativas + custo real via `stock_movements`) — reaproveita triggers existentes.
+- Aba "Custo" no Workspace com:
+  - Meta vs Real vs Última venda (`erp_sales_mirror`).
+  - Waterfall de custo (materiais / mão-de-obra / overhead).
+  - Sensibilidade: "se subir X% no fornecedor Y, margem cai Z%".
+- `ai_agents` já existe → 1 agente novo `product_insight` que roda on-demand e escreve em `marketing_notifications`/`alertas` com o **porquê + ação sugerida** (regra de ouro).
 
-1. **Nada de mock/seed/fake** — `scripts/check-no-mocks.mjs` bloqueia build.
-2. **RLS + GRANT em toda nova tabela**, na mesma migration.
-3. **Nenhuma escrita no ERP** — permanece read-only (`default_transaction_read_only=on`).
-4. **Nenhuma edge function nova** — tudo via `createServerFn` ou rota `/api/public/*`.
-5. **Nenhum arquivo em `src/routes/_authenticated/route.tsx`** (integration-managed).
-6. **Cada nova rota tem `head()` próprio** com title/description únicos.
-7. **Reusar componentes existentes** (`PageHeader`, `EmptyState`, `ErrorState`, painéis de IA) — nunca duplicar.
+## Onda 5 — PCP inteligente do Produto
 
-## Onde começar
+**Objetivo:** o Workspace mostra o estado real da fábrica para aquele produto.
 
-Onda 1 é a única que destrava as outras. Vou abrir com a migration do workflow engine + stage gates, depois o `<StageGateBadge>` no workspace de produto. Aprova?
+- Aba "PCP" já existe → adicionar:
+  - Card de gargalo por setor (usa `production_stage_log` + SLA).
+  - Previsão de conclusão (SAM × capacidade do setor via `supplier_capacity`).
+  - Reservas de material (`material_reservations`) com semáforo verde/amarelo/vermelho.
+- Sem novas tabelas; só uma função SQL `product_pcp_health(_product_id)`.
+
+## Onda 6 — Enterprise hardening
+
+**Objetivo:** deixar production-ready no padrão Centric/Backbone.
+
+- Auditoria: revisar policies faltantes de INSERT em `audit_logs` para todas as tabelas críticas.
+- Performance: índices em `v_product_events` fontes (occorred_at desc por product_id).
+- Acessibilidade: revisão AA no Workspace (foco visível, labels ARIA nos badges/timeline).
+- Erro global: `errorComponent` + `notFoundComponent` em todas as rotas de `_authenticated/_app.produto*`.
+- Testes de fumaça headless (Playwright) das transições Gate → Approval → Timeline.
+
+---
+
+## Detalhes técnicos
+
+**Migrations planejadas** (uma por onda, aprovadas separadamente):
+
+```text
+onda2: product_watchers, product_timeline_comments, product_timeline_attachments
+onda3: product_approvals, product_gate_status v2 (+3 requisitos)
+onda4: v_product_cost_snapshot (view), ai_agents seed 'product_insight'
+onda5: fn product_pcp_health(uuid)
+onda6: índices + policies faltantes
+```
+
+**Componentes reaproveitados** (nada novo desnecessário): `ProductTimeline`, `StageGateBadge`, `PageHeader`, `EmptyState`, `ErrorState`, painéis já existentes de BOM/PCP/Qualidade/Marketing.
+
+**Rotas:** nenhuma criada. Tudo entra como abas/painéis do `_app.produto.$id.tsx`.
+
+**Guardrails obrigatórios respeitados:** sem mock, sem duplicação, sem ERP-features (financeiro/fiscal), sem reescrita, RLS + GRANT em toda tabela nova.
+
+---
+
+## O que quero validar antes de codar
+
+1. Aprova avançar **onda a onda** (uma migration + código por vez), começando pela **Onda 2 — comentários + anexos + seguir produto na Timeline**?
+2. Ou prefere pular direto para **Onda 3 (Stage Gates + Approvals)**, que tem impacto de negócio maior?
+3. Alguma onda deve sair do escopo?

@@ -30,6 +30,8 @@ import {
   CostsPanel,
 } from "@/components/tech-pack/panels";
 import { ProductTimeline } from "@/components/product-timeline";
+import { ProductTimelineCollab } from "@/components/product-timeline-collab";
+
 import { ProductGallery } from "@/components/product-gallery";
 import { SkuPerformancePanel } from "@/components/sku-performance-panel";
 import { StageGateBadge } from "@/components/stage-gate-badge";
@@ -258,7 +260,9 @@ function ProductWorkspace() {
             </div>
             <div className="rounded-xl border border-border bg-card p-4">
               <ProductTimeline productId={product.id} createdAt={product.created_at} />
+              <ProductTimelineCollab productId={product.id} />
             </div>
+
           </div>
         </TabsContent>
 
@@ -444,6 +448,8 @@ function ProductWorkspace() {
         <TabsContent value="timeline">
           <div className="rounded-xl border border-border bg-card p-4">
             <ProductTimeline productId={product.id} createdAt={product.created_at} />
+            <ProductTimelineCollab productId={product.id} />
+
           </div>
         </TabsContent>
       </Tabs>
