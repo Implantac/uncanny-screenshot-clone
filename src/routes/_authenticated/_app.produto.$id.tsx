@@ -30,6 +30,8 @@ import {
   CostsPanel,
 } from "@/components/tech-pack/panels";
 import { ProductTimeline } from "@/components/product-timeline";
+import { ProductTimelineCollab } from "@/components/product-timeline-collab";
+
 import { ProductGallery } from "@/components/product-gallery";
 import { SkuPerformancePanel } from "@/components/sku-performance-panel";
 import { StageGateBadge } from "@/components/stage-gate-badge";
