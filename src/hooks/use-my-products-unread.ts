@@ -27,6 +27,28 @@ export function useMyProductsUnread() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
+  // Realtime: revalida contagem quando surge aprovação/comentário novo
+  useEffect(() => {
+    if (!uid) return;
+    const channel = supabase
+      .channel(`my-products-unread-${uid}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "product_approvals" },
+        () => qc.invalidateQueries({ queryKey: ["my-products-unread"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "product_timeline_comments" },
+        () => qc.invalidateQueries({ queryKey: ["my-products-unread"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [uid, qc]);
+
+
   const query = useQuery({
     enabled: !!uid,
     queryKey: ["my-products-unread", uid, lastSeen],
