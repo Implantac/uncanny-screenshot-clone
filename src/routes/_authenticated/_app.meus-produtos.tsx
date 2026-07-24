@@ -58,8 +58,10 @@ type PendingApproval = {
   decision: string;
   created_at: string;
   requested_by: string | null;
+  owner_id: string;
   products: { sku: string; name: string } | null;
 };
+
 
 type RecentComment = {
   id: string;
