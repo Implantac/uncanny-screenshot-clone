@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, ShieldAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/inspecoes")({
   head: () => ({
