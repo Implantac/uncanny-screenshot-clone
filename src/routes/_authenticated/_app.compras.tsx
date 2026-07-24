@@ -77,12 +77,12 @@ function Compras() {
 
   return (
     <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Compras</h1>
-        <p className="text-sm text-muted-foreground">
-          Necessidades de reposição, cotações e comparativo de fornecedores.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Suprimentos"
+        title="Compras"
+        description="Necessidades de reposição, cotações e comparativo de fornecedores."
+      />
+
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KPI
