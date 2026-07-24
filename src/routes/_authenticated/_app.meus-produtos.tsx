@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useMyProductsUnread } from "@/hooks/use-my-products-unread";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   BellRing,
   Package,
@@ -12,6 +15,7 @@ import {
   ShieldCheck,
   Clock,
   ArrowRight,
+  CheckCheck,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/meus-produtos")({
@@ -119,12 +123,42 @@ function MyProductsFeed() {
 
   const loading = watched.isLoading || approvals.isLoading;
 
+  const unread = useMyProductsUnread();
+  const lastSeen = unread.lastSeen;
+
+  const isNew = (iso: string) => iso > lastSeen;
+
+  const newApprovals = (approvals.data ?? []).filter((a) => isNew(a.created_at)).length;
+  const newComments = (comments.data ?? []).filter((c) => isNew(c.created_at)).length;
+
+  // Marca como lido ao sair da página
+  useEffect(() => {
+    return () => {
+      unread.markAllRead();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       <PageHeader
         title="Meus Produtos"
         description="Feed pessoal — produtos que você segue, aprovações pendentes e conversas recentes."
+        actions={
+          unread.total > 0 ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => unread.markAllRead()}
+              className="gap-1.5"
+            >
+              <CheckCheck className="size-3.5" />
+              Marcar tudo como lido ({unread.total})
+            </Button>
+          ) : null
+        }
       />
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Watched products */}
@@ -203,6 +237,11 @@ function MyProductsFeed() {
                 ({approvals.data?.length ?? 0})
               </span>
             </h2>
+            {newApprovals > 0 && (
+              <Badge className="text-[10px] bg-primary text-primary-foreground">
+                {newApprovals} nova{newApprovals === 1 ? "" : "s"}
+              </Badge>
+            )}
           </header>
           {(approvals.data ?? []).length === 0 ? (
             <EmptyState
@@ -212,13 +251,21 @@ function MyProductsFeed() {
             />
           ) : (
             <ul className="space-y-1.5">
-              {(approvals.data ?? []).map((a) => (
+              {(approvals.data ?? []).map((a) => {
+                const fresh = isNew(a.created_at);
+                return (
                 <li key={a.id}>
                   <Link
                     to="/produto/$id"
                     params={{ id: a.product_id }}
-                    className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition"
+                    className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition relative"
                   >
+                    {fresh && (
+                      <span
+                        aria-label="Nova"
+                        className="absolute left-1 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-primary"
+                      />
+                    )}
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-xs font-medium truncate">
                         {a.products?.name ?? "Produto"}
@@ -239,11 +286,13 @@ function MyProductsFeed() {
                     </div>
                   </Link>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </section>
       </div>
+
 
       {/* Recent comments feed */}
       <section className="rounded-xl border border-border bg-card p-4 space-y-3">
@@ -255,6 +304,11 @@ function MyProductsFeed() {
               ({comments.data?.length ?? 0})
             </span>
           </h2>
+          {newComments > 0 && (
+            <Badge className="text-[10px] bg-primary text-primary-foreground">
+              {newComments} nova{newComments === 1 ? "" : "s"}
+            </Badge>
+          )}
         </header>
         {watchedIds.length === 0 ? (
           <EmptyState
@@ -270,13 +324,21 @@ function MyProductsFeed() {
           />
         ) : (
           <ul className="space-y-2">
-            {(comments.data ?? []).map((c) => (
+            {(comments.data ?? []).map((c) => {
+              const fresh = isNew(c.created_at);
+              return (
               <li key={c.id}>
                 <Link
                   to="/produto/$id"
                   params={{ id: c.product_id }}
-                  className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition"
+                  className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition relative"
                 >
+                  {fresh && (
+                    <span
+                      aria-label="Nova"
+                      className="absolute left-1 top-3 size-1.5 rounded-full bg-primary"
+                    />
+                  )}
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <div className="text-xs font-medium truncate">
                       {c.products?.name ?? "Produto"}
@@ -293,9 +355,11 @@ function MyProductsFeed() {
                   </div>
                 </Link>
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
+
       </section>
     </div>
   );
