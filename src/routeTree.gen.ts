@@ -116,6 +116,7 @@ import { Route as AuthenticatedAppAcompanhamentoProducaoRouteImport } from './ro
 import { Route as AuthenticatedAppAbcColecaoRouteImport } from './routes/_authenticated/_app.abc-colecao'
 import { Route as AuthenticatedAppMrpIndexRouteImport } from './routes/_authenticated/_app.mrp.index'
 import { Route as ApiPublicSupplierPortalTokenRouteImport } from './routes/api/public/supplier-portal.$token'
+import { Route as ApiPublicHooksSupplierScorecardRecalcRouteImport } from './routes/api/public/hooks/supplier-scorecard-recalc'
 import { Route as ApiPublicHooksProductionSlaEscalationRouteImport } from './routes/api/public/hooks/production-sla-escalation'
 import { Route as ApiPublicHooksMrpRecalcRouteImport } from './routes/api/public/hooks/mrp-recalc'
 import { Route as ApiPublicHooksMarkLateOpsRouteImport } from './routes/api/public/hooks/mark-late-ops'
@@ -748,6 +749,12 @@ const ApiPublicSupplierPortalTokenRoute =
     path: '/api/public/supplier-portal/$token',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksSupplierScorecardRecalcRoute =
+  ApiPublicHooksSupplierScorecardRecalcRouteImport.update({
+    id: '/api/public/hooks/supplier-scorecard-recalc',
+    path: '/api/public/hooks/supplier-scorecard-recalc',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProductionSlaEscalationRoute =
   ApiPublicHooksProductionSlaEscalationRouteImport.update({
     id: '/api/public/hooks/production-sla-escalation',
@@ -988,6 +995,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/hooks/mrp-recalc': typeof ApiPublicHooksMrpRecalcRoute
   '/api/public/hooks/production-sla-escalation': typeof ApiPublicHooksProductionSlaEscalationRoute
+  '/api/public/hooks/supplier-scorecard-recalc': typeof ApiPublicHooksSupplierScorecardRecalcRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
   '/mrp/': typeof AuthenticatedAppMrpIndexRoute
   '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
@@ -1115,6 +1123,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/hooks/mrp-recalc': typeof ApiPublicHooksMrpRecalcRoute
   '/api/public/hooks/production-sla-escalation': typeof ApiPublicHooksProductionSlaEscalationRoute
+  '/api/public/hooks/supplier-scorecard-recalc': typeof ApiPublicHooksSupplierScorecardRecalcRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
   '/mrp': typeof AuthenticatedAppMrpIndexRoute
   '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
@@ -1245,6 +1254,7 @@ export interface FileRoutesById {
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/hooks/mrp-recalc': typeof ApiPublicHooksMrpRecalcRoute
   '/api/public/hooks/production-sla-escalation': typeof ApiPublicHooksProductionSlaEscalationRoute
+  '/api/public/hooks/supplier-scorecard-recalc': typeof ApiPublicHooksSupplierScorecardRecalcRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
   '/_authenticated/_app/mrp/': typeof AuthenticatedAppMrpIndexRoute
   '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
@@ -1374,6 +1384,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/hooks/mrp-recalc'
     | '/api/public/hooks/production-sla-escalation'
+    | '/api/public/hooks/supplier-scorecard-recalc'
     | '/api/public/supplier-portal/$token'
     | '/mrp/'
     | '/api/public/product-image/$ownerId/$'
@@ -1501,6 +1512,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/hooks/mrp-recalc'
     | '/api/public/hooks/production-sla-escalation'
+    | '/api/public/hooks/supplier-scorecard-recalc'
     | '/api/public/supplier-portal/$token'
     | '/mrp'
     | '/api/public/product-image/$ownerId/$'
@@ -1630,6 +1642,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/hooks/mrp-recalc'
     | '/api/public/hooks/production-sla-escalation'
+    | '/api/public/hooks/supplier-scorecard-recalc'
     | '/api/public/supplier-portal/$token'
     | '/_authenticated/_app/mrp/'
     | '/api/public/product-image/$ownerId/$'
@@ -1653,6 +1666,7 @@ export interface RootRouteChildren {
   ApiPublicHooksMarkLateOpsRoute: typeof ApiPublicHooksMarkLateOpsRoute
   ApiPublicHooksMrpRecalcRoute: typeof ApiPublicHooksMrpRecalcRoute
   ApiPublicHooksProductionSlaEscalationRoute: typeof ApiPublicHooksProductionSlaEscalationRoute
+  ApiPublicHooksSupplierScorecardRecalcRoute: typeof ApiPublicHooksSupplierScorecardRecalcRoute
   ApiPublicSupplierPortalTokenRoute: typeof ApiPublicSupplierPortalTokenRoute
   ApiPublicProductImageOwnerIdSplatRoute: typeof ApiPublicProductImageOwnerIdSplatRoute
 }
@@ -2408,6 +2422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSupplierPortalTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/supplier-scorecard-recalc': {
+      id: '/api/public/hooks/supplier-scorecard-recalc'
+      path: '/api/public/hooks/supplier-scorecard-recalc'
+      fullPath: '/api/public/hooks/supplier-scorecard-recalc'
+      preLoaderRoute: typeof ApiPublicHooksSupplierScorecardRecalcRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/production-sla-escalation': {
       id: '/api/public/hooks/production-sla-escalation'
       path: '/api/public/hooks/production-sla-escalation'
@@ -2835,6 +2856,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksMrpRecalcRoute: ApiPublicHooksMrpRecalcRoute,
   ApiPublicHooksProductionSlaEscalationRoute:
     ApiPublicHooksProductionSlaEscalationRoute,
+  ApiPublicHooksSupplierScorecardRecalcRoute:
+    ApiPublicHooksSupplierScorecardRecalcRoute,
   ApiPublicSupplierPortalTokenRoute: ApiPublicSupplierPortalTokenRoute,
   ApiPublicProductImageOwnerIdSplatRoute:
     ApiPublicProductImageOwnerIdSplatRoute,

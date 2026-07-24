@@ -31,6 +31,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSupplier360, type Supplier360 } from "@/lib/supplier-360.functions";
+import { SupplierScorecardMini } from "@/components/supplier-scorecard-panel";
 
 interface Props {
   supplierId: string | null;
@@ -127,6 +128,11 @@ function DrawerBody({ data }: { data: Supplier360 }) {
       <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3 flex items-start gap-2">
         <Sparkles className="size-4 text-primary mt-0.5 shrink-0" />
         <div className="text-xs leading-relaxed">{reason}</div>
+      </div>
+
+      {/* Scorecard adaptativo (Wave 25) */}
+      <div className="mt-3">
+        <SupplierScorecardMini supplierId={supplier.id} />
       </div>
 
       {/* KPI grid */}
