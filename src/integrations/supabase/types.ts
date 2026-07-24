@@ -5002,6 +5002,71 @@ export type Database = {
           },
         ]
       }
+      supplier_scorecards: {
+        Row: {
+          capa_reopened_count: number
+          computed_at: string
+          created_at: string
+          delta: number | null
+          fpy_pct: number | null
+          id: string
+          lead_time_days: number | null
+          notes: string | null
+          occurrences_count: number
+          orders_count: number
+          otif_pct: number | null
+          owner_id: string
+          prev_score: number | null
+          score: number
+          supplier_id: string
+          window_days: number
+        }
+        Insert: {
+          capa_reopened_count?: number
+          computed_at?: string
+          created_at?: string
+          delta?: number | null
+          fpy_pct?: number | null
+          id?: string
+          lead_time_days?: number | null
+          notes?: string | null
+          occurrences_count?: number
+          orders_count?: number
+          otif_pct?: number | null
+          owner_id: string
+          prev_score?: number | null
+          score?: number
+          supplier_id: string
+          window_days?: number
+        }
+        Update: {
+          capa_reopened_count?: number
+          computed_at?: string
+          created_at?: string
+          delta?: number | null
+          fpy_pct?: number | null
+          id?: string
+          lead_time_days?: number | null
+          notes?: string | null
+          occurrences_count?: number
+          orders_count?: number
+          otif_pct?: number | null
+          owner_id?: string
+          prev_score?: number | null
+          score?: number
+          supplier_id?: string
+          window_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_scorecards_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           active: boolean
