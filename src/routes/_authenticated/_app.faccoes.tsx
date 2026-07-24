@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Factory, AlertTriangle, Clock, Package, TrendingDown, MapPin } from "lucide-react";
 import { getFaccoes360 } from "@/lib/facao-360.functions";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/faccoes")({
   component: FaccoesPage,
