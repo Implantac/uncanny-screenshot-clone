@@ -186,6 +186,35 @@ function MyProductsFeed() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // Atalhos de teclado para aprovações em massa
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (k === "x") {
+        if (pendingList.length === 0) return;
+        e.preventDefault();
+        toggleAll();
+      } else if (k === "escape") {
+        if (selected.size === 0) return;
+        e.preventDefault();
+        setSelected(new Set());
+      } else if (k === "a") {
+        if (selected.size === 0 || bulkDecide.isPending) return;
+        e.preventDefault();
+        bulkDecide.mutate("aprovado");
+      } else if (k === "r") {
+        if (selected.size === 0 || bulkDecide.isPending) return;
+        e.preventDefault();
+        bulkDecide.mutate("rejeitado");
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingList.length, selected.size, bulkDecide.isPending]);
 
   // Marca como lido ao sair da página
   useEffect(() => {
