@@ -55,7 +55,9 @@ export const getCapacityRebalanceSuggestions = createServerFn({ method: "POST" }
     const scoreMargin = data.score_margin ?? 10;
     const limit = data.limit ?? 8;
 
-    const outsourcedStages = Object.keys(OUTSOURCED_TO_CATEGORY);
+    const outsourcedStages = Object.keys(OUTSOURCED_TO_CATEGORY) as Array<
+      "bordado_terc" | "silk_terc" | "costura_terc"
+    >;
 
     // 1) OPs ativas em estágios terceirizados
     const { data: rawOps, error: opErr } = await supabase
