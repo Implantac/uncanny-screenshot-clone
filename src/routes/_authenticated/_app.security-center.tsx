@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Trash2,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/security-center")({
   component: SecurityCenter,
