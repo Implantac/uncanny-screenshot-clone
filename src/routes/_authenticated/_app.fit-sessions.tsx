@@ -213,28 +213,41 @@ function Page() {
         <div className="space-y-2">
           {sessions.data?.map((s) => {
             const meta = STATUS_META[s.status] ?? STATUS_META.aberta;
+            const isSelected = selected === s.id;
+            const isCompare = compareId === s.id;
             return (
-              <button
+              <div
                 key={s.id}
-                onClick={() => setSelected(s.id)}
-                className={`w-full text-left glass rounded-lg p-3 hover:bg-accent/30 transition ${selected === s.id ? "ring-2 ring-primary" : ""}`}
+                className={`w-full glass rounded-lg p-3 hover:bg-accent/30 transition ${isSelected ? "ring-2 ring-primary" : ""} ${isCompare ? "ring-2 ring-amber-500" : ""}`}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium truncate">
-                    It. {s.iteration} · {s.fit_model || "—"}
-                  </span>
-                  <Badge variant="outline" className={`text-[10px] ${meta.color}`}>
-                    {meta.label}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {new Date(s.session_date).toLocaleDateString("pt-BR")}
-                </p>
-              </button>
+                <button className="w-full text-left" onClick={() => setSelected(s.id)}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium truncate">
+                      It. {s.iteration} · {s.fit_model || "—"}
+                    </span>
+                    <Badge variant="outline" className={`text-[10px] ${meta.color}`}>
+                      {meta.label}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(s.session_date).toLocaleDateString("pt-BR")}
+                  </p>
+                </button>
+                {selected && selected !== s.id && (
+                  <button
+                    onClick={() => setCompareId(isCompare ? null : s.id)}
+                    className="mt-2 text-[11px] inline-flex items-center gap-1 text-muted-foreground hover:text-amber-600 transition"
+                  >
+                    <Columns2 className="h-3 w-3" />
+                    {isCompare ? "Remover comparação" : "Comparar com esta"}
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
       </div>
+
 
       <div className="space-y-4">
         {!selected || !currentSession ? (
