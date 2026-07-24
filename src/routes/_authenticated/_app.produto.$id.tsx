@@ -35,6 +35,7 @@ import { ProductTimelineCollab } from "@/components/product-timeline-collab";
 import { ProductGallery } from "@/components/product-gallery";
 import { SkuPerformancePanel } from "@/components/sku-performance-panel";
 import { StageGatePanel } from "@/components/stage-gate-panel";
+import { ProductPcpHealthPanel } from "@/components/product-pcp-health";
 import { ProductCostCockpit } from "@/components/product-cost-cockpit";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
