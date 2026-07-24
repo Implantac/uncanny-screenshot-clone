@@ -305,6 +305,8 @@ function FornecedoresPage() {
 
       <SupplierScorecardMoversPanel onSelect={(id) => setView360Id(id)} />
 
+      <SupplierSwapSuggestionsPanel onSelectSupplier={(id) => setView360Id(id)} />
+
       <section className="rounded-xl border border-border bg-card/50 p-4">
         <div className="flex items-center justify-between gap-3 mb-3">
           <div>
