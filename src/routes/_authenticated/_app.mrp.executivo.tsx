@@ -88,24 +88,25 @@ function MrpExecPage() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <Button asChild variant="ghost" size="sm" className="mb-2">
-            <Link to="/mrp">
-              <ArrowLeft className="h-4 w-4 mr-1" /> MRP
-            </Link>
-          </Button>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+      <PageHeader
+        eyebrow={
+          <Link to="/mrp" className="inline-flex items-center gap-1 hover:text-foreground">
+            <ArrowLeft className="h-3 w-3" /> MRP
+          </Link>
+        }
+        title={
+          <span className="inline-flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-primary" /> MRP Executivo
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Dashboard estratégico com insights de IA por persona.
-          </p>
-        </div>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/mrp/bi">Ver BI MRP</Link>
-        </Button>
-      </div>
+          </span>
+        }
+        description="Dashboard estratégico com insights de IA por persona."
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <Link to="/mrp/bi">Ver BI MRP</Link>
+          </Button>
+        }
+      />
+
 
       {/* KPI grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
