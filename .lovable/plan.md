@@ -1,95 +1,58 @@
-# USE Fashion — Plano de Evolução (Ondas 2 → 6)
+## Contexto do que já existe (auditoria rápida)
 
-O que já foi entregue nas ondas anteriores permanece intacto:
+- **Stepper**: `ProductWorkflowStepper` já ativo em `/produto/$id` (linha 254). Bom.
+- **Breadcrumb**: componente `ui/breadcrumb` existe mas quase ninguém usa — a maioria das rotas usa só o `eyebrow` do `PageHeader` como "voltar".
+- **BOM**: `MaterialsPanel` em `tech-pack/panels.tsx` já tem `MaterialPickerDialog` visual e edição — precisa validar cálculo em tempo real.
+- **Medidas**: `MeasurementsPanel` (linha 655) é grid estático, sem regra de salto.
+- **Peça piloto**: `_app.prototipo.$id.tsx` tem timeline mas não diff visual entre revisões.
+- **Empty States / Skeleton / Badges**: já existem (`EmptyState`, badges com status_color), aplicação inconsistente.
+- **Integridade material**: `material_library` referenciada por `tech_sheet_materials.material_id` — hoje não bloqueia.
 
-- **Onda 0 — Auditoria + Product Workspace** (`/produto/$id` como agregador de 11 painéis existentes).
-- **Onda 1 — Workflow Engine + Stage Gates** (`product_gate_status`, `can_advance_product`, trigger de auditoria, `StageGateBadge` no Workspace).
-- **Onda 2 (parcial) — Timeline unificada** (`v_product_events` com 12 fontes + `<ProductTimeline>` virtualizada com infinite scroll).
+## Ondas de execução (posso pausar entre cada uma)
 
-Este plano cobre o que falta, sem quebrar nada.
+### Onda 1 — Navegação consistente (Stepper + Breadcrumbs)
+- Criar `PlmBreadcrumb` (wrapper fino sobre `ui/breadcrumb`) que aceita `items: {label, to?, params?}[]`.
+- Aplicar breadcrumb Coleção > Produto > SKU em:
+  - `_app.produto.$id.tsx` (adiciona Coleção antes de Produtos)
+  - `_app.ficha-tecnica.tsx` (Produto > Ficha vX)
+  - `_app.prototipo.$id.tsx` (Produto > Piloto)
+- Confirmar Stepper presente em Produto, adicionar mini-versão do Stepper no topo de Ficha/Piloto quando `productId` está no contexto (mesmo cache, sem refetch).
 
----
+### Onda 2 — BOM (edição inline + custo live)
+- `MaterialsPanel`: garantir input `consumo` com edição inline direta na célula e recomputo local do `totalCost` via `useMemo` antes de salvar (optimistic).
+- Substituir formulário "adicionar material" por `MaterialPickerDialog` já existente onde ainda usar select simples.
+- Rodapé sticky com "Custo total materiais: R$ X,XX (recalculado)" com badge amarelo enquanto houver alterações não salvas.
 
-## Onda 2 — Timeline & Colaboração (completar)
+### Onda 3 — Medidas com Regra de Salto (por faixa)
+- Adicionar coluna `grade_rule` em `tech_sheet_measurements` (jsonb: `{PP-P:1.5, P-M:2, M-G:2, G-GG:3}`).
+- Botão "Aplicar salto" abre popover onde usuário define incremento por faixa (PP-P, P-M, M-G, G-GG) → preenche colunas dependentes a partir do valor base (M por padrão).
+- Recomputo puramente client-side; salvar dispara update em batch.
 
-**Objetivo:** transformar a Timeline em canal ativo, não só histórico.
+### Onda 4 — Peça piloto: histórico visual + comparar versões
+- `_app.prototipo.$id.tsx`: agrupar `prototype_adjustments` em cards "Rodada N" com data, badge de status, foto (attachment thumbnail), comentário.
+- Botão "Comparar com anterior" abre `Dialog` com layout 2 colunas (foto + campos alterados destacados).
 
-- Comentários por evento (thread leve reutilizando `prototype_comments` como padrão) escopados por `product_id`.
-- Anexos por evento (bucket `product-timeline` privado).
-- Filtro por setor + intervalo de datas + busca textual (server-side na view).
-- Assinaturas de eventos → toca `push_notifications` para quem seguiu o produto.
-- Botão "Seguir produto" (nova tabela `product_watchers`).
+### Onda 5 — Consistência visual (menor esforço, alto impacto)
+- Criar `StatusBadge` central mapeando `product_status`, `prototype_stage`, `production_status` → cor semântica (verde/amarelo/vermelho/azul). Substituir badges ad-hoc nas 4 telas críticas.
+- Auditar `EmptyState` em Coleções vazias, Produto sem BOM, Ficha sem medidas — adicionar CTA "Adicionar primeiro".
+- Skeleton loader padrão (`TableSkeleton`) nas 3 tabelas maiores (produtos, materiais, protótipos).
 
-Sem novas rotas — tudo dentro do `Product Workspace › Timeline`.
+### Onda 6 — Integridade referencial (guardrail material)
+- Nova server fn `checkMaterialUsage(materialId)` retornando `{ productCount, products: [{sku, name}] }`.
+- Ao clicar em excluir material na drawer, chamar checagem primeiro. Se `productCount > 0`, mostrar `AlertDialog`:
+  > "Este material está em uso em N produto(s): SKU-01, SKU-02… Remova das fichas antes de excluir."
+  Sem opção de forçar (conforme decisão).
+- Migration não necessária (já existe FK; só melhora a experiência antes do erro do banco).
 
-## Onda 3 — Stage Gates ampliados + Approvals
+## Detalhe técnico
 
-**Objetivo:** transformar Gates em fluxo de aprovação real.
+- Novo componente: `src/components/ui/plm-breadcrumb.tsx`, `src/components/status-badge.tsx`.
+- Migration (Onda 3): `ALTER TABLE tech_sheet_measurements ADD COLUMN grade_rule jsonb`. Trigger de recompute apenas se `grade_rule IS NOT NULL`.
+- Server fn (Onda 6): `src/lib/material-usage.functions.ts` com `.middleware([requireSupabaseAuth])`.
+- Nenhuma tabela nova em Ondas 1, 2, 4, 5. Nenhum breaking change em Cloud.
 
-- Adicionar 3 gates críticos ao `product_gate_status`:
-  - **Grade de tamanhos definida** (`product_size_options`).
-  - **Rota de produção definida** (`product_routing`).
-  - **Meta de custo respeitada** (`product_target_costs` vs `tech_sheets.cost_price`).
-- Nova tabela `product_approvals(product_id, gate_key, required_role, approver_id, decision, note, decided_at)`.
-- Cada gate reprovado abre uma tarefa nomeada com responsável (usa `user_roles`).
-- Painel `StageGateBadge` vira `StageGatePanel` expansível dentro do Workspace, mostrando bloqueios com CTA "resolver agora".
-- Nada de rota nova; substituição in-place do componente atual.
+## Ordem de entrega proposta
 
-## Onda 4 — Cost Cockpit + AI Insights por Produto
+Executar Ondas 1 + 5 juntas (mesma família UX), depois 2, depois 6 (rápida), depois 3, depois 4. Cada onda é um push separado com typecheck verde antes de seguir.
 
-**Objetivo:** margem viva ao lado do produto.
-
-- View `v_product_cost_snapshot` (custo BOM + operações + overhead + reservas ativas + custo real via `stock_movements`) — reaproveita triggers existentes.
-- Aba "Custo" no Workspace com:
-  - Meta vs Real vs Última venda (`erp_sales_mirror`).
-  - Waterfall de custo (materiais / mão-de-obra / overhead).
-  - Sensibilidade: "se subir X% no fornecedor Y, margem cai Z%".
-- `ai_agents` já existe → 1 agente novo `product_insight` que roda on-demand e escreve em `marketing_notifications`/`alertas` com o **porquê + ação sugerida** (regra de ouro).
-
-## Onda 5 — PCP inteligente do Produto
-
-**Objetivo:** o Workspace mostra o estado real da fábrica para aquele produto.
-
-- Aba "PCP" já existe → adicionar:
-  - Card de gargalo por setor (usa `production_stage_log` + SLA).
-  - Previsão de conclusão (SAM × capacidade do setor via `supplier_capacity`).
-  - Reservas de material (`material_reservations`) com semáforo verde/amarelo/vermelho.
-- Sem novas tabelas; só uma função SQL `product_pcp_health(_product_id)`.
-
-## Onda 6 — Enterprise hardening
-
-**Objetivo:** deixar production-ready no padrão Centric/Backbone.
-
-- Auditoria: revisar policies faltantes de INSERT em `audit_logs` para todas as tabelas críticas.
-- Performance: índices em `v_product_events` fontes (occorred_at desc por product_id).
-- Acessibilidade: revisão AA no Workspace (foco visível, labels ARIA nos badges/timeline).
-- Erro global: `errorComponent` + `notFoundComponent` em todas as rotas de `_authenticated/_app.produto*`.
-- Testes de fumaça headless (Playwright) das transições Gate → Approval → Timeline.
-
----
-
-## Detalhes técnicos
-
-**Migrations planejadas** (uma por onda, aprovadas separadamente):
-
-```text
-onda2: product_watchers, product_timeline_comments, product_timeline_attachments
-onda3: product_approvals, product_gate_status v2 (+3 requisitos)
-onda4: v_product_cost_snapshot (view), ai_agents seed 'product_insight'
-onda5: fn product_pcp_health(uuid)
-onda6: índices + policies faltantes
-```
-
-**Componentes reaproveitados** (nada novo desnecessário): `ProductTimeline`, `StageGateBadge`, `PageHeader`, `EmptyState`, `ErrorState`, painéis já existentes de BOM/PCP/Qualidade/Marketing.
-
-**Rotas:** nenhuma criada. Tudo entra como abas/painéis do `_app.produto.$id.tsx`.
-
-**Guardrails obrigatórios respeitados:** sem mock, sem duplicação, sem ERP-features (financeiro/fiscal), sem reescrita, RLS + GRANT em toda tabela nova.
-
----
-
-## O que quero validar antes de codar
-
-1. Aprova avançar **onda a onda** (uma migration + código por vez), começando pela **Onda 2 — comentários + anexos + seguir produto na Timeline**?
-2. Ou prefere pular direto para **Onda 3 (Stage Gates + Approvals)**, que tem impacto de negócio maior?
-3. Alguma onda deve sair do escopo?
+Confirma essa sequência ou quer reordenar?
