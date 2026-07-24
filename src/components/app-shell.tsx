@@ -258,14 +258,36 @@ export function AppShell({ children }: { children: ReactNode }) {
         })}
       </nav>
       {!isCollapsed && (
-        <div className="m-3 p-3 rounded-lg glass">
+        <div className="m-3 p-3 rounded-lg glass space-y-2">
           <div className="flex items-center gap-2 text-xs font-medium">
             <div className="size-2 rounded-full bg-success animate-pulse" />
             Sistema operacional
           </div>
-          <div className="mt-1 text-[11px] text-muted-foreground">18 módulos · 99.98% uptime</div>
+          <div className="text-[11px] text-muted-foreground">
+            {visibleModules.length} módulos visíveis
+          </div>
+          {!canSeeAll && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowAll((s) => {
+                  const next = !s;
+                  try {
+                    localStorage.setItem(SIDEBAR_SHOW_ALL_KEY, next ? "1" : "0");
+                  } catch {
+                    /* ignore */
+                  }
+                  return next;
+                });
+              }}
+              className="w-full text-[11px] px-2 py-1 rounded-md border border-sidebar-border hover:bg-sidebar-accent/40 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showAll ? "Mostrar só meu perfil" : "Mostrar todos os módulos"}
+            </button>
+          )}
         </div>
       )}
+
     </TooltipProvider>
   );
 
