@@ -44,6 +44,7 @@ import { ProductCostCockpit } from "@/components/product-cost-cockpit";
 import { ProductCostEnginePanel } from "@/components/product-cost-engine-panel";
 import { ProductWorkflowPanel } from "@/components/product-workflow-panel";
 import { ProductLifecycleCopilotPanel } from "@/components/product-lifecycle-copilot-panel";
+import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
   head: ({ params }) => ({
@@ -249,6 +250,8 @@ function ProductWorkspace() {
           <Metric label="OPs em andamento" value={String(openOps)} tone={openOps > 0 ? "primary" : "default"} />
         </div>
       </div>
+
+      <ProductWorkflowStepper productId={product.id} />
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/40 p-1">

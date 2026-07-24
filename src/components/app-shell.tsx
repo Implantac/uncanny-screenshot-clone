@@ -30,6 +30,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ContextualFab } from "@/components/contextual-fab";
 import { useState, useEffect, useMemo, type ReactNode } from "react";
 
 
@@ -361,6 +362,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
+      <ContextualFab />
     </div>
   );
 }
