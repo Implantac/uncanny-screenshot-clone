@@ -190,7 +190,7 @@ export const importTechPack = createServerFn({ method: "POST" })
       version_number: 0, // marker de import; incrementos "reais" vêm do fluxo de aprovação
       label: `Import ${p.source} · ${p.version_label ?? new Date().toISOString().slice(0, 10)}`,
       notes: `Tech pack importado (${p.materials.length} materiais, ${p.measurements.length} medidas, ${p.operations.length} operações).`,
-      snapshot: p as unknown as Record<string, unknown>,
+      snapshot: JSON.parse(JSON.stringify(p)),
       created_by: userId,
     });
 
