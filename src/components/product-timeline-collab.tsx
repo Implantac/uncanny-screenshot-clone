@@ -557,6 +557,9 @@ function CommentCard({
   onRemove,
   onReply,
   onDownload,
+  onEdit,
+  onToggleResolve,
+  canResolve,
   isReply,
 }: {
   c: Comment;
@@ -565,36 +568,117 @@ function CommentCard({
   onRemove: () => void;
   onReply: () => void;
   onDownload: (a: Attachment) => void;
+  onEdit: (body: string) => void;
+  onToggleResolve?: () => void;
+  canResolve?: boolean;
   isReply?: boolean;
 }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(c.body);
+  const resolved = !!c.resolved_at;
   return (
     <div
-      className={`rounded-lg border border-border bg-card p-2.5 space-y-1.5 ${
-        isReply ? "bg-muted/30" : ""
+      className={`rounded-lg border p-2.5 space-y-1.5 ${
+        resolved
+          ? "border-emerald-500/40 bg-emerald-500/5"
+          : isReply
+            ? "border-border bg-muted/30"
+            : "border-border bg-card"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="text-sm whitespace-pre-wrap break-words">{c.body}</div>
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            className="text-muted-foreground hover:text-primary"
-            title="Responder"
-            onClick={onReply}
-          >
-            <Reply className="size-3.5" />
-          </button>
-          {mine && (
+        {editing ? (
+          <div className="flex-1 space-y-1.5">
+            <Textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              className="text-sm min-h-[60px] bg-background"
+            />
+            <div className="flex items-center gap-1.5">
+              <Button
+                type="button"
+                size="sm"
+                className="h-6 text-[11px]"
+                disabled={!draft.trim() || draft.trim() === c.body}
+                onClick={() => {
+                  onEdit(draft);
+                  setEditing(false);
+                }}
+              >
+                <Check className="size-3 mr-1" /> Salvar
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-6 text-[11px]"
+                onClick={() => {
+                  setDraft(c.body);
+                  setEditing(false);
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm whitespace-pre-wrap break-words flex-1">
+            {c.body}
+          </div>
+        )}
+        {!editing && (
+          <div className="flex items-center gap-1 shrink-0">
+            {canResolve && onToggleResolve && (
+              <button
+                type="button"
+                className={
+                  resolved
+                    ? "text-emerald-600 hover:text-muted-foreground"
+                    : "text-muted-foreground hover:text-emerald-600"
+                }
+                title={resolved ? "Reabrir thread" : "Marcar como resolvida"}
+                onClick={onToggleResolve}
+              >
+                {resolved ? (
+                  <RotateCcw className="size-3.5" />
+                ) : (
+                  <CheckCircle2 className="size-3.5" />
+                )}
+              </button>
+            )}
             <button
               type="button"
-              className="text-muted-foreground hover:text-destructive"
-              title="Remover"
-              onClick={onRemove}
+              className="text-muted-foreground hover:text-primary"
+              title="Responder"
+              onClick={onReply}
             >
-              <Trash2 className="size-3.5" />
+              <Reply className="size-3.5" />
             </button>
-          )}
-        </div>
+            {mine && (
+              <>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:text-primary"
+                  title="Editar"
+                  onClick={() => {
+                    setDraft(c.body);
+                    setEditing(true);
+                  }}
+                >
+                  <Pencil className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:text-destructive"
+                  title="Remover"
+                  onClick={onRemove}
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
       {atts.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
@@ -611,8 +695,9 @@ function CommentCard({
           ))}
         </div>
       )}
-      <div className="text-[10px] text-muted-foreground font-mono">
-        {new Date(c.created_at).toLocaleString("pt-BR")}
+      <div className="text-[10px] text-muted-foreground font-mono flex items-center gap-2">
+        <span>{new Date(c.created_at).toLocaleString("pt-BR")}</span>
+        {c.edited_at && <span className="italic">· editado</span>}
       </div>
     </div>
   );
