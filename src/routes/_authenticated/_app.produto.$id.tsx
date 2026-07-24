@@ -332,14 +332,13 @@ function ProductWorkspace() {
           )}
         </TabsContent>
 
-        <TabsContent value="custos">
+        <TabsContent value="custos" className="space-y-4">
+          <ProductCostCockpit productId={product.id} />
           {sheet ? (
             <div className="rounded-xl border border-border bg-card p-4">
               <CostsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={false} />
             </div>
-          ) : (
-            <NoSheet productId={product.id} />
-          )}
+          ) : null}
         </TabsContent>
 
         <TabsContent value="prototipos">
