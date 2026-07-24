@@ -30,6 +30,7 @@ import { SamEfficiencyPanel } from "@/components/sam-efficiency-panel";
 import { PcpCapacityTocPanel } from "@/components/pcp-capacity-toc-panel";
 import { PcpApsPanel } from "@/components/pcp-aps-panel";
 import { AdaptiveProductionPriorityPanel } from "@/components/adaptive-production-priority-panel";
+import { CapacityRebalancePanel } from "@/components/capacity-rebalance-panel";
 import { PcpApsGantt } from "@/components/pcp-aps-gantt";
 import { LoteSplitDialog } from "@/components/lote-split-dialog";
 import { useServerFn } from "@tanstack/react-start";
