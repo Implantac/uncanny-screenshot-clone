@@ -77,6 +77,10 @@ type ProductRow = {
 function ProductWorkspace() {
   const { id } = useParams({ from: "/_authenticated/_app/produto/$id" });
   useRealtime("products", ["product-workspace", id]);
+  const audit = useServerFn(logProductView);
+  useEffect(() => {
+    audit({ data: { productId: id } }).catch(() => {});
+  }, [id, audit]);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product-workspace", id],
