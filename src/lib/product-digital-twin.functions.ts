@@ -71,7 +71,7 @@ export const getProductDigitalTwin = createServerFn({ method: "POST" })
           "id, code, quantity, status, stage, stage_updated_at, due_date, created_at",
         )
         .eq("product_id", productId)
-        .in("status", ["aguardando", "em_producao", "em_andamento"])
+        .in("status", ["aguardando", "em_producao"])
         .order("stage_updated_at", { ascending: true })
         .limit(200),
     ]);
