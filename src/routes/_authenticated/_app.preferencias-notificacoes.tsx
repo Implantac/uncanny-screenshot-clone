@@ -92,7 +92,6 @@ function NotificationPreferencesPage() {
       <PageHeader
         title="Preferências de notificação"
         description="Escolha, por categoria, se deseja receber push, e-mail ou silenciar completamente."
-        icon={Bell}
       />
 
       <div className="rounded-xl border border-border bg-card divide-y divide-border">
