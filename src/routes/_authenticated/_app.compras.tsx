@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { ShoppingCart, AlertTriangle, Package, TrendingDown } from "lucide-react";
 import { InventorySmartPanel } from "@/components/inventory-smart-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/compras")({ component: Compras });
 
