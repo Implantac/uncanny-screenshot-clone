@@ -9,6 +9,8 @@ export type MaterialSourcingRisk = {
   openCapaCount: number;
   occurrenceCount: number;
   suppliers: Array<{ id: string; name: string | null; capaCount: number; avgScore: number | null }>;
+  alternateSuppliers: Array<{ id: string; name: string | null; score: number }>;
+  materialLibraryIds: string[];
   products: Array<{ id: string; name: string | null; sku: string | null; capaCount: number }>;
   activeCollections: Array<{ id: string; name: string; launchDate: string | null; daysToLaunch: number | null }>;
   recommendation: string;
