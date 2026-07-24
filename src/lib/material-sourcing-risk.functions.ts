@@ -308,16 +308,114 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
     };
   });
 
+export type MaterialSupplierSwapResult =
+  | { blocked: true; worstPct: number; worstProductName: string | null; worstSku: string | null; threshold: number; affectedActive: number }
+  | { blocked: false; updated: number; ids: string[]; worstPct: number | null; overridden: boolean };
+
+const GUARDRAIL_PCT = 10;
+const ACTIVE_PRODUCT_STATUS = new Set(["desenvolvimento", "aprovado", "producao"]);
+
 export const applyMaterialSupplierSwap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (data: { materialKey: string; newSupplierId: string; materialLibraryIds?: string[] }) => data,
+    (data: {
+      materialKey: string;
+      newSupplierId: string;
+      materialLibraryIds?: string[];
+      override?: { reason: string };
+    }) => data,
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<MaterialSupplierSwapResult> => {
     const sb = context.supabase;
     const key = data.materialKey.trim().toLowerCase().replace(/\s+/g, " ");
+    const nk = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
-    // Fetch candidate rows by owner (RLS) then filter by normalized name or explicit ids
+    // --- Guardrail: simulate impact on ACTIVE product tech sheets before applying ---
+    const { data: tsmAll } = await sb
+      .from("tech_sheet_materials")
+      .select("tech_sheet_id, name, total_cost, consumption, loss_pct");
+    type TsmLite = { tech_sheet_id: string; name: string | null; total_cost: number | null; consumption: number | null; loss_pct: number | null };
+    const matching = ((tsmAll ?? []) as TsmLite[]).filter((m) => m.name && nk(m.name) === key);
+    const sheetIds = [...new Set(matching.map((m) => m.tech_sheet_id))];
+
+    let worstPct: number | null = null;
+    let worstName: string | null = null;
+    let worstSku: string | null = null;
+    let affectedActive = 0;
+
+    if (sheetIds.length > 0) {
+      const { data: matLib } = await sb
+        .from("material_library")
+        .select("id, name, preferred_supplier_id, reference_cost")
+        .eq("active", true);
+      type MLR = { id: string; name: string | null; preferred_supplier_id: string | null; reference_cost: number | null };
+      const sameName = ((matLib ?? []) as MLR[]).filter((m) => m.name && nk(m.name) === key);
+      let estUnit: number | null = null;
+      const specific = sameName.find((m) => m.preferred_supplier_id === data.newSupplierId);
+      if (specific?.reference_cost && specific.reference_cost > 0) estUnit = Number(specific.reference_cost);
+      else {
+        const withCost = sameName.filter((m) => m.reference_cost && m.reference_cost > 0);
+        if (withCost.length) estUnit = withCost.reduce((s, m) => s + Number(m.reference_cost ?? 0), 0) / withCost.length;
+      }
+
+      if (estUnit != null) {
+        const { data: sheets } = await sb
+          .from("tech_sheets")
+          .select("id, product_id, cost_price, overhead_pct")
+          .in("id", sheetIds);
+        type SR = { id: string; product_id: string | null; cost_price: number | null; overhead_pct: number | null };
+        const sRows = (sheets ?? []) as SR[];
+        const productIds = [...new Set(sRows.map((s) => s.product_id).filter((x): x is string => !!x))];
+        const { data: prods } = productIds.length
+          ? await sb.from("products").select("id, name, sku, status").in("id", productIds)
+          : { data: [] as { id: string; name: string | null; sku: string | null; status: string | null }[] };
+        const prodMap = new Map((prods ?? []).map((p) => [p.id, p]));
+
+        const linesBySheet = new Map<string, TsmLite[]>();
+        for (const m of matching) {
+          const a = linesBySheet.get(m.tech_sheet_id) ?? [];
+          a.push(m);
+          linesBySheet.set(m.tech_sheet_id, a);
+        }
+
+        for (const sheet of sRows) {
+          const prod = sheet.product_id ? prodMap.get(sheet.product_id) : null;
+          if (!prod || !prod.status || !ACTIVE_PRODUCT_STATUS.has(prod.status)) continue;
+          const lines = linesBySheet.get(sheet.id) ?? [];
+          if (lines.length === 0) continue;
+          const currentLine = lines.reduce((s, l) => s + Number(l.total_cost ?? 0), 0);
+          const projLine = lines.reduce((s, l) => {
+            const cons = Number(l.consumption ?? 0);
+            const loss = Number(l.loss_pct ?? 0);
+            return s + estUnit! * cons * (1 + loss / 100);
+          }, 0);
+          const overheadMult = 1 + Number(sheet.overhead_pct ?? 0) / 100;
+          const finalDelta = (projLine - currentLine) * overheadMult;
+          const currentCost = Number(sheet.cost_price ?? 0);
+          if (currentCost <= 0) continue;
+          const pct = (finalDelta / currentCost) * 100;
+          affectedActive++;
+          if (worstPct == null || Math.abs(pct) > Math.abs(worstPct)) {
+            worstPct = pct;
+            worstName = prod.name;
+            worstSku = prod.sku;
+          }
+        }
+
+        if (!data.override && worstPct != null && Math.abs(worstPct) > GUARDRAIL_PCT) {
+          return {
+            blocked: true,
+            worstPct,
+            worstProductName: worstName,
+            worstSku,
+            threshold: GUARDRAIL_PCT,
+            affectedActive,
+          };
+        }
+      }
+    }
+
+    // --- Apply the swap ---
     const { data: rows, error } = await sb
       .from("material_library")
       .select("id, name")
@@ -326,11 +424,11 @@ export const applyMaterialSupplierSwap = createServerFn({ method: "POST" })
 
     const targetIds = new Set(data.materialLibraryIds ?? []);
     const ids = (rows ?? [])
-      .filter((r) => targetIds.has(r.id) || (r.name && r.name.trim().toLowerCase().replace(/\s+/g, " ") === key))
+      .filter((r) => targetIds.has(r.id) || (r.name && nk(r.name) === key))
       .map((r) => r.id);
 
     if (ids.length === 0) {
-      return { updated: 0, ids: [] as string[] };
+      return { blocked: false, updated: 0, ids: [], worstPct, overridden: !!data.override };
     }
 
     const { error: upErr } = await sb
@@ -342,16 +440,19 @@ export const applyMaterialSupplierSwap = createServerFn({ method: "POST" })
     await sb.rpc("log_audit", {
       _entity: "material_library",
       _entity_id: ids[0],
-      _action: "supplier_swap",
+      _action: data.override ? "supplier_swap_override" : "supplier_swap",
       _payload: {
         material_key: key,
         new_supplier_id: data.newSupplierId,
         affected_ids: ids,
+        worst_pct: worstPct,
+        worst_product: worstName,
+        override_reason: data.override?.reason ?? null,
         source: "material_sourcing_risk_panel",
       },
     });
 
-    return { updated: ids.length, ids };
+    return { blocked: false, updated: ids.length, ids, worstPct, overridden: !!data.override };
   });
 
 export type MaterialSwapSimulation = {
