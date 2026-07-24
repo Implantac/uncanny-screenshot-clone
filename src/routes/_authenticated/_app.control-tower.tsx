@@ -17,6 +17,7 @@ import { useMemo, useState } from "react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { WarRoomPanel } from "@/components/war-room-panel";
 import { AutoPushSentinel } from "@/components/auto-push-sentinel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/control-tower")({
   component: ControlTower,
@@ -179,28 +180,28 @@ function ControlTower() {
 
   return (
     <div className="p-6 space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Torre de Controle</h1>
-          <p className="text-sm text-muted-foreground">
-            Operação ao vivo do chão de fábrica + previsão de demanda.
-          </p>
-        </div>
-        <div className="flex gap-1 text-xs">
-          <button
-            onClick={() => setTab("live")}
-            className={`px-3 py-1.5 rounded inline-flex items-center gap-1.5 ${tab === "live" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
-          >
-            <Radio className="size-3" /> Operação ao vivo
-          </button>
-          <button
-            onClick={() => setTab("demand")}
-            className={`px-3 py-1.5 rounded inline-flex items-center gap-1.5 ${tab === "demand" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
-          >
-            <Activity className="size-3" /> Demanda × Suprimento
-          </button>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Operação"
+        title="Torre de Controle"
+        description="Operação ao vivo do chão de fábrica + previsão de demanda."
+        actions={
+          <div className="flex gap-1 text-xs">
+            <button
+              onClick={() => setTab("live")}
+              className={`px-3 py-1.5 rounded inline-flex items-center gap-1.5 ${tab === "live" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            >
+              <Radio className="size-3" /> Operação ao vivo
+            </button>
+            <button
+              onClick={() => setTab("demand")}
+              className={`px-3 py-1.5 rounded inline-flex items-center gap-1.5 ${tab === "demand" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            >
+              <Activity className="size-3" /> Demanda × Suprimento
+            </button>
+          </div>
+        }
+      />
+
 
       <div className="flex justify-end">
         <AutoPushSentinel />

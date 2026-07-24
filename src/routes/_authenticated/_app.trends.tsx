@@ -7,6 +7,7 @@ import { Palette, Sparkles, Upload, Loader2, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { analyzeTrendImage } from "@/lib/trends.functions";
 import { TrendRadarPanel } from "@/components/trend-radar-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/trends")({ component: Trends });
 
@@ -73,10 +74,12 @@ function Trends() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Hub de Tendências</h1>
-        <p className="text-sm text-muted-foreground">Moodboard, paleta e análise visual por IA.</p>
-      </header>
+      <PageHeader
+        eyebrow="Design"
+        title="Hub de Tendências"
+        description="Moodboard, paleta e análise visual por IA."
+      />
+
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2 rounded-xl border border-dashed border-border bg-card p-4 sm:p-6">
