@@ -29,6 +29,7 @@ import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-dr
 import { SamEfficiencyPanel } from "@/components/sam-efficiency-panel";
 import { PcpCapacityTocPanel } from "@/components/pcp-capacity-toc-panel";
 import { PcpApsPanel } from "@/components/pcp-aps-panel";
+import { AdaptiveProductionPriorityPanel } from "@/components/adaptive-production-priority-panel";
 import { PcpApsGantt } from "@/components/pcp-aps-gantt";
 import { LoteSplitDialog } from "@/components/lote-split-dialog";
 import { useServerFn } from "@tanstack/react-start";
@@ -576,6 +577,7 @@ function PcpKanban() {
       <PersonaInsightsPanel persona="pcp" />
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
 
+      <AdaptiveProductionPriorityPanel />
       <PcpApsPanel />
       <PcpApsGantt />
 
