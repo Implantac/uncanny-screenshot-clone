@@ -61,7 +61,30 @@ function NotificationsPage() {
   const { filter, page } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const unread = useMyProductsUnread();
+  const qc = useQueryClient();
   const filterKey = ["all", "approvals", "mentions"].includes(filter) ? filter : "all";
+
+  // Realtime: refaz a lista quando aprovações/comentários novos chegam
+  useEffect(() => {
+    if (!uid) return;
+    const channel = supabase
+      .channel(`notif-page-${uid}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "product_approvals" },
+        () => qc.invalidateQueries({ queryKey: ["notif-list"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "product_timeline_comments" },
+        () => qc.invalidateQueries({ queryKey: ["notif-list"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [uid, qc]);
+
 
   const watched = useQuery({
     enabled: !!uid,
