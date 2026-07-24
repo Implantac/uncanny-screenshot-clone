@@ -763,6 +763,7 @@ function ColecoesPage() {
     setDefaultParentId(null);
     setOpen(true);
   }
+  useFabNewAction(openCreate);
 
   function openCreateCapsule(parentId: string) {
     setEditing(null);
