@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Supplier360Drawer } from "@/components/supplier-360-drawer";
 import { SupplierScorecardMoversPanel } from "@/components/supplier-scorecard-panel";
+import { SupplierSwapSuggestionsPanel } from "@/components/supplier-swap-suggestions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
