@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Clock, Workflow, ArrowRight } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/approvals")({
   head: () => ({
@@ -119,14 +120,16 @@ function Approvals() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Workflow className="h-6 w-6 text-amber-600" /> Workflow de Aprovações
-        </h1>
-        <p className="text-muted-foreground">
-          PLM como sistema de gates — nada avança sem aprovação.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Governança"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Workflow className="h-6 w-6 text-amber-600" /> Workflow de Aprovações
+          </span>
+        }
+        description="PLM como sistema de gates — nada avança sem aprovação."
+      />
+
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {(data ?? []).map((g) => (

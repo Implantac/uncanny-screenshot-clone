@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Factory, AlertTriangle, Clock, Package, TrendingDown, MapPin } from "lucide-react";
 import { getFaccoes360 } from "@/lib/facao-360.functions";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/faccoes")({
   component: FaccoesPage,
@@ -24,19 +25,17 @@ function FaccoesPage() {
   const items = data ?? [];
 
   return (
-    <div className="space-y-4 p-4">
-      <header className="flex items-center gap-3">
-        <div className="size-10 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
-          <Factory className="size-5 text-primary-foreground" />
-        </div>
-        <div>
-          <h1 className="text-xl font-semibold">Facção 360°</h1>
-          <p className="text-sm text-muted-foreground">
-            Painel consolidado das oficinas externas — perda, defeito, lead time real e OS atrasadas
-            (90 dias).
-          </p>
-        </div>
-      </header>
+    <div className="space-y-4 p-4 md:p-6">
+      <PageHeader
+        eyebrow="Rede externa"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Factory className="size-5 text-primary" /> Facção 360°
+          </span>
+        }
+        description="Painel consolidado das oficinas externas — perda, defeito, lead time real e OS atrasadas (90 dias)."
+      />
+
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Carregando facções…</p>

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ShieldCheck, AlertTriangle, Clock, Truck, Sliders } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { QualityIntelligencePanel } from "@/components/quality-intelligence-panel";
 import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
 import { QualityFpyPanel } from "@/components/quality-fpy-panel";
@@ -132,21 +133,23 @@ function Quality() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+      <PageHeader
+        eyebrow="Qualidade & SLA"
+        title={
+          <span className="inline-flex items-center gap-2">
             <ShieldCheck className="h-6 w-6 text-cyan-600" /> Centro de Qualidade & SLA
-          </h1>
-          <p className="text-muted-foreground">
-            Inspeções, defeitos por fornecedor e cumprimento de prazo.
-          </p>
-        </div>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/quality/capa-rules">
-            <Sliders className="size-4 mr-1" /> Regras de CAPA automática
-          </Link>
-        </Button>
-      </div>
+          </span>
+        }
+        description="Inspeções, defeitos por fornecedor e cumprimento de prazo."
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <Link to="/quality/capa-rules">
+              <Sliders className="size-4 mr-1" /> Regras de CAPA automática
+            </Link>
+          </Button>
+        }
+      />
+
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>

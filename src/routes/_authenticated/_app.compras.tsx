@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { ShoppingCart, AlertTriangle, Package, TrendingDown } from "lucide-react";
 import { InventorySmartPanel } from "@/components/inventory-smart-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/compras")({ component: Compras });
 
@@ -77,12 +78,12 @@ function Compras() {
 
   return (
     <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Compras</h1>
-        <p className="text-sm text-muted-foreground">
-          Necessidades de reposição, cotações e comparativo de fornecedores.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Suprimentos"
+        title="Compras"
+        description="Necessidades de reposição, cotações e comparativo de fornecedores."
+      />
+
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KPI
