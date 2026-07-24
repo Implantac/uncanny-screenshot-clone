@@ -50,6 +50,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
   const [mentioned, setMentioned] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [replyTo, setReplyTo] = useState<Comment | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
