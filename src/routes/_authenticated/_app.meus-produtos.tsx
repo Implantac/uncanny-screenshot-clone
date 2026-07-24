@@ -304,6 +304,11 @@ function MyProductsFeed() {
               ({comments.data?.length ?? 0})
             </span>
           </h2>
+          {newComments > 0 && (
+            <Badge className="text-[10px] bg-primary text-primary-foreground">
+              {newComments} nova{newComments === 1 ? "" : "s"}
+            </Badge>
+          )}
         </header>
         {watchedIds.length === 0 ? (
           <EmptyState
@@ -319,13 +324,21 @@ function MyProductsFeed() {
           />
         ) : (
           <ul className="space-y-2">
-            {(comments.data ?? []).map((c) => (
+            {(comments.data ?? []).map((c) => {
+              const fresh = isNew(c.created_at);
+              return (
               <li key={c.id}>
                 <Link
                   to="/produto/$id"
                   params={{ id: c.product_id }}
-                  className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition"
+                  className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition relative"
                 >
+                  {fresh && (
+                    <span
+                      aria-label="Nova"
+                      className="absolute left-1 top-3 size-1.5 rounded-full bg-primary"
+                    />
+                  )}
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <div className="text-xs font-medium truncate">
                       {c.products?.name ?? "Produto"}
@@ -342,9 +355,11 @@ function MyProductsFeed() {
                   </div>
                 </Link>
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
+
       </section>
     </div>
   );
