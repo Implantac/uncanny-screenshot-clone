@@ -165,6 +165,10 @@ function ProdutosPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [prefill, setPrefill] = useState<Prefill | null>(null);
+  useFabNewAction(() => {
+    setEditing(null);
+    setOpen(true);
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const sp = Route.useSearch();
   const { q: search, prefillName, prefillCategory, prefillColors } = sp;
