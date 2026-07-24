@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Trophy, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { SupplierRecommender } from "@/components/supplier-recommender";
+import { SupplierSwapSuggestionsPanel } from "@/components/supplier-swap-suggestions";
 
 export const Route = createFileRoute("/_authenticated/_app/sourcing")({
   head: () => ({
@@ -191,6 +192,7 @@ function Page() {
         ) : (
           <>
             <SupplierRecommender rfqTitle={rfqs.data?.find((r) => r.id === selected)?.title} />
+            <SupplierSwapSuggestionsPanel />
             <div className="glass rounded-xl p-4">
               <h2 className="font-semibold mb-3">Adicionar cotação</h2>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
