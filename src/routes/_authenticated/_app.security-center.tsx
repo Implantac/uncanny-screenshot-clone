@@ -83,12 +83,12 @@ function SecurityCenter() {
 
   return (
     <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Centro de Segurança</h1>
-        <p className="text-sm text-muted-foreground">
-          MFA, política de senhas, criptografia e backups — postura de segurança da plataforma.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Segurança"
+        title="Centro de Segurança"
+        description="MFA, política de senhas, criptografia e backups — postura de segurança da plataforma."
+      />
+
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatusCard
