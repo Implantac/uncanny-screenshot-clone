@@ -57,6 +57,7 @@ import { Route as AuthenticatedAppOndeEstaRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppOmnichannelRouteImport } from './routes/_authenticated/_app.omnichannel'
 import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_authenticated/_app.movimentacoes'
 import { Route as AuthenticatedAppMobileRouteImport } from './routes/_authenticated/_app.mobile'
+import { Route as AuthenticatedAppMeusProdutosRouteImport } from './routes/_authenticated/_app.meus-produtos'
 import { Route as AuthenticatedAppMateriaisRouteImport } from './routes/_authenticated/_app.materiais'
 import { Route as AuthenticatedAppMarketingEnviosRouteImport } from './routes/_authenticated/_app.marketing-envios'
 import { Route as AuthenticatedAppMarketingRouteImport } from './routes/_authenticated/_app.marketing'
@@ -398,6 +399,12 @@ const AuthenticatedAppMobileRoute = AuthenticatedAppMobileRouteImport.update({
   path: '/mobile',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppMeusProdutosRoute =
+  AuthenticatedAppMeusProdutosRouteImport.update({
+    id: '/meus-produtos',
+    path: '/meus-produtos',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppMateriaisRoute =
   AuthenticatedAppMateriaisRouteImport.update({
     id: '/materiais',
@@ -869,6 +876,7 @@ export interface FileRoutesByFullPath {
   '/marketing': typeof AuthenticatedAppMarketingRoute
   '/marketing-envios': typeof AuthenticatedAppMarketingEnviosRoute
   '/materiais': typeof AuthenticatedAppMateriaisRoute
+  '/meus-produtos': typeof AuthenticatedAppMeusProdutosRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
@@ -988,6 +996,7 @@ export interface FileRoutesByTo {
   '/marketing': typeof AuthenticatedAppMarketingRoute
   '/marketing-envios': typeof AuthenticatedAppMarketingEnviosRoute
   '/materiais': typeof AuthenticatedAppMateriaisRoute
+  '/meus-produtos': typeof AuthenticatedAppMeusProdutosRoute
   '/mobile': typeof AuthenticatedAppMobileRoute
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
@@ -1109,6 +1118,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/marketing': typeof AuthenticatedAppMarketingRoute
   '/_authenticated/_app/marketing-envios': typeof AuthenticatedAppMarketingEnviosRoute
   '/_authenticated/_app/materiais': typeof AuthenticatedAppMateriaisRoute
+  '/_authenticated/_app/meus-produtos': typeof AuthenticatedAppMeusProdutosRoute
   '/_authenticated/_app/mobile': typeof AuthenticatedAppMobileRoute
   '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/_authenticated/_app/omnichannel': typeof AuthenticatedAppOmnichannelRoute
@@ -1231,6 +1241,7 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/marketing-envios'
     | '/materiais'
+    | '/meus-produtos'
     | '/mobile'
     | '/movimentacoes'
     | '/omnichannel'
@@ -1350,6 +1361,7 @@ export interface FileRouteTypes {
     | '/marketing'
     | '/marketing-envios'
     | '/materiais'
+    | '/meus-produtos'
     | '/mobile'
     | '/movimentacoes'
     | '/omnichannel'
@@ -1470,6 +1482,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/marketing'
     | '/_authenticated/_app/marketing-envios'
     | '/_authenticated/_app/materiais'
+    | '/_authenticated/_app/meus-produtos'
     | '/_authenticated/_app/mobile'
     | '/_authenticated/_app/movimentacoes'
     | '/_authenticated/_app/omnichannel'
@@ -1885,6 +1898,13 @@ declare module '@tanstack/react-router' {
       path: '/mobile'
       fullPath: '/mobile'
       preLoaderRoute: typeof AuthenticatedAppMobileRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/meus-produtos': {
+      id: '/_authenticated/_app/meus-produtos'
+      path: '/meus-produtos'
+      fullPath: '/meus-produtos'
+      preLoaderRoute: typeof AuthenticatedAppMeusProdutosRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/materiais': {
@@ -2470,6 +2490,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMarketingRoute: typeof AuthenticatedAppMarketingRoute
   AuthenticatedAppMarketingEnviosRoute: typeof AuthenticatedAppMarketingEnviosRoute
   AuthenticatedAppMateriaisRoute: typeof AuthenticatedAppMateriaisRoute
+  AuthenticatedAppMeusProdutosRoute: typeof AuthenticatedAppMeusProdutosRoute
   AuthenticatedAppMobileRoute: typeof AuthenticatedAppMobileRoute
   AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
   AuthenticatedAppOmnichannelRoute: typeof AuthenticatedAppOmnichannelRoute
@@ -2576,6 +2597,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMarketingRoute: AuthenticatedAppMarketingRoute,
   AuthenticatedAppMarketingEnviosRoute: AuthenticatedAppMarketingEnviosRoute,
   AuthenticatedAppMateriaisRoute: AuthenticatedAppMateriaisRoute,
+  AuthenticatedAppMeusProdutosRoute: AuthenticatedAppMeusProdutosRoute,
   AuthenticatedAppMobileRoute: AuthenticatedAppMobileRoute,
   AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
   AuthenticatedAppOmnichannelRoute: AuthenticatedAppOmnichannelRoute,
