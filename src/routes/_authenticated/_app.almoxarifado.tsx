@@ -45,6 +45,7 @@ import { InventoryLotBreakdownButton } from "@/components/inventory-lot-breakdow
 import { InventoryScrapsPanel } from "@/components/inventory-scraps-panel";
 import { ScrapByOpPanel } from "@/components/scrap-by-op-panel";
 import { InventorySmartPanel } from "@/components/inventory-smart-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/almoxarifado")({
   validateSearch: zodValidator(
