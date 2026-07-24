@@ -1,13 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useMyProductsUnread } from "@/hooks/use-my-products-unread";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
+
 import { Button } from "@/components/ui/button";
 import {
   Bell,
@@ -59,7 +61,30 @@ function NotificationsPage() {
   const { filter, page } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const unread = useMyProductsUnread();
+  const qc = useQueryClient();
   const filterKey = ["all", "approvals", "mentions"].includes(filter) ? filter : "all";
+
+  // Realtime: refaz a lista quando aprovações/comentários novos chegam
+  useEffect(() => {
+    if (!uid) return;
+    const channel = supabase
+      .channel(`notif-page-${uid}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "product_approvals" },
+        () => qc.invalidateQueries({ queryKey: ["notif-list"] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "product_timeline_comments" },
+        () => qc.invalidateQueries({ queryKey: ["notif-list"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [uid, qc]);
+
 
   const watched = useQuery({
     enabled: !!uid,
