@@ -68,10 +68,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     try {
       const v = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
       if (v === "1") setCollapsed(true);
+      const s = localStorage.getItem(SIDEBAR_SHOW_ALL_KEY);
+      if (s === "1") setShowAll(true);
     } catch {
       /* ignore */
     }
   }, []);
+
 
   useEffect(() => {
     setMobileOpen(false);
