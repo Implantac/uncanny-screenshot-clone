@@ -307,10 +307,20 @@ function FichaTecnicaPage() {
     setOpen(true);
   }
 
+  const fichaCrumbs = selected
+    ? [
+        { label: "Ficha Técnica", link: { to: "/ficha-tecnica" as const } },
+        ...(selectedProduct
+          ? [{ label: selectedProduct.sku, link: { to: "/produto/$id" as const, params: { id: selectedProduct.id } } }]
+          : []),
+        { label: `${selected.code} · ${selected.version}` },
+      ]
+    : [{ label: "Ficha Técnica" }];
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
+      <PlmBreadcrumb items={fichaCrumbs} />
       <PageHeader
-        eyebrow="Módulo 5"
         title={
           <span className="flex items-center gap-2">
             <FileText className="size-6 text-primary" /> Ficha Técnica Inteligente
@@ -326,10 +336,13 @@ function FichaTecnicaPage() {
           </>
         }
       />
+      {selected?.product_id && <ProductWorkflowStepper productId={selected.product_id} />}
       <div className="w-full grid gap-3 md:grid-cols-2">
         <TechSheetCostAlertsPanel />
         <TechSheetBomReviewPanel />
       </div>
+
+
 
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
