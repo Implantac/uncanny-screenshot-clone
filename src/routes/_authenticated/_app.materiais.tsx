@@ -126,6 +126,7 @@ function Page() {
             </SelectContent>
           </Select>
           <Input
+            ref={codeInputRef}
             placeholder="Código"
             value={form.code}
             onChange={(e) => setForm({ ...form, code: e.target.value })}
