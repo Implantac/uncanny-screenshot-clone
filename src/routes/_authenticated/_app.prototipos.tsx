@@ -303,7 +303,31 @@ function Prototipos() {
   }
 
   const productName = (id: string | null) => products.find((p) => p.id === id)?.name ?? "—";
+  const productImage = (id: string | null) =>
+    products.find((p) => p.id === id)?.image_url ?? null;
   const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "—";
+
+  // Urgência baseada no prazo — visual enterprise (verde/âmbar/vermelho)
+  function dueUrgency(due: string | null): {
+    label: string;
+    tone: "ok" | "warn" | "late" | "none";
+    days: number | null;
+  } {
+    if (!due) return { label: "Sem prazo", tone: "none", days: null };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const d = new Date(due + "T00:00:00");
+    const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
+    if (diff < 0) return { label: `Atrasado ${Math.abs(diff)}d`, tone: "late", days: diff };
+    if (diff <= 2) return { label: `${diff}d restantes`, tone: "warn", days: diff };
+    return { label: `${diff}d restantes`, tone: "ok", days: diff };
+  }
+  const URGENCY_CLASS: Record<"ok" | "warn" | "late" | "none", string> = {
+    ok: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30",
+    warn: "bg-amber-500/15 text-amber-500 border-amber-500/30",
+    late: "bg-destructive/15 text-destructive border-destructive/30",
+    none: "bg-muted/40 text-muted-foreground border-border",
+  };
 
   const productsInCollection = useMemo(() => {
     if (!collectionId) return null;
@@ -497,30 +521,58 @@ function Prototipos() {
                         onClick={() => user?.id === p.owner_id && openEdit(p)}
                         className="w-full text-left"
                       >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="font-mono text-xs text-muted-foreground">{p.code}</div>
-                          {p.current_sector && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded border border-border bg-muted/40 text-muted-foreground">
-                              {SECTORS.find((s) => s.key === p.current_sector)?.label}
-                            </span>
+                        <div className="flex gap-2.5">
+                          {productImage(p.product_id) ? (
+                            <img
+                              src={productImage(p.product_id)!}
+                              alt=""
+                              loading="lazy"
+                              className="size-14 rounded-md object-cover border border-border bg-muted shrink-0"
+                            />
+                          ) : (
+                            <div className="size-14 rounded-md border border-dashed border-border bg-muted/40 grid place-items-center text-muted-foreground shrink-0">
+                              <Scissors className="size-4 opacity-60" />
+                            </div>
                           )}
-                        </div>
-                        <div className="text-sm font-medium truncate">
-                          {productName(p.product_id)}
-                        </div>
-                        <div className="text-xs text-muted-foreground truncate">
-                          {supplierName(p.supplier_id)}
-                        </div>
-                        {p.due_date && (
-                          <div className="text-[10px] text-muted-foreground">
-                            Prazo: {p.due_date}
+                          <div className="min-w-0 flex-1 space-y-0.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="font-mono text-[10px] text-muted-foreground truncate">
+                                {p.code}
+                              </div>
+                              {p.current_sector && (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded border border-border bg-muted/40 text-muted-foreground shrink-0">
+                                  {SECTORS.find((s) => s.key === p.current_sector)?.label}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-sm font-medium truncate">
+                              {productName(p.product_id)}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {supplierName(p.supplier_id)}
+                            </div>
                           </div>
-                        )}
-                        {p.needs_adjustment && (
-                          <div className="text-[10px] text-amber-600 mt-1 font-medium">
-                            ⚠ Aguardando ajuste
-                          </div>
-                        )}
+                        </div>
+                        {(() => {
+                          const u = dueUrgency(p.due_date);
+                          if (u.tone === "none" && !p.needs_adjustment) return null;
+                          return (
+                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                              {u.tone !== "none" && (
+                                <span
+                                  className={`text-[10px] px-1.5 py-0.5 rounded border ${URGENCY_CLASS[u.tone]}`}
+                                >
+                                  {u.label}
+                                </span>
+                              )}
+                              {p.needs_adjustment && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/15 text-amber-500 font-medium">
+                                  ⚠ Ajuste
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </button>
                       <div className="flex justify-end gap-1 -mb-1 -mr-1 opacity-70 group-hover:opacity-100 transition">
                         {(p.stage === "em_prova" || p.stage === "em_confeccao") &&
