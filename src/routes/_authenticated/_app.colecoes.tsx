@@ -51,6 +51,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionIntelligencePanel } from "@/components/collection-intelligence-panel";
+import { CollectionCapaRiskPanel } from "@/components/collection-capa-risk-panel";
 import { CarryOverPanel } from "@/components/carry-over-panel";
 import { AssortmentPanel } from "@/components/assortment-panel";
 import { LifecyclePanel } from "@/components/lifecycle-panel";
