@@ -64,10 +64,34 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
           }
         }
 
+        // Preferências do usuário para categoria "digest"
+        const userIds = Array.from(perUser.keys());
+        const prefs = new Map<string, { muted: boolean; push: boolean }>();
+        if (userIds.length > 0) {
+          const { data: prefRows } = await supabaseAdmin
+            .from("notification_preferences")
+            .select("user_id, muted, push_enabled")
+            .eq("category", "digest")
+            .in("user_id", userIds);
+          for (const p of prefRows ?? []) {
+            prefs.set(p.user_id as string, {
+              muted: !!p.muted,
+              push: p.push_enabled !== false,
+            });
+          }
+        }
+
         let sent = 0;
+        let skipped_pref = 0;
         const today = new Date().toISOString().slice(0, 10);
         for (const [uid, counts] of perUser) {
           if (counts.approvals === 0 && counts.mentions === 0) continue;
+
+          const pref = prefs.get(uid);
+          if (pref && (pref.muted || !pref.push)) {
+            skipped_pref++;
+            continue;
+          }
 
           // dedupe: 1 digest por usuário por dia
           const { data: exists } = await supabaseAdmin
