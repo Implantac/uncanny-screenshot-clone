@@ -146,12 +146,30 @@ function Page() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
+      // Guardrail: bloqueia exclusão se o material estiver em fichas técnicas
+      const { data: usage, error: usageErr } = await (supabase as any).rpc(
+        "material_library_usage",
+        { _material_id: id },
+      );
+      if (usageErr) throw usageErr;
+      if (Array.isArray(usage) && usage.length > 0) {
+        const samples = usage
+          .slice(0, 3)
+          .map((u: any) => u.product_sku || u.tech_sheet_code)
+          .filter(Boolean)
+          .join(", ");
+        const extra = usage.length > 3 ? ` (+${usage.length - 3})` : "";
+        throw new Error(
+          `Material em uso em ${usage.length} ficha(s) técnica(s): ${samples}${extra}. Remova das fichas antes de excluir.`,
+        );
+      }
       const { error } = await (supabase as any).from("material_library").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       setSelectedId(null);
       qc.invalidateQueries({ queryKey: ["material-library"] });
+      toast.success("Material excluído");
     },
     onError: (e: Error) => toast.error(e.message),
   });
