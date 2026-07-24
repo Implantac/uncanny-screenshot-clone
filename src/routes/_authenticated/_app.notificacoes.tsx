@@ -180,7 +180,7 @@ function NotificationsPage() {
   const setFilter = (f: string) =>
     navigate({ search: { filter: f, page: 1 } });
   const setPage = (p: number) =>
-    navigate({ search: (prev) => ({ ...prev, page: p }) });
+    navigate({ search: (prev: { filter: string; page: number }) => ({ ...prev, page: p }) });
 
   const FILTERS: Array<{ key: string; label: string; icon: typeof Bell }> = [
     { key: "all", label: "Todas", icon: Bell },
