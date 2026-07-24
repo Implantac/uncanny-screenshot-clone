@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useMyProductsUnread } from "@/hooks/use-my-products-unread";
@@ -8,16 +8,21 @@ import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 import {
   BellRing,
   Package,
   MessageSquare,
   ShieldCheck,
-  Clock,
   ArrowRight,
   CheckCheck,
+  Check,
+  X,
+  Loader2,
 } from "lucide-react";
 import { ApprovalSlaBadge } from "@/components/approval-sla-badge";
+
 
 export const Route = createFileRoute("/_authenticated/_app/meus-produtos")({
   head: () => ({
@@ -53,8 +58,10 @@ type PendingApproval = {
   decision: string;
   created_at: string;
   requested_by: string | null;
+  owner_id: string;
   products: { sku: string; name: string } | null;
 };
+
 
 type RecentComment = {
   id: string;
@@ -94,7 +101,7 @@ function MyProductsFeed() {
       const { data, error } = await supabase
         .from("product_approvals")
         .select(
-          "id, product_id, gate_key, decision, created_at, requested_by, products:product_id(sku, name)",
+          "id, product_id, gate_key, decision, created_at, requested_by, owner_id, products:product_id(sku, name)",
         )
         .eq("decision", "pendente")
         .order("created_at", { ascending: false })
@@ -103,6 +110,7 @@ function MyProductsFeed() {
       return (data ?? []) as unknown as PendingApproval[];
     },
   });
+
 
   const comments = useQuery({
     enabled: !!uid && watchedIds.length > 0,
@@ -131,6 +139,53 @@ function MyProductsFeed() {
 
   const newApprovals = (approvals.data ?? []).filter((a) => isNew(a.created_at)).length;
   const newComments = (comments.data ?? []).filter((c) => isNew(c.created_at)).length;
+
+  // Bulk approval selection
+  const qc = useQueryClient();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const pendingList = approvals.data ?? [];
+  const allSelected = pendingList.length > 0 && selected.size === pendingList.length;
+  const selectedItems = useMemo(
+    () => pendingList.filter((a) => selected.has(a.id)),
+    [pendingList, selected],
+  );
+
+  const toggleOne = (id: string) =>
+    setSelected((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  const toggleAll = () =>
+    setSelected(allSelected ? new Set() : new Set(pendingList.map((a) => a.id)));
+
+  const bulkDecide = useMutation({
+    mutationFn: async (decision: "aprovado" | "rejeitado") => {
+      if (selectedItems.length === 0) return 0;
+      const rows = selectedItems.map((a) => ({
+        product_id: a.product_id,
+        owner_id: a.owner_id,
+        gate_key: a.gate_key,
+        decision,
+      }));
+      const { error } = await supabase.from("product_approvals").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (count, decision) => {
+      if (!count) return;
+      toast.success(
+        `${count} aprovaç${count === 1 ? "ão" : "ões"} ${
+          decision === "aprovado" ? "aprovadas" : "reprovadas"
+        }`,
+      );
+      setSelected(new Set());
+      qc.invalidateQueries({ queryKey: ["my-products-approvals-pending", uid] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   // Marca como lido ao sair da página
   useEffect(() => {
@@ -251,41 +306,100 @@ function MyProductsFeed() {
               description="Nenhum gate esperando decisão."
             />
           ) : (
-            <ul className="space-y-1.5">
-              {(approvals.data ?? []).map((a) => {
-                const fresh = isNew(a.created_at);
-                return (
-                <li key={a.id}>
-                  <Link
-                    to="/produto/$id"
-                    params={{ id: a.product_id }}
-                    className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition relative"
+            <>
+              <div className="flex items-center justify-between gap-2 border border-dashed border-border rounded-lg px-2.5 py-1.5">
+                <label className="flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleAll}
+                    aria-label="Selecionar todas as aprovações pendentes"
+                  />
+                  {selected.size > 0
+                    ? `${selected.size} selecionada${selected.size === 1 ? "" : "s"}`
+                    : "Selecionar todas"}
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[11px] gap-1"
+                    disabled={selected.size === 0 || bulkDecide.isPending}
+                    onClick={() => bulkDecide.mutate("rejeitado")}
                   >
-                    {fresh && (
-                      <span
-                        aria-label="Nova"
-                        className="absolute left-1 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-primary"
-                      />
+                    {bulkDecide.isPending && bulkDecide.variables === "rejeitado" ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <X className="size-3" />
                     )}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="text-xs font-medium truncate">
-                        {a.products?.name ?? "Produto"}
+                    Reprovar
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-7 text-[11px] gap-1"
+                    disabled={selected.size === 0 || bulkDecide.isPending}
+                    onClick={() => bulkDecide.mutate("aprovado")}
+                  >
+                    {bulkDecide.isPending && bulkDecide.variables === "aprovado" ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <Check className="size-3" />
+                    )}
+                    Aprovar
+                  </Button>
+                </div>
+              </div>
+              <ul className="space-y-1.5">
+                {(approvals.data ?? []).map((a) => {
+                  const fresh = isNew(a.created_at);
+                  const checked = selected.has(a.id);
+                  return (
+                    <li key={a.id}>
+                      <div
+                        className={`flex items-start gap-2 border rounded-lg px-2 py-2 transition relative ${
+                          checked
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:bg-muted"
+                        }`}
+                      >
+                        {fresh && (
+                          <span
+                            aria-label="Nova"
+                            className="absolute left-1 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-primary"
+                          />
+                        )}
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={() => toggleOne(a.id)}
+                          aria-label={`Selecionar ${a.products?.name ?? "produto"}`}
+                          className="mt-0.5 ml-2"
+                        />
+                        <Link
+                          to="/produto/$id"
+                          params={{ id: a.product_id }}
+                          className="flex-1 min-w-0"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="text-xs font-medium truncate">
+                              {a.products?.name ?? "Produto"}
+                            </div>
+                            <ApprovalSlaBadge createdAt={a.created_at} />
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5">
+                            Gate: <span className="font-mono">{a.gate_key}</span>
+                          </div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                            Aberta em {new Date(a.created_at).toLocaleString("pt-BR")}
+                          </div>
+                        </Link>
                       </div>
-                      <ApprovalSlaBadge createdAt={a.created_at} />
-                    </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">
-                      Gate: <span className="font-mono">{a.gate_key}</span>
-                    </div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">
-                      Aberta em {new Date(a.created_at).toLocaleString("pt-BR")}
-                    </div>
-                  </Link>
-                </li>
-                );
-              })}
-            </ul>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
           )}
         </section>
+
       </div>
 
 
