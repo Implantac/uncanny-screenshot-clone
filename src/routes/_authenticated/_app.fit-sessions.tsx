@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Ruler, CheckCircle2, Image as ImageIcon, MessageSquare, CheckCheck, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/fit-sessions")({
   head: () => ({
@@ -157,12 +158,14 @@ function Page() {
   );
 
   return (
-    <div className="p-6 grid lg:grid-cols-[360px_1fr] gap-6">
+    <div className="p-6 space-y-4">
+      <PageHeader
+        eyebrow="Qualidade"
+        title="Histórico de Provas"
+        description="Fit sessions com fotos, comentários técnicos e aprovação de peça piloto."
+      />
+      <div className="grid lg:grid-cols-[360px_1fr] gap-6">
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Ruler className="h-5 w-5 text-primary" />
-          <h1 className="text-xl font-bold">Histórico de Provas</h1>
-        </div>
         <div className="glass rounded-xl p-3 space-y-2">
           <Input
             placeholder="Modelo (nome)"
@@ -376,6 +379,7 @@ function Page() {
             </div>
           </>
         )}
+      </div>
       </div>
     </div>
   );
