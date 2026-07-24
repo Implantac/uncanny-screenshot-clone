@@ -1164,3 +1164,177 @@ function SizeConsumptionPopover({
   );
 }
 
+/* ---------------------------- Grade rule popover --------------------------- */
+/**
+ * Regra de Salto entre tamanhos: usuário escolhe o tamanho base e o incremento
+ * (em cm) para cada faixa adjacente. Ex.: base M=48, PP→P +1.5, P→M +2,
+ * M→G +2, G→GG +3. O componente calcula os valores para todos os tamanhos
+ * da grade a partir da base, propagando +Δ para tamanhos maiores e −Δ para
+ * menores, e salva a coluna `sizes` em batch.
+ */
+function GradeRulePopover({
+  sizes,
+  current,
+  disabled,
+  onApply,
+}: {
+  sizes: string[];
+  current: Record<string, number>;
+  disabled: boolean;
+  onApply: (next: Record<string, number>) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const pickDefaultBase = () => {
+    if (sizes.includes("M")) return "M";
+    return sizes[Math.floor(sizes.length / 2)] ?? sizes[0] ?? "";
+  };
+  const [base, setBase] = useState<string>(pickDefaultBase());
+  const [baseValue, setBaseValue] = useState<string>(
+    String(current[pickDefaultBase()] ?? current[sizes[0] ?? ""] ?? 0),
+  );
+  // deltas[i] = incremento entre sizes[i] e sizes[i+1]
+  const [deltas, setDeltas] = useState<string[]>(() =>
+    Array(Math.max(0, sizes.length - 1)).fill("2"),
+  );
+
+  // resync when opening
+  const handleOpen = (o: boolean) => {
+    setOpen(o);
+    if (o) {
+      const b = current && Object.keys(current).length > 0
+        ? (sizes.find((s) => s === "M") ?? sizes[Math.floor(sizes.length / 2)] ?? sizes[0] ?? "")
+        : pickDefaultBase();
+      setBase(b);
+      setBaseValue(String(current[b] ?? 0));
+      setDeltas((prev) => {
+        const n = Math.max(0, sizes.length - 1);
+        if (prev.length === n) return prev;
+        return Array(n).fill(prev[0] ?? "2");
+      });
+    }
+  };
+
+  const preview = useMemo(() => {
+    const result: Record<string, number> = {};
+    const idxBase = sizes.indexOf(base);
+    if (idxBase < 0 || sizes.length === 0) return result;
+    const bv = Number(String(baseValue).replace(",", "."));
+    if (!Number.isFinite(bv)) return result;
+    result[base] = bv;
+    // maiores
+    let acc = bv;
+    for (let i = idxBase; i < sizes.length - 1; i++) {
+      const d = Number(String(deltas[i] ?? "0").replace(",", "."));
+      acc = +(acc + (Number.isFinite(d) ? d : 0)).toFixed(2);
+      result[sizes[i + 1]] = acc;
+    }
+    // menores
+    acc = bv;
+    for (let i = idxBase; i > 0; i--) {
+      const d = Number(String(deltas[i - 1] ?? "0").replace(",", "."));
+      acc = +(acc - (Number.isFinite(d) ? d : 0)).toFixed(2);
+      result[sizes[i - 1]] = acc;
+    }
+    return result;
+  }, [sizes, base, baseValue, deltas]);
+
+  if (sizes.length < 2) return null;
+
+  return (
+    <Popover open={open} onOpenChange={handleOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="size-6 shrink-0"
+          disabled={disabled}
+          title="Aplicar regra de salto"
+        >
+          <span className="text-[11px] font-semibold text-primary">Δ</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 space-y-3" align="start">
+        <div>
+          <div className="text-xs font-semibold">Regra de salto</div>
+          <p className="text-[11px] text-muted-foreground">
+            Defina o tamanho base e o incremento entre cada faixa. Os demais tamanhos
+            são preenchidos automaticamente.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 items-end">
+          <div>
+            <Label className="text-[11px] text-muted-foreground">Base</Label>
+            <select
+              value={base}
+              onChange={(e) => setBase(e.target.value)}
+              className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
+            >
+              {sizes.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <Label className="text-[11px] text-muted-foreground">Valor base (cm)</Label>
+            <Input
+              value={baseValue}
+              onChange={(e) => setBaseValue(e.target.value)}
+              className="h-8 text-xs text-right tabular-nums"
+              inputMode="decimal"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-[11px] text-muted-foreground">Incrementos entre faixas (cm)</Label>
+          <div className="space-y-1">
+            {sizes.slice(0, -1).map((s, i) => (
+              <div key={`${s}-${sizes[i + 1]}`} className="flex items-center gap-2">
+                <span className="text-[11px] font-mono w-16 text-muted-foreground">
+                  {s} → {sizes[i + 1]}
+                </span>
+                <Input
+                  value={deltas[i] ?? ""}
+                  onChange={(e) => {
+                    const next = [...deltas];
+                    next[i] = e.target.value;
+                    setDeltas(next);
+                  }}
+                  className="h-7 text-xs text-right tabular-nums"
+                  inputMode="decimal"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-border/60 bg-muted/30 p-2">
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Prévia</div>
+          <div className="grid grid-cols-4 gap-1 text-[11px] tabular-nums">
+            {sizes.map((s) => (
+              <div key={s} className={`rounded px-1.5 py-0.5 text-center ${s === base ? "bg-primary/15 text-primary font-semibold" : "bg-background"}`}>
+                <div className="text-[9px] text-muted-foreground">{s}</div>
+                <div>{(preview[s] ?? 0).toFixed(2)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-1">
+          <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              onApply(preview);
+              setOpen(false);
+            }}
+          >
+            Aplicar salto
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
