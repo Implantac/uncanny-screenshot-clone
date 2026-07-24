@@ -52,6 +52,7 @@ import { CarryOverPanel } from "@/components/carry-over-panel";
 import { AssortmentPanel } from "@/components/assortment-panel";
 import { ChannelMixPanel } from "@/components/channel-mix-panel";
 import { CollectionIntelligencePanel } from "@/components/collection-intelligence-panel";
+import { CollectionCapaRiskPanel } from "@/components/collection-capa-risk-panel";
 import { LaunchingWeekPanel } from "@/components/launching-week-panel";
 import { QualityCollectionsBridgePanel } from "@/components/quality-collections-bridge-panel";
 
