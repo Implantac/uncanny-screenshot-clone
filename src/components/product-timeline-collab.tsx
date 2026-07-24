@@ -508,7 +508,18 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
                     setTimeout(() => textareaRef.current?.focus(), 0);
                   }}
                   onDownload={downloadAttachment}
+                  onEdit={(body) => editComment.mutate({ id: c.id, body })}
+                  onToggleResolve={() =>
+                    toggleResolve.mutate({ id: c.id, resolved: !!c.resolved_at })
+                  }
+                  canResolve
                 />
+                {c.resolved_at && (
+                  <div className="ml-6 -mt-1 text-[10px] text-emerald-600 dark:text-emerald-500 inline-flex items-center gap-1">
+                    <CheckCircle2 className="size-3" /> Resolvida em{" "}
+                    {new Date(c.resolved_at).toLocaleString("pt-BR")}
+                  </div>
+                )}
                 {replies.length > 0 && (
                   <ul className="ml-6 border-l-2 border-primary/20 pl-3 space-y-2">
                     {replies.map((r) => (
