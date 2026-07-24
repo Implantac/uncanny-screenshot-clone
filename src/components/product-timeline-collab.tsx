@@ -13,6 +13,9 @@ import {
   Loader2,
   Trash2,
   Download,
+  Reply,
+  CornerDownRight,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +26,7 @@ type Comment = {
   author_id: string;
   event_id: string | null;
   event_source: string | null;
+  parent_id: string | null;
 };
 
 type Attachment = {
