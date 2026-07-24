@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ApprovalSlaBadge } from "@/components/approval-sla-badge";
 
 const PAGE_SIZE = 20;
 
