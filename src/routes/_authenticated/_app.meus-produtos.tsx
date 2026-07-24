@@ -123,12 +123,42 @@ function MyProductsFeed() {
 
   const loading = watched.isLoading || approvals.isLoading;
 
+  const unread = useMyProductsUnread();
+  const lastSeen = unread.lastSeen;
+
+  const isNew = (iso: string) => iso > lastSeen;
+
+  const newApprovals = (approvals.data ?? []).filter((a) => isNew(a.created_at)).length;
+  const newComments = (comments.data ?? []).filter((c) => isNew(c.created_at)).length;
+
+  // Marca como lido ao sair da página
+  useEffect(() => {
+    return () => {
+      unread.markAllRead();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       <PageHeader
         title="Meus Produtos"
         description="Feed pessoal — produtos que você segue, aprovações pendentes e conversas recentes."
+        actions={
+          unread.total > 0 ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => unread.markAllRead()}
+              className="gap-1.5"
+            >
+              <CheckCheck className="size-3.5" />
+              Marcar tudo como lido ({unread.total})
+            </Button>
+          ) : null
+        }
       />
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Watched products */}
