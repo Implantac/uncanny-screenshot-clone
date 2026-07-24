@@ -42,6 +42,7 @@ import { ProductPcpHealthPanel } from "@/components/product-pcp-health";
 import { ProductCostCockpit } from "@/components/product-cost-cockpit";
 import { ProductCostEnginePanel } from "@/components/product-cost-engine-panel";
 import { ProductWorkflowPanel } from "@/components/product-workflow-panel";
+import { ProductLifecycleCopilotPanel } from "@/components/product-lifecycle-copilot-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
   head: ({ params }) => ({
