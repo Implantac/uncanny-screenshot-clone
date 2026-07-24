@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/ui/page-header";
 import { Switch } from "@/components/ui/switch";
-import { Bell, AtSign, ClipboardCheck, Sparkles, Factory, ShieldCheck } from "lucide-react";
+import { AtSign, ClipboardCheck, Sparkles, Factory, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/preferencias-notificacoes")({
