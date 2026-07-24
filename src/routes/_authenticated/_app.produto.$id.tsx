@@ -39,6 +39,7 @@ import { ProductGallery } from "@/components/product-gallery";
 import { SkuPerformancePanel } from "@/components/sku-performance-panel";
 import { StageGatePanel } from "@/components/stage-gate-panel";
 import { ProductPcpHealthPanel } from "@/components/product-pcp-health";
+import { ProductDigitalTwinPanel } from "@/components/product-digital-twin-panel";
 import { ProductCostCockpit } from "@/components/product-cost-cockpit";
 import { ProductCostEnginePanel } from "@/components/product-cost-engine-panel";
 import { ProductWorkflowPanel } from "@/components/product-workflow-panel";
@@ -393,7 +394,9 @@ function ProductWorkspace() {
 
         <TabsContent value="pcp" className="space-y-4">
           <ProductPcpHealthPanel productId={product.id} />
+          <ProductDigitalTwinPanel productId={product.id} />
           <div className="rounded-xl border border-border bg-card p-4">
+
             {ops.length === 0 ? (
               <EmptyState
                 icon={Factory}
