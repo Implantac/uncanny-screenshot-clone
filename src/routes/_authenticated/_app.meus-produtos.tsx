@@ -17,6 +17,7 @@ import {
   ArrowRight,
   CheckCheck,
 } from "lucide-react";
+import { ApprovalSlaBadge } from "@/components/approval-sla-badge";
 
 export const Route = createFileRoute("/_authenticated/_app/meus-produtos")({
   head: () => ({
