@@ -75,12 +75,12 @@ function FashionCalendar() {
 
   return (
     <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Fashion Calendar</h1>
-        <p className="text-sm text-muted-foreground">
-          Linha do tempo de coleções: desenvolvimento, produção, lançamento e sell-in.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Coleções"
+        title="Fashion Calendar"
+        description="Linha do tempo de coleções: desenvolvimento, produção, lançamento e sell-in."
+      />
+
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KPI label="Coleções" value={summary.total} icon={<Package className="size-4" />} />
