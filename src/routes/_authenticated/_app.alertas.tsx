@@ -113,21 +113,24 @@ function AlertsCenterPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <Inbox className="size-6 text-primary" />
-            Central de Alertas
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Tudo o que precisa da sua atenção em um só lugar — priorizado por impacto.
-          </p>
-        </div>
-        <div className="text-right">
-          <div className="text-3xl font-semibold tabular-nums">{data?.length ?? 0}</div>
-          <div className="text-xs text-muted-foreground">alertas ativos</div>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Prioridades do dia"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Inbox className="size-6 text-primary" /> Central de Alertas
+          </span>
+        }
+        description="Tudo o que precisa da sua atenção em um só lugar — priorizado por impacto."
+        actions={
+          <div className="text-right">
+            <div className="text-3xl font-semibold tabular-nums leading-none">
+              {data?.length ?? 0}
+            </div>
+            <div className="text-xs text-muted-foreground">alertas ativos</div>
+          </div>
+        }
+      />
+
 
       <div className="flex flex-wrap gap-2">
         {(Object.keys(CAT_LABEL) as (AlertCategory | "all")[]).map((k) => (
