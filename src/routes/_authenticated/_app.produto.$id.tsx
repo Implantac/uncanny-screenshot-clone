@@ -40,6 +40,7 @@ import { SkuPerformancePanel } from "@/components/sku-performance-panel";
 import { StageGatePanel } from "@/components/stage-gate-panel";
 import { ProductPcpHealthPanel } from "@/components/product-pcp-health";
 import { ProductCostCockpit } from "@/components/product-cost-cockpit";
+import { ProductWorkflowPanel } from "@/components/product-workflow-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
   head: ({ params }) => ({
@@ -262,6 +263,7 @@ function ProductWorkspace() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
+          <ProductWorkflowPanel productId={product.id} />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="rounded-xl border border-border bg-card p-4">
               <div className="text-sm font-semibold mb-2">Galeria e referências</div>

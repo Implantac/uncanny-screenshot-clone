@@ -1,0 +1,1 @@
+ALTER VIEW public.v_my_workflow_tasks SET (security_invoker = true);
