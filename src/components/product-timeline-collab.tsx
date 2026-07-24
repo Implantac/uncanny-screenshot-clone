@@ -288,6 +288,23 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
       </div>
 
       <div className="rounded-lg border border-border bg-muted/30 p-2 space-y-2">
+        {replyTo && (
+          <div className="flex items-start gap-2 rounded-md border border-primary/30 bg-primary/5 px-2 py-1.5 text-[11px]">
+            <CornerDownRight className="size-3 text-primary mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-primary">Respondendo a comentário</div>
+              <div className="truncate text-muted-foreground">{replyTo.body}</div>
+            </div>
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground"
+              title="Cancelar resposta"
+              onClick={() => setReplyTo(null)}
+            >
+              <X className="size-3" />
+            </button>
+          </div>
+        )}
         <div className="relative">
           <Textarea
             ref={textareaRef}
