@@ -1,6 +1,6 @@
 import { useRouterState, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Plus, Package, Library, Sparkles, Scissors, FileText, Factory } from "lucide-react";
+import { Plus, Package, Library, Sparkles, Scissors, FileText } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
