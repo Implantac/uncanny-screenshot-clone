@@ -147,22 +147,22 @@ function DocumentsHub() {
 
   return (
     <div className="space-y-4">
-      <header className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-xl font-semibold inline-flex items-center gap-2">
-            <FolderOpen className="size-5 text-primary" />
-            Central de Documentos
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            Tudo num só lugar: fichas técnicas, anexos do portal de fornecedor, capas, moodboards e
-            fotos de produto.
-          </p>
-        </div>
-        <div className="text-xs text-muted-foreground inline-flex items-center gap-2">
-          {isLoading && <Loader2 className="size-3 animate-spin" />}
-          {data && <span>{data.total} documento(s)</span>}
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Repositório central"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <FolderOpen className="size-5 text-primary" /> Central de Documentos
+          </span>
+        }
+        description="Tudo num só lugar: fichas técnicas, anexos do portal de fornecedor, capas, moodboards e fotos de produto."
+        actions={
+          <div className="text-xs text-muted-foreground inline-flex items-center gap-2">
+            {isLoading && <Loader2 className="size-3 animate-spin" />}
+            {data && <span>{data.total} documento(s)</span>}
+          </div>
+        }
+      />
+
 
       <div className="glass rounded-xl p-4 space-y-3">
         <div className="relative">
