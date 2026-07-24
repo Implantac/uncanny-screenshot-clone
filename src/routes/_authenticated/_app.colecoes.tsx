@@ -283,7 +283,7 @@ function ColecoesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("collections")
-        .select("*, parent:collections!collections_parent_id_fkey(id, name)")
+        .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as unknown as Collection[];
