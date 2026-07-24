@@ -7,6 +7,7 @@ import { Palette, Sparkles, Upload, Loader2, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { analyzeTrendImage } from "@/lib/trends.functions";
 import { TrendRadarPanel } from "@/components/trend-radar-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/trends")({ component: Trends });
 
