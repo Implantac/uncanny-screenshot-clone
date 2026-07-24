@@ -160,108 +160,104 @@ function Page() {
 
   return (
     <div className="p-6 space-y-6">
-      <header className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Library className="h-6 w-6 text-primary" />
-          <div>
-            <h1 className="text-2xl font-bold">Biblioteca de Materiais</h1>
-            <p className="text-sm text-muted-foreground">
-              Tecidos, aviamentos e cores reutilizáveis entre coleções.
-            </p>
-          </div>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-1">
-              <Plus className="h-4 w-4" /> Novo material
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Novo material</DialogTitle>
-            </DialogHeader>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="md:col-span-2">
-                <StorageUploader
-                  bucket="materials"
-                  value={form.image_url || null}
-                  onChange={(url) => setForm({ ...form, image_url: url || "" })}
-                  accept="image/*"
-                  kind="image"
-                  label="Foto do material"
-                />
-              </div>
-              <Select value={form.kind} onValueChange={(v) => setForm({ ...form, kind: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {KINDS.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select
-                value={form.preferred_supplier_id ?? "none"}
-                onValueChange={(v) =>
-                  setForm({ ...form, preferred_supplier_id: v === "none" ? null : v })
-                }
-              >
-                <SelectTrigger><SelectValue placeholder="Fornecedor" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sem fornecedor</SelectItem>
-                  {suppliers.data?.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input
-                placeholder="Código"
-                value={form.code}
-                onChange={(e) => setForm({ ...form, code: e.target.value })}
-              />
-              <Input
-                placeholder="Nome"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-              <Input
-                placeholder="Composição"
-                value={form.composition}
-                onChange={(e) => setForm({ ...form, composition: e.target.value })}
-                className="md:col-span-2"
-              />
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-10">Cor</span>
-                <Input
-                  type="color"
-                  value={form.color_hex || "#000000"}
-                  onChange={(e) => setForm({ ...form, color_hex: e.target.value })}
-                  className="w-16 p-1 h-9"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  placeholder="Unid."
-                  value={form.unit}
-                  onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                />
-                <Input
-                  type="number"
-                  placeholder="Custo ref."
-                  value={form.reference_cost}
-                  onChange={(e) => setForm({ ...form, reference_cost: Number(e.target.value) })}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="ghost" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button
-                onClick={() => add.mutate()}
-                disabled={!form.code || !form.name || add.isPending}
-              >
-                <Plus className="h-4 w-4 mr-1" /> Adicionar
+      <PageHeader
+        eyebrow="Biblioteca"
+        title="Biblioteca de Materiais"
+        description="Tecidos, aviamentos e cores reutilizáveis entre coleções."
+        actions={
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-1">
+                <Plus className="h-4 w-4" /> Novo material
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </header>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Novo material</DialogTitle>
+              </DialogHeader>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="md:col-span-2">
+                  <StorageUploader
+                    bucket="materials"
+                    value={form.image_url || null}
+                    onChange={(url) => setForm({ ...form, image_url: url || "" })}
+                    accept="image/*"
+                    kind="image"
+                    label="Foto do material"
+                  />
+                </div>
+                <Select value={form.kind} onValueChange={(v) => setForm({ ...form, kind: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {KINDS.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={form.preferred_supplier_id ?? "none"}
+                  onValueChange={(v) =>
+                    setForm({ ...form, preferred_supplier_id: v === "none" ? null : v })
+                  }
+                >
+                  <SelectTrigger><SelectValue placeholder="Fornecedor" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sem fornecedor</SelectItem>
+                    {suppliers.data?.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  placeholder="Código"
+                  value={form.code}
+                  onChange={(e) => setForm({ ...form, code: e.target.value })}
+                />
+                <Input
+                  placeholder="Nome"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+                <Input
+                  placeholder="Composição"
+                  value={form.composition}
+                  onChange={(e) => setForm({ ...form, composition: e.target.value })}
+                  className="md:col-span-2"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground w-10">Cor</span>
+                  <Input
+                    type="color"
+                    value={form.color_hex || "#000000"}
+                    onChange={(e) => setForm({ ...form, color_hex: e.target.value })}
+                    className="w-16 p-1 h-9"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Unid."
+                    value={form.unit}
+                    onChange={(e) => setForm({ ...form, unit: e.target.value })}
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Custo ref."
+                    value={form.reference_cost}
+                    onChange={(e) => setForm({ ...form, reference_cost: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setDialogOpen(false)}>Cancelar</Button>
+                <Button
+                  onClick={() => add.mutate()}
+                  disabled={!form.code || !form.name || add.isPending}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Adicionar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        }
+      />
 
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
         <div className="relative flex-1 max-w-lg">
