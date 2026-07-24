@@ -52,6 +52,7 @@ import { BomTemplatesButton } from "@/components/bom-templates-button";
 import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer";
 import { TechSheetCostAlertsPanel } from "@/components/tech-sheet-cost-alerts-panel";
 import { TechSheetBomReviewPanel } from "@/components/tech-sheet-bom-review-panel";
+import { TechPackImportButton } from "@/components/tech-pack-import-button";
 import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
 import { ShieldCheck, Camera } from "lucide-react";
 
@@ -318,9 +319,12 @@ function FichaTecnicaPage() {
           <TechSheetCostAlertsPanel />
           <TechSheetBomReviewPanel />
         </div>
-        <Button onClick={openCreate} className="gap-2">
-          <Plus className="size-4" /> Nova ficha
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <TechPackImportButton />
+          <Button onClick={openCreate} className="gap-2">
+            <Plus className="size-4" /> Nova ficha
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
