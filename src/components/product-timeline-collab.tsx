@@ -31,6 +31,9 @@ type Comment = {
   event_id: string | null;
   event_source: string | null;
   parent_id: string | null;
+  edited_at: string | null;
+  resolved_at: string | null;
+  resolved_by: string | null;
 };
 
 type Attachment = {
