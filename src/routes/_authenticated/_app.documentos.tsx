@@ -19,6 +19,7 @@ import { listDocumentsHub, type DocItem, type DocSource } from "@/lib/documents-
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/documentos")({
   component: DocumentsHub,
