@@ -348,7 +348,7 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
 /* --------------------------- BOM PDF export helper --------------------------- */
 function exportBomPdf(
   data: Material[],
-  libMap: Map<string, LibraryMaterial>,
+  libMap: Map<string, { image_url: string | null; color_hex: string | null }>,
   total: number,
 ) {
   const rows = data
