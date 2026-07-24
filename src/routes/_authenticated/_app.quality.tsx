@@ -190,6 +190,9 @@ function Quality() {
 
       <QualityCollectionsBridgePanel />
 
+      <MaterialSourcingRiskPanel />
+
+
       <QualityMarketingBridgePanel />
 
 
