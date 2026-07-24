@@ -296,6 +296,7 @@ function FichaTecnicaPage() {
     setEditing(null);
     setOpen(true);
   }
+  useFabNewAction(openCreate);
 
   function openEdit(sheet: Sheet) {
     setEditing(sheet);
