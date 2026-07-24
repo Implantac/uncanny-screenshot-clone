@@ -127,6 +127,23 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
       }
     });
 
+    // material_library index by normalized name
+    type MatLibRow = { id: string; name: string | null; preferred_supplier_id: string | null };
+    const matLibByKey = new Map<string, MatLibRow[]>();
+    ((matLib ?? []) as MatLibRow[]).forEach((m) => {
+      if (!m.name) return;
+      const k = norm(m.name);
+      const a = matLibByKey.get(k) ?? [];
+      a.push(m);
+      matLibByKey.set(k, a);
+    });
+
+    // Ranked alternate suppliers pool (score desc, score >= 60)
+    const rankedSuppliers = [...latestScore.entries()]
+      .filter(([, sc]) => sc >= 60)
+      .sort((a, b) => b[1] - a[1])
+      .map(([id, score]) => ({ id, name: supplierMap.get(id)?.name ?? null, score: Math.round(score) }));
+
     // productId -> collections
     const productToCols = new Map<string, string[]>();
     ((cps ?? []) as CpRow[]).forEach((cp) => {
