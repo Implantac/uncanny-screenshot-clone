@@ -212,6 +212,8 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
     onSuccess: () => {
       setBody("");
       setPendingFiles([]);
+      setMentioned([]);
+      setMentionQuery(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       qc.invalidateQueries({ queryKey: ["product-timeline-comments", productId] });
       qc.invalidateQueries({ queryKey: ["product-timeline-attachments", productId] });
