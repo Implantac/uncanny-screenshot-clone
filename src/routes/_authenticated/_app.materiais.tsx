@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, Library, Search, Package, ImageOff } from "lucide-react";
+import { Plus, Trash2, Search, Package, ImageOff } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
 
