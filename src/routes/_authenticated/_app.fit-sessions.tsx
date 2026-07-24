@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Ruler, CheckCircle2, Image as ImageIcon, MessageSquare, CheckCheck, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/fit-sessions")({
   head: () => ({
