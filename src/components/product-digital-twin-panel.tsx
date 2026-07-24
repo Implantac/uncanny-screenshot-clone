@@ -20,7 +20,7 @@ import { getProductDigitalTwin } from "@/lib/product-digital-twin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export function ProductDigitalTwinPanel({ productId }: { productId: string }) {
   const fetchTwin = useServerFn(getProductDigitalTwin);
