@@ -18,6 +18,7 @@ import {
   MODULES,
   MODULE_GROUPS,
   moduleAllowed,
+  moduleAllowedForRole,
   type ModuleDef,
   type ModuleGroup,
 } from "@/lib/modules";
@@ -30,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useEffect, useMemo, type ReactNode } from "react";
+
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Admin",
