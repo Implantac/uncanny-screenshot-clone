@@ -16,12 +16,11 @@ type FabConfig = {
  * para abrir seu próprio Dialog de criação (sem depender de search params).
  */
 const FAB_MAP: Record<string, FabConfig> = {
-  "/produtos":     { to: "/produtos",      label: "Nova peça",      icon: Package },
-  "/materiais":    { to: "/materiais",     label: "Novo material",  icon: Library },
-  "/colecoes":     { to: "/colecoes",      label: "Nova coleção",   icon: Sparkles },
-  "/prototipos":   { to: "/prototipos",    label: "Novo protótipo", icon: Scissors },
-  "/ficha-tecnica": { to: "/ficha-tecnica", label: "Nova ficha",    icon: FileText },
-  "/pcp-kanban":   { to: "/pcp-kanban",    label: "Nova OP",        icon: Factory },
+  "/produtos":      { to: "/produtos",      label: "Nova peça",      icon: Package },
+  "/colecoes":      { to: "/colecoes",      label: "Nova coleção",   icon: Sparkles },
+  "/prototipos":    { to: "/prototipos",    label: "Novo protótipo", icon: Scissors },
+  "/ficha-tecnica": { to: "/ficha-tecnica", label: "Nova ficha",     icon: FileText },
+  "/materiais":     { to: "/materiais",     label: "Novo material",  icon: Library },
 };
 
 export const FAB_EVENT = "use-moda:new-action";
