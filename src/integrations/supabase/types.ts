@@ -2661,6 +2661,7 @@ export type Database = {
           id: string
           mentioned_user_ids: string[]
           owner_id: string
+          parent_id: string | null
           product_id: string
           updated_at: string
         }
@@ -2673,6 +2674,7 @@ export type Database = {
           id?: string
           mentioned_user_ids?: string[]
           owner_id: string
+          parent_id?: string | null
           product_id: string
           updated_at?: string
         }
@@ -2685,10 +2687,18 @@ export type Database = {
           id?: string
           mentioned_user_ids?: string[]
           owner_id?: string
+          parent_id?: string | null
           product_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "product_timeline_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "product_timeline_comments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_timeline_comments_product_id_fkey"
             columns: ["product_id"]
