@@ -124,6 +124,10 @@ function Prototipos() {
       replace: true,
     });
   const [open, setOpen] = useState(false);
+  useFabNewAction(() => {
+    setEditing(null);
+    setOpen(true);
+  });
   const [editing, setEditing] = useState<Prototype | null>(null);
   const [form, setForm] = useState({
     code: "",
