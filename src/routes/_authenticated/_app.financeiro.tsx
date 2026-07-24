@@ -130,80 +130,77 @@ function Financeiro() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          <div className="size-11 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
-            <Wallet className="size-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Financeiro</h1>
-            <p className="text-sm text-muted-foreground">Contas a pagar e receber</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() =>
-              exportToCsv(
-                "financeiro",
-                rows.map((r) => ({
-                  ...r,
-                  type: r.type === "receber" ? "Receber" : "Pagar",
-                  status: STATUS_LABEL[r.status],
-                })),
-                [
-                  { key: "type", label: "Tipo" },
-                  { key: "description", label: "Descrição" },
-                  { key: "due_date", label: "Vencimento" },
-                  { key: "status", label: "Status" },
-                  { key: "value", label: "Valor" },
-                  { key: "notes", label: "Observações" },
-                ],
-              )
-            }
-            disabled={!rows.length}
-            className="gap-2"
-          >
-            <Download className="size-4" />
-            CSV
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() =>
-              exportToPdf(
-                "financeiro",
-                "Financeiro",
-                rows.map((r) => ({
-                  ...r,
-                  type: r.type === "receber" ? "Receber" : "Pagar",
-                  status: STATUS_LABEL[r.status],
-                })),
-                [
-                  { key: "type", label: "Tipo" },
-                  { key: "description", label: "Descrição" },
-                  { key: "due_date", label: "Vencimento" },
-                  { key: "status", label: "Status" },
-                  { key: "value", label: "Valor" },
-                ],
-              )
-            }
-            disabled={!rows.length}
-            className="gap-2"
-          >
-            <FileText className="size-4" />
-            PDF
-          </Button>
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setOpen(true);
-            }}
-            className="gap-2"
-          >
-            <Plus className="size-4" /> Novo lançamento
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Financeiro"
+        title="Financeiro"
+        description="Contas a pagar e receber"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              onClick={() =>
+                exportToCsv(
+                  "financeiro",
+                  rows.map((r) => ({
+                    ...r,
+                    type: r.type === "receber" ? "Receber" : "Pagar",
+                    status: STATUS_LABEL[r.status],
+                  })),
+                  [
+                    { key: "type", label: "Tipo" },
+                    { key: "description", label: "Descrição" },
+                    { key: "due_date", label: "Vencimento" },
+                    { key: "status", label: "Status" },
+                    { key: "value", label: "Valor" },
+                    { key: "notes", label: "Observações" },
+                  ],
+                )
+              }
+              disabled={!rows.length}
+              className="gap-2"
+            >
+              <Download className="size-4" />
+              CSV
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                exportToPdf(
+                  "financeiro",
+                  "Financeiro",
+                  rows.map((r) => ({
+                    ...r,
+                    type: r.type === "receber" ? "Receber" : "Pagar",
+                    status: STATUS_LABEL[r.status],
+                  })),
+                  [
+                    { key: "type", label: "Tipo" },
+                    { key: "description", label: "Descrição" },
+                    { key: "due_date", label: "Vencimento" },
+                    { key: "status", label: "Status" },
+                    { key: "value", label: "Valor" },
+                  ],
+                )
+              }
+              disabled={!rows.length}
+              className="gap-2"
+            >
+              <FileText className="size-4" />
+              PDF
+            </Button>
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setOpen(true);
+              }}
+              className="gap-2"
+            >
+              <Plus className="size-4" /> Novo lançamento
+            </Button>
+          </>
+        }
+      />
+
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="glass rounded-xl p-5">
