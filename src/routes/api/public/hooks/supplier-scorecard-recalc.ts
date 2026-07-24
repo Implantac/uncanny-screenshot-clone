@@ -253,7 +253,7 @@ export const Route = createFileRoute("/api/public/hooks/supplier-scorecard-recal
 
             // Update suppliers.rating (0..5) and lead_time_days (only if we have samples)
             const newRating = Math.round(clamp(scoreRounded / 20, 0, 5));
-            const patch: Record<string, unknown> = { rating: newRating };
+            const patch: { rating: number; lead_time_days?: number } = { rating: newRating };
             if (leadAvg != null) patch.lead_time_days = Math.round(leadAvg);
             await supabase.from("suppliers").update(patch).eq("id", s.id);
 
