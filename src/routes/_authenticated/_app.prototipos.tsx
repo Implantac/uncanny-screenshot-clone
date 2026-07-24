@@ -303,7 +303,31 @@ function Prototipos() {
   }
 
   const productName = (id: string | null) => products.find((p) => p.id === id)?.name ?? "—";
+  const productImage = (id: string | null) =>
+    products.find((p) => p.id === id)?.image_url ?? null;
   const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "—";
+
+  // Urgência baseada no prazo — visual enterprise (verde/âmbar/vermelho)
+  function dueUrgency(due: string | null): {
+    label: string;
+    tone: "ok" | "warn" | "late" | "none";
+    days: number | null;
+  } {
+    if (!due) return { label: "Sem prazo", tone: "none", days: null };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const d = new Date(due + "T00:00:00");
+    const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
+    if (diff < 0) return { label: `Atrasado ${Math.abs(diff)}d`, tone: "late", days: diff };
+    if (diff <= 2) return { label: `${diff}d restantes`, tone: "warn", days: diff };
+    return { label: `${diff}d restantes`, tone: "ok", days: diff };
+  }
+  const URGENCY_CLASS: Record<"ok" | "warn" | "late" | "none", string> = {
+    ok: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30",
+    warn: "bg-amber-500/15 text-amber-500 border-amber-500/30",
+    late: "bg-destructive/15 text-destructive border-destructive/30",
+    none: "bg-muted/40 text-muted-foreground border-border",
+  };
 
   const productsInCollection = useMemo(() => {
     if (!collectionId) return null;
