@@ -44,6 +44,7 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
       { data: scorecards },
       { data: cps },
       { data: collections },
+      { data: matLib },
     ] = await Promise.all([
       sb
         .from("quality_capa")
@@ -60,7 +61,6 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
       sb.from("tech_sheet_materials").select("tech_sheet_id, name, unit_cost"),
       sb.from("products").select("id, name, sku"),
       sb.from("suppliers").select("id, name"),
-
       sb
         .from("supplier_scorecards")
         .select("supplier_id, score, computed_at")
@@ -68,6 +68,8 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
         .limit(2000),
       sb.from("collection_products").select("collection_id, product_id"),
       sb.from("collections").select("id, name, launch_date, status"),
+      sb.from("material_library").select("id, name, preferred_supplier_id").eq("active", true),
+
     ]);
 
     type CapaRow = { id: string; order_id: string | null; supplier_id: string | null; status: string | null; closed_at: string | null };
