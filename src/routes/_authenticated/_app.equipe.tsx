@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { listTeam, setUserRole, setUserSector } from "@/lib/team.functions";
 import { useRoles } from "@/hooks/use-role";
 import { APP_SECTORS, SECTOR_LABEL, type AppSector } from "@/lib/modules";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/equipe")({
   head: () => ({
