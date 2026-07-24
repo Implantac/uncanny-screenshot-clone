@@ -279,6 +279,89 @@ export const Route = createFileRoute("/api/public/hooks/supplier-scorecard-recal
                 },
               });
               notified = true;
+
+              // Wave 29 — Loop scorecard→CAPA
+              // Abre CAPA automática vinculada às ocorrências que puxaram o score
+              // (evita duplicar quando já existe CAPA aberta com o marker do trigger).
+              const trigger = wentCritical ? "critical" : "drop";
+              const marker = `[auto-scorecard:${trigger}]`;
+
+              const { data: existingCapa } = await supabase
+                .from("quality_capa")
+                .select("id")
+                .eq("owner_id", s.owner_id)
+                .eq("supplier_id", s.id)
+                .neq("status", "encerrada")
+                .ilike("problem", `%${marker}%`)
+                .limit(1)
+                .maybeSingle();
+
+              if (!existingCapa) {
+                // Pega a ocorrência negativa mais relevante da janela
+                let topOccurrenceId: string | null = null;
+                let topOrderId: string | null = null;
+                if (orderIds.length) {
+                  const { data: recentOcc } = await supabase
+                    .from("production_occurrences")
+                    .select("id, order_id, kind, created_at")
+                    .eq("owner_id", s.owner_id)
+                    .in("order_id", orderIds)
+                    .in("kind", KIND_NEGATIVE)
+                    .gte("created_at", sinceIso)
+                    .order("created_at", { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                  topOccurrenceId = recentOcc?.id ?? null;
+                  topOrderId = recentOcc?.order_id ?? null;
+                }
+
+                const severity =
+                  scoreRounded < 30 ? "alta" : scoreRounded < 45 ? "media" : "baixa";
+                const dueDate = new Date(
+                  Date.now() + 14 * 86_400_000,
+                ).toISOString().slice(0, 10);
+
+                const { data: capaRow } = await supabase
+                  .from("quality_capa")
+                  .insert({
+                    owner_id: s.owner_id,
+                    supplier_id: s.id,
+                    occurrence_id: topOccurrenceId,
+                    order_id: topOrderId,
+                    title: `Queda de scorecard — ${s.name}`,
+                    problem: `${marker} Score caiu para ${scoreRounded.toFixed(0)}${
+                      delta != null ? ` (${delta > 0 ? "+" : ""}${delta}pts)` : ""
+                    } em ${windowDays}d. Sinais: ${notes}.`,
+                    root_cause: null,
+                    corrective_action: null,
+                    preventive_action: null,
+                    severity,
+                    status: "aberta",
+                    due_date: dueDate,
+                  })
+                  .select("id")
+                  .maybeSingle();
+
+                if (capaRow?.id) {
+                  await supabase.from("push_notifications").insert({
+                    owner_id: s.owner_id,
+                    title: `CAPA aberta — ${s.name}`,
+                    body: `CAPA criada automaticamente pela queda de scorecard (${scoreRounded.toFixed(0)}${
+                      delta != null ? `, ${delta}pts` : ""
+                    }).`,
+                    link: `/quality?tab=capa`,
+                    kind: "capa_auto_opened",
+                    severity,
+                    payload: {
+                      supplier_id: s.id,
+                      capa_id: capaRow.id,
+                      trigger,
+                      score: scoreRounded,
+                      delta,
+                    },
+                  });
+                }
+              }
             }
           }
 
