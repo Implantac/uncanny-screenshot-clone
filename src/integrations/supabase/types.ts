@@ -2810,6 +2810,68 @@ export type Database = {
           },
         ]
       }
+      product_workflow_steps: {
+        Row: {
+          assignee_id: string | null
+          blocker_reason: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          owner_role: string | null
+          product_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["product_workflow_status"]
+          step: Database["public"]["Enums"]["product_workflow_step"]
+          step_order: number
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          blocker_reason?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          owner_role?: string | null
+          product_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["product_workflow_status"]
+          step: Database["public"]["Enums"]["product_workflow_step"]
+          step_order: number
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          blocker_reason?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          owner_role?: string | null
+          product_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["product_workflow_status"]
+          step?: Database["public"]["Enums"]["product_workflow_step"]
+          step_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_workflow_steps_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       production_batches: {
         Row: {
           code: string
@@ -5415,6 +5477,32 @@ export type Database = {
         }
         Relationships: []
       }
+      v_my_workflow_tasks: {
+        Row: {
+          blocker_reason: string | null
+          id: string | null
+          owner_id: string | null
+          owner_role: string | null
+          product_id: string | null
+          product_image: string | null
+          product_name: string | null
+          product_sku: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["product_workflow_status"] | null
+          step: Database["public"]["Enums"]["product_workflow_step"] | null
+          step_order: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_workflow_steps_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_product_events: {
         Row: {
           actor_email: string | null
@@ -5493,6 +5581,16 @@ export type Database = {
           requirement: string
         }[]
       }
+      product_workflow_advance: {
+        Args: { _note?: string; _product_id: string }
+        Returns: {
+          advanced: boolean
+          blockers: string[]
+          from_step: string
+          to_step: string
+        }[]
+      }
+      product_workflow_seed: { Args: { _product_id: string }; Returns: number }
       production_orders_generate_reservations: {
         Args: { _order_id: string }
         Returns: number
@@ -5565,6 +5663,21 @@ export type Database = {
         | "aprovado"
         | "producao"
         | "descontinuado"
+      product_workflow_status:
+        | "pendente"
+        | "em_andamento"
+        | "concluido"
+        | "bloqueado"
+      product_workflow_step:
+        | "concepcao"
+        | "modelagem"
+        | "engenharia"
+        | "custos"
+        | "piloto"
+        | "aprov_comercial"
+        | "aprov_diretoria"
+        | "liberacao_pcp"
+        | "producao"
       production_batch_status:
         | "planejado"
         | "em_producao"
@@ -5820,6 +5933,23 @@ export const Constants = {
         "aprovado",
         "producao",
         "descontinuado",
+      ],
+      product_workflow_status: [
+        "pendente",
+        "em_andamento",
+        "concluido",
+        "bloqueado",
+      ],
+      product_workflow_step: [
+        "concepcao",
+        "modelagem",
+        "engenharia",
+        "custos",
+        "piloto",
+        "aprov_comercial",
+        "aprov_diretoria",
+        "liberacao_pcp",
+        "producao",
       ],
       production_batch_status: [
         "planejado",
