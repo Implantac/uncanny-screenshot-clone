@@ -119,6 +119,7 @@ export const getRootCauseClusters = createServerFn({ method: "POST" })
     const capas = (capasRes.data ?? []) as {
       id: string;
       supplier_id: string | null;
+      occurrence_id: string | null;
       order_id: string | null;
       status: string;
     }[];
