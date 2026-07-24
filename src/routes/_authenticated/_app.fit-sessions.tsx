@@ -14,10 +14,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Ruler, CheckCircle2, Image as ImageIcon, MessageSquare, CheckCheck, AlertTriangle } from "lucide-react";
+import { Plus, Ruler, CheckCircle2, Image as ImageIcon, MessageSquare, CheckCheck, AlertTriangle, Columns2, X } from "lucide-react";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
 import { PageHeader } from "@/components/ui/page-header";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 
 export const Route = createFileRoute("/_authenticated/_app/fit-sessions")({
   head: () => ({
@@ -59,6 +60,8 @@ function Page() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [selected, setSelected] = useState<string | null>(null);
+  const [compareId, setCompareId] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
   const [sf, setSf] = useState({ fit_model: "", notes: "", iteration: 1 });
   const [cf, setCf] = useState<{ pom_label: string; severity: string; comment: string; image_url: string | null }>({
     pom_label: "",
@@ -92,6 +95,25 @@ function Page() {
       return (data ?? []) as Comment[];
     },
   });
+
+  const compareComments = useQuery({
+    queryKey: ["fit-comments", compareId],
+    enabled: !!compareId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fit_session_comments")
+        .select("*")
+        .eq("fit_session_id", compareId!)
+        .order("created_at");
+      if (error) throw error;
+      return (data ?? []) as Comment[];
+    },
+  });
+
+  const compareSession = useMemo(
+    () => sessions.data?.find((s) => s.id === compareId) ?? null,
+    [sessions.data, compareId],
+  );
 
   const currentSession = useMemo(
     () => sessions.data?.find((s) => s.id === selected) ?? null,
@@ -164,7 +186,7 @@ function Page() {
         title="Histórico de Provas"
         description="Fit sessions com fotos, comentários técnicos e aprovação de peça piloto."
       />
-      <div className="grid lg:grid-cols-[360px_1fr] gap-6">
+      <div className={`grid gap-6 ${compareId ? "lg:grid-cols-[320px_1fr_1fr]" : "lg:grid-cols-[360px_1fr]"}`}>
       <div className="space-y-4">
         <div className="glass rounded-xl p-3 space-y-2">
           <Input
@@ -191,28 +213,41 @@ function Page() {
         <div className="space-y-2">
           {sessions.data?.map((s) => {
             const meta = STATUS_META[s.status] ?? STATUS_META.aberta;
+            const isSelected = selected === s.id;
+            const isCompare = compareId === s.id;
             return (
-              <button
+              <div
                 key={s.id}
-                onClick={() => setSelected(s.id)}
-                className={`w-full text-left glass rounded-lg p-3 hover:bg-accent/30 transition ${selected === s.id ? "ring-2 ring-primary" : ""}`}
+                className={`w-full glass rounded-lg p-3 hover:bg-accent/30 transition ${isSelected ? "ring-2 ring-primary" : ""} ${isCompare ? "ring-2 ring-amber-500" : ""}`}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium truncate">
-                    It. {s.iteration} · {s.fit_model || "—"}
-                  </span>
-                  <Badge variant="outline" className={`text-[10px] ${meta.color}`}>
-                    {meta.label}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {new Date(s.session_date).toLocaleDateString("pt-BR")}
-                </p>
-              </button>
+                <button className="w-full text-left" onClick={() => setSelected(s.id)}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium truncate">
+                      It. {s.iteration} · {s.fit_model || "—"}
+                    </span>
+                    <Badge variant="outline" className={`text-[10px] ${meta.color}`}>
+                      {meta.label}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(s.session_date).toLocaleDateString("pt-BR")}
+                  </p>
+                </button>
+                {selected && selected !== s.id && (
+                  <button
+                    onClick={() => setCompareId(isCompare ? null : s.id)}
+                    className="mt-2 text-[11px] inline-flex items-center gap-1 text-muted-foreground hover:text-amber-600 transition"
+                  >
+                    <Columns2 className="h-3 w-3" />
+                    {isCompare ? "Remover comparação" : "Comparar com esta"}
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
       </div>
+
 
       <div className="space-y-4">
         {!selected || !currentSession ? (
@@ -261,18 +296,18 @@ function Page() {
                   <ImageIcon className="h-4 w-4 text-primary" /> Fotos da prova ({photos.length})
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                  {photos.map((url) => (
-                    <a
+                  {photos.map((url, i) => (
+                    <button
                       key={url}
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
+                      type="button"
+                      onClick={() => setLightbox({ images: photos, index: i })}
                       className="aspect-square rounded-md overflow-hidden border border-border hover:border-primary/60 transition"
                     >
                       <img src={url} alt="Foto da prova" className="w-full h-full object-cover" loading="lazy" />
-                    </a>
+                    </button>
                   ))}
                 </div>
+
               </div>
             )}
 
@@ -356,14 +391,18 @@ function Page() {
                     </div>
                     <p className={`text-sm ${c.resolved ? "line-through" : ""}`}>{c.comment}</p>
                     {c.image_url && (
-                      <a href={c.image_url} target="_blank" rel="noreferrer" className="inline-block">
+                      <button
+                        type="button"
+                        onClick={() => setLightbox({ images: [c.image_url!], index: 0 })}
+                        className="inline-block"
+                      >
                         <img
                           src={c.image_url}
                           alt="Anexo"
-                          className="mt-1 max-h-48 rounded-md border border-border object-cover"
+                          className="mt-1 max-h-48 rounded-md border border-border object-cover hover:border-primary/60 transition"
                           loading="lazy"
                         />
-                      </a>
+                      </button>
                     )}
                   </div>
                   <Button
@@ -380,7 +419,108 @@ function Page() {
           </>
         )}
       </div>
+
+      {/* Coluna de comparação lado-a-lado */}
+      {compareId && compareSession && (
+        <div className="space-y-4">
+          <div className="glass rounded-xl p-4 border-2 border-amber-500/40">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <div className="text-xs uppercase tracking-wider text-amber-600 font-medium">
+                  Comparando · Iteração {compareSession.iteration}
+                </div>
+                <div className="font-semibold text-lg">
+                  {compareSession.fit_model || "Modelo não informado"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(compareSession.session_date).toLocaleDateString("pt-BR")}
+                </div>
+              </div>
+              <button
+                onClick={() => setCompareId(null)}
+                className="p-1.5 rounded-md hover:bg-accent"
+                aria-label="Fechar comparação"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <Badge
+              variant="outline"
+              className={`mt-2 text-[10px] ${(STATUS_META[compareSession.status] ?? STATUS_META.aberta).color}`}
+            >
+              {(STATUS_META[compareSession.status] ?? STATUS_META.aberta).label}
+            </Badge>
+          </div>
+
+          {(() => {
+            const cPhotos = (compareComments.data ?? [])
+              .filter((c) => !!c.image_url)
+              .map((c) => c.image_url!);
+            return cPhotos.length > 0 ? (
+              <div className="glass rounded-xl p-4">
+                <div className="text-sm font-semibold flex items-center gap-2 mb-2">
+                  <ImageIcon className="h-4 w-4 text-amber-600" /> Fotos ({cPhotos.length})
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {cPhotos.map((url, i) => (
+                    <button
+                      key={url}
+                      type="button"
+                      onClick={() => setLightbox({ images: cPhotos, index: i })}
+                      className="aspect-square rounded-md overflow-hidden border border-border hover:border-amber-500/60 transition"
+                    >
+                      <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null;
+          })()}
+
+          <div className="space-y-3">
+            {(compareComments.data ?? []).length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-4">
+                Sem apontamentos nesta prova.
+              </div>
+            ) : (
+              (compareComments.data ?? []).map((c) => (
+                <div
+                  key={c.id}
+                  className={`glass rounded-xl p-3 ${c.resolved ? "opacity-60" : ""}`}
+                >
+                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-1">
+                    <Badge
+                      variant={
+                        c.severity === "critico"
+                          ? "destructive"
+                          : c.severity === "ajuste"
+                            ? "default"
+                            : "outline"
+                      }
+                      className="text-[10px]"
+                    >
+                      {c.severity}
+                    </Badge>
+                    <span>{new Date(c.created_at).toLocaleDateString("pt-BR")}</span>
+                  </div>
+                  {c.pom_label && (
+                    <div className="text-xs font-medium mb-1">{c.pom_label}</div>
+                  )}
+                  <p className={`text-sm ${c.resolved ? "line-through" : ""}`}>{c.comment}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
       </div>
+
+      <ImageLightbox
+        images={lightbox?.images ?? []}
+        openIndex={lightbox?.index ?? null}
+        onClose={() => setLightbox(null)}
+      />
     </div>
   );
 }
+

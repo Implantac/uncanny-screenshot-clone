@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Layers3, Scissors, Ruler, Wallet, ArrowUp, ArrowDown, Link2, X, Search, Library } from "lucide-react";
+import { Plus, Trash2, Layers3, Scissors, Ruler, Wallet, ArrowUp, ArrowDown, Link2, X, Search, Library, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -190,12 +190,25 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
         <div className="text-sm font-semibold flex items-center gap-2">
           <Layers3 className="size-4 text-primary" /> BOM · Materiais
         </div>
-        {canEdit && (
-          <Button size="sm" className="gap-1" onClick={() => setPickerOpen(true)}>
-            <Library className="size-3.5" /> Adicionar da Biblioteca
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {data.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1"
+              onClick={() => exportBomPdf(data, libMap, total)}
+            >
+              <FileDown className="size-3.5" /> Exportar PDF
+            </Button>
+          )}
+          {canEdit && (
+            <Button size="sm" className="gap-1" onClick={() => setPickerOpen(true)}>
+              <Library className="size-3.5" /> Adicionar da Biblioteca
+            </Button>
+          )}
+        </div>
       </div>
+
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Carregando…</div>
       ) : data.length === 0 ? (
@@ -331,6 +344,78 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
     </div>
   );
 }
+
+/* --------------------------- BOM PDF export helper --------------------------- */
+function exportBomPdf(
+  data: Material[],
+  libMap: Map<string, { image_url: string | null; color_hex: string | null }>,
+  total: number,
+) {
+  const rows = data
+    .map((m) => {
+      const lib = libMap.get(m.name.trim().toLowerCase());
+      const img = lib?.image_url
+        ? `<img src="${lib.image_url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #ddd" />`
+        : `<div style="width:40px;height:40px;border-radius:4px;background:${lib?.color_hex || "#eee"};border:1px solid #ddd"></div>`;
+      return `
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #eee">${img}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;font-weight:500">${escapeHtml(m.name)}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee">${escapeHtml(m.unit || "")}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${Number(m.consumption || 0).toFixed(3)}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${Number(m.loss_pct || 0).toFixed(1)}%</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${fmt(Number(m.unit_cost || 0))}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;text-align:right;font-weight:600">${fmt(Number(m.total_cost || 0))}</td>
+        </tr>`;
+    })
+    .join("");
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>BOM · Ficha Técnica</title>
+    <style>
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111;padding:32px;max-width:900px;margin:auto}
+      h1{font-size:20px;margin:0 0 4px}
+      .sub{color:#666;font-size:12px;margin-bottom:24px}
+      table{width:100%;border-collapse:collapse;font-size:13px}
+      thead th{text-align:left;padding:8px;border-bottom:2px solid #333;background:#f6f6f6;text-transform:uppercase;font-size:11px;letter-spacing:.04em}
+      .total-card{margin-top:24px;padding:16px 20px;border:2px solid #6366f1;background:#eef2ff;border-radius:10px;display:flex;justify-content:space-between;align-items:center}
+      .total-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#4338ca;font-weight:600}
+      .total-value{font-size:26px;font-weight:700;color:#4338ca;font-variant-numeric:tabular-nums}
+      @media print { body{padding:12px} .no-print{display:none} }
+    </style></head><body>
+    <h1>Lista de Materiais (BOM)</h1>
+    <div class="sub">Gerado em ${new Date().toLocaleString("pt-BR")} · ${data.length} ${data.length === 1 ? "item" : "itens"}</div>
+    <table>
+      <thead><tr>
+        <th></th><th>Material</th><th>Un</th><th style="text-align:right">Consumo</th>
+        <th style="text-align:right">Perda</th><th style="text-align:right">Custo un.</th><th style="text-align:right">Total</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="total-card">
+      <div>
+        <div class="total-label">Custo Total de Matéria-Prima</div>
+        <div style="font-size:11px;color:#666;margin-top:2px">${data.length} ${data.length === 1 ? "item" : "itens"} no BOM</div>
+      </div>
+      <div class="total-value">${fmt(total)}</div>
+    </div>
+    <script>window.onload = () => setTimeout(() => window.print(), 300);</script>
+    </body></html>`;
+
+  const w = window.open("", "_blank", "width=980,height=800");
+  if (!w) {
+    toast.error("Popup bloqueado — permita popups para exportar.");
+    return;
+  }
+  w.document.write(html);
+  w.document.close();
+}
+
+function escapeHtml(s: string) {
+  return String(s).replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string
+  ));
+}
+
 
 /* ------------------------------- Operations ------------------------------- */
 export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
