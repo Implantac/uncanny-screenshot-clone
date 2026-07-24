@@ -31,6 +31,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSupplier360, type Supplier360 } from "@/lib/supplier-360.functions";
+import { SupplierScorecardMini } from "@/components/supplier-scorecard-panel";
 
 interface Props {
   supplierId: string | null;
