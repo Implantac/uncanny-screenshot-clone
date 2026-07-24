@@ -799,6 +799,8 @@ function ColecoesPage() {
       </div>
 
       <CollectionIntelligencePanel />
+      <CollectionCapaRiskPanel />
+
 
       {selected && (
         <>
