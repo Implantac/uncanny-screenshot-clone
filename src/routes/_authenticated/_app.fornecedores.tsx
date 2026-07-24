@@ -245,25 +245,26 @@ function FornecedoresPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+      <PageHeader
+        eyebrow="Rede"
+        title={
+          <span className="inline-flex items-center gap-2">
             <Truck className="size-6 text-primary" /> Fornecedores
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Sua rede de parceiros — tecidos, aviamentos, costura e mais.
-          </p>
-        </div>
-        <Button
-          onClick={() => {
-            setEditing(null);
-            setOpen(true);
-          }}
-          className="gap-2"
-        >
-          <Plus className="size-4" /> Novo Fornecedor
-        </Button>
-      </div>
+          </span>
+        }
+        description="Sua rede de parceiros — tecidos, aviamentos, costura e mais."
+        actions={
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+            }}
+            className="gap-2"
+          >
+            <Plus className="size-4" /> Novo Fornecedor
+          </Button>
+        }
+      />
 
       {total > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
