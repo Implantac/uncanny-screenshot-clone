@@ -85,9 +85,11 @@ export const advanceProductWorkflow = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    const args: { _product_id: string; _note?: string } = { _product_id: data.productId };
+    if (data.note) args._note = data.note;
     const { data: res, error } = await context.supabase.rpc(
       "product_workflow_advance",
-      { _product_id: data.productId, _note: data.note ?? null },
+      args,
     );
     if (error) throw new Error(error.message);
     const row = Array.isArray(res) ? res[0] : res;

@@ -19,6 +19,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/_a
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/_app.index'
 import { Route as PortalFornecedorTokenRouteImport } from './routes/portal.fornecedor.$token'
 import { Route as ApiPublicErpSyncSectorsRouteImport } from './routes/api/public/erp-sync-sectors'
+import { Route as AuthenticatedAppWorkflowRouteImport } from './routes/_authenticated/_app.workflow'
 import { Route as AuthenticatedAppWarRoomProducaoRouteImport } from './routes/_authenticated/_app.war-room-producao'
 import { Route as AuthenticatedAppVariantesRouteImport } from './routes/_authenticated/_app.variantes'
 import { Route as AuthenticatedAppUseAiRouteImport } from './routes/_authenticated/_app.use-ai'
@@ -182,6 +183,12 @@ const ApiPublicErpSyncSectorsRoute = ApiPublicErpSyncSectorsRouteImport.update({
   path: '/api/public/erp-sync-sectors',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAppWorkflowRoute =
+  AuthenticatedAppWorkflowRouteImport.update({
+    id: '/workflow',
+    path: '/workflow',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppWarRoomProducaoRoute =
   AuthenticatedAppWarRoomProducaoRouteImport.update({
     id: '/war-room-producao',
@@ -945,6 +952,7 @@ export interface FileRoutesByFullPath {
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
+  '/workflow': typeof AuthenticatedAppWorkflowRoute
   '/api/public/erp-sync-sectors': typeof ApiPublicErpSyncSectorsRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
@@ -1069,6 +1077,7 @@ export interface FileRoutesByTo {
   '/use-ai': typeof AuthenticatedAppUseAiRoute
   '/variantes': typeof AuthenticatedAppVariantesRoute
   '/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
+  '/workflow': typeof AuthenticatedAppWorkflowRoute
   '/api/public/erp-sync-sectors': typeof ApiPublicErpSyncSectorsRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
@@ -1195,6 +1204,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/use-ai': typeof AuthenticatedAppUseAiRoute
   '/_authenticated/_app/variantes': typeof AuthenticatedAppVariantesRoute
   '/_authenticated/_app/war-room-producao': typeof AuthenticatedAppWarRoomProducaoRoute
+  '/_authenticated/_app/workflow': typeof AuthenticatedAppWorkflowRoute
   '/api/public/erp-sync-sectors': typeof ApiPublicErpSyncSectorsRoute
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
@@ -1322,6 +1332,7 @@ export interface FileRouteTypes {
     | '/use-ai'
     | '/variantes'
     | '/war-room-producao'
+    | '/workflow'
     | '/api/public/erp-sync-sectors'
     | '/portal/fornecedor/$token'
     | '/apontar/$id'
@@ -1446,6 +1457,7 @@ export interface FileRouteTypes {
     | '/use-ai'
     | '/variantes'
     | '/war-room-producao'
+    | '/workflow'
     | '/api/public/erp-sync-sectors'
     | '/portal/fornecedor/$token'
     | '/apontar/$id'
@@ -1571,6 +1583,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/use-ai'
     | '/_authenticated/_app/variantes'
     | '/_authenticated/_app/war-room-producao'
+    | '/_authenticated/_app/workflow'
     | '/api/public/erp-sync-sectors'
     | '/portal/fornecedor/$token'
     | '/_authenticated/_app/'
@@ -1687,6 +1700,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/erp-sync-sectors'
       preLoaderRoute: typeof ApiPublicErpSyncSectorsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_app/workflow': {
+      id: '/_authenticated/_app/workflow'
+      path: '/workflow'
+      fullPath: '/workflow'
+      preLoaderRoute: typeof AuthenticatedAppWorkflowRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/war-room-producao': {
       id: '/_authenticated/_app/war-room-producao'
@@ -2613,6 +2633,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppUseAiRoute: typeof AuthenticatedAppUseAiRoute
   AuthenticatedAppVariantesRoute: typeof AuthenticatedAppVariantesRoute
   AuthenticatedAppWarRoomProducaoRoute: typeof AuthenticatedAppWarRoomProducaoRoute
+  AuthenticatedAppWorkflowRoute: typeof AuthenticatedAppWorkflowRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppApontarIdRoute: typeof AuthenticatedAppApontarIdRoute
   AuthenticatedAppLoteIdRoute: typeof AuthenticatedAppLoteIdRoute
@@ -2724,6 +2745,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppUseAiRoute: AuthenticatedAppUseAiRoute,
   AuthenticatedAppVariantesRoute: AuthenticatedAppVariantesRoute,
   AuthenticatedAppWarRoomProducaoRoute: AuthenticatedAppWarRoomProducaoRoute,
+  AuthenticatedAppWorkflowRoute: AuthenticatedAppWorkflowRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppApontarIdRoute: AuthenticatedAppApontarIdRoute,
   AuthenticatedAppLoteIdRoute: AuthenticatedAppLoteIdRoute,
