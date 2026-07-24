@@ -304,26 +304,13 @@ function Page() {
                 />
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <StorageUploader
-                    bucket="fit-photos"
-                    pathPrefix={`${user?.id ?? "u"}/${selected}`}
-                    onUploaded={(url) => setCf({ ...cf, image_url: url })}
-                    accept="image/*"
-                    label={cf.image_url ? "Trocar foto" : "Anexar foto"}
-                  />
-                  {cf.image_url && (
-                    <div className="flex items-center gap-2">
-                      <img src={cf.image_url} alt="Anexo" className="size-10 rounded-md object-cover border" />
-                      <button
-                        className="text-xs text-muted-foreground hover:text-destructive"
-                        onClick={() => setCf({ ...cf, image_url: null })}
-                      >
-                        remover
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <StorageUploader
+                  bucket="fit-photos"
+                  kind="image"
+                  value={cf.image_url}
+                  onChange={(url) => setCf({ ...cf, image_url: url })}
+                  label={cf.image_url ? "Trocar foto" : "Anexar foto"}
+                />
                 <Button onClick={() => addComment.mutate()} disabled={!cf.comment || addComment.isPending}>
                   <Plus className="h-4 w-4 mr-1" />
                   Publicar
