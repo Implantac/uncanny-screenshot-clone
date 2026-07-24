@@ -57,6 +57,9 @@ import { TechPackImportButton } from "@/components/tech-pack-import-button";
 import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
 import { ShieldCheck, Camera } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
+import { StatusBadge } from "@/components/status-badge";
+import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

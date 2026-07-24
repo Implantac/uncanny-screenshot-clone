@@ -65,13 +65,8 @@ const STATUS_TONE: Record<Adjustment["status"], string> = {
   concluido: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
   cancelado: "bg-muted text-muted-foreground border-border",
 };
-const STAGE_LABEL: Record<string, string> = {
-  solicitado: "Solicitado",
-  em_confeccao: "Em confecção",
-  em_prova: "Em prova",
-  aprovado: "Aprovado",
-  reprovado: "Reprovado",
-};
+
+
 
 function relTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
