@@ -451,52 +451,114 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
         </div>
       ) : (
         <ul className="space-y-2">
-          {(commentsQuery.data ?? []).map((c) => {
-            const atts = attachmentsByComment.get(c.id) ?? [];
-            const mine = c.author_id === userId;
+          {roots.map((c) => {
+            const replies = repliesByParent.get(c.id) ?? [];
             return (
-              <li
-                key={c.id}
-                className="rounded-lg border border-border bg-card p-2.5 space-y-1.5"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="text-sm whitespace-pre-wrap break-words">
-                    {c.body}
-                  </div>
-                  {mine && (
-                    <button
-                      type="button"
-                      className="text-muted-foreground hover:text-destructive"
-                      title="Remover"
-                      onClick={() => removeComment.mutate(c.id)}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  )}
-                </div>
-                {atts.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {atts.map((a) => (
-                      <button
-                        key={a.id}
-                        type="button"
-                        onClick={() => downloadAttachment(a)}
-                        className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border border-border bg-muted hover:bg-muted/70"
-                      >
-                        <Download className="size-3" />
-                        <span className="truncate max-w-[180px]">{a.file_name}</span>
-                      </button>
+              <li key={c.id} className="space-y-2">
+                <CommentCard
+                  c={c}
+                  mine={c.author_id === userId}
+                  atts={attachmentsByComment.get(c.id) ?? []}
+                  onRemove={() => removeComment.mutate(c.id)}
+                  onReply={() => {
+                    setReplyTo(c);
+                    setTimeout(() => textareaRef.current?.focus(), 0);
+                  }}
+                  onDownload={downloadAttachment}
+                />
+                {replies.length > 0 && (
+                  <ul className="ml-6 border-l-2 border-primary/20 pl-3 space-y-2">
+                    {replies.map((r) => (
+                      <li key={r.id}>
+                        <CommentCard
+                          c={r}
+                          mine={r.author_id === userId}
+                          atts={attachmentsByComment.get(r.id) ?? []}
+                          onRemove={() => removeComment.mutate(r.id)}
+                          onReply={() => {
+                            setReplyTo(c);
+                            setTimeout(() => textareaRef.current?.focus(), 0);
+                          }}
+                          onDownload={downloadAttachment}
+                          isReply
+                        />
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 )}
-                <div className="text-[10px] text-muted-foreground font-mono">
-                  {new Date(c.created_at).toLocaleString("pt-BR")}
-                </div>
               </li>
             );
           })}
         </ul>
       )}
+    </div>
+  );
+}
+
+function CommentCard({
+  c,
+  mine,
+  atts,
+  onRemove,
+  onReply,
+  onDownload,
+  isReply,
+}: {
+  c: Comment;
+  mine: boolean;
+  atts: Attachment[];
+  onRemove: () => void;
+  onReply: () => void;
+  onDownload: (a: Attachment) => void;
+  isReply?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-lg border border-border bg-card p-2.5 space-y-1.5 ${
+        isReply ? "bg-muted/30" : ""
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-sm whitespace-pre-wrap break-words">{c.body}</div>
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-primary"
+            title="Responder"
+            onClick={onReply}
+          >
+            <Reply className="size-3.5" />
+          </button>
+          {mine && (
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-destructive"
+              title="Remover"
+              onClick={onRemove}
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+      {atts.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {atts.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => onDownload(a)}
+              className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border border-border bg-muted hover:bg-muted/70"
+            >
+              <Download className="size-3" />
+              <span className="truncate max-w-[180px]">{a.file_name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="text-[10px] text-muted-foreground font-mono">
+        {new Date(c.created_at).toLocaleString("pt-BR")}
+      </div>
     </div>
   );
 }
