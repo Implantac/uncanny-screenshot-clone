@@ -190,12 +190,25 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
         <div className="text-sm font-semibold flex items-center gap-2">
           <Layers3 className="size-4 text-primary" /> BOM · Materiais
         </div>
-        {canEdit && (
-          <Button size="sm" className="gap-1" onClick={() => setPickerOpen(true)}>
-            <Library className="size-3.5" /> Adicionar da Biblioteca
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {data.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1"
+              onClick={() => exportBomPdf(data, libMap, total)}
+            >
+              <FileDown className="size-3.5" /> Exportar PDF
+            </Button>
+          )}
+          {canEdit && (
+            <Button size="sm" className="gap-1" onClick={() => setPickerOpen(true)}>
+              <Library className="size-3.5" /> Adicionar da Biblioteca
+            </Button>
+          )}
+        </div>
       </div>
+
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Carregando…</div>
       ) : data.length === 0 ? (
