@@ -51,6 +51,7 @@ import {
 import { BomTemplatesButton } from "@/components/bom-templates-button";
 import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer";
 import { TechSheetCostAlertsPanel } from "@/components/tech-sheet-cost-alerts-panel";
+import { TechSheetBomReviewPanel } from "@/components/tech-sheet-bom-review-panel";
 import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
 import { ShieldCheck, Camera } from "lucide-react";
 
