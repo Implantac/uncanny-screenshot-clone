@@ -61,6 +61,7 @@ import { CollectionCompareDialog } from "@/components/collection-compare-dialog"
 import { ThemesPanel, LinesDialogButton } from "@/components/themes-lines-panel";
 import { ChannelMixPanel } from "@/components/channel-mix-panel";
 import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";
+import { PageHeader } from "@/components/ui/page-header";
 
 const STATUS_KEYS = ["briefing", "design", "desenvolvimento", "producao", "entregue"] as const;
 const SORT_KEYS = ["recent", "name", "progress", "launch", "year"] as const;
@@ -779,26 +780,24 @@ function ColecoesPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">
-            Módulo 2
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
+      <PageHeader
+        eyebrow="Módulo 2"
+        title={
+          <span className="flex items-center gap-2">
             <Layers className="size-6 text-primary" /> Gestão de Coleções
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Planejamento, direção criativa, mix, cronograma, performance e ROI em uma única visão.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <LinesDialogButton />
-          <CollectionCompareDialog collections={collections} />
-          <Button onClick={openCreate} className="gap-2">
-            <Plus className="size-4" /> Nova coleção
-          </Button>
-        </div>
-      </div>
+          </span>
+        }
+        description="Planejamento, direção criativa, mix, cronograma, performance e ROI em uma única visão."
+        actions={
+          <>
+            <LinesDialogButton />
+            <CollectionCompareDialog collections={collections} />
+            <Button onClick={openCreate} className="gap-2">
+              <Plus className="size-4" /> Nova coleção
+            </Button>
+          </>
+        }
+      />
 
       <CollectionIntelligencePanel />
       <CollectionCapaRiskPanel />

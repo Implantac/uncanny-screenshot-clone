@@ -49,6 +49,7 @@ import {
 import { PrototypeTimelineButton } from "@/components/prototype-timeline";
 import { DevIntelligencePanel } from "@/components/dev-intelligence-panel";
 import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";
+import { PageHeader } from "@/components/ui/page-header";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -378,26 +379,26 @@ function Prototipos() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-primary/10 grid place-items-center">
-            <Scissors className="size-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold">Protótipos</h1>
-            <p className="text-sm text-muted-foreground">Solicitações, provas e aprovações</p>
-          </div>
-        </div>
-        <Button
-          onClick={() => {
-            setEditing(null);
-            setOpen(true);
-          }}
-        >
-          <Plus className="size-4 mr-2" />
-          Nova solicitação
-        </Button>
-      </div>
+      <PageHeader
+        eyebrow="Desenvolvimento"
+        title={
+          <span className="flex items-center gap-2">
+            <Scissors className="size-6 text-primary" /> Protótipos
+          </span>
+        }
+        description="Solicitações, provas e aprovações do ciclo de peças piloto."
+        actions={
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+            }}
+            className="gap-2"
+          >
+            <Plus className="size-4" /> Nova solicitação
+          </Button>
+        }
+      />
 
       {collectionId && (
         <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 flex items-center justify-between gap-3 text-sm">
