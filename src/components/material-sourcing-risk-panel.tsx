@@ -172,7 +172,7 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
               disabled={mutation.isPending}
               onSelect={(e) => {
                 e.preventDefault();
-                mutation.mutate(s.id);
+                mutation.mutate({ newSupplierId: s.id });
               }}
               className="flex flex-col items-stretch gap-0.5 text-xs py-2"
             >
