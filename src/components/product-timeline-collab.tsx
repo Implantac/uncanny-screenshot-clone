@@ -172,6 +172,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
           author_id: userId,
           owner_id: userId,
           body: text,
+          mentioned_user_ids: mentioned.map((m) => m.id),
         })
         .select("id")
         .single();
