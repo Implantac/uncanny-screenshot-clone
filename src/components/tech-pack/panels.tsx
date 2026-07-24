@@ -759,11 +759,19 @@ export function MeasurementsPanel({ sheetId, ownerId, canEdit }: Props) {
               {data.map((m) => (
                 <TableRow key={m.id}>
                   <TableCell>
-                    <EditableText
-                      value={m.point}
-                      disabled={!canEdit}
-                      onSave={(v) => upd.mutate({ id: m.id, patch: { point: v } })}
-                    />
+                    <div className="flex items-center gap-1">
+                      <EditableText
+                        value={m.point}
+                        disabled={!canEdit}
+                        onSave={(v) => upd.mutate({ id: m.id, patch: { point: v } })}
+                      />
+                      <GradeRulePopover
+                        sizes={sizes}
+                        current={m.sizes || {}}
+                        disabled={!canEdit}
+                        onApply={(next) => upd.mutate({ id: m.id, patch: { sizes: next } })}
+                      />
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <EditableNum
