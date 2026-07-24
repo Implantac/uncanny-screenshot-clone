@@ -17,6 +17,7 @@ import { useMemo, useState } from "react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { WarRoomPanel } from "@/components/war-room-panel";
 import { AutoPushSentinel } from "@/components/auto-push-sentinel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/control-tower")({
   component: ControlTower,
