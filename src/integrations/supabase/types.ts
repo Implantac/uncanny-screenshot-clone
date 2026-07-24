@@ -2659,6 +2659,7 @@ export type Database = {
           event_id: string | null
           event_source: string | null
           id: string
+          mentioned_user_ids: string[]
           owner_id: string
           product_id: string
           updated_at: string
@@ -2670,6 +2671,7 @@ export type Database = {
           event_id?: string | null
           event_source?: string | null
           id?: string
+          mentioned_user_ids?: string[]
           owner_id: string
           product_id: string
           updated_at?: string
@@ -2681,6 +2683,7 @@ export type Database = {
           event_id?: string | null
           event_source?: string | null
           id?: string
+          mentioned_user_ids?: string[]
           owner_id?: string
           product_id?: string
           updated_at?: string
