@@ -378,7 +378,8 @@ function ProductWorkspace() {
           </div>
         </TabsContent>
 
-        <TabsContent value="pcp">
+        <TabsContent value="pcp" className="space-y-4">
+          <ProductPcpHealthPanel productId={product.id} />
           <div className="rounded-xl border border-border bg-card p-4">
             {ops.length === 0 ? (
               <EmptyState
