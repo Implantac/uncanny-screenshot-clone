@@ -101,7 +101,7 @@ function MyProductsFeed() {
       const { data, error } = await supabase
         .from("product_approvals")
         .select(
-          "id, product_id, gate_key, decision, created_at, requested_by, products:product_id(sku, name)",
+          "id, product_id, gate_key, decision, created_at, requested_by, owner_id, products:product_id(sku, name)",
         )
         .eq("decision", "pendente")
         .order("created_at", { ascending: false })
@@ -110,6 +110,7 @@ function MyProductsFeed() {
       return (data ?? []) as unknown as PendingApproval[];
     },
   });
+
 
   const comments = useQuery({
     enabled: !!uid && watchedIds.length > 0,
