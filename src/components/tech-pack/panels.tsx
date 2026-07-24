@@ -70,6 +70,7 @@ const fmt = (n: number) => n.toLocaleString("pt-BR", { style: "currency", curren
 /* ------------------------------- Materials -------------------------------- */
 export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
   const qc = useQueryClient();
+  const [pickerOpen, setPickerOpen] = useState(false);
   const { data = [], isLoading } = useQuery({
     queryKey: ["ts-materials", sheetId],
     queryFn: async () => {
@@ -83,7 +84,40 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
     },
   });
 
-  const add = useMutation({
+  const addFromLibrary = useMutation({
+    mutationFn: async (m: LibraryMaterial) => {
+      // resolve inventory_item_id via code (SKU) — evita duplicar cadastro se já existe no almox
+      let inventoryId: string | null = null;
+      const { data: invMatch } = await supabase
+        .from("inventory_items")
+        .select("id")
+        .eq("owner_id", ownerId)
+        .eq("sku", m.code)
+        .maybeSingle();
+      if (invMatch?.id) inventoryId = invMatch.id;
+
+      const { error } = await supabase.from("tech_sheet_materials").insert({
+        owner_id: ownerId,
+        tech_sheet_id: sheetId,
+        name: m.name,
+        unit: m.unit ?? "un",
+        consumption: 0,
+        loss_pct: 0,
+        unit_cost: Number(m.reference_cost ?? 0),
+        position: data.length,
+        inventory_item_id: inventoryId,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Material adicionado ao BOM");
+      qc.invalidateQueries({ queryKey: ["ts-materials", sheetId] });
+      qc.invalidateQueries({ queryKey: ["tech_sheets"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const addBlank = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("tech_sheet_materials").insert({
         owner_id: ownerId,
@@ -127,13 +161,20 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
 
   return (
     <div className="space-y-3">
+      <MaterialPickerDialog
+        ownerId={ownerId}
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onPick={(m) => addFromLibrary.mutate(m)}
+        onCreateBlank={() => addBlank.mutate()}
+      />
       <div className="flex items-center justify-between">
         <div className="text-sm font-semibold flex items-center gap-2">
           <Layers3 className="size-4 text-primary" /> BOM · Materiais
         </div>
         {canEdit && (
-          <Button size="sm" variant="outline" className="gap-1" onClick={() => add.mutate()}>
-            <Plus className="size-3.5" /> Material
+          <Button size="sm" className="gap-1" onClick={() => setPickerOpen(true)}>
+            <Library className="size-3.5" /> Adicionar da Biblioteca
           </Button>
         )}
       </div>
