@@ -391,14 +391,18 @@ function Page() {
                     </div>
                     <p className={`text-sm ${c.resolved ? "line-through" : ""}`}>{c.comment}</p>
                     {c.image_url && (
-                      <a href={c.image_url} target="_blank" rel="noreferrer" className="inline-block">
+                      <button
+                        type="button"
+                        onClick={() => setLightbox({ images: [c.image_url!], index: 0 })}
+                        className="inline-block"
+                      >
                         <img
                           src={c.image_url}
                           alt="Anexo"
-                          className="mt-1 max-h-48 rounded-md border border-border object-cover"
+                          className="mt-1 max-h-48 rounded-md border border-border object-cover hover:border-primary/60 transition"
                           loading="lazy"
                         />
-                      </a>
+                      </button>
                     )}
                   </div>
                   <Button
@@ -415,7 +419,108 @@ function Page() {
           </>
         )}
       </div>
+
+      {/* Coluna de comparação lado-a-lado */}
+      {compareId && compareSession && (
+        <div className="space-y-4">
+          <div className="glass rounded-xl p-4 border-2 border-amber-500/40">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <div className="text-xs uppercase tracking-wider text-amber-600 font-medium">
+                  Comparando · Iteração {compareSession.iteration}
+                </div>
+                <div className="font-semibold text-lg">
+                  {compareSession.fit_model || "Modelo não informado"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(compareSession.session_date).toLocaleDateString("pt-BR")}
+                </div>
+              </div>
+              <button
+                onClick={() => setCompareId(null)}
+                className="p-1.5 rounded-md hover:bg-accent"
+                aria-label="Fechar comparação"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <Badge
+              variant="outline"
+              className={`mt-2 text-[10px] ${(STATUS_META[compareSession.status] ?? STATUS_META.aberta).color}`}
+            >
+              {(STATUS_META[compareSession.status] ?? STATUS_META.aberta).label}
+            </Badge>
+          </div>
+
+          {(() => {
+            const cPhotos = (compareComments.data ?? [])
+              .filter((c) => !!c.image_url)
+              .map((c) => c.image_url!);
+            return cPhotos.length > 0 ? (
+              <div className="glass rounded-xl p-4">
+                <div className="text-sm font-semibold flex items-center gap-2 mb-2">
+                  <ImageIcon className="h-4 w-4 text-amber-600" /> Fotos ({cPhotos.length})
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {cPhotos.map((url, i) => (
+                    <button
+                      key={url}
+                      type="button"
+                      onClick={() => setLightbox({ images: cPhotos, index: i })}
+                      className="aspect-square rounded-md overflow-hidden border border-border hover:border-amber-500/60 transition"
+                    >
+                      <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null;
+          })()}
+
+          <div className="space-y-3">
+            {(compareComments.data ?? []).length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-4">
+                Sem apontamentos nesta prova.
+              </div>
+            ) : (
+              (compareComments.data ?? []).map((c) => (
+                <div
+                  key={c.id}
+                  className={`glass rounded-xl p-3 ${c.resolved ? "opacity-60" : ""}`}
+                >
+                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-1">
+                    <Badge
+                      variant={
+                        c.severity === "critico"
+                          ? "destructive"
+                          : c.severity === "ajuste"
+                            ? "default"
+                            : "outline"
+                      }
+                      className="text-[10px]"
+                    >
+                      {c.severity}
+                    </Badge>
+                    <span>{new Date(c.created_at).toLocaleDateString("pt-BR")}</span>
+                  </div>
+                  {c.pom_label && (
+                    <div className="text-xs font-medium mb-1">{c.pom_label}</div>
+                  )}
+                  <p className={`text-sm ${c.resolved ? "line-through" : ""}`}>{c.comment}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
       </div>
+
+      <ImageLightbox
+        images={lightbox?.images ?? []}
+        openIndex={lightbox?.index ?? null}
+        onClose={() => setLightbox(null)}
+      />
     </div>
   );
 }
+
