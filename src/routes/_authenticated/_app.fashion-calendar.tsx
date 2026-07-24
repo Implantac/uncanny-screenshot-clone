@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Calendar, Package, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/fashion-calendar")({
   component: FashionCalendar,
