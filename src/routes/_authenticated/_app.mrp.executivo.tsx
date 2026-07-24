@@ -25,6 +25,7 @@ import {
   type MrpExecKpis,
 } from "@/lib/mrp-insights.functions";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/mrp/executivo")({
   head: () => ({
