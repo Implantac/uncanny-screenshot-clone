@@ -130,6 +130,11 @@ function DrawerBody({ data }: { data: Supplier360 }) {
         <div className="text-xs leading-relaxed">{reason}</div>
       </div>
 
+      {/* Scorecard adaptativo (Wave 25) */}
+      <div className="mt-3">
+        <SupplierScorecardMini supplierId={supplier.id} />
+      </div>
+
       {/* KPI grid */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
         <Kpi
