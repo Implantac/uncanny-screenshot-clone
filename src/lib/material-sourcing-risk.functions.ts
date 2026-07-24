@@ -268,6 +268,10 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
         recommendation = `Monitorar *${agg.displayName}* — ${agg.capas.size} CAPAs / ${agg.occs} ocorrências em 180d.`;
       }
 
+      const excluded = new Set(suppliersList.map((s) => s.id));
+      const alternateSuppliers = rankedSuppliers.filter((s) => !excluded.has(s.id)).slice(0, 5);
+      const materialLibraryIds = (matLibByKey.get(key) ?? []).map((m) => m.id);
+
       rows.push({
         key,
         displayName: agg.displayName,
@@ -276,6 +280,8 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
         openCapaCount: agg.openCapas,
         occurrenceCount: agg.occs,
         suppliers: suppliersList.slice(0, 4),
+        alternateSuppliers,
+        materialLibraryIds,
         products: productsList.slice(0, 6),
         activeCollections: activeCollections.slice(0, 4),
         recommendation,
