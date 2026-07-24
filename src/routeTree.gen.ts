@@ -116,6 +116,7 @@ import { Route as AuthenticatedAppAcompanhamentoProducaoRouteImport } from './ro
 import { Route as AuthenticatedAppAbcColecaoRouteImport } from './routes/_authenticated/_app.abc-colecao'
 import { Route as AuthenticatedAppMrpIndexRouteImport } from './routes/_authenticated/_app.mrp.index'
 import { Route as ApiPublicSupplierPortalTokenRouteImport } from './routes/api/public/supplier-portal.$token'
+import { Route as ApiPublicHooksProductionSlaEscalationRouteImport } from './routes/api/public/hooks/production-sla-escalation'
 import { Route as ApiPublicHooksMrpRecalcRouteImport } from './routes/api/public/hooks/mrp-recalc'
 import { Route as ApiPublicHooksMarkLateOpsRouteImport } from './routes/api/public/hooks/mark-late-ops'
 import { Route as ApiPublicHooksErpPullAllRouteImport } from './routes/api/public/hooks/erp-pull-all'
@@ -746,6 +747,12 @@ const ApiPublicSupplierPortalTokenRoute =
     path: '/api/public/supplier-portal/$token',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksProductionSlaEscalationRoute =
+  ApiPublicHooksProductionSlaEscalationRouteImport.update({
+    id: '/api/public/hooks/production-sla-escalation',
+    path: '/api/public/hooks/production-sla-escalation',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksMrpRecalcRoute = ApiPublicHooksMrpRecalcRouteImport.update({
   id: '/api/public/hooks/mrp-recalc',
   path: '/api/public/hooks/mrp-recalc',
@@ -972,6 +979,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/hooks/mrp-recalc': typeof ApiPublicHooksMrpRecalcRoute
+  '/api/public/hooks/production-sla-escalation': typeof ApiPublicHooksProductionSlaEscalationRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
   '/mrp/': typeof AuthenticatedAppMrpIndexRoute
   '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
@@ -1097,6 +1105,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/hooks/mrp-recalc': typeof ApiPublicHooksMrpRecalcRoute
+  '/api/public/hooks/production-sla-escalation': typeof ApiPublicHooksProductionSlaEscalationRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
   '/mrp': typeof AuthenticatedAppMrpIndexRoute
   '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
@@ -1225,6 +1234,7 @@ export interface FileRoutesById {
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
   '/api/public/hooks/mrp-recalc': typeof ApiPublicHooksMrpRecalcRoute
+  '/api/public/hooks/production-sla-escalation': typeof ApiPublicHooksProductionSlaEscalationRoute
   '/api/public/supplier-portal/$token': typeof ApiPublicSupplierPortalTokenRoute
   '/_authenticated/_app/mrp/': typeof AuthenticatedAppMrpIndexRoute
   '/api/public/product-image/$ownerId/$': typeof ApiPublicProductImageOwnerIdSplatRoute
@@ -1352,6 +1362,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/hooks/mrp-recalc'
+    | '/api/public/hooks/production-sla-escalation'
     | '/api/public/supplier-portal/$token'
     | '/mrp/'
     | '/api/public/product-image/$ownerId/$'
@@ -1477,6 +1488,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/hooks/mrp-recalc'
+    | '/api/public/hooks/production-sla-escalation'
     | '/api/public/supplier-portal/$token'
     | '/mrp'
     | '/api/public/product-image/$ownerId/$'
@@ -1604,6 +1616,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
     | '/api/public/hooks/mrp-recalc'
+    | '/api/public/hooks/production-sla-escalation'
     | '/api/public/supplier-portal/$token'
     | '/_authenticated/_app/mrp/'
     | '/api/public/product-image/$ownerId/$'
@@ -1625,6 +1638,7 @@ export interface RootRouteChildren {
   ApiPublicHooksErpPullAllRoute: typeof ApiPublicHooksErpPullAllRoute
   ApiPublicHooksMarkLateOpsRoute: typeof ApiPublicHooksMarkLateOpsRoute
   ApiPublicHooksMrpRecalcRoute: typeof ApiPublicHooksMrpRecalcRoute
+  ApiPublicHooksProductionSlaEscalationRoute: typeof ApiPublicHooksProductionSlaEscalationRoute
   ApiPublicSupplierPortalTokenRoute: typeof ApiPublicSupplierPortalTokenRoute
   ApiPublicProductImageOwnerIdSplatRoute: typeof ApiPublicProductImageOwnerIdSplatRoute
 }
@@ -2380,6 +2394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSupplierPortalTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/production-sla-escalation': {
+      id: '/api/public/hooks/production-sla-escalation'
+      path: '/api/public/hooks/production-sla-escalation'
+      fullPath: '/api/public/hooks/production-sla-escalation'
+      preLoaderRoute: typeof ApiPublicHooksProductionSlaEscalationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/mrp-recalc': {
       id: '/api/public/hooks/mrp-recalc'
       path: '/api/public/hooks/mrp-recalc'
@@ -2789,6 +2810,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksErpPullAllRoute: ApiPublicHooksErpPullAllRoute,
   ApiPublicHooksMarkLateOpsRoute: ApiPublicHooksMarkLateOpsRoute,
   ApiPublicHooksMrpRecalcRoute: ApiPublicHooksMrpRecalcRoute,
+  ApiPublicHooksProductionSlaEscalationRoute:
+    ApiPublicHooksProductionSlaEscalationRoute,
   ApiPublicSupplierPortalTokenRoute: ApiPublicSupplierPortalTokenRoute,
   ApiPublicProductImageOwnerIdSplatRoute:
     ApiPublicProductImageOwnerIdSplatRoute,
