@@ -8,6 +8,7 @@ import { Factory, Clock, CheckCircle2, AlertTriangle, Gauge, Activity } from "lu
 import { CapacitySimulator } from "@/components/capacity-simulator";
 import { PcpIntelligencePanel } from "@/components/pcp-intelligence-panel";
 import { SupplierCapacityEditor } from "@/components/supplier-capacity-editor";
+import { PageHeader } from "@/components/ui/page-header";
 
 const searchSchema = z.object({
   scope: z.enum(["all", "interna", "faccao"]).default("all").catch("all"),
