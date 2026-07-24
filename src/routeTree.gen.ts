@@ -121,6 +121,7 @@ import { Route as ApiPublicHooksMrpRecalcRouteImport } from './routes/api/public
 import { Route as ApiPublicHooksMarkLateOpsRouteImport } from './routes/api/public/hooks/mark-late-ops'
 import { Route as ApiPublicHooksErpPullAllRouteImport } from './routes/api/public/hooks/erp-pull-all'
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
+import { Route as ApiPublicHooksCapaEffectivenessCheckRouteImport } from './routes/api/public/hooks/capa-effectiveness-check'
 import { Route as ApiPublicHooksApprovalEscalationRouteImport } from './routes/api/public/hooks/approval-escalation'
 import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
@@ -776,6 +777,12 @@ const ApiPublicHooksDailyDigestRoute =
     path: '/api/public/hooks/daily-digest',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksCapaEffectivenessCheckRoute =
+  ApiPublicHooksCapaEffectivenessCheckRouteImport.update({
+    id: '/api/public/hooks/capa-effectiveness-check',
+    path: '/api/public/hooks/capa-effectiveness-check',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksApprovalEscalationRoute =
   ApiPublicHooksApprovalEscalationRouteImport.update({
     id: '/api/public/hooks/approval-escalation',
@@ -975,6 +982,7 @@ export interface FileRoutesByFullPath {
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/hooks/approval-escalation': typeof ApiPublicHooksApprovalEscalationRoute
+  '/api/public/hooks/capa-effectiveness-check': typeof ApiPublicHooksCapaEffectivenessCheckRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
@@ -1101,6 +1109,7 @@ export interface FileRoutesByTo {
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/hooks/approval-escalation': typeof ApiPublicHooksApprovalEscalationRoute
+  '/api/public/hooks/capa-effectiveness-check': typeof ApiPublicHooksCapaEffectivenessCheckRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
@@ -1230,6 +1239,7 @@ export interface FileRoutesById {
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
   '/api/public/hooks/approval-escalation': typeof ApiPublicHooksApprovalEscalationRoute
+  '/api/public/hooks/capa-effectiveness-check': typeof ApiPublicHooksCapaEffectivenessCheckRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
@@ -1358,6 +1368,7 @@ export interface FileRouteTypes {
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/hooks/approval-escalation'
+    | '/api/public/hooks/capa-effectiveness-check'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
@@ -1484,6 +1495,7 @@ export interface FileRouteTypes {
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/hooks/approval-escalation'
+    | '/api/public/hooks/capa-effectiveness-check'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
@@ -1612,6 +1624,7 @@ export interface FileRouteTypes {
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
     | '/api/public/hooks/approval-escalation'
+    | '/api/public/hooks/capa-effectiveness-check'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
@@ -1634,6 +1647,7 @@ export interface RootRouteChildren {
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
   ApiPublicErpSyncPublicIdRoute: typeof ApiPublicErpSyncPublicIdRoute
   ApiPublicHooksApprovalEscalationRoute: typeof ApiPublicHooksApprovalEscalationRoute
+  ApiPublicHooksCapaEffectivenessCheckRoute: typeof ApiPublicHooksCapaEffectivenessCheckRoute
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksErpPullAllRoute: typeof ApiPublicHooksErpPullAllRoute
   ApiPublicHooksMarkLateOpsRoute: typeof ApiPublicHooksMarkLateOpsRoute
@@ -2429,6 +2443,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksDailyDigestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/capa-effectiveness-check': {
+      id: '/api/public/hooks/capa-effectiveness-check'
+      path: '/api/public/hooks/capa-effectiveness-check'
+      fullPath: '/api/public/hooks/capa-effectiveness-check'
+      preLoaderRoute: typeof ApiPublicHooksCapaEffectivenessCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/approval-escalation': {
       id: '/api/public/hooks/approval-escalation'
       path: '/api/public/hooks/approval-escalation'
@@ -2806,6 +2827,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
   ApiPublicErpSyncPublicIdRoute: ApiPublicErpSyncPublicIdRoute,
   ApiPublicHooksApprovalEscalationRoute: ApiPublicHooksApprovalEscalationRoute,
+  ApiPublicHooksCapaEffectivenessCheckRoute:
+    ApiPublicHooksCapaEffectivenessCheckRoute,
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
   ApiPublicHooksErpPullAllRoute: ApiPublicHooksErpPullAllRoute,
   ApiPublicHooksMarkLateOpsRoute: ApiPublicHooksMarkLateOpsRoute,
