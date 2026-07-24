@@ -89,12 +89,12 @@ function StockHealth() {
 
   return (
     <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Stock Health</h1>
-        <p className="text-sm text-muted-foreground">
-          Saúde do estoque: ruptura, baixo, morto, excesso e cobertura por SKU.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Estoque"
+        title="Stock Health"
+        description="Saúde do estoque: ruptura, baixo, morto, excesso e cobertura por SKU."
+      />
+
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KPI label="Itens" value={summary.total} icon={<Package className="size-4" />} />
