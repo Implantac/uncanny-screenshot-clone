@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Truck, Users, Calendar, Sparkles, AlertTriangle, ArrowRight, Trophy } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/cadeia-360")({
   head: () => ({
