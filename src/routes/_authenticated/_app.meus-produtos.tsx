@@ -124,7 +124,6 @@ function MyProductsFeed() {
       <PageHeader
         title="Meus Produtos"
         description="Feed pessoal — produtos que você segue, aprovações pendentes e conversas recentes."
-        icon={BellRing}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
