@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { logProductView } from "@/lib/product-audit.functions";
 import { useRealtime } from "@/hooks/use-realtime";
 import {
   ArrowLeft,
@@ -74,6 +77,10 @@ type ProductRow = {
 function ProductWorkspace() {
   const { id } = useParams({ from: "/_authenticated/_app/produto/$id" });
   useRealtime("products", ["product-workspace", id]);
+  const audit = useServerFn(logProductView);
+  useEffect(() => {
+    audit({ data: { productId: id } }).catch(() => {});
+  }, [id, audit]);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product-workspace", id],

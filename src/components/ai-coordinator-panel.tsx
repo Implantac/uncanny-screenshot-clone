@@ -55,15 +55,17 @@ export function AICoordinatorPanel({
           </div>
         </div>
         <button
+          type="button"
           onClick={() => mutation.mutate()}
           disabled={mutation.isPending}
-          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 min-h-8 min-w-8 justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={mutation.isPending ? "Atualizando insights" : "Atualizar insights"}
           title="Atualizar"
         >
           {mutation.isPending ? (
-            <Loader2 className="size-3 animate-spin" />
+            <Loader2 className="size-3 animate-spin" aria-hidden="true" />
           ) : (
-            <RefreshCw className="size-3" />
+            <RefreshCw className="size-3" aria-hidden="true" />
           )}
         </button>
       </div>
