@@ -1,9 +1,106 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Package, Factory, Calendar, AlertOctagon } from "lucide-react";
+import { Package, Factory, Calendar, AlertOctagon, ArrowLeftRight, Loader2, Check } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { getMaterialSourcingRisks } from "@/lib/material-sourcing-risk.functions";
+import {
+  applyMaterialSupplierSwap,
+  getMaterialSourcingRisks,
+  type MaterialSourcingRisk,
+} from "@/lib/material-sourcing-risk.functions";
 import { Markdown } from "@/components/markdown";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
+
+function SwapButton({ row }: { row: MaterialSourcingRisk }) {
+  const qc = useQueryClient();
+  const swap = useServerFn(applyMaterialSupplierSwap);
+  const [pending, setPending] = useState<string | null>(null);
+  const mutation = useMutation({
+    mutationFn: (newSupplierId: string) =>
+      swap({
+        data: {
+          materialKey: row.key,
+          newSupplierId,
+          materialLibraryIds: row.materialLibraryIds,
+        },
+      }),
+    onMutate: (id) => setPending(id),
+    onSuccess: (res, id) => {
+      const name = row.alternateSuppliers.find((s) => s.id === id)?.name ?? "fornecedor";
+      if (res.updated === 0) {
+        toast.warning(
+          `Nenhum material "${row.displayName}" encontrado no material_library — cadastre antes de aplicar substituição.`,
+        );
+      } else {
+        toast.success(`${res.updated} material(is) atualizado(s) → ${name}`);
+      }
+      qc.invalidateQueries({ queryKey: ["material-sourcing-risks"] });
+    },
+    onError: (e) => toast.error(`Falha na substituição: ${(e as Error).message}`),
+    onSettled: () => setPending(null),
+  });
+
+  if (row.alternateSuppliers.length === 0) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          disabled={mutation.isPending}
+          className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary disabled:opacity-50"
+        >
+          {mutation.isPending ? (
+            <Loader2 className="size-3 animate-spin" />
+          ) : (
+            <ArrowLeftRight className="size-3" />
+          )}
+          Aplicar substituição
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel className="text-xs">
+          Trocar fornecedor preferido em <span className="font-semibold">{row.displayName}</span>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {row.alternateSuppliers.map((s) => (
+          <DropdownMenuItem
+            key={s.id}
+            disabled={mutation.isPending}
+            onSelect={(e) => {
+              e.preventDefault();
+              mutation.mutate(s.id);
+            }}
+            className="flex items-center justify-between gap-2 text-xs"
+          >
+            <span className="truncate">{s.name ?? s.id.slice(0, 6)}</span>
+            <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+              {pending === s.id ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : (
+                <Check className="size-3 text-emerald-500" />
+              )}
+              score {s.score}
+            </span>
+          </DropdownMenuItem>
+        ))}
+        {row.materialLibraryIds.length === 0 && (
+          <div className="px-2 py-1.5 text-[10px] text-muted-foreground">
+            Material não está cadastrado em material_library — substituição criará vínculo por nome.
+          </div>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function MaterialSourcingRiskPanel() {
   const fn = useServerFn(getMaterialSourcingRisks);
@@ -108,6 +205,9 @@ export function MaterialSourcingRiskPanel() {
                 ))}
               </div>
             )}
+            <div className="pt-1 flex justify-end">
+              <SwapButton row={r} />
+            </div>
           </div>
         ))}
       </div>

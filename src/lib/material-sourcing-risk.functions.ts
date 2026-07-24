@@ -9,6 +9,8 @@ export type MaterialSourcingRisk = {
   openCapaCount: number;
   occurrenceCount: number;
   suppliers: Array<{ id: string; name: string | null; capaCount: number; avgScore: number | null }>;
+  alternateSuppliers: Array<{ id: string; name: string | null; score: number }>;
+  materialLibraryIds: string[];
   products: Array<{ id: string; name: string | null; sku: string | null; capaCount: number }>;
   activeCollections: Array<{ id: string; name: string; launchDate: string | null; daysToLaunch: number | null }>;
   recommendation: string;
@@ -42,6 +44,7 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
       { data: scorecards },
       { data: cps },
       { data: collections },
+      { data: matLib },
     ] = await Promise.all([
       sb
         .from("quality_capa")
@@ -65,6 +68,8 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
         .limit(2000),
       sb.from("collection_products").select("collection_id, product_id"),
       sb.from("collections").select("id, name, launch_date, status"),
+      sb.from("material_library").select("id, name, preferred_supplier_id").eq("active", true),
+
     ]);
 
     type CapaRow = { id: string; order_id: string | null; supplier_id: string | null; status: string | null; closed_at: string | null };
@@ -121,6 +126,23 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
         latestScore.set(s.supplier_id, Number(s.score));
       }
     });
+
+    // material_library index by normalized name
+    type MatLibRow = { id: string; name: string | null; preferred_supplier_id: string | null };
+    const matLibByKey = new Map<string, MatLibRow[]>();
+    ((matLib ?? []) as MatLibRow[]).forEach((m) => {
+      if (!m.name) return;
+      const k = norm(m.name);
+      const a = matLibByKey.get(k) ?? [];
+      a.push(m);
+      matLibByKey.set(k, a);
+    });
+
+    // Ranked alternate suppliers pool (score desc, score >= 60)
+    const rankedSuppliers = [...latestScore.entries()]
+      .filter(([, sc]) => sc >= 60)
+      .sort((a, b) => b[1] - a[1])
+      .map(([id, score]) => ({ id, name: supplierMap.get(id)?.name ?? null, score: Math.round(score) }));
 
     // productId -> collections
     const productToCols = new Map<string, string[]>();
@@ -246,6 +268,10 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
         recommendation = `Monitorar *${agg.displayName}* — ${agg.capas.size} CAPAs / ${agg.occs} ocorrências em 180d.`;
       }
 
+      const excluded = new Set(suppliersList.map((s) => s.id));
+      const alternateSuppliers = rankedSuppliers.filter((s) => !excluded.has(s.id)).slice(0, 5);
+      const materialLibraryIds = (matLibByKey.get(key) ?? []).map((m) => m.id);
+
       rows.push({
         key,
         displayName: agg.displayName,
@@ -254,6 +280,8 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
         openCapaCount: agg.openCapas,
         occurrenceCount: agg.occs,
         suppliers: suppliersList.slice(0, 4),
+        alternateSuppliers,
+        materialLibraryIds,
         products: productsList.slice(0, 6),
         activeCollections: activeCollections.slice(0, 4),
         recommendation,
@@ -278,4 +306,50 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
       summary: { materialsAtRisk, totalOpenCapas, totalProducts },
       insight,
     };
+  });
+
+export const applyMaterialSupplierSwap = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (data: { materialKey: string; newSupplierId: string; materialLibraryIds?: string[] }) => data,
+  )
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase;
+    const key = data.materialKey.trim().toLowerCase().replace(/\s+/g, " ");
+
+    // Fetch candidate rows by owner (RLS) then filter by normalized name or explicit ids
+    const { data: rows, error } = await sb
+      .from("material_library")
+      .select("id, name")
+      .eq("active", true);
+    if (error) throw error;
+
+    const targetIds = new Set(data.materialLibraryIds ?? []);
+    const ids = (rows ?? [])
+      .filter((r) => targetIds.has(r.id) || (r.name && r.name.trim().toLowerCase().replace(/\s+/g, " ") === key))
+      .map((r) => r.id);
+
+    if (ids.length === 0) {
+      return { updated: 0, ids: [] as string[] };
+    }
+
+    const { error: upErr } = await sb
+      .from("material_library")
+      .update({ preferred_supplier_id: data.newSupplierId })
+      .in("id", ids);
+    if (upErr) throw upErr;
+
+    await sb.rpc("log_audit", {
+      _entity: "material_library",
+      _entity_id: ids[0],
+      _action: "supplier_swap",
+      _payload: {
+        material_key: key,
+        new_supplier_id: data.newSupplierId,
+        affected_ids: ids,
+        source: "material_sourcing_risk_panel",
+      },
+    });
+
+    return { updated: ids.length, ids };
   });
