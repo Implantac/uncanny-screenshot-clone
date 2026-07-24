@@ -534,6 +534,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
                             setTimeout(() => textareaRef.current?.focus(), 0);
                           }}
                           onDownload={downloadAttachment}
+                          onEdit={(body) => editComment.mutate({ id: r.id, body })}
                           isReply
                         />
                       </li>
