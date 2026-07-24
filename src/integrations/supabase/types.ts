@@ -5232,6 +5232,7 @@ export type Database = {
           id: string
           inventory_item_id: string | null
           loss_pct: number
+          material_id: string | null
           name: string
           notes: string | null
           owner_id: string
@@ -5249,6 +5250,7 @@ export type Database = {
           id?: string
           inventory_item_id?: string | null
           loss_pct?: number
+          material_id?: string | null
           name: string
           notes?: string | null
           owner_id: string
@@ -5266,6 +5268,7 @@ export type Database = {
           id?: string
           inventory_item_id?: string | null
           loss_pct?: number
+          material_id?: string | null
           name?: string
           notes?: string | null
           owner_id?: string
@@ -5290,6 +5293,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "inventory_items_available"
             referencedColumns: ["inventory_item_id"]
+          },
+          {
+            foreignKeyName: "tech_sheet_materials_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "material_library"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "tech_sheet_materials_tech_sheet_id_fkey"
@@ -5706,6 +5716,19 @@ export type Database = {
           _payload?: Json
         }
         Returns: string
+      }
+      material_library_usage: {
+        Args: { _material_id: string }
+        Returns: {
+          product_id: string
+          product_name: string
+          product_sku: string
+          tech_sheet_code: string
+          tech_sheet_id: string
+          tech_sheet_status: string
+          tech_sheet_updated_at: string
+          tech_sheet_version: string
+        }[]
       }
       product_gate_status: {
         Args: { _product_id: string }
