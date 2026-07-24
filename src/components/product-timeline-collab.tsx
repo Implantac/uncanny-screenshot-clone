@@ -281,12 +281,73 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
       </div>
 
       <div className="rounded-lg border border-border bg-muted/30 p-2 space-y-2">
-        <Textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Comentar, marcar ajuste, registrar decisão…"
-          className="text-sm min-h-[64px] bg-background"
-        />
+        <div className="relative">
+          <Textarea
+            ref={textareaRef}
+            value={body}
+            onChange={(e) => {
+              const v = e.target.value;
+              setBody(v);
+              const caret = e.target.selectionStart ?? v.length;
+              const before = v.slice(0, caret);
+              const m = before.match(/(?:^|\s)@([\p{L}0-9._-]*)$/u);
+              setMentionQuery(m ? m[1] : null);
+            }}
+            placeholder="Comentar, marcar ajuste, registrar decisão… use @ para marcar alguém"
+            className="text-sm min-h-[64px] bg-background"
+          />
+          {mentionQuery !== null && (peopleQuery.data?.length ?? 0) > 0 && (
+            <div className="absolute z-20 bottom-full mb-1 left-2 w-64 max-h-56 overflow-auto rounded-md border border-border bg-popover shadow-lg text-sm">
+              {(peopleQuery.data ?? []).map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className="w-full text-left px-2.5 py-1.5 hover:bg-muted flex items-center gap-2"
+                  onClick={() => {
+                    const el = textareaRef.current;
+                    const caret = el?.selectionStart ?? body.length;
+                    const before = body.slice(0, caret);
+                    const after = body.slice(caret);
+                    const replaced = before.replace(
+                      /(^|\s)@([\p{L}0-9._-]*)$/u,
+                      (_m, pre) => `${pre}@${p.name} `,
+                    );
+                    setBody(replaced + after);
+                    setMentioned((prev) =>
+                      prev.some((x) => x.id === p.id) ? prev : [...prev, p],
+                    );
+                    setMentionQuery(null);
+                    setTimeout(() => el?.focus(), 0);
+                  }}
+                >
+                  <span className="size-5 rounded-full bg-primary/15 text-primary text-[10px] grid place-items-center font-semibold">
+                    {p.name.slice(0, 1).toUpperCase()}
+                  </span>
+                  <span className="truncate">{p.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {mentioned.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className="text-[10px] text-muted-foreground">Marcados:</span>
+            {mentioned.map((m) => (
+              <Badge key={m.id} variant="outline" className="text-[10px] gap-1">
+                @{m.name}
+                <button
+                  type="button"
+                  className="ml-1 opacity-60 hover:opacity-100"
+                  onClick={() =>
+                    setMentioned((prev) => prev.filter((x) => x.id !== m.id))
+                  }
+                >
+                  ×
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
         {pendingFiles.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {pendingFiles.map((f, i) => (
