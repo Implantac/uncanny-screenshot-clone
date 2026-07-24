@@ -56,6 +56,7 @@ import { TechSheetBomReviewPanel } from "@/components/tech-sheet-bom-review-pane
 import { TechPackImportButton } from "@/components/tech-pack-import-button";
 import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
 import { ShieldCheck, Camera } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -305,28 +306,26 @@ function FichaTecnicaPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">
-            Módulo 5
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
+      <PageHeader
+        eyebrow="Módulo 5"
+        title={
+          <span className="flex items-center gap-2">
             <FileText className="size-6 text-primary" /> Ficha Técnica Inteligente
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Visualização de produto, conteúdo estruturado por área e histórico versionado.
-          </p>
-        </div>
-        <div className="w-full grid gap-3 md:grid-cols-2">
-          <TechSheetCostAlertsPanel />
-          <TechSheetBomReviewPanel />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <TechPackImportButton />
-          <Button onClick={openCreate} className="gap-2">
-            <Plus className="size-4" /> Nova ficha
-          </Button>
-        </div>
+          </span>
+        }
+        description="Visualização de produto, conteúdo estruturado por área e histórico versionado."
+        actions={
+          <>
+            <TechPackImportButton />
+            <Button onClick={openCreate} className="gap-2">
+              <Plus className="size-4" /> Nova ficha
+            </Button>
+          </>
+        }
+      />
+      <div className="w-full grid gap-3 md:grid-cols-2">
+        <TechSheetCostAlertsPanel />
+        <TechSheetBomReviewPanel />
       </div>
 
       {isLoading ? (

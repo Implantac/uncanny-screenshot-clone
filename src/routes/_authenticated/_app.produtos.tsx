@@ -46,6 +46,7 @@ import { toast } from "sonner";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ProductTimeline } from "@/components/product-timeline";
 import { ProductGallery } from "@/components/product-gallery";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/produtos")({
   validateSearch: zodValidator(
@@ -277,53 +278,51 @@ function ProdutosPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">
-            Módulo 4
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
+      <PageHeader
+        eyebrow="Módulo 4"
+        title={
+          <span className="flex items-center gap-2">
             <Package className="size-6 text-primary" /> Produtos
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Catálogo premium com leitura rápida de coleção, margem, status e histórico do item.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            onClick={() =>
-              exportToCsv(
-                "produtos",
-                products.map((product) => ({ ...product, status: STATUS_LABELS[product.status] })),
-                [
-                  { key: "sku", label: "SKU" },
-                  { key: "name", label: "Nome" },
-                  { key: "category", label: "Categoria" },
-                  { key: "status", label: "Status" },
-                  { key: "cost_price", label: "Custo" },
-                  { key: "sell_price", label: "Venda" },
-                  { key: "sizes", label: "Tamanhos" },
-                  { key: "colors", label: "Cores" },
-                ],
-              )
-            }
-            disabled={!products.length}
-            className="gap-2"
-          >
-            <Download className="size-4" /> Exportar CSV
-          </Button>
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setOpen(true);
-            }}
-            className="gap-2"
-          >
-            <Plus className="size-4" /> Novo produto
-          </Button>
-        </div>
-      </div>
+          </span>
+        }
+        description="Catálogo premium com leitura rápida de coleção, margem, status e histórico do item."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              onClick={() =>
+                exportToCsv(
+                  "produtos",
+                  products.map((product) => ({ ...product, status: STATUS_LABELS[product.status] })),
+                  [
+                    { key: "sku", label: "SKU" },
+                    { key: "name", label: "Nome" },
+                    { key: "category", label: "Categoria" },
+                    { key: "status", label: "Status" },
+                    { key: "cost_price", label: "Custo" },
+                    { key: "sell_price", label: "Venda" },
+                    { key: "sizes", label: "Tamanhos" },
+                    { key: "colors", label: "Cores" },
+                  ],
+                )
+              }
+              disabled={!products.length}
+              className="gap-2"
+            >
+              <Download className="size-4" /> Exportar CSV
+            </Button>
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setOpen(true);
+              }}
+              className="gap-2"
+            >
+              <Plus className="size-4" /> Novo produto
+            </Button>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <SummaryCard label="Total no catálogo" value={String(summary.total)} />
