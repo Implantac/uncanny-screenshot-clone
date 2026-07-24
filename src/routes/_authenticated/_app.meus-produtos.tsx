@@ -306,41 +306,100 @@ function MyProductsFeed() {
               description="Nenhum gate esperando decisão."
             />
           ) : (
-            <ul className="space-y-1.5">
-              {(approvals.data ?? []).map((a) => {
-                const fresh = isNew(a.created_at);
-                return (
-                <li key={a.id}>
-                  <Link
-                    to="/produto/$id"
-                    params={{ id: a.product_id }}
-                    className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition relative"
+            <>
+              <div className="flex items-center justify-between gap-2 border border-dashed border-border rounded-lg px-2.5 py-1.5">
+                <label className="flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleAll}
+                    aria-label="Selecionar todas as aprovações pendentes"
+                  />
+                  {selected.size > 0
+                    ? `${selected.size} selecionada${selected.size === 1 ? "" : "s"}`
+                    : "Selecionar todas"}
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-[11px] gap-1"
+                    disabled={selected.size === 0 || bulkDecide.isPending}
+                    onClick={() => bulkDecide.mutate("rejeitado")}
                   >
-                    {fresh && (
-                      <span
-                        aria-label="Nova"
-                        className="absolute left-1 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-primary"
-                      />
+                    {bulkDecide.isPending && bulkDecide.variables === "rejeitado" ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <X className="size-3" />
                     )}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="text-xs font-medium truncate">
-                        {a.products?.name ?? "Produto"}
+                    Reprovar
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-7 text-[11px] gap-1"
+                    disabled={selected.size === 0 || bulkDecide.isPending}
+                    onClick={() => bulkDecide.mutate("aprovado")}
+                  >
+                    {bulkDecide.isPending && bulkDecide.variables === "aprovado" ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <Check className="size-3" />
+                    )}
+                    Aprovar
+                  </Button>
+                </div>
+              </div>
+              <ul className="space-y-1.5">
+                {(approvals.data ?? []).map((a) => {
+                  const fresh = isNew(a.created_at);
+                  const checked = selected.has(a.id);
+                  return (
+                    <li key={a.id}>
+                      <div
+                        className={`flex items-start gap-2 border rounded-lg px-2 py-2 transition relative ${
+                          checked
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:bg-muted"
+                        }`}
+                      >
+                        {fresh && (
+                          <span
+                            aria-label="Nova"
+                            className="absolute left-1 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-primary"
+                          />
+                        )}
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={() => toggleOne(a.id)}
+                          aria-label={`Selecionar ${a.products?.name ?? "produto"}`}
+                          className="mt-0.5 ml-2"
+                        />
+                        <Link
+                          to="/produto/$id"
+                          params={{ id: a.product_id }}
+                          className="flex-1 min-w-0"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="text-xs font-medium truncate">
+                              {a.products?.name ?? "Produto"}
+                            </div>
+                            <ApprovalSlaBadge createdAt={a.created_at} />
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5">
+                            Gate: <span className="font-mono">{a.gate_key}</span>
+                          </div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                            Aberta em {new Date(a.created_at).toLocaleString("pt-BR")}
+                          </div>
+                        </Link>
                       </div>
-                      <ApprovalSlaBadge createdAt={a.created_at} />
-                    </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">
-                      Gate: <span className="font-mono">{a.gate_key}</span>
-                    </div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">
-                      Aberta em {new Date(a.created_at).toLocaleString("pt-BR")}
-                    </div>
-                  </Link>
-                </li>
-                );
-              })}
-            </ul>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
           )}
         </section>
+
       </div>
 
 
