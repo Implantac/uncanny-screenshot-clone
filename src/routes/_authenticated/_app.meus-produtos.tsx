@@ -354,6 +354,7 @@ function MyProductsFeed() {
                     className="h-7 text-[11px] gap-1"
                     disabled={selected.size === 0 || bulkDecide.isPending}
                     onClick={() => bulkDecide.mutate("rejeitado")}
+                    title="Reprovar selecionadas (R)"
                   >
                     {bulkDecide.isPending && bulkDecide.variables === "rejeitado" ? (
                       <Loader2 className="size-3 animate-spin" />
@@ -361,12 +362,14 @@ function MyProductsFeed() {
                       <X className="size-3" />
                     )}
                     Reprovar
+                    <kbd className="ml-1 hidden md:inline text-[9px] px-1 rounded bg-muted border border-border">R</kbd>
                   </Button>
                   <Button
                     size="sm"
                     className="h-7 text-[11px] gap-1"
                     disabled={selected.size === 0 || bulkDecide.isPending}
                     onClick={() => bulkDecide.mutate("aprovado")}
+                    title="Aprovar selecionadas (A)"
                   >
                     {bulkDecide.isPending && bulkDecide.variables === "aprovado" ? (
                       <Loader2 className="size-3 animate-spin" />
@@ -374,9 +377,13 @@ function MyProductsFeed() {
                       <Check className="size-3" />
                     )}
                     Aprovar
+                    <kbd className="ml-1 hidden md:inline text-[9px] px-1 rounded bg-muted border border-border">A</kbd>
                   </Button>
                 </div>
               </div>
+              <p className="text-[10px] text-muted-foreground px-1">
+                Atalhos: <kbd className="px-1 rounded bg-muted border border-border">X</kbd> selecionar tudo · <kbd className="px-1 rounded bg-muted border border-border">A</kbd> aprovar · <kbd className="px-1 rounded bg-muted border border-border">R</kbd> reprovar · <kbd className="px-1 rounded bg-muted border border-border">Esc</kbd> limpar
+              </p>
               <ul className="space-y-1.5">
                 {(approvals.data ?? []).map((a) => {
                   const fresh = isNew(a.created_at);
