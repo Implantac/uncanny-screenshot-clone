@@ -20,6 +20,7 @@ import {
 import { exportToCsv } from "@/lib/csv";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useFabNewAction } from "@/components/contextual-fab";
 import { useRealtime } from "@/hooks/use-realtime";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,6 +166,10 @@ function ProdutosPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [prefill, setPrefill] = useState<Prefill | null>(null);
+  useFabNewAction(() => {
+    setEditing(null);
+    setOpen(true);
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const sp = Route.useSearch();
   const { q: search, prefillName, prefillCategory, prefillColors } = sp;

@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useFabNewAction } from "@/components/contextual-fab";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,6 +46,11 @@ function Page() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [filter, setFilter] = useState<string>("todos");
+  const codeInputRef = useRef<HTMLInputElement>(null);
+  useFabNewAction(() => {
+    codeInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    codeInputRef.current?.focus();
+  });
   const [form, setForm] = useState({
     kind: "tecido",
     code: "",
@@ -119,6 +126,7 @@ function Page() {
             </SelectContent>
           </Select>
           <Input
+            ref={codeInputRef}
             placeholder="Código"
             value={form.code}
             onChange={(e) => setForm({ ...form, code: e.target.value })}

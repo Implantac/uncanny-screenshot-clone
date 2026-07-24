@@ -21,6 +21,7 @@ import { suggestTechSheetImprovements } from "@/lib/tech-pack-ai.functions";
 import { Markdown } from "@/components/markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useFabNewAction } from "@/components/contextual-fab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -295,6 +296,7 @@ function FichaTecnicaPage() {
     setEditing(null);
     setOpen(true);
   }
+  useFabNewAction(openCreate);
 
   function openEdit(sheet: Sheet) {
     setEditing(sheet);
