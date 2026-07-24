@@ -220,6 +220,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
       setPendingFiles([]);
       setMentioned([]);
       setMentionQuery(null);
+      setReplyTo(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       qc.invalidateQueries({ queryKey: ["product-timeline-comments", productId] });
       qc.invalidateQueries({ queryKey: ["product-timeline-attachments", productId] });
