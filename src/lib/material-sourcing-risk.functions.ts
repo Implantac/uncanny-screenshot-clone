@@ -307,3 +307,49 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
       insight,
     };
   });
+
+export const applyMaterialSupplierSwap = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (data: { materialKey: string; newSupplierId: string; materialLibraryIds?: string[] }) => data,
+  )
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase;
+    const key = data.materialKey.trim().toLowerCase().replace(/\s+/g, " ");
+
+    // Fetch candidate rows by owner (RLS) then filter by normalized name or explicit ids
+    const { data: rows, error } = await sb
+      .from("material_library")
+      .select("id, name")
+      .eq("active", true);
+    if (error) throw error;
+
+    const targetIds = new Set(data.materialLibraryIds ?? []);
+    const ids = (rows ?? [])
+      .filter((r) => targetIds.has(r.id) || (r.name && r.name.trim().toLowerCase().replace(/\s+/g, " ") === key))
+      .map((r) => r.id);
+
+    if (ids.length === 0) {
+      return { updated: 0, ids: [] as string[] };
+    }
+
+    const { error: upErr } = await sb
+      .from("material_library")
+      .update({ preferred_supplier_id: data.newSupplierId })
+      .in("id", ids);
+    if (upErr) throw upErr;
+
+    await sb.rpc("log_audit", {
+      _entity: "material_library",
+      _entity_id: ids[0],
+      _action: "supplier_swap",
+      _payload: {
+        material_key: key,
+        new_supplier_id: data.newSupplierId,
+        affected_ids: ids,
+        source: "material_sourcing_risk_panel",
+      },
+    });
+
+    return { updated: ids.length, ids };
+  });
