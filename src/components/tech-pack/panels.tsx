@@ -84,9 +84,27 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
     },
   });
 
+  // Lookup de foto/cor a partir da Biblioteca Global (best-effort por nome)
+  const { data: library = [] } = useQuery({
+    queryKey: ["ts-materials-lib", ownerId],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("material_library")
+        .select("name, image_url, color_hex")
+        .eq("owner_id", ownerId)
+        .eq("active", true);
+      return (data ?? []) as { name: string; image_url: string | null; color_hex: string | null }[];
+    },
+    staleTime: 60_000,
+  });
+  const libMap = useMemo(() => {
+    const m = new Map<string, { image_url: string | null; color_hex: string | null }>();
+    for (const l of library) m.set(l.name.trim().toLowerCase(), l);
+    return m;
+  }, [library]);
+
   const addFromLibrary = useMutation({
     mutationFn: async (m: LibraryMaterial) => {
-      // resolve inventory_item_id via code (SKU) — evita duplicar cadastro se já existe no almox
       let inventoryId: string | null = null;
       const { data: invMatch } = await supabase
         .from("inventory_items")
@@ -185,105 +203,130 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
           Nenhum material no BOM ainda.
         </div>
       ) : (
-        <div className="rounded-xl border border-border overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Material</TableHead>
-                <TableHead className="w-40">Almox.</TableHead>
-                <TableHead className="w-20">Un</TableHead>
-                <TableHead className="w-24 text-right">Consumo</TableHead>
-                <TableHead className="w-20 text-right">Perda %</TableHead>
-                <TableHead className="w-28 text-right">Custo un.</TableHead>
-                <TableHead className="w-28 text-right">Total</TableHead>
-                {canEdit && <TableHead className="w-12" />}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((m) => (
-                <TableRow key={m.id}>
-                  <TableCell>
-                    <EditableText
-                      value={m.name}
-                      disabled={!canEdit}
-                      onSave={(v) => upd.mutate({ id: m.id, patch: { name: v } })}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <InventoryLinkCell
-                      ownerId={ownerId}
-                      value={m.inventory_item_id}
-                      disabled={!canEdit}
-                      onChange={(id) => upd.mutate({ id: m.id, patch: { inventory_item_id: id } })}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <EditableText
-                      value={m.unit}
-                      disabled={!canEdit}
-                      onSave={(v) => upd.mutate({ id: m.id, patch: { unit: v } })}
-                    />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <EditableNum
-                        value={m.consumption}
-                        disabled={!canEdit}
-                        onSave={(v) => upd.mutate({ id: m.id, patch: { consumption: v } })}
-                      />
-                      <SizeConsumptionPopover
-                        value={m.consumption_by_size}
-                        disabled={!canEdit}
-                        onSave={(v: Record<string, number> | null) =>
-                          upd.mutate({
-                            id: m.id,
-                            patch: { consumption_by_size: v } as Partial<Material>,
-                          })
-                        }
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <EditableNum
-                      value={m.loss_pct}
-                      disabled={!canEdit}
-                      onSave={(v) => upd.mutate({ id: m.id, patch: { loss_pct: v } })}
-                    />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <EditableNum
-                      value={m.unit_cost}
-                      disabled={!canEdit}
-                      onSave={(v) => upd.mutate({ id: m.id, patch: { unit_cost: v } })}
-                    />
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {fmt(Number(m.total_cost || 0))}
-                  </TableCell>
-                  {canEdit && (
-                    <TableCell>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="size-7 text-destructive"
-                        onClick={() => del.mutate(m.id)}
-                      >
-                        <Trash2 className="size-3.5" />
-                      </Button>
-                    </TableCell>
-                  )}
+        <>
+          <div className="rounded-xl border border-border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-14">Foto</TableHead>
+                  <TableHead>Material</TableHead>
+                  <TableHead className="w-40">Almox.</TableHead>
+                  <TableHead className="w-20">Un</TableHead>
+                  <TableHead className="w-24 text-right">Consumo</TableHead>
+                  <TableHead className="w-20 text-right">Perda %</TableHead>
+                  <TableHead className="w-28 text-right">Custo un.</TableHead>
+                  <TableHead className="w-28 text-right">Total</TableHead>
+                  {canEdit && <TableHead className="w-12" />}
                 </TableRow>
-              ))}
-              <TableRow className="bg-muted/30 font-medium">
-                <TableCell colSpan={6} className="text-right">
-                  Subtotal materiais
-                </TableCell>
-                <TableCell className="text-right tabular-nums">{fmt(total)}</TableCell>
-                {canEdit && <TableCell />}
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {data.map((m) => {
+                  const lib = libMap.get(m.name.trim().toLowerCase());
+                  return (
+                    <TableRow key={m.id}>
+                      <TableCell>
+                        <div
+                          className="size-10 rounded-md border border-border/60 overflow-hidden shrink-0"
+                          style={{ background: lib?.color_hex || "hsl(var(--muted))" }}
+                        >
+                          {lib?.image_url && (
+                            <img
+                              src={lib.image_url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <EditableText
+                          value={m.name}
+                          disabled={!canEdit}
+                          onSave={(v) => upd.mutate({ id: m.id, patch: { name: v } })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <InventoryLinkCell
+                          ownerId={ownerId}
+                          value={m.inventory_item_id}
+                          disabled={!canEdit}
+                          onChange={(id) => upd.mutate({ id: m.id, patch: { inventory_item_id: id } })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <EditableText
+                          value={m.unit}
+                          disabled={!canEdit}
+                          onSave={(v) => upd.mutate({ id: m.id, patch: { unit: v } })}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <EditableNum
+                            value={m.consumption}
+                            disabled={!canEdit}
+                            onSave={(v) => upd.mutate({ id: m.id, patch: { consumption: v } })}
+                          />
+                          <SizeConsumptionPopover
+                            value={m.consumption_by_size}
+                            disabled={!canEdit}
+                            onSave={(v: Record<string, number> | null) =>
+                              upd.mutate({
+                                id: m.id,
+                                patch: { consumption_by_size: v } as Partial<Material>,
+                              })
+                            }
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <EditableNum
+                          value={m.loss_pct}
+                          disabled={!canEdit}
+                          onSave={(v) => upd.mutate({ id: m.id, patch: { loss_pct: v } })}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <EditableNum
+                          value={m.unit_cost}
+                          disabled={!canEdit}
+                          onSave={(v) => upd.mutate({ id: m.id, patch: { unit_cost: v } })}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums font-medium">
+                        {fmt(Number(m.total_cost || 0))}
+                      </TableCell>
+                      {canEdit && (
+                        <TableCell>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="size-7 text-destructive"
+                            onClick={() => del.mutate(m.id)}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="rounded-xl border border-primary/40 bg-primary/10 p-4 flex items-center justify-between gap-4">
+            <div>
+              <div className="text-xs uppercase tracking-wider text-primary/80 font-medium">
+                Custo Total de Matéria-Prima
+              </div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                {data.length} {data.length === 1 ? "item" : "itens"} no BOM · atualiza automaticamente com consumo, perda e custo unitário.
+              </div>
+            </div>
+            <div className="text-3xl font-bold tabular-nums text-primary">{fmt(total)}</div>
+          </div>
+        </>
       )}
     </div>
   );
