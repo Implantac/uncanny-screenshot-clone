@@ -86,31 +86,15 @@ function NotificationsPage() {
   }, [uid, qc]);
 
 
-  const watched = useQuery({
-    enabled: !!uid,
-    queryKey: ["notif-watched", uid],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("product_watchers")
-        .select("product_id")
-        .eq("user_id", uid!);
-      if (error) throw error;
-      return (data ?? []).map((r) => r.product_id);
-    },
-  });
-
-  const watchedIds = watched.data ?? [];
-
   const data = useQuery({
-    enabled: !!uid && !watched.isLoading,
-    queryKey: ["notif-list", uid, filterKey, watchedIds.join(","), page],
+    enabled: !!uid,
+    queryKey: ["notif-list", uid, filterKey, page],
     queryFn: async (): Promise<{ items: NotifItem[]; total: number }> => {
       const items: NotifItem[] = [];
       let total = 0;
 
       const wantApprovals = filterKey === "all" || filterKey === "approvals";
-      const wantMentions =
-        (filterKey === "all" || filterKey === "mentions") && watchedIds.length > 0;
+      const wantMentions = filterKey === "all" || filterKey === "mentions";
 
       if (wantApprovals) {
         const { count } = await supabase
@@ -123,7 +107,7 @@ function NotificationsPage() {
         const { count } = await supabase
           .from("product_timeline_comments")
           .select("id", { count: "exact", head: true })
-          .in("product_id", watchedIds)
+          .contains("mentioned_user_ids", [uid!])
           .neq("author_id", uid!);
         total += count ?? 0;
       }
@@ -166,7 +150,7 @@ function NotificationsPage() {
           .select(
             "id, product_id, body, created_at, products:product_id(sku, name)",
           )
-          .in("product_id", watchedIds)
+          .contains("mentioned_user_ids", [uid!])
           .neq("author_id", uid!)
           .order("created_at", { ascending: false })
           .limit(need);
@@ -291,7 +275,7 @@ function NotificationsPage() {
               title="Sem notificações"
               description={
                 filterKey === "mentions"
-                  ? "Você não tem menções recentes. Siga produtos para receber comentários da equipe."
+                  ? "Você não tem menções recentes. A equipe pode te marcar em comentários com @seu nome."
                   : "Nada por aqui. Você está em dia."
               }
             />

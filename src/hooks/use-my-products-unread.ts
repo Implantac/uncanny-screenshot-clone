@@ -54,13 +54,6 @@ export function useMyProductsUnread() {
     queryKey: ["my-products-unread", uid, lastSeen],
     refetchInterval: 60_000,
     queryFn: async () => {
-      // Watched product IDs for mentions/comments
-      const { data: watched } = await supabase
-        .from("product_watchers")
-        .select("product_id")
-        .eq("user_id", uid!);
-      const watchedIds = (watched ?? []).map((w) => w.product_id);
-
       // Pending approvals created since last seen
       const { count: approvalsCount } = await supabase
         .from("product_approvals")
@@ -68,22 +61,20 @@ export function useMyProductsUnread() {
         .eq("decision", "pendente")
         .gt("created_at", lastSeen);
 
-      let mentionsCount = 0;
-      if (watchedIds.length > 0) {
-        const { count } = await supabase
-          .from("product_timeline_comments")
-          .select("id", { count: "exact", head: true })
-          .in("product_id", watchedIds)
-          .neq("author_id", uid!)
-          .gt("created_at", lastSeen);
-        mentionsCount = count ?? 0;
-      }
+      // Real @mentions: comments where mentioned_user_ids contains me
+      const { count: mCount } = await supabase
+        .from("product_timeline_comments")
+        .select("id", { count: "exact", head: true })
+        .contains("mentioned_user_ids", [uid!])
+        .neq("author_id", uid!)
+        .gt("created_at", lastSeen);
 
       const approvals = approvalsCount ?? 0;
+      const mentions = mCount ?? 0;
       return {
         approvals,
-        mentions: mentionsCount,
-        total: approvals + mentionsCount,
+        mentions,
+        total: approvals + mentions,
       };
     },
   });
