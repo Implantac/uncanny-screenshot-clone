@@ -353,3 +353,261 @@ export const applyMaterialSupplierSwap = createServerFn({ method: "POST" })
 
     return { updated: ids.length, ids };
   });
+
+export type MaterialSwapSimulation = {
+  newSupplierId: string;
+  newSupplierName: string | null;
+  hasReferenceCost: boolean;
+  estimatedUnitCost: number | null;
+  affectedSheets: number;
+  affectedDrafts: number;
+  materialsCostDelta: number; // BRL, may be negative
+  materialsCostDeltaPct: number | null; // vs current sheets materials_cost total
+  finalCostDelta: number; // considers overhead
+  worst: {
+    techSheetId: string;
+    productName: string | null;
+    sku: string | null;
+    currentCost: number;
+    projectedCost: number;
+    deltaPct: number;
+  } | null;
+  details: Array<{
+    techSheetId: string;
+    productName: string | null;
+    sku: string | null;
+    status: string | null;
+    currentCost: number;
+    projectedCost: number;
+    delta: number;
+    deltaPct: number;
+  }>;
+};
+
+export const simulateMaterialSupplierSwap = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (data: {
+      materialKey: string;
+      candidateSupplierIds: string[];
+      materialLibraryIds?: string[];
+    }) => data,
+  )
+  .handler(async ({ data, context }): Promise<MaterialSwapSimulation[]> => {
+    const sb = context.supabase;
+    const key = data.materialKey.trim().toLowerCase().replace(/\s+/g, " ");
+    const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
+
+    const [{ data: matLib }, { data: suppliers }] = await Promise.all([
+      sb
+        .from("material_library")
+        .select("id, name, preferred_supplier_id, reference_cost, active")
+        .eq("active", true),
+      sb.from("suppliers").select("id, name").in("id", data.candidateSupplierIds),
+    ]);
+
+    const supplierName = new Map(
+      ((suppliers ?? []) as { id: string; name: string | null }[]).map((s) => [
+        s.id,
+        s.name,
+      ]),
+    );
+
+    type MatLibRow = {
+      id: string;
+      name: string | null;
+      preferred_supplier_id: string | null;
+      reference_cost: number | null;
+    };
+
+    const sameName = ((matLib ?? []) as MatLibRow[]).filter(
+      (m) => m.name && norm(m.name) === key,
+    );
+
+    // Fallback pool: any material_library row from same supplier (avg reference cost)
+    const supplierAvgCost = new Map<string, number>();
+    for (const sid of data.candidateSupplierIds) {
+      const rows = ((matLib ?? []) as MatLibRow[]).filter(
+        (m) => m.preferred_supplier_id === sid && m.reference_cost != null && m.reference_cost > 0,
+      );
+      if (rows.length > 0) {
+        supplierAvgCost.set(
+          sid,
+          rows.reduce((s, r) => s + Number(r.reference_cost ?? 0), 0) / rows.length,
+        );
+      }
+    }
+
+    // Load draft/em_revisao tech sheets consuming this material
+    const { data: tsm } = await sb
+      .from("tech_sheet_materials")
+      .select("id, tech_sheet_id, name, unit_cost, total_cost, consumption, loss_pct");
+
+    type TsmRow = {
+      id: string;
+      tech_sheet_id: string;
+      name: string | null;
+      unit_cost: number | null;
+      total_cost: number | null;
+      consumption: number | null;
+      loss_pct: number | null;
+    };
+
+    const matching = ((tsm ?? []) as TsmRow[]).filter(
+      (m) => m.name && norm(m.name) === key,
+    );
+    const sheetIds = [...new Set(matching.map((m) => m.tech_sheet_id))];
+    if (sheetIds.length === 0) {
+      return data.candidateSupplierIds.map((sid) => ({
+        newSupplierId: sid,
+        newSupplierName: supplierName.get(sid) ?? null,
+        hasReferenceCost: false,
+        estimatedUnitCost: null,
+        affectedSheets: 0,
+        affectedDrafts: 0,
+        materialsCostDelta: 0,
+        materialsCostDeltaPct: null,
+        finalCostDelta: 0,
+        worst: null,
+        details: [],
+      }));
+    }
+
+    const [{ data: sheets }, { data: products }] = await Promise.all([
+      sb
+        .from("tech_sheets")
+        .select("id, product_id, status, cost_price, materials_cost, overhead_pct")
+        .in("id", sheetIds)
+        .in("status", ["rascunho", "em_revisao"]),
+      sb.from("products").select("id, name, sku"),
+    ]);
+
+    type SheetRow = {
+      id: string;
+      product_id: string | null;
+      status: string;
+      cost_price: number | null;
+      materials_cost: number | null;
+      overhead_pct: number | null;
+    };
+    type ProdRow = { id: string; name: string | null; sku: string | null };
+
+    const sheetRows = (sheets ?? []) as SheetRow[];
+    const prodMap = new Map(
+      ((products ?? []) as ProdRow[]).map((p) => [p.id, p]),
+    );
+
+    // Group matching materials by tech_sheet
+    const linesBySheet = new Map<string, TsmRow[]>();
+    for (const m of matching) {
+      const arr = linesBySheet.get(m.tech_sheet_id) ?? [];
+      arr.push(m);
+      linesBySheet.set(m.tech_sheet_id, arr);
+    }
+
+    const results: MaterialSwapSimulation[] = [];
+
+    for (const sid of data.candidateSupplierIds) {
+      // Best available unit cost estimate for this supplier + material
+      const specificRow = sameName.find((m) => m.preferred_supplier_id === sid);
+      let estimatedUnitCost: number | null = null;
+      let hasReferenceCost = false;
+      if (specificRow?.reference_cost != null && specificRow.reference_cost > 0) {
+        estimatedUnitCost = Number(specificRow.reference_cost);
+        hasReferenceCost = true;
+      } else if (sameName.length > 0) {
+        // avg of same-name reference costs (best proxy for market)
+        const withCost = sameName.filter(
+          (m) => m.reference_cost != null && m.reference_cost > 0,
+        );
+        if (withCost.length > 0) {
+          estimatedUnitCost =
+            withCost.reduce((s, m) => s + Number(m.reference_cost ?? 0), 0) /
+            withCost.length;
+        }
+      }
+      if (estimatedUnitCost == null && supplierAvgCost.has(sid)) {
+        estimatedUnitCost = supplierAvgCost.get(sid)!;
+      }
+
+      const details: MaterialSwapSimulation["details"] = [];
+      let totalDelta = 0;
+      let totalFinalDelta = 0;
+      let currentMatTotal = 0;
+
+      for (const sheet of sheetRows) {
+        const lines = linesBySheet.get(sheet.id) ?? [];
+        if (lines.length === 0) continue;
+
+        const currentLineCost = lines.reduce(
+          (s, l) => s + Number(l.total_cost ?? 0),
+          0,
+        );
+
+        let projectedLineCost = currentLineCost;
+        if (estimatedUnitCost != null) {
+          projectedLineCost = lines.reduce((s, l) => {
+            const cons = Number(l.consumption ?? 0);
+            const loss = Number(l.loss_pct ?? 0);
+            return s + estimatedUnitCost! * cons * (1 + loss / 100);
+          }, 0);
+        }
+
+        const matDelta = projectedLineCost - currentLineCost;
+        const overheadMult = 1 + Number(sheet.overhead_pct ?? 0) / 100;
+        const finalDelta = matDelta * overheadMult;
+
+        const currentCost = Number(sheet.cost_price ?? 0);
+        const projectedCost = currentCost + finalDelta;
+        const deltaPct =
+          currentCost > 0 ? (finalDelta / currentCost) * 100 : 0;
+
+        const prod = sheet.product_id ? prodMap.get(sheet.product_id) : null;
+
+        details.push({
+          techSheetId: sheet.id,
+          productName: prod?.name ?? null,
+          sku: prod?.sku ?? null,
+          status: sheet.status,
+          currentCost,
+          projectedCost,
+          delta: finalDelta,
+          deltaPct,
+        });
+
+        totalDelta += matDelta;
+        totalFinalDelta += finalDelta;
+        currentMatTotal += Number(sheet.materials_cost ?? 0);
+      }
+
+      details.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+      const worst =
+        details.length > 0
+          ? {
+              techSheetId: details[0].techSheetId,
+              productName: details[0].productName,
+              sku: details[0].sku,
+              currentCost: details[0].currentCost,
+              projectedCost: details[0].projectedCost,
+              deltaPct: details[0].deltaPct,
+            }
+          : null;
+
+      results.push({
+        newSupplierId: sid,
+        newSupplierName: supplierName.get(sid) ?? null,
+        hasReferenceCost,
+        estimatedUnitCost,
+        affectedSheets: details.length,
+        affectedDrafts: details.length,
+        materialsCostDelta: totalDelta,
+        materialsCostDeltaPct:
+          currentMatTotal > 0 ? (totalDelta / currentMatTotal) * 100 : null,
+        finalCostDelta: totalFinalDelta,
+        worst,
+        details: details.slice(0, 6),
+      });
+    }
+
+    return results;
+  });
