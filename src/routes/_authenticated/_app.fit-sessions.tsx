@@ -96,6 +96,25 @@ function Page() {
     },
   });
 
+  const compareComments = useQuery({
+    queryKey: ["fit-comments", compareId],
+    enabled: !!compareId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fit_session_comments")
+        .select("*")
+        .eq("fit_session_id", compareId!)
+        .order("created_at");
+      if (error) throw error;
+      return (data ?? []) as Comment[];
+    },
+  });
+
+  const compareSession = useMemo(
+    () => sessions.data?.find((s) => s.id === compareId) ?? null,
+    [sessions.data, compareId],
+  );
+
   const currentSession = useMemo(
     () => sessions.data?.find((s) => s.id === selected) ?? null,
     [sessions.data, selected],
