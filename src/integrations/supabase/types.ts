@@ -2256,6 +2256,66 @@ export type Database = {
           },
         ]
       }
+      product_cost_history: {
+        Row: {
+          created_at: string
+          id: string
+          labor_cost: number
+          materials_cost: number
+          overhead_pct: number
+          owner_id: string
+          product_id: string
+          reason: string | null
+          status: string
+          target_cost: number | null
+          tech_sheet_id: string | null
+          total_cost: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          labor_cost?: number
+          materials_cost?: number
+          overhead_pct?: number
+          owner_id: string
+          product_id: string
+          reason?: string | null
+          status?: string
+          target_cost?: number | null
+          tech_sheet_id?: string | null
+          total_cost?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          labor_cost?: number
+          materials_cost?: number
+          overhead_pct?: number
+          owner_id?: string
+          product_id?: string
+          reason?: string | null
+          status?: string
+          target_cost?: number | null
+          tech_sheet_id?: string | null
+          total_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_cost_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_cost_history_tech_sheet_id_fkey"
+            columns: ["tech_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "tech_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_families: {
         Row: {
           collection_id: string
@@ -5602,6 +5662,16 @@ export type Database = {
           b_count: number
           c_count: number
           total: number
+        }[]
+      }
+      suggest_retail_price: {
+        Args: { _product_id: string }
+        Returns: {
+          current_cost: number
+          current_retail: number
+          gap_pct: number
+          suggested_price: number
+          target_margin_pct: number
         }[]
       }
     }
