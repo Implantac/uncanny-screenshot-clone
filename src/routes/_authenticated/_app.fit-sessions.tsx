@@ -60,6 +60,8 @@ function Page() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [selected, setSelected] = useState<string | null>(null);
+  const [compareId, setCompareId] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
   const [sf, setSf] = useState({ fit_model: "", notes: "", iteration: 1 });
   const [cf, setCf] = useState<{ pom_label: string; severity: string; comment: string; image_url: string | null }>({
     pom_label: "",
