@@ -267,6 +267,42 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
     onError: (e: any) => toast.error(e?.message ?? "Falha ao remover"),
   });
 
+  const editComment = useMutation({
+    mutationFn: async (v: { id: string; body: string }) => {
+      const text = v.body.trim();
+      if (!text) throw new Error("Comentário vazio.");
+      const { error } = await supabase
+        .from("product_timeline_comments")
+        .update({ body: text, edited_at: new Date().toISOString() })
+        .eq("id", v.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["product-timeline-comments", productId] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao editar"),
+  });
+
+  const toggleResolve = useMutation({
+    mutationFn: async (v: { id: string; resolved: boolean }) => {
+      if (!userId) throw new Error("Sem usuário.");
+      const patch = v.resolved
+        ? { resolved_at: null, resolved_by: null }
+        : { resolved_at: new Date().toISOString(), resolved_by: userId };
+      const { error } = await supabase
+        .from("product_timeline_comments")
+        .update(patch)
+        .eq("id", v.id);
+      if (error) throw error;
+      return !v.resolved;
+    },
+    onSuccess: (nowResolved) => {
+      toast.success(nowResolved ? "Thread resolvida" : "Thread reaberta");
+      qc.invalidateQueries({ queryKey: ["product-timeline-comments", productId] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao alterar status"),
+  });
+
   async function downloadAttachment(a: Attachment) {
     const { data, error } = await supabase.storage
       .from("product-timeline")
