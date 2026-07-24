@@ -16,6 +16,10 @@ import {
   Reply,
   CornerDownRight,
   X,
+  Pencil,
+  Check,
+  CheckCircle2,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +31,9 @@ type Comment = {
   event_id: string | null;
   event_source: string | null;
   parent_id: string | null;
+  edited_at: string | null;
+  resolved_at: string | null;
+  resolved_by: string | null;
 };
 
 type Attachment = {
@@ -102,7 +109,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("product_timeline_comments")
-        .select("id, body, created_at, author_id, event_id, event_source, parent_id")
+        .select("id, body, created_at, author_id, event_id, event_source, parent_id, edited_at, resolved_at, resolved_by")
         .eq("product_id", productId)
         .order("created_at", { ascending: false })
         .limit(200);
@@ -258,6 +265,42 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
       qc.invalidateQueries({ queryKey: ["product-timeline-attachments", productId] });
     },
     onError: (e: any) => toast.error(e?.message ?? "Falha ao remover"),
+  });
+
+  const editComment = useMutation({
+    mutationFn: async (v: { id: string; body: string }) => {
+      const text = v.body.trim();
+      if (!text) throw new Error("Comentário vazio.");
+      const { error } = await supabase
+        .from("product_timeline_comments")
+        .update({ body: text, edited_at: new Date().toISOString() })
+        .eq("id", v.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["product-timeline-comments", productId] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao editar"),
+  });
+
+  const toggleResolve = useMutation({
+    mutationFn: async (v: { id: string; resolved: boolean }) => {
+      if (!userId) throw new Error("Sem usuário.");
+      const patch = v.resolved
+        ? { resolved_at: null, resolved_by: null }
+        : { resolved_at: new Date().toISOString(), resolved_by: userId };
+      const { error } = await supabase
+        .from("product_timeline_comments")
+        .update(patch)
+        .eq("id", v.id);
+      if (error) throw error;
+      return !v.resolved;
+    },
+    onSuccess: (nowResolved) => {
+      toast.success(nowResolved ? "Thread resolvida" : "Thread reaberta");
+      qc.invalidateQueries({ queryKey: ["product-timeline-comments", productId] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao alterar status"),
   });
 
   async function downloadAttachment(a: Attachment) {
@@ -465,7 +508,18 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
                     setTimeout(() => textareaRef.current?.focus(), 0);
                   }}
                   onDownload={downloadAttachment}
+                  onEdit={(body) => editComment.mutate({ id: c.id, body })}
+                  onToggleResolve={() =>
+                    toggleResolve.mutate({ id: c.id, resolved: !!c.resolved_at })
+                  }
+                  canResolve
                 />
+                {c.resolved_at && (
+                  <div className="ml-6 -mt-1 text-[10px] text-emerald-600 dark:text-emerald-500 inline-flex items-center gap-1">
+                    <CheckCircle2 className="size-3" /> Resolvida em{" "}
+                    {new Date(c.resolved_at).toLocaleString("pt-BR")}
+                  </div>
+                )}
                 {replies.length > 0 && (
                   <ul className="ml-6 border-l-2 border-primary/20 pl-3 space-y-2">
                     {replies.map((r) => (
@@ -480,6 +534,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
                             setTimeout(() => textareaRef.current?.focus(), 0);
                           }}
                           onDownload={downloadAttachment}
+                          onEdit={(body) => editComment.mutate({ id: r.id, body })}
                           isReply
                         />
                       </li>
@@ -502,6 +557,9 @@ function CommentCard({
   onRemove,
   onReply,
   onDownload,
+  onEdit,
+  onToggleResolve,
+  canResolve,
   isReply,
 }: {
   c: Comment;
@@ -510,36 +568,117 @@ function CommentCard({
   onRemove: () => void;
   onReply: () => void;
   onDownload: (a: Attachment) => void;
+  onEdit: (body: string) => void;
+  onToggleResolve?: () => void;
+  canResolve?: boolean;
   isReply?: boolean;
 }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(c.body);
+  const resolved = !!c.resolved_at;
   return (
     <div
-      className={`rounded-lg border border-border bg-card p-2.5 space-y-1.5 ${
-        isReply ? "bg-muted/30" : ""
+      className={`rounded-lg border p-2.5 space-y-1.5 ${
+        resolved
+          ? "border-emerald-500/40 bg-emerald-500/5"
+          : isReply
+            ? "border-border bg-muted/30"
+            : "border-border bg-card"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="text-sm whitespace-pre-wrap break-words">{c.body}</div>
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            className="text-muted-foreground hover:text-primary"
-            title="Responder"
-            onClick={onReply}
-          >
-            <Reply className="size-3.5" />
-          </button>
-          {mine && (
+        {editing ? (
+          <div className="flex-1 space-y-1.5">
+            <Textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              className="text-sm min-h-[60px] bg-background"
+            />
+            <div className="flex items-center gap-1.5">
+              <Button
+                type="button"
+                size="sm"
+                className="h-6 text-[11px]"
+                disabled={!draft.trim() || draft.trim() === c.body}
+                onClick={() => {
+                  onEdit(draft);
+                  setEditing(false);
+                }}
+              >
+                <Check className="size-3 mr-1" /> Salvar
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-6 text-[11px]"
+                onClick={() => {
+                  setDraft(c.body);
+                  setEditing(false);
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm whitespace-pre-wrap break-words flex-1">
+            {c.body}
+          </div>
+        )}
+        {!editing && (
+          <div className="flex items-center gap-1 shrink-0">
+            {canResolve && onToggleResolve && (
+              <button
+                type="button"
+                className={
+                  resolved
+                    ? "text-emerald-600 hover:text-muted-foreground"
+                    : "text-muted-foreground hover:text-emerald-600"
+                }
+                title={resolved ? "Reabrir thread" : "Marcar como resolvida"}
+                onClick={onToggleResolve}
+              >
+                {resolved ? (
+                  <RotateCcw className="size-3.5" />
+                ) : (
+                  <CheckCircle2 className="size-3.5" />
+                )}
+              </button>
+            )}
             <button
               type="button"
-              className="text-muted-foreground hover:text-destructive"
-              title="Remover"
-              onClick={onRemove}
+              className="text-muted-foreground hover:text-primary"
+              title="Responder"
+              onClick={onReply}
             >
-              <Trash2 className="size-3.5" />
+              <Reply className="size-3.5" />
             </button>
-          )}
-        </div>
+            {mine && (
+              <>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:text-primary"
+                  title="Editar"
+                  onClick={() => {
+                    setDraft(c.body);
+                    setEditing(true);
+                  }}
+                >
+                  <Pencil className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:text-destructive"
+                  title="Remover"
+                  onClick={onRemove}
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
       {atts.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
@@ -556,8 +695,9 @@ function CommentCard({
           ))}
         </div>
       )}
-      <div className="text-[10px] text-muted-foreground font-mono">
-        {new Date(c.created_at).toLocaleString("pt-BR")}
+      <div className="text-[10px] text-muted-foreground font-mono flex items-center gap-2">
+        <span>{new Date(c.created_at).toLocaleString("pt-BR")}</span>
+        {c.edited_at && <span className="italic">· editado</span>}
       </div>
     </div>
   );
