@@ -79,25 +79,25 @@ function ExecutivoPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Executivo</h1>
-          <p className="text-sm text-muted-foreground">
-            Coleção × KPI com semáforo. Decisões em 1 olhada.
-          </p>
-        </div>
-        <Select value={String(windowDays)} onValueChange={(v) => setWindowDays(Number(v))}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="30">Últimos 30 dias</SelectItem>
-            <SelectItem value="60">Últimos 60 dias</SelectItem>
-            <SelectItem value="90">Últimos 90 dias</SelectItem>
-            <SelectItem value="180">Últimos 180 dias</SelectItem>
-          </SelectContent>
-        </Select>
-      </header>
+      <PageHeader
+        eyebrow="Executivo"
+        title="Executivo"
+        description="Coleção × KPI com semáforo. Decisões em 1 olhada."
+        actions={
+          <Select value={String(windowDays)} onValueChange={(v) => setWindowDays(Number(v))}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="30">Últimos 30 dias</SelectItem>
+              <SelectItem value="60">Últimos 60 dias</SelectItem>
+              <SelectItem value="90">Últimos 90 dias</SelectItem>
+              <SelectItem value="180">Últimos 180 dias</SelectItem>
+            </SelectContent>
+          </Select>
+        }
+      />
+
 
       <WarRoomPanel />
 
