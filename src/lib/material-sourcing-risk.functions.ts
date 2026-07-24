@@ -60,6 +60,7 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
       sb.from("tech_sheet_materials").select("tech_sheet_id, name, unit_cost"),
       sb.from("products").select("id, name, sku"),
       sb.from("suppliers").select("id, name"),
+
       sb
         .from("supplier_scorecards")
         .select("supplier_id, score, computed_at")
