@@ -163,15 +163,17 @@ function Cadeia360() {
 
   return (
     <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-          <Truck className="size-6 text-primary" />
-          Cadeia 360º
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Portal de fornecedores, sourcing inteligente e calendário de capacidade — em uma tela.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Supply Chain"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Truck className="size-6 text-primary" />
+            Cadeia 360º
+          </span>
+        }
+        description="Portal de fornecedores, sourcing inteligente e calendário de capacidade — em uma tela."
+      />
+
 
       {isLoading && <div className="text-sm text-muted-foreground">Carregando…</div>}
 
