@@ -275,7 +275,7 @@ function NotificationsPage() {
               title="Sem notificações"
               description={
                 filterKey === "mentions"
-                  ? "Você não tem menções recentes. Siga produtos para receber comentários da equipe."
+                  ? "Você não tem menções recentes. A equipe pode te marcar em comentários com @seu nome."
                   : "Nada por aqui. Você está em dia."
               }
             />
