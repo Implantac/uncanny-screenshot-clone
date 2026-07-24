@@ -186,7 +186,7 @@ function Page() {
         title="Histórico de Provas"
         description="Fit sessions com fotos, comentários técnicos e aprovação de peça piloto."
       />
-      <div className="grid lg:grid-cols-[360px_1fr] gap-6">
+      <div className={`grid gap-6 ${compareId ? "lg:grid-cols-[320px_1fr_1fr]" : "lg:grid-cols-[360px_1fr]"}`}>
       <div className="space-y-4">
         <div className="glass rounded-xl p-3 space-y-2">
           <Input
