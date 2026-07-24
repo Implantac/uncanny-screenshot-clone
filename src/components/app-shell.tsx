@@ -42,18 +42,27 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 const SIDEBAR_COLLAPSED_KEY = "usemoda:sidebar-collapsed";
+const SIDEBAR_SHOW_ALL_KEY = "usemoda:sidebar-show-all";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   const active = location.pathname;
   const { user } = useAuth();
-  const { primary } = useRoles();
+  const { primary, isAdmin: isAdminRole } = useRoles();
   const { sectors, isAdmin } = useSectors();
-  const visibleModules = MODULES.filter((m) => !m.hidden && moduleAllowed(m, sectors, isAdmin));
+  const canSeeAll = isAdmin || isAdminRole || primary === "gerente";
+  const [showAll, setShowAll] = useState(false);
+  const visibleModules = MODULES.filter(
+    (m) =>
+      !m.hidden &&
+      moduleAllowed(m, sectors, isAdmin) &&
+      (canSeeAll || showAll || moduleAllowedForRole(m, primary)),
+  );
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+
 
   useEffect(() => {
     try {
