@@ -37,6 +37,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { getRoutingsForProducts } from "@/lib/product-routing.functions";
 import { ErpSectorSyncPanel } from "@/components/erp-sector-sync-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 
 
@@ -327,44 +328,46 @@ function PcpKanban() {
     <div className="p-4 md:p-6 space-y-4">
       <ErpSectorSyncPanel />
 
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">PCP — Passagem por setores</h1>
-          <p className="text-sm text-muted-foreground">
-            Arraste cards entre colunas para programar a passagem entre setores. Prioridade, prazo e
-            tempo no setor visíveis em cada card.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {batchFilter && (
-            <button
-              onClick={() => setBatchFilter(null)}
-              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border border-border bg-card hover:bg-muted"
-              title="Limpar filtro de lote"
-            >
-              Lote: <span className="font-semibold tabular-nums">{batchFilter}</span>
-              <X className="size-3" />
-            </button>
-          )}
-          <div className="inline-flex rounded-md border border-border bg-card overflow-hidden text-xs">
-            <button
-              onClick={() => setMode("ordens")}
-              className={`px-3 py-1.5 inline-flex items-center gap-1 ${mode === "ordens" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
-            >
-              <Factory className="size-3.5" /> Ordens
-            </button>
-            <button
-              onClick={() => {
-                setMode("lotes");
-                setBatchFilter(null);
-              }}
-              className={`px-3 py-1.5 inline-flex items-center gap-1 ${mode === "lotes" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
-            >
-              <Package className="size-3.5" /> Lotes
-            </button>
+      <PageHeader
+        eyebrow="PCP"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Factory className="size-6 text-primary" /> Passagem por setores
+          </span>
+        }
+        description="Arraste cards entre colunas para programar a passagem entre setores. Prioridade, prazo e tempo no setor visíveis em cada card."
+        actions={
+          <div className="flex items-center gap-2">
+            {batchFilter && (
+              <button
+                onClick={() => setBatchFilter(null)}
+                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border border-border bg-card hover:bg-muted"
+                title="Limpar filtro de lote"
+              >
+                Lote: <span className="font-semibold tabular-nums">{batchFilter}</span>
+                <X className="size-3" />
+              </button>
+            )}
+            <div className="inline-flex rounded-md border border-border bg-card overflow-hidden text-xs">
+              <button
+                onClick={() => setMode("ordens")}
+                className={`px-3 py-1.5 inline-flex items-center gap-1 ${mode === "ordens" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+              >
+                <Factory className="size-3.5" /> Ordens
+              </button>
+              <button
+                onClick={() => {
+                  setMode("lotes");
+                  setBatchFilter(null);
+                }}
+                className={`px-3 py-1.5 inline-flex items-center gap-1 ${mode === "lotes" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+              >
+                <Package className="size-3.5" /> Lotes
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
+        }
+      />
 
       <div className="rounded-xl border border-border bg-card">
         <div className="flex flex-wrap items-center gap-2 px-3 py-2">

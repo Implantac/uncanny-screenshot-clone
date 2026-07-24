@@ -45,6 +45,7 @@ import { InventoryLotBreakdownButton } from "@/components/inventory-lot-breakdow
 import { InventoryScrapsPanel } from "@/components/inventory-scraps-panel";
 import { ScrapByOpPanel } from "@/components/scrap-by-op-panel";
 import { InventorySmartPanel } from "@/components/inventory-smart-panel";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/almoxarifado")({
   validateSearch: zodValidator(
@@ -232,55 +233,53 @@ function Almoxarifado() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          <div className="size-11 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
-            <Boxes className="size-5 text-primary-foreground" />
+      <PageHeader
+        eyebrow="Estoque"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Boxes className="size-6 text-primary" /> Almoxarifado
+          </span>
+        }
+        description={`${items.length} SKUs · ${criticos} críticos · ${noPontoPedido} no ponto de pedido`}
+        actions={
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" asChild className="gap-2">
+              <Link to="/mrp">
+                <Activity className="size-4" /> MRP Inteligente
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                exportToCsv("almoxarifado", items, [
+                  { key: "sku", label: "SKU" },
+                  { key: "name", label: "Nome" },
+                  { key: "category", label: "Categoria" },
+                  { key: "deposit", label: "Depósito" },
+                  { key: "unit", label: "Unidade" },
+                  { key: "balance", label: "Saldo" },
+                  { key: "minimum", label: "Mínimo" },
+                  { key: "notes", label: "Observações" },
+                ])
+              }
+              disabled={!items.length}
+              className="gap-2"
+            >
+              <Download className="size-4" />
+              Exportar CSV
+            </Button>
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setOpen(true);
+              }}
+              className="gap-2"
+            >
+              <Plus className="size-4" /> Novo item
+            </Button>
           </div>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Almoxarifado</h1>
-            <p className="text-sm text-muted-foreground">
-              {items.length} SKUs · {criticos} críticos · {noPontoPedido} no ponto de pedido
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild className="gap-2">
-            <Link to="/mrp">
-              <Activity className="size-4" /> MRP Inteligente
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() =>
-              exportToCsv("almoxarifado", items, [
-                { key: "sku", label: "SKU" },
-                { key: "name", label: "Nome" },
-                { key: "category", label: "Categoria" },
-                { key: "deposit", label: "Depósito" },
-                { key: "unit", label: "Unidade" },
-                { key: "balance", label: "Saldo" },
-                { key: "minimum", label: "Mínimo" },
-                { key: "notes", label: "Observações" },
-              ])
-            }
-            disabled={!items.length}
-            className="gap-2"
-          >
-            <Download className="size-4" />
-            Exportar CSV
-          </Button>
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setOpen(true);
-            }}
-            className="gap-2"
-          >
-            <Plus className="size-4" /> Novo item
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       <InventorySmartPanel />
 

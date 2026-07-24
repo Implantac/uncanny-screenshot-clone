@@ -36,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/lotes")({
   head: () => ({
@@ -237,22 +238,20 @@ function LotesPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">
-            PCP · Produção
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight flex items-center gap-2">
+      <PageHeader
+        eyebrow="PCP · Produção"
+        title={
+          <span className="inline-flex items-center gap-2">
             <Boxes className="size-6 text-primary" /> Lotes & Rastreabilidade
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Agrupe ordens de produção em lotes e visualize o histórico completo de estágios.
-          </p>
-        </div>
-        <Button onClick={openCreate} className="gap-2">
-          <Plus className="size-4" /> Novo lote
-        </Button>
-      </div>
+          </span>
+        }
+        description="Agrupe ordens de produção em lotes e visualize o histórico completo de estágios."
+        actions={
+          <Button onClick={openCreate} className="gap-2">
+            <Plus className="size-4" /> Novo lote
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Kpi label="Lotes totais" value={String(kpis.total)} />
