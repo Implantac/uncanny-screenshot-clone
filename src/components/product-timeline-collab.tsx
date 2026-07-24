@@ -42,7 +42,12 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
   const qc = useQueryClient();
   const [body, setBody] = useState("");
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentioned, setMentioned] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const userIdQuery = useQuery({
     queryKey: ["auth-user-id"],
@@ -50,6 +55,26 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
     staleTime: 5 * 60_000,
   });
   const userId = userIdQuery.data;
+
+  const peopleQuery = useQuery({
+    enabled: mentionQuery !== null,
+    queryKey: ["mention-people", mentionQuery],
+    queryFn: async () => {
+      const q = (mentionQuery ?? "").trim();
+      let req = supabase
+        .from("profiles")
+        .select("id, full_name")
+        .order("full_name", { ascending: true })
+        .limit(8);
+      if (q) req = req.ilike("full_name", `%${q}%`);
+      const { data, error } = await req;
+      if (error) throw error;
+      return (data ?? [])
+        .filter((p) => p.id !== userId && p.full_name)
+        .map((p) => ({ id: p.id, name: p.full_name as string }));
+    },
+    staleTime: 15_000,
+  });
 
   const watcherQuery = useQuery({
     queryKey: ["product-watcher", productId, userId],
