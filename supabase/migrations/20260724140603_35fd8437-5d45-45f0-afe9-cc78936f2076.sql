@@ -1,0 +1,2 @@
+ALTER TABLE public.product_timeline_comments ADD COLUMN IF NOT EXISTS parent_id uuid REFERENCES public.product_timeline_comments(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS idx_product_timeline_comments_parent ON public.product_timeline_comments(parent_id) WHERE parent_id IS NOT NULL;

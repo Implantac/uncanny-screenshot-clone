@@ -13,6 +13,9 @@ import {
   Loader2,
   Trash2,
   Download,
+  Reply,
+  CornerDownRight,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +26,7 @@ type Comment = {
   author_id: string;
   event_id: string | null;
   event_source: string | null;
+  parent_id: string | null;
 };
 
 type Attachment = {
@@ -46,6 +50,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
   const [mentioned, setMentioned] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [replyTo, setReplyTo] = useState<Comment | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -97,7 +102,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("product_timeline_comments")
-        .select("id, body, created_at, author_id, event_id, event_source")
+        .select("id, body, created_at, author_id, event_id, event_source, parent_id")
         .eq("product_id", productId)
         .order("created_at", { ascending: false })
         .limit(200);
@@ -134,6 +139,23 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
     });
     return map;
   }, [attachmentsQuery.data]);
+
+  const { roots, repliesByParent } = useMemo(() => {
+    const list = commentsQuery.data ?? [];
+    const rMap = new Map<string, Comment[]>();
+    const rootList: Comment[] = [];
+    // list is DESC; walk ASC for stable order and reverse roots after
+    for (const c of [...list].reverse()) {
+      if (c.parent_id) {
+        const arr = rMap.get(c.parent_id) ?? [];
+        arr.push(c);
+        rMap.set(c.parent_id, arr);
+      } else {
+        rootList.push(c);
+      }
+    }
+    return { roots: rootList.reverse(), repliesByParent: rMap };
+  }, [commentsQuery.data]);
 
   const toggleWatch = useMutation({
     mutationFn: async () => {
@@ -173,6 +195,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
           owner_id: userId,
           body: text,
           mentioned_user_ids: mentioned.map((m) => m.id),
+          parent_id: replyTo?.id ?? null,
         })
         .select("id")
         .single();
@@ -214,6 +237,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
       setPendingFiles([]);
       setMentioned([]);
       setMentionQuery(null);
+      setReplyTo(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       qc.invalidateQueries({ queryKey: ["product-timeline-comments", productId] });
       qc.invalidateQueries({ queryKey: ["product-timeline-attachments", productId] });
@@ -281,6 +305,23 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
       </div>
 
       <div className="rounded-lg border border-border bg-muted/30 p-2 space-y-2">
+        {replyTo && (
+          <div className="flex items-start gap-2 rounded-md border border-primary/30 bg-primary/5 px-2 py-1.5 text-[11px]">
+            <CornerDownRight className="size-3 text-primary mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-primary">Respondendo a comentário</div>
+              <div className="truncate text-muted-foreground">{replyTo.body}</div>
+            </div>
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground"
+              title="Cancelar resposta"
+              onClick={() => setReplyTo(null)}
+            >
+              <X className="size-3" />
+            </button>
+          </div>
+        )}
         <div className="relative">
           <Textarea
             ref={textareaRef}
@@ -410,52 +451,114 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
         </div>
       ) : (
         <ul className="space-y-2">
-          {(commentsQuery.data ?? []).map((c) => {
-            const atts = attachmentsByComment.get(c.id) ?? [];
-            const mine = c.author_id === userId;
+          {roots.map((c) => {
+            const replies = repliesByParent.get(c.id) ?? [];
             return (
-              <li
-                key={c.id}
-                className="rounded-lg border border-border bg-card p-2.5 space-y-1.5"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="text-sm whitespace-pre-wrap break-words">
-                    {c.body}
-                  </div>
-                  {mine && (
-                    <button
-                      type="button"
-                      className="text-muted-foreground hover:text-destructive"
-                      title="Remover"
-                      onClick={() => removeComment.mutate(c.id)}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  )}
-                </div>
-                {atts.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {atts.map((a) => (
-                      <button
-                        key={a.id}
-                        type="button"
-                        onClick={() => downloadAttachment(a)}
-                        className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border border-border bg-muted hover:bg-muted/70"
-                      >
-                        <Download className="size-3" />
-                        <span className="truncate max-w-[180px]">{a.file_name}</span>
-                      </button>
+              <li key={c.id} className="space-y-2">
+                <CommentCard
+                  c={c}
+                  mine={c.author_id === userId}
+                  atts={attachmentsByComment.get(c.id) ?? []}
+                  onRemove={() => removeComment.mutate(c.id)}
+                  onReply={() => {
+                    setReplyTo(c);
+                    setTimeout(() => textareaRef.current?.focus(), 0);
+                  }}
+                  onDownload={downloadAttachment}
+                />
+                {replies.length > 0 && (
+                  <ul className="ml-6 border-l-2 border-primary/20 pl-3 space-y-2">
+                    {replies.map((r) => (
+                      <li key={r.id}>
+                        <CommentCard
+                          c={r}
+                          mine={r.author_id === userId}
+                          atts={attachmentsByComment.get(r.id) ?? []}
+                          onRemove={() => removeComment.mutate(r.id)}
+                          onReply={() => {
+                            setReplyTo(c);
+                            setTimeout(() => textareaRef.current?.focus(), 0);
+                          }}
+                          onDownload={downloadAttachment}
+                          isReply
+                        />
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 )}
-                <div className="text-[10px] text-muted-foreground font-mono">
-                  {new Date(c.created_at).toLocaleString("pt-BR")}
-                </div>
               </li>
             );
           })}
         </ul>
       )}
+    </div>
+  );
+}
+
+function CommentCard({
+  c,
+  mine,
+  atts,
+  onRemove,
+  onReply,
+  onDownload,
+  isReply,
+}: {
+  c: Comment;
+  mine: boolean;
+  atts: Attachment[];
+  onRemove: () => void;
+  onReply: () => void;
+  onDownload: (a: Attachment) => void;
+  isReply?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-lg border border-border bg-card p-2.5 space-y-1.5 ${
+        isReply ? "bg-muted/30" : ""
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-sm whitespace-pre-wrap break-words">{c.body}</div>
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-primary"
+            title="Responder"
+            onClick={onReply}
+          >
+            <Reply className="size-3.5" />
+          </button>
+          {mine && (
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-destructive"
+              title="Remover"
+              onClick={onRemove}
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+      {atts.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {atts.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => onDownload(a)}
+              className="inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border border-border bg-muted hover:bg-muted/70"
+            >
+              <Download className="size-3" />
+              <span className="truncate max-w-[180px]">{a.file_name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="text-[10px] text-muted-foreground font-mono">
+        {new Date(c.created_at).toLocaleString("pt-BR")}
+      </div>
     </div>
   );
 }
