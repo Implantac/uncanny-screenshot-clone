@@ -774,7 +774,9 @@ function CollectionTabs({
 
         {/* Inteligência cruzada (painéis já existentes) */}
         <CollectionIntelligencePanel />
+        <CollectionCapaRiskPanel />
         <LaunchingWeekPanel />
+
 
         {/* Atalhos cruzados */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
