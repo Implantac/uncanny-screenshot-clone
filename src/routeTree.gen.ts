@@ -119,6 +119,7 @@ import { Route as ApiPublicHooksMrpRecalcRouteImport } from './routes/api/public
 import { Route as ApiPublicHooksMarkLateOpsRouteImport } from './routes/api/public/hooks/mark-late-ops'
 import { Route as ApiPublicHooksErpPullAllRouteImport } from './routes/api/public/hooks/erp-pull-all'
 import { Route as ApiPublicHooksDailyDigestRouteImport } from './routes/api/public/hooks/daily-digest'
+import { Route as ApiPublicHooksApprovalEscalationRouteImport } from './routes/api/public/hooks/approval-escalation'
 import { Route as ApiPublicErpSyncPublicIdRouteImport } from './routes/api/public/erp-sync.$publicId'
 import { Route as ApiPublicAgentsRunDueRouteImport } from './routes/api.public.agents.run-due'
 import { Route as AuthenticatedAppWarRoomColecaoIdRouteImport } from './routes/_authenticated/_app.war-room-colecao.$id'
@@ -761,6 +762,12 @@ const ApiPublicHooksDailyDigestRoute =
     path: '/api/public/hooks/daily-digest',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksApprovalEscalationRoute =
+  ApiPublicHooksApprovalEscalationRouteImport.update({
+    id: '/api/public/hooks/approval-escalation',
+    path: '/api/public/hooks/approval-escalation',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicErpSyncPublicIdRoute =
   ApiPublicErpSyncPublicIdRouteImport.update({
     id: '/api/public/erp-sync/$publicId',
@@ -952,6 +959,7 @@ export interface FileRoutesByFullPath {
   '/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
+  '/api/public/hooks/approval-escalation': typeof ApiPublicHooksApprovalEscalationRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
@@ -1075,6 +1083,7 @@ export interface FileRoutesByTo {
   '/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
+  '/api/public/hooks/approval-escalation': typeof ApiPublicHooksApprovalEscalationRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
@@ -1201,6 +1210,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/war-room-colecao/$id': typeof AuthenticatedAppWarRoomColecaoIdRoute
   '/api/public/agents/run-due': typeof ApiPublicAgentsRunDueRoute
   '/api/public/erp-sync/$publicId': typeof ApiPublicErpSyncPublicIdRoute
+  '/api/public/hooks/approval-escalation': typeof ApiPublicHooksApprovalEscalationRoute
   '/api/public/hooks/daily-digest': typeof ApiPublicHooksDailyDigestRoute
   '/api/public/hooks/erp-pull-all': typeof ApiPublicHooksErpPullAllRoute
   '/api/public/hooks/mark-late-ops': typeof ApiPublicHooksMarkLateOpsRoute
@@ -1326,6 +1336,7 @@ export interface FileRouteTypes {
     | '/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
+    | '/api/public/hooks/approval-escalation'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
@@ -1449,6 +1460,7 @@ export interface FileRouteTypes {
     | '/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
+    | '/api/public/hooks/approval-escalation'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
@@ -1574,6 +1586,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/war-room-colecao/$id'
     | '/api/public/agents/run-due'
     | '/api/public/erp-sync/$publicId'
+    | '/api/public/hooks/approval-escalation'
     | '/api/public/hooks/daily-digest'
     | '/api/public/hooks/erp-pull-all'
     | '/api/public/hooks/mark-late-ops'
@@ -1594,6 +1607,7 @@ export interface RootRouteChildren {
   PortalFornecedorTokenRoute: typeof PortalFornecedorTokenRoute
   ApiPublicAgentsRunDueRoute: typeof ApiPublicAgentsRunDueRoute
   ApiPublicErpSyncPublicIdRoute: typeof ApiPublicErpSyncPublicIdRoute
+  ApiPublicHooksApprovalEscalationRoute: typeof ApiPublicHooksApprovalEscalationRoute
   ApiPublicHooksDailyDigestRoute: typeof ApiPublicHooksDailyDigestRoute
   ApiPublicHooksErpPullAllRoute: typeof ApiPublicHooksErpPullAllRoute
   ApiPublicHooksMarkLateOpsRoute: typeof ApiPublicHooksMarkLateOpsRoute
@@ -2374,6 +2388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksDailyDigestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/approval-escalation': {
+      id: '/api/public/hooks/approval-escalation'
+      path: '/api/public/hooks/approval-escalation'
+      fullPath: '/api/public/hooks/approval-escalation'
+      preLoaderRoute: typeof ApiPublicHooksApprovalEscalationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/erp-sync/$publicId': {
       id: '/api/public/erp-sync/$publicId'
       path: '/api/public/erp-sync/$publicId'
@@ -2741,6 +2762,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortalFornecedorTokenRoute: PortalFornecedorTokenRoute,
   ApiPublicAgentsRunDueRoute: ApiPublicAgentsRunDueRoute,
   ApiPublicErpSyncPublicIdRoute: ApiPublicErpSyncPublicIdRoute,
+  ApiPublicHooksApprovalEscalationRoute: ApiPublicHooksApprovalEscalationRoute,
   ApiPublicHooksDailyDigestRoute: ApiPublicHooksDailyDigestRoute,
   ApiPublicHooksErpPullAllRoute: ApiPublicHooksErpPullAllRoute,
   ApiPublicHooksMarkLateOpsRoute: ApiPublicHooksMarkLateOpsRoute,
