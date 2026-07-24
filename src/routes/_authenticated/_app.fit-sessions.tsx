@@ -296,18 +296,18 @@ function Page() {
                   <ImageIcon className="h-4 w-4 text-primary" /> Fotos da prova ({photos.length})
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                  {photos.map((url) => (
-                    <a
+                  {photos.map((url, i) => (
+                    <button
                       key={url}
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
+                      type="button"
+                      onClick={() => setLightbox({ images: photos, index: i })}
                       className="aspect-square rounded-md overflow-hidden border border-border hover:border-primary/60 transition"
                     >
                       <img src={url} alt="Foto da prova" className="w-full h-full object-cover" loading="lazy" />
-                    </a>
+                    </button>
                   ))}
                 </div>
+
               </div>
             )}
 
