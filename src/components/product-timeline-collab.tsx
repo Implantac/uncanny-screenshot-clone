@@ -109,7 +109,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("product_timeline_comments")
-        .select("id, body, created_at, author_id, event_id, event_source, parent_id")
+        .select("id, body, created_at, author_id, event_id, event_source, parent_id, edited_at, resolved_at, resolved_by")
         .eq("product_id", productId)
         .order("created_at", { ascending: false })
         .limit(200);
