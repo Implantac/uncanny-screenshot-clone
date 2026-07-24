@@ -117,6 +117,7 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
       const { error } = await supabase.from("tech_sheet_materials").insert({
         owner_id: ownerId,
         tech_sheet_id: sheetId,
+        material_id: m.id,
         name: m.name,
         unit: m.unit ?? "un",
         consumption: 0,
@@ -124,7 +125,7 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
         unit_cost: Number(m.reference_cost ?? 0),
         position: data.length,
         inventory_item_id: inventoryId,
-      });
+      } as never);
       if (error) throw error;
     },
     onSuccess: () => {
