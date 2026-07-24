@@ -92,23 +92,39 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
   (sims ?? []).forEach((s) => simById.set(s.newSupplierId, s));
 
   const mutation = useMutation({
-    mutationFn: (newSupplierId: string) =>
+    mutationFn: (vars: { newSupplierId: string; override?: { reason: string } }) =>
       swap({
         data: {
           materialKey: row.key,
-          newSupplierId,
+          newSupplierId: vars.newSupplierId,
           materialLibraryIds: row.materialLibraryIds,
+          override: vars.override,
         },
       }),
-    onMutate: (id) => setPending(id),
-    onSuccess: (res, id) => {
-      const name = row.alternateSuppliers.find((s) => s.id === id)?.name ?? "fornecedor";
+    onMutate: (v) => setPending(v.newSupplierId),
+    onSuccess: (res, vars) => {
+      const name = row.alternateSuppliers.find((s) => s.id === vars.newSupplierId)?.name ?? "fornecedor";
+      if (res.blocked) {
+        const sign = res.worstPct > 0 ? "+" : "";
+        const target = res.worstProductName ?? res.worstSku ?? "produto ativo";
+        const reason = window.prompt(
+          `⚠️ Guardrail de custo\n\nImpacto estimado ${sign}${res.worstPct.toFixed(1)}% em ${target} (limite ${res.threshold}%, ${res.affectedActive} ficha(s) ativa(s)).\n\nDigite o motivo para prosseguir com a substituição:`,
+        );
+        if (reason && reason.trim().length >= 5) {
+          mutation.mutate({ newSupplierId: vars.newSupplierId, override: { reason: reason.trim() } });
+        } else if (reason !== null) {
+          toast.warning("Motivo obrigatório (mínimo 5 caracteres) — substituição cancelada.");
+        }
+        return;
+      }
       if (res.updated === 0) {
         toast.warning(
           `Nenhum material "${row.displayName}" encontrado no material_library — cadastre antes de aplicar substituição.`,
         );
       } else {
-        toast.success(`${res.updated} material(is) atualizado(s) → ${name}`);
+        toast.success(
+          `${res.updated} material(is) atualizado(s) → ${name}${res.overridden ? " (override registrado)" : ""}`,
+        );
       }
       qc.invalidateQueries({ queryKey: ["material-sourcing-risks"] });
       qc.invalidateQueries({ queryKey: ["tech-sheet-bom-reviews"] });
@@ -156,7 +172,7 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
               disabled={mutation.isPending}
               onSelect={(e) => {
                 e.preventDefault();
-                mutation.mutate(s.id);
+                mutation.mutate({ newSupplierId: s.id });
               }}
               className="flex flex-col items-stretch gap-0.5 text-xs py-2"
             >
