@@ -1,12 +1,25 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Package, Factory, Calendar, AlertOctagon, ArrowLeftRight, Loader2, Check } from "lucide-react";
+import {
+  Package,
+  Factory,
+  Calendar,
+  AlertOctagon,
+  ArrowLeftRight,
+  Loader2,
+  Check,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   applyMaterialSupplierSwap,
   getMaterialSourcingRisks,
+  simulateMaterialSupplierSwap,
   type MaterialSourcingRisk,
+  type MaterialSwapSimulation,
 } from "@/lib/material-sourcing-risk.functions";
 import { Markdown } from "@/components/markdown";
 import {
@@ -19,10 +32,65 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
+const brl = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+function DeltaBadge({ pct, hasEstimate }: { pct: number | null; hasEstimate: boolean }) {
+  if (!hasEstimate || pct == null) {
+    return (
+      <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+        <Minus className="size-2.5" />
+        s/ estimativa
+      </span>
+    );
+  }
+  const zero = Math.abs(pct) < 0.05;
+  if (zero) {
+    return (
+      <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+        <Minus className="size-2.5" /> ~0%
+      </span>
+    );
+  }
+  const up = pct > 0;
+  const Icon = up ? TrendingUp : TrendingDown;
+  return (
+    <span
+      className={`inline-flex items-center gap-0.5 text-[10px] font-mono ${up ? "text-destructive" : "text-emerald-600"}`}
+    >
+      <Icon className="size-2.5" />
+      {up ? "+" : ""}
+      {pct.toFixed(1)}%
+    </span>
+  );
+}
+
 function SwapButton({ row }: { row: MaterialSourcingRisk }) {
   const qc = useQueryClient();
   const swap = useServerFn(applyMaterialSupplierSwap);
+  const simulate = useServerFn(simulateMaterialSupplierSwap);
   const [pending, setPending] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const candidateIds = row.alternateSuppliers.map((s) => s.id);
+
+  const { data: sims, isLoading: simLoading } = useQuery({
+    queryKey: ["material-swap-sim", row.key, candidateIds.join(",")],
+    queryFn: () =>
+      simulate({
+        data: {
+          materialKey: row.key,
+          candidateSupplierIds: candidateIds,
+          materialLibraryIds: row.materialLibraryIds,
+        },
+      }),
+    enabled: open && candidateIds.length > 0,
+    staleTime: 30_000,
+  });
+
+  const simById = new Map<string, MaterialSwapSimulation>();
+  (sims ?? []).forEach((s) => simById.set(s.newSupplierId, s));
+
   const mutation = useMutation({
     mutationFn: (newSupplierId: string) =>
       swap({
@@ -44,6 +112,7 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
       }
       qc.invalidateQueries({ queryKey: ["material-sourcing-risks"] });
       qc.invalidateQueries({ queryKey: ["tech-sheet-bom-reviews"] });
+      qc.invalidateQueries({ queryKey: ["tech-sheet-cost-alerts"] });
     },
     onError: (e) => toast.error(`Falha na substituição: ${(e as Error).message}`),
     onSettled: () => setPending(null),
@@ -52,7 +121,7 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
   if (row.alternateSuppliers.length === 0) return null;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
@@ -64,35 +133,64 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
           ) : (
             <ArrowLeftRight className="size-3" />
           )}
-          Aplicar substituição
+          Simular & aplicar
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
+      <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="text-xs">
-          Trocar fornecedor preferido em <span className="font-semibold">{row.displayName}</span>
+          Trocar fornecedor em <span className="font-semibold">{row.displayName}</span>
+          {simLoading && (
+            <span className="ml-2 inline-flex items-center gap-1 text-muted-foreground text-[10px]">
+              <Loader2 className="size-2.5 animate-spin" /> simulando…
+            </span>
+          )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {row.alternateSuppliers.map((s) => (
-          <DropdownMenuItem
-            key={s.id}
-            disabled={mutation.isPending}
-            onSelect={(e) => {
-              e.preventDefault();
-              mutation.mutate(s.id);
-            }}
-            className="flex items-center justify-between gap-2 text-xs"
-          >
-            <span className="truncate">{s.name ?? s.id.slice(0, 6)}</span>
-            <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-              {pending === s.id ? (
-                <Loader2 className="size-3 animate-spin" />
-              ) : (
-                <Check className="size-3 text-emerald-500" />
+        {row.alternateSuppliers.map((s) => {
+          const sim = simById.get(s.id);
+          const has = !!sim?.hasReferenceCost || sim?.estimatedUnitCost != null;
+          const pct = sim?.materialsCostDeltaPct ?? null;
+          return (
+            <DropdownMenuItem
+              key={s.id}
+              disabled={mutation.isPending}
+              onSelect={(e) => {
+                e.preventDefault();
+                mutation.mutate(s.id);
+              }}
+              className="flex flex-col items-stretch gap-0.5 text-xs py-2"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate font-medium">
+                  {s.name ?? s.id.slice(0, 6)}
+                </span>
+                <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                  {pending === s.id ? (
+                    <Loader2 className="size-3 animate-spin" />
+                  ) : (
+                    <Check className="size-3 text-emerald-500" />
+                  )}
+                  score {s.score}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                <span>
+                  {sim?.affectedDrafts ?? 0} ficha(s){" "}
+                  {sim?.estimatedUnitCost != null && (
+                    <>· unit. est. {brl(sim.estimatedUnitCost)}</>
+                  )}
+                </span>
+                <DeltaBadge pct={pct} hasEstimate={has} />
+              </div>
+              {sim?.worst && has && (
+                <div className="text-[10px] text-muted-foreground truncate">
+                  Pior: {sim.worst.productName ?? sim.worst.sku ?? sim.worst.techSheetId.slice(0, 6)} ({sim.worst.deltaPct > 0 ? "+" : ""}
+                  {sim.worst.deltaPct.toFixed(1)}%)
+                </div>
               )}
-              score {s.score}
-            </span>
-          </DropdownMenuItem>
-        ))}
+            </DropdownMenuItem>
+          );
+        })}
         {row.materialLibraryIds.length === 0 && (
           <div className="px-2 py-1.5 text-[10px] text-muted-foreground">
             Material não está cadastrado em material_library — substituição criará vínculo por nome.
