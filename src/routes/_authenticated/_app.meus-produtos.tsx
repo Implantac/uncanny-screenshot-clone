@@ -251,13 +251,21 @@ function MyProductsFeed() {
             />
           ) : (
             <ul className="space-y-1.5">
-              {(approvals.data ?? []).map((a) => (
+              {(approvals.data ?? []).map((a) => {
+                const fresh = isNew(a.created_at);
+                return (
                 <li key={a.id}>
                   <Link
                     to="/produto/$id"
                     params={{ id: a.product_id }}
-                    className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition"
+                    className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition relative"
                   >
+                    {fresh && (
+                      <span
+                        aria-label="Nova"
+                        className="absolute left-1 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-primary"
+                      />
+                    )}
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-xs font-medium truncate">
                         {a.products?.name ?? "Produto"}
@@ -278,11 +286,13 @@ function MyProductsFeed() {
                     </div>
                   </Link>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </section>
       </div>
+
 
       {/* Recent comments feed */}
       <section className="rounded-xl border border-border bg-card p-4 space-y-3">
