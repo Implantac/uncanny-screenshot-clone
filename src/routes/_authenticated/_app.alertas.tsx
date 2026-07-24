@@ -21,6 +21,7 @@ import {
   type AlertCategory,
   type CenterAlert,
 } from "@/lib/alerts-center.functions";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/alertas")({
   component: AlertsCenterPage,
