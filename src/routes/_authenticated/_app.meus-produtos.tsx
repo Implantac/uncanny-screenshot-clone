@@ -17,6 +17,7 @@ import {
   ArrowRight,
   CheckCheck,
 } from "lucide-react";
+import { ApprovalSlaBadge } from "@/components/approval-sla-badge";
 
 export const Route = createFileRoute("/_authenticated/_app/meus-produtos")({
   head: () => ({
@@ -270,19 +271,13 @@ function MyProductsFeed() {
                       <div className="text-xs font-medium truncate">
                         {a.products?.name ?? "Produto"}
                       </div>
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] bg-amber-500/15 text-amber-600 border-amber-500/30"
-                      >
-                        pendente
-                      </Badge>
+                      <ApprovalSlaBadge createdAt={a.created_at} />
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-0.5">
                       Gate: <span className="font-mono">{a.gate_key}</span>
                     </div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5 inline-flex items-center gap-1">
-                      <Clock className="size-3" />
-                      {new Date(a.created_at).toLocaleString("pt-BR")}
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      Aberta em {new Date(a.created_at).toLocaleString("pt-BR")}
                     </div>
                   </Link>
                 </li>

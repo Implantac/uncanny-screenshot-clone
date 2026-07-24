@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ApprovalSlaBadge } from "@/components/approval-sla-badge";
 
 const PAGE_SIZE = 20;
 
@@ -326,17 +327,16 @@ function NotificationsPage() {
                             </span>
                           )}
                         </div>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "text-[10px] shrink-0",
-                            n.kind === "approval"
-                              ? "bg-amber-500/15 text-amber-600 border-amber-500/30"
-                              : "bg-primary/10 text-primary border-primary/30",
-                          )}
-                        >
-                          {n.kind === "approval" ? "aprovação" : "menção"}
-                        </Badge>
+                        {n.kind === "approval" ? (
+                          <ApprovalSlaBadge createdAt={n.created_at} className="shrink-0" />
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] shrink-0 bg-primary/10 text-primary border-primary/30"
+                          >
+                            menção
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-xs text-muted-foreground line-clamp-2 mt-0.5 whitespace-pre-wrap">
                         {n.subtitle}
