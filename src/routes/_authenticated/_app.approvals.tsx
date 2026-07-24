@@ -120,14 +120,16 @@ function Approvals() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Workflow className="h-6 w-6 text-amber-600" /> Workflow de Aprovações
-        </h1>
-        <p className="text-muted-foreground">
-          PLM como sistema de gates — nada avança sem aprovação.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Governança"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Workflow className="h-6 w-6 text-amber-600" /> Workflow de Aprovações
+          </span>
+        }
+        description="PLM como sistema de gates — nada avança sem aprovação."
+      />
+
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {(data ?? []).map((g) => (
