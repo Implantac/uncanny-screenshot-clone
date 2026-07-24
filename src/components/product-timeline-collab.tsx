@@ -140,6 +140,23 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
     return map;
   }, [attachmentsQuery.data]);
 
+  const { roots, repliesByParent } = useMemo(() => {
+    const list = commentsQuery.data ?? [];
+    const rMap = new Map<string, Comment[]>();
+    const rootList: Comment[] = [];
+    // list is DESC; walk ASC for stable order and reverse roots after
+    for (const c of [...list].reverse()) {
+      if (c.parent_id) {
+        const arr = rMap.get(c.parent_id) ?? [];
+        arr.push(c);
+        rMap.set(c.parent_id, arr);
+      } else {
+        rootList.push(c);
+      }
+    }
+    return { roots: rootList.reverse(), repliesByParent: rMap };
+  }, [commentsQuery.data]);
+
   const toggleWatch = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error("Sem usuário.");
