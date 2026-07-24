@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useMyProductsUnread } from "@/hooks/use-my-products-unread";
@@ -8,16 +8,21 @@ import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 import {
   BellRing,
   Package,
   MessageSquare,
   ShieldCheck,
-  Clock,
   ArrowRight,
   CheckCheck,
+  Check,
+  X,
+  Loader2,
 } from "lucide-react";
 import { ApprovalSlaBadge } from "@/components/approval-sla-badge";
+
 
 export const Route = createFileRoute("/_authenticated/_app/meus-produtos")({
   head: () => ({
