@@ -203,17 +203,25 @@ function NotificationsPage() {
         title="Notificações"
         description="Central de aprovações pendentes e menções nos seus produtos."
         actions={
-          unread.total > 0 ? (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => unread.markAllRead()}
-              className="gap-1.5"
+          <div className="flex items-center gap-2">
+            <Link
+              to="/preferencias-notificacoes"
+              className="text-xs inline-flex items-center gap-1 px-2 py-1.5 rounded border border-border hover:bg-muted"
             >
-              <CheckCheck className="size-3.5" />
-              Marcar tudo como lido ({unread.total})
-            </Button>
-          ) : null
+              Preferências
+            </Link>
+            {unread.total > 0 ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => unread.markAllRead()}
+                className="gap-1.5"
+              >
+                <CheckCheck className="size-3.5" />
+                Marcar tudo como lido ({unread.total})
+              </Button>
+            ) : null}
+          </div>
         }
       />
 

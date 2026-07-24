@@ -48,6 +48,7 @@ import { Route as AuthenticatedAppProdutividadeRouteImport } from './routes/_aut
 import { Route as AuthenticatedAppProductSuccessRouteImport } from './routes/_authenticated/_app.product-success'
 import { Route as AuthenticatedAppProductScoreRouteImport } from './routes/_authenticated/_app.product-score'
 import { Route as AuthenticatedAppProductRoutingRouteImport } from './routes/_authenticated/_app.product-routing'
+import { Route as AuthenticatedAppPreferenciasNotificacoesRouteImport } from './routes/_authenticated/_app.preferencias-notificacoes'
 import { Route as AuthenticatedAppPilotsRouteImport } from './routes/_authenticated/_app.pilots'
 import { Route as AuthenticatedAppPedidosCompraRouteImport } from './routes/_authenticated/_app.pedidos-compra'
 import { Route as AuthenticatedAppPcpStagesRouteImport } from './routes/_authenticated/_app.pcp-stages'
@@ -348,6 +349,12 @@ const AuthenticatedAppProductRoutingRoute =
   AuthenticatedAppProductRoutingRouteImport.update({
     id: '/product-routing',
     path: '/product-routing',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppPreferenciasNotificacoesRoute =
+  AuthenticatedAppPreferenciasNotificacoesRouteImport.update({
+    id: '/preferencias-notificacoes',
+    path: '/preferencias-notificacoes',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppPilotsRoute = AuthenticatedAppPilotsRouteImport.update({
@@ -901,6 +908,7 @@ export interface FileRoutesByFullPath {
   '/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
   '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/pilots': typeof AuthenticatedAppPilotsRoute
+  '/preferencias-notificacoes': typeof AuthenticatedAppPreferenciasNotificacoesRoute
   '/product-routing': typeof AuthenticatedAppProductRoutingRoute
   '/product-score': typeof AuthenticatedAppProductScoreRoute
   '/product-success': typeof AuthenticatedAppProductSuccessRoute
@@ -1023,6 +1031,7 @@ export interface FileRoutesByTo {
   '/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
   '/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/pilots': typeof AuthenticatedAppPilotsRoute
+  '/preferencias-notificacoes': typeof AuthenticatedAppPreferenciasNotificacoesRoute
   '/product-routing': typeof AuthenticatedAppProductRoutingRoute
   '/product-score': typeof AuthenticatedAppProductScoreRoute
   '/product-success': typeof AuthenticatedAppProductSuccessRoute
@@ -1147,6 +1156,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/pcp-stages': typeof AuthenticatedAppPcpStagesRoute
   '/_authenticated/_app/pedidos-compra': typeof AuthenticatedAppPedidosCompraRoute
   '/_authenticated/_app/pilots': typeof AuthenticatedAppPilotsRoute
+  '/_authenticated/_app/preferencias-notificacoes': typeof AuthenticatedAppPreferenciasNotificacoesRoute
   '/_authenticated/_app/product-routing': typeof AuthenticatedAppProductRoutingRoute
   '/_authenticated/_app/product-score': typeof AuthenticatedAppProductScoreRoute
   '/_authenticated/_app/product-success': typeof AuthenticatedAppProductSuccessRoute
@@ -1272,6 +1282,7 @@ export interface FileRouteTypes {
     | '/pcp-stages'
     | '/pedidos-compra'
     | '/pilots'
+    | '/preferencias-notificacoes'
     | '/product-routing'
     | '/product-score'
     | '/product-success'
@@ -1394,6 +1405,7 @@ export interface FileRouteTypes {
     | '/pcp-stages'
     | '/pedidos-compra'
     | '/pilots'
+    | '/preferencias-notificacoes'
     | '/product-routing'
     | '/product-score'
     | '/product-success'
@@ -1517,6 +1529,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/pcp-stages'
     | '/_authenticated/_app/pedidos-compra'
     | '/_authenticated/_app/pilots'
+    | '/_authenticated/_app/preferencias-notificacoes'
     | '/_authenticated/_app/product-routing'
     | '/_authenticated/_app/product-score'
     | '/_authenticated/_app/product-success'
@@ -1862,6 +1875,13 @@ declare module '@tanstack/react-router' {
       path: '/product-routing'
       fullPath: '/product-routing'
       preLoaderRoute: typeof AuthenticatedAppProductRoutingRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/preferencias-notificacoes': {
+      id: '/_authenticated/_app/preferencias-notificacoes'
+      path: '/preferencias-notificacoes'
+      fullPath: '/preferencias-notificacoes'
+      preLoaderRoute: typeof AuthenticatedAppPreferenciasNotificacoesRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/pilots': {
@@ -2542,6 +2562,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppPcpStagesRoute: typeof AuthenticatedAppPcpStagesRoute
   AuthenticatedAppPedidosCompraRoute: typeof AuthenticatedAppPedidosCompraRoute
   AuthenticatedAppPilotsRoute: typeof AuthenticatedAppPilotsRoute
+  AuthenticatedAppPreferenciasNotificacoesRoute: typeof AuthenticatedAppPreferenciasNotificacoesRoute
   AuthenticatedAppProductRoutingRoute: typeof AuthenticatedAppProductRoutingRoute
   AuthenticatedAppProductScoreRoute: typeof AuthenticatedAppProductScoreRoute
   AuthenticatedAppProductSuccessRoute: typeof AuthenticatedAppProductSuccessRoute
@@ -2650,6 +2671,8 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppPcpStagesRoute: AuthenticatedAppPcpStagesRoute,
   AuthenticatedAppPedidosCompraRoute: AuthenticatedAppPedidosCompraRoute,
   AuthenticatedAppPilotsRoute: AuthenticatedAppPilotsRoute,
+  AuthenticatedAppPreferenciasNotificacoesRoute:
+    AuthenticatedAppPreferenciasNotificacoesRoute,
   AuthenticatedAppProductRoutingRoute: AuthenticatedAppProductRoutingRoute,
   AuthenticatedAppProductScoreRoute: AuthenticatedAppProductScoreRoute,
   AuthenticatedAppProductSuccessRoute: AuthenticatedAppProductSuccessRoute,
