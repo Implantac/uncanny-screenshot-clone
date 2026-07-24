@@ -579,6 +579,7 @@ function PcpKanban() {
       <AICoordinatorPanel persona="pcp" title="Coordenador de PCP — leitura do kanban" />
 
       <AdaptiveProductionPriorityPanel />
+      <CapacityRebalancePanel />
       <PcpApsPanel />
       <PcpApsGantt />
 
