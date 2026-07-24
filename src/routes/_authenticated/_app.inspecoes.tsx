@@ -112,19 +112,21 @@ function InspectionsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+      <PageHeader
+        eyebrow="Qualidade"
+        title={
+          <span className="inline-flex items-center gap-2">
             <ShieldAlert className="size-6 text-primary" /> Inspeções de Qualidade
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Plano AQL por ordem, com classificação de defeitos e laudo.
-          </p>
-        </div>
-        <Button onClick={() => setOpen(true)}>
-          <Plus className="size-4 mr-1" /> Nova inspeção
-        </Button>
-      </header>
+          </span>
+        }
+        description="Plano AQL por ordem, com classificação de defeitos e laudo."
+        actions={
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="size-4 mr-1" /> Nova inspeção
+          </Button>
+        }
+      />
+
 
       <div className="rounded-xl border border-border bg-card overflow-x-auto">
         <table className="w-full text-sm">
