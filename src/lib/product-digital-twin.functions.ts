@@ -101,8 +101,8 @@ export const getProductDigitalTwin = createServerFn({ method: "POST" })
       openIds.length
         ? supabase
             .from("production_occurrences")
-            .select("production_order_id, created_at")
-            .in("production_order_id", openIds)
+            .select("order_id, created_at")
+            .in("order_id", openIds)
             .gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString())
         : Promise.resolve({ data: [] as never[] }),
     ]);
@@ -123,8 +123,9 @@ export const getProductDigitalTwin = createServerFn({ method: "POST" })
     });
 
     const occByOp = new Map<string, number>();
-    ((occRows.data ?? []) as Array<{ production_order_id: string }>).forEach((o) => {
-      occByOp.set(o.production_order_id, (occByOp.get(o.production_order_id) ?? 0) + 1);
+    ((occRows.data ?? []) as Array<{ order_id: string | null }>).forEach((o) => {
+      if (!o.order_id) return;
+      occByOp.set(o.order_id, (occByOp.get(o.order_id) ?? 0) + 1);
     });
 
     const now = Date.now();
