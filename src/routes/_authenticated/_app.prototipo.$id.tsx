@@ -27,6 +27,9 @@ import { toast } from "sonner";
 import { PrototypeApprovalGate } from "@/components/prototype-approval-gate";
 import { PrototypeGatesPanel } from "@/components/prototype-gates-panel";
 import { PrototypeHandoffTimeline } from "@/components/prototype-handoff-timeline";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
+import { StatusBadge } from "@/components/status-badge";
+import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
 
 export const Route = createFileRoute("/_authenticated/_app/prototipo/$id")({
   head: () => ({
@@ -62,13 +65,8 @@ const STATUS_TONE: Record<Adjustment["status"], string> = {
   concluido: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
   cancelado: "bg-muted text-muted-foreground border-border",
 };
-const STAGE_LABEL: Record<string, string> = {
-  solicitado: "Solicitado",
-  em_confeccao: "Em confecção",
-  em_prova: "Em prova",
-  aprovado: "Aprovado",
-  reprovado: "Reprovado",
-};
+
+
 
 function relTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -171,35 +169,48 @@ function PrototipoPage() {
     ? (SECTORS.find((s) => s.key === proto.current_sector)?.label ?? proto.current_sector)
     : null;
 
+  const crumbs = [
+    { label: "Protótipos", link: { to: "/prototipos" as const } },
+    ...(proto.products?.collection_id
+      ? [{ label: "Coleção", link: { to: "/colecao-360/$id" as const, params: { id: proto.products.collection_id } } }]
+      : []),
+    ...(proto.product_id
+      ? [{ label: proto.products?.sku ?? "Produto", link: { to: "/produto/$id" as const, params: { id: proto.product_id } } }]
+      : []),
+    { label: proto.code },
+  ];
+
   return (
     <div className="p-4 sm:p-6 space-y-5 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 flex-wrap">
-        <Link to="/prototipos">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="size-4 mr-1" />
-            Protótipos
-          </Button>
-        </Link>
-        {proto.products?.collection_id && (
-          <Link
-            to="/colecao-360/$id"
-            params={{ id: proto.products.collection_id }}
-          >
-            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10">
-              <Compass className="size-4 mr-1" />
-              Ver Coleção 360º
-            </Button>
-          </Link>
-        )}
-        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-          {STAGE_LABEL[proto.stage] ?? proto.stage}
-        </Badge>
+      <PlmBreadcrumb items={crumbs} />
+      <div className="flex items-center gap-2 flex-wrap">
+        <StatusBadge kind="prototype" value={proto.stage} />
         {proto.needs_adjustment && (
           <Badge variant="outline" className="bg-amber-500/15 text-amber-600 border-amber-500/30">
             <AlertTriangle className="size-3 mr-1" /> Precisa ajuste
           </Badge>
         )}
+        {sectorLabel && (
+          <Badge variant="outline" className="bg-muted text-muted-foreground border-border">
+            Setor: {sectorLabel}
+          </Badge>
+        )}
+        {proto.products?.collection_id && (
+          <Link
+            to="/colecao-360/$id"
+            params={{ id: proto.products.collection_id }}
+            className="ml-auto"
+          >
+            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10">
+              <Compass className="size-4 mr-1" />
+              Coleção 360º
+            </Button>
+          </Link>
+        )}
       </div>
+
+      {proto.product_id && <ProductWorkflowStepper productId={proto.product_id} />}
+
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-5">
         {/* Foto + dados */}

@@ -25,6 +25,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
+import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   MaterialsPanel,
@@ -181,25 +183,24 @@ function ProductWorkspace() {
     (p) => p.stage !== "aprovado" && p.stage !== "reprovado",
   ).length;
 
+  const crumbs = [
+    { label: "Produtos", link: { to: "/produtos" as const } },
+    ...(product.collection_id
+      ? [{ label: "Coleção", link: { to: "/colecao-360/$id" as const, params: { id: product.collection_id } } }]
+      : []),
+    { label: product.sku },
+  ];
+
   return (
     <div className="p-4 md:p-6 space-y-4">
+      <PlmBreadcrumb items={crumbs} />
       <PageHeader
-        eyebrow={
-          <Link
-            to="/produtos"
-            className="inline-flex items-center gap-1 hover:text-foreground transition"
-          >
-            <ArrowLeft className="size-3" /> Produtos
-          </Link>
-        }
         title={product.name}
         description={`${product.sku} · ${product.category ?? "sem categoria"}`}
         actions={
           <div className="flex flex-wrap items-center gap-1.5">
             <StageGatePanel productId={product.id} />
-            <Badge variant="outline" className="capitalize">
-              {product.status}
-            </Badge>
+            <StatusBadge kind="product" value={product.status} />
             {product.abc_class && (
               <Badge
                 variant="outline"
@@ -226,6 +227,7 @@ function ProductWorkspace() {
           </div>
         }
       />
+
 
       {/* Header card com identidade do produto */}
       <div className="rounded-xl border border-border bg-card p-4 flex gap-4">
