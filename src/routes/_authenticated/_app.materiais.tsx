@@ -46,6 +46,11 @@ function Page() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [filter, setFilter] = useState<string>("todos");
+  const codeInputRef = useRef<HTMLInputElement>(null);
+  useFabNewAction(() => {
+    codeInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    codeInputRef.current?.focus();
+  });
   const [form, setForm] = useState({
     kind: "tecido",
     code: "",
