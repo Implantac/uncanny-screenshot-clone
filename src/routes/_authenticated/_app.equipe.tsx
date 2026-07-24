@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { listTeam, setUserRole, setUserSector } from "@/lib/team.functions";
 import { useRoles } from "@/hooks/use-role";
 import { APP_SECTORS, SECTOR_LABEL, type AppSector } from "@/lib/modules";
+import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/equipe")({
   head: () => ({
@@ -76,17 +77,16 @@ function TeamPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="size-11 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-[var(--shadow-glow)]">
-          <Users className="size-5 text-primary-foreground" />
-        </div>
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Equipe & Permissões</h1>
-          <p className="text-xs text-muted-foreground">
-            Atribua papéis e setores aos usuários da plataforma
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Administração"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Users className="size-5 text-primary" /> Equipe & Permissões
+          </span>
+        }
+        description="Atribua papéis e setores aos usuários da plataforma."
+      />
+
 
       <div className="glass rounded-2xl overflow-x-auto">
         <table className="w-full text-sm min-w-[900px]">

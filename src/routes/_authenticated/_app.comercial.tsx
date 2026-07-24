@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Dialog,
   DialogContent,
@@ -173,72 +174,73 @@ function Comercial() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-primary/10 grid place-items-center">
-            <Store className="size-5 text-primary" />
+      <PageHeader
+        eyebrow="Vendas"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Store className="size-5 text-primary" /> Comercial / B2B
+          </span>
+        }
+        description={`Pedidos · carteira total ${brl(total)}`}
+        actions={
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() =>
+                exportToCsv(
+                  "pedidos-b2b",
+                  items.map((o) => ({ ...o, status: LABEL[o.status] })),
+                  [
+                    { key: "code", label: "Código" },
+                    { key: "customer_name", label: "Cliente" },
+                    { key: "representative", label: "Representante" },
+                    { key: "order_date", label: "Data" },
+                    { key: "status", label: "Status" },
+                    { key: "total_value", label: "Valor" },
+                    { key: "notes", label: "Observações" },
+                  ],
+                )
+              }
+              disabled={!items.length}
+            >
+              <Download className="size-4 mr-2" />
+              CSV
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                exportToPdf(
+                  "pedidos-b2b",
+                  "Pedidos B2B",
+                  items.map((o) => ({ ...o, status: LABEL[o.status] })),
+                  [
+                    { key: "code", label: "Código" },
+                    { key: "customer_name", label: "Cliente" },
+                    { key: "representative", label: "Representante" },
+                    { key: "order_date", label: "Data" },
+                    { key: "status", label: "Status" },
+                    { key: "total_value", label: "Valor" },
+                  ],
+                )
+              }
+              disabled={!items.length}
+            >
+              <FileText className="size-4 mr-2" />
+              PDF
+            </Button>
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setOpen(true);
+              }}
+            >
+              <Plus className="size-4 mr-2" />
+              Novo pedido
+            </Button>
           </div>
-          <div>
-            <h1 className="text-2xl font-semibold">Comercial / B2B</h1>
-            <p className="text-sm text-muted-foreground">Pedidos · carteira total {brl(total)}</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() =>
-              exportToCsv(
-                "pedidos-b2b",
-                items.map((o) => ({ ...o, status: LABEL[o.status] })),
-                [
-                  { key: "code", label: "Código" },
-                  { key: "customer_name", label: "Cliente" },
-                  { key: "representative", label: "Representante" },
-                  { key: "order_date", label: "Data" },
-                  { key: "status", label: "Status" },
-                  { key: "total_value", label: "Valor" },
-                  { key: "notes", label: "Observações" },
-                ],
-              )
-            }
-            disabled={!items.length}
-          >
-            <Download className="size-4 mr-2" />
-            CSV
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() =>
-              exportToPdf(
-                "pedidos-b2b",
-                "Pedidos B2B",
-                items.map((o) => ({ ...o, status: LABEL[o.status] })),
-                [
-                  { key: "code", label: "Código" },
-                  { key: "customer_name", label: "Cliente" },
-                  { key: "representative", label: "Representante" },
-                  { key: "order_date", label: "Data" },
-                  { key: "status", label: "Status" },
-                  { key: "total_value", label: "Valor" },
-                ],
-              )
-            }
-            disabled={!items.length}
-          >
-            <FileText className="size-4 mr-2" />
-            PDF
-          </Button>
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setOpen(true);
-            }}
-          >
-            <Plus className="size-4 mr-2" />
-            Novo pedido
-          </Button>
-        </div>
-      </div>
+        }
+      />
+
 
       {isLoading ? (
         <p className="text-muted-foreground">Carregando…</p>
