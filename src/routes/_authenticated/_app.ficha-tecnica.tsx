@@ -314,8 +314,9 @@ function FichaTecnicaPage() {
             Visualização de produto, conteúdo estruturado por área e histórico versionado.
           </p>
         </div>
-        <div className="w-full">
+        <div className="w-full grid gap-3 md:grid-cols-2">
           <TechSheetCostAlertsPanel />
+          <TechSheetBomReviewPanel />
         </div>
         <Button onClick={openCreate} className="gap-2">
           <Plus className="size-4" /> Nova ficha
