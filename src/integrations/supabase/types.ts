@@ -5458,10 +5458,13 @@ export type Database = {
           code: string
           content: string | null
           cost_price: number | null
+          cost_review_flagged_at: string | null
+          cost_review_reason: string | null
           created_at: string
           id: string
           labor_cost: number
           materials_cost: number
+          needs_cost_review: boolean
           overhead_pct: number
           owner_id: string
           product_id: string | null
@@ -5476,10 +5479,13 @@ export type Database = {
           code: string
           content?: string | null
           cost_price?: number | null
+          cost_review_flagged_at?: string | null
+          cost_review_reason?: string | null
           created_at?: string
           id?: string
           labor_cost?: number
           materials_cost?: number
+          needs_cost_review?: boolean
           overhead_pct?: number
           owner_id: string
           product_id?: string | null
@@ -5494,10 +5500,13 @@ export type Database = {
           code?: string
           content?: string | null
           cost_price?: number | null
+          cost_review_flagged_at?: string | null
+          cost_review_reason?: string | null
           created_at?: string
           id?: string
           labor_cost?: number
           materials_cost?: number
+          needs_cost_review?: boolean
           overhead_pct?: number
           owner_id?: string
           product_id?: string | null

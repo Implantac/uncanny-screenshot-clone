@@ -43,6 +43,7 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
         toast.success(`${res.updated} material(is) atualizado(s) → ${name}`);
       }
       qc.invalidateQueries({ queryKey: ["material-sourcing-risks"] });
+      qc.invalidateQueries({ queryKey: ["tech-sheet-bom-reviews"] });
     },
     onError: (e) => toast.error(`Falha na substituição: ${(e as Error).message}`),
     onSettled: () => setPending(null),
