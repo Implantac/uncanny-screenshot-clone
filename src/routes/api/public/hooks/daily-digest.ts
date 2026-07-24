@@ -125,6 +125,7 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
           ok: true,
           users_with_activity: perUser.size,
           sent,
+          skipped_pref,
         });
       },
     },
