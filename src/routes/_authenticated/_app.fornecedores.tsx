@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Supplier360Drawer } from "@/components/supplier-360-drawer";
 import { SupplierScorecardMoversPanel } from "@/components/supplier-scorecard-panel";
+import { SupplierSwapSuggestionsPanel } from "@/components/supplier-swap-suggestions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -304,6 +305,8 @@ function FornecedoresPage() {
       )}
 
       <SupplierScorecardMoversPanel onSelect={(id) => setView360Id(id)} />
+
+      <SupplierSwapSuggestionsPanel onSelectSupplier={(id) => setView360Id(id)} />
 
       <section className="rounded-xl border border-border bg-card/50 p-4">
         <div className="flex items-center justify-between gap-3 mb-3">
