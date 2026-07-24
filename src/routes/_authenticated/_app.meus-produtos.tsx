@@ -237,6 +237,11 @@ function MyProductsFeed() {
                 ({approvals.data?.length ?? 0})
               </span>
             </h2>
+            {newApprovals > 0 && (
+              <Badge className="text-[10px] bg-primary text-primary-foreground">
+                {newApprovals} nova{newApprovals === 1 ? "" : "s"}
+              </Badge>
+            )}
           </header>
           {(approvals.data ?? []).length === 0 ? (
             <EmptyState
