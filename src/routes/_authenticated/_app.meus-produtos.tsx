@@ -140,6 +140,53 @@ function MyProductsFeed() {
   const newApprovals = (approvals.data ?? []).filter((a) => isNew(a.created_at)).length;
   const newComments = (comments.data ?? []).filter((c) => isNew(c.created_at)).length;
 
+  // Bulk approval selection
+  const qc = useQueryClient();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const pendingList = approvals.data ?? [];
+  const allSelected = pendingList.length > 0 && selected.size === pendingList.length;
+  const selectedItems = useMemo(
+    () => pendingList.filter((a) => selected.has(a.id)),
+    [pendingList, selected],
+  );
+
+  const toggleOne = (id: string) =>
+    setSelected((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  const toggleAll = () =>
+    setSelected(allSelected ? new Set() : new Set(pendingList.map((a) => a.id)));
+
+  const bulkDecide = useMutation({
+    mutationFn: async (decision: "aprovado" | "rejeitado") => {
+      if (selectedItems.length === 0) return 0;
+      const rows = selectedItems.map((a) => ({
+        product_id: a.product_id,
+        owner_id: a.owner_id,
+        gate_key: a.gate_key,
+        decision,
+      }));
+      const { error } = await supabase.from("product_approvals").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (count, decision) => {
+      if (!count) return;
+      toast.success(
+        `${count} aprovaç${count === 1 ? "ão" : "ões"} ${
+          decision === "aprovado" ? "aprovadas" : "reprovadas"
+        }`,
+      );
+      setSelected(new Set());
+      qc.invalidateQueries({ queryKey: ["my-products-approvals-pending", uid] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   // Marca como lido ao sair da página
   useEffect(() => {
     return () => {
