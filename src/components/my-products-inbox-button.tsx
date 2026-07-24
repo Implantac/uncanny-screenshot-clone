@@ -6,8 +6,8 @@ export function MyProductsInboxButton() {
   const { total } = useMyProductsUnread();
   return (
     <Link
-      to="/meus-produtos"
-      title="Meus Produtos — aprovações e menções"
+      to="/notificacoes"
+      title="Notificações — aprovações e menções"
       className="relative size-9 grid place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
     >
       <Inbox className="size-4" />
