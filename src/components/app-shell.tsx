@@ -18,6 +18,7 @@ import {
   MODULES,
   MODULE_GROUPS,
   moduleAllowed,
+  moduleAllowedForRole,
   type ModuleDef,
   type ModuleGroup,
 } from "@/lib/modules";
@@ -31,6 +32,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useEffect, useMemo, type ReactNode } from "react";
 
+
 const ROLE_LABEL: Record<string, string> = {
   admin: "Admin",
   gerente: "Gerente",
@@ -40,27 +42,39 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 const SIDEBAR_COLLAPSED_KEY = "usemoda:sidebar-collapsed";
+const SIDEBAR_SHOW_ALL_KEY = "usemoda:sidebar-show-all";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
   const active = location.pathname;
   const { user } = useAuth();
-  const { primary } = useRoles();
+  const { primary, isAdmin: isAdminRole } = useRoles();
   const { sectors, isAdmin } = useSectors();
-  const visibleModules = MODULES.filter((m) => !m.hidden && moduleAllowed(m, sectors, isAdmin));
+  const canSeeAll = isAdmin || isAdminRole || primary === "gerente";
+  const [showAll, setShowAll] = useState(false);
+  const visibleModules = MODULES.filter(
+    (m) =>
+      !m.hidden &&
+      moduleAllowed(m, sectors, isAdmin) &&
+      (canSeeAll || showAll || moduleAllowedForRole(m, primary)),
+  );
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
+
   useEffect(() => {
     try {
       const v = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
       if (v === "1") setCollapsed(true);
+      const s = localStorage.getItem(SIDEBAR_SHOW_ALL_KEY);
+      if (s === "1") setShowAll(true);
     } catch {
       /* ignore */
     }
   }, []);
+
 
   useEffect(() => {
     setMobileOpen(false);
@@ -244,14 +258,36 @@ export function AppShell({ children }: { children: ReactNode }) {
         })}
       </nav>
       {!isCollapsed && (
-        <div className="m-3 p-3 rounded-lg glass">
+        <div className="m-3 p-3 rounded-lg glass space-y-2">
           <div className="flex items-center gap-2 text-xs font-medium">
             <div className="size-2 rounded-full bg-success animate-pulse" />
             Sistema operacional
           </div>
-          <div className="mt-1 text-[11px] text-muted-foreground">18 módulos · 99.98% uptime</div>
+          <div className="text-[11px] text-muted-foreground">
+            {visibleModules.length} módulos visíveis
+          </div>
+          {!canSeeAll && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowAll((s) => {
+                  const next = !s;
+                  try {
+                    localStorage.setItem(SIDEBAR_SHOW_ALL_KEY, next ? "1" : "0");
+                  } catch {
+                    /* ignore */
+                  }
+                  return next;
+                });
+              }}
+              className="w-full text-[11px] px-2 py-1 rounded-md border border-sidebar-border hover:bg-sidebar-accent/40 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showAll ? "Mostrar só meu perfil" : "Mostrar todos os módulos"}
+            </button>
+          )}
         </div>
       )}
+
     </TooltipProvider>
   );
 

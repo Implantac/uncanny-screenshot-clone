@@ -1104,3 +1104,25 @@ export function moduleAllowed(m: ModuleDef, userSectors: AppSector[], isAdmin: b
   if (!required) return true;
   return userSectors.includes(required);
 }
+
+/**
+ * Curadoria por papel — reduz ruído da sidebar para papéis não-admin.
+ * Admin e gerente veem TUDO. Outros papéis veem apenas grupos relevantes
+ * ao seu dia-a-dia; rotas continuam acessíveis via URL direta.
+ */
+export type AppRoleName = "admin" | "gerente" | "designer" | "comprador" | "vendedor";
+
+const ROLE_ALLOWED_GROUPS: Record<AppRoleName, ModuleGroup[] | "all"> = {
+  admin: "all",
+  gerente: "all",
+  designer: ["Operação", "Coleções", "Desenvolvimento", "Marketing", "Inteligência", "Plataforma"],
+  comprador: ["Operação", "Cadeia (PLM)", "PCP & Produção", "Inteligência", "ERP (Integração)", "Plataforma"],
+  vendedor: ["Operação", "Marketing", "Inteligência", "ERP (Integração)", "Plataforma"],
+};
+
+export function moduleAllowedForRole(m: ModuleDef, role: AppRoleName): boolean {
+  const allow = ROLE_ALLOWED_GROUPS[role];
+  if (allow === "all") return true;
+  return allow.includes(m.group);
+}
+
