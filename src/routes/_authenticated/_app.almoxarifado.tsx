@@ -386,154 +386,25 @@ function Almoxarifado() {
         </div>
       )}
 
-      {isLoading ? (
-        <div className="text-muted-foreground">Carregando…</div>
-      ) : items.length === 0 ? (
-        <div className="glass rounded-xl p-12 text-center">
-          <Sparkles className="size-10 text-primary mx-auto mb-3" />
-          <h3 className="font-semibold mb-1">Estoque vazio</h3>
-          <p className="text-sm text-muted-foreground mb-4">Cadastre o primeiro item.</p>
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setOpen(true);
-            }}
-          >
-            Cadastrar item
-          </Button>
-        </div>
-      ) : (
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="p-5 border-b border-border flex items-center justify-between gap-3 flex-wrap">
-            <div className="text-sm font-semibold">Inventário</div>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Buscar SKU ou nome…"
-                className="w-72 h-9 pl-8 pr-3 rounded-md bg-muted/60 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-ring/50"
-              />
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase tracking-wider text-muted-foreground bg-muted/30">
-                <tr>
-                  <th className="text-left font-medium px-5 py-2.5">SKU</th>
-                  <th className="text-left font-medium px-5 py-2.5">Item</th>
-                  <th className="text-left font-medium px-5 py-2.5">Categoria</th>
-                  <th className="text-right font-medium px-5 py-2.5">Saldo</th>
-                  <th className="text-right font-medium px-5 py-2.5">Mín / Máx</th>
-                  <th className="text-right font-medium px-5 py-2.5" title="Saídas últimos 30 dias">
-                    Giro 30d
-                  </th>
-                  <th
-                    className="text-right font-medium px-5 py-2.5"
-                    title="Ponto de pedido = consumo diário × lead time + segurança"
-                  >
-                    PP
-                  </th>
-                  <th className="text-right font-medium px-5 py-2.5">Últ. entrada</th>
-                  <th className="text-left font-medium px-5 py-2.5">Status</th>
-                  <th className="px-5 py-2.5"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((i) => {
-                  const bal = Number(i.balance);
-                  const min = Number(i.minimum);
-                  const max = Number(i.maximum);
-                  const giro = Number(i.turnover_30d || 0);
-                  const pp = reorderPoint(giro, leadFor(i), safetyFor(i), min);
-                  const critico = bal < min;
-                  const excesso = max > 0 && bal > max;
-                  const repor = !critico && bal <= pp && pp > min;
-                  const mine = i.owner_id === user?.id;
-                  return (
-                    <tr key={i.id} className="border-t border-border hover:bg-muted/30">
-                      <td className="px-5 py-3 tabular-nums text-muted-foreground">{i.sku}</td>
-                      <td className="px-5 py-3 font-medium">
-                        {i.name}
-                        <div className="text-xs text-muted-foreground">{i.deposit || "—"}</div>
-                      </td>
-                      <td className="px-5 py-3 text-muted-foreground">{CAT_LABEL[i.category]}</td>
-                      <td
-                        className={`px-5 py-3 text-right tabular-nums ${critico ? "text-destructive font-medium" : excesso ? "text-amber-500" : ""}`}
-                      >
-                        {bal} {i.unit}
-                      </td>
-                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">
-                        {min} / {max || "—"}
-                      </td>
-                      <td className="px-5 py-3 text-right tabular-nums text-muted-foreground">
-                        {giro} {i.unit}
-                      </td>
-                      <td
-                        className={`px-5 py-3 text-right tabular-nums ${repor ? "text-amber-500 font-medium" : "text-muted-foreground"}`}
-                      >
-                        {pp} {i.unit}
-                      </td>
-                      <td className="px-5 py-3 text-right text-muted-foreground text-xs">
-                        {fmtDate(i.last_entry_at)}
-                      </td>
-                      <td className="px-5 py-3">
-                        {critico ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-destructive/15 text-destructive">
-                            <AlertTriangle className="size-3" /> Crítico
-                          </span>
-                        ) : repor ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-500">
-                            <Zap className="size-3" /> Repor
-                          </span>
-                        ) : excesso ? (
-                          <span className="px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-500">
-                            Excesso
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/15 text-emerald-400">
-                            Ok
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-5 py-3 text-right">
-                        <div className="flex justify-end gap-1">
-                          <InventoryLotBreakdownButton
-                            itemId={i.id}
-                            itemName={i.name}
-                            unit={i.unit}
-                          />
-                          {mine && (
-                            <>
-                              <button
-                                onClick={() => {
-                                  setEditing(i);
-                                  setOpen(true);
-                                }}
-                                className="size-7 grid place-items-center rounded hover:bg-muted"
-                              >
-                                <Pencil className="size-3.5" />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  confirm("Remover este item?") && deleteMut.mutate(i.id)
-                                }
-                                className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive"
-                              >
-                                <Trash2 className="size-3.5" />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <InventoryTable
+        items={filtered}
+        loading={isLoading}
+        leadFor={leadFor}
+        safetyFor={safetyFor}
+        userId={user?.id}
+        onEdit={(i) => {
+          setEditing(i);
+          setOpen(true);
+        }}
+        onDelete={(id) => confirm("Remover este item?") && deleteMut.mutate(id)}
+        onCreate={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
+        query={q}
+        onQueryChange={setQ}
+      />
+
 
       <ItemDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} />
     </div>
