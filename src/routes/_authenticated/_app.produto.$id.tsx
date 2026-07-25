@@ -468,12 +468,16 @@ function ProductWorkspace() {
           </div>
         </TabsContent>
 
-        <TabsContent value="timeline">
+        <TabsContent value="timeline" className="space-y-4">
           <div className="rounded-xl border border-border bg-card p-4">
             <ProductTimeline productId={product.id} createdAt={product.created_at} />
             <ProductTimelineCollab productId={product.id} />
-
           </div>
+          <TimelineFeed
+            entityIds={[product.id]}
+            title="Timeline unificada (todos os setores)"
+            emptyLabel="Nenhum evento vinculado a este produto ainda."
+          />
         </TabsContent>
       </Tabs>
     </div>
