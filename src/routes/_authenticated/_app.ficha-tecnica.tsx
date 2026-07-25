@@ -56,6 +56,7 @@ import { TechSheetBomReviewPanel } from "@/components/tech-sheet-bom-review-pane
 import { TechPackImportButton } from "@/components/tech-pack-import-button";
 import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
 import { ShieldCheck, Camera } from "lucide-react";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import { StatusBadge } from "@/components/status-badge";
@@ -382,9 +383,14 @@ function FichaTecnicaPage() {
                           {product?.name || "Sem produto vinculado"}
                         </div>
                       </div>
-                      <Badge variant="outline" className={COLOR[sheet.status]}>
-                        {LABEL[sheet.status]}
-                      </Badge>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {sheet.product_id && (
+                          <ProductReadinessBadge productId={sheet.product_id} />
+                        )}
+                        <Badge variant="outline" className={COLOR[sheet.status]}>
+                          {LABEL[sheet.status]}
+                        </Badge>
+                      </div>
                     </div>
                     <div className="mt-3 text-xs text-muted-foreground">
                       {sheet.version} · {new Date(sheet.created_at).toLocaleDateString("pt-BR")}
