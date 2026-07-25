@@ -273,6 +273,7 @@ function ProductWorkspace() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
+          <ProductReadinessCard productId={product.id} />
           <ProductWorkflowPanel productId={product.id} />
           <ProductLifecycleCopilotPanel productId={product.id} />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
