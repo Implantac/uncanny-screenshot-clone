@@ -795,12 +795,12 @@ function Prototipos() {
                         )}
                       </div>
                       <div className="flex items-center justify-between">
-                        <Badge
-                          variant="outline"
-                          className={`${STAGE_COLOR[p.stage]} ${diff("stage") ? "ring-1 ring-amber-500/50" : ""}`}
-                        >
-                          {STAGE_LABEL[p.stage]}
-                        </Badge>
+                        <StatusBadge
+                          kind="prototype"
+                          value={p.stage}
+                          className={diff("stage") ? "ring-1 ring-amber-500/50" : undefined}
+                        />
+
                         <span className="font-mono text-xs text-muted-foreground">{p.code}</span>
                       </div>
                       <div
