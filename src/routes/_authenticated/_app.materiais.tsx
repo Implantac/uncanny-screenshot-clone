@@ -32,6 +32,7 @@ import { Plus, Trash2, Search, Package, ImageOff, Pencil, X, Save } from "lucide
 import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
+import { QuickSupplierDialog } from "@/components/quick-supplier-dialog";
 
 export const Route = createFileRoute("/_authenticated/_app/materiais")({
   head: () => ({
