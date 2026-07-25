@@ -97,7 +97,8 @@ function Approvals() {
               label: (p as { products?: { name: string } }).products?.name ?? p.code,
               sub: p.code,
               status: p.stage,
-              href: "/pilots",
+              href: p.product_id ? `/produto/${p.product_id}` : "/pilots",
+              productId: p.product_id,
             })),
         },
         {
