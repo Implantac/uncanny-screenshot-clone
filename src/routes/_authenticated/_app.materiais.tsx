@@ -229,20 +229,31 @@ function Page() {
                     {KINDS.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <Select
-                  value={form.preferred_supplier_id ?? "none"}
-                  onValueChange={(v) =>
-                    setForm({ ...form, preferred_supplier_id: v === "none" ? null : v })
-                  }
-                >
-                  <SelectTrigger><SelectValue placeholder="Fornecedor" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sem fornecedor</SelectItem>
-                    {suppliers.data?.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={form.preferred_supplier_id ?? "none"}
+                    onValueChange={(v) =>
+                      setForm({ ...form, preferred_supplier_id: v === "none" ? null : v })
+                    }
+                  >
+                    <SelectTrigger><SelectValue placeholder="Fornecedor" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem fornecedor</SelectItem>
+                      {suppliers.data?.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuickSupplierOpen(true)}
+                    title="Novo fornecedor"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
                 <Input
                   placeholder="Código"
                   value={form.code}
