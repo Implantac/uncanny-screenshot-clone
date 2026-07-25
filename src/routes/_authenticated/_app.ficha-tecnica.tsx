@@ -383,9 +383,14 @@ function FichaTecnicaPage() {
                           {product?.name || "Sem produto vinculado"}
                         </div>
                       </div>
-                      <Badge variant="outline" className={COLOR[sheet.status]}>
-                        {LABEL[sheet.status]}
-                      </Badge>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {sheet.product_id && (
+                          <ProductReadinessBadge productId={sheet.product_id} />
+                        )}
+                        <Badge variant="outline" className={COLOR[sheet.status]}>
+                          {LABEL[sheet.status]}
+                        </Badge>
+                      </div>
                     </div>
                     <div className="mt-3 text-xs text-muted-foreground">
                       {sheet.version} · {new Date(sheet.created_at).toLocaleDateString("pt-BR")}
