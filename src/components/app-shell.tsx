@@ -16,12 +16,14 @@ import { MyProductsInboxButton } from "./my-products-inbox-button";
 import { SectorChatButton } from "./sector-chat";
 import {
   MODULES,
-  MODULE_GROUPS,
+  LIFECYCLE_PHASES,
+  modulePhase,
   moduleAllowed,
   moduleAllowedForRole,
   type ModuleDef,
-  type ModuleGroup,
+  type LifecyclePhase,
 } from "@/lib/modules";
+
 import { useSectors } from "@/hooks/use-sectors";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -93,12 +95,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     });
   };
 
-  // Group → modules e qual grupo contém a rota ativa
+  // Fase (ciclo de vida) → módulos, marcando a fase que contém a rota ativa
   const grouped = useMemo(() => {
-    const map = new Map<ModuleGroup, { items: ModuleDef[]; activeIn: boolean }>();
-    for (const g of MODULE_GROUPS) map.set(g, { items: [], activeIn: false });
+    const map = new Map<LifecyclePhase, { items: ModuleDef[]; activeIn: boolean }>();
+    for (const p of LIFECYCLE_PHASES) map.set(p, { items: [], activeIn: false });
     for (const m of visibleModules) {
-      const bucket = map.get(m.group);
+      const bucket = map.get(modulePhase(m));
       if (!bucket) continue;
       bucket.items.push(m);
       if (active === m.path) bucket.activeIn = true;
@@ -155,7 +157,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           isCollapsed ? "px-2" : "px-3",
         )}
       >
-        {MODULE_GROUPS.map((group) => {
+        {LIFECYCLE_PHASES.map((group) => {
+
           const bucket = grouped.get(group);
           if (!bucket || bucket.items.length === 0) return null;
           const isOpen = openGroups[group] ?? bucket.activeIn ?? false;

@@ -1079,6 +1079,94 @@ export const MODULE_GROUPS: ModuleGroup[] = [
   "Plataforma",
 ];
 
+/* ============================================================
+ * Onda A — Sidebar reorganizada por CICLO DE VIDA DO PRODUTO.
+ * Cada módulo é mapeado a uma fase: Ideia → Planejamento →
+ * Desenvolvimento → Pilotagem → Produção → Comercial → Inteligência
+ * → Ferramentas. Mapeamento é derivado (group + slug override),
+ * então nenhum ModuleDef precisa ser alterado.
+ * ============================================================ */
+
+export type LifecyclePhase =
+  | "Ideia"
+  | "Planejamento"
+  | "Desenvolvimento"
+  | "Pilotagem"
+  | "Produção"
+  | "Comercial"
+  | "Inteligência"
+  | "Ferramentas";
+
+export const LIFECYCLE_PHASES: LifecyclePhase[] = [
+  "Ideia",
+  "Planejamento",
+  "Desenvolvimento",
+  "Pilotagem",
+  "Produção",
+  "Comercial",
+  "Inteligência",
+  "Ferramentas",
+];
+
+/** Grupo → fase padrão (fallback quando não há override por slug). */
+const GROUP_TO_PHASE: Record<ModuleGroup, LifecyclePhase> = {
+  "Operação": "Planejamento",
+  "Coleções": "Planejamento",
+  "Desenvolvimento": "Desenvolvimento",
+  "PCP & Produção": "Produção",
+  "Cadeia (PLM)": "Produção",
+  "Marketing": "Comercial",
+  "Inteligência": "Inteligência",
+  "ERP (Integração)": "Ferramentas",
+  "Plataforma": "Ferramentas",
+};
+
+/** Override por slug — tira o módulo do fallback do grupo. */
+const SLUG_TO_PHASE: Record<string, LifecyclePhase> = {
+  // Ideia
+  "trends": "Ideia",
+  "biblioteca": "Ideia",
+  // Planejamento (mantém coleções + calendar + command)
+  "fashion-calendar": "Planejamento",
+  "time-and-action": "Planejamento",
+  "command-center": "Planejamento",
+  "executivo": "Planejamento",
+  // Desenvolvimento
+  "produtos": "Desenvolvimento",
+  "meus-produtos": "Desenvolvimento",
+  "ficha-tecnica": "Desenvolvimento",
+  "materiais": "Desenvolvimento",
+  "variantes": "Desenvolvimento",
+  "dev-kanban": "Desenvolvimento",
+  // Pilotagem
+  "prototipos": "Pilotagem",
+  "prototipo-kanban": "Pilotagem",
+  "approvals": "Pilotagem",
+  "fit-sessions": "Pilotagem",
+  "sample-review": "Pilotagem",
+  // Inteligência
+  "bi": "Inteligência",
+  "fashion-gpt": "Inteligência",
+  "use-ai": "Inteligência",
+  "data-lake": "Inteligência",
+  "war-room": "Inteligência",
+  "war-room-producao": "Inteligência",
+  "control-tower": "Inteligência",
+  "closed-loop": "Inteligência",
+  "intel-hub": "Inteligência",
+  "product-success": "Inteligência",
+  "margem": "Inteligência",
+  "abc-colecao": "Inteligência",
+  // Ferramentas
+  "security-center": "Ferramentas",
+  "equipe": "Ferramentas",
+};
+
+export function modulePhase(m: ModuleDef): LifecyclePhase {
+  return SLUG_TO_PHASE[m.slug] ?? GROUP_TO_PHASE[m.group] ?? "Ferramentas";
+}
+
+
 export type AppSector = "marketing" | "pcp" | "desenvolvimento";
 export const APP_SECTORS: AppSector[] = ["marketing", "pcp", "desenvolvimento"];
 export const SECTOR_LABEL: Record<AppSector, string> = {

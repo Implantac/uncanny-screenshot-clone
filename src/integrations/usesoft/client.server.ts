@@ -27,6 +27,20 @@ export class UsesoftConfigError extends Error {
   }
 }
 
+export class UsesoftDisabledError extends Error {
+  constructor() {
+    super(
+      "ERP Usesoft desconectado (modo desenvolvimento). Para reativar, remova a variável USESOFT_DISABLED do backend.",
+    );
+    this.name = "UsesoftDisabledError";
+  }
+}
+
+export function isUsesoftDisabled(): boolean {
+  const v = (process.env.USESOFT_DISABLED ?? "").trim().toLowerCase();
+  return v === "1" || v === "true" || v === "yes" || v === "on";
+}
+
 export function validateUsesoftEnv(): {
   host: string;
   port: number;
@@ -34,6 +48,7 @@ export function validateUsesoftEnv(): {
   user: string;
   password: string;
 } {
+
   const host = (process.env.USESOFT_PG_HOST ?? "").trim();
   const portRaw = (process.env.USESOFT_PG_PORT ?? "").trim();
   const database = (process.env.USESOFT_PG_DATABASE ?? "").trim();
@@ -108,12 +123,16 @@ export async function usesoftQuery<T extends QueryResultRow = QueryResultRow>(
   sql: string,
   params: unknown[] = [],
 ): Promise<QueryResult<T>> {
+  if (isUsesoftDisabled()) {
+    throw new UsesoftDisabledError();
+  }
   if (!READ_ONLY_RE.test(sql)) {
     throw new Error("usesoftQuery aceita apenas SELECT/WITH (read-only).");
   }
   const pool = getPool();
   return pool.query<T>(sql, params as unknown[]);
 }
+
 
 /**
  * Healthcheck simples.
@@ -132,8 +151,11 @@ export async function usesoftPing(): Promise<{
     const err = e as Error;
     const msg = err.message ?? String(err);
     let friendly = msg;
-    if (err.name === "UsesoftConfigError") {
+    if (err.name === "UsesoftDisabledError") {
       friendly = msg;
+    } else if (err.name === "UsesoftConfigError") {
+      friendly = msg;
+
     } else if (msg.includes("ENOTFOUND") || msg.includes("EAI_AGAIN")) {
       friendly = "Host do ERP não resolvido (DNS). Verifique USESOFT_PG_HOST no backend.";
     } else if (msg.includes("ECONNREFUSED")) {
