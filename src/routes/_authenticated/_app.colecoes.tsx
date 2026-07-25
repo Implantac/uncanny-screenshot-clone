@@ -1547,9 +1547,11 @@ function ColecoesPage() {
                     {selectedProducts.length ? (
                       <div className="grid sm:grid-cols-2 gap-3">
                         {selectedProducts.map((product) => (
-                          <div
+                          <Link
                             key={product.id}
-                            className="rounded-xl border border-border bg-background/30 p-4"
+                            to="/produto/$id"
+                            params={{ id: product.id }}
+                            className="rounded-xl border border-border bg-background/30 p-4 hover:border-primary/50 hover:bg-background/50 transition-colors block"
                           >
                             <div className="flex items-start gap-3">
                               <ProductThumb
@@ -1565,14 +1567,17 @@ function ColecoesPage() {
                                       {product.category || "Sem categoria"}
                                     </div>
                                   </div>
-                                  <Badge variant="outline">{product.status}</Badge>
+                                  <div className="flex flex-col items-end gap-1 shrink-0">
+                                    <Badge variant="outline">{product.status}</Badge>
+                                    <ProductReadinessBadge productId={product.id} />
+                                  </div>
                                 </div>
                                 <div className="mt-3 text-xs text-muted-foreground">
                                   Preço potencial {brl(Number(product.sell_price || 0))}
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </Link>
                         ))}
                       </div>
                     ) : (
