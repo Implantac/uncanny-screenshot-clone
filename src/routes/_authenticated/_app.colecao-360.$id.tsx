@@ -820,7 +820,7 @@ function CollectionTabs({
       </TabsContent>
 
       <TabsContent value="historico" className="space-y-4">
-        <CollectionUnifiedTimeline collectionId={collectionId} current={current} />
+        <CollectionUnifiedTimeline collectionId={collectionId} />
       </TabsContent>
     </Tabs>
   );
