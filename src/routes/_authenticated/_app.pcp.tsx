@@ -779,7 +779,10 @@ function PCP() {
                       >
                         <div className="truncate">
                           <div className="font-mono text-xs text-muted-foreground">{o.code}</div>
-                          <div className="text-sm truncate">{productName(o.product_id)}</div>
+                          <div className="text-sm truncate flex items-center gap-1.5">
+                            <span className="truncate">{productName(o.product_id)}</span>
+                            {o.product_id && <ProductReadinessBadge productId={o.product_id} />}
+                          </div>
                         </div>
                         <div className="relative h-6 bg-muted/30 rounded">
                           <div
