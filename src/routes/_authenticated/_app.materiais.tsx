@@ -69,6 +69,7 @@ function Page() {
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [quickSupplierOpen, setQuickSupplierOpen] = useState(false);
   useFabNewAction(() => setDialogOpen(true));
 
   const [form, setForm] = useState({
