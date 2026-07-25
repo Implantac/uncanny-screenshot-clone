@@ -548,7 +548,11 @@ function CollectionTabs({
         <TabsTrigger value="lancamento">
           <Megaphone className="size-3.5 mr-1.5" /> Lançamento
         </TabsTrigger>
+        <TabsTrigger value="historico">
+          <Activity className="size-3.5 mr-1.5" /> Histórico
+        </TabsTrigger>
       </TabsList>
+
 
       <TabsContent value="visao" className="space-y-4">
         {/* Pipeline visual */}
