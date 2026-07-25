@@ -27,6 +27,20 @@ export class UsesoftConfigError extends Error {
   }
 }
 
+export class UsesoftDisabledError extends Error {
+  constructor() {
+    super(
+      "ERP Usesoft desconectado (modo desenvolvimento). Para reativar, remova a variável USESOFT_DISABLED do backend.",
+    );
+    this.name = "UsesoftDisabledError";
+  }
+}
+
+export function isUsesoftDisabled(): boolean {
+  const v = (process.env.USESOFT_DISABLED ?? "").trim().toLowerCase();
+  return v === "1" || v === "true" || v === "yes" || v === "on";
+}
+
 export function validateUsesoftEnv(): {
   host: string;
   port: number;
@@ -34,6 +48,7 @@ export function validateUsesoftEnv(): {
   user: string;
   password: string;
 } {
+
   const host = (process.env.USESOFT_PG_HOST ?? "").trim();
   const portRaw = (process.env.USESOFT_PG_PORT ?? "").trim();
   const database = (process.env.USESOFT_PG_DATABASE ?? "").trim();
