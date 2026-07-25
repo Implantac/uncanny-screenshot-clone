@@ -468,71 +468,94 @@ function EstoquePanel({
 
   const itemMap = new Map(items.map((i) => [i.id, i]));
 
-  return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/40 text-muted-foreground text-xs">
-          <tr>
-            <th className="text-left px-3 py-2">Data</th>
-            <th className="text-left px-3 py-2">Tipo</th>
-            <th className="text-left px-3 py-2">Item</th>
-            <th className="text-right px-3 py-2">Quantidade</th>
-            <th className="text-left px-3 py-2">Origem</th>
-            <th className="text-left px-3 py-2">Notas</th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading ? (
-            <tr>
-              <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                Carregando…
-              </td>
-            </tr>
-          ) : moves.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                Nenhuma movimentação registrada.
-              </td>
-            </tr>
-          ) : (
-            moves.map((m) => {
-              const it = itemMap.get(m.inventory_item_id);
-              return (
-                <tr key={m.id} className="border-t border-border">
-                  <td className="px-3 py-2 text-xs text-muted-foreground">
-                    {new Date(m.created_at).toLocaleString("pt-BR")}
-                  </td>
-                  <td className="px-3 py-2">{typeBadge(m.type)}</td>
-                  <td className="px-3 py-2">
-                    {it ? (
-                      <>
-                        <span className="font-mono text-xs">{it.sku}</span> · {it.name}
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td
-                    className={`px-3 py-2 text-right tabular-nums font-semibold ${m.type === "entrada" ? "text-emerald-400" : m.type === "saida" ? "text-destructive" : ""}`}
-                  >
-                    {m.type === "entrada" ? "+" : m.type === "saida" ? "−" : ""}
-                    {Number(m.quantity).toFixed(0)} {it?.unit ?? ""}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">
-                    {m.reference_kind ?? "manual"}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground truncate max-w-xs">
-                    {m.notes ?? "—"}
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
+  const columns: DataTableColumn<Mov>[] = [
+    {
+      key: "created_at",
+      header: "Data",
+      value: (m) => m.created_at,
+      cell: (m) => (
+        <span className="text-xs text-muted-foreground">
+          {new Date(m.created_at).toLocaleString("pt-BR")}
+        </span>
+      ),
+    },
+    {
+      key: "type",
+      header: "Tipo",
+      value: (m) => m.type,
+      cell: (m) => typeBadge(m.type),
+    },
+    {
+      key: "item",
+      header: "Item",
+      value: (m) => {
+        const it = itemMap.get(m.inventory_item_id);
+        return it ? `${it.sku} ${it.name}` : "";
+      },
+      cell: (m) => {
+        const it = itemMap.get(m.inventory_item_id);
+        return it ? (
+          <>
+            <span className="font-mono text-xs">{it.sku}</span> · {it.name}
+          </>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
+    },
+    {
+      key: "quantity",
+      header: "Quantidade",
+      align: "right",
+      value: (m) => Number(m.quantity),
+      cell: (m) => {
+        const it = itemMap.get(m.inventory_item_id);
+        return (
+          <span
+            className={`tabular-nums font-semibold ${m.type === "entrada" ? "text-emerald-400" : m.type === "saida" ? "text-destructive" : ""}`}
+          >
+            {m.type === "entrada" ? "+" : m.type === "saida" ? "−" : ""}
+            {Number(m.quantity).toFixed(0)} {it?.unit ?? ""}
+          </span>
+        );
+      },
+    },
+    {
+      key: "reference_kind",
+      header: "Origem",
+      value: (m) => m.reference_kind ?? "manual",
+      cell: (m) => (
+        <span className="text-xs text-muted-foreground">{m.reference_kind ?? "manual"}</span>
+      ),
+    },
+    {
+      key: "notes",
+      header: "Notas",
+      value: (m) => m.notes ?? "",
+      cell: (m) => (
+        <span className="text-xs text-muted-foreground truncate max-w-xs block">
+          {m.notes ?? "—"}
+        </span>
+      ),
+    },
+  ];
 
+  return (
+    <>
+      <DataTable
+        data={moves}
+        columns={columns}
+        loading={isLoading}
+        getRowId={(m) => m.id}
+        initialSort={{ key: "created_at", dir: "desc" }}
+        searchPlaceholder="Buscar por item, SKU, notas…"
+        emptyTitle="Nenhuma movimentação registrada"
+        emptyDescription="Registre uma nova movimentação para começar."
+        emptyIcon={ArrowLeftRight}
+        pageSize={25}
+      />
       <MovDialog open={open} onOpenChange={setOpen} items={items} userId={userId} />
-    </div>
+    </>
   );
 }
 
