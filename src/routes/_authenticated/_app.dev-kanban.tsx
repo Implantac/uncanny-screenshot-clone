@@ -9,6 +9,7 @@ import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
 export const Route = createFileRoute("/_authenticated/_app/dev-kanban")({ component: DevKanban });
 
@@ -251,11 +252,14 @@ function DevKanban() {
                         {p.name}
                       </div>
                       <div className="text-muted-foreground tabular-nums">{p.sku}</div>
-                      <div className="flex items-center justify-between text-muted-foreground pt-1">
+                      <div className="flex items-center justify-between text-muted-foreground pt-1 gap-1">
                         <span className="truncate">{p.category ?? "—"}</span>
-                        {p.sell_price ? (
-                          <span className="tabular-nums">R$ {Number(p.sell_price).toFixed(0)}</span>
-                        ) : null}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <ProductReadinessBadge productId={p.id} />
+                          {p.sell_price ? (
+                            <span className="tabular-nums">R$ {Number(p.sell_price).toFixed(0)}</span>
+                          ) : null}
+                        </div>
                       </div>
                       <select
                         className="md:opacity-0 md:group-hover:opacity-100 transition w-full mt-1 text-[10px] bg-muted/50 border border-border rounded px-1 py-0.5"
