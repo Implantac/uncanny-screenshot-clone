@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/status-badge";
 import { toast } from "sonner";
 import { PrototypeCommentsButton } from "@/components/prototype-comments";
 import {
