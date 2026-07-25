@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/status-badge";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 import { toast } from "sonner";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ProductTimeline } from "@/components/product-timeline";
@@ -384,7 +385,12 @@ function ProdutosPage() {
                           <Tag className="size-3" /> {product.sku}
                         </div>
                       </div>
-                      <StatusBadge kind="product" value={product.status} />
+                      <div className="flex items-center gap-1 shrink-0">
+                        <ProductReadinessBadge productId={product.id} />
+                        <StatusBadge kind="product" value={product.status} />
+                      </div>
+
+
 
                     </div>
                     <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
