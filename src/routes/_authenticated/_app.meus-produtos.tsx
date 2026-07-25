@@ -301,6 +301,7 @@ function MyProductsFeed() {
                           {p.sku}
                         </div>
                       </div>
+                      <ProductReadinessBadge productId={p.id} />
                       <Badge variant="outline" className="text-[10px] capitalize">
                         {p.status}
                       </Badge>
