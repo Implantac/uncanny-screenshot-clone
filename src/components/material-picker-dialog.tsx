@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Library, Plus, Package } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { QuickMaterialDialog } from "@/components/quick-material-dialog";
 
 export type LibraryMaterial = {
   id: string;
@@ -46,6 +47,7 @@ export function MaterialPickerDialog({
 }: Props) {
   const [q, setQ] = useState("");
   const [kind, setKind] = useState<string>("todos");
+  const [quickOpen, setQuickOpen] = useState(false);
 
   const { data: items = [], isLoading } = useQuery({
     enabled: open,
@@ -181,20 +183,38 @@ export function MaterialPickerDialog({
           >
             <Library className="size-3" /> Gerenciar biblioteca
           </Link>
-          {onCreateBlank && (
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                onCreateBlank();
-                onOpenChange(false);
-              }}
+              onClick={() => setQuickOpen(true)}
             >
-              <Plus className="size-3.5 mr-1" /> Item manual
+              <Plus className="size-3.5 mr-1" /> Novo material
             </Button>
-          )}
+            {onCreateBlank && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  onCreateBlank();
+                  onOpenChange(false);
+                }}
+              >
+                Item manual
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
+      <QuickMaterialDialog
+        open={quickOpen}
+        onOpenChange={setQuickOpen}
+        defaultKind={kind !== "todos" ? kind : "tecido"}
+        onCreated={(m) => {
+          onPick(m);
+          onOpenChange(false);
+        }}
+      />
     </Dialog>
   );
 }
