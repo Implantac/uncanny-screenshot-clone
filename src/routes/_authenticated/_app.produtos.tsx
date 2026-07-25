@@ -384,9 +384,8 @@ function ProdutosPage() {
                           <Tag className="size-3" /> {product.sku}
                         </div>
                       </div>
-                      <Badge variant="outline" className={STATUS_COLORS[product.status]}>
-                        {STATUS_LABELS[product.status]}
-                      </Badge>
+                      <StatusBadge kind="product" value={product.status} />
+
                     </div>
                     <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                       <span>{product.category || "Sem categoria"}</span>
