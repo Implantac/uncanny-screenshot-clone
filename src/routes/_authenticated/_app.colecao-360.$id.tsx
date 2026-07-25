@@ -826,21 +826,26 @@ function CollectionTabs({
   );
 }
 
-function CollectionUnifiedTimeline({
-  collectionId,
-  current,
-}: {
-  collectionId: string;
-  current: CollectionAggregate;
-}) {
-  const ids = [
-    collectionId,
-    ...current.products.map((p) => p.id),
-    ...current.prototypes.map((p) => p.id),
-  ];
+function CollectionUnifiedTimeline({ collectionId }: { collectionId: string }) {
+  const { data: extraIds = [] } = useQuery({
+    queryKey: ["collection-timeline-entity-ids", collectionId],
+    queryFn: async () => {
+      const [{ data: cps }, { data: protos }, { data: ops }] = await Promise.all([
+        supabase.from("collection_products").select("product_id").eq("collection_id", collectionId),
+        supabase.from("prototypes").select("id").eq("collection_id", collectionId),
+        supabase.from("production_orders").select("id").eq("collection_id", collectionId),
+      ]);
+      const ids = new Set<string>();
+      (cps ?? []).forEach((r) => r.product_id && ids.add(r.product_id as string));
+      (protos ?? []).forEach((r) => ids.add(r.id as string));
+      (ops ?? []).forEach((r) => ids.add(r.id as string));
+      return Array.from(ids);
+    },
+  });
+
   return (
     <TimelineFeed
-      entityIds={ids}
+      entityIds={[collectionId, ...extraIds]}
       title="Histórico unificado da coleção"
       emptyLabel="Sem eventos registrados no período para esta coleção."
       sinceDays={60}
@@ -848,6 +853,7 @@ function CollectionUnifiedTimeline({
     />
   );
 }
+
 
 
 
