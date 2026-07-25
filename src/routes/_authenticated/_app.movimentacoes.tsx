@@ -39,6 +39,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 
 const searchSchema = z.object({
   tab: fallback(z.enum(["passagem", "estoque"]), "passagem").default("passagem"),
