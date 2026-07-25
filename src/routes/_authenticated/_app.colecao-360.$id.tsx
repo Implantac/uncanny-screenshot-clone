@@ -818,9 +818,37 @@ function CollectionTabs({
       <TabsContent value="lancamento" className="space-y-4">
         <LaunchingWeekPanel />
       </TabsContent>
+
+      <TabsContent value="historico" className="space-y-4">
+        <CollectionUnifiedTimeline collectionId={collectionId} current={current} />
+      </TabsContent>
     </Tabs>
   );
 }
+
+function CollectionUnifiedTimeline({
+  collectionId,
+  current,
+}: {
+  collectionId: string;
+  current: { products?: Array<{ id: string }>; prototypes?: Array<{ id: string }> };
+}) {
+  const ids = [
+    collectionId,
+    ...(current.products?.map((p) => p.id) ?? []),
+    ...(current.prototypes?.map((p) => p.id) ?? []),
+  ];
+  return (
+    <TimelineFeed
+      entityIds={ids}
+      title="Histórico unificado da coleção"
+      emptyLabel="Sem eventos registrados no período para esta coleção."
+      sinceDays={60}
+      limit={300}
+    />
+  );
+}
+
 
 function CollectionTimelineTab({ collectionId }: { collectionId: string }) {
   const qc = useQueryClient();
