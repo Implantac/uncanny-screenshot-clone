@@ -35,7 +35,9 @@ import {
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
-import { Target, Heart } from "lucide-react";
+import { Target, Heart, Activity } from "lucide-react";
+import { TimelineFeed } from "@/components/timeline-feed";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
