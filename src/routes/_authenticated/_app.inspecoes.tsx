@@ -149,6 +149,113 @@ function InspectionsPage() {
   );
 }
 
+function InspectionsTable({
+  data,
+  loading,
+  pos,
+  onDelete,
+}: {
+  data: Inspection[];
+  loading: boolean;
+  pos: { id: string; code: string }[];
+  onDelete: (id: string) => void;
+}) {
+  const columns: DataTableColumn<Inspection>[] = [
+    {
+      key: "inspected_at",
+      header: "Data",
+      value: (r) => r.inspected_at,
+      cell: (r) => new Date(r.inspected_at).toLocaleDateString("pt-BR"),
+    },
+    {
+      key: "inspection_type",
+      header: "Tipo",
+      value: (r) => r.inspection_type,
+      cell: (r) => r.inspection_type,
+    },
+    {
+      key: "op",
+      header: "OP",
+      value: (r) => pos.find((p) => p.id === r.production_order_id)?.code ?? "",
+      cell: (r) => (
+        <span className="font-mono">
+          {pos.find((p) => p.id === r.production_order_id)?.code ?? "—"}
+        </span>
+      ),
+    },
+    {
+      key: "aql_level",
+      header: "AQL",
+      value: (r) => r.aql_level ?? "",
+      cell: (r) => r.aql_level ?? "—",
+    },
+    {
+      key: "lot",
+      header: "Lote / Amostra",
+      cell: (r) => `${r.lot_size ?? "—"} / ${r.sample_size ?? "—"}`,
+    },
+    {
+      key: "defects",
+      header: "Críticos / Maiores / Menores",
+      value: (r) => r.critical_defects,
+      cell: (r) => (
+        <>
+          <span className="text-destructive font-medium">{r.critical_defects}</span>
+          {" / "}
+          <span>{r.major_defects}</span>
+          {" / "}
+          <span className="text-muted-foreground">{r.minor_defects}</span>
+        </>
+      ),
+    },
+    {
+      key: "result",
+      header: "Resultado",
+      value: (r) => r.result,
+      cell: (r) => resultBadge(r.result),
+    },
+    {
+      key: "inspector",
+      header: "Inspetor",
+      value: (r) => r.inspector ?? "",
+      cell: (r) => <span className="text-muted-foreground">{r.inspector ?? "—"}</span>,
+    },
+    {
+      key: "actions",
+      header: "",
+      align: "right",
+      cell: (r) => (
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Excluir inspeção"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(r.id);
+          }}
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <DataTable
+      data={data}
+      columns={columns}
+      loading={loading}
+      getRowId={(r) => r.id}
+      initialSort={{ key: "inspected_at", dir: "desc" }}
+      searchPlaceholder="Buscar por tipo, OP, AQL, inspetor…"
+      emptyTitle="Nenhuma inspeção registrada"
+      emptyDescription="Registre uma nova inspeção AQL para começar."
+      emptyIcon={ShieldAlert}
+      pageSize={20}
+    />
+  );
+}
+
 function NewInspectionDialog({
   open,
   onOpenChange,
