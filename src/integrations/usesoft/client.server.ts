@@ -123,12 +123,16 @@ export async function usesoftQuery<T extends QueryResultRow = QueryResultRow>(
   sql: string,
   params: unknown[] = [],
 ): Promise<QueryResult<T>> {
+  if (isUsesoftDisabled()) {
+    throw new UsesoftDisabledError();
+  }
   if (!READ_ONLY_RE.test(sql)) {
     throw new Error("usesoftQuery aceita apenas SELECT/WITH (read-only).");
   }
   const pool = getPool();
   return pool.query<T>(sql, params as unknown[]);
 }
+
 
 /**
  * Healthcheck simples.
