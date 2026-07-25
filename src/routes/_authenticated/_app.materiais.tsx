@@ -32,6 +32,7 @@ import { Plus, Trash2, Search, Package, ImageOff, Pencil, X, Save } from "lucide
 import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
+import { QuickSupplierDialog } from "@/components/quick-supplier-dialog";
 
 export const Route = createFileRoute("/_authenticated/_app/materiais")({
   head: () => ({
@@ -68,6 +69,7 @@ function Page() {
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [quickSupplierOpen, setQuickSupplierOpen] = useState(false);
   useFabNewAction(() => setDialogOpen(true));
 
   const [form, setForm] = useState({
@@ -227,20 +229,31 @@ function Page() {
                     {KINDS.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <Select
-                  value={form.preferred_supplier_id ?? "none"}
-                  onValueChange={(v) =>
-                    setForm({ ...form, preferred_supplier_id: v === "none" ? null : v })
-                  }
-                >
-                  <SelectTrigger><SelectValue placeholder="Fornecedor" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sem fornecedor</SelectItem>
-                    {suppliers.data?.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={form.preferred_supplier_id ?? "none"}
+                    onValueChange={(v) =>
+                      setForm({ ...form, preferred_supplier_id: v === "none" ? null : v })
+                    }
+                  >
+                    <SelectTrigger><SelectValue placeholder="Fornecedor" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem fornecedor</SelectItem>
+                      {suppliers.data?.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuickSupplierOpen(true)}
+                    title="Novo fornecedor"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
                 <Input
                   placeholder="Código"
                   value={form.code}
@@ -346,6 +359,12 @@ function Page() {
         onOpenChange={(o) => !o && setSelectedId(null)}
         suppliers={suppliers.data ?? []}
         onDelete={() => selected && remove.mutate(selected.id)}
+      />
+
+      <QuickSupplierDialog
+        open={quickSupplierOpen}
+        onOpenChange={setQuickSupplierOpen}
+        onCreated={(sup) => setForm((f) => ({ ...f, preferred_supplier_id: sup.id }))}
       />
     </div>
   );
@@ -466,6 +485,7 @@ function MaterialDetailSheet({
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Item | null>(item);
+  const [quickOpen, setQuickOpen] = useState(false);
 
   useEffect(() => {
     setDraft(item);
@@ -552,18 +572,29 @@ function MaterialDetailSheet({
                 </Select>
               </Field>
               <Field label="Fornecedor">
-                <Select
-                  value={d.preferred_supplier_id ?? "none"}
-                  onValueChange={(v) => set("preferred_supplier_id", v === "none" ? null : v)}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sem fornecedor</SelectItem>
-                    {suppliers.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={d.preferred_supplier_id ?? "none"}
+                    onValueChange={(v) => set("preferred_supplier_id", v === "none" ? null : v)}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem fornecedor</SelectItem>
+                      {suppliers.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuickOpen(true)}
+                    title="Novo fornecedor"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </Field>
               <Field label="Código">
                 <Input value={d.code} onChange={(e) => set("code", e.target.value)} />
@@ -666,6 +697,11 @@ function MaterialDetailSheet({
             )}
           </div>
         </div>
+        <QuickSupplierDialog
+          open={quickOpen}
+          onOpenChange={setQuickOpen}
+          onCreated={(sup) => set("preferred_supplier_id", sup.id)}
+        />
       </SheetContent>
     </Sheet>
   );
