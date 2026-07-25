@@ -9,14 +9,16 @@ vi.mock("@/integrations/supabase/client", () => ({
   supabase: { rpc: (...a: unknown[]) => rpcMock(...a) },
 }));
 
-const READY_ROWS = [
+type Row = { requirement: string; ok: boolean; detail: string | null };
+
+const READY_ROWS: Row[] = [
   { requirement: "Ficha técnica aprovada", ok: true, detail: null },
   { requirement: "BOM (materiais)", ok: true, detail: null },
   { requirement: "Custo definido", ok: true, detail: null },
   { requirement: "Protótipo aprovado", ok: true, detail: null },
 ];
 
-const PENDING_ROWS = [
+const PENDING_ROWS: Row[] = [
   { requirement: "Ficha técnica aprovada", ok: false, detail: "sem versão aprovada" },
   { requirement: "BOM (materiais)", ok: true, detail: null },
   { requirement: "Custo definido", ok: false, detail: null },
