@@ -59,24 +59,41 @@ export function ProductReadinessBadge({
   const failing = critical.filter((r) => !r.ok);
   const ready = failing.length === 0;
 
+  const summary = ready
+    ? "Pronto para produção — todos os gates críticos passaram."
+    : `${failing.length} de ${critical.length} gates críticos pendentes: ${failing
+        .map((f) => f.requirement)
+        .join(", ")}.`;
+
   return (
     <TooltipProvider delayDuration={150}>
       <Tooltip>
         <TooltipTrigger asChild>
           <span
+            role="button"
+            tabIndex={0}
+            aria-label={`Prontidão para produção: ${summary}`}
             className={cn(
               "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-medium tabular-nums cursor-help",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
               ready
                 ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
                 : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
               className,
             )}
           >
-            {ready ? <ShieldCheck className="size-3" /> : <ShieldAlert className="size-3" />}
-            {ready ? "Pronto" : `${failing.length}/${critical.length}`}
+            {ready ? (
+              <ShieldCheck className="size-3" aria-hidden="true" />
+            ) : (
+              <ShieldAlert className="size-3" aria-hidden="true" />
+            )}
+            <span aria-hidden="true">
+              {ready ? "Pronto" : `${failing.length}/${critical.length}`}
+            </span>
           </span>
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs p-0 overflow-hidden">
+        <TooltipContent side="top" role="tooltip" className="max-w-xs p-0 overflow-hidden">
+
           <div className="px-3 py-2 border-b border-border/50 bg-muted/40">
             <div className="text-[11px] font-semibold">
               {ready ? "Pronto para produção" : "Gates críticos pendentes"}
