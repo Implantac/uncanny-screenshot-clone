@@ -34,7 +34,9 @@ export type TimelineFilters = {
   since_days?: number;
   search?: string;
   limit?: number;
+  entity_ids?: string[];
 };
+
 
 const STAGE_LABEL: Record<string, string> = {
   cad: "CAD",
