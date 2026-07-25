@@ -629,9 +629,8 @@ function ProductDetail({
 
           <div className="p-5 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className={STATUS_COLORS[product.status]}>
-                {STATUS_LABELS[product.status]}
-              </Badge>
+              <StatusBadge kind="product" value={product.status} />
+
               {product.product_group && <Badge variant="outline">{product.product_group}</Badge>}
               {product.subgroup && <Badge variant="outline">{product.subgroup}</Badge>}
               {product.product_class && <Badge variant="outline">{product.product_class}</Badge>}
