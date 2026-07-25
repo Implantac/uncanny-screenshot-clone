@@ -831,13 +831,24 @@ function CollectionUnifiedTimeline({
   current,
 }: {
   collectionId: string;
-  current: { products?: Array<{ id: string }>; prototypes?: Array<{ id: string }> };
+  current: CollectionAggregate;
 }) {
   const ids = [
     collectionId,
-    ...(current.products?.map((p) => p.id) ?? []),
-    ...(current.prototypes?.map((p) => p.id) ?? []),
+    ...current.products.map((p) => p.id),
+    ...current.prototypes.map((p) => p.id),
   ];
+  return (
+    <TimelineFeed
+      entityIds={ids}
+      title="Histórico unificado da coleção"
+      emptyLabel="Sem eventos registrados no período para esta coleção."
+      sinceDays={60}
+      limit={300}
+    />
+  );
+}
+
   return (
     <TimelineFeed
       entityIds={ids}
