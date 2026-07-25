@@ -24,7 +24,7 @@ type Gate = {
   key: string;
   title: string;
   description: string;
-  items: { id: string; label: string; sub?: string; status: string; href: string }[];
+  items: { id: string; label: string; sub?: string; status: string; href: string; productId?: string | null }[];
 };
 
 function Approvals() {
