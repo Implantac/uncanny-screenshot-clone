@@ -129,69 +129,13 @@ function InspectionsPage() {
       />
 
 
-      <div className="rounded-xl border border-border bg-card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 text-muted-foreground text-xs">
-            <tr>
-              <th className="text-left px-3 py-2">Data</th>
-              <th className="text-left px-3 py-2">Tipo</th>
-              <th className="text-left px-3 py-2">OP</th>
-              <th className="text-left px-3 py-2">AQL</th>
-              <th className="text-left px-3 py-2">Lote / Amostra</th>
-              <th className="text-left px-3 py-2">Críticos / Maiores / Menores</th>
-              <th className="text-left px-3 py-2">Resultado</th>
-              <th className="text-left px-3 py-2">Inspetor</th>
-              <th className="px-3 py-2 w-12" />
-            </tr>
-          </thead>
-          <tbody>
-            {insps.isLoading ? (
-              <tr>
-                <td colSpan={9} className="p-8 text-center text-muted-foreground">
-                  Carregando…
-                </td>
-              </tr>
-            ) : (insps.data ?? []).length === 0 ? (
-              <tr>
-                <td colSpan={9} className="p-8 text-center text-muted-foreground">
-                  Nenhuma inspeção registrada.
-                </td>
-              </tr>
-            ) : (
-              (insps.data ?? []).map((i) => {
-                const po = pos.data?.find((p) => p.id === i.production_order_id);
-                return (
-                  <tr key={i.id} className="border-t border-border">
-                    <td className="px-3 py-2">
-                      {new Date(i.inspected_at).toLocaleDateString("pt-BR")}
-                    </td>
-                    <td className="px-3 py-2">{i.inspection_type}</td>
-                    <td className="px-3 py-2 font-mono">{po?.code ?? "—"}</td>
-                    <td className="px-3 py-2">{i.aql_level ?? "—"}</td>
-                    <td className="px-3 py-2">
-                      {(i.lot_size ?? "—") + " / " + (i.sample_size ?? "—")}
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className="text-destructive font-medium">{i.critical_defects}</span>
-                      {" / "}
-                      <span>{i.major_defects}</span>
-                      {" / "}
-                      <span className="text-muted-foreground">{i.minor_defects}</span>
-                    </td>
-                    <td className="px-3 py-2">{resultBadge(i.result)}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{i.inspector ?? "—"}</td>
-                    <td className="px-3 py-2 text-right">
-                      <Button variant="ghost" size="icon" aria-label="Excluir inspeção" onClick={() => del.mutate(i.id)}>
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      <InspectionsTable
+        data={insps.data ?? []}
+        loading={insps.isLoading}
+        pos={pos.data ?? []}
+        onDelete={(id) => del.mutate(id)}
+      />
+
 
       <NewInspectionDialog
         open={open}
