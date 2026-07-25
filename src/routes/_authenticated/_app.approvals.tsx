@@ -82,7 +82,8 @@ function Approvals() {
               label: (f as { products?: { name: string } }).products?.name ?? "—",
               sub: `v${f.version}`,
               status: f.status,
-              href: "/ficha-tecnica",
+              href: f.product_id ? `/produto/${f.product_id}` : "/ficha-tecnica",
+              productId: f.product_id,
             })),
         },
         {
