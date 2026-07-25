@@ -25,7 +25,7 @@ const PENDING_ROWS: Row[] = [
   { requirement: "Protótipo aprovado", ok: true, detail: null },
 ];
 
-function renderScenario(rows: typeof READY_ROWS) {
+function renderScenario(rows: Row[]) {
   rpcMock.mockResolvedValue({ data: rows, error: null });
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
