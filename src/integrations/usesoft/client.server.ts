@@ -151,8 +151,11 @@ export async function usesoftPing(): Promise<{
     const err = e as Error;
     const msg = err.message ?? String(err);
     let friendly = msg;
-    if (err.name === "UsesoftConfigError") {
+    if (err.name === "UsesoftDisabledError") {
       friendly = msg;
+    } else if (err.name === "UsesoftConfigError") {
+      friendly = msg;
+
     } else if (msg.includes("ENOTFOUND") || msg.includes("EAI_AGAIN")) {
       friendly = "Host do ERP não resolvido (DNS). Verifique USESOFT_PG_HOST no backend.";
     } else if (msg.includes("ECONNREFUSED")) {
