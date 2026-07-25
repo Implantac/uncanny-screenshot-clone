@@ -664,9 +664,8 @@ function Prototipos() {
                     <td className="px-4 py-3">{productName(p.product_id)}</td>
                     <td className="px-4 py-3">{supplierName(p.supplier_id)}</td>
                     <td className="px-4 py-3">
-                      <Badge variant="outline" className={STAGE_COLOR[p.stage]}>
-                        {STAGE_LABEL[p.stage]}
-                      </Badge>
+                      <StatusBadge kind="prototype" value={p.stage} />
+
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{p.due_date ?? "—"}</td>
                     <td className="px-4 py-3 text-right">
