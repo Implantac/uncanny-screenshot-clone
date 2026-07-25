@@ -115,11 +115,15 @@ function DesignerWorkspace() {
                 {openProtos.slice(0, 15).map((p) => (
                   <Link
                     key={p.id}
-                    to="/prototipos"
+                    to={p.product_id ? "/produto/$id" : "/prototipos"}
+                    params={p.product_id ? { id: p.product_id } : undefined}
                     className="flex items-center justify-between border rounded-lg px-3 py-2 hover:bg-muted"
                   >
                     <span className="font-mono text-xs">{p.code}</span>
-                    <Badge variant="outline">{p.stage}</Badge>
+                    <div className="flex items-center gap-2">
+                      {p.product_id && <ProductReadinessBadge productId={p.product_id} />}
+                      <Badge variant="outline">{p.stage}</Badge>
+                    </div>
                   </Link>
                 ))}
                 {openProtos.length === 0 && (
