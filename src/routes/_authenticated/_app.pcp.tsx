@@ -51,6 +51,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PcpMrpPanel } from "@/components/pcp-mrp-panel";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 import { toast } from "sonner";
 
 const STATUS_VALS = ["aguardando", "em_producao", "concluida", "atrasada", "cancelada"] as const;
@@ -778,7 +779,10 @@ function PCP() {
                       >
                         <div className="truncate">
                           <div className="font-mono text-xs text-muted-foreground">{o.code}</div>
-                          <div className="text-sm truncate">{productName(o.product_id)}</div>
+                          <div className="text-sm truncate flex items-center gap-1.5">
+                            <span className="truncate">{productName(o.product_id)}</span>
+                            {o.product_id && <ProductReadinessBadge productId={o.product_id} />}
+                          </div>
                         </div>
                         <div className="relative h-6 bg-muted/30 rounded">
                           <div
@@ -821,7 +825,12 @@ function PCP() {
                   {filtered.map((o) => (
                     <tr key={o.id} className="border-t border-border hover:bg-muted/20">
                       <td className="px-4 py-3 font-mono text-xs">{o.code}</td>
-                      <td className="px-4 py-3">{productName(o.product_id)}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="truncate">{productName(o.product_id)}</span>
+                          {o.product_id && <ProductReadinessBadge productId={o.product_id} />}
+                        </div>
+                      </td>
                       <td className="px-4 py-3">{supplierName(o.supplier_id)}</td>
                       <td className="px-4 py-3 text-right tabular-nums">{o.quantity}</td>
                       <td className="px-4 py-3 w-40">
