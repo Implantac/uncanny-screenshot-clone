@@ -360,6 +360,12 @@ function Page() {
         suppliers={suppliers.data ?? []}
         onDelete={() => selected && remove.mutate(selected.id)}
       />
+
+      <QuickSupplierDialog
+        open={quickSupplierOpen}
+        onOpenChange={setQuickSupplierOpen}
+        onCreated={(sup) => setForm((f) => ({ ...f, preferred_supplier_id: sup.id }))}
+      />
     </div>
   );
 }
