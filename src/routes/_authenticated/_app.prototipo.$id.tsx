@@ -27,6 +27,8 @@ import { toast } from "sonner";
 import { PrototypeApprovalGate } from "@/components/prototype-approval-gate";
 import { PrototypeGatesPanel } from "@/components/prototype-gates-panel";
 import { PrototypeHandoffTimeline } from "@/components/prototype-handoff-timeline";
+import { TimelineFeed } from "@/components/timeline-feed";
+
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import { StatusBadge } from "@/components/status-badge";
 import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
