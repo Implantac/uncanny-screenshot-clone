@@ -51,6 +51,7 @@ import { PrototypeTimelineButton } from "@/components/prototype-timeline";
 import { DevIntelligencePanel } from "@/components/dev-intelligence-panel";
 import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";
 import { PageHeader } from "@/components/ui/page-header";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
