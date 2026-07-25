@@ -178,6 +178,7 @@ function Approvals() {
                         {it.sub && <div className="text-xs text-muted-foreground">{it.sub}</div>}
                       </div>
                       <div className="flex items-center gap-2">
+                        {it.productId && <ProductReadinessBadge productId={it.productId} />}
                         <Badge variant="outline">{it.status}</Badge>
                         <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       </div>
