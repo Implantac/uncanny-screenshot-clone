@@ -108,10 +108,11 @@ export function ProductReadinessBadge({
             {critical.map((g) => (
               <li key={g.requirement} className="flex items-start gap-2">
                 {g.ok ? (
-                  <Check className="size-3 mt-0.5 text-emerald-500 shrink-0" />
+                  <Check className="size-3 mt-0.5 text-emerald-500 shrink-0" aria-hidden="true" />
                 ) : (
-                  <X className="size-3 mt-0.5 text-amber-500 shrink-0" />
+                  <X className="size-3 mt-0.5 text-amber-500 shrink-0" aria-hidden="true" />
                 )}
+                <span className="sr-only">{g.ok ? "Aprovado:" : "Pendente:"}</span>
                 <div className="min-w-0">
                   <div className="text-[11px] font-medium leading-tight">
                     {g.requirement}
