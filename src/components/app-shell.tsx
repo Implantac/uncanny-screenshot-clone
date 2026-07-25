@@ -16,12 +16,14 @@ import { MyProductsInboxButton } from "./my-products-inbox-button";
 import { SectorChatButton } from "./sector-chat";
 import {
   MODULES,
-  MODULE_GROUPS,
+  LIFECYCLE_PHASES,
+  modulePhase,
   moduleAllowed,
   moduleAllowedForRole,
   type ModuleDef,
-  type ModuleGroup,
+  type LifecyclePhase,
 } from "@/lib/modules";
+
 import { useSectors } from "@/hooks/use-sectors";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
