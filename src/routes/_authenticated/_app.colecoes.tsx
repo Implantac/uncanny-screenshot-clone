@@ -1127,12 +1127,8 @@ function ColecoesPage() {
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <span className="font-medium truncate">{capsule.name}</span>
-                                  <Badge
-                                    variant="outline"
-                                    className={STATUS_COLORS[capsule.status]}
-                                  >
-                                    {STATUS_LABELS[capsule.status]}
-                                  </Badge>
+                                  <StatusBadge kind="collection" value={capsule.status} />
+
                                 </div>
                                 <div className="mt-1 text-xs text-muted-foreground">
                                   {capsule.season} {capsule.year} · {capsule.progress}%
