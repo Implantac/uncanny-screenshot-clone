@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { ShoppingCart, AlertTriangle, Package, TrendingDown } from "lucide-react";
 import { InventorySmartPanel } from "@/components/inventory-smart-panel";
 import { PageHeader } from "@/components/ui/page-header";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 
 export const Route = createFileRoute("/_authenticated/_app/compras")({ component: Compras });
 
