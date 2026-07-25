@@ -849,16 +849,7 @@ function CollectionUnifiedTimeline({
   );
 }
 
-  return (
-    <TimelineFeed
-      entityIds={ids}
-      title="Histórico unificado da coleção"
-      emptyLabel="Sem eventos registrados no período para esta coleção."
-      sinceDays={60}
-      limit={300}
-    />
-  );
-}
+
 
 
 function CollectionTimelineTab({ collectionId }: { collectionId: string }) {
