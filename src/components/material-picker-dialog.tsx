@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Library, Plus, Package } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { QuickMaterialDialog } from "@/components/quick-material-dialog";
 
 export type LibraryMaterial = {
   id: string;
