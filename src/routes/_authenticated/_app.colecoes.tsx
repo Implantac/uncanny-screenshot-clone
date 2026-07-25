@@ -1027,9 +1027,8 @@ function ColecoesPage() {
                     />
                     <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-background via-background/60 to-transparent">
                       <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <Badge variant="outline" className={STATUS_COLORS[selected.status]}>
-                          {STATUS_LABELS[selected.status]}
-                        </Badge>
+                        <StatusBadge kind="collection" value={selected.status} />
+
                         <Badge variant="outline">
                           {selected.season} {selected.year}
                         </Badge>
