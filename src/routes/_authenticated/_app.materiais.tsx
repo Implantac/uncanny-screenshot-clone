@@ -33,6 +33,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
 import { QuickSupplierDialog } from "@/components/quick-supplier-dialog";
+import { MaterialCostCascadePanel } from "@/components/material-cost-cascade-panel";
+
 
 export const Route = createFileRoute("/_authenticated/_app/materiais")({
   head: () => ({
