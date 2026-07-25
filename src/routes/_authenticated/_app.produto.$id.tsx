@@ -36,6 +36,7 @@ import {
 } from "@/components/tech-pack/panels";
 import { ProductTimeline } from "@/components/product-timeline";
 import { ProductTimelineCollab } from "@/components/product-timeline-collab";
+import { TimelineFeed } from "@/components/timeline-feed";
 
 import { ProductGallery } from "@/components/product-gallery";
 import { SkuPerformancePanel } from "@/components/sku-performance-panel";
@@ -468,12 +469,16 @@ function ProductWorkspace() {
           </div>
         </TabsContent>
 
-        <TabsContent value="timeline">
+        <TabsContent value="timeline" className="space-y-4">
           <div className="rounded-xl border border-border bg-card p-4">
             <ProductTimeline productId={product.id} createdAt={product.created_at} />
             <ProductTimelineCollab productId={product.id} />
-
           </div>
+          <TimelineFeed
+            entityIds={[product.id]}
+            title="Timeline unificada (todos os setores)"
+            emptyLabel="Nenhum evento vinculado a este produto ainda."
+          />
         </TabsContent>
       </Tabs>
     </div>
