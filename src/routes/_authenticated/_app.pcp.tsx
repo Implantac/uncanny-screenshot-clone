@@ -235,7 +235,17 @@ function PCP() {
       toast.success(editing ? "Ordem atualizada" : "Ordem criada");
       reset();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      const msg = e.message || "";
+      if (msg.includes("gates obrigatórios") || msg.includes("Pendências:")) {
+        toast.error("OP bloqueada pelos gates do produto", {
+          description: msg.replace(/^.*Pendências:\s*/, ""),
+          duration: 10000,
+        });
+      } else {
+        toast.error(msg);
+      }
+    },
   });
 
   const del = useMutation({
