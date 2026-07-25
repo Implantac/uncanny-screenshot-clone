@@ -571,18 +571,29 @@ function MaterialDetailSheet({
                 </Select>
               </Field>
               <Field label="Fornecedor">
-                <Select
-                  value={d.preferred_supplier_id ?? "none"}
-                  onValueChange={(v) => set("preferred_supplier_id", v === "none" ? null : v)}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sem fornecedor</SelectItem>
-                    {suppliers.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={d.preferred_supplier_id ?? "none"}
+                    onValueChange={(v) => set("preferred_supplier_id", v === "none" ? null : v)}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem fornecedor</SelectItem>
+                      {suppliers.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuickOpen(true)}
+                    title="Novo fornecedor"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </Field>
               <Field label="Código">
                 <Input value={d.code} onChange={(e) => set("code", e.target.value)} />
