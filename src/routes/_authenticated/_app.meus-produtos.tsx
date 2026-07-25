@@ -22,6 +22,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { ApprovalSlaBadge } from "@/components/approval-sla-badge";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
 
 export const Route = createFileRoute("/_authenticated/_app/meus-produtos")({
