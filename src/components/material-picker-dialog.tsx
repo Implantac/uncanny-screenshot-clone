@@ -47,6 +47,7 @@ export function MaterialPickerDialog({
 }: Props) {
   const [q, setQ] = useState("");
   const [kind, setKind] = useState<string>("todos");
+  const [quickOpen, setQuickOpen] = useState(false);
 
   const { data: items = [], isLoading } = useQuery({
     enabled: open,
