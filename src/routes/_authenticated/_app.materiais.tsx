@@ -485,6 +485,7 @@ function MaterialDetailSheet({
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Item | null>(item);
+  const [quickOpen, setQuickOpen] = useState(false);
 
   useEffect(() => {
     setDraft(item);
