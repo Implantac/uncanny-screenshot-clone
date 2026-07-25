@@ -51,6 +51,7 @@ import { PrototypeTimelineButton } from "@/components/prototype-timeline";
 import { DevIntelligencePanel } from "@/components/dev-intelligence-panel";
 import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";
 import { PageHeader } from "@/components/ui/page-header";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -557,7 +558,8 @@ function Prototipos() {
                         </div>
                         {(() => {
                           const u = dueUrgency(p.due_date);
-                          if (u.tone === "none" && !p.needs_adjustment) return null;
+                          const showReadiness = p.stage === "aprovado" && p.product_id;
+                          if (u.tone === "none" && !p.needs_adjustment && !showReadiness) return null;
                           return (
                             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                               {u.tone !== "none" && (
@@ -571,6 +573,9 @@ function Prototipos() {
                                 <span className="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/15 text-amber-500 font-medium">
                                   ⚠ Ajuste
                                 </span>
+                              )}
+                              {showReadiness && (
+                                <ProductReadinessBadge productId={p.product_id!} />
                               )}
                             </div>
                           );
