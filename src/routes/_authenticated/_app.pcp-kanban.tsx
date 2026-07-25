@@ -38,6 +38,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { getRoutingsForProducts } from "@/lib/product-routing.functions";
 import { ErpSectorSyncPanel } from "@/components/erp-sector-sync-panel";
 import { PageHeader } from "@/components/ui/page-header";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
 
 
@@ -784,6 +785,9 @@ function PcpKanban() {
                               >
                                 <AlertTriangle className="size-2.5" /> CAPA
                               </span>
+                            )}
+                            {o.product_id && (
+                              <ProductReadinessBadge productId={o.product_id} />
                             )}
                           </span>
                           <div className="flex items-center gap-1">
