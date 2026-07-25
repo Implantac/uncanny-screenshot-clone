@@ -660,6 +660,10 @@ function MaterialDetailSheet({
             </div>
           )}
 
+          {!editing && d.id && <MaterialCostCascadePanel materialId={d.id} />}
+
+
+
           <div className="flex items-center gap-2 pt-2 border-t border-border">
             {editing ? (
               <>
