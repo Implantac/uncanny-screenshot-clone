@@ -385,7 +385,12 @@ function ProdutosPage() {
                           <Tag className="size-3" /> {product.sku}
                         </div>
                       </div>
-                      <StatusBadge kind="product" value={product.status} />
+                      <div className="flex items-center gap-1 shrink-0">
+                        <ProductReadinessBadge productId={product.id} />
+                        <StatusBadge kind="product" value={product.status} />
+                      </div>
+
+
 
                     </div>
                     <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
