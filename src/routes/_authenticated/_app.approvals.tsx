@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Clock, Workflow, ArrowRight } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
 export const Route = createFileRoute("/_authenticated/_app/approvals")({
   head: () => ({
