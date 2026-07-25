@@ -413,6 +413,252 @@ function Almoxarifado() {
   );
 }
 
+function InventoryTable({
+  items,
+  loading,
+  leadFor,
+  safetyFor,
+  userId,
+  onEdit,
+  onDelete,
+  onCreate,
+  query,
+  onQueryChange,
+}: {
+  items: Item[];
+  loading: boolean;
+  leadFor: (i: Item) => number;
+  safetyFor: (i: Item) => number;
+  userId: string | undefined;
+  onEdit: (i: Item) => void;
+  onDelete: (id: string) => void;
+  onCreate: () => void;
+  query: string;
+  onQueryChange: (v: string) => void;
+}) {
+  const columns: DataTableColumn<Item>[] = [
+    {
+      key: "sku",
+      header: "SKU",
+      value: (i) => i.sku,
+      cell: (i) => <span className="tabular-nums text-muted-foreground">{i.sku}</span>,
+    },
+    {
+      key: "name",
+      header: "Item",
+      value: (i) => `${i.name} ${i.deposit ?? ""}`,
+      cell: (i) => (
+        <div>
+          <div className="font-medium">{i.name}</div>
+          <div className="text-xs text-muted-foreground">{i.deposit || "—"}</div>
+        </div>
+      ),
+    },
+    {
+      key: "category",
+      header: "Categoria",
+      value: (i) => CAT_LABEL[i.category],
+      cell: (i) => <span className="text-muted-foreground">{CAT_LABEL[i.category]}</span>,
+    },
+    {
+      key: "balance",
+      header: "Saldo",
+      align: "right",
+      value: (i) => Number(i.balance),
+      cell: (i) => {
+        const bal = Number(i.balance);
+        const min = Number(i.minimum);
+        const max = Number(i.maximum);
+        const critico = bal < min;
+        const excesso = max > 0 && bal > max;
+        return (
+          <span
+            className={`tabular-nums ${critico ? "text-destructive font-medium" : excesso ? "text-amber-500" : ""}`}
+          >
+            {bal} {i.unit}
+          </span>
+        );
+      },
+    },
+    {
+      key: "minmax",
+      header: "Mín / Máx",
+      align: "right",
+      value: (i) => Number(i.minimum),
+      cell: (i) => (
+        <span className="tabular-nums text-muted-foreground">
+          {Number(i.minimum)} / {Number(i.maximum) || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "turnover",
+      header: "Giro 30d",
+      align: "right",
+      value: (i) => Number(i.turnover_30d || 0),
+      cell: (i) => (
+        <span className="tabular-nums text-muted-foreground">
+          {Number(i.turnover_30d || 0)} {i.unit}
+        </span>
+      ),
+    },
+    {
+      key: "pp",
+      header: "PP",
+      align: "right",
+      value: (i) =>
+        reorderPoint(Number(i.turnover_30d || 0), leadFor(i), safetyFor(i), Number(i.minimum)),
+      cell: (i) => {
+        const bal = Number(i.balance);
+        const min = Number(i.minimum);
+        const pp = reorderPoint(Number(i.turnover_30d || 0), leadFor(i), safetyFor(i), min);
+        const repor = bal >= min && bal <= pp && pp > min;
+        return (
+          <span
+            className={`tabular-nums ${repor ? "text-amber-500 font-medium" : "text-muted-foreground"}`}
+          >
+            {pp} {i.unit}
+          </span>
+        );
+      },
+    },
+    {
+      key: "last_entry_at",
+      header: "Últ. entrada",
+      align: "right",
+      value: (i) => i.last_entry_at ?? "",
+      cell: (i) => (
+        <span className="text-muted-foreground text-xs">{fmtDate(i.last_entry_at)}</span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      value: (i) => {
+        const bal = Number(i.balance);
+        const min = Number(i.minimum);
+        const max = Number(i.maximum);
+        const pp = reorderPoint(Number(i.turnover_30d || 0), leadFor(i), safetyFor(i), min);
+        if (bal < min) return "0-critico";
+        if (bal <= pp && pp > min) return "1-repor";
+        if (max > 0 && bal > max) return "2-excesso";
+        return "3-ok";
+      },
+      cell: (i) => {
+        const bal = Number(i.balance);
+        const min = Number(i.minimum);
+        const max = Number(i.maximum);
+        const pp = reorderPoint(Number(i.turnover_30d || 0), leadFor(i), safetyFor(i), min);
+        const critico = bal < min;
+        const excesso = max > 0 && bal > max;
+        const repor = !critico && bal <= pp && pp > min;
+        if (critico)
+          return (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-destructive/15 text-destructive">
+              <AlertTriangle className="size-3" /> Crítico
+            </span>
+          );
+        if (repor)
+          return (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-500">
+              <Zap className="size-3" /> Repor
+            </span>
+          );
+        if (excesso)
+          return (
+            <span className="px-2 py-0.5 rounded text-xs bg-amber-500/15 text-amber-500">
+              Excesso
+            </span>
+          );
+        return (
+          <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/15 text-emerald-400">
+            Ok
+          </span>
+        );
+      },
+    },
+    {
+      key: "actions",
+      header: "",
+      align: "right",
+      cell: (i) => {
+        const mine = i.owner_id === userId;
+        return (
+          <div className="flex justify-end gap-1">
+            <InventoryLotBreakdownButton itemId={i.id} itemName={i.name} unit={i.unit} />
+            {mine && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(i);
+                  }}
+                  className="size-7 grid place-items-center rounded hover:bg-muted"
+                  aria-label="Editar item"
+                >
+                  <Pencil className="size-3.5" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(i.id);
+                  }}
+                  className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive"
+                  aria-label="Remover item"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
+  if (!loading && items.length === 0 && !query) {
+    return (
+      <EmptyState
+        icon={Sparkles}
+        title="Estoque vazio"
+        description="Cadastre o primeiro item."
+        action={<Button onClick={onCreate}>Cadastrar item</Button>}
+      />
+    );
+  }
+
+  return (
+    <section className="space-y-2">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="text-sm font-medium">Inventário</div>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+            placeholder="Buscar SKU ou nome…"
+            className="w-72 pl-8"
+          />
+        </div>
+      </div>
+      <DataTable
+        data={items}
+        columns={columns}
+        loading={loading}
+        getRowId={(i) => i.id}
+        initialSort={{ key: "status", dir: "asc" }}
+        searchPlaceholder="Filtrar por categoria, status, giro…"
+        emptyTitle="Nenhum item encontrado"
+        emptyDescription="Ajuste a busca ou os filtros."
+        emptyIcon={Boxes}
+        pageSize={25}
+      />
+    </section>
+  );
+}
+
+
+
 function ItemDialog({
   open,
   onOpenChange,
