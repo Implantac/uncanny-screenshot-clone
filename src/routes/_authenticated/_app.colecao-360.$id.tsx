@@ -35,7 +35,9 @@ import {
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
-import { Target, Heart } from "lucide-react";
+import { Target, Heart, Activity } from "lucide-react";
+import { TimelineFeed } from "@/components/timeline-feed";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -548,7 +550,11 @@ function CollectionTabs({
         <TabsTrigger value="lancamento">
           <Megaphone className="size-3.5 mr-1.5" /> Lançamento
         </TabsTrigger>
+        <TabsTrigger value="historico">
+          <Activity className="size-3.5 mr-1.5" /> Histórico
+        </TabsTrigger>
       </TabsList>
+
 
       <TabsContent value="visao" className="space-y-4">
         {/* Pipeline visual */}
@@ -812,9 +818,52 @@ function CollectionTabs({
       <TabsContent value="lancamento" className="space-y-4">
         <LaunchingWeekPanel />
       </TabsContent>
+
+      <TabsContent value="historico" className="space-y-4">
+        <CollectionUnifiedTimeline collectionId={collectionId} />
+      </TabsContent>
     </Tabs>
   );
 }
+
+function CollectionUnifiedTimeline({ collectionId }: { collectionId: string }) {
+  const { data: extraIds = [] } = useQuery({
+    queryKey: ["collection-timeline-entity-ids", collectionId],
+    queryFn: async () => {
+      const { data: cps } = await supabase
+        .from("collection_products")
+        .select("product_id")
+        .eq("collection_id", collectionId);
+      const productIds = (cps ?? [])
+        .map((r) => r.product_id as string | null)
+        .filter((v): v is string => !!v);
+      if (productIds.length === 0) return [] as string[];
+      const [{ data: protos }, { data: ops }] = await Promise.all([
+        supabase.from("prototypes").select("id").in("product_id", productIds),
+        supabase.from("production_orders").select("id").in("product_id", productIds),
+      ]);
+      const ids = new Set<string>(productIds);
+      (protos ?? []).forEach((r) => ids.add(r.id as string));
+      (ops ?? []).forEach((r) => ids.add(r.id as string));
+      return Array.from(ids);
+    },
+
+  });
+
+  return (
+    <TimelineFeed
+      entityIds={[collectionId, ...extraIds]}
+      title="Histórico unificado da coleção"
+      emptyLabel="Sem eventos registrados no período para esta coleção."
+      sinceDays={60}
+      limit={300}
+    />
+  );
+}
+
+
+
+
 
 function CollectionTimelineTab({ collectionId }: { collectionId: string }) {
   const qc = useQueryClient();

@@ -33,6 +33,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
 import { QuickSupplierDialog } from "@/components/quick-supplier-dialog";
+import { MaterialCostCascadePanel } from "@/components/material-cost-cascade-panel";
+
 
 export const Route = createFileRoute("/_authenticated/_app/materiais")({
   head: () => ({
@@ -657,6 +659,10 @@ function MaterialDetailSheet({
               )}
             </div>
           )}
+
+          {!editing && d.id && <MaterialCostCascadePanel materialId={d.id} />}
+
+
 
           <div className="flex items-center gap-2 pt-2 border-t border-border">
             {editing ? (

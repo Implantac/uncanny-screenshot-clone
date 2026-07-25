@@ -34,7 +34,9 @@ export type TimelineFilters = {
   since_days?: number;
   search?: string;
   limit?: number;
+  entity_ids?: string[];
 };
+
 
 const STAGE_LABEL: Record<string, string> = {
   cad: "CAD",
@@ -234,6 +236,10 @@ export const getGlobalTimeline = createServerFn({ method: "POST" })
 
     // Filtros pós-agregação
     let out = results;
+    if (data.entity_ids?.length) {
+      const ids = new Set(data.entity_ids);
+      out = out.filter((e) => e.entity_id != null && ids.has(e.entity_id));
+    }
     if (data.severity?.length) {
       const sev = new Set(data.severity);
       out = out.filter((e) => sev.has(e.severity));
@@ -247,6 +253,7 @@ export const getGlobalTimeline = createServerFn({ method: "POST" })
           (e.actor ?? "").toLowerCase().includes(q),
       );
     }
+
 
     out.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
     return out.slice(0, limit);

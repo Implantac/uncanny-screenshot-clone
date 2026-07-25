@@ -27,6 +27,8 @@ import { toast } from "sonner";
 import { PrototypeApprovalGate } from "@/components/prototype-approval-gate";
 import { PrototypeGatesPanel } from "@/components/prototype-gates-panel";
 import { PrototypeHandoffTimeline } from "@/components/prototype-handoff-timeline";
+import { TimelineFeed } from "@/components/timeline-feed";
+
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import { StatusBadge } from "@/components/status-badge";
 import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
@@ -286,6 +288,13 @@ function PrototipoPage() {
             prototypeId={proto.id}
             currentSector={proto.current_sector ?? null}
           />
+          <TimelineFeed
+            entityIds={[proto.id]}
+            title="Timeline unificada · atividade cruzada"
+            emptyLabel="Sem eventos cruzados registrados para este protótipo."
+            sinceDays={60}
+          />
+
           {stats.photos.length > 0 && (
             <div>
               <div className="text-sm font-semibold mb-2 flex items-center gap-2">
