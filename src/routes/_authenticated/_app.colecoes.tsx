@@ -960,9 +960,8 @@ function ColecoesPage() {
                             ) : null}
                           </div>
                         </div>
-                        <Badge variant="outline" className={STATUS_COLORS[collection.status]}>
-                          {STATUS_LABELS[collection.status]}
-                        </Badge>
+                        <StatusBadge kind="collection" value={collection.status} />
+
                       </div>
                       <div className="mt-3 space-y-1.5">
                         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
