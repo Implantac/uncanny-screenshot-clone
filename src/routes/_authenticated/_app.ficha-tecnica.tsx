@@ -56,6 +56,7 @@ import { TechSheetBomReviewPanel } from "@/components/tech-sheet-bom-review-pane
 import { TechPackImportButton } from "@/components/tech-pack-import-button";
 import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
 import { ShieldCheck, Camera } from "lucide-react";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import { StatusBadge } from "@/components/status-badge";
