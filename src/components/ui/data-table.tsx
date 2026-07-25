@@ -41,7 +41,7 @@ type Props<T> = {
   onRowClick?: (row: T) => void;
   emptyTitle?: string;
   emptyDescription?: string;
-  emptyIcon?: ReactNode;
+  emptyIcon?: LucideIcon;
   searchPlaceholder?: string;
   toolbar?: ReactNode;
   initialSort?: { key: string; dir: "asc" | "desc" };
