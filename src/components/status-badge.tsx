@@ -59,13 +59,28 @@ const ADJUSTMENT: Record<string, { tone: StatusTone; label: string }> = {
   cancelado: { tone: "neutral", label: "Cancelado" },
 };
 
+// collection_status
+const COLLECTION: Record<string, { tone: StatusTone; label: string }> = {
+  briefing: { tone: "neutral", label: "Briefing" },
+  design: { tone: "info", label: "Design" },
+  aprovacao: { tone: "warning", label: "Aprovação" },
+  desenvolvimento: { tone: "warning", label: "Desenvolvimento" },
+  producao: { tone: "primary", label: "Produção" },
+  entregue: { tone: "success", label: "Entregue" },
+  lancamento: { tone: "success", label: "Lançamento" },
+  markdown: { tone: "warning", label: "Markdown" },
+  descontinuada: { tone: "danger", label: "Descontinuada" },
+};
+
 const KINDS = {
   product: PRODUCT,
   prototype: PROTOTYPE,
   production: PRODUCTION,
   techsheet: TECHSHEET,
   adjustment: ADJUSTMENT,
+  collection: COLLECTION,
 } as const;
+
 
 export type StatusKind = keyof typeof KINDS;
 
