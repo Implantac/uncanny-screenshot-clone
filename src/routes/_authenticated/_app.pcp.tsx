@@ -51,6 +51,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PcpMrpPanel } from "@/components/pcp-mrp-panel";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 import { toast } from "sonner";
 
 const STATUS_VALS = ["aguardando", "em_producao", "concluida", "atrasada", "cancelada"] as const;
