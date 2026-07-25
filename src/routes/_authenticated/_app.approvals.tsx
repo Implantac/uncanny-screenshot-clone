@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Clock, Workflow, ArrowRight } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
 export const Route = createFileRoute("/_authenticated/_app/approvals")({
   head: () => ({
@@ -23,7 +24,7 @@ type Gate = {
   key: string;
   title: string;
   description: string;
-  items: { id: string; label: string; sub?: string; status: string; href: string }[];
+  items: { id: string; label: string; sub?: string; status: string; href: string; productId?: string | null }[];
 };
 
 function Approvals() {
@@ -81,7 +82,8 @@ function Approvals() {
               label: (f as { products?: { name: string } }).products?.name ?? "—",
               sub: `v${f.version}`,
               status: f.status,
-              href: "/ficha-tecnica",
+              href: f.product_id ? `/produto/${f.product_id}` : "/ficha-tecnica",
+              productId: f.product_id,
             })),
         },
         {
@@ -95,7 +97,8 @@ function Approvals() {
               label: (p as { products?: { name: string } }).products?.name ?? p.code,
               sub: p.code,
               status: p.stage,
-              href: "/pilots",
+              href: p.product_id ? `/produto/${p.product_id}` : "/pilots",
+              productId: p.product_id,
             })),
         },
         {
@@ -175,6 +178,7 @@ function Approvals() {
                         {it.sub && <div className="text-xs text-muted-foreground">{it.sub}</div>}
                       </div>
                       <div className="flex items-center gap-2">
+                        {it.productId && <ProductReadinessBadge productId={it.productId} />}
                         <Badge variant="outline">{it.status}</Badge>
                         <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       </div>
