@@ -24,6 +24,7 @@ import {
 import { Plus, ShieldAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/page-header";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 
 export const Route = createFileRoute("/_authenticated/_app/inspecoes")({
   head: () => ({
