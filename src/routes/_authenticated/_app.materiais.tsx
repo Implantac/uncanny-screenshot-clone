@@ -697,6 +697,11 @@ function MaterialDetailSheet({
             )}
           </div>
         </div>
+        <QuickSupplierDialog
+          open={quickOpen}
+          onOpenChange={setQuickOpen}
+          onCreated={(sup) => set("preferred_supplier_id", sup.id)}
+        />
       </SheetContent>
     </Sheet>
   );
