@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { PenTool, Sparkles, Scissors, Compass, Palette } from "lucide-react";
 import { DesignerAIAssistant } from "@/components/designer-ai-assistant";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
 export const Route = createFileRoute("/_authenticated/_app/designer-workspace")({
   head: () => ({
