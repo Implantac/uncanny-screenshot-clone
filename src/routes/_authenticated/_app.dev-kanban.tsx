@@ -9,6 +9,7 @@ import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
+import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
 export const Route = createFileRoute("/_authenticated/_app/dev-kanban")({ component: DevKanban });
 
