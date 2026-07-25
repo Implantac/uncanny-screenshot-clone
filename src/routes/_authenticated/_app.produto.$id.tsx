@@ -48,6 +48,7 @@ import { ProductCostEnginePanel } from "@/components/product-cost-engine-panel";
 import { ProductWorkflowPanel } from "@/components/product-workflow-panel";
 import { ProductLifecycleCopilotPanel } from "@/components/product-lifecycle-copilot-panel";
 import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
+import { ProductReadinessCard } from "@/components/product-readiness-card";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
   head: ({ params }) => ({
@@ -272,6 +273,7 @@ function ProductWorkspace() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
+          <ProductReadinessCard productId={product.id} />
           <ProductWorkflowPanel productId={product.id} />
           <ProductLifecycleCopilotPanel productId={product.id} />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
