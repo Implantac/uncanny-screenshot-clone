@@ -830,17 +830,24 @@ function CollectionUnifiedTimeline({ collectionId }: { collectionId: string }) {
   const { data: extraIds = [] } = useQuery({
     queryKey: ["collection-timeline-entity-ids", collectionId],
     queryFn: async () => {
-      const [{ data: cps }, { data: protos }, { data: ops }] = await Promise.all([
-        supabase.from("collection_products").select("product_id").eq("collection_id", collectionId),
-        supabase.from("prototypes").select("id").eq("collection_id", collectionId),
-        supabase.from("production_orders").select("id").eq("collection_id", collectionId),
+      const { data: cps } = await supabase
+        .from("collection_products")
+        .select("product_id")
+        .eq("collection_id", collectionId);
+      const productIds = (cps ?? [])
+        .map((r) => r.product_id as string | null)
+        .filter((v): v is string => !!v);
+      if (productIds.length === 0) return [] as string[];
+      const [{ data: protos }, { data: ops }] = await Promise.all([
+        supabase.from("prototypes").select("id").in("product_id", productIds),
+        supabase.from("production_orders").select("id").in("product_id", productIds),
       ]);
-      const ids = new Set<string>();
-      (cps ?? []).forEach((r) => r.product_id && ids.add(r.product_id as string));
+      const ids = new Set<string>(productIds);
       (protos ?? []).forEach((r) => ids.add(r.id as string));
       (ops ?? []).forEach((r) => ids.add(r.id as string));
       return Array.from(ids);
     },
+
   });
 
   return (
