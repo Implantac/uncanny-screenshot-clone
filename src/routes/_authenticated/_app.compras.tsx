@@ -109,82 +109,135 @@ function Compras() {
 
       <InventorySmartPanel />
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="px-4 py-3 border-b border-border font-medium">Necessidade de compra</div>
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 text-muted-foreground text-xs">
-            <tr>
-              <th className="text-left px-3 py-2">SKU</th>
-              <th className="text-left px-3 py-2">Item</th>
-              <th className="text-left px-3 py-2">Categoria</th>
-              <th className="text-left px-3 py-2">Depósito</th>
-              <th className="text-right px-3 py-2">Saldo</th>
-              <th className="text-right px-3 py-2">Mínimo</th>
-              <th className="text-right px-3 py-2">Sugestão</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={7} className="p-8 text-center text-muted-foreground">
-                  Carregando…
-                </td>
-              </tr>
-            ) : needs.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="p-8 text-center text-muted-foreground">
-                  Sem necessidades de compra no momento.
-                </td>
-              </tr>
-            ) : (
-              needs.map((n) => (
-                <tr key={n.id} className="border-t border-border">
-                  <td className="px-3 py-2 font-mono text-xs">{n.sku}</td>
-                  <td className="px-3 py-2 font-medium">{n.name}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{n.category}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{n.deposit ?? "—"}</td>
-                  <td
-                    className={`px-3 py-2 text-right tabular-nums ${Number(n.balance) === 0 ? "text-destructive font-semibold" : ""}`}
-                  >
-                    {Number(n.balance).toFixed(0)} {n.unit}
-                  </td>
-                  <td className="px-3 py-2 text-right text-muted-foreground tabular-nums">
-                    {Number(n.minimum).toFixed(0)}
-                  </td>
-                  <td className="px-3 py-2 text-right tabular-nums font-semibold text-primary">
-                    {n.suggested} {n.unit}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <NeedsTable needs={needs} loading={isLoading} />
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="px-4 py-3 border-b border-border font-medium">
-          Mapa de fornecedores por categoria
-        </div>
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 text-muted-foreground text-xs">
-            <tr>
-              <th className="text-left px-3 py-2">Categoria</th>
-              <th className="text-right px-3 py-2">Fornecedores</th>
-              <th className="text-right px-3 py-2">SKUs em estoque</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bySupplierCategory.map((c) => (
-              <tr key={c.category} className="border-t border-border">
-                <td className="px-3 py-2 font-medium capitalize">{c.category}</td>
-                <td className="px-3 py-2 text-right tabular-nums">{c.suppliers}</td>
-                <td className="px-3 py-2 text-right tabular-nums">{c.count}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <CategoriesTable rows={bySupplierCategory} />
     </div>
+  );
+}
+
+type Need = Item & { shortage: number; suggested: number };
+
+function NeedsTable({ needs, loading }: { needs: Need[]; loading: boolean }) {
+  const columns: DataTableColumn<Need>[] = [
+    {
+      key: "sku",
+      header: "SKU",
+      value: (r) => r.sku,
+      cell: (r) => <span className="font-mono text-xs">{r.sku}</span>,
+    },
+    {
+      key: "name",
+      header: "Item",
+      value: (r) => r.name,
+      cell: (r) => <span className="font-medium">{r.name}</span>,
+    },
+    {
+      key: "category",
+      header: "Categoria",
+      value: (r) => r.category,
+      cell: (r) => <span className="text-muted-foreground">{r.category}</span>,
+    },
+    {
+      key: "deposit",
+      header: "Depósito",
+      value: (r) => r.deposit ?? "",
+      cell: (r) => <span className="text-muted-foreground">{r.deposit ?? "—"}</span>,
+    },
+    {
+      key: "balance",
+      header: "Saldo",
+      align: "right",
+      value: (r) => Number(r.balance),
+      cell: (r) => (
+        <span
+          className={`tabular-nums ${Number(r.balance) === 0 ? "text-destructive font-semibold" : ""}`}
+        >
+          {Number(r.balance).toFixed(0)} {r.unit}
+        </span>
+      ),
+    },
+    {
+      key: "minimum",
+      header: "Mínimo",
+      align: "right",
+      value: (r) => Number(r.minimum),
+      cell: (r) => (
+        <span className="tabular-nums text-muted-foreground">
+          {Number(r.minimum).toFixed(0)}
+        </span>
+      ),
+    },
+    {
+      key: "suggested",
+      header: "Sugestão",
+      align: "right",
+      value: (r) => r.suggested,
+      cell: (r) => (
+        <span className="tabular-nums font-semibold text-primary">
+          {r.suggested} {r.unit}
+        </span>
+      ),
+    },
+  ];
+
+  return (
+    <section className="space-y-2">
+      <div className="text-sm font-medium">Necessidade de compra</div>
+      <DataTable
+        data={needs}
+        columns={columns}
+        loading={loading}
+        getRowId={(r) => r.id}
+        initialSort={{ key: "balance", dir: "asc" }}
+        searchPlaceholder="Buscar por SKU, item, categoria…"
+        emptyTitle="Sem necessidades de compra"
+        emptyDescription="Todo o estoque está acima do mínimo no momento."
+        emptyIcon={ShoppingCart}
+        pageSize={25}
+      />
+    </section>
+  );
+}
+
+type CategoryRow = { category: string; count: number; suppliers: number };
+
+function CategoriesTable({ rows }: { rows: CategoryRow[] }) {
+  const columns: DataTableColumn<CategoryRow>[] = [
+    {
+      key: "category",
+      header: "Categoria",
+      value: (r) => r.category,
+      cell: (r) => <span className="font-medium capitalize">{r.category}</span>,
+    },
+    {
+      key: "suppliers",
+      header: "Fornecedores",
+      align: "right",
+      value: (r) => r.suppliers,
+      cell: (r) => <span className="tabular-nums">{r.suppliers}</span>,
+    },
+    {
+      key: "count",
+      header: "SKUs em estoque",
+      align: "right",
+      value: (r) => r.count,
+      cell: (r) => <span className="tabular-nums">{r.count}</span>,
+    },
+  ];
+
+  return (
+    <section className="space-y-2">
+      <div className="text-sm font-medium">Mapa de fornecedores por categoria</div>
+      <DataTable
+        data={rows}
+        columns={columns}
+        getRowId={(r) => r.category}
+        initialSort={{ key: "count", dir: "desc" }}
+        searchPlaceholder="Buscar categoria…"
+        emptyTitle="Sem categorias mapeadas"
+      />
+    </section>
   );
 }
 
