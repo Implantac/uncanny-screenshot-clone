@@ -5694,6 +5694,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      create_production_order_force: {
+        Args: { _payload: Json; _reason: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
