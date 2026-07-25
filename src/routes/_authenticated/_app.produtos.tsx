@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/status-badge";
 import { toast } from "sonner";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ProductTimeline } from "@/components/product-timeline";
@@ -383,9 +384,8 @@ function ProdutosPage() {
                           <Tag className="size-3" /> {product.sku}
                         </div>
                       </div>
-                      <Badge variant="outline" className={STATUS_COLORS[product.status]}>
-                        {STATUS_LABELS[product.status]}
-                      </Badge>
+                      <StatusBadge kind="product" value={product.status} />
+
                     </div>
                     <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                       <span>{product.category || "Sem categoria"}</span>
@@ -629,9 +629,8 @@ function ProductDetail({
 
           <div className="p-5 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className={STATUS_COLORS[product.status]}>
-                {STATUS_LABELS[product.status]}
-              </Badge>
+              <StatusBadge kind="product" value={product.status} />
+
               {product.product_group && <Badge variant="outline">{product.product_group}</Badge>}
               {product.subgroup && <Badge variant="outline">{product.subgroup}</Badge>}
               {product.product_class && <Badge variant="outline">{product.product_class}</Badge>}

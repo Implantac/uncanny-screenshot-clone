@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/status-badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -959,9 +960,8 @@ function ColecoesPage() {
                             ) : null}
                           </div>
                         </div>
-                        <Badge variant="outline" className={STATUS_COLORS[collection.status]}>
-                          {STATUS_LABELS[collection.status]}
-                        </Badge>
+                        <StatusBadge kind="collection" value={collection.status} />
+
                       </div>
                       <div className="mt-3 space-y-1.5">
                         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
@@ -1027,9 +1027,8 @@ function ColecoesPage() {
                     />
                     <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-background via-background/60 to-transparent">
                       <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <Badge variant="outline" className={STATUS_COLORS[selected.status]}>
-                          {STATUS_LABELS[selected.status]}
-                        </Badge>
+                        <StatusBadge kind="collection" value={selected.status} />
+
                         <Badge variant="outline">
                           {selected.season} {selected.year}
                         </Badge>
@@ -1128,12 +1127,8 @@ function ColecoesPage() {
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <span className="font-medium truncate">{capsule.name}</span>
-                                  <Badge
-                                    variant="outline"
-                                    className={STATUS_COLORS[capsule.status]}
-                                  >
-                                    {STATUS_LABELS[capsule.status]}
-                                  </Badge>
+                                  <StatusBadge kind="collection" value={capsule.status} />
+
                                 </div>
                                 <div className="mt-1 text-xs text-muted-foreground">
                                   {capsule.season} {capsule.year} · {capsule.progress}%
