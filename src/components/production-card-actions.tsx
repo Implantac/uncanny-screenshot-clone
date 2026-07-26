@@ -247,6 +247,15 @@ export function ProductionCardActions({
           pending={advance.isPending}
         />
       )}
+
+      <CloseOrderDialog
+        open={closeOpen}
+        onOpenChange={setCloseOpen}
+        orderId={order.id}
+        orderCode={order.batch_code ?? order.code}
+        plannedQty={order.quantity}
+        invalidateKey={invalidateKey}
+      />
     </span>
   );
 }
