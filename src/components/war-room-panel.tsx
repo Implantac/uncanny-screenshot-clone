@@ -23,7 +23,7 @@ const MODULE_META: Record<
   Bottleneck["module"],
   { label: string; Icon: typeof Factory; color: string }
 > = {
-  pcp: { label: "PCP", Icon: Factory, color: "text-blue-400" },
+  pcp: { label: "PCP", Icon: Factory, color: "text-primary" },
   qualidade: { label: "Qualidade", Icon: Beaker, color: "text-amber-400" },
   desenvolvimento: { label: "Dev", Icon: Wrench, color: "text-violet-400" },
   custo: { label: "Custo", Icon: DollarSign, color: "text-emerald-400" },
@@ -31,9 +31,9 @@ const MODULE_META: Record<
 };
 
 const SEV_BADGE: Record<Bottleneck["severity"], string> = {
-  critica: "bg-red-500/15 text-red-400 border-red-500/30",
+  critica: "bg-destructive/15 text-destructive border-destructive/30",
   alta: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  media: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  media: "bg-primary/15 text-primary border-primary/30",
 };
 
 export function WarRoomPanel() {
@@ -94,7 +94,7 @@ export function WarRoomPanel() {
     <Card className="p-4 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <AlertOctagon className="size-4 text-red-400" />
+          <AlertOctagon className="size-4 text-destructive" />
           <h3 className="text-sm font-semibold uppercase tracking-widest">Sala de Guerra</h3>
           <Badge variant="outline" className="text-[10px]">
             {items.length} gargalo(s)

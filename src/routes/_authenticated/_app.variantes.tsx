@@ -303,6 +303,7 @@ function VariantsPage() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label="Excluir variante"
                             onClick={() => delVariant.mutate(v.id)}
                           >
                             <Trash2 className="size-4" />

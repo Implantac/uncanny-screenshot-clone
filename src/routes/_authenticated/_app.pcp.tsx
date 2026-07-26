@@ -869,6 +869,7 @@ function PCP() {
                           <Button
                             size="icon"
                             variant="ghost"
+                            aria-label="Histórico de setores"
                             title="Histórico de setores"
                             onClick={() => setHistoryOrder(o)}
                           >
@@ -1492,6 +1493,7 @@ function ServiceOrdersPanel({
                     <Button
                       size="icon"
                       variant="ghost"
+                      aria-label="Excluir setor"
                       onClick={() => del.mutate(s.id)}
                       disabled={s.owner_id !== ownerId}
                     >

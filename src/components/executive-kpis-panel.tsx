@@ -126,7 +126,7 @@ export function ExecutiveKpisPanel() {
                     <span
                       className={`font-mono font-semibold ${
                         "alert" in k && (k as { alert?: boolean }).alert
-                          ? "text-red-400"
+                          ? "text-destructive"
                           : "text-foreground"
                       }`}
                     >
