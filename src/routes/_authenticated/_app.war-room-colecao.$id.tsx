@@ -173,14 +173,15 @@ function WarRoomColecao() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-5">
+      <PlmBreadcrumb
+        items={[
+          { label: "Coleções", link: { to: "/colecoes" } },
+          { label: c.name, link: { to: "/colecao-360/$id", params: { id: c.id } } },
+          { label: "War Room" },
+        ]}
+      />
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <Link
-            to="/colecoes"
-            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mb-2"
-          >
-            <ArrowLeft className="size-3" /> Coleções
-          </Link>
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-primary">
             <Radio className="size-3.5" /> War Room
           </div>
