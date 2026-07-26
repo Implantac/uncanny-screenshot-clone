@@ -113,6 +113,36 @@ export function CommandPalette() {
                   </CommandGroup>
                 );
               })()}
+              <CommandGroup heading="Ações rápidas">
+                <CommandItem
+                  onSelect={() => {
+                    setOpen(false);
+                    setQ("");
+                    window.dispatchEvent(
+                      new KeyboardEvent("keydown", { key: "n", bubbles: true }),
+                    );
+                  }}
+                >
+                  <span className="flex-1">Criar novo produto</span>
+                  <kbd className="text-[10px] border border-border rounded px-1.5 py-0.5 ml-2 text-muted-foreground">
+                    N
+                  </kbd>
+                </CommandItem>
+                <CommandItem
+                  onSelect={() => {
+                    setOpen(false);
+                    setQ("");
+                    window.dispatchEvent(
+                      new KeyboardEvent("keydown", { key: "?", bubbles: true, shiftKey: true }),
+                    );
+                  }}
+                >
+                  <span className="flex-1">Ver atalhos de teclado</span>
+                  <kbd className="text-[10px] border border-border rounded px-1.5 py-0.5 ml-2 text-muted-foreground">
+                    ?
+                  </kbd>
+                </CommandItem>
+              </CommandGroup>
               <CommandGroup heading="Ir para…">
                 {[
                   { path: "/produtos", label: "Produtos", hint: "G P" },
