@@ -58,6 +58,7 @@ export function ProductionCardActions({
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
+  const [closeOpen, setCloseOpen] = useState(false);
   const [pointOpen, setPointOpen] = useState(false);
   const [qty, setQty] = useState<string>(
     String(Math.round(((order.progress ?? 0) / 100) * (order.quantity ?? 0))),
