@@ -96,9 +96,9 @@ function CopilotPage() {
     transport,
     onError: (err) => {
       const msg = err.message || "";
-      if (msg.includes("429")) toast.error("Muitas requisições. Aguarde um instante.");
-      else if (msg.includes("402")) toast.error("Créditos de IA esgotados.");
-      else toast.error("Erro no Copiloto PCP.");
+      if (msg.includes("429")) toast.error("Agente USE ocupado — tente em instantes.");
+      else if (msg.includes("402")) toast.error("Agente USE em pausa — retomando automaticamente.");
+      else toast.error("Copiloto PCP indisponível no momento.");
     },
   });
 
