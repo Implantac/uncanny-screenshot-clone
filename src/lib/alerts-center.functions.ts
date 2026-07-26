@@ -201,8 +201,11 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         why: "Lote ultrapassou o SLA do setor — possível gargalo, falta de material ou apontamento esquecido.",
         link: "/pcp-kanban",
         ts: o.stage_updated_at as string,
+        entityKey: `op:${o.id}`,
+        entityLabel: `OP ${o.code}`,
       });
     }
+
 
     // 4. Qualidade — CAPAs abertas/vencendo
     for (const c of capas ?? []) {
