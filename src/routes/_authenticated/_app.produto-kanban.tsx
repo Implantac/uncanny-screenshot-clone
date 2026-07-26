@@ -48,6 +48,45 @@ const SLA_DAYS: Record<WorkflowStep, number> = {
   producao: 30,
 };
 
+function exportKanbanCsv(
+  cols: { step: WorkflowStep; cards: LifecycleKanbanCard[] }[],
+) {
+  const rows = [
+    ["Fase", "SKU", "Produto", "Coleção", "Dias na fase", "SLA", "Status"],
+    ...cols.flatMap((col) =>
+      col.cards.map((c) => [
+        STEP_META[col.step]?.label ?? col.step,
+        c.sku,
+        c.name,
+        c.collection_name ?? "",
+        String(c.days_in_step),
+        String(SLA_DAYS[col.step]),
+        c.blocked
+          ? `Bloqueado${c.blocker_reason ? ": " + c.blocker_reason : ""}`
+          : c.days_in_step > SLA_DAYS[col.step]
+          ? "Atrasado"
+          : "Ok",
+      ]),
+    ),
+  ];
+  const csv = rows
+    .map((r) =>
+      r
+        .map((v) => `"${String(v).replaceAll('"', '""').replaceAll("\n", " ")}"`)
+        .join(","),
+    )
+    .join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ciclo-vida-produtos-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success("CSV exportado");
+}
+
+
 type QuickFilter = "all" | "blocked" | "overdue" | "pinned";
 
 function ProductLifecycleKanban() {
