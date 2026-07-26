@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { MODULES } from "@/lib/modules";
+import { getRecentProducts } from "@/lib/recent-products";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
