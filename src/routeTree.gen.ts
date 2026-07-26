@@ -88,6 +88,7 @@ import { Route as AuthenticatedAppProductRoutingRouteImport } from './routes/_au
 import { Route as AuthenticatedAppProductScoreRouteImport } from './routes/_authenticated/_app.product-score'
 import { Route as AuthenticatedAppProductSuccessRouteImport } from './routes/_authenticated/_app.product-success'
 import { Route as AuthenticatedAppProdutividadeRouteImport } from './routes/_authenticated/_app.produtividade'
+import { Route as AuthenticatedAppProdutoKanbanRouteImport } from './routes/_authenticated/_app.produto-kanban'
 import { Route as AuthenticatedAppProdutosRouteImport } from './routes/_authenticated/_app.produtos'
 import { Route as AuthenticatedAppProduzirHojeRouteImport } from './routes/_authenticated/_app.produzir-hoje'
 import { Route as AuthenticatedAppProfitabilityRouteImport } from './routes/_authenticated/_app.profitability'
@@ -590,6 +591,12 @@ const AuthenticatedAppProdutividadeRoute =
     path: '/produtividade',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppProdutoKanbanRoute =
+  AuthenticatedAppProdutoKanbanRouteImport.update({
+    id: '/produto-kanban',
+    path: '/produto-kanban',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppProdutosRoute =
   AuthenticatedAppProdutosRouteImport.update({
     id: '/produtos',
@@ -971,6 +978,7 @@ export interface FileRoutesByFullPath {
   '/product-score': typeof AuthenticatedAppProductScoreRoute
   '/product-success': typeof AuthenticatedAppProductSuccessRoute
   '/produtividade': typeof AuthenticatedAppProdutividadeRoute
+  '/produto-kanban': typeof AuthenticatedAppProdutoKanbanRoute
   '/produtos': typeof AuthenticatedAppProdutosRoute
   '/produzir-hoje': typeof AuthenticatedAppProduzirHojeRoute
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
@@ -1102,6 +1110,7 @@ export interface FileRoutesByTo {
   '/product-score': typeof AuthenticatedAppProductScoreRoute
   '/product-success': typeof AuthenticatedAppProductSuccessRoute
   '/produtividade': typeof AuthenticatedAppProdutividadeRoute
+  '/produto-kanban': typeof AuthenticatedAppProdutoKanbanRoute
   '/produtos': typeof AuthenticatedAppProdutosRoute
   '/produzir-hoje': typeof AuthenticatedAppProduzirHojeRoute
   '/profitability': typeof AuthenticatedAppProfitabilityRoute
@@ -1235,6 +1244,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/product-score': typeof AuthenticatedAppProductScoreRoute
   '/_authenticated/_app/product-success': typeof AuthenticatedAppProductSuccessRoute
   '/_authenticated/_app/produtividade': typeof AuthenticatedAppProdutividadeRoute
+  '/_authenticated/_app/produto-kanban': typeof AuthenticatedAppProdutoKanbanRoute
   '/_authenticated/_app/produtos': typeof AuthenticatedAppProdutosRoute
   '/_authenticated/_app/produzir-hoje': typeof AuthenticatedAppProduzirHojeRoute
   '/_authenticated/_app/profitability': typeof AuthenticatedAppProfitabilityRoute
@@ -1369,6 +1379,7 @@ export interface FileRouteTypes {
     | '/product-score'
     | '/product-success'
     | '/produtividade'
+    | '/produto-kanban'
     | '/produtos'
     | '/produzir-hoje'
     | '/profitability'
@@ -1500,6 +1511,7 @@ export interface FileRouteTypes {
     | '/product-score'
     | '/product-success'
     | '/produtividade'
+    | '/produto-kanban'
     | '/produtos'
     | '/produzir-hoje'
     | '/profitability'
@@ -1632,6 +1644,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/product-score'
     | '/_authenticated/_app/product-success'
     | '/_authenticated/_app/produtividade'
+    | '/_authenticated/_app/produto-kanban'
     | '/_authenticated/_app/produtos'
     | '/_authenticated/_app/produzir-hoje'
     | '/_authenticated/_app/profitability'
@@ -2265,6 +2278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppProdutividadeRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/produto-kanban': {
+      id: '/_authenticated/_app/produto-kanban'
+      path: '/produto-kanban'
+      fullPath: '/produto-kanban'
+      preLoaderRoute: typeof AuthenticatedAppProdutoKanbanRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/produtos': {
       id: '/_authenticated/_app/produtos'
       path: '/produtos'
@@ -2733,6 +2753,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppProductScoreRoute: typeof AuthenticatedAppProductScoreRoute
   AuthenticatedAppProductSuccessRoute: typeof AuthenticatedAppProductSuccessRoute
   AuthenticatedAppProdutividadeRoute: typeof AuthenticatedAppProdutividadeRoute
+  AuthenticatedAppProdutoKanbanRoute: typeof AuthenticatedAppProdutoKanbanRoute
   AuthenticatedAppProdutosRoute: typeof AuthenticatedAppProdutosRoute
   AuthenticatedAppProduzirHojeRoute: typeof AuthenticatedAppProduzirHojeRoute
   AuthenticatedAppProfitabilityRoute: typeof AuthenticatedAppProfitabilityRoute
@@ -2847,6 +2868,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppProductScoreRoute: AuthenticatedAppProductScoreRoute,
   AuthenticatedAppProductSuccessRoute: AuthenticatedAppProductSuccessRoute,
   AuthenticatedAppProdutividadeRoute: AuthenticatedAppProdutividadeRoute,
+  AuthenticatedAppProdutoKanbanRoute: AuthenticatedAppProdutoKanbanRoute,
   AuthenticatedAppProdutosRoute: AuthenticatedAppProdutosRoute,
   AuthenticatedAppProduzirHojeRoute: AuthenticatedAppProduzirHojeRoute,
   AuthenticatedAppProfitabilityRoute: AuthenticatedAppProfitabilityRoute,
