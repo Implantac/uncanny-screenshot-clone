@@ -355,7 +355,7 @@ function ProdutosPage() {
           <Button
             onClick={() => {
               setEditing(null);
-              setOpen(true);
+              setQuickOpen(true);
             }}
           >
             Cadastrar produto
