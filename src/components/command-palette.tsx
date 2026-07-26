@@ -13,6 +13,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { MODULES } from "@/lib/modules";
 import { getRecentProducts, getPinnedProducts } from "@/lib/recent-products";
+import { getRecentCollections } from "@/lib/recent-collections";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -108,6 +109,27 @@ export function CommandPalette() {
                       <CommandItem key={r.id} onSelect={() => go(`/produto/${r.id}`)}>
                         <span className="font-mono text-xs text-muted-foreground mr-2">{r.sku}</span>
                         {r.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                );
+              })()}
+              {(() => {
+                const recentCollections = getRecentCollections();
+                if (!recentCollections.length) return null;
+                return (
+                  <CommandGroup heading="Coleções recentes">
+                    {recentCollections.map((c) => (
+                      <CommandItem
+                        key={c.id}
+                        onSelect={() => go(`/colecao-360/${c.id}`)}
+                      >
+                        <span className="flex-1">{c.name}</span>
+                        {(c.season || c.year) && (
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {c.season} {c.year}
+                          </span>
+                        )}
                       </CommandItem>
                     ))}
                   </CommandGroup>
