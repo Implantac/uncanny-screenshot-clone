@@ -8,6 +8,7 @@ const TARGETS: Record<string, { path: string; label: string }> = {
   p: { path: "/produtos", label: "Produtos" },
   c: { path: "/colecoes", label: "Coleções" },
   k: { path: "/pcp-kanban", label: "Kanban do PCP" },
+  l: { path: "/produto-kanban", label: "Ciclo de Vida do Produto" },
   a: { path: "/alertas", label: "Alertas" },
   d: { path: "/", label: "Início" },
   b: { path: "/biblioteca", label: "Biblioteca de materiais" },
