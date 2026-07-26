@@ -49,6 +49,7 @@ import { ProductWorkflowPanel } from "@/components/product-workflow-panel";
 import { ProductLifecycleCopilotPanel } from "@/components/product-lifecycle-copilot-panel";
 import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
 import { ProductReadinessCard } from "@/components/product-readiness-card";
+import { ProductNextStepBanner } from "@/components/product-next-step-banner";
 import { ProductPrintArtworksPanel } from "@/components/product-print-artworks-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
