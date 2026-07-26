@@ -51,6 +51,7 @@ import { ProductTimeline } from "@/components/product-timeline";
 import { ProductGallery } from "@/components/product-gallery";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProductDuplicateDialog } from "@/components/product-duplicate-dialog";
+import { ProductQuickCreateDialog } from "@/components/product-quick-create-dialog";
 
 export const Route = createFileRoute("/_authenticated/_app/produtos")({
   validateSearch: zodValidator(
@@ -169,6 +170,7 @@ function ProdutosPage() {
   useRealtime("products", ["products", "collections-ref"]);
 
   const [open, setOpen] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [duplicating, setDuplicating] = useState<Product | null>(null);
   const [prefill, setPrefill] = useState<Prefill | null>(null);
@@ -319,7 +321,7 @@ function ProdutosPage() {
             <Button
               onClick={() => {
                 setEditing(null);
-                setOpen(true);
+                setQuickOpen(true);
               }}
               className="gap-2"
             >
@@ -353,7 +355,7 @@ function ProdutosPage() {
           <Button
             onClick={() => {
               setEditing(null);
-              setOpen(true);
+              setQuickOpen(true);
             }}
           >
             Cadastrar produto
@@ -426,6 +428,17 @@ function ProdutosPage() {
           )}
         </div>
       )}
+
+      <ProductQuickCreateDialog
+        open={quickOpen}
+        onOpenChange={setQuickOpen}
+        userId={user?.id}
+        collections={collections}
+        onAdvanced={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
+      />
 
       <ProductDialog
         open={open}
