@@ -241,6 +241,7 @@ export function CommandPalette() {
                   { path: "/produtos", label: "Produtos", hint: "G P" },
                   { path: "/colecoes", label: "Coleções", hint: "G C" },
                   { path: "/pcp-kanban", label: "Kanban do PCP", hint: "G K" },
+                  { path: "/produto-kanban", label: "Ciclo de Vida do Produto", hint: "G L" },
                   { path: "/alertas", label: "Alertas", hint: "G A" },
                   { path: "/biblioteca", label: "Biblioteca de materiais", hint: "G B" },
                   { path: "/ficha-tecnica", label: "Fichas técnicas", hint: "G F" },
