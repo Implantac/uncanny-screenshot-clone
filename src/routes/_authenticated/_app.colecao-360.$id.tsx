@@ -38,6 +38,7 @@ import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { Target, Heart, Activity } from "lucide-react";
 import { TimelineFeed } from "@/components/timeline-feed";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
