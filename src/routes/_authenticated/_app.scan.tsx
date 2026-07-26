@@ -78,25 +78,29 @@ function ScanPage() {
       const like = `%${q}%`;
       const { data } = await supabase
         .from("production_orders")
-        .select("id, batch_code, current_stage, products:product_id(sku, name)")
-        .or(`batch_code.ilike.${like},product_sku.ilike.${like}`)
+        .select("id, batch_code, code, stage, products:product_id(sku, name)")
+        .or(`batch_code.ilike.${like},code.ilike.${like}`)
         .limit(8);
       if (cancelled) return;
-      const rows = (data ?? []).map((r: {
+      type Row = {
         id: string;
         batch_code: string | null;
-        current_stage: string | null;
+        code: string;
+        stage: string | null;
         products?: { sku?: string | null; name?: string | null } | null;
-      }) => ({
+      };
+      const rows: Suggestion[] = ((data ?? []) as unknown as Row[]).map((r) => ({
         id: r.id,
         batch_code: r.batch_code,
-        current_stage: r.current_stage,
+        code: r.code,
+        stage: r.stage,
         product_sku: r.products?.sku ?? null,
         product_name: r.products?.name ?? null,
-      })) as Suggestion[];
+      }));
       setSuggestions(rows);
       setSearching(false);
     }, 200);
+
     return () => {
       cancelled = true;
       clearTimeout(t);
