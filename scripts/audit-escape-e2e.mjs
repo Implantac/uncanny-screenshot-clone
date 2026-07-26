@@ -90,6 +90,14 @@ for (const req of REQUIRED) {
   }
 }
 
+// Link direto pra aba de artifacts desta run (aparece no summary quando falha).
+const runUrl =
+  process.env.GITHUB_SERVER_URL &&
+  process.env.GITHUB_REPOSITORY &&
+  process.env.GITHUB_RUN_ID
+    ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}#artifacts`
+    : null;
+
 // Escreve resumo no GitHub Actions Job Summary quando disponível.
 const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 if (summaryPath) {
@@ -120,15 +128,29 @@ if (summaryPath) {
     lines.push("");
     lines.push("</details>");
     lines.push("");
-    lines.push("> Traces, screenshots e vídeos desses casos estão no artifact `escape-failure-*` desta run.");
+    if (runUrl) {
+      lines.push(
+        `> 📎 Traces, screenshots e vídeos desses casos: [artifact \`escape-failure-*\` desta run](${runUrl})`,
+      );
+    } else {
+      lines.push("> Traces, screenshots e vídeos desses casos estão no artifact `escape-failure-*` desta run.");
+    }
   }
   fs.appendFileSync(summaryPath, lines.join("\n") + "\n");
 }
 
 if (problems.length) {
+  // Anotações por caso falhando — aparecem inline no checks UI do PR.
+  for (const r of rows.filter((r) => !r.status.startsWith("✅"))) {
+    const title = `Escape audit: ${r.status.replace(/^\S+\s/, "")}`;
+    console.error(
+      `::error file=e2e/${r.file},title=${title}::${r.title} — ${r.reason}`,
+    );
+  }
   console.error("::error::Auditoria Escape falhou — cenários obrigatórios não rodaram verde:");
   for (const p of problems) console.error(" - " + p);
   process.exit(1);
 }
 
 console.log(`OK: ${REQUIRED.length} cenário(s) Escape (pronto + pendente) executados e passaram.`);
+
