@@ -241,18 +241,67 @@ function ApontarPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-[80vh] grid place-items-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-background pb-24">
+        <header className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
+          <div className="p-2 -ml-2 rounded-md">
+            <ArrowLeft className="size-5 text-muted-foreground" />
+          </div>
+          <div className="flex-1 min-w-0 space-y-1">
+            <div className="h-2.5 w-24 rounded bg-muted animate-pulse" />
+            <div className="h-4 w-40 rounded bg-muted animate-pulse" />
+          </div>
+        </header>
+        <main className="px-4 py-4 space-y-4 max-w-xl mx-auto">
+          <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+            <div className="size-16 rounded-lg bg-muted animate-pulse" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-2/3 rounded bg-muted animate-pulse" />
+              <div className="h-3 w-1/2 rounded bg-muted animate-pulse" />
+              <div className="h-3 w-1/3 rounded bg-muted animate-pulse" />
+            </div>
+          </div>
+          <div className="h-24 rounded-xl border border-border bg-card animate-pulse" />
+          <div className="h-40 rounded-xl border border-border bg-card animate-pulse" />
+          <div className="h-16 rounded-xl bg-muted animate-pulse" />
+        </main>
+        <div className="sr-only" role="status" aria-live="polite">
+          <Loader2 className="size-4 animate-spin inline" /> Carregando OP…
+        </div>
       </div>
     );
   }
   if (!order) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-muted-foreground">OP não encontrada.</p>
-        <Link to="/lotes" className="text-primary text-sm">
-          Voltar
-        </Link>
+      <div className="min-h-screen bg-background">
+        <header className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
+          <Link to="/lotes" className="p-2 -ml-2 rounded-md hover:bg-muted">
+            <ArrowLeft className="size-5" />
+          </Link>
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Apontar produção
+            </div>
+            <div className="text-base font-semibold truncate">OP não encontrada</div>
+          </div>
+        </header>
+        <main className="px-4 py-10 max-w-xl mx-auto text-center space-y-4">
+          <div className="mx-auto size-14 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 grid place-items-center">
+            <AlertTriangle className="size-6" />
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-lg font-semibold">Esta OP não existe ou saiu da sua visão</h1>
+            <p className="text-sm text-muted-foreground">
+              Pode ter sido concluída, cancelada ou pertence a outro workspace. Volte à lista de
+              lotes para escolher outra.
+            </p>
+          </div>
+          <Link
+            to="/lotes"
+            className="inline-flex items-center gap-2 h-11 px-4 rounded-lg bg-primary text-primary-foreground font-medium text-sm"
+          >
+            <ArrowLeft className="size-4" /> Ver lotes
+          </Link>
+        </main>
       </div>
     );
   }
