@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { MODULES } from "@/lib/modules";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ExecutiveKpisPanel } from "@/components/executive-kpis-panel";
 import { MorningBriefingPanel } from "@/components/morning-briefing-panel";
@@ -345,19 +346,34 @@ function TrendBlock({
 
 function CommandCenter() {
   const { data, isLoading } = useDashboard();
+  const { user } = useAuth();
   const [today, setToday] = useState("");
+  const [hour, setHour] = useState(() => new Date().getHours());
   useEffect(() => {
     setToday(
       new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }),
     );
+    const id = setInterval(() => setHour(new Date().getHours()), 60_000);
+    return () => clearInterval(id);
   }, []);
   const k = data?.kpis;
+  const firstName = useMemo(() => {
+    const raw =
+      (user?.user_metadata?.full_name as string | undefined) ??
+      (user?.user_metadata?.name as string | undefined) ??
+      user?.email ??
+      "";
+    const base = raw.includes("@") ? raw.split("@")[0] : raw;
+    const token = base.split(/[\s._-]+/).filter(Boolean)[0] ?? "";
+    if (!token) return "";
+    return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase();
+  }, [user]);
   const greeting = useMemo(() => {
-    const h = new Date().getHours();
-    if (h < 12) return "Bom dia";
-    if (h < 18) return "Boa tarde";
+    if (hour < 12) return "Bom dia";
+    if (hour < 18) return "Boa tarde";
     return "Boa noite";
-  }, []);
+  }, [hour]);
+
 
   const kpis = [
     {
@@ -394,7 +410,7 @@ function CommandCenter() {
             Command Center · PLM
           </div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-            {greeting}, <span className="text-gradient">USE Moda</span>
+            {greeting}, <span className="text-gradient">{firstName || "USE Moda"}</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             Desenvolvimento, produção e cadeia em tempo real{today && ` · ${today}`}
