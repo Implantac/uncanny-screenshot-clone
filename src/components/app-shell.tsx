@@ -345,7 +345,19 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
           <SectorChatButton />
           <MyProductsInboxButton />
+          <button
+            type="button"
+            title="Atalhos de teclado (?)"
+            aria-label="Abrir atalhos de teclado"
+            onClick={() => {
+              window.dispatchEvent(new KeyboardEvent("keydown", { key: "?" }));
+            }}
+            className="size-9 hidden sm:grid place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Keyboard className="size-4" />
+          </button>
           <NotificationsBell />
+
           <div className="flex items-center gap-2 pl-2 sm:pl-3 sm:ml-1 sm:border-l border-border">
             <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">
               {initials || "U"}
