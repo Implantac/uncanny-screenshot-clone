@@ -347,7 +347,27 @@ function FichaTecnicaPage() {
 
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando…</div>
+        <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-4" aria-label="Carregando fichas técnicas">
+          <section className="glass rounded-xl p-4 space-y-3">
+            <div className="h-4 w-40 rounded bg-muted animate-pulse" />
+            <div className="h-3 w-28 rounded bg-muted/70 animate-pulse" />
+            <div className="space-y-2 pt-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-14 rounded-lg border border-border bg-muted/40 animate-pulse" />
+              ))}
+            </div>
+          </section>
+          <section className="glass rounded-xl p-4 space-y-4">
+            <div className="h-6 w-64 rounded bg-muted animate-pulse" />
+            <div className="h-4 w-96 rounded bg-muted/70 animate-pulse" />
+            <div className="grid md:grid-cols-2 gap-3 pt-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-24 rounded-lg border border-border bg-muted/40 animate-pulse" />
+              ))}
+            </div>
+            <div className="h-64 rounded-lg border border-border bg-muted/30 animate-pulse" />
+          </section>
+        </div>
       ) : sheets.length === 0 ? (
         <div className="glass rounded-xl p-8 md:p-12">
           <div className="max-w-2xl mx-auto text-center">
