@@ -20,11 +20,13 @@ import { useState, useMemo } from "react";
 import {
   getAlertsCenter,
   dismissAlert,
+  dispatchAlertPushes,
   type AlertSeverity,
   type AlertCategory,
   type CenterAlert,
   type DismissMode,
 } from "@/lib/alerts-center.functions";
+
 import { PageHeader } from "@/components/ui/page-header";
 import {
   DropdownMenu,
@@ -89,11 +91,18 @@ function AlertsCenterPage() {
   const qc = useQueryClient();
   const fetchAlerts = useServerFn(getAlertsCenter);
   const dismissFn = useServerFn(dismissAlert);
+  const dispatchFn = useServerFn(dispatchAlertPushes);
   const { data, isLoading } = useQuery({
     queryKey: ["alerts-center"],
-    queryFn: () => fetchAlerts(),
+    queryFn: async () => {
+      const alerts = await fetchAlerts();
+      // fire-and-forget push dispatch (dedupe 24h no servidor)
+      dispatchFn().catch(() => {});
+      return alerts;
+    },
     refetchInterval: 60_000,
   });
+
 
   const [cat, setCat] = useState<AlertCategory | "all">("all");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});

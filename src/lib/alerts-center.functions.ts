@@ -317,3 +317,170 @@ export const dismissAlert = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+/**
+ * Wave 18 — Dispatch de push notifications para alertas críticos.
+ * Respeita notification_preferences por categoria e dedupe por 24h
+ * (mesmo alert_key não gera 2 pushes seguidos).
+ */
+export const dispatchAlertPushes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ sent: number; skipped: number }> => {
+    const { supabase, userId } = context;
+
+    const alerts = await (async () => {
+      // Reusa o mesmo query rodando o handler in-place seria complexo;
+      // aqui buscamos de novo apenas o crítico/alto que precisa notificar.
+      const nowMs = Date.now();
+      const today = new Date().toISOString().slice(0, 10);
+      const stuckCutoff = new Date(nowMs - 86_400_000).toISOString();
+
+      const [{ data: inv }, { data: overdueOps }, { data: stuckOps }, { data: stages }, { data: capas }] =
+        await Promise.all([
+          supabase
+            .from("inventory_items")
+            .select("id, name, balance, minimum, unit")
+            .eq("owner_id", userId),
+          supabase
+            .from("production_orders")
+            .select("id, code, due_date, status")
+            .eq("owner_id", userId)
+            .neq("status", "concluida")
+            .lte("due_date", today),
+          supabase
+            .from("production_orders")
+            .select("id, code, stage, stage_updated_at")
+            .eq("owner_id", userId)
+            .neq("status", "concluida")
+            .neq("stage", "entregue")
+            .lt("stage_updated_at", stuckCutoff),
+          supabase.from("pcp_stages").select("key, sla_stuck_days").eq("owner_id", userId),
+          supabase
+            .from("quality_capa")
+            .select("id, title, severity, status, due_date")
+            .eq("owner_id", userId)
+            .neq("status", "fechada"),
+        ]);
+
+      const slaByStage = new Map<string, number>(
+        (stages ?? []).map((s) => [s.key as string, Number(s.sla_stuck_days ?? 3)]),
+      );
+
+      const out: {
+        key: string;
+        cat: AlertCategory;
+        sev: AlertSeverity;
+        title: string;
+        body: string;
+        link: string;
+      }[] = [];
+
+      for (const i of inv ?? []) {
+        const bal = Number(i.balance ?? 0);
+        const min = Number(i.minimum ?? 0);
+        if (min <= 0 || bal > min) continue;
+        const ratio = min > 0 ? bal / min : 1;
+        const sev: AlertSeverity = bal <= 0 ? "critica" : ratio < 0.5 ? "alta" : "media";
+        if (sev !== "critica" && sev !== "alta") continue;
+        out.push({
+          key: `inv:${i.id}`,
+          cat: "estoque",
+          sev,
+          title: `Estoque crítico: ${i.name}`,
+          body: `Saldo ${bal} ${i.unit ?? ""} · mínimo ${min}`,
+          link: "/almoxarifado",
+        });
+      }
+      for (const o of overdueOps ?? []) {
+        const daysLate = Math.floor((nowMs - new Date(o.due_date as string).getTime()) / 86_400_000);
+        const sev: AlertSeverity = daysLate >= 7 ? "critica" : daysLate >= 2 ? "alta" : "media";
+        if (sev !== "critica" && sev !== "alta") continue;
+        out.push({
+          key: `op-overdue:${o.id}`,
+          cat: "atraso",
+          sev,
+          title: `OP ${o.code} atrasada ${daysLate}d`,
+          body: `Prazo ${o.due_date} estourou.`,
+          link: "/pcp",
+        });
+      }
+      for (const o of stuckOps ?? []) {
+        const days = (nowMs - new Date(o.stage_updated_at as string).getTime()) / 86_400_000;
+        const sla = slaByStage.get(o.stage as string) ?? 3;
+        if (days < sla) continue;
+        const sev: AlertSeverity = days >= sla * 3 ? "critica" : days >= sla * 2 ? "alta" : "media";
+        if (sev !== "critica" && sev !== "alta") continue;
+        out.push({
+          key: `op-stuck:${o.id}`,
+          cat: "parado",
+          sev,
+          title: `OP ${o.code} parada em ${o.stage}`,
+          body: `Sem movimento há ${Math.floor(days)}d (SLA ${sla}d).`,
+          link: "/pcp-kanban",
+        });
+      }
+      for (const c of capas ?? []) {
+        const due = c.due_date ? new Date(c.due_date as string) : null;
+        const overdueDays = due ? Math.floor((nowMs - due.getTime()) / 86_400_000) : -1;
+        if (overdueDays < 1 && (c.severity as string) !== "critica") continue;
+        const sev: AlertSeverity =
+          overdueDays >= 7 ? "critica" : overdueDays >= 1 ? "alta" : "critica";
+        out.push({
+          key: `capa:${c.id}`,
+          cat: "qualidade",
+          sev,
+          title: `CAPA: ${c.title}`,
+          body: overdueDays > 0 ? `Vencida há ${overdueDays}d.` : `Severidade crítica.`,
+          link: "/qualidade",
+        });
+      }
+      return out;
+    })();
+
+    if (alerts.length === 0) return { sent: 0, skipped: 0 };
+
+    const { data: prefs } = await supabase
+      .from("notification_preferences")
+      .select("category, muted, push_enabled")
+      .eq("user_id", userId);
+    const prefBy = new Map(
+      (prefs ?? []).map((p) => [p.category as string, p as { muted: boolean; push_enabled: boolean }]),
+    );
+
+    // Dedupe: já enviado nas últimas 24h?
+    const since = new Date(Date.now() - 24 * 3_600_000).toISOString();
+    const keys = alerts.map((a) => a.key);
+    const { data: recentRaw } = await supabase
+      .from("push_notifications")
+      .select("payload")
+      .eq("owner_id", userId)
+      .eq("kind", "alertas_center")
+      .gte("sent_at", since);
+    const alreadySent = new Set(
+      (recentRaw ?? [])
+        .map((r) => (r.payload as { alert_key?: string } | null)?.alert_key)
+        .filter((k): k is string => !!k && keys.includes(k)),
+    );
+
+    const rows = alerts
+      .filter((a) => {
+        const p = prefBy.get(a.cat);
+        if (p && (p.muted || !p.push_enabled)) return false;
+        return !alreadySent.has(a.key);
+      })
+      .map((a) => ({
+        owner_id: userId,
+        title: a.title,
+        body: a.body,
+        link: a.link,
+        kind: "alertas_center",
+        severity: a.sev,
+        payload: { alert_key: a.key, category: a.cat },
+      }));
+
+    if (rows.length === 0) return { sent: 0, skipped: alerts.length };
+
+    const { error } = await supabase.from("push_notifications").insert(rows);
+    if (error) throw error;
+    return { sent: rows.length, skipped: alerts.length - rows.length };
+  });
