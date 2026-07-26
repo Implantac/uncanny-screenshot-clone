@@ -8,7 +8,9 @@ import {
   MessageSquare,
   History,
   FileText,
+  CheckCircle2,
 } from "lucide-react";
+import { CloseOrderDialog } from "@/components/close-order-dialog";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -56,6 +58,7 @@ export function ProductionCardActions({
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
+  const [closeOpen, setCloseOpen] = useState(false);
   const [pointOpen, setPointOpen] = useState(false);
   const [qty, setQty] = useState<string>(
     String(Math.round(((order.progress ?? 0) / 100) * (order.quantity ?? 0))),
@@ -200,6 +203,12 @@ export function ProductionCardActions({
           <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onOpenHistory(); }}>
             <History className="size-3.5" /> Histórico de passagens
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={(e) => { e.preventDefault(); setCloseOpen(true); }}
+            className="text-success focus:text-success"
+          >
+            <CheckCircle2 className="size-3.5" /> Fechar OP
+          </DropdownMenuItem>
           {onOpenSheet && (
             <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onOpenSheet(); }}>
               <FileText className="size-3.5" /> Ficha técnica
@@ -238,6 +247,15 @@ export function ProductionCardActions({
           pending={advance.isPending}
         />
       )}
+
+      <CloseOrderDialog
+        open={closeOpen}
+        onOpenChange={setCloseOpen}
+        orderId={order.id}
+        orderCode={order.batch_code ?? order.code}
+        plannedQty={order.quantity}
+        invalidateKey={invalidateKey}
+      />
     </span>
   );
 }

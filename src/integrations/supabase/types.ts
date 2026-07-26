@@ -3310,6 +3310,9 @@ export type Database = {
       production_orders: {
         Row: {
           batch_code: string | null
+          close_notes: string | null
+          closed_at: string | null
+          closed_by: string | null
           code: string
           created_at: string
           due_date: string | null
@@ -3319,9 +3322,11 @@ export type Database = {
           owner_id: string
           parent_order_id: string | null
           priority: number
+          produced_qty: number | null
           product_id: string | null
           progress: number
           quantity: number
+          rejected_qty: number
           stage: Database["public"]["Enums"]["production_stage"]
           stage_updated_at: string
           started_at: string | null
@@ -3331,6 +3336,9 @@ export type Database = {
         }
         Insert: {
           batch_code?: string | null
+          close_notes?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
           code: string
           created_at?: string
           due_date?: string | null
@@ -3340,9 +3348,11 @@ export type Database = {
           owner_id: string
           parent_order_id?: string | null
           priority?: number
+          produced_qty?: number | null
           product_id?: string | null
           progress?: number
           quantity?: number
+          rejected_qty?: number
           stage?: Database["public"]["Enums"]["production_stage"]
           stage_updated_at?: string
           started_at?: string | null
@@ -3352,6 +3362,9 @@ export type Database = {
         }
         Update: {
           batch_code?: string | null
+          close_notes?: string | null
+          closed_at?: string | null
+          closed_by?: string | null
           code?: string
           created_at?: string
           due_date?: string | null
@@ -3361,9 +3374,11 @@ export type Database = {
           owner_id?: string
           parent_order_id?: string | null
           priority?: number
+          produced_qty?: number | null
           product_id?: string | null
           progress?: number
           quantity?: number
+          rejected_qty?: number
           stage?: Database["public"]["Enums"]["production_stage"]
           stage_updated_at?: string
           started_at?: string | null
