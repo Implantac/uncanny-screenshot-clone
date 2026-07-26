@@ -49,6 +49,7 @@ import { ProductWorkflowPanel } from "@/components/product-workflow-panel";
 import { ProductLifecycleCopilotPanel } from "@/components/product-lifecycle-copilot-panel";
 import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
 import { ProductReadinessCard } from "@/components/product-readiness-card";
+import { ProductPrintArtworksPanel } from "@/components/product-print-artworks-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
   head: ({ params }) => ({
@@ -402,6 +403,7 @@ function ProductWorkspace() {
 
         <TabsContent value="pcp" className="space-y-4">
           <ProductPcpHealthPanel productId={product.id} />
+          <ProductPrintArtworksPanel productId={product.id} />
           <ProductDigitalTwinPanel productId={product.id} />
           <div className="rounded-xl border border-border bg-card p-4">
 
