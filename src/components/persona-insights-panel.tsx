@@ -79,16 +79,16 @@ export function PersonaInsightsPanel({ persona }: { persona: PersonaKey }) {
       </div>
 
       {error ? (
-        <div className="text-xs text-destructive">
-          Falha: {(error as Error).message}
+        <div className="text-xs text-muted-foreground">
+          IA temporariamente indisponível — os demais indicadores continuam ativos.
         </div>
       ) : data?.error === "rate_limited" ? (
-        <div className="text-xs text-amber-600">
-          Muitas chamadas — aguarde alguns segundos e atualize.
+        <div className="text-xs text-muted-foreground">
+          Analisando com calma — atualize em alguns segundos.
         </div>
       ) : data?.error === "credits_exhausted" ? (
-        <div className="text-xs text-amber-600">
-          Créditos de IA esgotados — adicione créditos no workspace.
+        <div className="text-xs text-muted-foreground">
+          IA em pausa. Ative créditos em Configurações para receber insights automáticos.
         </div>
       ) : !data || isFetching ? (
         <div className="text-xs text-muted-foreground inline-flex items-center gap-2">
