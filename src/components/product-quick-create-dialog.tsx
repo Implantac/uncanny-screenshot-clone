@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
 type CollectionRef = { id: string; name: string; season: string; year: number };
