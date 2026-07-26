@@ -177,8 +177,11 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         why: `Prazo estourou há ${daysLate} dia(s). Quanto mais tempo parada, maior o custo de atraso e quebra de SLA.`,
         link: "/pcp",
         ts: o.updated_at as string,
+        entityKey: `op:${o.id}`,
+        entityLabel: `OP ${o.code}`,
       });
     }
+
 
     // 3. OPs paradas (gargalo) — usa SLA por estágio
     for (const o of stuckOps ?? []) {
