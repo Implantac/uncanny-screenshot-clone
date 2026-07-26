@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
 import { PageHeader } from "@/components/ui/page-header";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
+import { MeasurementCheckPanel } from "@/components/measurement-check-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/fit-sessions")({
   head: () => ({
@@ -338,6 +339,12 @@ function Page() {
                 {(comments.data ?? []).filter((c) => c.resolved).length} resolvido(s)
               </div>
             </div>
+
+            <MeasurementCheckPanel
+              fitSessionId={currentSession.id}
+              prototypeId={currentSession.prototype_id}
+            />
+
 
             {/* Galeria de fotos coletadas */}
             {photos.length > 0 && (
