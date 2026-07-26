@@ -940,6 +940,29 @@ function PcpKanban() {
                           </div>
                         )}
 
+                        {o.product_id &&
+                          (col.key === "silk" ||
+                            col.key === "silk_terc" ||
+                            col.key === "bordado" ||
+                            col.key === "bordado_terc") &&
+                          (approvedArtworksByProduct.get(o.product_id)?.length ?? 0) > 0 && (
+                            <div className="flex flex-wrap gap-1 pt-0.5">
+                              {approvedArtworksByProduct.get(o.product_id)!.map((a) => (
+                                <a
+                                  key={a.id}
+                                  href="/estampas"
+                                  onClick={(e) => e.stopPropagation()}
+                                  title={`${a.technique} — ${a.name} (aprovada)`}
+                                  className="text-[9px] px-1.5 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 truncate max-w-[110px] inline-flex items-center gap-1"
+                                >
+                                  <Sparkles className="size-2.5 shrink-0" />
+                                  <span className="truncate">{a.name}</span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+
+
                         <div className="flex items-center justify-between text-muted-foreground tabular-nums">
                           <span>{o.quantity} pç</span>
                           <span>{o.progress}%</span>
