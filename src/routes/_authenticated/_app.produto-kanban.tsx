@@ -195,24 +195,52 @@ function LifecycleColumn({
   const meta = STEP_META[step];
   const sla = SLA_DAYS[step];
   const stale = cards.filter((c) => c.days_in_step > sla).length;
+  const avgDays = cards.length
+    ? Math.round(cards.reduce((s, c) => s + c.days_in_step, 0) / cards.length)
+    : 0;
+  const oldest = cards.reduce((max, c) => Math.max(max, c.days_in_step), 0);
 
   return (
     <div className="flex h-full w-72 flex-col rounded-lg border bg-card">
-      <div className="flex items-center justify-between border-b px-3 py-2">
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold">{meta.label}</div>
-          <div className="text-[11px] text-muted-foreground">{meta.role}</div>
-        </div>
-        <div className="flex items-center gap-1">
-          {stale > 0 && (
-            <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
-              {stale} atrasadas
+      <div className="border-b px-3 py-2">
+        <div className="flex items-center justify-between">
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold">{meta.label}</div>
+            <div className="text-[11px] text-muted-foreground">{meta.role}</div>
+          </div>
+          <div className="flex items-center gap-1">
+            {stale > 0 && (
+              <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
+                {stale} atrasadas
+              </Badge>
+            )}
+            <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+              {cards.length}
             </Badge>
-          )}
-          <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-            {cards.length}
-          </Badge>
+          </div>
         </div>
+        {cards.length > 0 && (
+          <div
+            className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground"
+            title={`SLA da fase: ${sla} dias`}
+          >
+            <span>
+              média <span className="font-medium text-foreground">{avgDays}d</span>
+            </span>
+            <span>
+              mais antigo{" "}
+              <span
+                className={cn(
+                  "font-medium",
+                  oldest > sla ? "text-destructive" : "text-foreground",
+                )}
+              >
+                {oldest}d
+              </span>{" "}
+              / SLA {sla}d
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 space-y-2 overflow-y-auto p-2">
@@ -309,6 +337,24 @@ function LifecycleCard({
               <AlertTriangle className="h-3 w-3" /> bloqueado
             </span>
           )}
+        </div>
+        <div
+          className="mt-1 h-1 w-full overflow-hidden rounded-full bg-muted"
+          title={`${card.days_in_step}d de ${sla}d de SLA`}
+        >
+          <div
+            className={cn(
+              "h-full transition-all",
+              overdue
+                ? "bg-destructive"
+                : card.days_in_step / sla > 0.7
+                ? "bg-amber-500"
+                : "bg-emerald-500",
+            )}
+            style={{
+              width: `${Math.min(100, Math.round((card.days_in_step / sla) * 100))}%`,
+            }}
+          />
         </div>
         {card.blocked && card.blocker_reason && (
           <div className="mt-1 line-clamp-2 rounded bg-destructive/10 px-2 py-1 text-[11px] text-destructive">
