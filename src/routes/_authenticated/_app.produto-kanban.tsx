@@ -338,6 +338,24 @@ function LifecycleCard({
             </span>
           )}
         </div>
+        <div
+          className="mt-1 h-1 w-full overflow-hidden rounded-full bg-muted"
+          title={`${card.days_in_step}d de ${sla}d de SLA`}
+        >
+          <div
+            className={cn(
+              "h-full transition-all",
+              overdue
+                ? "bg-destructive"
+                : card.days_in_step / sla > 0.7
+                ? "bg-amber-500"
+                : "bg-emerald-500",
+            )}
+            style={{
+              width: `${Math.min(100, Math.round((card.days_in_step / sla) * 100))}%`,
+            }}
+          />
+        </div>
         {card.blocked && card.blocker_reason && (
           <div className="mt-1 line-clamp-2 rounded bg-destructive/10 px-2 py-1 text-[11px] text-destructive">
             {card.blocker_reason}
