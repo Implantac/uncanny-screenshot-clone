@@ -258,6 +258,45 @@ function ProductLifecycleKanban() {
         }
       />
 
+      {showOwnershipBanner && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-amber-50 px-4 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>
+              <div className="font-medium">
+                Você ainda não é dono de nenhum produto neste workspace.
+              </div>
+              <div className="text-xs opacity-80">
+                Existem <strong>{allCount.toLocaleString("pt-BR")}</strong> produtos criados por
+                outras pessoas da empresa. Veja todos para acompanhar o ciclo de vida completo.
+              </div>
+            </div>
+          </div>
+          <Button size="sm" variant="default" onClick={() => setScope("all")}>
+            Ver todos do workspace
+          </Button>
+        </div>
+      )}
+
+      {scope === "all" && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/40 px-4 py-1.5 text-xs text-muted-foreground">
+          <span>
+            Mostrando <strong>{allCount.toLocaleString("pt-BR")}</strong> produtos de todo o
+            workspace (você é dono de {mineCount.toLocaleString("pt-BR")}).
+          </span>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 px-2 text-xs"
+            onClick={() => setScope("mine")}
+          >
+            Ver só os meus
+          </Button>
+        </div>
+      )}
+
+
+
 
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
         <div className="flex h-full min-w-max gap-3 p-4">
