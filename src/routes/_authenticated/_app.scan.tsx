@@ -22,9 +22,10 @@ const UUID_RX = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/
 type Suggestion = {
   id: string;
   batch_code: string | null;
+  code: string;
   product_sku: string | null;
   product_name: string | null;
-  current_stage: string | null;
+  stage: string | null;
 };
 
 function ScanPage() {
