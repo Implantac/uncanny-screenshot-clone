@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ShoppingCart, Plus, Trash2, Pencil, Package } from "lucide-react";
+import { ShoppingCart, Plus, Trash2, Pencil, Package, PackageCheck } from "lucide-react";
+import { PurchaseReceiptDialog } from "@/components/purchase-receipt-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -71,6 +72,7 @@ function POPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<PO | null>(null);
+  const [receiptFor, setReceiptFor] = useState<PO | null>(null);
 
   const { data: pos = [], isLoading } = useQuery({
     queryKey: ["purchase_orders"],
@@ -197,6 +199,15 @@ function POPage() {
                   </td>
                   <td className="px-3 py-2 text-right">
                     <div className="flex justify-end gap-1">
+                      {(p.status === "aprovado" || p.status === "cotando") && (
+                        <button
+                          onClick={() => setReceiptFor(p)}
+                          title="Registrar recebimento"
+                          className="size-7 grid place-items-center rounded hover:bg-emerald-500/20 text-emerald-500"
+                        >
+                          <PackageCheck className="size-3.5" />
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           setEditing(p);
@@ -226,6 +237,13 @@ function POPage() {
         onOpenChange={setOpen}
         editing={editing}
         suppliers={suppliers}
+        userId={user?.id}
+      />
+      <PurchaseReceiptDialog
+        open={!!receiptFor}
+        onOpenChange={(v) => !v && setReceiptFor(null)}
+        purchaseOrderId={receiptFor?.id ?? null}
+        poCode={receiptFor?.code ?? ""}
         userId={user?.id}
       />
     </div>
