@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useRouterState, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { GlobalPushListener } from "@/components/global-push-listener";
+import { GlobalBreadcrumb } from "@/components/global-breadcrumb";
 import { MODULES, moduleAllowed, moduleSector, SECTOR_LABEL } from "@/lib/modules";
 import { useSectors } from "@/hooks/use-sectors";
 import { Lock } from "lucide-react";
@@ -14,6 +15,7 @@ function AppLayout() {
     <AppShell>
       <GlobalPushListener />
       <SectorGuard>
+        <GlobalBreadcrumb />
         <Outlet />
       </SectorGuard>
     </AppShell>
