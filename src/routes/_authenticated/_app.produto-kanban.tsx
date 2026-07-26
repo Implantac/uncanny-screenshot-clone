@@ -76,9 +76,9 @@ function ProductLifecycleKanban() {
   return (
     <div className="flex h-full flex-col">
       <PageHeader
+        className="border-b px-4 py-3"
         title="Ciclo de Vida do Produto"
-        subtitle="Onde cada peça está agora — do briefing à produção."
-        icon={<Layers className="h-5 w-5" />}
+        description="Onde cada peça está agora — do briefing à produção."
         actions={
           <div className="flex items-center gap-3">
             <Badge variant="outline" className="gap-1">
