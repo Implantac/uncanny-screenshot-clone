@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { ProductQuickCreateDialog } from "@/components/product-quick-create-dialog";
+import { ProductQuickCreateDialog } from "@/components/product-quick-create-dialog-lazy";
 import { FAB_EVENT } from "@/components/contextual-fab";
 
 /**
