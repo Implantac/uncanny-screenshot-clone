@@ -85,15 +85,17 @@ async function cloneProduct(
   if (opts.includeSizes) {
     const { data: sizes } = await supabase
       .from("product_size_options")
-      .select("size_key, label, position, active")
+      .select("label, position, active")
       .eq("product_id", baseId);
     if (sizes && sizes.length > 0) {
       await supabase.from("product_size_options").insert(
-        (sizes as Array<Record<string, unknown>>).map((s) => ({
-          ...s,
+        sizes.map((s) => ({
+          label: s.label,
+          position: s.position,
+          active: s.active,
           product_id: newId,
           owner_id: overrides.ownerId,
-        })) as never,
+        })),
       );
     }
   }
