@@ -705,7 +705,7 @@ function PcpKanban() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 overflow-x-auto pb-2">
         {STAGES.map((col) => {
           const items = grouped.get(col.key) ?? [];
           const qty = items.reduce((s, o) => s + o.quantity, 0);
