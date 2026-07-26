@@ -261,7 +261,26 @@ function LotesPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando…</div>
+        <div className="grid grid-cols-1 xl:grid-cols-[340px_minmax(0,1fr)] gap-4">
+          <div className="space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="glass rounded-xl p-4 space-y-2 animate-pulse">
+                <div className="h-4 w-2/3 bg-muted/40 rounded" />
+                <div className="h-3 w-1/2 bg-muted/30 rounded" />
+                <div className="flex gap-2">
+                  <div className="h-5 w-14 bg-muted/30 rounded-full" />
+                  <div className="h-5 w-10 bg-muted/30 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="glass rounded-xl p-6 space-y-3 animate-pulse">
+            <div className="h-5 w-1/3 bg-muted/40 rounded" />
+            <div className="h-3 w-full bg-muted/30 rounded" />
+            <div className="h-3 w-4/5 bg-muted/30 rounded" />
+            <div className="h-40 w-full bg-muted/20 rounded-lg" />
+          </div>
+        </div>
       ) : batches.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center">
           <Boxes className="size-10 text-primary mx-auto mb-3" />
