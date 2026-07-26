@@ -14,6 +14,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { MODULES } from "@/lib/modules";
 import { getRecentProducts, getPinnedProducts } from "@/lib/recent-products";
 import { getRecentCollections, getPinnedCollections } from "@/lib/recent-collections";
+import {
+  getRecentSuppliers,
+  getPinnedSuppliers,
+  pushRecentSupplier,
+} from "@/lib/recent-suppliers";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
