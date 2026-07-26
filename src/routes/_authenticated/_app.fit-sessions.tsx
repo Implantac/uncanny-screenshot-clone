@@ -340,6 +340,12 @@ function Page() {
               </div>
             </div>
 
+            <MeasurementCheckPanel
+              fitSessionId={currentSession.id}
+              prototypeId={currentSession.prototype_id}
+            />
+
+
             {/* Galeria de fotos coletadas */}
             {photos.length > 0 && (
               <div className="glass rounded-xl p-4">
