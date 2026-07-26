@@ -62,6 +62,9 @@ jobs:
             console.log('OK: nenhum teste skipado.');
           "
 
+      - name: Audit Escape scenario coverage (ready + pending must have run green)
+        run: node scripts/audit-escape-e2e.mjs playwright-results.json
+
       # Always upload, so failures (and their intel-debug bundles) are downloadable
       # from the Actions run page under "Artifacts".
       - name: Upload intel-debug artifacts
