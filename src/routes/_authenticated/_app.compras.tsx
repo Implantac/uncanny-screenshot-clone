@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { ShoppingCart, AlertTriangle, Package, TrendingDown } from "lucide-react";
-import { InventorySmartPanel } from "@/components/inventory-smart-panel";
+import { InventorySmartPanel } from "@/components/inventory-smart-panel-lazy";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 
