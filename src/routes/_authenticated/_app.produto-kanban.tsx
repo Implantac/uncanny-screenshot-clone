@@ -58,6 +58,18 @@ const SLA_DAYS: Record<WorkflowStep, number> = {
   producao: 30,
 };
 
+const EMPTY_HINTS: Record<WorkflowStep, string> = {
+  concepcao: "Nenhum produto em concepção. Use ‘N’ para criar um esboço a partir do briefing.",
+  modelagem: "Sem produtos em modelagem. Avance um item aprovado na concepção para começar a ficha.",
+  engenharia: "Ninguém em engenharia. Finalize a ficha técnica de um produto para trazê-lo aqui.",
+  custos: "Sem custos em análise. Fichas prontas caem aqui para bater a margem-alvo.",
+  piloto: "Nenhum piloto em andamento. Solicite uma peça piloto a partir da ficha aprovada.",
+  aprov_comercial: "Sem produtos aguardando comercial. Aprove pilotos para escalar a decisão.",
+  aprov_diretoria: "Sem itens na diretoria. Comercial aprova primeiro, depois cai aqui.",
+  liberacao_pcp: "Nada para liberar ao PCP. Aprove na diretoria para gerar OP.",
+  producao: "Sem produtos em produção. Ao liberar ao PCP, a OP aparece aqui.",
+};
+
 function exportKanbanCsv(
   cols: { step: WorkflowStep; cards: LifecycleKanbanCard[] }[],
 ) {
@@ -323,8 +335,8 @@ function LifecycleColumn({
 
       <div className="flex-1 space-y-2 overflow-y-auto p-2">
         {cards.length === 0 && (
-          <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">
-            Nenhum produto nesta fase.
+          <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground leading-relaxed">
+            {EMPTY_HINTS[step]}
           </div>
         )}
         {cards.map((card) => (
