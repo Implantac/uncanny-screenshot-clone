@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { MODULES } from "@/lib/modules";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ExecutiveKpisPanel } from "@/components/executive-kpis-panel";
 import { MorningBriefingPanel } from "@/components/morning-briefing-panel";
