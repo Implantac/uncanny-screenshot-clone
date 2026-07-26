@@ -7,7 +7,7 @@ const Real = lazy(() =>
 );
 
 type Props = {
-  productId: string | null;
+  productId: string | null | undefined;
   productionOrderId?: string | null;
   orderCode?: string | null;
   open: boolean;
