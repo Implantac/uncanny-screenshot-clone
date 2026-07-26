@@ -433,8 +433,28 @@ function FornecedoresPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {suppliers.map((s) => (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPinnedOnly((v) => !v)}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors flex items-center gap-1.5 ${
+                pinnedOnly
+                  ? "bg-primary/15 border-primary/40 text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+              title="Mostrar apenas fixados"
+            >
+              <Pin className="size-3" /> Fixados{" "}
+              <span className="opacity-70">({pinnedIds.size})</span>
+            </button>
+            {pinnedOnly && (
+              <span className="text-xs text-muted-foreground">
+                Filtrando por fornecedores fixados
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {(pinnedOnly ? suppliers.filter((s) => pinnedIds.has(s.id)) : suppliers).map((s) => (
             <div
               key={s.id}
               className="glass rounded-xl p-5 flex flex-col gap-3 hover:border-primary/40 transition-colors"
