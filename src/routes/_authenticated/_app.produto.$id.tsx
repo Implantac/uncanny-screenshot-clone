@@ -259,7 +259,10 @@ function ProductWorkspace() {
 
       <ProductWorkflowStepper productId={product.id} />
 
+      <ProductNextStepBanner productId={product.id} />
+
       <Tabs defaultValue="overview" className="space-y-4">
+
         <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/40 p-1">
           <TabTrig value="overview" icon={<Sparkles className="size-3.5" />}>Overview</TabTrig>
           <TabTrig value="ficha" icon={<FileText className="size-3.5" />}>Ficha técnica</TabTrig>
