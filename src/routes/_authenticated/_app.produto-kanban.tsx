@@ -97,7 +97,6 @@ function exportKanbanCsv(
 }
 
 
-type QuickFilter = "all" | "blocked" | "overdue" | "pinned";
 
 function ProductLifecycleKanban() {
   const fetchKanban = useServerFn(listLifecycleKanban);
