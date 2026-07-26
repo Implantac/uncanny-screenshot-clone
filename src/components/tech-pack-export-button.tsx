@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileDown, Loader2, Settings2 } from "lucide-react";
+import { FileDown, Loader2, Settings2, Users, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,7 +100,8 @@ export function TechPackExportButton({
   const [openCfg, setOpenCfg] = useState(false);
   const [opts, setOpts] = useState<CoverOpts>(() => loadOpts());
 
-  const exportPdf = async (coverOpts: CoverOpts) => {
+  const exportPdf = async (coverOpts: CoverOpts, audience: "interna" | "fornecedor" = "interna") => {
+    const showCosts = audience === "interna";
     setBusy(true);
     try {
       const [{ default: jsPDF }, autoTableMod, materialsRes, opsRes, measRes] = await Promise.all([
@@ -203,15 +204,23 @@ export function TechPackExportButton({
       cursorY += 8;
       autoTable(doc, {
         startY: cursorY,
-        head: [["Material", "Unid.", "Consumo", "Perda %", "Custo unit.", "Total"]],
-        body: materials.map((m) => [
-          m.name,
-          m.unit ?? "",
-          String(m.consumption ?? 0),
-          `${((m.loss_pct as number) ?? 0).toFixed(1)}%`,
-          fmtBRL(m.unit_cost as number),
-          fmtBRL(m.total_cost as number),
-        ]),
+        head: [
+          showCosts
+            ? ["Material", "Unid.", "Consumo", "Perda %", "Custo unit.", "Total"]
+            : ["Material", "Unid.", "Consumo", "Perda %"],
+        ],
+        body: materials.map((m) =>
+          showCosts
+            ? [
+                m.name,
+                m.unit ?? "",
+                String(m.consumption ?? 0),
+                `${((m.loss_pct as number) ?? 0).toFixed(1)}%`,
+                fmtBRL(m.unit_cost as number),
+                fmtBRL(m.total_cost as number),
+              ]
+            : [m.name, m.unit ?? "", String(m.consumption ?? 0), `${((m.loss_pct as number) ?? 0).toFixed(1)}%`],
+        ),
         styles: { fontSize: 8 },
         headStyles: { fillColor: [ar, ag, ab] },
         margin: { left: 40, right: 40 },
@@ -230,15 +239,23 @@ export function TechPackExportButton({
       cursorY += 8;
       autoTable(doc, {
         startY: cursorY,
-        head: [["Operação", "Máquina", "Setor", "SAM (min)", "R$/min", "Custo"]],
-        body: operations.map((o) => [
-          o.name,
-          o.machine ?? "",
-          o.responsible_role ?? "",
-          String(o.sam ?? 0),
-          fmtBRL(o.rate_per_min as number),
-          fmtBRL(o.total_cost as number),
-        ]),
+        head: [
+          showCosts
+            ? ["Operação", "Máquina", "Setor", "SAM (min)", "R$/min", "Custo"]
+            : ["Operação", "Máquina", "Setor", "SAM (min)"],
+        ],
+        body: operations.map((o) =>
+          showCosts
+            ? [
+                o.name,
+                o.machine ?? "",
+                o.responsible_role ?? "",
+                String(o.sam ?? 0),
+                fmtBRL(o.rate_per_min as number),
+                fmtBRL(o.total_cost as number),
+              ]
+            : [o.name, o.machine ?? "", o.responsible_role ?? "", String(o.sam ?? 0)],
+        ),
         styles: { fontSize: 8 },
         headStyles: { fillColor: [ar, ag, ab] },
         margin: { left: 40, right: 40 },
@@ -296,8 +313,8 @@ export function TechPackExportButton({
         doc.text(footer, 40, pageH - 24);
       }
 
-      doc.save(`tech-pack-${code}-v${version}.pdf`);
-      toast.success("Tech Pack exportado");
+      doc.save(`tech-pack-${code}-v${version}${audience === "fornecedor" ? "-fornecedor" : ""}.pdf`);
+      toast.success(`Tech Pack ${audience === "fornecedor" ? "(fornecedor)" : "(interno)"} exportado`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao gerar PDF");
     } finally {
