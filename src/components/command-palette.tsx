@@ -113,6 +113,24 @@ export function CommandPalette() {
                   </CommandGroup>
                 );
               })()}
+              <CommandGroup heading="Ir para…">
+                {[
+                  { path: "/produtos", label: "Produtos", hint: "G P" },
+                  { path: "/colecoes", label: "Coleções", hint: "G C" },
+                  { path: "/pcp-kanban", label: "Kanban do PCP", hint: "G K" },
+                  { path: "/alertas", label: "Alertas", hint: "G A" },
+                  { path: "/biblioteca", label: "Biblioteca de materiais", hint: "G B" },
+                  { path: "/ficha-tecnica", label: "Fichas técnicas", hint: "G F" },
+                  { path: "/", label: "Início", hint: "G D" },
+                ].map((n) => (
+                  <CommandItem key={n.path} onSelect={() => go(n.path)}>
+                    <span className="flex-1">{n.label}</span>
+                    <kbd className="text-[10px] border border-border rounded px-1.5 py-0.5 ml-2 text-muted-foreground">
+                      {n.hint}
+                    </kbd>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
               <CommandGroup heading="Módulos">
                 {MODULES.map((m) => {
                   const Icon = m.icon;
