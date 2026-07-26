@@ -112,6 +112,20 @@ function FornecedoresPage() {
     action: ReviewAction;
   } | null>(null);
   const [view360Id, setView360Id] = useState<string | null>(null);
+  const [pinnedOnly, setPinnedOnly] = useState(false);
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const refresh = () => setPinnedIds(new Set(getPinnedSuppliers().map((s) => s.id)));
+    refresh();
+    window.addEventListener("plm:pinned-suppliers-changed", refresh);
+    return () => window.removeEventListener("plm:pinned-suppliers-changed", refresh);
+  }, []);
+
+  function openView360(s: Pick<Supplier, "id" | "name" | "category">) {
+    pushRecentSupplier({ id: s.id, name: s.name, category: s.category });
+    setView360Id(s.id);
+  }
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
