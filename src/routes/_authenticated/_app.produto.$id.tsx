@@ -207,7 +207,7 @@ function ProductWorkspace() {
   if (isLoading) {
     return (
       <div className="p-6 space-y-4 max-w-7xl mx-auto">
-        <PlmBreadcrumb items={[{ label: "Produtos", to: "/produtos" }, { label: "Carregando…" }]} />
+        <PlmBreadcrumb items={[{ label: "Produtos", link: { to: "/produtos" } }, { label: "Carregando…" }]} />
         <div className="h-10 w-2/3 bg-muted rounded animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4">
           <div className="h-64 bg-muted rounded-xl animate-pulse" />
