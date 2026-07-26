@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-r
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Compass,
   Layers,
@@ -50,7 +50,6 @@ import {
   STAGE_LABELS,
 } from "@/lib/collection-timeline.functions";
 import { pushRecentCollection } from "@/lib/recent-collections";
-import { useEffect } from "react";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionColorPalette } from "@/components/collection-color-palette";
 import { CarryOverPanel } from "@/components/carry-over-panel";
