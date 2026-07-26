@@ -105,9 +105,9 @@ function ProductLifecycleKanban() {
   const q = search.q;
   const quick = search.f;
   const setQ = (val: string) =>
-    navigate({ search: (prev) => ({ ...prev, q: val }), replace: true });
+    navigate({ search: (prev: KanbanSearch) => ({ ...prev, q: val }), replace: true });
   const setQuick = (val: QuickFilter) =>
-    navigate({ search: (prev) => ({ ...prev, f: val }), replace: true });
+    navigate({ search: (prev: KanbanSearch) => ({ ...prev, f: val }), replace: true });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["product-lifecycle-kanban"],
