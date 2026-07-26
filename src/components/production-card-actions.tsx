@@ -8,7 +8,9 @@ import {
   MessageSquare,
   History,
   FileText,
+  CheckCircle2,
 } from "lucide-react";
+import { CloseOrderDialog } from "@/components/close-order-dialog";
 import { toast } from "sonner";
 import {
   DropdownMenu,
