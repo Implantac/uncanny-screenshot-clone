@@ -153,6 +153,16 @@ function ProductLifecycleKanban() {
                 className="h-8 w-56 pl-7 text-sm"
               />
             </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1 px-2 text-xs"
+              disabled={!filtered.length}
+              onClick={() => exportKanbanCsv(filtered)}
+              title="Exportar visão atual em CSV"
+            >
+              <Download className="h-3 w-3" /> CSV
+            </Button>
           </div>
         }
       />
