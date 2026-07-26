@@ -154,6 +154,9 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         entityKey: `inv:${i.id}`,
         entityLabel: i.name as string,
       });
+    }
+
+
 
 
     // 2. OPs atrasadas
