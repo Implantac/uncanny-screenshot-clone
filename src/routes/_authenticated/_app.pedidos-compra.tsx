@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ShoppingCart, Plus, Trash2, Pencil, Package } from "lucide-react";
+import { ShoppingCart, Plus, Trash2, Pencil, Package, PackageCheck } from "lucide-react";
+import { PurchaseReceiptDialog } from "@/components/purchase-receipt-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
