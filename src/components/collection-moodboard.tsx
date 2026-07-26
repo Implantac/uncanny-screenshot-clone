@@ -215,6 +215,15 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
           </form>
         </DialogContent>
       </Dialog>
+
+      {toProduct && (
+        <MoodboardToProductDialog
+          open={!!toProduct}
+          onOpenChange={(o) => !o && setToProduct(null)}
+          collectionId={collectionId}
+          moodItem={toProduct}
+        />
+      )}
     </div>
   );
 }
