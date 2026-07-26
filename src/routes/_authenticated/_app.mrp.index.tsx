@@ -28,7 +28,7 @@ import {
   type MrpStatus,
 } from "@/lib/mrp-planning.functions";
 import { syncMrpAlerts } from "@/lib/mrp-material.functions";
-import { MrpMaterialDrawer } from "@/components/mrp-material-drawer";
+import { MrpMaterialDrawer } from "@/components/mrp-material-drawer-lazy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
