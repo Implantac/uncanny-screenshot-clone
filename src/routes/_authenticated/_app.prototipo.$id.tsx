@@ -22,7 +22,7 @@ import {
   SECTORS,
   PrototypeAdjustmentsButton,
   type AdjustmentSector,
-} from "@/components/prototype-adjustments";
+} from "@/components/prototype-adjustments-lazy";
 import { toast } from "sonner";
 import { PrototypeApprovalGate } from "@/components/prototype-approval-gate";
 import { PrototypeGatesPanel } from "@/components/prototype-gates-panel";

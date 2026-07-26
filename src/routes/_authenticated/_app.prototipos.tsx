@@ -46,7 +46,7 @@ import {
   PrototypeAdjustmentsButton,
   SECTORS,
   type AdjustmentSector,
-} from "@/components/prototype-adjustments";
+} from "@/components/prototype-adjustments-lazy";
 import { PrototypeTimelineButton } from "@/components/prototype-timeline";
 import { DevIntelligencePanel } from "@/components/dev-intelligence-panel";
 import { ViewPresetsDropdown, type ViewPresetFilters } from "@/components/view-presets-dropdown";

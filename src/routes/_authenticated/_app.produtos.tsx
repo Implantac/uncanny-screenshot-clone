@@ -53,8 +53,8 @@ import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ProductTimeline } from "@/components/product-timeline";
 import { ProductGallery } from "@/components/product-gallery";
 import { PageHeader } from "@/components/ui/page-header";
-import { ProductDuplicateDialog } from "@/components/product-duplicate-dialog";
-import { ProductQuickCreateDialog } from "@/components/product-quick-create-dialog";
+import { ProductDuplicateDialog } from "@/components/product-duplicate-dialog-lazy";
+import { ProductQuickCreateDialog } from "@/components/product-quick-create-dialog-lazy";
 
 export const Route = createFileRoute("/_authenticated/_app/produtos")({
   validateSearch: zodValidator(
