@@ -1,19 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { AlertTriangle, Clock, Search, Sparkles } from "lucide-react";
+import { AlertTriangle, ChevronRight, Clock, Search, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 import {
   listLifecycleKanban,
   type LifecycleKanbanCard,
 } from "@/lib/product-lifecycle-kanban.functions";
-import { STEP_META, type WorkflowStep } from "@/lib/product-workflow.functions";
+import {
+  advanceProductWorkflow,
+  STEP_META,
+  type WorkflowStep,
+} from "@/lib/product-workflow.functions";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/_app/produto-kanban")({
   component: ProductLifecycleKanban,
