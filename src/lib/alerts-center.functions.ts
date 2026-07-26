@@ -31,7 +31,10 @@ export type CenterAlert = {
   why: string;
   link: string;
   ts: string;
+  entityKey?: string;
+  entityLabel?: string;
 };
+
 
 const sevWeight: Record<AlertSeverity, number> = {
   critica: 4,
@@ -148,8 +151,13 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
             : "Saldo abaixo do ponto de ressuprimento — risco de ruptura nas próximas OPs.",
         link: "/almoxarifado",
         ts: new Date().toISOString(),
+        entityKey: `inv:${i.id}`,
+        entityLabel: i.name as string,
       });
     }
+
+
+
 
     // 2. OPs atrasadas
     for (const o of overdueOps ?? []) {
@@ -169,8 +177,11 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         why: `Prazo estourou há ${daysLate} dia(s). Quanto mais tempo parada, maior o custo de atraso e quebra de SLA.`,
         link: "/pcp",
         ts: o.updated_at as string,
+        entityKey: `op:${o.id}`,
+        entityLabel: `OP ${o.code}`,
       });
     }
+
 
     // 3. OPs paradas (gargalo) — usa SLA por estágio
     for (const o of stuckOps ?? []) {
@@ -190,8 +201,11 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         why: "Lote ultrapassou o SLA do setor — possível gargalo, falta de material ou apontamento esquecido.",
         link: "/pcp-kanban",
         ts: o.stage_updated_at as string,
+        entityKey: `op:${o.id}`,
+        entityLabel: `OP ${o.code}`,
       });
     }
+
 
     // 4. Qualidade — CAPAs abertas/vencendo
     for (const c of capas ?? []) {
@@ -242,8 +256,11 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         why: "Protótipo paralisado atrasa o lançamento da coleção inteira.",
         link: "/prototipos",
         ts: p.updated_at as string,
+        entityKey: `proto:${p.id}`,
+        entityLabel: `Protótipo ${p.code}`,
       });
     }
+
 
     // 6. Marketing
     for (const m of mkt ?? []) {
@@ -271,19 +288,29 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
     return alerts;
   });
 
+export type DismissMode = "snooze_1h" | "snooze_1d" | "snooze_7d" | "resolve";
+
+const SNOOZE_MS: Record<Exclude<DismissMode, "resolve">, number> = {
+  snooze_1h: 3_600_000,
+  snooze_1d: 86_400_000,
+  snooze_7d: 7 * 86_400_000,
+};
+
 export const dismissAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { key: string; mode: "snooze" | "resolve" }) => data)
+  .inputValidator((data: { keys: string[]; mode: DismissMode }) => data)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const payload = {
+    const until =
+      data.mode === "resolve" ? null : new Date(Date.now() + SNOOZE_MS[data.mode]).toISOString();
+    const payload = data.keys.map((key) => ({
       user_id: userId,
       owner_id: userId,
-      alert_key: data.key,
+      alert_key: key,
       resolved: data.mode === "resolve",
-      dismissed_until:
-        data.mode === "snooze" ? new Date(Date.now() + 7 * 86_400_000).toISOString() : null,
-    };
+      dismissed_until: until,
+    }));
+
     const { error } = await supabase
       .from("alert_dismissals")
       .upsert(payload, { onConflict: "user_id,alert_key" });
