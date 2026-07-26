@@ -161,6 +161,51 @@ export function CommandPalette() {
                   </CommandGroup>
                 );
               })()}
+              {(() => {
+                const pinnedSuppliers = getPinnedSuppliers();
+                if (!pinnedSuppliers.length) return null;
+                return (
+                  <CommandGroup heading="Fornecedores fixados">
+                    {pinnedSuppliers.map((s) => (
+                      <CommandItem
+                        key={s.id}
+                        onSelect={() => {
+                          pushRecentSupplier({ id: s.id, name: s.name, category: s.category });
+                          go("/fornecedores");
+                        }}
+                      >
+                        <span className="flex-1">{s.name}</span>
+                        {s.category && (
+                          <span className="ml-2 text-xs text-muted-foreground">{s.category}</span>
+                        )}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                );
+              })()}
+              {(() => {
+                const pinnedIds = new Set(getPinnedSuppliers().map((s) => s.id));
+                const recentSuppliers = getRecentSuppliers().filter((s) => !pinnedIds.has(s.id));
+                if (!recentSuppliers.length) return null;
+                return (
+                  <CommandGroup heading="Fornecedores recentes">
+                    {recentSuppliers.map((s) => (
+                      <CommandItem
+                        key={s.id}
+                        onSelect={() => {
+                          pushRecentSupplier({ id: s.id, name: s.name, category: s.category });
+                          go("/fornecedores");
+                        }}
+                      >
+                        <span className="flex-1">{s.name}</span>
+                        {s.category && (
+                          <span className="ml-2 text-xs text-muted-foreground">{s.category}</span>
+                        )}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                );
+              })()}
               <CommandGroup heading="Ações rápidas">
                 <CommandItem
                   onSelect={() => {
