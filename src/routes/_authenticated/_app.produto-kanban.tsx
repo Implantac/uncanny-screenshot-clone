@@ -48,9 +48,12 @@ const SLA_DAYS: Record<WorkflowStep, number> = {
   producao: 30,
 };
 
+type QuickFilter = "all" | "blocked" | "overdue" | "pinned";
+
 function ProductLifecycleKanban() {
   const fetchKanban = useServerFn(listLifecycleKanban);
   const [q, setQ] = useState("");
+  const [quick, setQuick] = useState<QuickFilter>("all");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["product-lifecycle-kanban"],
@@ -58,27 +61,56 @@ function ProductLifecycleKanban() {
     staleTime: 30_000,
   });
 
+  const pinnedIds = useMemo<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const raw = window.localStorage.getItem("plm:pinned-products");
+      const arr = raw ? (JSON.parse(raw) as string[]) : [];
+      return new Set(arr);
+    } catch {
+      return new Set();
+    }
+  }, []);
+
   const filtered = useMemo(() => {
     if (!data) return [];
     const needle = q.trim().toLowerCase();
-    if (!needle) return data;
     return data.map((col) => ({
       ...col,
-      cards: col.cards.filter(
-        (c) =>
-          c.name.toLowerCase().includes(needle) ||
-          c.sku.toLowerCase().includes(needle) ||
-          (c.collection_name?.toLowerCase() ?? "").includes(needle),
-      ),
+      cards: col.cards.filter((c) => {
+        if (needle) {
+          const hit =
+            c.name.toLowerCase().includes(needle) ||
+            c.sku.toLowerCase().includes(needle) ||
+            (c.collection_name?.toLowerCase() ?? "").includes(needle);
+          if (!hit) return false;
+        }
+        if (quick === "blocked" && !c.blocked) return false;
+        if (quick === "overdue" && c.days_in_step <= SLA_DAYS[col.step]) return false;
+        if (quick === "pinned" && !pinnedIds.has(c.product_id)) return false;
+        return true;
+      }),
     }));
-  }, [data, q]);
+  }, [data, q, quick, pinnedIds]);
 
   const totals = useMemo(() => {
     const total = data?.reduce((sum, c) => sum + c.cards.length, 0) ?? 0;
     const blocked =
       data?.reduce((sum, c) => sum + c.cards.filter((x) => x.blocked).length, 0) ?? 0;
-    return { total, blocked };
+    const overdue =
+      data?.reduce(
+        (sum, c) => sum + c.cards.filter((x) => x.days_in_step > SLA_DAYS[c.step]).length,
+        0,
+      ) ?? 0;
+    return { total, blocked, overdue };
   }, [data]);
+
+  const chips: { key: QuickFilter; label: string; count?: number }[] = [
+    { key: "all", label: "Todos", count: totals.total },
+    { key: "blocked", label: "Bloqueados", count: totals.blocked },
+    { key: "overdue", label: "Atrasados", count: totals.overdue },
+    { key: "pinned", label: "Fixados", count: pinnedIds.size },
+  ];
 
   return (
     <div className="flex h-full flex-col">
@@ -87,13 +119,29 @@ function ProductLifecycleKanban() {
         title="Ciclo de Vida do Produto"
         description="Onde cada peça está agora — do briefing à produção."
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1">
+              {chips.map((c) => (
+                <Button
+                  key={c.key}
+                  size="sm"
+                  variant={quick === c.key ? "default" : "outline"}
+                  className="h-7 px-2 text-xs"
+                  onClick={() => setQuick(c.key)}
+                >
+                  {c.label}
+                  {typeof c.count === "number" && (
+                    <span className="ml-1 opacity-70">{c.count}</span>
+                  )}
+                </Button>
+              ))}
+            </div>
             <Badge variant="outline" className="gap-1">
-              <Sparkles className="h-3 w-3" /> {totals.total} produtos
+              <Sparkles className="h-3 w-3" /> {totals.total}
             </Badge>
             {totals.blocked > 0 && (
               <Badge variant="destructive" className="gap-1">
-                <AlertTriangle className="h-3 w-3" /> {totals.blocked} bloqueados
+                <AlertTriangle className="h-3 w-3" /> {totals.blocked}
               </Badge>
             )}
             <div className="relative">
@@ -108,6 +156,7 @@ function ProductLifecycleKanban() {
           </div>
         }
       />
+
 
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
         <div className="flex h-full min-w-max gap-3 p-4">
