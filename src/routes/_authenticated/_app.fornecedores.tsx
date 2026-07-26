@@ -24,6 +24,13 @@ import { SupplierScorecardMoversPanel } from "@/components/supplier-scorecard-pa
 import { SupplierSwapSuggestionsPanel } from "@/components/supplier-swap-suggestions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { Pin, PinOff } from "lucide-react";
+import {
+  pushRecentSupplier,
+  getPinnedSuppliers,
+  isSupplierPinned,
+  togglePinnedSupplier,
+} from "@/lib/recent-suppliers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,6 +112,20 @@ function FornecedoresPage() {
     action: ReviewAction;
   } | null>(null);
   const [view360Id, setView360Id] = useState<string | null>(null);
+  const [pinnedOnly, setPinnedOnly] = useState(false);
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const refresh = () => setPinnedIds(new Set(getPinnedSuppliers().map((s) => s.id)));
+    refresh();
+    window.addEventListener("plm:pinned-suppliers-changed", refresh);
+    return () => window.removeEventListener("plm:pinned-suppliers-changed", refresh);
+  }, []);
+
+  function openView360(s: Pick<Supplier, "id" | "name" | "category">) {
+    pushRecentSupplier({ id: s.id, name: s.name, category: s.category });
+    setView360Id(s.id);
+  }
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
@@ -412,8 +433,28 @@ function FornecedoresPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {suppliers.map((s) => (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPinnedOnly((v) => !v)}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors flex items-center gap-1.5 ${
+                pinnedOnly
+                  ? "bg-primary/15 border-primary/40 text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+              title="Mostrar apenas fixados"
+            >
+              <Pin className="size-3" /> Fixados{" "}
+              <span className="opacity-70">({pinnedIds.size})</span>
+            </button>
+            {pinnedOnly && (
+              <span className="text-xs text-muted-foreground">
+                Filtrando por fornecedores fixados
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {(pinnedOnly ? suppliers.filter((s) => pinnedIds.has(s.id)) : suppliers).map((s) => (
             <div
               key={s.id}
               className="glass rounded-xl p-5 flex flex-col gap-3 hover:border-primary/40 transition-colors"
@@ -471,7 +512,27 @@ function FornecedoresPage() {
               {s.notes && <p className="text-xs text-muted-foreground line-clamp-2">{s.notes}</p>}
               <div className="flex justify-end gap-1 pt-2 border-t border-border">
                 <button
-                  onClick={() => setView360Id(s.id)}
+                  onClick={() => {
+                    const now = togglePinnedSupplier({
+                      id: s.id,
+                      name: s.name,
+                      category: s.category,
+                    });
+                    toast.success(now ? "Fornecedor fixado" : "Desfixado");
+                  }}
+                  className={`size-7 grid place-items-center rounded hover:bg-muted ${
+                    pinnedIds.has(s.id) ? "text-primary" : "text-muted-foreground"
+                  }`}
+                  title={pinnedIds.has(s.id) ? "Desfixar fornecedor" : "Fixar fornecedor"}
+                >
+                  {pinnedIds.has(s.id) ? (
+                    <PinOff className="size-3.5" />
+                  ) : (
+                    <Pin className="size-3.5" />
+                  )}
+                </button>
+                <button
+                  onClick={() => openView360(s)}
                   className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 flex items-center gap-1"
                   title="Visão 360° do fornecedor"
                 >
@@ -505,6 +566,7 @@ function FornecedoresPage() {
               </div>
             </div>
           ))}
+          </div>
         </div>
       )}
 
