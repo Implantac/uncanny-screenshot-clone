@@ -49,6 +49,8 @@ import {
   upsertMilestone,
   STAGE_LABELS,
 } from "@/lib/collection-timeline.functions";
+import { pushRecentCollection } from "@/lib/recent-collections";
+import { useEffect } from "react";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionColorPalette } from "@/components/collection-color-palette";
 import { CarryOverPanel } from "@/components/carry-over-panel";
@@ -430,6 +432,17 @@ function Colecao360() {
   ]);
 
   const current = summary.find((s) => s.collection.id === currentId) ?? summary[0];
+
+  useEffect(() => {
+    if (current?.collection?.id) {
+      pushRecentCollection({
+        id: current.collection.id,
+        name: current.collection.name,
+        season: current.collection.season,
+        year: current.collection.year,
+      });
+    }
+  }, [current?.collection?.id, current?.collection?.name, current?.collection?.season, current?.collection?.year]);
 
   return (
     <div className="p-6 space-y-6">
