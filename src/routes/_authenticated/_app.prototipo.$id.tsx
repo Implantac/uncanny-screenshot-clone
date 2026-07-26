@@ -150,22 +150,38 @@ function PrototipoPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (isLoading) return <div className="p-6 text-muted-foreground">Carregando…</div>;
+  if (isLoading) {
+    return (
+      <div className="p-4 sm:p-6 space-y-4 max-w-6xl mx-auto">
+        <div className="h-4 w-64 bg-muted rounded animate-pulse" />
+        <div className="h-8 w-80 bg-muted rounded animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="h-32 bg-muted rounded-xl animate-pulse" />
+          <div className="h-32 bg-muted rounded-xl animate-pulse" />
+          <div className="h-32 bg-muted rounded-xl animate-pulse" />
+        </div>
+        <div className="h-64 bg-muted rounded-xl animate-pulse" />
+      </div>
+    );
+  }
   if (!proto) {
     return (
-      <div className="p-6 space-y-4">
-        <Link to="/prototipos">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="size-4 mr-1" />
-            Voltar
-          </Button>
-        </Link>
-        <div className="rounded-xl border border-border bg-card/50 p-8 text-center text-muted-foreground">
-          Protótipo não encontrado.
+      <div className="p-4 sm:p-6 space-y-4 max-w-3xl mx-auto">
+        <PlmBreadcrumb items={[{ label: "Protótipos", link: { to: "/prototipos" as const } }, { label: "Não encontrado" }]} />
+        <div className="rounded-xl border border-border bg-card/50 p-10 text-center space-y-3">
+          <AlertTriangle className="size-8 text-muted-foreground mx-auto" />
+          <p className="text-muted-foreground">Protótipo não encontrado. Pode ter sido removido ou o link está desatualizado.</p>
+          <Link to="/prototipos">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="size-4 mr-1" />
+              Voltar para protótipos
+            </Button>
+          </Link>
         </div>
       </div>
     );
   }
+
 
   const sectorLabel = proto.current_sector
     ? (SECTORS.find((s) => s.key === proto.current_sector)?.label ?? proto.current_sector)
