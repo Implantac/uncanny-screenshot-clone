@@ -9,6 +9,7 @@ import {
   Loader2,
   Package,
   Pencil,
+  Pin,
   Plus,
   Scissors,
   Search,
@@ -46,6 +47,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/status-badge";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 import { ProductPinButton } from "@/components/product-pin-button";
+import { getPinnedProducts } from "@/lib/recent-products";
 import { toast } from "sonner";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ProductTimeline } from "@/components/product-timeline";
@@ -229,15 +231,26 @@ function ProdutosPage() {
     },
   });
 
+  const [pinnedOnly, setPinnedOnly] = useState(false);
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const refresh = () => setPinnedIds(new Set(getPinnedProducts().map((p) => p.id)));
+    refresh();
+    window.addEventListener("plm:pinned-changed", refresh);
+    return () => window.removeEventListener("plm:pinned-changed", refresh);
+  }, []);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return products;
-    return products.filter((product) =>
+    let list = products;
+    if (pinnedOnly) list = list.filter((p) => pinnedIds.has(p.id));
+    if (!term) return list;
+    return list.filter((product) =>
       [product.name, product.sku, product.category || "", STATUS_LABELS[product.status]].some(
         (value) => value.toLowerCase().includes(term),
       ),
     );
-  }, [products, search]);
+  }, [products, search, pinnedOnly, pinnedIds]);
 
   useEffect(() => {
     if (!filtered.length) {
@@ -373,6 +386,20 @@ function ProdutosPage() {
                 placeholder="Buscar por SKU, nome ou categoria"
                 className="pl-9"
               />
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setPinnedOnly((v) => !v)}
+                aria-pressed={pinnedOnly}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors ${pinnedOnly ? "border-primary/40 bg-primary/10 text-primary" : "border-border hover:bg-muted/40 text-muted-foreground"}`}
+              >
+                <Pin className="size-3" />
+                Fixados
+                {pinnedIds.size > 0 && (
+                  <span className="ml-0.5 text-[10px] opacity-70">({pinnedIds.size})</span>
+                )}
+              </button>
             </div>
             <div className="space-y-2">
               {filtered.map((product) => {
