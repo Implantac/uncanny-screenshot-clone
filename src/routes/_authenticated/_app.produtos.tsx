@@ -170,6 +170,7 @@ function ProdutosPage() {
   useRealtime("products", ["products", "collections-ref"]);
 
   const [open, setOpen] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [duplicating, setDuplicating] = useState<Product | null>(null);
   const [prefill, setPrefill] = useState<Prefill | null>(null);
