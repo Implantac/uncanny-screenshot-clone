@@ -49,6 +49,7 @@ import { ProductWorkflowPanel } from "@/components/product-workflow-panel";
 import { ProductLifecycleCopilotPanel } from "@/components/product-lifecycle-copilot-panel";
 import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
 import { ProductReadinessCard } from "@/components/product-readiness-card";
+import { ProductNextStepBanner } from "@/components/product-next-step-banner";
 import { ProductPrintArtworksPanel } from "@/components/product-print-artworks-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
@@ -258,7 +259,10 @@ function ProductWorkspace() {
 
       <ProductWorkflowStepper productId={product.id} />
 
+      <ProductNextStepBanner productId={product.id} />
+
       <Tabs defaultValue="overview" className="space-y-4">
+
         <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/40 p-1">
           <TabTrig value="overview" icon={<Sparkles className="size-3.5" />}>Overview</TabTrig>
           <TabTrig value="ficha" icon={<FileText className="size-3.5" />}>Ficha técnica</TabTrig>
