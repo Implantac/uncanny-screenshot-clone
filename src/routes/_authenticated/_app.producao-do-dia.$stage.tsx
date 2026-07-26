@@ -5,6 +5,8 @@ import { listDayProduction } from "@/lib/pcp-ops.functions";
 import { AlertTriangle, Clock, Factory, Truck } from "lucide-react";
 import { QuickPassButton } from "@/components/quick-pass-lazy";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
+
 
 export const Route = createFileRoute("/_authenticated/_app/producao-do-dia/$stage")({
   head: ({ params }) => ({
