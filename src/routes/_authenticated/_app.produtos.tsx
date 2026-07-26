@@ -45,6 +45,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/status-badge";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";
+import { ProductPinButton } from "@/components/product-pin-button";
 import { toast } from "sonner";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ProductTimeline } from "@/components/product-timeline";
