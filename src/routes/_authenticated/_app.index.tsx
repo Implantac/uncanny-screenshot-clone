@@ -474,6 +474,54 @@ function CommandCenter() {
         </div>
       </div>
 
+      {nextAction && (
+        (() => {
+          const Icon = nextAction.icon;
+          const toneClass =
+            nextAction.tone === "danger"
+              ? "border-destructive/40 bg-destructive/5"
+              : nextAction.tone === "warning"
+              ? "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30"
+              : nextAction.tone === "success"
+              ? "border-emerald-400/40 bg-emerald-50 dark:bg-emerald-950/30"
+              : "border-primary/30 bg-primary/5";
+          const iconClass =
+            nextAction.tone === "danger"
+              ? "text-destructive"
+              : nextAction.tone === "warning"
+              ? "text-amber-600 dark:text-amber-300"
+              : nextAction.tone === "success"
+              ? "text-emerald-600 dark:text-emerald-300"
+              : "text-primary";
+          return (
+            <div
+              className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 ${toneClass}`}
+            >
+              <div className="flex items-start gap-3 min-w-0">
+                <div className={`mt-0.5 shrink-0 ${iconClass}`}>
+                  <Icon className="size-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground mb-0.5">
+                    Próxima ação
+                  </div>
+                  <div className="text-sm sm:text-base font-semibold leading-snug">
+                    {nextAction.title}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{nextAction.sub}</div>
+                </div>
+              </div>
+              <Link
+                to={nextAction.to}
+                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 whitespace-nowrap"
+              >
+                {nextAction.cta} <ArrowUpRight className="size-3.5" />
+              </Link>
+            </div>
+          );
+        })()
+      )}
+
       <MorningBriefingPanel />
       <RecentProductsStrip />
       <RecentCollectionsStrip />
