@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Smartphone } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
@@ -1040,6 +1041,15 @@ function PcpKanban() {
                                   o.quantity - Math.floor((o.quantity * o.progress) / 100),
                                 )}
                               />
+                              <Link
+                                to="/apontar/$id"
+                                params={{ id: o.id }}
+                                onClick={(e) => e.stopPropagation()}
+                                title="Apontar no mobile"
+                                className="text-[10px] inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-border hover:bg-muted"
+                              >
+                                <Smartphone className="size-3" />
+                              </Link>
                               <button
                                 onClick={() => move(o.id, nextStage.key)}
                                 className="text-[10px] inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary text-primary-foreground hover:opacity-90"
