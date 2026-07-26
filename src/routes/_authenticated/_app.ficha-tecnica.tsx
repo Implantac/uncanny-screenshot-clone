@@ -349,13 +349,37 @@ function FichaTecnicaPage() {
       {isLoading ? (
         <div className="text-muted-foreground">Carregando…</div>
       ) : sheets.length === 0 ? (
-        <div className="glass rounded-xl p-12 text-center">
-          <ClipboardList className="size-10 text-primary mx-auto mb-3" />
-          <h2 className="font-semibold mb-1">Nenhuma ficha técnica cadastrada</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Crie a primeira ficha para centralizar materiais, operações e custos.
-          </p>
-          <Button onClick={openCreate}>Criar ficha</Button>
+        <div className="glass rounded-xl p-8 md:p-12">
+          <div className="max-w-2xl mx-auto text-center">
+            <ClipboardList className="size-10 text-primary mx-auto mb-3" />
+            <h2 className="text-lg font-semibold mb-1">Comece sua primeira ficha técnica</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              A ficha é o coração do produto: reúne materiais (BOM), operações (BOP), medidas e custos.
+              Assim que criada, o sistema calcula automaticamente custo total e sinaliza gates de OP.
+            </p>
+            <div className="grid md:grid-cols-3 gap-3 text-left mb-6">
+              {[
+                { n: "1", t: "Vincule ao produto", d: "Selecione o SKU. Se ainda não existe, use Quick Create." },
+                { n: "2", t: "Preencha BOM + BOP", d: "Materiais e operações alimentam o custo automaticamente." },
+                { n: "3", t: "Aprove e libere OP", d: "Ficha aprovada + piloto liberam a OP para o PCP." },
+              ].map((s) => (
+                <div key={s.n} className="rounded-xl border border-border bg-background/30 p-4">
+                  <div className="size-6 rounded-full bg-primary/15 text-primary text-xs font-semibold flex items-center justify-center mb-2">{s.n}</div>
+                  <div className="text-sm font-medium mb-1">{s.t}</div>
+                  <div className="text-xs text-muted-foreground leading-5">{s.d}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              <Button onClick={openCreate}>Criar ficha técnica</Button>
+              <Button variant="outline" asChild>
+                <a href="/produtos">Ir para produtos</a>
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              💡 Dica: você também pode criar a ficha direto pelo Product Workspace, clicando em "Próximo passo" no produto.
+            </p>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-4">
