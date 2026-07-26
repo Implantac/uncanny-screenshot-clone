@@ -477,6 +477,30 @@ function Colecao360() {
     return () => window.removeEventListener("keydown", handler);
   }, [current?.collection?.id, current?.collection?.name, current?.collection?.season, current?.collection?.year]);
 
+  // Wave 45 — Teclas [ / ] navegam entre coleções recentes
+  useEffect(() => {
+    if (!current?.collection?.id) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "[" && e.key !== "]") return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t?.isContentEditable) return;
+      const recents = getRecentCollections();
+      if (recents.length < 2) return;
+      const idx = recents.findIndex((r) => r.id === current.collection.id);
+      if (idx === -1) return;
+      const nextIdx = e.key === "]" ? (idx + 1) % recents.length : (idx - 1 + recents.length) % recents.length;
+      const target = recents[nextIdx];
+      if (!target || target.id === current.collection.id) return;
+      e.preventDefault();
+      navigate({ to: "/colecao-360/$id", params: { id: target.id } });
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [current?.collection?.id, navigate]);
+
+
   return (
     <div className="p-6 space-y-6">
       <header className="flex items-start justify-between gap-3 flex-wrap">
