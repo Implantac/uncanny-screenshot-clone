@@ -141,9 +141,9 @@ function Approvals() {
               <CardDescription>{g.title}</CardDescription>
               <CardTitle className="text-2xl flex items-center gap-2">
                 {g.items.length === 0 ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  <CheckCircle2 className="h-5 w-5 text-success" />
                 ) : (
-                  <Clock className="h-5 w-5 text-orange-600" />
+                  <Clock className="h-5 w-5 text-warning" />
                 )}
                 {g.items.length}
               </CardTitle>
@@ -185,7 +185,7 @@ function Approvals() {
                     </Link>
                   ))}
                   {g.items.length === 0 && (
-                    <p className="text-sm text-green-600">✓ Nada pendente nesse gate.</p>
+                    <p className="text-sm text-success">✓ Nada pendente nesse gate.</p>
                   )}
                 </div>
               </div>

@@ -154,7 +154,7 @@ function ClosedLoop() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>NPS médio</CardDescription>
-            <CardTitle className="text-2xl text-green-600">{npsAvg}</CardTitle>
+            <CardTitle className="text-2xl text-success">{npsAvg}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
@@ -166,13 +166,13 @@ function ClosedLoop() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Produtos a repetir</CardDescription>
-            <CardTitle className="text-2xl text-green-600">{data?.repetir.length ?? 0}</CardTitle>
+            <CardTitle className="text-2xl text-success">{data?.repetir.length ?? 0}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Produtos a cortar</CardDescription>
-            <CardTitle className="text-2xl text-red-600">{data?.cortar.length ?? 0}</CardTitle>
+            <CardTitle className="text-2xl text-destructive">{data?.cortar.length ?? 0}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -191,7 +191,7 @@ function ClosedLoop() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <ReplanColumn
                 title="Repetir"
-                icon={<Repeat className="h-4 w-4 text-green-600" />}
+                icon={<Repeat className="h-4 w-4 text-success" />}
                 items={data?.repetir ?? []}
                 tone="green"
               />
@@ -203,7 +203,7 @@ function ClosedLoop() {
               />
               <ReplanColumn
                 title="Cortar"
-                icon={<Scissors className="h-4 w-4 text-red-600" />}
+                icon={<Scissors className="h-4 w-4 text-destructive" />}
                 items={data?.cortar ?? []}
                 tone="red"
               />
@@ -296,7 +296,7 @@ function ClosedLoop() {
                         </td>
                         <td className="text-right">
                           <span className="inline-flex items-center gap-1">
-                            <Star className="h-3 w-3 text-yellow-500" />
+                            <Star className="h-3 w-3 text-warning" />
                             {r.rating.toFixed(1)}
                           </span>
                         </td>
@@ -305,10 +305,10 @@ function ClosedLoop() {
                           <span
                             className={
                               r.nps >= 50
-                                ? "text-green-600"
+                                ? "text-success"
                                 : r.nps >= 20
                                   ? "text-amber-600"
-                                  : "text-red-600"
+                                  : "text-destructive"
                             }
                           >
                             {r.nps}
@@ -318,10 +318,10 @@ function ClosedLoop() {
                           <span
                             className={
                               r.returnRate < 5
-                                ? "text-green-600"
+                                ? "text-success"
                                 : r.returnRate < 10
                                   ? "text-amber-600"
-                                  : "text-red-600"
+                                  : "text-destructive"
                             }
                           >
                             <RotateCcw className="inline h-3 w-3 mr-1" />
@@ -357,7 +357,7 @@ function ReplanColumn({
       ? "border-green-500/30"
       : tone === "amber"
         ? "border-amber-500/30"
-        : "border-red-500/30";
+        : "border-destructive/30";
   return (
     <Card className={`border-2 ${ring}`}>
       <CardHeader className="pb-3">
