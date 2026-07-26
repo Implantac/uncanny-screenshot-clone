@@ -118,16 +118,23 @@ function ProductLifecycleKanban() {
   const navigate = useNavigate({ from: Route.fullPath });
   const q = search.q;
   const quick = search.f;
+  const scope = search.scope;
   const setQ = (val: string) =>
     navigate({ search: (prev: KanbanSearch) => ({ ...prev, q: val }), replace: true });
   const setQuick = (val: QuickFilter) =>
     navigate({ search: (prev: KanbanSearch) => ({ ...prev, f: val }), replace: true });
+  const setScope = (val: Scope) =>
+    navigate({ search: (prev: KanbanSearch) => ({ ...prev, scope: val }), replace: true });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["product-lifecycle-kanban"],
-    queryFn: () => fetchKanban(),
+    queryKey: ["product-lifecycle-kanban", scope],
+    queryFn: () => fetchKanban({ data: { scope } }),
     staleTime: 30_000,
   });
+
+  const columns = data?.columns ?? [];
+  const mineCount = data?.mine_count ?? 0;
+  const allCount = data?.all_count ?? 0;
 
   const pinnedIds = useMemo<Set<string>>(() => {
     if (typeof window === "undefined") return new Set();
@@ -141,9 +148,8 @@ function ProductLifecycleKanban() {
   }, []);
 
   const filtered = useMemo(() => {
-    if (!data) return [];
     const needle = q.trim().toLowerCase();
-    return data.map((col) => ({
+    return columns.map((col) => ({
       ...col,
       cards: col.cards.filter((c) => {
         if (needle) {
@@ -159,19 +165,22 @@ function ProductLifecycleKanban() {
         return true;
       }),
     }));
-  }, [data, q, quick, pinnedIds]);
+  }, [columns, q, quick, pinnedIds]);
 
   const totals = useMemo(() => {
-    const total = data?.reduce((sum, c) => sum + c.cards.length, 0) ?? 0;
-    const blocked =
-      data?.reduce((sum, c) => sum + c.cards.filter((x) => x.blocked).length, 0) ?? 0;
-    const overdue =
-      data?.reduce(
-        (sum, c) => sum + c.cards.filter((x) => x.days_in_step > SLA_DAYS[c.step]).length,
-        0,
-      ) ?? 0;
+    const total = columns.reduce((sum, c) => sum + c.cards.length, 0);
+    const blocked = columns.reduce(
+      (sum, c) => sum + c.cards.filter((x) => x.blocked).length,
+      0,
+    );
+    const overdue = columns.reduce(
+      (sum, c) => sum + c.cards.filter((x) => x.days_in_step > SLA_DAYS[c.step]).length,
+      0,
+    );
     return { total, blocked, overdue };
-  }, [data]);
+  }, [columns]);
+
+  const showOwnershipBanner = !isLoading && scope === "mine" && mineCount === 0 && allCount > 0;
 
   const chips: { key: QuickFilter; label: string; count?: number }[] = [
     { key: "all", label: "Todos", count: totals.total },
