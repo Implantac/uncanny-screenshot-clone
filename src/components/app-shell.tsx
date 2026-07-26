@@ -8,7 +8,9 @@ import {
   ChevronRight,
   PanelLeftClose,
   PanelLeftOpen,
+  Keyboard,
 } from "lucide-react";
+
 import logoAsset from "@/assets/logo.png.asset.json";
 import { CommandPalette } from "./command-palette";
 import { NotificationsBell } from "./notifications-bell";
