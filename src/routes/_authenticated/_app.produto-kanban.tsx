@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { AlertTriangle, Clock, Layers, Search, Sparkles } from "lucide-react";
+import { AlertTriangle, Clock, Search, Sparkles } from "lucide-react";
 
 import { PageHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
