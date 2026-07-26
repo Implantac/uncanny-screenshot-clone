@@ -66,9 +66,9 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { MarketingIntelligence } from "@/components/marketing-intelligence";
-import { ProductMarketingRoiPanel } from "@/components/product-marketing-roi-panel";
-import { MarketingBriefStudio } from "@/components/marketing-brief-studio";
+import { MarketingIntelligence } from "@/components/marketing-intelligence-lazy";
+import { ProductMarketingRoiPanel } from "@/components/product-marketing-roi-panel-lazy";
+import { MarketingBriefStudio } from "@/components/marketing-brief-studio-lazy";
 import { LaunchingWeekPanel } from "@/components/launching-week-panel";
 
 export const Route = createFileRoute("/_authenticated/_app/marketing")({

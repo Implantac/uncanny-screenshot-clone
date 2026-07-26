@@ -58,7 +58,7 @@ import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionIntelligencePanel } from "@/components/collection-intelligence-panel";
 import { CollectionCapaRiskPanel } from "@/components/collection-capa-risk-panel";
 import { CarryOverPanel } from "@/components/carry-over-panel";
-import { AssortmentPanel } from "@/components/assortment-panel";
+import { AssortmentPanel } from "@/components/assortment-panel-lazy";
 import { LifecyclePanel } from "@/components/lifecycle-panel";
 import type { CollectionState } from "@/lib/lifecycle.functions";
 import { CollectionCompareDialog } from "@/components/collection-compare-dialog";
