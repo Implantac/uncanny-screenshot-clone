@@ -199,6 +199,15 @@ function POPage() {
                   </td>
                   <td className="px-3 py-2 text-right">
                     <div className="flex justify-end gap-1">
+                      {(p.status === "aprovado" || p.status === "cotando") && (
+                        <button
+                          onClick={() => setReceiptFor(p)}
+                          title="Registrar recebimento"
+                          className="size-7 grid place-items-center rounded hover:bg-emerald-500/20 text-emerald-500"
+                        >
+                          <PackageCheck className="size-3.5" />
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           setEditing(p);
