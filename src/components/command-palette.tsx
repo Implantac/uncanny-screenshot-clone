@@ -13,7 +13,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { MODULES } from "@/lib/modules";
 import { getRecentProducts, getPinnedProducts } from "@/lib/recent-products";
-import { getRecentCollections } from "@/lib/recent-collections";
+import { getRecentCollections, getPinnedCollections } from "@/lib/recent-collections";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -115,7 +115,28 @@ export function CommandPalette() {
                 );
               })()}
               {(() => {
-                const recentCollections = getRecentCollections();
+                const pinnedCollections = getPinnedCollections();
+                if (!pinnedCollections.length) return null;
+                return (
+                  <CommandGroup heading="Coleções fixadas">
+                    {pinnedCollections.map((c) => (
+                      <CommandItem key={c.id} onSelect={() => go(`/colecao-360/${c.id}`)}>
+                        <span className="flex-1">{c.name}</span>
+                        {(c.season || c.year) && (
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {c.season} {c.year}
+                          </span>
+                        )}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                );
+              })()}
+              {(() => {
+                const pinnedIds = new Set(getPinnedCollections().map((c) => c.id));
+                const recentCollections = getRecentCollections().filter(
+                  (c) => !pinnedIds.has(c.id),
+                );
                 if (!recentCollections.length) return null;
                 return (
                   <CommandGroup heading="Coleções recentes">
