@@ -23,6 +23,13 @@ import { cn } from "@/lib/utils";
 
 
 export const Route = createFileRoute("/_authenticated/_app/produto-kanban")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    q: typeof s.q === "string" ? s.q : "",
+    f:
+      s.f === "blocked" || s.f === "overdue" || s.f === "pinned" || s.f === "all"
+        ? (s.f as QuickFilter)
+        : "all",
+  }),
   component: ProductLifecycleKanban,
   head: () => ({
     meta: [
