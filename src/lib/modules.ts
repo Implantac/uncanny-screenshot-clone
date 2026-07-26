@@ -1077,7 +1077,17 @@ export const MODULES: ModuleDef[] = [
     icon: Users,
     group: "Plataforma",
   },
+  {
+    slug: "onboarding",
+    path: "/onboarding",
+    title: "Onboarding — Importar dados",
+    short: "Importar CSV",
+    description: "Traga fornecedores, materiais e produtos de planilhas em minutos.",
+    icon: UploadCloud,
+    group: "Plataforma",
+  },
 ];
+
 
 export const MODULE_GROUPS: ModuleGroup[] = [
   "Operação",
