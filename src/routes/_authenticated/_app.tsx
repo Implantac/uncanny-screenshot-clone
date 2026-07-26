@@ -4,6 +4,7 @@ import { GlobalPushListener } from "@/components/global-push-listener";
 import { GlobalQuickCreate } from "@/components/global-quick-create";
 import { GlobalBreadcrumb } from "@/components/global-breadcrumb";
 import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help";
+import { KeyboardQuickNav } from "@/components/keyboard-quick-nav";
 import { MODULES, moduleAllowed, moduleSector, SECTOR_LABEL } from "@/lib/modules";
 import { useSectors } from "@/hooks/use-sectors";
 import { Lock } from "lucide-react";
@@ -18,6 +19,7 @@ function AppLayout() {
       <GlobalPushListener />
       <GlobalQuickCreate />
       <KeyboardShortcutsHelp />
+      <KeyboardQuickNav />
 
       <SectorGuard>
         <GlobalBreadcrumb />
