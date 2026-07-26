@@ -57,8 +57,10 @@ import {
   FolderOpen,
   Library,
   Palette,
+  UploadCloud,
   type LucideIcon,
 } from "lucide-react";
+
 
 export type ModuleGroup =
   | "Operação"
