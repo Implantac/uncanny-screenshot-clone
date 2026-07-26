@@ -319,7 +319,7 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
 
         <div className="space-y-4">
           {artwork.artwork_url && (
-            <img src={artwork.artwork_url} alt={artwork.name} className="w-full max-h-64 object-contain rounded border" />
+            <img src={artwork.artwork_url} alt={artwork.name} loading="lazy" decoding="async" className="w-full max-h-64 object-contain rounded border" />
           )}
 
           <div className="grid grid-cols-2 gap-2 text-sm">
