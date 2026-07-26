@@ -292,12 +292,19 @@ function AlertsCenterPage() {
                     key={g.entityKey}
                     className={`border border-border border-l-4 rounded-md ${SEV_STYLE[sev]}`}
                   >
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() =>
                         setExpanded((e) => ({ ...e, [g.entityKey]: !isOpen }))
                       }
-                      className="w-full flex items-center gap-2 p-3 text-left hover:bg-background/40"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setExpanded((s) => ({ ...s, [g.entityKey]: !isOpen }));
+                        }
+                      }}
+                      className="w-full flex items-center gap-2 p-3 text-left hover:bg-background/40 cursor-pointer"
                     >
                       {isOpen ? (
                         <ChevronDown className="size-4 text-muted-foreground" />
@@ -322,7 +329,7 @@ function AlertsCenterPage() {
                       >
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <span className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted inline-flex items-center gap-1">
+                            <span className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted inline-flex items-center gap-1 cursor-pointer">
                               <BellOff className="size-3" /> Adiar grupo
                             </span>
                           </DropdownMenuTrigger>
@@ -351,7 +358,7 @@ function AlertsCenterPage() {
                           <Check className="size-3.5 text-success" />
                         </button>
                       </div>
-                    </button>
+                    </div>
                     {isOpen && (
                       <div className="p-3 pt-0 space-y-2 border-t border-border/60">
                         {g.items.map((a) => renderCard(a, true))}
