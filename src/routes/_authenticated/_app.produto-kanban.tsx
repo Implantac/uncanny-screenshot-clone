@@ -23,7 +23,8 @@ import { cn } from "@/lib/utils";
 
 
 type QuickFilter = "all" | "blocked" | "overdue" | "pinned";
-type KanbanSearch = { q: string; f: QuickFilter };
+type Scope = "mine" | "all";
+type KanbanSearch = { q: string; f: QuickFilter; scope: Scope };
 
 export const Route = createFileRoute("/_authenticated/_app/produto-kanban")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/_authenticated/_app/produto-kanban")({
       s.f === "blocked" || s.f === "overdue" || s.f === "pinned" || s.f === "all"
         ? (s.f as QuickFilter)
         : "all",
+    scope: s.scope === "all" ? "all" : "mine",
   }),
   component: ProductLifecycleKanban,
   head: () => ({
@@ -116,16 +118,23 @@ function ProductLifecycleKanban() {
   const navigate = useNavigate({ from: Route.fullPath });
   const q = search.q;
   const quick = search.f;
+  const scope = search.scope;
   const setQ = (val: string) =>
     navigate({ search: (prev: KanbanSearch) => ({ ...prev, q: val }), replace: true });
   const setQuick = (val: QuickFilter) =>
     navigate({ search: (prev: KanbanSearch) => ({ ...prev, f: val }), replace: true });
+  const setScope = (val: Scope) =>
+    navigate({ search: (prev: KanbanSearch) => ({ ...prev, scope: val }), replace: true });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["product-lifecycle-kanban"],
-    queryFn: () => fetchKanban(),
+    queryKey: ["product-lifecycle-kanban", scope],
+    queryFn: () => fetchKanban({ data: { scope } }),
     staleTime: 30_000,
   });
+
+  const columns = data?.columns ?? [];
+  const mineCount = data?.mine_count ?? 0;
+  const allCount = data?.all_count ?? 0;
 
   const pinnedIds = useMemo<Set<string>>(() => {
     if (typeof window === "undefined") return new Set();
@@ -139,9 +148,8 @@ function ProductLifecycleKanban() {
   }, []);
 
   const filtered = useMemo(() => {
-    if (!data) return [];
     const needle = q.trim().toLowerCase();
-    return data.map((col) => ({
+    return columns.map((col) => ({
       ...col,
       cards: col.cards.filter((c) => {
         if (needle) {
@@ -157,19 +165,22 @@ function ProductLifecycleKanban() {
         return true;
       }),
     }));
-  }, [data, q, quick, pinnedIds]);
+  }, [columns, q, quick, pinnedIds]);
 
   const totals = useMemo(() => {
-    const total = data?.reduce((sum, c) => sum + c.cards.length, 0) ?? 0;
-    const blocked =
-      data?.reduce((sum, c) => sum + c.cards.filter((x) => x.blocked).length, 0) ?? 0;
-    const overdue =
-      data?.reduce(
-        (sum, c) => sum + c.cards.filter((x) => x.days_in_step > SLA_DAYS[c.step]).length,
-        0,
-      ) ?? 0;
+    const total = columns.reduce((sum, c) => sum + c.cards.length, 0);
+    const blocked = columns.reduce(
+      (sum, c) => sum + c.cards.filter((x) => x.blocked).length,
+      0,
+    );
+    const overdue = columns.reduce(
+      (sum, c) => sum + c.cards.filter((x) => x.days_in_step > SLA_DAYS[c.step]).length,
+      0,
+    );
     return { total, blocked, overdue };
-  }, [data]);
+  }, [columns]);
+
+  const showOwnershipBanner = !isLoading && scope === "mine" && mineCount === 0 && allCount > 0;
 
   const chips: { key: QuickFilter; label: string; count?: number }[] = [
     { key: "all", label: "Todos", count: totals.total },
@@ -246,6 +257,45 @@ function ProductLifecycleKanban() {
           </div>
         }
       />
+
+      {showOwnershipBanner && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-amber-50 px-4 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>
+              <div className="font-medium">
+                Você ainda não é dono de nenhum produto neste workspace.
+              </div>
+              <div className="text-xs opacity-80">
+                Existem <strong>{allCount.toLocaleString("pt-BR")}</strong> produtos criados por
+                outras pessoas da empresa. Veja todos para acompanhar o ciclo de vida completo.
+              </div>
+            </div>
+          </div>
+          <Button size="sm" variant="default" onClick={() => setScope("all")}>
+            Ver todos do workspace
+          </Button>
+        </div>
+      )}
+
+      {scope === "all" && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/40 px-4 py-1.5 text-xs text-muted-foreground">
+          <span>
+            Mostrando <strong>{allCount.toLocaleString("pt-BR")}</strong> produtos de todo o
+            workspace (você é dono de {mineCount.toLocaleString("pt-BR")}).
+          </span>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 px-2 text-xs"
+            onClick={() => setScope("mine")}
+          >
+            Ver só os meus
+          </Button>
+        </div>
+      )}
+
+
 
 
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
