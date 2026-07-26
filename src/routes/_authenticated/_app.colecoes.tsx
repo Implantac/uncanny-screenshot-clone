@@ -24,7 +24,9 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
+import { Pin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getPinnedCollections } from "@/lib/recent-collections";
 import { useAuth } from "@/hooks/use-auth";
 import { useFabNewAction } from "@/components/contextual-fab";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -281,6 +283,14 @@ function ColecoesPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
   const [defaultParentId, setDefaultParentId] = useState<string | null>(null);
+  const [pinnedOnly, setPinnedOnly] = useState(false);
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const refresh = () => setPinnedIds(new Set(getPinnedCollections().map((c) => c.id)));
+    refresh();
+    window.addEventListener("plm:pinned-collections-changed", refresh);
+    return () => window.removeEventListener("plm:pinned-collections-changed", refresh);
+  }, []);
 
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["collections"],
@@ -613,6 +623,7 @@ function ColecoesPage() {
   const filteredCollections = useMemo(() => {
     const term = q.trim().toLowerCase();
     const list = collections.filter((c) => {
+      if (pinnedOnly && !pinnedIds.has(c.id)) return false;
       if (statusFilter !== "all" && c.status !== statusFilter) return false;
       if (seasonFilter !== "all" && c.season !== seasonFilter) return false;
       if (!term) return true;
@@ -643,12 +654,12 @@ function ColecoesPage() {
       }
     });
     return sorted;
-  }, [collections, q, statusFilter, seasonFilter, sortBy]);
+  }, [collections, q, statusFilter, seasonFilter, sortBy, pinnedOnly, pinnedIds]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCollections.length / pageSize));
   useEffect(() => {
     setPage(1);
-  }, [q, statusFilter, seasonFilter, sortBy, setPage]);
+  }, [q, statusFilter, seasonFilter, sortBy, pinnedOnly, setPage]);
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages, setPage]);
@@ -904,7 +915,19 @@ function ColecoesPage() {
               </SelectContent>
             </Select>
 
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setPinnedOnly((v) => !v)}
+                aria-pressed={pinnedOnly}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs transition-colors ${pinnedOnly ? "border-primary/40 bg-primary/10 text-primary" : "border-border hover:bg-muted/40 text-muted-foreground"}`}
+              >
+                <Pin className="size-3" />
+                Fixadas
+                {pinnedIds.size > 0 && (
+                  <span className="ml-0.5 text-[10px] opacity-70">({pinnedIds.size})</span>
+                )}
+              </button>
               <ViewPresetsDropdown
                 module="colecoes"
                 current={{ q, status: statusFilter, season: seasonFilter, sort: sortBy }}
