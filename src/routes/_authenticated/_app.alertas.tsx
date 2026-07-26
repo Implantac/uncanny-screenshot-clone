@@ -20,11 +20,13 @@ import { useState, useMemo } from "react";
 import {
   getAlertsCenter,
   dismissAlert,
+  dispatchAlertPushes,
   type AlertSeverity,
   type AlertCategory,
   type CenterAlert,
   type DismissMode,
 } from "@/lib/alerts-center.functions";
+
 import { PageHeader } from "@/components/ui/page-header";
 import {
   DropdownMenu,
