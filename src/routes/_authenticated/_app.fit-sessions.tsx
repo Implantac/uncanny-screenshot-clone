@@ -174,6 +174,25 @@ function Page() {
     },
   });
 
+  const criticalOpen = useMemo(
+    () => (comments.data ?? []).filter((c) => c.severity === "critico" && !c.resolved).length,
+    [comments.data],
+  );
+  const ajustesOpen = useMemo(
+    () => (comments.data ?? []).filter((c) => c.severity === "ajuste" && !c.resolved).length,
+    [comments.data],
+  );
+
+  const handleStatusChange = (v: string) => {
+    if (v === "aprovada" && criticalOpen > 0) {
+      toast.error(
+        `Não é possível aprovar: ${criticalOpen} apontamento(s) crítico(s) aberto(s). Resolva ou reclassifique antes.`,
+      );
+      return;
+    }
+    updateStatus.mutate(v);
+  };
+
   const photos = useMemo(
     () => (comments.data ?? []).filter((c) => !!c.image_url).map((c) => c.image_url!),
     [comments.data],
