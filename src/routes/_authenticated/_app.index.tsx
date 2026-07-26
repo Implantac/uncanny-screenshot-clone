@@ -405,6 +405,7 @@ function CommandCenter() {
       </div>
 
       <MorningBriefingPanel />
+      <RecentProductsStrip />
       <ExecutiveKpisPanel />
 
 
