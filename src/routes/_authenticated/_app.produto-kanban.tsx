@@ -335,8 +335,8 @@ function LifecycleColumn({
 
       <div className="flex-1 space-y-2 overflow-y-auto p-2">
         {cards.length === 0 && (
-          <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">
-            Nenhum produto nesta fase.
+          <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground leading-relaxed">
+            {EMPTY_HINTS[step]}
           </div>
         )}
         {cards.map((card) => (
