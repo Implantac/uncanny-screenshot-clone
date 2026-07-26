@@ -15,7 +15,7 @@ import { QualityParetoPanel } from "@/components/quality-pareto-panel";
 import { SupplierDefectRcaPanel } from "@/components/supplier-defect-rca-panel";
 import { QualityDevBridgePanel } from "@/components/quality-dev-bridge-panel";
 import { QualityCollectionsBridgePanel } from "@/components/quality-collections-bridge-panel";
-import { MaterialSourcingRiskPanel } from "@/components/material-sourcing-risk-panel";
+import { MaterialSourcingRiskPanel } from "@/components/material-sourcing-risk-panel-lazy";
 import { QualityMarketingBridgePanel } from "@/components/quality-marketing-bridge-panel";
 import { CapaPanel } from "@/components/capa-panel-lazy";
 import { CapaEffectivenessPanel } from "@/components/capa-effectiveness-panel";
