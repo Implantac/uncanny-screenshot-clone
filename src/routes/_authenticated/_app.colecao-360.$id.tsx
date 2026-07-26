@@ -54,6 +54,7 @@ import {
   pushRecentCollection,
   isCollectionPinned,
   togglePinnedCollection,
+  getRecentCollections,
 } from "@/lib/recent-collections";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionColorPalette } from "@/components/collection-color-palette";
