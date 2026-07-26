@@ -12,6 +12,9 @@ import {
   BellOff,
   CheckCircle2,
   Inbox,
+  ChevronDown,
+  ChevronRight,
+  Layers,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import {
@@ -20,8 +23,15 @@ import {
   type AlertSeverity,
   type AlertCategory,
   type CenterAlert,
+  type DismissMode,
 } from "@/lib/alerts-center.functions";
 import { PageHeader } from "@/components/ui/page-header";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_authenticated/_app/alertas")({
   component: AlertsCenterPage,
@@ -69,6 +79,12 @@ const CAT_ICON: Record<AlertCategory, React.ComponentType<{ className?: string }
   marketing: Megaphone,
 };
 
+const SNOOZE_OPTIONS: { mode: DismissMode; label: string }[] = [
+  { mode: "snooze_1h", label: "Adiar 1 hora" },
+  { mode: "snooze_1d", label: "Adiar 1 dia" },
+  { mode: "snooze_7d", label: "Adiar 7 dias" },
+];
+
 function AlertsCenterPage() {
   const qc = useQueryClient();
   const fetchAlerts = useServerFn(getAlertsCenter);
@@ -80,10 +96,10 @@ function AlertsCenterPage() {
   });
 
   const [cat, setCat] = useState<AlertCategory | "all">("all");
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const dismiss = useMutation({
-    mutationFn: (v: { key: string; mode: "snooze" | "resolve" }) =>
-      dismissFn({ data: v }),
+    mutationFn: (v: { keys: string[]; mode: DismissMode }) => dismissFn({ data: v }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["alerts-center"] }),
   });
 
@@ -98,18 +114,94 @@ function AlertsCenterPage() {
     return c as Record<AlertCategory | "all", number>;
   }, [data]);
 
-  const grouped: Record<AlertSeverity, CenterAlert[]> = useMemo(() => {
-    const g: Record<AlertSeverity, CenterAlert[]> = {
-      critica: [],
-      alta: [],
-      media: [],
-      baixa: [],
-    };
-    for (const a of filtered) g[a.severity].push(a);
-    return g;
-  }, [filtered]);
+  // Group by severity → then by entity (fallback: individual key)
+  const grouped: Record<AlertSeverity, { entityKey: string; label?: string; items: CenterAlert[] }[]> =
+    useMemo(() => {
+      const bySev: Record<AlertSeverity, Map<string, { label?: string; items: CenterAlert[] }>> = {
+        critica: new Map(),
+        alta: new Map(),
+        media: new Map(),
+        baixa: new Map(),
+      };
+      for (const a of filtered) {
+        const gk = a.entityKey ?? a.key;
+        const bucket = bySev[a.severity];
+        if (!bucket.has(gk)) bucket.set(gk, { label: a.entityLabel, items: [] });
+        bucket.get(gk)!.items.push(a);
+      }
+      const out = {} as Record<
+        AlertSeverity,
+        { entityKey: string; label?: string; items: CenterAlert[] }[]
+      >;
+      (Object.keys(bySev) as AlertSeverity[]).forEach((s) => {
+        out[s] = Array.from(bySev[s], ([entityKey, v]) => ({ entityKey, ...v }));
+      });
+      return out;
+    }, [filtered]);
 
   const total = filtered.length;
+
+  const renderCard = (a: CenterAlert, compact = false) => {
+    const Icon = CAT_ICON[a.category];
+    return (
+      <article
+        key={a.key}
+        className={`group border border-border border-l-4 rounded-md p-3 ${
+          compact ? "" : SEV_STYLE[a.severity]
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <Icon className="size-4 mt-0.5 shrink-0 text-foreground/70" />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <div className="text-sm font-medium">{a.title}</div>
+              <div className="text-xs text-muted-foreground">{a.detail}</div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 italic">{a.why}</p>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <Link
+              to={a.link}
+              className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted"
+            >
+              Ir para
+            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  title="Adiar"
+                  aria-label="Adiar alerta"
+                  className="size-7 grid place-items-center rounded hover:bg-background"
+                >
+                  <BellOff className="size-3.5 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {SNOOZE_OPTIONS.map((o) => (
+                  <DropdownMenuItem
+                    key={o.mode}
+                    onClick={() => dismiss.mutate({ keys: [a.key], mode: o.mode })}
+                  >
+                    {o.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <button
+              type="button"
+              title="Marcar resolvido"
+              aria-label="Marcar resolvido"
+              onClick={() => dismiss.mutate({ keys: [a.key], mode: "resolve" })}
+              className="size-7 grid place-items-center rounded hover:bg-background"
+            >
+              <Check className="size-3.5 text-success" />
+            </button>
+          </div>
+        </div>
+      </article>
+    );
+  };
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -120,7 +212,7 @@ function AlertsCenterPage() {
             <Inbox className="size-6 text-primary" /> Central de Alertas
           </span>
         }
-        description="Tudo o que precisa da sua atenção em um só lugar — priorizado por impacto."
+        description="Tudo o que precisa da sua atenção em um só lugar — priorizado por impacto, agrupado por OP/produto."
         actions={
           <div className="text-right">
             <div className="text-3xl font-semibold tabular-nums leading-none">
@@ -130,7 +222,6 @@ function AlertsCenterPage() {
           </div>
         }
       />
-
 
       <div className="flex flex-wrap gap-2">
         {(Object.keys(CAT_LABEL) as (AlertCategory | "all")[]).map((k) => (
@@ -165,61 +256,97 @@ function AlertsCenterPage() {
         </div>
       )}
 
-      {(["critica", "alta", "media", "baixa"] as AlertSeverity[]).map((sev) =>
-        grouped[sev].length === 0 ? null : (
+      {(["critica", "alta", "media", "baixa"] as AlertSeverity[]).map((sev) => {
+        const groups = grouped[sev];
+        if (!groups || groups.length === 0) return null;
+        const totalItems = groups.reduce((n, g) => n + g.items.length, 0);
+        return (
           <section key={sev} className="space-y-2">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {SEV_LABEL[sev]} · {grouped[sev].length}
+              {SEV_LABEL[sev]} · {totalItems}
             </h2>
             <div className="space-y-2">
-              {grouped[sev].map((a) => {
-                const Icon = CAT_ICON[a.category];
+              {groups.map((g) => {
+                if (g.items.length === 1) return renderCard(g.items[0]);
+                const isOpen = expanded[g.entityKey] ?? false;
+                const allKeys = g.items.map((i) => i.key);
                 return (
-                  <article
-                    key={a.key}
-                    className={`group border border-border border-l-4 rounded-md p-3 ${SEV_STYLE[a.severity]}`}
+                  <div
+                    key={g.entityKey}
+                    className={`border border-border border-l-4 rounded-md ${SEV_STYLE[sev]}`}
                   >
-                    <div className="flex items-start gap-3">
-                      <Icon className="size-4 mt-0.5 shrink-0 text-foreground/70" />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-baseline gap-2 flex-wrap">
-                          <div className="text-sm font-medium">{a.title}</div>
-                          <div className="text-xs text-muted-foreground">{a.detail}</div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpanded((e) => ({ ...e, [g.entityKey]: !isOpen }))
+                      }
+                      className="w-full flex items-center gap-2 p-3 text-left hover:bg-background/40"
+                    >
+                      {isOpen ? (
+                        <ChevronDown className="size-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="size-4 text-muted-foreground" />
+                      )}
+                      <Layers className="size-4 text-foreground/70" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium">
+                          {g.label ?? "Grupo"}{" "}
+                          <span className="text-xs font-normal text-muted-foreground">
+                            · {g.items.length} alertas
+                          </span>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1 italic">{a.why}</p>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {g.items.map((i) => i.title).join(" · ")}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Link
-                          to={a.link}
-                          className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted"
-                        >
-                          Ir para
-                        </Link>
+                      <div
+                        className="flex items-center gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <span className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted inline-flex items-center gap-1">
+                              <BellOff className="size-3" /> Adiar grupo
+                            </span>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {SNOOZE_OPTIONS.map((o) => (
+                              <DropdownMenuItem
+                                key={o.mode}
+                                onClick={() =>
+                                  dismiss.mutate({ keys: allKeys, mode: o.mode })
+                                }
+                              >
+                                {o.label} ({g.items.length})
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                         <button
                           type="button"
-                          title="Adiar 7 dias"
-                          onClick={() => dismiss.mutate({ key: a.key, mode: "snooze" })}
-                          className="size-7 grid place-items-center rounded hover:bg-background"
-                        >
-                          <BellOff className="size-3.5 text-muted-foreground" />
-                        </button>
-                        <button
-                          type="button"
-                          title="Marcar resolvido"
-                          onClick={() => dismiss.mutate({ key: a.key, mode: "resolve" })}
+                          title="Resolver grupo"
+                          aria-label="Resolver grupo"
+                          onClick={() =>
+                            dismiss.mutate({ keys: allKeys, mode: "resolve" })
+                          }
                           className="size-7 grid place-items-center rounded hover:bg-background"
                         >
                           <Check className="size-3.5 text-success" />
                         </button>
                       </div>
-                    </div>
-                  </article>
+                    </button>
+                    {isOpen && (
+                      <div className="p-3 pt-0 space-y-2 border-t border-border/60">
+                        {g.items.map((a) => renderCard(a, true))}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
           </section>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 }
