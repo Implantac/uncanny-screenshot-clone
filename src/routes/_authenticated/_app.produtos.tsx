@@ -1216,7 +1216,13 @@ function ProductDialog({
               onChange={(event) => setColorsStr(event.target.value)}
               placeholder="#111111, #f4ede2 ou Preto, Off-white"
             />
+            <CollectionPaletteSuggestion
+              collectionId={collectionId === "none" ? null : collectionId}
+              currentValue={colorsStr}
+              onApply={(str) => setColorsStr(str)}
+            />
           </div>
+
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
@@ -1231,3 +1237,65 @@ function ProductDialog({
     </Dialog>
   );
 }
+
+function CollectionPaletteSuggestion({
+  collectionId,
+  currentValue,
+  onApply,
+}: {
+  collectionId: string | null;
+  currentValue: string;
+  onApply: (str: string) => void;
+}) {
+  const { data: colors = [] } = useQuery({
+    enabled: !!collectionId,
+    queryKey: ["collection-palette-suggest", collectionId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("collection_colors")
+        .select("name, hex_value, is_primary, sort_order")
+        .eq("collection_id", collectionId!)
+        .order("is_primary", { ascending: false })
+        .order("sort_order", { ascending: true });
+      return data ?? [];
+    },
+  });
+  if (!collectionId || colors.length === 0) return null;
+  const suggested = colors.map((c: any) => c.hex_value).filter(Boolean).join(", ");
+  const alreadyApplied =
+    currentValue.trim().length > 0 &&
+    colors.every((c: any) => currentValue.toLowerCase().includes(String(c.hex_value).toLowerCase()));
+  return (
+    <div className="rounded-lg border border-dashed border-border bg-muted/30 p-2 space-y-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[11px] text-muted-foreground">
+          Cartela da coleção · {colors.length} cor{colors.length > 1 ? "es" : ""}
+        </span>
+        <button
+          type="button"
+          disabled={alreadyApplied}
+          onClick={() => onApply(suggested)}
+          className="text-[11px] text-primary hover:underline disabled:text-muted-foreground disabled:no-underline"
+        >
+          {alreadyApplied ? "Aplicada" : currentValue.trim() ? "Substituir" : "Aplicar cartela"}
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {colors.map((c: any) => (
+          <span
+            key={c.hex_value + c.name}
+            title={`${c.name}${c.is_primary ? " (principal)" : ""}`}
+            className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-2 py-0.5 text-[10px]"
+          >
+            <span
+              className="size-3 rounded-full border border-border"
+              style={{ background: c.hex_value }}
+            />
+            {c.name}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+

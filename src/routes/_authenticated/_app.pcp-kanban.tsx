@@ -134,6 +134,23 @@ function PcpKanban() {
   });
   useRealtime("quality_capa", ["pcp-kanban-open-capa"]);
 
+  // Gate de estampa/silk/bordado: OPs cujo produto tenha artes pendentes não avançam de Corte.
+  const { data: pendingPrintProductIds = new Set<string>() } = useQuery({
+    queryKey: ["pcp-kanban-pending-prints"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("print_artworks")
+        .select("product_id, status")
+        .not("product_id", "is", null)
+        .in("status", ["rascunho", "aguardando_prova", "em_prova"]);
+      if (error) throw error;
+      return new Set<string>((data ?? []).map((r) => r.product_id as string));
+    },
+    refetchInterval: 60_000,
+  });
+  useRealtime("print_artworks", ["pcp-kanban-pending-prints"]);
+
+
   // Roteiros (product_routing) por produto, com fallback família → default
   const fetchRoutings = useServerFn(getRoutingsForProducts);
   const productIds = useMemo(
@@ -321,9 +338,35 @@ function PcpKanban() {
       });
       return;
     }
+    // Gate de estampa/silk/bordado — não deixa sair de Corte com artes pendentes.
+    const downstreamOfCorte: Stage[] = [
+      "bordado",
+      "bordado_terc",
+      "silk",
+      "silk_terc",
+      "costura",
+      "costura_terc",
+      "acabamento",
+      "entregue",
+    ];
+    if (
+      o.stage === "corte" &&
+      downstreamOfCorte.includes(stage) &&
+      o.product_id &&
+      pendingPrintProductIds.has(o.product_id)
+    ) {
+      toast.error(
+        `${o.code} tem arte de estampa/silk/bordado pendente — libere no módulo Estampas antes de sair do Corte.`,
+        {
+          action: { label: "Abrir Estampas", onClick: () => window.open(`/estampas`, "_self") },
+        },
+      );
+      return;
+    }
     update.mutate({ id, stage });
     toast.success(`${o.code} → ${STAGES.find((s) => s.key === stage)?.label}`);
   };
+
 
   return (
     <div className="p-4 md:p-6 space-y-4">
