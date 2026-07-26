@@ -158,6 +158,8 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
         </div>
       )}
 
+      <TrendRadarPanel collectionId={collectionId} />
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
