@@ -89,6 +89,7 @@ type ProductRow = {
 
 function ProductWorkspace() {
   const { id } = useParams({ from: "/_authenticated/_app/produto/$id" });
+  const navigate = useNavigate();
   useRealtime("products", ["product-workspace", id]);
   const audit = useServerFn(logProductView);
   useEffect(() => {
