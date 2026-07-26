@@ -19,7 +19,7 @@ import {
   FileText,
   Activity,
 } from "lucide-react";
-import { Supplier360Drawer } from "@/components/supplier-360-drawer";
+import { Supplier360Drawer } from "@/components/supplier-360-drawer-lazy";
 import { SupplierScorecardMoversPanel } from "@/components/supplier-scorecard-panel";
 import { SupplierSwapSuggestionsPanel } from "@/components/supplier-swap-suggestions";
 import { supabase } from "@/integrations/supabase/client";

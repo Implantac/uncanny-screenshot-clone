@@ -9,7 +9,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Package, ImageIcon, FileText, ChevronRight } from "lucide-react";
-import { ProductionTechSheetDrawer } from "./production-tech-sheet-drawer";
+import { ProductionTechSheetDrawer } from "./production-tech-sheet-drawer-lazy";
 
 type Props = {
   batchCode: string | null;

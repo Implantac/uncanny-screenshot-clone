@@ -26,7 +26,7 @@ import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { PersonaInsightsPanelLazy as PersonaInsightsPanel } from "@/components/persona-insights-panel-lazy";
 import { DelayPredictionPanel } from "@/components/delay-prediction-panel";
 import { LoteReferencesDrawer } from "@/components/lote-references-drawer";
-import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-drawer";
+import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-drawer-lazy";
 import { SamEfficiencyPanel } from "@/components/sam-efficiency-panel";
 import { PcpCapacityTocPanel } from "@/components/pcp-capacity-toc-panel";
 import { PcpApsPanel } from "@/components/pcp-aps-panel";
