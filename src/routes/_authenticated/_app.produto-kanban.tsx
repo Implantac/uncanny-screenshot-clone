@@ -188,60 +188,103 @@ function LifecycleCard({
   sla: number;
 }) {
   const overdue = card.days_in_step > sla;
+  const advanceFn = useServerFn(advanceProductWorkflow);
+  const qc = useQueryClient();
+  const advance = useMutation({
+    mutationFn: () => advanceFn({ data: { productId: card.product_id } }),
+    onSuccess: (res) => {
+      if (res?.advanced) {
+        toast.success(
+          `Avançou para ${STEP_META[res.to_step as WorkflowStep]?.label ?? res.to_step}`,
+        );
+        qc.invalidateQueries({ queryKey: ["product-lifecycle-kanban"] });
+      } else {
+        toast.warning("Não é possível avançar", {
+          description: res?.blockers?.join(" · ") || "Complete os requisitos da fase atual.",
+        });
+      }
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const canAdvance = !card.blocked && card.current_step !== "producao";
+
   return (
-    <Link
-      to="/produto/$id"
-      params={{ id: card.product_id }}
+    <div
       className={cn(
-        "block rounded-md border bg-background p-2 text-left transition hover:border-primary/60 hover:shadow-sm",
+        "group relative rounded-md border bg-background p-2 text-left transition hover:border-primary/60 hover:shadow-sm",
         card.blocked && "border-destructive/50 bg-destructive/5",
       )}
     >
-      <div className="flex items-start gap-2">
-        {card.image_url ? (
-          <img
-            src={card.image_url}
-            alt=""
-            className="h-10 w-10 rounded object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded bg-muted text-[10px] text-muted-foreground">
-            {card.sku.slice(0, 3)}
-          </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-xs font-medium">{card.name}</div>
-          <div className="truncate text-[11px] text-muted-foreground">
-            {card.sku}
-            {card.collection_name ? ` • ${card.collection_name}` : ""}
-          </div>
-        </div>
-        <ProductReadinessBadge productId={card.product_id} className="scale-90" />
-      </div>
-
-      <div className="mt-2 flex items-center justify-between text-[11px]">
-        <span
-          className={cn(
-            "inline-flex items-center gap-1",
-            overdue ? "text-destructive" : "text-muted-foreground",
+      <Link
+        to="/produto/$id"
+        params={{ id: card.product_id }}
+        className="block"
+      >
+        <div className="flex items-start gap-2">
+          {card.image_url ? (
+            <img
+              src={card.image_url}
+              alt=""
+              className="h-10 w-10 rounded object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded bg-muted text-[10px] text-muted-foreground">
+              {card.sku.slice(0, 3)}
+            </div>
           )}
-        >
-          <Clock className="h-3 w-3" />
-          {card.days_in_step}d na fase
-          {overdue && ` • SLA ${sla}d`}
-        </span>
-        {card.blocked && (
-          <span className="inline-flex items-center gap-1 text-destructive">
-            <AlertTriangle className="h-3 w-3" /> bloqueado
-          </span>
-        )}
-      </div>
-      {card.blocked && card.blocker_reason && (
-        <div className="mt-1 line-clamp-2 rounded bg-destructive/10 px-2 py-1 text-[11px] text-destructive">
-          {card.blocker_reason}
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-xs font-medium">{card.name}</div>
+            <div className="truncate text-[11px] text-muted-foreground">
+              {card.sku}
+              {card.collection_name ? ` • ${card.collection_name}` : ""}
+            </div>
+          </div>
+          <ProductReadinessBadge productId={card.product_id} className="scale-90" />
         </div>
+
+        <div className="mt-2 flex items-center justify-between text-[11px]">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1",
+              overdue ? "text-destructive" : "text-muted-foreground",
+            )}
+          >
+            <Clock className="h-3 w-3" />
+            {card.days_in_step}d na fase
+            {overdue && ` • SLA ${sla}d`}
+          </span>
+          {card.blocked && (
+            <span className="inline-flex items-center gap-1 text-destructive">
+              <AlertTriangle className="h-3 w-3" /> bloqueado
+            </span>
+          )}
+        </div>
+        {card.blocked && card.blocker_reason && (
+          <div className="mt-1 line-clamp-2 rounded bg-destructive/10 px-2 py-1 text-[11px] text-destructive">
+            {card.blocker_reason}
+          </div>
+        )}
+      </Link>
+
+      {canAdvance && (
+        <Button
+          size="sm"
+          variant="secondary"
+          className="absolute right-1 top-1 h-6 gap-1 px-1.5 text-[10px] opacity-0 shadow-sm transition group-hover:opacity-100"
+          disabled={advance.isPending}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            advance.mutate();
+          }}
+          title="Avançar fase"
+        >
+          Avançar <ChevronRight className="h-3 w-3" />
+        </Button>
       )}
-    </Link>
+    </div>
   );
 }
+
