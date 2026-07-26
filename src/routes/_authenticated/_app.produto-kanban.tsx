@@ -98,8 +98,14 @@ type QuickFilter = "all" | "blocked" | "overdue" | "pinned";
 
 function ProductLifecycleKanban() {
   const fetchKanban = useServerFn(listLifecycleKanban);
-  const [q, setQ] = useState("");
-  const [quick, setQuick] = useState<QuickFilter>("all");
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const q = search.q;
+  const quick = search.f;
+  const setQ = (val: string) =>
+    navigate({ search: (prev) => ({ ...prev, q: val }), replace: true });
+  const setQuick = (val: QuickFilter) =>
+    navigate({ search: (prev) => ({ ...prev, f: val }), replace: true });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["product-lifecycle-kanban"],
