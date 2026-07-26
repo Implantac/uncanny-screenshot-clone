@@ -114,6 +114,25 @@ function ProductWorkspace() {
     if (product?.id) pushRecentProduct({ id: product.id, sku: product.sku, name: product.name });
   }, [product?.id, product?.sku, product?.name]);
 
+  // Wave 35 — shortcut "P" toggles pin on current product workspace
+  useEffect(() => {
+    if (!product?.id) return;
+    const onKey = async (e: KeyboardEvent) => {
+      if (e.key !== "p" && e.key !== "P") return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      e.preventDefault();
+      const { togglePinnedProduct } = await import("@/lib/recent-products");
+      const { toast } = await import("sonner");
+      const now = togglePinnedProduct({ id: product.id, sku: product.sku, name: product.name });
+      toast.success(now ? "Produto fixado (P)" : "Produto desafixado (P)");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [product?.id, product?.sku, product?.name]);
+
+
   const { data: sheet } = useQuery({
     enabled: !!product,
     queryKey: ["product-workspace-sheet", id],
