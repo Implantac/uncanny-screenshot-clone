@@ -37,7 +37,7 @@ import {
   CostsPanel,
 } from "@/components/tech-pack/panels";
 import { ProductTimeline } from "@/components/product-timeline";
-import { ProductTimelineCollab } from "@/components/product-timeline-collab";
+import { ProductTimelineCollab } from "@/components/product-timeline-collab-lazy";
 import { TimelineFeed } from "@/components/timeline-feed";
 
 import { ProductGallery } from "@/components/product-gallery";
