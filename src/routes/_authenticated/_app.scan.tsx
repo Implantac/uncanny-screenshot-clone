@@ -19,6 +19,14 @@ export const Route = createFileRoute("/_authenticated/_app/scan")({
 
 const UUID_RX = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
 
+type Suggestion = {
+  id: string;
+  batch_code: string | null;
+  product_sku: string | null;
+  product_name: string | null;
+  current_stage: string | null;
+};
+
 function ScanPage() {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -26,6 +34,8 @@ function ScanPage() {
   const [error, setError] = useState<string | null>(null);
   const [manual, setManual] = useState("");
   const [busy, setBusy] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [searching, setSearching] = useState(false);
 
   async function go(target: string) {
     setBusy(true);
@@ -34,25 +44,63 @@ function ScanPage() {
       navigate({ to: "/apontar/$id", params: { id: m[1] } });
       return;
     }
-    // try lookup by batch code
     const code = target.trim();
     if (!code) {
       setBusy(false);
       return;
     }
-    const { data } = await supabase
+    // Exact batch_code match first
+    const { data: exact } = await supabase
       .from("production_orders")
       .select("id")
       .eq("batch_code", code)
       .limit(1)
       .maybeSingle();
-    if (data?.id) {
-      navigate({ to: "/apontar/$id", params: { id: data.id } });
-    } else {
-      toast.error(`Lote "${code}" não encontrado`);
-      setBusy(false);
+    if (exact?.id) {
+      navigate({ to: "/apontar/$id", params: { id: exact.id } });
+      return;
     }
+    toast.error(`Lote "${code}" não encontrado`);
+    setBusy(false);
   }
+
+  // Partial search: batch_code OR product SKU/name
+  useEffect(() => {
+    const q = manual.trim();
+    if (q.length < 2 || UUID_RX.test(q)) {
+      setSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    const t = setTimeout(async () => {
+      const like = `%${q}%`;
+      const { data } = await supabase
+        .from("production_orders")
+        .select("id, batch_code, current_stage, products:product_id(sku, name)")
+        .or(`batch_code.ilike.${like},product_sku.ilike.${like}`)
+        .limit(8);
+      if (cancelled) return;
+      const rows = (data ?? []).map((r: {
+        id: string;
+        batch_code: string | null;
+        current_stage: string | null;
+        products?: { sku?: string | null; name?: string | null } | null;
+      }) => ({
+        id: r.id,
+        batch_code: r.batch_code,
+        current_stage: r.current_stage,
+        product_sku: r.products?.sku ?? null,
+        product_name: r.products?.name ?? null,
+      })) as Suggestion[];
+      setSuggestions(rows);
+      setSearching(false);
+    }, 200);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [manual]);
 
   useEffect(() => {
     const id = "qr-reader";
