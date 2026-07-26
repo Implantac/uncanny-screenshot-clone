@@ -3,9 +3,11 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/ui/page-header";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Printer, ArrowLeft, Grid3x3 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/_app/line-sheet/$id")({
   head: () => ({
