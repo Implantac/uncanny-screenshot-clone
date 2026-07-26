@@ -225,7 +225,7 @@ function ProductWorkspace() {
   if (!product) {
     return (
       <div className="p-6 max-w-2xl mx-auto space-y-4">
-        <PlmBreadcrumb items={[{ label: "Produtos", to: "/produtos" }, { label: "Não encontrado" }]} />
+        <PlmBreadcrumb items={[{ label: "Produtos", link: { to: "/produtos" } }, { label: "Não encontrado" }]} />
         <EmptyState
           icon={Package}
           title="Produto não encontrado"
