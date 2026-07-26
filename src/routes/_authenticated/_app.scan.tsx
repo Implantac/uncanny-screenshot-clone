@@ -19,6 +19,15 @@ export const Route = createFileRoute("/_authenticated/_app/scan")({
 
 const UUID_RX = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
 
+type Suggestion = {
+  id: string;
+  batch_code: string | null;
+  code: string;
+  product_sku: string | null;
+  product_name: string | null;
+  stage: string | null;
+};
+
 function ScanPage() {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -26,6 +35,8 @@ function ScanPage() {
   const [error, setError] = useState<string | null>(null);
   const [manual, setManual] = useState("");
   const [busy, setBusy] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [searching, setSearching] = useState(false);
 
   async function go(target: string) {
     setBusy(true);
@@ -34,25 +45,67 @@ function ScanPage() {
       navigate({ to: "/apontar/$id", params: { id: m[1] } });
       return;
     }
-    // try lookup by batch code
     const code = target.trim();
     if (!code) {
       setBusy(false);
       return;
     }
-    const { data } = await supabase
+    // Exact batch_code match first
+    const { data: exact } = await supabase
       .from("production_orders")
       .select("id")
       .eq("batch_code", code)
       .limit(1)
       .maybeSingle();
-    if (data?.id) {
-      navigate({ to: "/apontar/$id", params: { id: data.id } });
-    } else {
-      toast.error(`Lote "${code}" não encontrado`);
-      setBusy(false);
+    if (exact?.id) {
+      navigate({ to: "/apontar/$id", params: { id: exact.id } });
+      return;
     }
+    toast.error(`Lote "${code}" não encontrado`);
+    setBusy(false);
   }
+
+  // Partial search: batch_code OR product SKU/name
+  useEffect(() => {
+    const q = manual.trim();
+    if (q.length < 2 || UUID_RX.test(q)) {
+      setSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    const t = setTimeout(async () => {
+      const like = `%${q}%`;
+      const { data } = await supabase
+        .from("production_orders")
+        .select("id, batch_code, code, stage, products:product_id(sku, name)")
+        .or(`batch_code.ilike.${like},code.ilike.${like}`)
+        .limit(8);
+      if (cancelled) return;
+      type Row = {
+        id: string;
+        batch_code: string | null;
+        code: string;
+        stage: string | null;
+        products?: { sku?: string | null; name?: string | null } | null;
+      };
+      const rows: Suggestion[] = ((data ?? []) as unknown as Row[]).map((r) => ({
+        id: r.id,
+        batch_code: r.batch_code,
+        code: r.code,
+        stage: r.stage,
+        product_sku: r.products?.sku ?? null,
+        product_name: r.products?.name ?? null,
+      }));
+      setSuggestions(rows);
+      setSearching(false);
+    }, 200);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [manual]);
 
   useEffect(() => {
     const id = "qr-reader";
@@ -112,19 +165,56 @@ function ScanPage() {
 
         <section className="rounded-xl border border-border bg-card p-4 space-y-2">
           <label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Keyboard className="size-3.5" /> Digitar código do lote
+            <Keyboard className="size-3.5" /> Buscar lote, OP ou SKU
           </label>
           <div className="flex gap-2">
             <Input
               value={manual}
               onChange={(e) => setManual(e.target.value)}
-              placeholder="ex: L-2026-001"
+              placeholder="ex: L-2026-001, OP-123, MODELO-42"
               onKeyDown={(e) => e.key === "Enter" && go(manual)}
+              autoFocus
             />
             <Button onClick={() => go(manual)} disabled={busy || !manual.trim()}>
               Abrir
             </Button>
           </div>
+          {manual.trim().length >= 2 && (
+            <div className="mt-1 rounded-lg border border-border bg-background/50 divide-y divide-border overflow-hidden">
+              {searching && suggestions.length === 0 ? (
+                <div className="text-xs text-muted-foreground px-3 py-2">Buscando…</div>
+              ) : suggestions.length === 0 ? (
+                <div className="text-xs text-muted-foreground px-3 py-2">
+                  Nenhum resultado. Enter tenta correspondência exata.
+                </div>
+              ) : (
+                suggestions.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => navigate({ to: "/apontar/$id", params: { id: s.id } })}
+                    className="w-full text-left px-3 py-2 hover:bg-muted focus:bg-muted focus:outline-none"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-medium truncate">
+                        {s.batch_code || s.code}
+                      </div>
+                      {s.stage && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-wider">
+                          {s.stage}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {s.product_sku && <span className="font-mono">{s.product_sku}</span>}
+                      {s.product_sku && s.product_name && " · "}
+                      {s.product_name}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </section>
 
         <p className="text-[11px] text-muted-foreground text-center">
