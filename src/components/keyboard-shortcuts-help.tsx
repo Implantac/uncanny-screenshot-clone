@@ -12,6 +12,8 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ["P"], label: "Fixar/desafixar coleção atual", scope: "Coleção 360º" },
   { keys: ["["], label: "Produto anterior (recentes)", scope: "Product Workspace" },
   { keys: ["]"], label: "Próximo produto (recentes)", scope: "Product Workspace" },
+  { keys: ["["], label: "Coleção anterior (recentes)", scope: "Coleção 360º" },
+  { keys: ["]"], label: "Próxima coleção (recentes)", scope: "Coleção 360º" },
   { keys: ["?"], label: "Abrir esta ajuda de atalhos", scope: "Global" },
   { keys: ["Esc"], label: "Fechar diálogos abertos", scope: "Global" },
   { keys: ["G", "P"], label: "Ir para Produtos", scope: "Navegação" },
