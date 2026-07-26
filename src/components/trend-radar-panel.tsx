@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { scanTrendRadar, type TrendSignal } from "@/lib/trend-radar.functions";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Radar, Loader2, TrendingUp } from "lucide-react";
+import { Radar, Loader2, TrendingUp, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
-export function TrendRadarPanel() {
+type Props = {
+  collectionId?: string;
+};
+
+function paletteSvgDataUrl(title: string, colors: string[]): string {
+  const swatches = colors.length > 0 ? colors : ["#ddd"];
+  const w = 400;
+  const h = 400;
+  const sw = w / swatches.length;
+  const rects = swatches
+    .map((c, i) => `<rect x="${i * sw}" y="0" width="${sw}" height="${h}" fill="${c}"/>`)
+    .join("");
+  const safe = title.replace(/[<>&]/g, "").slice(0, 40);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${rects}<rect x="0" y="${h - 60}" width="${w}" height="60" fill="rgba(0,0,0,0.55)"/><text x="20" y="${h - 22}" font-family="Inter,Arial" font-size="20" fill="#fff" font-weight="600">${safe}</text></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+export function TrendRadarPanel({ collectionId }: Props = {}) {
   const fn = useServerFn(scanTrendRadar);
+  const qc = useQueryClient();
+  const { user } = useAuth();
   const [horizon, setHorizon] = useState<"now" | "next-season" | "next-year">("next-season");
+  const [pinning, setPinning] = useState<number | null>(null);
 
   const m = useMutation({
     mutationFn: () =>
@@ -26,6 +48,29 @@ export function TrendRadarPanel() {
 
   const signals = m.data?.signals ?? [];
 
+  const pinToMood = async (idx: number, s: TrendSignal) => {
+    if (!collectionId || !user) return;
+    setPinning(idx);
+    try {
+      const caption = `${s.title} · ${s.category} · #${s.keywords.slice(0, 3).join(" #")}`;
+      const image_url = paletteSvgDataUrl(s.title, s.colors);
+      const { error } = await supabase.from("collection_moodboard").insert({
+        collection_id: collectionId,
+        owner_id: user.id,
+        image_url,
+        caption,
+        kind: "tendencia",
+      });
+      if (error) throw error;
+      toast.success("Tendência adicionada ao moodboard");
+      qc.invalidateQueries({ queryKey: ["moodboard", collectionId] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao pinar");
+    } finally {
+      setPinning(null);
+    }
+  };
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-5 space-y-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -35,6 +80,7 @@ export function TrendRadarPanel() {
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             IA cruza paleta e categorias atuais com tendências do horizonte escolhido.
+            {collectionId ? " Pin direto no moodboard desta coleção." : ""}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -120,6 +166,24 @@ export function TrendRadarPanel() {
                 {s.why && (
                   <div className="text-[11px] text-foreground/80 italic border-l-2 border-primary/40 pl-2">
                     {s.why}
+                  </div>
+                )}
+                {collectionId && (
+                  <div className="flex justify-end pt-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[11px]"
+                      onClick={() => pinToMood(i, s)}
+                      disabled={pinning === i}
+                    >
+                      {pinning === i ? (
+                        <Loader2 className="size-3 mr-1 animate-spin" />
+                      ) : (
+                        <Plus className="size-3 mr-1" />
+                      )}
+                      Pin no moodboard
+                    </Button>
                   </div>
                 )}
               </div>
