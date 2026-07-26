@@ -8,7 +8,7 @@ import { ShieldCheck, AlertTriangle, Clock, Truck, Sliders } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { QualityIntelligencePanel } from "@/components/quality-intelligence-panel";
-import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
+import { PersonaInsightsPanelLazy as PersonaInsightsPanel } from "@/components/persona-insights-panel-lazy";
 import { QualityFpyPanel } from "@/components/quality-fpy-panel";
 import { QualityConqPanel } from "@/components/quality-conq-panel";
 import { QualityParetoPanel } from "@/components/quality-pareto-panel";

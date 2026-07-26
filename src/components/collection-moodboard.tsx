@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
 import { MoodboardToProductDialog } from "@/components/moodboard-to-product-dialog";
-import { TrendRadarPanel } from "@/components/trend-radar-panel";
+import { TrendRadarPanelLazy as TrendRadarPanel } from "@/components/trend-radar-panel-lazy";
 
 type MoodKind = "inspiracao" | "tendencia" | "referencia";
 const KIND_LABEL: Record<MoodKind, string> = {
