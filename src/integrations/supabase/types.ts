@@ -3924,6 +3924,92 @@ export type Database = {
           },
         ]
       }
+      purchase_order_receipt_items: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          purchase_order_item_id: string
+          qty_received: number
+          receipt_id: string
+          supplier_lot: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          purchase_order_item_id: string
+          qty_received: number
+          receipt_id: string
+          supplier_lot?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          purchase_order_item_id?: string
+          qty_received?: number
+          receipt_id?: string
+          supplier_lot?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_receipt_items_purchase_order_item_id_fkey"
+            columns: ["purchase_order_item_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_receipt_items_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_order_receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_order_receipts: {
+        Row: {
+          created_at: string
+          id: string
+          invoice_number: string | null
+          notes: string | null
+          owner_id: string
+          purchase_order_id: string
+          received_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invoice_number?: string | null
+          notes?: string | null
+          owner_id: string
+          purchase_order_id: string
+          received_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invoice_number?: string | null
+          notes?: string | null
+          owner_id?: string
+          purchase_order_id?: string
+          received_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_receipts_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       purchase_orders: {
         Row: {
           code: string
