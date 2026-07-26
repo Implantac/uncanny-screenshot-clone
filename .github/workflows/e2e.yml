@@ -17,6 +17,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fail fast if E2E credentials are missing
+        run: |
+          if [ -z "$E2E_EMAIL" ] || [ -z "$E2E_PASSWORD" ]; then
+            echo "::error::E2E_EMAIL/E2E_PASSWORD ausentes — todos os specs seriam skipados. Configure os secrets em Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -28,7 +35,32 @@ jobs:
         run: bunx playwright install --with-deps chromium
 
       - name: Run Playwright tests
-        run: bunx playwright test
+        run: bunx playwright test --reporter=list,json
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-results.json
+
+      - name: Fail if any test was skipped (skips mascaram cobertura, ex.: Escape no ProductReadinessBadge)
+        run: |
+          node -e "
+            const fs = require('fs');
+            const r = JSON.parse(fs.readFileSync('playwright-results.json','utf8'));
+            const skipped = new Set();
+            const walk = (suite) => {
+              for (const s of suite.suites ?? []) walk(s);
+              for (const spec of suite.specs ?? [])
+                for (const t of spec.tests ?? [])
+                  for (const res of t.results ?? [])
+                    if (res.status === 'skipped' || t.status === 'skipped')
+                      skipped.add(spec.title);
+            };
+            for (const s of r.suites ?? []) walk(s);
+            if (skipped.size) {
+              console.error('::error::' + skipped.size + ' teste(s) skipados — CI exige execução real:');
+              for (const t of skipped) console.error(' - ' + t);
+              process.exit(1);
+            }
+            console.log('OK: nenhum teste skipado.');
+          "
 
       # Always upload, so failures (and their intel-debug bundles) are downloadable
       # from the Actions run page under "Artifacts".
