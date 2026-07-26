@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { logProductView } from "@/lib/product-audit.functions";
+import { pushRecentProduct } from "@/lib/recent-products";
 import { useRealtime } from "@/hooks/use-realtime";
 import {
   ArrowLeft,
