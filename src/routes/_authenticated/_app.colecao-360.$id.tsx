@@ -787,6 +787,7 @@ function CollectionTabs({
         {/* Atalhos cruzados */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
           <Shortcut to="/colecoes" label="Editar coleção" />
+          <Shortcut to="/line-sheet/$id" params={{ id: collectionId }} label="Line Sheet visual" />
           <Shortcut to="/product-score" label="Score por produto" />
           <ShortcutPlain href="/abc-colecao" label="Curva ABC da coleção" icon={<Award className="size-3" />} />
           <Shortcut to="/war-room-colecao/$id" params={{ id: collectionId }} label="War Room" />

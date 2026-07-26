@@ -134,6 +134,7 @@ import { Route as AuthenticatedAppProducaoDoDiaStageRouteImport } from './routes
 import { Route as AuthenticatedAppMrpExecutivoRouteImport } from './routes/_authenticated/_app.mrp.executivo'
 import { Route as AuthenticatedAppMrpBiRouteImport } from './routes/_authenticated/_app.mrp.bi'
 import { Route as AuthenticatedAppLoteIdRouteImport } from './routes/_authenticated/_app.lote.$id'
+import { Route as AuthenticatedAppLineSheetIdRouteImport } from './routes/_authenticated/_app.line-sheet.$id'
 import { Route as AuthenticatedAppColecao360IdRouteImport } from './routes/_authenticated/_app.colecao-360.$id'
 import { Route as AuthenticatedAppApontarIdRouteImport } from './routes/_authenticated/_app.apontar.$id'
 import { Route as ApiPublicProductImageOwnerIdSplatRouteImport } from './routes/api/public/product-image/$ownerId.$'
@@ -853,6 +854,12 @@ const AuthenticatedAppLoteIdRoute = AuthenticatedAppLoteIdRouteImport.update({
   path: '/lote/$id',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppLineSheetIdRoute =
+  AuthenticatedAppLineSheetIdRouteImport.update({
+    id: '/line-sheet/$id',
+    path: '/line-sheet/$id',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppColecao360IdRoute =
   AuthenticatedAppColecao360IdRouteImport.update({
     id: '/$id',
@@ -978,6 +985,7 @@ export interface FileRoutesByFullPath {
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/colecao-360/$id': typeof AuthenticatedAppColecao360IdRoute
+  '/line-sheet/$id': typeof AuthenticatedAppLineSheetIdRoute
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
@@ -1106,6 +1114,7 @@ export interface FileRoutesByTo {
   '/portal/fornecedor/$token': typeof PortalFornecedorTokenRoute
   '/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/colecao-360/$id': typeof AuthenticatedAppColecao360IdRoute
+  '/line-sheet/$id': typeof AuthenticatedAppLineSheetIdRoute
   '/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
@@ -1237,6 +1246,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/': typeof AuthenticatedAppIndexRoute
   '/_authenticated/_app/apontar/$id': typeof AuthenticatedAppApontarIdRoute
   '/_authenticated/_app/colecao-360/$id': typeof AuthenticatedAppColecao360IdRoute
+  '/_authenticated/_app/line-sheet/$id': typeof AuthenticatedAppLineSheetIdRoute
   '/_authenticated/_app/lote/$id': typeof AuthenticatedAppLoteIdRoute
   '/_authenticated/_app/mrp/bi': typeof AuthenticatedAppMrpBiRoute
   '/_authenticated/_app/mrp/executivo': typeof AuthenticatedAppMrpExecutivoRoute
@@ -1367,6 +1377,7 @@ export interface FileRouteTypes {
     | '/portal/fornecedor/$token'
     | '/apontar/$id'
     | '/colecao-360/$id'
+    | '/line-sheet/$id'
     | '/lote/$id'
     | '/mrp/bi'
     | '/mrp/executivo'
@@ -1495,6 +1506,7 @@ export interface FileRouteTypes {
     | '/portal/fornecedor/$token'
     | '/apontar/$id'
     | '/colecao-360/$id'
+    | '/line-sheet/$id'
     | '/lote/$id'
     | '/mrp/bi'
     | '/mrp/executivo'
@@ -1625,6 +1637,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/'
     | '/_authenticated/_app/apontar/$id'
     | '/_authenticated/_app/colecao-360/$id'
+    | '/_authenticated/_app/line-sheet/$id'
     | '/_authenticated/_app/lote/$id'
     | '/_authenticated/_app/mrp/bi'
     | '/_authenticated/_app/mrp/executivo'
@@ -2548,6 +2561,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppLoteIdRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/line-sheet/$id': {
+      id: '/_authenticated/_app/line-sheet/$id'
+      path: '/line-sheet/$id'
+      fullPath: '/line-sheet/$id'
+      preLoaderRoute: typeof AuthenticatedAppLineSheetIdRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/colecao-360/$id': {
       id: '/_authenticated/_app/colecao-360/$id'
       path: '/$id'
@@ -2699,6 +2719,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppWorkflowRoute: typeof AuthenticatedAppWorkflowRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
   AuthenticatedAppApontarIdRoute: typeof AuthenticatedAppApontarIdRoute
+  AuthenticatedAppLineSheetIdRoute: typeof AuthenticatedAppLineSheetIdRoute
   AuthenticatedAppLoteIdRoute: typeof AuthenticatedAppLoteIdRoute
   AuthenticatedAppMrpBiRoute: typeof AuthenticatedAppMrpBiRoute
   AuthenticatedAppMrpExecutivoRoute: typeof AuthenticatedAppMrpExecutivoRoute
@@ -2811,6 +2832,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppWorkflowRoute: AuthenticatedAppWorkflowRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
   AuthenticatedAppApontarIdRoute: AuthenticatedAppApontarIdRoute,
+  AuthenticatedAppLineSheetIdRoute: AuthenticatedAppLineSheetIdRoute,
   AuthenticatedAppLoteIdRoute: AuthenticatedAppLoteIdRoute,
   AuthenticatedAppMrpBiRoute: AuthenticatedAppMrpBiRoute,
   AuthenticatedAppMrpExecutivoRoute: AuthenticatedAppMrpExecutivoRoute,
@@ -2865,13 +2887,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

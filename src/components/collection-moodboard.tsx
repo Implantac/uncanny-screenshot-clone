@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, ImagePlus, Sparkles } from "lucide-react";
+import { Plus, Trash2, ImagePlus, Sparkles, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
+import { MoodboardToProductDialog } from "@/components/moodboard-to-product-dialog";
 
 type MoodKind = "inspiracao" | "tendencia" | "referencia";
 const KIND_LABEL: Record<MoodKind, string> = {
@@ -38,6 +39,7 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
   const [url, setUrl] = useState("");
   const [caption, setCaption] = useState("");
   const [kind, setKind] = useState<MoodKind>("inspiracao");
+  const [toProduct, setToProduct] = useState<MoodItem | null>(null);
 
   const { data = [] } = useQuery({
     queryKey: ["moodboard", collectionId],
@@ -129,13 +131,22 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
                       {KIND_LABEL[m.kind]}
                     </Badge>
                   )}
-                  <button
-                    onClick={() => del.mutate(m.id)}
-                    className="size-5 rounded bg-destructive/80 text-white flex items-center justify-center hover:bg-destructive"
-                    title="Remover"
-                  >
-                    <Trash2 className="size-3" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setToProduct(m)}
+                      className="h-5 px-1.5 rounded bg-primary/90 text-primary-foreground flex items-center gap-0.5 text-[9px] font-medium hover:bg-primary"
+                      title="Virar em produto"
+                    >
+                      <Wand2 className="size-2.5" /> Produto
+                    </button>
+                    <button
+                      onClick={() => del.mutate(m.id)}
+                      className="size-5 rounded bg-destructive/80 text-white flex items-center justify-center hover:bg-destructive"
+                      title="Remover"
+                    >
+                      <Trash2 className="size-3" />
+                    </button>
+                  </div>
                 </div>
                 {m.caption && (
                   <div className="text-[10px] text-white/90 mt-1 line-clamp-2">{m.caption}</div>
@@ -204,6 +215,15 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
           </form>
         </DialogContent>
       </Dialog>
+
+      {toProduct && (
+        <MoodboardToProductDialog
+          open={!!toProduct}
+          onOpenChange={(o) => !o && setToProduct(null)}
+          collectionId={collectionId}
+          moodItem={toProduct}
+        />
+      )}
     </div>
   );
 }

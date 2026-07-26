@@ -54,6 +54,7 @@ import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer
 import { TechSheetCostAlertsPanel } from "@/components/tech-sheet-cost-alerts-panel";
 import { TechSheetBomReviewPanel } from "@/components/tech-sheet-bom-review-panel";
 import { TechPackImportButton } from "@/components/tech-pack-import-button";
+import { TechPackExportButton } from "@/components/tech-pack-export-button";
 import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
 import { ShieldCheck, Camera } from "lucide-react";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";
@@ -413,6 +414,15 @@ function FichaTecnicaPage() {
 
                 <div className="glass rounded-xl p-5">
                   <div className="flex justify-end mb-3 gap-2">
+                    <TechPackExportButton
+                      sheetId={selected.id}
+                      code={selected.code}
+                      version={selected.version}
+                      productName={selectedProduct?.name}
+                      productSku={selectedProduct?.sku}
+                      productImage={selectedProduct?.image_url}
+                      status={selected.status}
+                    />
                     <ApproveTechSheetButton
                       sheetId={selected.id}
                       status={selected.status}
