@@ -56,12 +56,20 @@ const walk = (suite, file = suite.file ?? null) => {
 for (const s of report.suites ?? []) walk(s);
 
 const problems = [];
+const rows = []; // { status, file, title, reason }
 for (const req of REQUIRED) {
   const matches = executed.filter(
     (e) => e.file === req.file && req.titleMatch.test(e.title),
   );
   if (matches.length === 0) {
-    problems.push(`FALTANDO: ${req.file} :: ${req.titleMatch} (nenhum teste com esse título rodou)`);
+    const msg = `FALTANDO: ${req.file} :: ${req.titleMatch} (nenhum teste com esse título rodou)`;
+    problems.push(msg);
+    rows.push({
+      status: "🚫 FALTANDO",
+      file: req.file,
+      title: String(req.titleMatch),
+      reason: "nenhum teste com esse título rodou (spec não existe, foi filtrado, ou o título mudou)",
+    });
     continue;
   }
   for (const m of matches) {
@@ -70,8 +78,51 @@ for (const req of REQUIRED) {
       problems.push(
         `NÃO PASSOU: ${m.file} :: "${m.title}" (aggregated=${m.aggregated}, last=${m.last})`,
       );
+      const icon = m.last === "skipped" || m.aggregated === "skipped" ? "⏭️ SKIPPED" : "❌ FALHOU";
+      const reason =
+        m.last === "skipped" || m.aggregated === "skipped"
+          ? "teste foi skipado (test.skip / fixture ausente / credenciais faltando)"
+          : `execução não passou (aggregated=${m.aggregated}, last=${m.last})`;
+      rows.push({ status: icon, file: m.file, title: m.title, reason });
+    } else {
+      rows.push({ status: "✅ OK", file: m.file, title: m.title, reason: "passou" });
     }
   }
+}
+
+// Escreve resumo no GitHub Actions Job Summary quando disponível.
+const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+if (summaryPath) {
+  const failing = rows.filter((r) => !r.status.startsWith("✅"));
+  const lines = [];
+  lines.push("## Auditoria — Cenário Escape (ProductReadinessBadge)");
+  lines.push("");
+  if (failing.length === 0) {
+    lines.push(`✅ Todos os ${REQUIRED.length} casos obrigatórios rodaram e passaram.`);
+  } else {
+    lines.push(`❌ ${failing.length} caso(s) obrigatório(s) falharam ou foram skipados:`);
+    lines.push("");
+    lines.push("| Status | Spec | Teste | Motivo |");
+    lines.push("| --- | --- | --- | --- |");
+    for (const r of failing) {
+      const esc = (s) => String(s).replace(/\|/g, "\\|").replace(/\n/g, " ");
+      lines.push(`| ${r.status} | \`${esc(r.file)}\` | ${esc(r.title)} | ${esc(r.reason)} |`);
+    }
+    lines.push("");
+    lines.push("<details><summary>Todos os casos auditados</summary>");
+    lines.push("");
+    lines.push("| Status | Spec | Teste | Motivo |");
+    lines.push("| --- | --- | --- | --- |");
+    for (const r of rows) {
+      const esc = (s) => String(s).replace(/\|/g, "\\|").replace(/\n/g, " ");
+      lines.push(`| ${r.status} | \`${esc(r.file)}\` | ${esc(r.title)} | ${esc(r.reason)} |`);
+    }
+    lines.push("");
+    lines.push("</details>");
+    lines.push("");
+    lines.push("> Traces, screenshots e vídeos desses casos estão no artifact `escape-failure-*` desta run.");
+  }
+  fs.appendFileSync(summaryPath, lines.join("\n") + "\n");
 }
 
 if (problems.length) {
