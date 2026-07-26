@@ -374,6 +374,59 @@ function CommandCenter() {
     return "Boa noite";
   }, [hour]);
 
+  const nextAction = useMemo(() => {
+    const a = data?.alerts;
+    if (!a) return null;
+    const late = a.lateBatches?.length ?? 0;
+    const stuck = a.stuckBatches?.length ?? 0;
+    const pilots = a.pendingPilots?.length ?? 0;
+    const noSheet = a.productsWithoutSheet?.length ?? 0;
+    if (late > 0)
+      return {
+        tone: "danger" as const,
+        icon: AlertTriangle,
+        title: `${late} lote${late > 1 ? "s" : ""} atrasado${late > 1 ? "s" : ""} na produção`,
+        sub: "Abra o Kanban do PCP e priorize o desbloqueio antes que impacte a entrega.",
+        cta: "Ir ao PCP Kanban",
+        to: "/pcp-kanban",
+      };
+    if (stuck > 0)
+      return {
+        tone: "warning" as const,
+        icon: AlertTriangle,
+        title: `${stuck} lote${stuck > 1 ? "s parados" : " parado"} há 5+ dias`,
+        sub: "Identifique o gargalo — provavelmente falta material, apontamento ou aprovação.",
+        cta: "Ver lotes parados",
+        to: "/pcp-kanban",
+      };
+    if (pilots > 0)
+      return {
+        tone: "info" as const,
+        icon: Scissors,
+        title: `${pilots} piloto${pilots > 1 ? "s aguardando" : " aguardando"} aprovação`,
+        sub: "Aprove ou peça ajuste para destravar a passagem ao PCP.",
+        cta: "Ver pilotos",
+        to: "/pilots",
+      };
+    if (noSheet > 0)
+      return {
+        tone: "info" as const,
+        icon: FileText,
+        title: `${noSheet} produto${noSheet > 1 ? "s sem ficha" : " sem ficha"} técnica aprovada`,
+        sub: "Sem ficha aprovada não há custo firme nem OP liberada. Complete as pendentes.",
+        cta: "Abrir Ficha Técnica",
+        to: "/ficha-tecnica",
+      };
+    return {
+      tone: "success" as const,
+      icon: CheckCircle2,
+      title: "Tudo sob controle por aqui.",
+      sub: "Nenhum lote atrasado, nenhum piloto pendente. Bom momento para planejar a próxima cápsula.",
+      cta: "Ver Coleções",
+      to: "/collections",
+    };
+  }, [data]);
+
 
   const kpis = [
     {
