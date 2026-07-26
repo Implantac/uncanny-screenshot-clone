@@ -338,9 +338,35 @@ function PcpKanban() {
       });
       return;
     }
+    // Gate de estampa/silk/bordado — não deixa sair de Corte com artes pendentes.
+    const downstreamOfCorte: Stage[] = [
+      "bordado",
+      "bordado_terc",
+      "silk",
+      "silk_terc",
+      "costura",
+      "costura_terc",
+      "acabamento",
+      "entregue",
+    ];
+    if (
+      o.stage === "corte" &&
+      downstreamOfCorte.includes(stage) &&
+      o.product_id &&
+      pendingPrintProductIds.has(o.product_id)
+    ) {
+      toast.error(
+        `${o.code} tem arte de estampa/silk/bordado pendente — libere no módulo Estampas antes de sair do Corte.`,
+        {
+          action: { label: "Abrir Estampas", onClick: () => window.open(`/estampas`, "_self") },
+        },
+      );
+      return;
+    }
     update.mutate({ id, stage });
     toast.success(`${o.code} → ${STAGES.find((s) => s.key === stage)?.label}`);
   };
+
 
   return (
     <div className="p-4 md:p-6 space-y-4">
