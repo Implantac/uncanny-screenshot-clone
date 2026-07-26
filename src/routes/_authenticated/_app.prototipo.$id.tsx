@@ -281,6 +281,42 @@ function PrototipoPage() {
 
         <PrototypeApprovalGate prototypeId={proto.id} currentStage={proto.stage} />
 
+        {proto.stage === "aprovado" && (
+          <div className="relative overflow-hidden rounded-xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-5">
+            <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-emerald-500/20 blur-3xl" aria-hidden />
+            <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-emerald-500/20 p-2">
+                  <CheckCircle2 className="size-6 text-emerald-500" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                    🎉 Piloto aprovado! Pronto para produção.
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    Todos os selos foram registrados. Você já pode abrir uma Ordem de Produção no PCP.
+                  </div>
+                </div>
+              </div>
+              <div className="sm:ml-auto flex items-center gap-2">
+                {proto.product_id && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/produto/$id" params={{ id: proto.product_id }}>
+                      Ver produto
+                    </Link>
+                  </Button>
+                )}
+                <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Link to="/pcp-kanban">
+                    <Factory className="size-4 mr-1.5" />
+                    Criar OP no PCP
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Timeline full-page */}
         <div className="space-y-4">
           <PrototypeGatesPanel prototypeId={proto.id} />
