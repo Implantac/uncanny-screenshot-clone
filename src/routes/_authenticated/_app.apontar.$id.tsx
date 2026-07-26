@@ -1,5 +1,5 @@
 import { createFileRoute, useParams, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -11,6 +11,8 @@ import {
   Clock,
   Package,
   Loader2,
+  WifiOff,
+  CloudUpload,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,24 +27,91 @@ export const Route = createFileRoute("/_authenticated/_app/apontar/$id")({
 });
 
 type Stage =
-  | "cad"
+  | "compras"
   | "corte"
+  | "bordado"
+  | "bordado_terc"
+  | "silk"
+  | "silk_terc"
   | "costura"
+  | "costura_terc"
   | "acabamento"
-  | "qualidade"
-  | "expedicao"
-  | "entregue"
-  | "concluido";
+  | "entregue";
 
 const STAGES: { key: Stage; label: string }[] = [
-  { key: "cad", label: "CAD / Modelagem" },
+  { key: "compras", label: "Compras" },
   { key: "corte", label: "Corte" },
+  { key: "bordado", label: "Bordado" },
+  { key: "bordado_terc", label: "Bordado Terc." },
+  { key: "silk", label: "Silk" },
+  { key: "silk_terc", label: "Silk Terc." },
   { key: "costura", label: "Costura" },
+  { key: "costura_terc", label: "Costura Terc." },
   { key: "acabamento", label: "Acabamento" },
-  { key: "qualidade", label: "Qualidade" },
-  { key: "expedicao", label: "Expedição" },
   { key: "entregue", label: "Entregue" },
 ];
+
+const QUEUE_KEY = "apontar:queue:v1";
+
+type QueuedMove = {
+  id: string;
+  order_id: string;
+  owner_id: string;
+  from_stage: Stage;
+  to_stage: Stage;
+  quantity: number;
+  is_partial: boolean;
+  note: string | null;
+  created_by: string | null;
+  advance_stage: boolean;
+  ts: number;
+};
+
+function readQueue(): QueuedMove[] {
+  try {
+    return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+function writeQueue(q: QueuedMove[]) {
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
+}
+
+async function flushQueue(): Promise<{ ok: number; fail: number }> {
+  let ok = 0;
+  let fail = 0;
+  const q = readQueue();
+  if (!q.length) return { ok, fail };
+  const remaining: QueuedMove[] = [];
+  for (const m of q) {
+    try {
+      const { error } = await supabase.from("production_stage_log").insert({
+        owner_id: m.owner_id,
+        order_id: m.order_id,
+        from_stage: m.from_stage,
+        to_stage: m.to_stage,
+        quantity: m.quantity,
+        is_partial: m.is_partial,
+        note: m.note,
+        created_by: m.created_by,
+      } as any);
+      if (error) throw error;
+      if (m.advance_stage) {
+        await supabase
+          .from("production_orders")
+          .update({ stage: m.to_stage as any, stage_updated_at: new Date().toISOString() })
+          .eq("id", m.order_id);
+      }
+      ok++;
+    } catch {
+      fail++;
+      remaining.push(m);
+    }
+  }
+  writeQueue(remaining);
+  return { ok, fail };
+}
 
 function relTime(iso?: string | null) {
   if (!iso) return "";
@@ -57,6 +126,33 @@ function ApontarPage() {
   const { id } = useParams({ from: "/_authenticated/_app/apontar/$id" });
   const qc = useQueryClient();
   useRealtime("production_orders", ["apontar", id]);
+
+  const [online, setOnline] = useState(
+    typeof navigator === "undefined" ? true : navigator.onLine,
+  );
+  const [queueSize, setQueueSize] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setQueueSize(readQueue().length);
+    refresh();
+    const onOnline = async () => {
+      setOnline(true);
+      const r = await flushQueue();
+      refresh();
+      if (r.ok) toast.success(`${r.ok} apontamento(s) enviado(s) da fila offline`);
+      if (r.fail) toast.error(`${r.fail} apontamento(s) falharam ao sincronizar`);
+      qc.invalidateQueries({ queryKey: ["apontar", id] });
+    };
+    const onOffline = () => setOnline(false);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    const t = setInterval(refresh, 4000);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+      clearInterval(t);
+    };
+  }, [id, qc]);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["apontar", id],
@@ -92,6 +188,26 @@ function ApontarPage() {
       const { data: u } = await supabase.auth.getUser();
       const created_by = u.user?.id ?? null;
 
+      if (!navigator.onLine) {
+        const q = readQueue();
+        q.push({
+          id: crypto.randomUUID(),
+          order_id: order.id,
+          owner_id: order.owner_id,
+          from_stage: order.stage,
+          to_stage: to,
+          quantity: partialQty ?? total,
+          is_partial: isPartial,
+          note: note ?? null,
+          created_by,
+          advance_stage: !isPartial,
+          ts: Date.now(),
+        });
+        writeQueue(q);
+        setQueueSize(q.length);
+        return { queued: true };
+      }
+
       const { error: e1 } = await supabase.from("production_stage_log").insert({
         owner_id: order.owner_id,
         order_id: order.id,
@@ -111,9 +227,12 @@ function ApontarPage() {
           .eq("id", order.id);
         if (e2) throw e2;
       }
+      return { queued: false };
     },
-    onSuccess: (_d, v) => {
-      toast.success(`Apontado → ${STAGES.find((s) => s.key === v.to)?.label ?? v.to}`);
+    onSuccess: (res, v) => {
+      const label = STAGES.find((s) => s.key === v.to)?.label ?? v.to;
+      if (res?.queued) toast.success(`Salvo offline → ${label}. Enviará quando reconectar.`);
+      else toast.success(`Apontado → ${label}`);
       setQty("");
       qc.invalidateQueries({ queryKey: ["apontar", id] });
     },
@@ -141,7 +260,7 @@ function ApontarPage() {
   const late =
     order.due_date &&
     new Date(order.due_date).getTime() < Date.now() &&
-    order.stage !== "concluido";
+    order.stage !== "entregue";
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -161,6 +280,37 @@ function ApontarPage() {
           </span>
         )}
       </header>
+
+      {(!online || queueSize > 0) && (
+        <div
+          className={`px-4 py-2 text-xs flex items-center justify-between gap-2 border-b ${
+            online
+              ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300"
+              : "bg-destructive/10 border-destructive/30 text-destructive"
+          }`}
+        >
+          <span className="inline-flex items-center gap-2">
+            {online ? <CloudUpload className="size-3.5" /> : <WifiOff className="size-3.5" />}
+            {online
+              ? `${queueSize} apontamento(s) na fila para enviar`
+              : "Sem conexão — apontamentos serão salvos e enviados ao reconectar"}
+          </span>
+          {online && queueSize > 0 && (
+            <button
+              onClick={async () => {
+                const r = await flushQueue();
+                setQueueSize(readQueue().length);
+                if (r.ok) toast.success(`${r.ok} enviado(s)`);
+                if (r.fail) toast.error(`${r.fail} falharam`);
+                qc.invalidateQueries({ queryKey: ["apontar", id] });
+              }}
+              className="underline font-medium"
+            >
+              Sincronizar
+            </button>
+          )}
+        </div>
+      )}
 
       <main className="px-4 py-4 space-y-5 max-w-xl mx-auto">
         <section className="rounded-xl border border-border bg-card p-4">
@@ -259,7 +409,7 @@ function ApontarPage() {
           {!nextStage && (
             <button
               disabled={move.isPending}
-              onClick={() => move.mutate({ to: "concluido" as Stage })}
+              onClick={() => move.mutate({ to: "entregue" })}
               className="w-full h-16 rounded-xl bg-success text-success-foreground font-semibold text-lg inline-flex items-center justify-center gap-2"
             >
               <CheckCircle2 className="size-5" /> Concluir
