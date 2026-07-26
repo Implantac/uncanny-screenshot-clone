@@ -283,6 +283,14 @@ function ColecoesPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
   const [defaultParentId, setDefaultParentId] = useState<string | null>(null);
+  const [pinnedOnly, setPinnedOnly] = useState(false);
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const refresh = () => setPinnedIds(new Set(getPinnedCollections().map((c) => c.id)));
+    refresh();
+    window.addEventListener("plm:pinned-collections-changed", refresh);
+    return () => window.removeEventListener("plm:pinned-collections-changed", refresh);
+  }, []);
 
   const { data: collections = [], isLoading } = useQuery({
     queryKey: ["collections"],
