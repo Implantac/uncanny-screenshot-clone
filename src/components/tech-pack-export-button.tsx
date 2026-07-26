@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Loader2, Settings2, Users, Building2 } from "lucide-react";
-void 0 as unknown as typeof import("lucide-react").FileDown;
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
