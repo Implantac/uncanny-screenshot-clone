@@ -312,13 +312,13 @@ function LotePage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-5">
+      <PlmBreadcrumb
+        items={[
+          { label: "Lotes", link: { to: "/lotes" } },
+          { label: `Lote ${batch.code}` },
+        ]}
+      />
       <div className="flex items-center gap-3">
-        <Link to="/lotes">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="size-4 mr-1" />
-            Lotes
-          </Button>
-        </Link>
         <Badge variant="outline" className={STATUS_TONE[batch.status] ?? ""}>
           {batch.status}
         </Badge>
@@ -326,6 +326,7 @@ function LotePage() {
           <LoteQrButton batchCode={batch.code} batchId={batch.id} />
         </div>
       </div>
+
 
       <div className="flex items-start gap-3">
         <div className="size-12 rounded-xl bg-primary/10 grid place-items-center">
