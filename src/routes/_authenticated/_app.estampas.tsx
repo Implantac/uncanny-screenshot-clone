@@ -358,7 +358,7 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
                         p.status === "ajuste" ? "secondary" : "outline"
                       }>{p.status}</Badge>
                     </div>
-                    {p.proof_url && <img src={p.proof_url} alt={`Round ${p.round}`} className="w-full max-h-40 object-contain rounded border" />}
+                    {p.proof_url && <img src={p.proof_url} alt={`Round ${p.round}`} loading="lazy" decoding="async" className="w-full max-h-40 object-contain rounded border" />}
                     {p.notes && <p className="text-xs text-muted-foreground">Notas: {p.notes}</p>}
                     {p.reviewer_notes && <p className="text-xs">Revisão: {p.reviewer_notes}</p>}
                     {p.status === "pendente" && (
