@@ -410,7 +410,7 @@ function CommandCenter() {
             Command Center · PLM
           </div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-            {greeting}, <span className="text-gradient">USE Moda</span>
+            {greeting}, <span className="text-gradient">{firstName || "USE Moda"}</span>
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             Desenvolvimento, produção e cadeia em tempo real{today && ` · ${today}`}
