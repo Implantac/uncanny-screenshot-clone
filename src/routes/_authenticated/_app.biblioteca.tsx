@@ -136,7 +136,17 @@ function BibliotecaPage() {
 
         <main className="col-span-12 md:col-span-9">
           {isLoading && (
-            <div className="text-center text-muted-foreground py-12">Carregando…</div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" aria-label="Carregando biblioteca">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="rounded-xl overflow-hidden border border-border/40 animate-pulse">
+                  <div className="aspect-square bg-muted/40" />
+                  <div className="p-2 space-y-2">
+                    <div className="h-3 w-3/4 bg-muted/40 rounded" />
+                    <div className="h-3 w-1/2 bg-muted/30 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
           {!isLoading && (data?.items.length ?? 0) === 0 && (
             <div className="text-center text-muted-foreground py-12 border border-dashed rounded-xl">
