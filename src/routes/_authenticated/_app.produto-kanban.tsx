@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
-import { AlertTriangle, ChevronRight, Clock, Download, Search, Sparkles } from "lucide-react";
+import { useMemo } from "react";
+import { AlertTriangle, ChevronRight, Clock, Download, Search, Share2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ui/page-header";
@@ -22,7 +22,17 @@ import {
 import { cn } from "@/lib/utils";
 
 
+type QuickFilter = "all" | "blocked" | "overdue" | "pinned";
+type KanbanSearch = { q: string; f: QuickFilter };
+
 export const Route = createFileRoute("/_authenticated/_app/produto-kanban")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    q: typeof s.q === "string" ? s.q : "",
+    f:
+      s.f === "blocked" || s.f === "overdue" || s.f === "pinned" || s.f === "all"
+        ? (s.f as QuickFilter)
+        : "all",
+  }),
   component: ProductLifecycleKanban,
   head: () => ({
     meta: [
@@ -87,12 +97,17 @@ function exportKanbanCsv(
 }
 
 
-type QuickFilter = "all" | "blocked" | "overdue" | "pinned";
 
 function ProductLifecycleKanban() {
   const fetchKanban = useServerFn(listLifecycleKanban);
-  const [q, setQ] = useState("");
-  const [quick, setQuick] = useState<QuickFilter>("all");
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const q = search.q;
+  const quick = search.f;
+  const setQ = (val: string) =>
+    navigate({ search: (prev: KanbanSearch) => ({ ...prev, q: val }), replace: true });
+  const setQuick = (val: QuickFilter) =>
+    navigate({ search: (prev: KanbanSearch) => ({ ...prev, f: val }), replace: true });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["product-lifecycle-kanban"],
@@ -201,6 +216,20 @@ function ProductLifecycleKanban() {
               title="Exportar visão atual em CSV"
             >
               <Download className="h-3 w-3" /> CSV
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1 px-2 text-xs"
+              onClick={() => {
+                navigator.clipboard
+                  .writeText(window.location.href)
+                  .then(() => toast.success("Link da visão copiado"))
+                  .catch(() => toast.error("Não consegui copiar o link"));
+              }}
+              title="Copiar link desta visão (filtro + busca)"
+            >
+              <Share2 className="h-3 w-3" /> Compartilhar
             </Button>
           </div>
         }
