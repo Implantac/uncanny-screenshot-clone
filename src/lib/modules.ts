@@ -56,6 +56,7 @@ import {
   Flame,
   FolderOpen,
   Library,
+  Palette,
   type LucideIcon,
 } from "lucide-react";
 
