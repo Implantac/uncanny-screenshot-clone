@@ -165,19 +165,56 @@ function ScanPage() {
 
         <section className="rounded-xl border border-border bg-card p-4 space-y-2">
           <label className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Keyboard className="size-3.5" /> Digitar código do lote
+            <Keyboard className="size-3.5" /> Buscar lote, OP ou SKU
           </label>
           <div className="flex gap-2">
             <Input
               value={manual}
               onChange={(e) => setManual(e.target.value)}
-              placeholder="ex: L-2026-001"
+              placeholder="ex: L-2026-001, OP-123, MODELO-42"
               onKeyDown={(e) => e.key === "Enter" && go(manual)}
+              autoFocus
             />
             <Button onClick={() => go(manual)} disabled={busy || !manual.trim()}>
               Abrir
             </Button>
           </div>
+          {manual.trim().length >= 2 && (
+            <div className="mt-1 rounded-lg border border-border bg-background/50 divide-y divide-border overflow-hidden">
+              {searching && suggestions.length === 0 ? (
+                <div className="text-xs text-muted-foreground px-3 py-2">Buscando…</div>
+              ) : suggestions.length === 0 ? (
+                <div className="text-xs text-muted-foreground px-3 py-2">
+                  Nenhum resultado. Enter tenta correspondência exata.
+                </div>
+              ) : (
+                suggestions.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => navigate({ to: "/apontar/$id", params: { id: s.id } })}
+                    className="w-full text-left px-3 py-2 hover:bg-muted focus:bg-muted focus:outline-none"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-medium truncate">
+                        {s.batch_code || s.code}
+                      </div>
+                      {s.stage && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-wider">
+                          {s.stage}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {s.product_sku && <span className="font-mono">{s.product_sku}</span>}
+                      {s.product_sku && s.product_name && " · "}
+                      {s.product_name}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </section>
 
         <p className="text-[11px] text-muted-foreground text-center">
