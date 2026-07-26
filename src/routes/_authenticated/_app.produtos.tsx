@@ -429,6 +429,17 @@ function ProdutosPage() {
         </div>
       )}
 
+      <ProductQuickCreateDialog
+        open={quickOpen}
+        onOpenChange={setQuickOpen}
+        userId={user?.id}
+        collections={collections}
+        onAdvanced={() => {
+          setEditing(null);
+          setOpen(true);
+        }}
+      />
+
       <ProductDialog
         open={open}
         onOpenChange={(v) => {
