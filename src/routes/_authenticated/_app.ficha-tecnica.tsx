@@ -54,7 +54,7 @@ import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer
 import { TechSheetCostAlertsPanel } from "@/components/tech-sheet-cost-alerts-panel";
 import { TechSheetBomReviewPanel } from "@/components/tech-sheet-bom-review-panel";
 import { TechPackImportButton } from "@/components/tech-pack-import-button";
-import { TechPackExportButton } from "@/components/tech-pack-export-button";
+import { TechPackExportButtonLazy as TechPackExportButton } from "@/components/tech-pack-export-button-lazy";
 import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
 import { ShieldCheck, Camera } from "lucide-react";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";
