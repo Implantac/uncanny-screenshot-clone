@@ -831,7 +831,25 @@ function ColecoesPage() {
       )}
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando…</div>
+        <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-4">
+          <section className="glass rounded-xl p-3 sm:p-4 space-y-3">
+            <div className="h-5 w-40 bg-muted rounded animate-pulse" />
+            <div className="h-3 w-24 bg-muted rounded animate-pulse" />
+            <div className="space-y-2 pt-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-14 bg-muted rounded-lg animate-pulse" />
+              ))}
+            </div>
+          </section>
+          <section className="glass rounded-xl p-3 sm:p-4 space-y-3">
+            <div className="h-5 w-56 bg-muted rounded animate-pulse" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-40 bg-muted rounded-xl animate-pulse" />
+              ))}
+            </div>
+          </section>
+        </div>
       ) : collections.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center">
           <Sparkles className="size-10 text-primary mx-auto mb-3" />
