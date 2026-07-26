@@ -1216,7 +1216,13 @@ function ProductDialog({
               onChange={(event) => setColorsStr(event.target.value)}
               placeholder="#111111, #f4ede2 ou Preto, Off-white"
             />
+            <CollectionPaletteSuggestion
+              collectionId={collectionId === "none" ? null : collectionId}
+              currentValue={colorsStr}
+              onApply={(str) => setColorsStr(str)}
+            />
           </div>
+
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
