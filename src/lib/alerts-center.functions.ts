@@ -288,19 +288,29 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
     return alerts;
   });
 
+export type DismissMode = "snooze_1h" | "snooze_1d" | "snooze_7d" | "resolve";
+
+const SNOOZE_MS: Record<Exclude<DismissMode, "resolve">, number> = {
+  snooze_1h: 3_600_000,
+  snooze_1d: 86_400_000,
+  snooze_7d: 7 * 86_400_000,
+};
+
 export const dismissAlert = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { key: string; mode: "snooze" | "resolve" }) => data)
+  .inputValidator((data: { keys: string[]; mode: DismissMode }) => data)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const payload = {
+    const until =
+      data.mode === "resolve" ? null : new Date(Date.now() + SNOOZE_MS[data.mode]).toISOString();
+    const payload = data.keys.map((key) => ({
       user_id: userId,
       owner_id: userId,
-      alert_key: data.key,
+      alert_key: key,
       resolved: data.mode === "resolve",
-      dismissed_until:
-        data.mode === "snooze" ? new Date(Date.now() + 7 * 86_400_000).toISOString() : null,
-    };
+      dismissed_until: until,
+    }));
+
     const { error } = await supabase
       .from("alert_dismissals")
       .upsert(payload, { onConflict: "user_id,alert_key" });
