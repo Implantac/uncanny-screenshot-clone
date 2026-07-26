@@ -50,6 +50,7 @@ import {
   STAGE_LABELS,
 } from "@/lib/collection-timeline.functions";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
+import { CollectionColorPalette } from "@/components/collection-color-palette";
 import { CarryOverPanel } from "@/components/carry-over-panel";
 import { AssortmentPanel } from "@/components/assortment-panel";
 import { ChannelMixPanel } from "@/components/channel-mix-panel";
@@ -538,6 +539,9 @@ function CollectionTabs({
         <TabsTrigger value="moodboard">
           <Palette className="size-3.5 mr-1.5" /> Moodboard
         </TabsTrigger>
+        <TabsTrigger value="cartela">
+          <Palette className="size-3.5 mr-1.5" /> Cartela de Cor
+        </TabsTrigger>
         <TabsTrigger value="assortment">
           <Grid3x3 className="size-3.5 mr-1.5" /> Assortment & Mix
         </TabsTrigger>
@@ -802,6 +806,11 @@ function CollectionTabs({
       <TabsContent value="moodboard" className="space-y-4">
         <CollectionMoodboard collectionId={collectionId} />
       </TabsContent>
+
+      <TabsContent value="cartela" className="space-y-4">
+        <CollectionColorPalette collectionId={collectionId} />
+      </TabsContent>
+
 
       <TabsContent value="assortment" className="space-y-4">
         <AssortmentPanel collectionId={collectionId} collectionName={current.collection.name} />

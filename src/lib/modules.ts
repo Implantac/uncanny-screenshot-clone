@@ -308,6 +308,15 @@ export const MODULES: ModuleDef[] = [
     group: "Desenvolvimento",
   },
   {
+    slug: "estampas",
+    path: "/estampas",
+    title: "Estampas & Silk",
+    short: "Aprovação de arte e prova",
+    description: "Arte final → prova de cor → liberação para o fornecedor, com rounds e responsáveis.",
+    icon: Palette,
+    group: "Desenvolvimento",
+  },
+  {
     slug: "target-costing",
     path: "/target-costing",
     title: "Target Costing",
