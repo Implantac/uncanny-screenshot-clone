@@ -11,6 +11,13 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ["P"], label: "Fixar/desafixar produto atual", scope: "Product Workspace" },
   { keys: ["?"], label: "Abrir esta ajuda de atalhos", scope: "Global" },
   { keys: ["Esc"], label: "Fechar diálogos abertos", scope: "Global" },
+  { keys: ["G", "P"], label: "Ir para Produtos", scope: "Navegação" },
+  { keys: ["G", "C"], label: "Ir para Coleções", scope: "Navegação" },
+  { keys: ["G", "K"], label: "Ir para Kanban do PCP", scope: "Navegação" },
+  { keys: ["G", "A"], label: "Ir para Alertas", scope: "Navegação" },
+  { keys: ["G", "B"], label: "Ir para Biblioteca de materiais", scope: "Navegação" },
+  { keys: ["G", "F"], label: "Ir para Fichas técnicas", scope: "Navegação" },
+  { keys: ["G", "D"], label: "Ir para Início (dashboard)", scope: "Navegação" },
 ];
 
 function Key({ children }: { children: React.ReactNode }) {
