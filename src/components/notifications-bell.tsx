@@ -60,7 +60,10 @@ export function NotificationsBell() {
   const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["notifications", user?.id ?? null],
+    enabled: !!user?.id,
     refetchInterval: 60_000,
+    refetchOnWindowFocus: false,
+    staleTime: 30_000,
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
       const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
