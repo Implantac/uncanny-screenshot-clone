@@ -1696,7 +1696,7 @@ function ReadyToLaunchCard({
             >
               <div className="size-10 rounded bg-muted overflow-hidden shrink-0 grid place-items-center">
                 {prod.image_url ? (
-                  <img src={prod.image_url} alt="" className="size-full object-cover" />
+                  <img src={prod.image_url} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
                 ) : (
                   <Megaphone className="size-4 text-muted-foreground" />
                 )}

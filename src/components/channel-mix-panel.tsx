@@ -178,7 +178,7 @@ function ChannelColumn({
             }`}
           >
             {p.imageUrl ? (
-              <img src={p.imageUrl} alt="" className="size-5 rounded object-cover" />
+              <img src={p.imageUrl} alt="" loading="lazy" decoding="async" className="size-5 rounded object-cover" />
             ) : (
               <div className="size-5 rounded bg-muted" />
             )}

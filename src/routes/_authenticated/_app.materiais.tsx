@@ -551,7 +551,7 @@ function MaterialDetailSheet({
               style={{ background: d.image_url ? undefined : d.color_hex || "hsl(var(--muted))" }}
             >
               {d.image_url ? (
-                <img src={d.image_url} alt={d.name} className="w-full h-full object-cover" />
+                <img src={d.image_url} alt={d.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               ) : !d.color_hex ? (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   <ImageOff className="size-12" />

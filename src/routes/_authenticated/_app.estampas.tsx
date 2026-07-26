@@ -172,7 +172,7 @@ function EstampasPage() {
                   <Card key={a.id} className="cursor-pointer hover:border-primary transition" onClick={() => setSelected(a)}>
                     <div className="h-40 w-full bg-muted overflow-hidden rounded-t-lg">
                       {a.artwork_url ? (
-                        <img src={a.artwork_url} alt={a.name} className="w-full h-full object-contain" />
+                        <img src={a.artwork_url} alt={a.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
                       ) : (
                         <div className="flex items-center justify-center h-full text-muted-foreground">
                           <ImageIcon className="size-8" />
@@ -319,7 +319,7 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
 
         <div className="space-y-4">
           {artwork.artwork_url && (
-            <img src={artwork.artwork_url} alt={artwork.name} className="w-full max-h-64 object-contain rounded border" />
+            <img src={artwork.artwork_url} alt={artwork.name} loading="lazy" decoding="async" className="w-full max-h-64 object-contain rounded border" />
           )}
 
           <div className="grid grid-cols-2 gap-2 text-sm">
@@ -358,7 +358,7 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
                         p.status === "ajuste" ? "secondary" : "outline"
                       }>{p.status}</Badge>
                     </div>
-                    {p.proof_url && <img src={p.proof_url} alt={`Round ${p.round}`} className="w-full max-h-40 object-contain rounded border" />}
+                    {p.proof_url && <img src={p.proof_url} alt={`Round ${p.round}`} loading="lazy" decoding="async" className="w-full max-h-40 object-contain rounded border" />}
                     {p.notes && <p className="text-xs text-muted-foreground">Notas: {p.notes}</p>}
                     {p.reviewer_notes && <p className="text-xs">Revisão: {p.reviewer_notes}</p>}
                     {p.status === "pendente" && (

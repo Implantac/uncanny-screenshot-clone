@@ -99,7 +99,7 @@ export function FitSessionTimeline({
               >
                 <div className="aspect-square bg-muted flex items-center justify-center">
                   {photo ? (
-                    <img src={photo} alt={`Prova ${s.iteration}`} className="w-full h-full object-cover" />
+                    <img src={photo} alt={`Prova ${s.iteration}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   ) : (
                     <ImageIcon className="size-8 text-muted-foreground/40" />
                   )}
