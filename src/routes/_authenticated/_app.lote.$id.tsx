@@ -31,6 +31,8 @@ import { LoteQrButton } from "@/components/lote-qr-button";
 import { BomExplosionDialog } from "@/components/bom-explosion-dialog";
 import { LoteSplitDialog } from "@/components/lote-split-dialog";
 import { LotePassagensPanel } from "@/components/lote-passagens-panel";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
+
 
 const OCC_KIND_LABEL: Record<string, string> = {
   positiva: "Positiva (+)",
