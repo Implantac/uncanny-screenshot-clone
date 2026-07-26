@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useRouterState, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { GlobalPushListener } from "@/components/global-push-listener";
+import { GlobalQuickCreate } from "@/components/global-quick-create";
 import { GlobalBreadcrumb } from "@/components/global-breadcrumb";
 import { MODULES, moduleAllowed, moduleSector, SECTOR_LABEL } from "@/lib/modules";
 import { useSectors } from "@/hooks/use-sectors";
@@ -14,6 +15,7 @@ function AppLayout() {
   return (
     <AppShell>
       <GlobalPushListener />
+      <GlobalQuickCreate />
       <SectorGuard>
         <GlobalBreadcrumb />
         <Outlet />

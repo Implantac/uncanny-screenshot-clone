@@ -31,7 +31,7 @@ export function GlobalQuickCreate() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("collections")
-        .select("id, name, season")
+        .select("id, name, season, year")
         .order("name");
       if (error) throw error;
       return data ?? [];
