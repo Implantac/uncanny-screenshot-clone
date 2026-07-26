@@ -109,6 +109,10 @@ function ProductWorkspace() {
     },
   });
 
+  useEffect(() => {
+    if (product?.id) pushRecentProduct({ id: product.id, sku: product.sku, name: product.name });
+  }, [product?.id, product?.sku, product?.name]);
+
   const { data: sheet } = useQuery({
     enabled: !!product,
     queryKey: ["product-workspace-sheet", id],
