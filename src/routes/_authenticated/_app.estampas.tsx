@@ -172,7 +172,7 @@ function EstampasPage() {
                   <Card key={a.id} className="cursor-pointer hover:border-primary transition" onClick={() => setSelected(a)}>
                     <div className="h-40 w-full bg-muted overflow-hidden rounded-t-lg">
                       {a.artwork_url ? (
-                        <img src={a.artwork_url} alt={a.name} className="w-full h-full object-contain" />
+                        <img src={a.artwork_url} alt={a.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
                       ) : (
                         <div className="flex items-center justify-center h-full text-muted-foreground">
                           <ImageIcon className="size-8" />
