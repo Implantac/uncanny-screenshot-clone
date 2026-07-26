@@ -152,11 +152,11 @@ function ProductWorkspace() {
       e.preventDefault();
       const { toast } = await import("sonner");
       toast.info(`${e.key === "]" ? "Próximo" : "Anterior"}: ${target.sku}`);
-      window.location.assign(`/produto/${target.id}`);
+      navigate({ to: "/produto/$id", params: { id: target.id } });
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [product?.id]);
+  }, [product?.id, navigate]);
 
 
   const { data: sheet } = useQuery({
