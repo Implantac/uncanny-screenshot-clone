@@ -403,6 +403,7 @@ function ProductWorkspace() {
 
         <TabsContent value="pcp" className="space-y-4">
           <ProductPcpHealthPanel productId={product.id} />
+          <ProductPrintArtworksPanel productId={product.id} />
           <ProductDigitalTwinPanel productId={product.id} />
           <div className="rounded-xl border border-border bg-card p-4">
 
