@@ -31,7 +31,10 @@ export type CenterAlert = {
   why: string;
   link: string;
   ts: string;
+  entityKey?: string;
+  entityLabel?: string;
 };
+
 
 const sevWeight: Record<AlertSeverity, number> = {
   critica: 4,
