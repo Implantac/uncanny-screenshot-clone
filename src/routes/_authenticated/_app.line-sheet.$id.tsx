@@ -120,13 +120,14 @@ function LineSheetPage() {
       <div className="print:hidden space-y-3">
         <PlmBreadcrumb
           items={[
-            { label: "Coleções", to: "/collections" },
+            { label: "Coleções", link: { to: "/collections" } },
             ...(collection
-              ? [{ label: collection.name, to: "/colecao-360/$id" as const, params: { id } }]
+              ? [{ label: collection.name, link: { to: "/colecao-360/$id" as const, params: { id } } }]
               : []),
             { label: "Line Sheet" },
           ]}
         />
+
         <PageHeader
           eyebrow="Coleções"
           title={`Line Sheet · ${collection?.name ?? "…"}`}
