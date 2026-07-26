@@ -25,7 +25,7 @@ import { QuickPassButton } from "@/components/quick-pass-lazy";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { PersonaInsightsPanelLazy as PersonaInsightsPanel } from "@/components/persona-insights-panel-lazy";
 import { DelayPredictionPanel } from "@/components/delay-prediction-panel";
-import { LoteReferencesDrawer } from "@/components/lote-references-drawer";
+import { LoteReferencesDrawer } from "@/components/lote-references-drawer-lazy";
 import { ProductionTechSheetDrawer } from "@/components/production-tech-sheet-drawer-lazy";
 import { SamEfficiencyPanel } from "@/components/sam-efficiency-panel";
 import { PcpCapacityTocPanel } from "@/components/pcp-capacity-toc-panel";
