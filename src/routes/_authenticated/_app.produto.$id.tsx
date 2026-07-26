@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -89,6 +89,7 @@ type ProductRow = {
 
 function ProductWorkspace() {
   const { id } = useParams({ from: "/_authenticated/_app/produto/$id" });
+  const navigate = useNavigate();
   useRealtime("products", ["product-workspace", id]);
   const audit = useServerFn(logProductView);
   useEffect(() => {
@@ -151,11 +152,11 @@ function ProductWorkspace() {
       e.preventDefault();
       const { toast } = await import("sonner");
       toast.info(`${e.key === "]" ? "Próximo" : "Anterior"}: ${target.sku}`);
-      window.location.assign(`/produto/${target.id}`);
+      navigate({ to: "/produto/$id", params: { id: target.id } });
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [product?.id]);
+  }, [product?.id, navigate]);
 
 
   const { data: sheet } = useQuery({
