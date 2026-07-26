@@ -48,6 +48,13 @@ export function ProductQuickCreateDialog({
   const [skuTouched, setSkuTouched] = useState(false);
   const [collectionId, setCollectionId] = useState<string>("none");
 
+  // Inline collection creation state
+  const [showNewColl, setShowNewColl] = useState(false);
+  const [newCollName, setNewCollName] = useState("");
+  const currentYear = new Date().getFullYear();
+  const [newCollSeason, setNewCollSeason] = useState<string>("Verão");
+  const [newCollYear, setNewCollYear] = useState<number>(currentYear);
+
   // Suggest SKU: first 3 letters of name + timestamp suffix
   const suggestedSku = useMemo(() => {
     const base = name
@@ -67,7 +74,38 @@ export function ProductQuickCreateDialog({
     setSku("");
     setSkuTouched(false);
     setCollectionId(defaultCollectionId ?? (collections[0]?.id ?? "none"));
-  }, [open, defaultCollectionId, collections]);
+    setShowNewColl(collections.length === 0);
+    setNewCollName("");
+    setNewCollSeason("Verão");
+    setNewCollYear(currentYear);
+  }, [open, defaultCollectionId, collections, currentYear]);
+
+  const createCollectionMut = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error("Sessão expirada");
+      if (!newCollName.trim()) throw new Error("Informe o nome da coleção");
+      const { data, error } = await supabase
+        .from("collections")
+        .insert({
+          name: newCollName.trim(),
+          season: newCollSeason,
+          year: newCollYear,
+          status: "briefing" as const,
+          owner_id: userId,
+        })
+        .select("id, name, season, year")
+        .single();
+      if (error) throw error;
+      return data as CollectionRef;
+    },
+    onSuccess: (coll) => {
+      toast.success(`Coleção "${coll.name}" criada`);
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      setCollectionId(coll.id);
+      setShowNewColl(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   // Pre-flight: check SKU uniqueness on the fly
   const finalSku = skuTouched && sku ? sku.trim().toUpperCase() : suggestedSku;
