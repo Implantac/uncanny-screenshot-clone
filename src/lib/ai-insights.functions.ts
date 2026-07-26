@@ -351,14 +351,14 @@ export const askInsight = createServerFn({ method: "POST" })
       const status = e?.statusCode ?? e?.lastError?.statusCode;
       if (status === 429 || /Too Many Requests/i.test(msg)) {
         return {
-          text: "**Limite de requisições atingido.** A IA está recebendo muitas chamadas no momento. Aguarde alguns segundos e tente novamente.",
+          text: "**Agente USE ocupado.** Muitas análises em paralelo — atualize em alguns segundos.",
           persona: persona.label,
           error: "rate_limited" as const,
         };
       }
       if (status === 402 || /Payment Required/i.test(msg)) {
         return {
-          text: "**Créditos de IA esgotados.** Adicione créditos no workspace para continuar usando o assistente.",
+          text: "**Agente USE em pausa.** Retomando automaticamente em instantes.",
           persona: persona.label,
           error: "credits_exhausted" as const,
         };
