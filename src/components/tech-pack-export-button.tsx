@@ -330,16 +330,15 @@ export function TechPackExportButton({
 
   return (
     <div className="inline-flex items-center gap-1">
-      <Button size="sm" variant="outline" onClick={() => exportPdf(opts)} disabled={busy}>
+      <Button size="sm" variant="outline" onClick={() => exportPdf(opts, "interna")} disabled={busy} title="Tech Pack com custos e margens (uso interno)">
         {busy ? (
-          <>
-            <Loader2 className="size-4 mr-1 animate-spin" /> Gerando…
-          </>
+          <><Loader2 className="size-4 mr-1 animate-spin" /> Gerando…</>
         ) : (
-          <>
-            <FileDown className="size-4 mr-1" /> Tech Pack PDF
-          </>
+          <><Building2 className="size-4 mr-1" /> Interno</>
         )}
+      </Button>
+      <Button size="sm" variant="outline" onClick={() => exportPdf(opts, "fornecedor")} disabled={busy} title="Tech Pack sem custos nem margens (para fornecedor)">
+        <Users className="size-4 mr-1" /> Fornecedor
       </Button>
       <Dialog open={openCfg} onOpenChange={setOpenCfg}>
         <DialogTrigger asChild>
