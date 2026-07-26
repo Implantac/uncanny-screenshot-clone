@@ -377,11 +377,18 @@ function ProdutosPage() {
               {filtered.map((product) => {
                 const active = product.id === selected?.id;
                 return (
-                  <button
+                  <div
                     key={product.id}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setSelectedId(product.id)}
-                    className={`w-full rounded-xl border p-3 text-left transition-colors ${active ? "border-primary/40 bg-primary/10" : "border-border bg-background/30 hover:bg-muted/30"}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedId(product.id);
+                      }
+                    }}
+                    className={`w-full rounded-xl border p-3 text-left transition-colors cursor-pointer ${active ? "border-primary/40 bg-primary/10" : "border-border bg-background/30 hover:bg-muted/30"}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -390,19 +397,20 @@ function ProdutosPage() {
                           <Tag className="size-3" /> {product.sku}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
+                      <div
+                        className="flex items-center gap-1 shrink-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ProductPinButton id={product.id} sku={product.sku} name={product.name} />
                         <ProductReadinessBadge productId={product.id} />
                         <StatusBadge kind="product" value={product.status} />
                       </div>
-
-
-
                     </div>
                     <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                       <span>{product.category || "Sem categoria"}</span>
                       <span>{brl(Number(product.sell_price || 0))}</span>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
               {!filtered.length && (
