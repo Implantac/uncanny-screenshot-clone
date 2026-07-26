@@ -15,6 +15,7 @@ import {
   Sparkles,
   Tag,
   Trash2,
+  Copy,
   Upload,
 } from "lucide-react";
 import { exportToCsv } from "@/lib/csv";
@@ -49,6 +50,7 @@ import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ProductTimeline } from "@/components/product-timeline";
 import { ProductGallery } from "@/components/product-gallery";
 import { PageHeader } from "@/components/ui/page-header";
+import { ProductDuplicateDialog } from "@/components/product-duplicate-dialog";
 
 export const Route = createFileRoute("/_authenticated/_app/produtos")({
   validateSearch: zodValidator(
@@ -168,6 +170,7 @@ function ProdutosPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [duplicating, setDuplicating] = useState<Product | null>(null);
   const [prefill, setPrefill] = useState<Prefill | null>(null);
   useFabNewAction(() => {
     setEditing(null);
@@ -418,6 +421,7 @@ function ProdutosPage() {
                 setOpen(true);
               }}
               onDelete={() => deleteMut.mutate(selected.id)}
+              onDuplicate={() => setDuplicating(selected)}
             />
           )}
         </div>
@@ -434,6 +438,15 @@ function ProdutosPage() {
         collections={collections}
         prefill={prefill}
       />
+
+      {duplicating && user?.id && (
+        <ProductDuplicateDialog
+          open={!!duplicating}
+          onOpenChange={(v) => !v && setDuplicating(null)}
+          product={duplicating}
+          ownerId={user.id}
+        />
+      )}
     </div>
   );
 }
@@ -453,12 +466,14 @@ function ProductDetail({
   canEdit,
   onEdit,
   onDelete,
+  onDuplicate,
 }: {
   product: Product;
   collection: CollectionRef | null;
   canEdit: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
 }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -785,6 +800,9 @@ function ProductDetail({
               <>
                 <Button variant="outline" onClick={onEdit} className="gap-2">
                   <Pencil className="size-4" /> Editar
+                </Button>
+                <Button variant="outline" onClick={onDuplicate} className="gap-2">
+                  <Copy className="size-4" /> Duplicar / variar cor
                 </Button>
                 <Button
                   variant="outline"
