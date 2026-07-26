@@ -88,7 +88,7 @@ export function PersonaInsightsPanel({ persona }: { persona: PersonaKey }) {
         </div>
       ) : data?.error === "credits_exhausted" ? (
         <div className="text-xs text-muted-foreground">
-          IA em pausa. Ative créditos em Configurações para receber insights automáticos.
+          Agente USE em pausa — retomando automaticamente.
         </div>
       ) : !data || isFetching ? (
         <div className="text-xs text-muted-foreground inline-flex items-center gap-2">

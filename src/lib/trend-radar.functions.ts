@@ -127,9 +127,9 @@ ${data.notes ? `Observações: ${data.notes}` : ""}`;
       const e = err as { statusCode?: number; lastError?: { statusCode?: number } };
       const status = e?.statusCode ?? e?.lastError?.statusCode;
       if (status === 429)
-        throw new Error("Limite de requisições da IA atingido. Aguarde alguns segundos.");
+        throw new Error("Agente USE ocupado — tente novamente em instantes.");
       if (status === 402)
-        throw new Error("Créditos de IA esgotados. Adicione créditos no workspace.");
+        throw new Error("Agente USE em pausa — retomando automaticamente.");
       throw err;
     }
   });

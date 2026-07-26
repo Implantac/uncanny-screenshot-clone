@@ -62,9 +62,9 @@ function FashionGPT() {
     transport,
     onError: (err) => {
       const msg = err.message || "";
-      if (msg.includes("429")) toast.error("Muitas requisições. Tente novamente em instantes.");
-      else if (msg.includes("402")) toast.error("Créditos de IA esgotados no workspace.");
-      else toast.error("Erro ao chamar o Fashion GPT.");
+      if (msg.includes("429")) toast.error("Agente USE ocupado — tente em instantes.");
+      else if (msg.includes("402")) toast.error("Agente USE em pausa — retomando automaticamente.");
+      else toast.error("Agente Fashion GPT indisponível no momento.");
     },
   });
 

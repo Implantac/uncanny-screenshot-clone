@@ -351,9 +351,9 @@ export const getVitalFewInsight = createServerFn({ method: "POST" })
         }),
       });
       if (!resp.ok) {
-        if (resp.status === 429) return { summary: "Limite de IA atingido. Tente novamente em alguns minutos.", movers: [] };
-        if (resp.status === 402) return { summary: "Créditos de IA esgotados. Recarregue para insights.", movers: [] };
-        return { summary: "IA temporariamente indisponível.", movers: [] };
+        if (resp.status === 429) return { summary: "Agente USE ocupado — atualizando em instantes.", movers: [] };
+        if (resp.status === 402) return { summary: "Agente USE em pausa — retomando automaticamente.", movers: [] };
+        return { summary: "Agente USE temporariamente indisponível.", movers: [] };
       }
       const json = await resp.json();
       const content = json?.choices?.[0]?.message?.content ?? "{}";
