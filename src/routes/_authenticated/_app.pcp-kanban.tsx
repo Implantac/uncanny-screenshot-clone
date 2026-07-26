@@ -150,6 +150,29 @@ function PcpKanban() {
   });
   useRealtime("print_artworks", ["pcp-kanban-pending-prints"]);
 
+  // Artes aprovadas/liberadas por produto — surgem como sub-tarefas no card em Silk/Bordado.
+  type ApprovedArtwork = { id: string; name: string; technique: string };
+  const { data: approvedArtworksByProduct = new Map<string, ApprovedArtwork[]>() } = useQuery({
+    queryKey: ["pcp-kanban-approved-prints"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("print_artworks")
+        .select("id, name, technique, product_id, status")
+        .not("product_id", "is", null)
+        .in("status", ["aprovada", "liberada_producao"]);
+      if (error) throw error;
+      const m = new Map<string, ApprovedArtwork[]>();
+      for (const r of data ?? []) {
+        const pid = r.product_id as string;
+        const arr = m.get(pid) ?? [];
+        arr.push({ id: r.id as string, name: r.name as string, technique: r.technique as string });
+        m.set(pid, arr);
+      }
+      return m;
+    },
+    refetchInterval: 60_000,
+  });
+
 
   // Roteiros (product_routing) por produto, com fallback família → default
   const fetchRoutings = useServerFn(getRoutingsForProducts);
