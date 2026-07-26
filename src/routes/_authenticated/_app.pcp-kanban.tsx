@@ -134,6 +134,23 @@ function PcpKanban() {
   });
   useRealtime("quality_capa", ["pcp-kanban-open-capa"]);
 
+  // Gate de estampa/silk/bordado: OPs cujo produto tenha artes pendentes não avançam de Corte.
+  const { data: pendingPrintProductIds = new Set<string>() } = useQuery({
+    queryKey: ["pcp-kanban-pending-prints"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("print_artworks")
+        .select("product_id, status")
+        .not("product_id", "is", null)
+        .in("status", ["rascunho", "aguardando_prova", "em_prova"]);
+      if (error) throw error;
+      return new Set<string>((data ?? []).map((r) => r.product_id as string));
+    },
+    refetchInterval: 60_000,
+  });
+  useRealtime("print_artworks", ["pcp-kanban-pending-prints"]);
+
+
   // Roteiros (product_routing) por produto, com fallback família → default
   const fetchRoutings = useServerFn(getRoutingsForProducts);
   const productIds = useMemo(
