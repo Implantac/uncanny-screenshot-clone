@@ -137,7 +137,9 @@ export const PRIMARY_SLUGS = new Set<string>([
   "fashion-gpt",
   "bi",
   "security-center",
+  "onboarding",
 ]);
+
 
 export const isPrimaryModule = (m: ModuleDef) => PRIMARY_SLUGS.has(m.slug);
 
