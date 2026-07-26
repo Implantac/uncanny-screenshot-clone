@@ -22,6 +22,9 @@ import {
 import { cn } from "@/lib/utils";
 
 
+type QuickFilter = "all" | "blocked" | "overdue" | "pinned";
+type KanbanSearch = { q: string; f: QuickFilter };
+
 export const Route = createFileRoute("/_authenticated/_app/produto-kanban")({
   validateSearch: (s: Record<string, unknown>) => ({
     q: typeof s.q === "string" ? s.q : "",
