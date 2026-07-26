@@ -374,6 +374,59 @@ function CommandCenter() {
     return "Boa noite";
   }, [hour]);
 
+  const nextAction = useMemo(() => {
+    const a = data?.alerts;
+    if (!a) return null;
+    const late = a.lateBatches?.length ?? 0;
+    const stuck = a.stuckBatches?.length ?? 0;
+    const pilots = a.pendingPilots?.length ?? 0;
+    const noSheet = a.productsWithoutSheet?.length ?? 0;
+    if (late > 0)
+      return {
+        tone: "danger" as const,
+        icon: AlertTriangle,
+        title: `${late} lote${late > 1 ? "s" : ""} atrasado${late > 1 ? "s" : ""} na produção`,
+        sub: "Abra o Kanban do PCP e priorize o desbloqueio antes que impacte a entrega.",
+        cta: "Ir ao PCP Kanban",
+        to: "/pcp-kanban",
+      };
+    if (stuck > 0)
+      return {
+        tone: "warning" as const,
+        icon: AlertTriangle,
+        title: `${stuck} lote${stuck > 1 ? "s parados" : " parado"} há 5+ dias`,
+        sub: "Identifique o gargalo — provavelmente falta material, apontamento ou aprovação.",
+        cta: "Ver lotes parados",
+        to: "/pcp-kanban",
+      };
+    if (pilots > 0)
+      return {
+        tone: "info" as const,
+        icon: Scissors,
+        title: `${pilots} piloto${pilots > 1 ? "s aguardando" : " aguardando"} aprovação`,
+        sub: "Aprove ou peça ajuste para destravar a passagem ao PCP.",
+        cta: "Ver pilotos",
+        to: "/pilots",
+      };
+    if (noSheet > 0)
+      return {
+        tone: "info" as const,
+        icon: FileText,
+        title: `${noSheet} produto${noSheet > 1 ? "s sem ficha" : " sem ficha"} técnica aprovada`,
+        sub: "Sem ficha aprovada não há custo firme nem OP liberada. Complete as pendentes.",
+        cta: "Abrir Ficha Técnica",
+        to: "/ficha-tecnica",
+      };
+    return {
+      tone: "success" as const,
+      icon: CheckCircle2,
+      title: "Tudo sob controle por aqui.",
+      sub: "Nenhum lote atrasado, nenhum piloto pendente. Bom momento para planejar a próxima cápsula.",
+      cta: "Ver Coleções",
+      to: "/collections",
+    };
+  }, [data]);
+
 
   const kpis = [
     {
@@ -420,6 +473,54 @@ function CommandCenter() {
           </p>
         </div>
       </div>
+
+      {nextAction && (
+        (() => {
+          const Icon = nextAction.icon;
+          const toneClass =
+            nextAction.tone === "danger"
+              ? "border-destructive/40 bg-destructive/5"
+              : nextAction.tone === "warning"
+              ? "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30"
+              : nextAction.tone === "success"
+              ? "border-emerald-400/40 bg-emerald-50 dark:bg-emerald-950/30"
+              : "border-primary/30 bg-primary/5";
+          const iconClass =
+            nextAction.tone === "danger"
+              ? "text-destructive"
+              : nextAction.tone === "warning"
+              ? "text-amber-600 dark:text-amber-300"
+              : nextAction.tone === "success"
+              ? "text-emerald-600 dark:text-emerald-300"
+              : "text-primary";
+          return (
+            <div
+              className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 ${toneClass}`}
+            >
+              <div className="flex items-start gap-3 min-w-0">
+                <div className={`mt-0.5 shrink-0 ${iconClass}`}>
+                  <Icon className="size-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground mb-0.5">
+                    Próxima ação
+                  </div>
+                  <div className="text-sm sm:text-base font-semibold leading-snug">
+                    {nextAction.title}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{nextAction.sub}</div>
+                </div>
+              </div>
+              <Link
+                to={nextAction.to}
+                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 whitespace-nowrap"
+              >
+                {nextAction.cta} <ArrowUpRight className="size-3.5" />
+              </Link>
+            </div>
+          );
+        })()
+      )}
 
       <MorningBriefingPanel />
       <RecentProductsStrip />
