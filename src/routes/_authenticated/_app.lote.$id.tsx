@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { ProductionOccurrenceButton } from "@/components/production-occurrence";
-import { TechSheetDrawerTrigger } from "@/components/tech-sheet-drawer";
+import { TechSheetDrawerTrigger } from "@/components/tech-sheet-drawer-lazy";
 import { LoteQrButton } from "@/components/lote-qr-button";
 import { BomExplosionDialog } from "@/components/bom-explosion-dialog";
 import { LoteSplitDialog } from "@/components/lote-split-dialog";
