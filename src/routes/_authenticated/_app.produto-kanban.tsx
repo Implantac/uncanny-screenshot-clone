@@ -217,6 +217,20 @@ function ProductLifecycleKanban() {
             >
               <Download className="h-3 w-3" /> CSV
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1 px-2 text-xs"
+              onClick={() => {
+                navigator.clipboard
+                  .writeText(window.location.href)
+                  .then(() => toast.success("Link da visão copiado"))
+                  .catch(() => toast.error("Não consegui copiar o link"));
+              }}
+              title="Copiar link desta visão (filtro + busca)"
+            >
+              <Share2 className="h-3 w-3" /> Compartilhar
+            </Button>
           </div>
         }
       />
