@@ -108,6 +108,10 @@ export function ProductQuickCreateDialog({
         .select("id")
         .single();
       if (error) throw error;
+      // Auto-follow: criador vira watcher e o produto aparece em "Meus Produtos"
+      await supabase
+        .from("product_watchers")
+        .insert({ product_id: data.id, user_id: userId, owner_id: userId });
       return data.id as string;
     },
     onSuccess: (id) => {
