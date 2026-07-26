@@ -6,7 +6,7 @@ import { Sparkles, CheckCircle2, Clock, ImageIcon, AlertTriangle, LayoutGrid } f
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
-import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
+import { PersonaInsightsPanelLazy as PersonaInsightsPanel } from "@/components/persona-insights-panel-lazy";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";

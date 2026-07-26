@@ -42,7 +42,7 @@ import {
   LabelList,
 } from "recharts";
 import { exportToCsv } from "@/lib/csv";
-import { PersonaInsightsPanel } from "@/components/persona-insights-panel";
+import { PersonaInsightsPanelLazy as PersonaInsightsPanel } from "@/components/persona-insights-panel-lazy";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";

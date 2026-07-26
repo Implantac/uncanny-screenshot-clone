@@ -6,7 +6,7 @@ import { useMemo, useRef, useState } from "react";
 import { Palette, Sparkles, Upload, Loader2, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { analyzeTrendImage } from "@/lib/trends.functions";
-import { TrendRadarPanel } from "@/components/trend-radar-panel";
+import { TrendRadarPanelLazy as TrendRadarPanel } from "@/components/trend-radar-panel-lazy";
 import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/trends")({ component: Trends });
