@@ -20,6 +20,7 @@ import { StorageUploader } from "@/components/storage-uploader";
 import { PageHeader } from "@/components/ui/page-header";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { MeasurementCheckPanel } from "@/components/measurement-check-panel";
+import { FitSessionTimeline } from "@/components/fit-session-timeline";
 
 export const Route = createFileRoute("/_authenticated/_app/fit-sessions")({
   head: () => ({
@@ -205,6 +206,13 @@ function Page() {
         eyebrow="Qualidade"
         title="Histórico de Provas"
         description="Fit sessions com fotos, comentários técnicos e aprovação de peça piloto."
+      />
+      <FitSessionTimeline
+        sessions={sessions.data ?? []}
+        selectedId={selected}
+        compareId={compareId}
+        onSelect={setSelected}
+        onCompare={setCompareId}
       />
       <div className={`grid gap-6 ${compareId ? "lg:grid-cols-[320px_1fr_1fr]" : "lg:grid-cols-[360px_1fr]"}`}>
       <div className="space-y-4">
