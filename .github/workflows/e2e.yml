@@ -63,17 +63,46 @@ jobs:
           "
 
       - name: Audit Escape scenario coverage (ready + pending must have run green)
+        id: escape_audit
         run: node scripts/audit-escape-e2e.mjs playwright-results.json
 
-      # Always upload, so failures (and their intel-debug bundles) are downloadable
-      # from the Actions run page under "Artifacts".
-      - name: Upload intel-debug artifacts
+      # When the Escape audit fails, collect ONLY the Escape-related traces,
+      # screenshots and videos into a focused bundle so it's fast to inspect.
+      - name: Collect Escape failure artifacts
+        if: failure() && steps.escape_audit.outcome == 'failure'
+        run: |
+          set -e
+          mkdir -p escape-failure-bundle
+          if [ -d test-results ]; then
+            # Playwright names per-test dirs after the spec + title; grep by
+            # spec filename fragment and by "escape" in the title.
+            find test-results -mindepth 1 -maxdepth 1 -type d \( \
+              -iname '*escape*' -o \
+              -iname '*enter-space*' -o \
+              -iname '*product-readiness-badge*' \
+            \) -exec cp -r {} escape-failure-bundle/ \;
+          fi
+          cp playwright-results.json escape-failure-bundle/ 2>/dev/null || true
+          echo "Bundle contents:" && ls -R escape-failure-bundle || true
+
+      - name: Upload Escape failure bundle (traces + screenshots + videos)
+        if: failure() && steps.escape_audit.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: escape-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: escape-failure-bundle/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      # Always upload the full report + raw test-results as a fallback.
+      - name: Upload full Playwright artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: intel-debug-${{ github.run_id }}-${{ github.run_attempt }}
+          name: playwright-full-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             test-results/**
             playwright-report/**
+            playwright-results.json
           if-no-files-found: ignore
           retention-days: 14
