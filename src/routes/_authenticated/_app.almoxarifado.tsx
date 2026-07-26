@@ -44,7 +44,7 @@ import { StorageUploader } from "@/components/storage-uploader";
 import { InventoryLotBreakdownButton } from "@/components/inventory-lot-breakdown";
 import { InventoryScrapsPanel } from "@/components/inventory-scraps-panel";
 import { ScrapByOpPanel } from "@/components/scrap-by-op-panel";
-import { InventorySmartPanel } from "@/components/inventory-smart-panel";
+import { InventorySmartPanel } from "@/components/inventory-smart-panel-lazy";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
