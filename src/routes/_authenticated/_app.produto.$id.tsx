@@ -26,6 +26,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
+import { ProductPinButton } from "@/components/product-pin-button";
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -208,6 +209,7 @@ function ProductWorkspace() {
         description={`${product.sku} · ${product.category ?? "sem categoria"}`}
         actions={
           <div className="flex flex-wrap items-center gap-1.5">
+            <ProductPinButton id={product.id} sku={product.sku} name={product.name} />
             <StageGatePanel productId={product.id} />
             <StatusBadge kind="product" value={product.status} />
             {product.abc_class && (
