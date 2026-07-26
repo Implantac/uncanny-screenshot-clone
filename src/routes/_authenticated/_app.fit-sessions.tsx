@@ -292,19 +292,50 @@ function Page() {
                 <span className="text-xs text-muted-foreground">Definir status:</span>
                 <Select
                   value={currentSession.status}
-                  onValueChange={(v) => updateStatus.mutate(v)}
+                  onValueChange={handleStatusChange}
                 >
                   <SelectTrigger className="w-56">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(STATUS_META).map(([k, m]) => (
-                      <SelectItem key={k} value={k}>
+                      <SelectItem key={k} value={k} disabled={k === "aprovada" && criticalOpen > 0}>
                         {m.label}
+                        {k === "aprovada" && criticalOpen > 0 ? " · bloqueado" : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            {/* Gate de aprovação */}
+            <div
+              className={`glass rounded-xl p-3 flex items-center justify-between text-xs gap-3 ${
+                criticalOpen > 0
+                  ? "border border-red-500/40 bg-red-500/5"
+                  : "border border-emerald-500/30 bg-emerald-500/5"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {criticalOpen > 0 ? (
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                ) : (
+                  <CheckCheck className="h-4 w-4 text-emerald-600" />
+                )}
+                <span className="font-medium">
+                  {criticalOpen > 0
+                    ? `${criticalOpen} apontamento(s) crítico(s) aberto(s)`
+                    : "Peça pronta para aprovação"}
+                </span>
+              </div>
+              <div className="text-muted-foreground">
+                {ajustesOpen > 0 && (
+                  <span className="mr-2">
+                    <b className="text-foreground">{ajustesOpen}</b> ajuste(s) pendente(s)
+                  </span>
+                )}
+                {(comments.data ?? []).filter((c) => c.resolved).length} resolvido(s)
               </div>
             </div>
 
