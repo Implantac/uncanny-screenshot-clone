@@ -1,7 +1,17 @@
 import { useState } from "react";
-import { FileDown, Loader2 } from "lucide-react";
+import { FileDown, Loader2, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 
 type Props = {
@@ -13,6 +23,50 @@ type Props = {
   productImage?: string | null;
   status?: string | null;
 };
+
+type CoverOpts = {
+  brand: string;
+  logoUrl: string;
+  client: string;
+  season: string;
+  contact: string;
+  accent: string;
+};
+
+const LS_KEY = "tech-pack-cover-opts";
+const defaultOpts: CoverOpts = {
+  brand: "",
+  logoUrl: "",
+  client: "",
+  season: "",
+  contact: "",
+  accent: "#141414",
+};
+
+function loadOpts(): CoverOpts {
+  if (typeof window === "undefined") return defaultOpts;
+  try {
+    const raw = window.localStorage.getItem(LS_KEY);
+    if (!raw) return defaultOpts;
+    return { ...defaultOpts, ...JSON.parse(raw) };
+  } catch {
+    return defaultOpts;
+  }
+}
+
+function saveOpts(o: CoverOpts) {
+  try {
+    window.localStorage.setItem(LS_KEY, JSON.stringify(o));
+  } catch {
+    /* ignore */
+  }
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return [20, 20, 20];
+  return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+}
 
 const fmtBRL = (n: number | null | undefined) =>
   n == null ? "—" : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -43,8 +97,10 @@ export function TechPackExportButton({
   status,
 }: Props) {
   const [busy, setBusy] = useState(false);
+  const [openCfg, setOpenCfg] = useState(false);
+  const [opts, setOpts] = useState<CoverOpts>(() => loadOpts());
 
-  const exportPdf = async () => {
+  const exportPdf = async (coverOpts: CoverOpts) => {
     setBusy(true);
     try {
       const [{ default: jsPDF }, autoTableMod, materialsRes, opsRes, measRes] = await Promise.all([
@@ -75,35 +131,70 @@ export function TechPackExportButton({
       const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
       const pageW = doc.internal.pageSize.getWidth();
       const pageH = doc.internal.pageSize.getHeight();
+      const [ar, ag, ab] = hexToRgb(coverOpts.accent);
 
-      // ---------- CAPA ----------
-      doc.setFillColor(20, 20, 20);
-      doc.rect(0, 0, pageW, 80, "F");
+      // ---------- CAPA customizável ----------
+      doc.setFillColor(ar, ag, ab);
+      doc.rect(0, 0, pageW, 110, "F");
       doc.setTextColor(255);
-      doc.setFontSize(10);
-      doc.text("FICHA TÉCNICA · TECH PACK", 40, 32);
+      doc.setFontSize(9);
+      doc.text((coverOpts.brand || "TECH PACK").toUpperCase(), 40, 32);
       doc.setFontSize(20);
-      doc.text(productName ?? "Produto", 40, 60);
+      doc.text(productName ?? "Produto", 40, 62);
+      doc.setFontSize(10);
+      doc.text(
+        [coverOpts.client, coverOpts.season].filter(Boolean).join(" · ") || "Ficha técnica",
+        40,
+        84,
+      );
+
+      // Logo (canto direito da faixa)
+      if (coverOpts.logoUrl) {
+        const logo = await loadImageDataUrl(coverOpts.logoUrl);
+        if (logo) {
+          try {
+            const fmt = /^data:image\/png/i.test(logo) ? "PNG" : "JPEG";
+            doc.addImage(logo, fmt, pageW - 110, 20, 70, 70);
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+
       doc.setTextColor(30);
       doc.setFontSize(11);
-      doc.text(`SKU: ${productSku ?? "—"}`, 40, 110);
-      doc.text(`Código ficha: ${code}`, 40, 128);
-      doc.text(`Versão: ${version}`, 40, 146);
-      doc.text(`Status: ${status ?? "—"}`, 40, 164);
-      doc.text(`Gerado: ${new Date().toLocaleString("pt-BR")}`, 40, 182);
+      let capaY = 140;
+      const capaLines = [
+        `SKU: ${productSku ?? "—"}`,
+        `Código ficha: ${code}`,
+        `Versão: ${version}`,
+        `Status: ${status ?? "—"}`,
+        `Gerado: ${new Date().toLocaleString("pt-BR")}`,
+      ];
+      capaLines.forEach((line) => {
+        doc.text(line, 40, capaY);
+        capaY += 18;
+      });
 
       if (productImage) {
         const dataUrl = await loadImageDataUrl(productImage);
         if (dataUrl) {
           try {
-            doc.addImage(dataUrl, "JPEG", pageW - 220, 100, 180, 180);
+            doc.addImage(dataUrl, "JPEG", pageW - 220, 130, 180, 180);
           } catch {
-            /* ignore image failure */
+            /* ignore */
           }
         }
       }
 
-      let cursorY = 320;
+      // Rodapé de contato na capa
+      if (coverOpts.contact) {
+        doc.setFontSize(9);
+        doc.setTextColor(120);
+        doc.text(`Contato: ${coverOpts.contact}`, 40, 340);
+      }
+
+      let cursorY = 370;
 
       // ---------- BOM ----------
       doc.setTextColor(0);
@@ -122,7 +213,7 @@ export function TechPackExportButton({
           fmtBRL(m.total_cost as number),
         ]),
         styles: { fontSize: 8 },
-        headStyles: { fillColor: [40, 40, 40] },
+        headStyles: { fillColor: [ar, ag, ab] },
         margin: { left: 40, right: 40 },
       });
       // @ts-expect-error autotable augments doc
@@ -149,7 +240,7 @@ export function TechPackExportButton({
           fmtBRL(o.total_cost as number),
         ]),
         styles: { fontSize: 8 },
-        headStyles: { fillColor: [40, 40, 40] },
+        headStyles: { fillColor: [ar, ag, ab] },
         margin: { left: 40, right: 40 },
       });
       // @ts-expect-error autotable augments doc
@@ -183,7 +274,7 @@ export function TechPackExportButton({
             }),
           ]),
           styles: { fontSize: 8 },
-          headStyles: { fillColor: [40, 40, 40] },
+          headStyles: { fillColor: [ar, ag, ab] },
           margin: { left: 40, right: 40 },
         });
       }
@@ -194,11 +285,15 @@ export function TechPackExportButton({
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setTextColor(140);
-        doc.text(
-          `Ficha ${code} v${version} · ${productSku ?? ""} · Página ${i}/${totalPages}`,
-          40,
-          pageH - 24,
-        );
+        const footer = [
+          coverOpts.brand,
+          `Ficha ${code} v${version}`,
+          productSku ?? "",
+          `Página ${i}/${totalPages}`,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        doc.text(footer, 40, pageH - 24);
       }
 
       doc.save(`tech-pack-${code}-v${version}.pdf`);
@@ -210,17 +305,117 @@ export function TechPackExportButton({
     }
   };
 
+  const handleGenerate = async () => {
+    saveOpts(opts);
+    setOpenCfg(false);
+    await exportPdf(opts);
+  };
+
   return (
-    <Button size="sm" variant="outline" onClick={exportPdf} disabled={busy}>
-      {busy ? (
-        <>
-          <Loader2 className="size-4 mr-1 animate-spin" /> Gerando…
-        </>
-      ) : (
-        <>
-          <FileDown className="size-4 mr-1" /> Tech Pack PDF
-        </>
-      )}
-    </Button>
+    <div className="inline-flex items-center gap-1">
+      <Button size="sm" variant="outline" onClick={() => exportPdf(opts)} disabled={busy}>
+        {busy ? (
+          <>
+            <Loader2 className="size-4 mr-1 animate-spin" /> Gerando…
+          </>
+        ) : (
+          <>
+            <FileDown className="size-4 mr-1" /> Tech Pack PDF
+          </>
+        )}
+      </Button>
+      <Dialog open={openCfg} onOpenChange={setOpenCfg}>
+        <DialogTrigger asChild>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-8 w-8 p-0"
+            title="Configurar capa"
+            disabled={busy}
+          >
+            <Settings2 className="size-4" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Capa do Tech Pack</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Field label="Marca">
+              <Input
+                value={opts.brand}
+                onChange={(e) => setOpts({ ...opts, brand: e.target.value })}
+                placeholder="USE Moda"
+              />
+            </Field>
+            <Field label="Logo (URL)">
+              <Input
+                value={opts.logoUrl}
+                onChange={(e) => setOpts({ ...opts, logoUrl: e.target.value })}
+                placeholder="https://…/logo.png"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Cliente / marca própria">
+                <Input
+                  value={opts.client}
+                  onChange={(e) => setOpts({ ...opts, client: e.target.value })}
+                  placeholder="Marca X"
+                />
+              </Field>
+              <Field label="Estação">
+                <Input
+                  value={opts.season}
+                  onChange={(e) => setOpts({ ...opts, season: e.target.value })}
+                  placeholder="Verão 26"
+                />
+              </Field>
+            </div>
+            <Field label="Contato">
+              <Input
+                value={opts.contact}
+                onChange={(e) => setOpts({ ...opts, contact: e.target.value })}
+                placeholder="dev@marca.com · +55 47 9xxxx-xxxx"
+              />
+            </Field>
+            <Field label="Cor de destaque">
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={opts.accent}
+                  onChange={(e) => setOpts({ ...opts, accent: e.target.value })}
+                  className="h-9 w-12 rounded border border-border cursor-pointer"
+                />
+                <Input
+                  value={opts.accent}
+                  onChange={(e) => setOpts({ ...opts, accent: e.target.value })}
+                  className="font-mono text-xs"
+                />
+              </div>
+            </Field>
+            <p className="text-[11px] text-muted-foreground">
+              Preferências salvas neste navegador para os próximos exports.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenCfg(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleGenerate} disabled={busy}>
+              Salvar e gerar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {children}
+    </div>
   );
 }
