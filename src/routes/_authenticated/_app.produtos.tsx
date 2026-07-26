@@ -358,7 +358,19 @@ function ProdutosPage() {
       />
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando…</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="glass rounded-xl p-4 space-y-3 animate-pulse">
+              <div className="aspect-square rounded-lg bg-muted/40" />
+              <div className="h-4 w-3/4 bg-muted/40 rounded" />
+              <div className="h-3 w-1/2 bg-muted/30 rounded" />
+              <div className="flex gap-2">
+                <div className="h-5 w-14 bg-muted/30 rounded-full" />
+                <div className="h-5 w-10 bg-muted/30 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : products.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center">
           <Package className="size-10 text-primary mx-auto mb-3" />
