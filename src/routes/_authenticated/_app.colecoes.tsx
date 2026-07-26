@@ -24,7 +24,9 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
+import { Pin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getPinnedCollections } from "@/lib/recent-collections";
 import { useAuth } from "@/hooks/use-auth";
 import { useFabNewAction } from "@/components/contextual-fab";
 import { useRealtime } from "@/hooks/use-realtime";
