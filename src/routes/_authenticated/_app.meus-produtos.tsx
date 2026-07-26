@@ -187,6 +187,24 @@ function MyProductsFeed() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const decideOne = useMutation({
+    mutationFn: async ({ item, decision }: { item: PendingApproval; decision: "aprovado" | "rejeitado" }) => {
+      const { error } = await supabase.from("product_approvals").insert({
+        product_id: item.product_id,
+        owner_id: item.owner_id,
+        gate_key: item.gate_key,
+        decision,
+      });
+      if (error) throw error;
+      return decision;
+    },
+    onSuccess: (decision) => {
+      toast.success(decision === "aprovado" ? "Aprovado" : "Reprovado");
+      qc.invalidateQueries({ queryKey: ["my-products-approvals-pending", uid] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   // Atalhos de teclado para aprovações em massa
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
