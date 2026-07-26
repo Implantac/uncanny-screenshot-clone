@@ -623,6 +623,7 @@ function ColecoesPage() {
   const filteredCollections = useMemo(() => {
     const term = q.trim().toLowerCase();
     const list = collections.filter((c) => {
+      if (pinnedOnly && !pinnedIds.has(c.id)) return false;
       if (statusFilter !== "all" && c.status !== statusFilter) return false;
       if (seasonFilter !== "all" && c.season !== seasonFilter) return false;
       if (!term) return true;
