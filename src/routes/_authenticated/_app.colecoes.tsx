@@ -915,7 +915,19 @@ function ColecoesPage() {
               </SelectContent>
             </Select>
 
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setPinnedOnly((v) => !v)}
+                aria-pressed={pinnedOnly}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs transition-colors ${pinnedOnly ? "border-primary/40 bg-primary/10 text-primary" : "border-border hover:bg-muted/40 text-muted-foreground"}`}
+              >
+                <Pin className="size-3" />
+                Fixadas
+                {pinnedIds.size > 0 && (
+                  <span className="ml-0.5 text-[10px] opacity-70">({pinnedIds.size})</span>
+                )}
+              </button>
               <ViewPresetsDropdown
                 module="colecoes"
                 current={{ q, status: statusFilter, season: seasonFilter, sort: sortBy }}
