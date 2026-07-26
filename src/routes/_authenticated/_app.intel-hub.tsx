@@ -20,7 +20,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
-import { AskFashionAI } from "@/components/ask-fashion-ai";
+import { AskFashionAI } from "@/components/ask-fashion-ai-lazy";
 
 export const Route = createFileRoute("/_authenticated/_app/intel-hub")({
   head: () => ({

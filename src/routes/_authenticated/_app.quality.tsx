@@ -19,7 +19,7 @@ import { MaterialSourcingRiskPanel } from "@/components/material-sourcing-risk-p
 import { QualityMarketingBridgePanel } from "@/components/quality-marketing-bridge-panel";
 import { CapaPanel } from "@/components/capa-panel-lazy";
 import { CapaEffectivenessPanel } from "@/components/capa-effectiveness-panel";
-import { OccurrencesParetoPanel } from "@/components/occurrences-pareto-panel";
+import { OccurrencesParetoPanel } from "@/components/occurrences-pareto-panel-lazy";
 import { RootCausePanel } from "@/components/root-cause-panel";
 import { CellEfficiencyPanel } from "@/components/cell-efficiency-panel";
 
