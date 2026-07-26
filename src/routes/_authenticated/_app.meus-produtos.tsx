@@ -447,6 +447,45 @@ function MyProductsFeed() {
                             Aberta em {new Date(a.created_at).toLocaleString("pt-BR")}
                           </div>
                         </Link>
+                        <div className="flex items-center gap-1 self-center">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="size-7 text-destructive hover:bg-destructive/10"
+                            title="Reprovar"
+                            aria-label={`Reprovar ${a.products?.name ?? "produto"}`}
+                            disabled={decideOne.isPending}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              decideOne.mutate({ item: a, decision: "rejeitado" });
+                            }}
+                          >
+                            {decideOne.isPending && decideOne.variables?.item.id === a.id && decideOne.variables?.decision === "rejeitado" ? (
+                              <Loader2 className="size-3.5 animate-spin" />
+                            ) : (
+                              <X className="size-3.5" />
+                            )}
+                          </Button>
+                          <Button
+                            size="icon"
+                            className="size-7"
+                            title="Aprovar"
+                            aria-label={`Aprovar ${a.products?.name ?? "produto"}`}
+                            disabled={decideOne.isPending}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              decideOne.mutate({ item: a, decision: "aprovado" });
+                            }}
+                          >
+                            {decideOne.isPending && decideOne.variables?.item.id === a.id && decideOne.variables?.decision === "aprovado" ? (
+                              <Loader2 className="size-3.5 animate-spin" />
+                            ) : (
+                              <Check className="size-3.5" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </li>
                   );
