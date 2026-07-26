@@ -32,6 +32,7 @@ import {
   Recycle,
   Megaphone,
   Award,
+  Star,
 } from "lucide-react";
 import { useRealtime } from "@/hooks/use-realtime";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
@@ -49,7 +50,11 @@ import {
   upsertMilestone,
   STAGE_LABELS,
 } from "@/lib/collection-timeline.functions";
-import { pushRecentCollection } from "@/lib/recent-collections";
+import {
+  pushRecentCollection,
+  isCollectionPinned,
+  togglePinnedCollection,
+} from "@/lib/recent-collections";
 import { CollectionMoodboard } from "@/components/collection-moodboard";
 import { CollectionColorPalette } from "@/components/collection-color-palette";
 import { CarryOverPanel } from "@/components/carry-over-panel";
@@ -443,6 +448,11 @@ function Colecao360() {
     }
   }, [current?.collection?.id, current?.collection?.name, current?.collection?.season, current?.collection?.year]);
 
+  const [pinned, setPinned] = useState(false);
+  useEffect(() => {
+    if (current?.collection?.id) setPinned(isCollectionPinned(current.collection.id));
+  }, [current?.collection?.id]);
+
   return (
     <div className="p-6 space-y-6">
       <header className="flex items-start justify-between gap-3 flex-wrap">
@@ -456,13 +466,36 @@ function Colecao360() {
           </p>
         </div>
         {current && (
-          <Link
-            to="/war-room-colecao/$id"
-            params={{ id: current.collection.id }}
-            className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
-          >
-            <Radio className="size-3.5" /> Abrir War Room
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const nowPinned = togglePinnedCollection({
+                  id: current.collection.id,
+                  name: current.collection.name,
+                  season: current.collection.season,
+                  year: current.collection.year,
+                });
+                setPinned(nowPinned);
+                toast.success(nowPinned ? "Coleção fixada" : "Coleção desafixada");
+              }}
+              className={`inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors ${
+                pinned
+                  ? "border-amber-500/40 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+              title={pinned ? "Desafixar coleção" : "Fixar coleção"}
+            >
+              <Star className={`size-3.5 ${pinned ? "fill-current" : ""}`} />
+              {pinned ? "Fixada" : "Fixar"}
+            </button>
+            <Link
+              to="/war-room-colecao/$id"
+              params={{ id: current.collection.id }}
+              className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
+            >
+              <Radio className="size-3.5" /> Abrir War Room
+            </Link>
+          </div>
         )}
       </header>
 
