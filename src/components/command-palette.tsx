@@ -295,7 +295,13 @@ export function CommandPalette() {
           {data?.suppliers.length ? (
             <CommandGroup heading="Fornecedores">
               {data.suppliers.map((s) => (
-                <CommandItem key={s.id} onSelect={() => go("/fornecedores")}>
+                <CommandItem
+                  key={s.id}
+                  onSelect={() => {
+                    pushRecentSupplier({ id: s.id, name: s.name, category: s.category });
+                    go("/fornecedores");
+                  }}
+                >
                   {s.name}
                   <span className="ml-2 text-xs text-muted-foreground">{s.category}</span>
                 </CommandItem>
