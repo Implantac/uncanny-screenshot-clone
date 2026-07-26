@@ -389,7 +389,7 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
               <Card className="mt-3">
                 <CardHeader><CardTitle className="text-sm">Registrar nova prova</CardTitle></CardHeader>
                 <CardContent className="space-y-2">
-                  <StorageUploader onUploaded={(url) => setProofUrl(url)} bucket="prototypes" accept="image/*" />
+                  <StorageUploader bucket="prototypes" value={proofUrl || null} onChange={(url) => setProofUrl(url ?? "")} accept="image/*" kind="image" />
                   {proofUrl && <img src={proofUrl} alt="Preview" className="max-h-32 rounded border" />}
                   <Textarea value={proofNotes} onChange={(e) => setProofNotes(e.target.value)} placeholder="Observações da prova (cor, malha, alinhamento)…" />
                   <Button onClick={() => addProof.mutate()} disabled={addProof.isPending || !proofUrl} className="w-full">
