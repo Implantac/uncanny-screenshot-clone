@@ -9,6 +9,7 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ["Ctrl", "K"], label: "Abrir Command Palette (Windows/Linux)", scope: "Global" },
   { keys: ["N"], label: "Criar novo produto (Quick Create)", scope: "Global" },
   { keys: ["P"], label: "Fixar/desafixar produto atual", scope: "Product Workspace" },
+  { keys: ["P"], label: "Fixar/desafixar coleção atual", scope: "Coleção 360º" },
   { keys: ["["], label: "Produto anterior (recentes)", scope: "Product Workspace" },
   { keys: ["]"], label: "Próximo produto (recentes)", scope: "Product Workspace" },
   { keys: ["?"], label: "Abrir esta ajuda de atalhos", scope: "Global" },

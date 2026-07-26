@@ -453,6 +453,29 @@ function Colecao360() {
     if (current?.collection?.id) setPinned(isCollectionPinned(current.collection.id));
   }, [current?.collection?.id]);
 
+  // Wave 44 — Tecla P: alterna fixar/desafixar a coleção atual
+  useEffect(() => {
+    if (!current?.collection?.id) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "p" && e.key !== "P") return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t?.isContentEditable) return;
+      e.preventDefault();
+      const nowPinned = togglePinnedCollection({
+        id: current.collection.id,
+        name: current.collection.name,
+        season: current.collection.season,
+        year: current.collection.year,
+      });
+      setPinned(nowPinned);
+      toast.success(nowPinned ? "Coleção fixada" : "Coleção desafixada");
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [current?.collection?.id, current?.collection?.name, current?.collection?.season, current?.collection?.year]);
+
   return (
     <div className="p-6 space-y-6">
       <header className="flex items-start justify-between gap-3 flex-wrap">
