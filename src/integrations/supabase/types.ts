@@ -301,6 +301,59 @@ export type Database = {
           },
         ]
       }
+      collection_colors: {
+        Row: {
+          cmyk: string | null
+          collection_id: string
+          created_at: string
+          hex: string
+          id: string
+          is_primary: boolean
+          name: string
+          owner_id: string
+          pantone: string | null
+          sort_order: number
+          updated_at: string
+          usage_notes: string | null
+        }
+        Insert: {
+          cmyk?: string | null
+          collection_id: string
+          created_at?: string
+          hex: string
+          id?: string
+          is_primary?: boolean
+          name: string
+          owner_id: string
+          pantone?: string | null
+          sort_order?: number
+          updated_at?: string
+          usage_notes?: string | null
+        }
+        Update: {
+          cmyk?: string | null
+          collection_id?: string
+          created_at?: string
+          hex?: string
+          id?: string
+          is_primary?: boolean
+          name?: string
+          owner_id?: string
+          pantone?: string | null
+          sort_order?: number
+          updated_at?: string
+          usage_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_colors_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collection_milestones: {
         Row: {
           actual_date: string | null
@@ -2161,6 +2214,134 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      print_artworks: {
+        Row: {
+          artwork_url: string | null
+          collection_id: string | null
+          colors: string[]
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          position_notes: string | null
+          product_id: string | null
+          released_at: string | null
+          released_by: string | null
+          released_notes: string | null
+          size_notes: string | null
+          status: Database["public"]["Enums"]["print_artwork_status"]
+          supplier_id: string | null
+          technique: Database["public"]["Enums"]["print_technique"]
+          updated_at: string
+        }
+        Insert: {
+          artwork_url?: string | null
+          collection_id?: string | null
+          colors?: string[]
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          position_notes?: string | null
+          product_id?: string | null
+          released_at?: string | null
+          released_by?: string | null
+          released_notes?: string | null
+          size_notes?: string | null
+          status?: Database["public"]["Enums"]["print_artwork_status"]
+          supplier_id?: string | null
+          technique?: Database["public"]["Enums"]["print_technique"]
+          updated_at?: string
+        }
+        Update: {
+          artwork_url?: string | null
+          collection_id?: string | null
+          colors?: string[]
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          position_notes?: string | null
+          product_id?: string | null
+          released_at?: string | null
+          released_by?: string | null
+          released_notes?: string | null
+          size_notes?: string | null
+          status?: Database["public"]["Enums"]["print_artwork_status"]
+          supplier_id?: string | null
+          technique?: Database["public"]["Enums"]["print_technique"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_artworks_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_artworks_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      print_proofs: {
+        Row: {
+          artwork_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          proof_url: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          round: number
+          status: Database["public"]["Enums"]["print_proof_status"]
+          updated_at: string
+        }
+        Insert: {
+          artwork_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          proof_url?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          round?: number
+          status?: Database["public"]["Enums"]["print_proof_status"]
+          updated_at?: string
+        }
+        Update: {
+          artwork_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          proof_url?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          round?: number
+          status?: Database["public"]["Enums"]["print_proof_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_proofs_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "print_artworks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_approvals: {
         Row: {
@@ -5821,6 +6002,21 @@ export type Database = {
         | "descontinuada"
       inventory_category: "tecido" | "aviamento" | "acabado" | "outros"
       material_reservation_status: "ativa" | "consumida" | "liberada"
+      print_artwork_status:
+        | "rascunho"
+        | "aguardando_prova"
+        | "em_prova"
+        | "aprovada"
+        | "rejeitada"
+        | "liberada_producao"
+      print_proof_status: "pendente" | "aprovada" | "ajuste" | "rejeitada"
+      print_technique:
+        | "silk"
+        | "estampa_digital"
+        | "sublimacao"
+        | "dtf"
+        | "bordado"
+        | "transfer"
       product_abc_class: "A" | "B" | "C"
       product_lifecycle_state:
         | "planned"
@@ -6090,6 +6286,23 @@ export const Constants = {
       ],
       inventory_category: ["tecido", "aviamento", "acabado", "outros"],
       material_reservation_status: ["ativa", "consumida", "liberada"],
+      print_artwork_status: [
+        "rascunho",
+        "aguardando_prova",
+        "em_prova",
+        "aprovada",
+        "rejeitada",
+        "liberada_producao",
+      ],
+      print_proof_status: ["pendente", "aprovada", "ajuste", "rejeitada"],
+      print_technique: [
+        "silk",
+        "estampa_digital",
+        "sublimacao",
+        "dtf",
+        "bordado",
+        "transfer",
+      ],
       product_abc_class: ["A", "B", "C"],
       product_lifecycle_state: [
         "planned",
