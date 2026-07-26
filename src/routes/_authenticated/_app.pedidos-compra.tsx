@@ -239,6 +239,13 @@ function POPage() {
         suppliers={suppliers}
         userId={user?.id}
       />
+      <PurchaseReceiptDialog
+        open={!!receiptFor}
+        onOpenChange={(v) => !v && setReceiptFor(null)}
+        purchaseOrderId={receiptFor?.id ?? null}
+        poCode={receiptFor?.code ?? ""}
+        userId={user?.id}
+      />
     </div>
   );
 }
