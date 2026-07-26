@@ -659,7 +659,7 @@ function ColecoesPage() {
   const totalPages = Math.max(1, Math.ceil(filteredCollections.length / pageSize));
   useEffect(() => {
     setPage(1);
-  }, [q, statusFilter, seasonFilter, sortBy, setPage]);
+  }, [q, statusFilter, seasonFilter, sortBy, pinnedOnly, setPage]);
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages, setPage]);
