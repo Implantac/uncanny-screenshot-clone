@@ -50,7 +50,7 @@ import {
   CostsPanel,
 } from "@/components/tech-pack/panels";
 import { BomTemplatesButton } from "@/components/bom-templates-button";
-import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer";
+import { TechSheetVersionsDrawer } from "@/components/tech-sheet-versions-drawer-lazy";
 import { TechSheetCostAlertsPanel } from "@/components/tech-sheet-cost-alerts-panel";
 import { TechSheetBomReviewPanel } from "@/components/tech-sheet-bom-review-panel";
 import { TechPackImportButton } from "@/components/tech-pack-import-button";
