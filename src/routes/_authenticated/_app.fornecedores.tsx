@@ -546,6 +546,7 @@ function FornecedoresPage() {
               </div>
             </div>
           ))}
+          </div>
         </div>
       )}
 
