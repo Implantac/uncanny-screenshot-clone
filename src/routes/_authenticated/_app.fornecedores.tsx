@@ -512,7 +512,27 @@ function FornecedoresPage() {
               {s.notes && <p className="text-xs text-muted-foreground line-clamp-2">{s.notes}</p>}
               <div className="flex justify-end gap-1 pt-2 border-t border-border">
                 <button
-                  onClick={() => setView360Id(s.id)}
+                  onClick={() => {
+                    const now = togglePinnedSupplier({
+                      id: s.id,
+                      name: s.name,
+                      category: s.category,
+                    });
+                    toast.success(now ? "Fornecedor fixado" : "Desfixado");
+                  }}
+                  className={`size-7 grid place-items-center rounded hover:bg-muted ${
+                    pinnedIds.has(s.id) ? "text-primary" : "text-muted-foreground"
+                  }`}
+                  title={pinnedIds.has(s.id) ? "Desfixar fornecedor" : "Fixar fornecedor"}
+                >
+                  {pinnedIds.has(s.id) ? (
+                    <PinOff className="size-3.5" />
+                  ) : (
+                    <Pin className="size-3.5" />
+                  )}
+                </button>
+                <button
+                  onClick={() => openView360(s)}
                   className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 flex items-center gap-1"
                   title="Visão 360° do fornecedor"
                 >
