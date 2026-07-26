@@ -151,8 +151,10 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
             : "Saldo abaixo do ponto de ressuprimento — risco de ruptura nas próximas OPs.",
         link: "/almoxarifado",
         ts: new Date().toISOString(),
+        entityKey: `inv:${i.id}`,
+        entityLabel: i.name as string,
       });
-    }
+
 
     // 2. OPs atrasadas
     for (const o of overdueOps ?? []) {
