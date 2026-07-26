@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { MODULES } from "@/lib/modules";
-import { getRecentProducts } from "@/lib/recent-products";
+import { getRecentProducts, getPinnedProducts } from "@/lib/recent-products";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -85,7 +85,22 @@ export function CommandPalette() {
           {!term && (
             <>
               {(() => {
-                const recents = getRecentProducts();
+                const pinned = getPinnedProducts();
+                if (!pinned.length) return null;
+                return (
+                  <CommandGroup heading="Fixados">
+                    {pinned.map((r) => (
+                      <CommandItem key={r.id} onSelect={() => go(`/produto/${r.id}`)}>
+                        <span className="font-mono text-xs text-muted-foreground mr-2">{r.sku}</span>
+                        {r.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                );
+              })()}
+              {(() => {
+                const pinnedIds = new Set(getPinnedProducts().map((p) => p.id));
+                const recents = getRecentProducts().filter((r) => !pinnedIds.has(r.id));
                 if (!recents.length) return null;
                 return (
                   <CommandGroup heading="Recentes">
