@@ -223,11 +223,19 @@ function AlertsCenterPage() {
         }
         description="Tudo o que precisa da sua atenção em um só lugar — priorizado por impacto, agrupado por OP/produto."
         actions={
-          <div className="text-right">
-            <div className="text-3xl font-semibold tabular-nums leading-none">
-              {data?.length ?? 0}
+          <div className="flex items-center gap-3">
+            <Link
+              to="/preferencias-notificacoes"
+              className="text-xs px-3 py-1.5 rounded-md border border-border hover:bg-muted transition-colors"
+            >
+              Preferências
+            </Link>
+            <div className="text-right">
+              <div className="text-3xl font-semibold tabular-nums leading-none">
+                {data?.length ?? 0}
+              </div>
+              <div className="text-xs text-muted-foreground">alertas ativos</div>
             </div>
-            <div className="text-xs text-muted-foreground">alertas ativos</div>
           </div>
         }
       />
