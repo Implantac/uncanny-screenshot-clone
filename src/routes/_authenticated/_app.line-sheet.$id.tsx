@@ -3,9 +3,11 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/ui/page-header";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Printer, ArrowLeft, Grid3x3 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/_app/line-sheet/$id")({
   head: () => ({
@@ -115,7 +117,17 @@ function LineSheetPage() {
 
   return (
     <div className="p-6 space-y-4 print:p-2">
-      <div className="print:hidden">
+      <div className="print:hidden space-y-3">
+        <PlmBreadcrumb
+          items={[
+            { label: "Coleções", link: { to: "/collections" } },
+            ...(collection
+              ? [{ label: collection.name, link: { to: "/colecao-360/$id" as const, params: { id } } }]
+              : []),
+            { label: "Line Sheet" },
+          ]}
+        />
+
         <PageHeader
           eyebrow="Coleções"
           title={`Line Sheet · ${collection?.name ?? "…"}`}
@@ -126,13 +138,6 @@ function LineSheetPage() {
           }
           actions={
             <div className="flex gap-2">
-              <Link
-                to="/colecao-360/$id"
-                params={{ id }}
-                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-              >
-                <ArrowLeft className="size-3.5" /> Voltar
-              </Link>
               <Button size="sm" variant="outline" onClick={() => window.print()}>
                 <Printer className="size-4 mr-1" /> Imprimir / PDF
               </Button>
@@ -140,6 +145,7 @@ function LineSheetPage() {
           }
         />
       </div>
+
 
       <div className="hidden print:block mb-4">
         <h1 className="text-xl font-bold">
