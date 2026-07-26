@@ -89,11 +89,11 @@ async function cloneProduct(
       .eq("product_id", baseId);
     if (sizes && sizes.length > 0) {
       await supabase.from("product_size_options").insert(
-        sizes.map((s) => ({
+        (sizes as Array<Record<string, unknown>>).map((s) => ({
           ...s,
           product_id: newId,
           owner_id: overrides.ownerId,
-        })),
+        })) as never,
       );
     }
   }
