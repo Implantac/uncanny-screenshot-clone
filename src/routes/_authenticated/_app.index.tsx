@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ExecutiveKpisPanel } from "@/components/executive-kpis-panel";
 import { MorningBriefingPanel } from "@/components/morning-briefing-panel";
+import { RecentProductsStrip } from "@/components/recent-products-strip";
 
 export const Route = createFileRoute("/_authenticated/_app/")({
   head: () => ({
@@ -404,6 +405,7 @@ function CommandCenter() {
       </div>
 
       <MorningBriefingPanel />
+      <RecentProductsStrip />
       <ExecutiveKpisPanel />
 
 
