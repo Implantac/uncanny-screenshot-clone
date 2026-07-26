@@ -172,8 +172,26 @@ function LineSheetPage() {
       </div>
 
       {isLoading ? (
-        <div className="glass rounded-xl p-8 text-center text-muted-foreground">
-          Carregando produtos da coleção…
+        <div className="space-y-4">
+          {[0, 1].map((s) => (
+            <section key={s} className="space-y-2">
+              <div className="h-4 w-40 bg-muted rounded animate-pulse" />
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="glass rounded-lg overflow-hidden animate-pulse"
+                  >
+                    <div className="aspect-[3/4] bg-muted" />
+                    <div className="p-2 space-y-2">
+                      <div className="h-3 bg-muted rounded w-3/4" />
+                      <div className="h-3 bg-muted rounded w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       ) : products.length === 0 ? (
         <div className="glass rounded-xl p-8 text-center text-muted-foreground">
@@ -184,6 +202,7 @@ function LineSheetPage() {
             </Link>
           </div>
         </div>
+
       ) : (
         groups.map(([cat, items]) => (
           <section key={cat} className="space-y-2 break-inside-avoid">
