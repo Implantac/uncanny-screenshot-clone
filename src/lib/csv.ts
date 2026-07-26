@@ -35,3 +35,74 @@ export function exportToCsv<T extends Record<string, unknown>>(
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Parse a CSV string into rows of string cells.
+ * Handles quoted fields, escaped quotes (""), CRLF, BOM.
+ * Auto-detects delimiter between comma and semicolon.
+ */
+export function parseCsv(text: string): string[][] {
+  if (!text) return [];
+  // strip BOM
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+
+  // detect delimiter from first non-quoted line
+  const head = text.split(/\r?\n/, 1)[0] ?? "";
+  const delim = (head.match(/;/g)?.length ?? 0) > (head.match(/,/g)?.length ?? 0) ? ";" : ",";
+
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += c;
+      }
+    } else {
+      if (c === '"') {
+        inQuotes = true;
+      } else if (c === delim) {
+        row.push(field);
+        field = "";
+      } else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(field);
+        // skip fully-empty lines
+        if (!(row.length === 1 && row[0] === "")) rows.push(row);
+        row = [];
+        field = "";
+      } else {
+        field += c;
+      }
+    }
+  }
+  if (field !== "" || row.length) {
+    row.push(field);
+    if (!(row.length === 1 && row[0] === "")) rows.push(row);
+  }
+  return rows;
+}
+
+/** Convert parsed rows (header + body) into records keyed by header. */
+export function csvToRecords(rows: string[][]): Record<string, string>[] {
+  if (rows.length < 2) return [];
+  const [header, ...body] = rows;
+  return body.map((r) => {
+    const rec: Record<string, string> = {};
+    header.forEach((h, i) => {
+      rec[h.trim()] = (r[i] ?? "").trim();
+    });
+    return rec;
+  });
+}
+
