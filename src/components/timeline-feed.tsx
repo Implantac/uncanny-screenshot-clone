@@ -139,12 +139,35 @@ export function TimelineFeed({
         <ol className="divide-y divide-border">
           {filtered.map((e) => {
             const Icon = SEV_ICON[e.severity];
+            const isMilestone =
+              e.source === "stage" ||
+              e.source === "prototype" ||
+              (e.source === "inspection" && e.severity === "success");
             return (
-              <li key={e.id} className="flex gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
+              <li
+                key={e.id}
+                className={`flex gap-3 px-4 py-3 hover:bg-muted/30 transition-colors border-l-2 ${
+                  isMilestone
+                    ? e.severity === "critical" || e.severity === "warning"
+                      ? "border-l-destructive bg-destructive/[0.04]"
+                      : "border-l-emerald-500 bg-emerald-500/[0.04]"
+                    : "border-l-transparent"
+                }`}
+              >
                 <Icon className={`size-4 mt-0.5 shrink-0 ${SEV_TONE[e.severity]}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className="text-sm font-medium truncate">{e.title}</span>
+                    <span className={`text-sm truncate ${isMilestone ? "font-semibold" : "font-medium"}`}>
+                      {e.title}
+                    </span>
+                    {isMilestone && (
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] uppercase tracking-wide gap-1 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                      >
+                        <Flag className="size-2.5" /> Marco
+                      </Badge>
+                    )}
                     <Badge variant="outline" className="text-[9px] uppercase tracking-wide">
                       {SOURCE_LABEL[e.source]}
                     </Badge>
@@ -175,6 +198,7 @@ export function TimelineFeed({
             );
           })}
         </ol>
+
       )}
     </div>
   );
