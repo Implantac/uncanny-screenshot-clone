@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import logoAsset from "@/assets/logo.png.asset.json";
-import { CommandPalette } from "./command-palette";
+import { CommandPaletteLazy as CommandPalette } from "./command-palette-lazy";
 import { NotificationsBell } from "./notifications-bell";
 import { MyProductsInboxButton } from "./my-products-inbox-button";
 import { SectorChatButton } from "./sector-chat";
