@@ -56,6 +56,7 @@ import { Route as AuthenticatedAppPcpStagesRouteImport } from './routes/_authent
 import { Route as AuthenticatedAppPcpKanbanRouteImport } from './routes/_authenticated/_app.pcp-kanban'
 import { Route as AuthenticatedAppPcpRouteImport } from './routes/_authenticated/_app.pcp'
 import { Route as AuthenticatedAppOndeEstaRouteImport } from './routes/_authenticated/_app.onde-esta'
+import { Route as AuthenticatedAppOnboardingRouteImport } from './routes/_authenticated/_app.onboarding'
 import { Route as AuthenticatedAppOmnichannelRouteImport } from './routes/_authenticated/_app.omnichannel'
 import { Route as AuthenticatedAppNotificacoesRouteImport } from './routes/_authenticated/_app.notificacoes'
 import { Route as AuthenticatedAppMovimentacoesRouteImport } from './routes/_authenticated/_app.movimentacoes'
@@ -402,6 +403,12 @@ const AuthenticatedAppOndeEstaRoute =
   AuthenticatedAppOndeEstaRouteImport.update({
     id: '/onde-esta',
     path: '/onde-esta',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppOnboardingRoute =
+  AuthenticatedAppOnboardingRouteImport.update({
+    id: '/onboarding',
+    path: '/onboarding',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppOmnichannelRoute =
@@ -952,6 +959,7 @@ export interface FileRoutesByFullPath {
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
+  '/onboarding': typeof AuthenticatedAppOnboardingRoute
   '/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
@@ -1082,6 +1090,7 @@ export interface FileRoutesByTo {
   '/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/omnichannel': typeof AuthenticatedAppOmnichannelRoute
+  '/onboarding': typeof AuthenticatedAppOnboardingRoute
   '/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/pcp': typeof AuthenticatedAppPcpRoute
   '/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
@@ -1214,6 +1223,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/movimentacoes': typeof AuthenticatedAppMovimentacoesRoute
   '/_authenticated/_app/notificacoes': typeof AuthenticatedAppNotificacoesRoute
   '/_authenticated/_app/omnichannel': typeof AuthenticatedAppOmnichannelRoute
+  '/_authenticated/_app/onboarding': typeof AuthenticatedAppOnboardingRoute
   '/_authenticated/_app/onde-esta': typeof AuthenticatedAppOndeEstaRoute
   '/_authenticated/_app/pcp': typeof AuthenticatedAppPcpRoute
   '/_authenticated/_app/pcp-kanban': typeof AuthenticatedAppPcpKanbanRoute
@@ -1347,6 +1357,7 @@ export interface FileRouteTypes {
     | '/movimentacoes'
     | '/notificacoes'
     | '/omnichannel'
+    | '/onboarding'
     | '/onde-esta'
     | '/pcp'
     | '/pcp-kanban'
@@ -1477,6 +1488,7 @@ export interface FileRouteTypes {
     | '/movimentacoes'
     | '/notificacoes'
     | '/omnichannel'
+    | '/onboarding'
     | '/onde-esta'
     | '/pcp'
     | '/pcp-kanban'
@@ -1608,6 +1620,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/movimentacoes'
     | '/_authenticated/_app/notificacoes'
     | '/_authenticated/_app/omnichannel'
+    | '/_authenticated/_app/onboarding'
     | '/_authenticated/_app/onde-esta'
     | '/_authenticated/_app/pcp'
     | '/_authenticated/_app/pcp-kanban'
@@ -2026,6 +2039,13 @@ declare module '@tanstack/react-router' {
       path: '/onde-esta'
       fullPath: '/onde-esta'
       preLoaderRoute: typeof AuthenticatedAppOndeEstaRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/onboarding': {
+      id: '/_authenticated/_app/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedAppOnboardingRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/omnichannel': {
@@ -2701,6 +2721,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppMovimentacoesRoute: typeof AuthenticatedAppMovimentacoesRoute
   AuthenticatedAppNotificacoesRoute: typeof AuthenticatedAppNotificacoesRoute
   AuthenticatedAppOmnichannelRoute: typeof AuthenticatedAppOmnichannelRoute
+  AuthenticatedAppOnboardingRoute: typeof AuthenticatedAppOnboardingRoute
   AuthenticatedAppOndeEstaRoute: typeof AuthenticatedAppOndeEstaRoute
   AuthenticatedAppPcpRoute: typeof AuthenticatedAppPcpRoute
   AuthenticatedAppPcpKanbanRoute: typeof AuthenticatedAppPcpKanbanRoute
@@ -2813,6 +2834,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppMovimentacoesRoute: AuthenticatedAppMovimentacoesRoute,
   AuthenticatedAppNotificacoesRoute: AuthenticatedAppNotificacoesRoute,
   AuthenticatedAppOmnichannelRoute: AuthenticatedAppOmnichannelRoute,
+  AuthenticatedAppOnboardingRoute: AuthenticatedAppOnboardingRoute,
   AuthenticatedAppOndeEstaRoute: AuthenticatedAppOndeEstaRoute,
   AuthenticatedAppPcpRoute: AuthenticatedAppPcpRoute,
   AuthenticatedAppPcpKanbanRoute: AuthenticatedAppPcpKanbanRoute,
