@@ -23,6 +23,7 @@ import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ExecutiveKpisPanel } from "@/components/executive-kpis-panel";
 import { MorningBriefingPanel } from "@/components/morning-briefing-panel";
 import { RecentProductsStrip } from "@/components/recent-products-strip";
+import { RecentCollectionsStrip } from "@/components/recent-collections-strip";
 
 export const Route = createFileRoute("/_authenticated/_app/")({
   head: () => ({
@@ -406,6 +407,7 @@ function CommandCenter() {
 
       <MorningBriefingPanel />
       <RecentProductsStrip />
+      <RecentCollectionsStrip />
       <ExecutiveKpisPanel />
 
 
