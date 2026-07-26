@@ -197,28 +197,98 @@ export function ProductQuickCreateDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="qc-coll">
-              Coleção <span className="text-destructive">*</span>
-            </Label>
-            <Select value={collectionId} onValueChange={setCollectionId}>
-              <SelectTrigger id="qc-coll">
-                <SelectValue placeholder="Selecione a coleção" />
-              </SelectTrigger>
-              <SelectContent>
-                {collections.length === 0 ? (
-                  <SelectItem value="none" disabled>
-                    Crie uma coleção primeiro
-                  </SelectItem>
-                ) : (
-                  collections.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name} ({c.season} {c.year})
+            <div className="flex items-center justify-between">
+              <Label htmlFor="qc-coll">
+                Coleção <span className="text-destructive">*</span>
+              </Label>
+              {!showNewColl ? (
+                <button
+                  type="button"
+                  onClick={() => setShowNewColl(true)}
+                  className="text-[11px] text-primary hover:underline inline-flex items-center gap-1"
+                >
+                  <Plus className="size-3" /> Criar nova
+                </button>
+              ) : (
+                collections.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowNewColl(false)}
+                    className="text-[11px] text-muted-foreground hover:underline inline-flex items-center gap-1"
+                  >
+                    <X className="size-3" /> Cancelar
+                  </button>
+                )
+              )}
+            </div>
+
+            {!showNewColl ? (
+              <Select value={collectionId} onValueChange={setCollectionId}>
+                <SelectTrigger id="qc-coll">
+                  <SelectValue placeholder="Selecione a coleção" />
+                </SelectTrigger>
+                <SelectContent>
+                  {collections.length === 0 ? (
+                    <SelectItem value="none" disabled>
+                      Crie uma coleção primeiro
                     </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+                  ) : (
+                    collections.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name} ({c.season} {c.year})
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3 space-y-2">
+                <Input
+                  placeholder="Nome da coleção (ex.: Alto Verão 2026)"
+                  value={newCollName}
+                  onChange={(e) => setNewCollName(e.target.value)}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Select value={newCollSeason} onValueChange={setNewCollSeason}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Verão">Verão</SelectItem>
+                      <SelectItem value="Inverno">Inverno</SelectItem>
+                      <SelectItem value="Alto Verão">Alto Verão</SelectItem>
+                      <SelectItem value="Meia Estação">Meia Estação</SelectItem>
+                      <SelectItem value="Resort">Resort</SelectItem>
+                      <SelectItem value="Cápsula">Cápsula</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="number"
+                    min={currentYear - 1}
+                    max={currentYear + 3}
+                    value={newCollYear}
+                    onChange={(e) => setNewCollYear(Number(e.target.value))}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full"
+                  disabled={!newCollName.trim() || createCollectionMut.isPending}
+                  onClick={() => createCollectionMut.mutate()}
+                >
+                  {createCollectionMut.isPending ? (
+                    <>
+                      <Loader2 className="size-3.5 animate-spin mr-2" /> Criando…
+                    </>
+                  ) : (
+                    "Criar coleção e usar"
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
+
 
           <div className="space-y-2">
             <Label htmlFor="qc-sku">
