@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
 import { MoodboardToProductDialog } from "@/components/moodboard-to-product-dialog";
+import { TrendRadarPanel } from "@/components/trend-radar-panel";
 
 type MoodKind = "inspiracao" | "tendencia" | "referencia";
 const KIND_LABEL: Record<MoodKind, string> = {
@@ -156,6 +157,8 @@ export function CollectionMoodboard({ collectionId }: { collectionId: string }) 
           ))}
         </div>
       )}
+
+      <TrendRadarPanel collectionId={collectionId} />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md">
