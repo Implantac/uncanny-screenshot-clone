@@ -98,7 +98,7 @@ export function CommandPalette() {
           {data?.products.length ? (
             <CommandGroup heading="Produtos">
               {data.products.map((p) => (
-                <CommandItem key={p.id} onSelect={() => go("/produtos")}>
+                <CommandItem key={p.id} onSelect={() => go(`/produto/${p.id}`)}>
                   <span className="font-mono text-xs text-muted-foreground mr-2">{p.sku}</span>
                   {p.name}
                 </CommandItem>
@@ -109,7 +109,7 @@ export function CommandPalette() {
           {data?.collections.length ? (
             <CommandGroup heading="Coleções">
               {data.collections.map((c) => (
-                <CommandItem key={c.id} onSelect={() => go("/colecoes")}>
+                <CommandItem key={c.id} onSelect={() => go(`/colecao-360/${c.id}`)}>
                   {c.name}
                   <span className="ml-2 text-xs text-muted-foreground">
                     {c.season} {c.year}
