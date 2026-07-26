@@ -113,8 +113,8 @@ function EstampasPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        icon={Palette}
-        title="Aprovação de Estampas & Silk"
+        eyebrow="Desenvolvimento"
+        title={<span className="flex items-center gap-2"><Palette className="size-5" /> Aprovação de Estampas & Silk</span>}
         description="Arte final → prova de cor → liberação para o fornecedor. Rastreia rounds e responsáveis."
         actions={
           <Dialog open={openNew} onOpenChange={setOpenNew}>
