@@ -654,7 +654,7 @@ function ColecoesPage() {
       }
     });
     return sorted;
-  }, [collections, q, statusFilter, seasonFilter, sortBy]);
+  }, [collections, q, statusFilter, seasonFilter, sortBy, pinnedOnly, pinnedIds]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCollections.length / pageSize));
   useEffect(() => {
