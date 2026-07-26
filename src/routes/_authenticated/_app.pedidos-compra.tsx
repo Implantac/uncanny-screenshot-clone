@@ -72,6 +72,7 @@ function POPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<PO | null>(null);
+  const [receiptFor, setReceiptFor] = useState<PO | null>(null);
 
   const { data: pos = [], isLoading } = useQuery({
     queryKey: ["purchase_orders"],
