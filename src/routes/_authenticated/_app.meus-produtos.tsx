@@ -187,6 +187,24 @@ function MyProductsFeed() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const decideOne = useMutation({
+    mutationFn: async ({ item, decision }: { item: PendingApproval; decision: "aprovado" | "rejeitado" }) => {
+      const { error } = await supabase.from("product_approvals").insert({
+        product_id: item.product_id,
+        owner_id: item.owner_id,
+        gate_key: item.gate_key,
+        decision,
+      });
+      if (error) throw error;
+      return decision;
+    },
+    onSuccess: (decision) => {
+      toast.success(decision === "aprovado" ? "Aprovado" : "Reprovado");
+      qc.invalidateQueries({ queryKey: ["my-products-approvals-pending", uid] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   // Atalhos de teclado para aprovações em massa
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -429,6 +447,45 @@ function MyProductsFeed() {
                             Aberta em {new Date(a.created_at).toLocaleString("pt-BR")}
                           </div>
                         </Link>
+                        <div className="flex items-center gap-1 self-center">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="size-7 text-destructive hover:bg-destructive/10"
+                            title="Reprovar"
+                            aria-label={`Reprovar ${a.products?.name ?? "produto"}`}
+                            disabled={decideOne.isPending}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              decideOne.mutate({ item: a, decision: "rejeitado" });
+                            }}
+                          >
+                            {decideOne.isPending && decideOne.variables?.item.id === a.id && decideOne.variables?.decision === "rejeitado" ? (
+                              <Loader2 className="size-3.5 animate-spin" />
+                            ) : (
+                              <X className="size-3.5" />
+                            )}
+                          </Button>
+                          <Button
+                            size="icon"
+                            className="size-7"
+                            title="Aprovar"
+                            aria-label={`Aprovar ${a.products?.name ?? "produto"}`}
+                            disabled={decideOne.isPending}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              decideOne.mutate({ item: a, decision: "aprovado" });
+                            }}
+                          >
+                            {decideOne.isPending && decideOne.variables?.item.id === a.id && decideOne.variables?.decision === "aprovado" ? (
+                              <Loader2 className="size-3.5 animate-spin" />
+                            ) : (
+                              <Check className="size-3.5" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </li>
                   );
