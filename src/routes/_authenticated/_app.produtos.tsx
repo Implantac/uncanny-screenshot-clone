@@ -321,7 +321,7 @@ function ProdutosPage() {
             <Button
               onClick={() => {
                 setEditing(null);
-                setOpen(true);
+                setQuickOpen(true);
               }}
               className="gap-2"
             >
