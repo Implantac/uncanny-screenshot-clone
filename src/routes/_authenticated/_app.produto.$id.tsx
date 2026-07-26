@@ -132,6 +132,31 @@ function ProductWorkspace() {
     return () => window.removeEventListener("keydown", onKey);
   }, [product?.id, product?.sku, product?.name]);
 
+  // Wave 39 — shortcuts "[" / "]" navegam entre produtos recentes
+  useEffect(() => {
+    if (!product?.id) return;
+    const onKey = async (e: KeyboardEvent) => {
+      if (e.key !== "[" && e.key !== "]") return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      const { getRecentProducts } = await import("@/lib/recent-products");
+      const list = getRecentProducts();
+      if (list.length < 2) return;
+      const idx = list.findIndex((x) => x.id === product.id);
+      if (idx < 0) return;
+      const nextIdx = e.key === "]" ? (idx + 1) % list.length : (idx - 1 + list.length) % list.length;
+      const target = list[nextIdx];
+      if (!target || target.id === product.id) return;
+      e.preventDefault();
+      const { toast } = await import("sonner");
+      toast.info(`${e.key === "]" ? "Próximo" : "Anterior"}: ${target.sku}`);
+      window.location.assign(`/produto/${target.id}`);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [product?.id]);
+
 
   const { data: sheet } = useQuery({
     enabled: !!product,
