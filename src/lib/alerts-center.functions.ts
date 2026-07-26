@@ -256,8 +256,11 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         why: "Protótipo paralisado atrasa o lançamento da coleção inteira.",
         link: "/prototipos",
         ts: p.updated_at as string,
+        entityKey: `proto:${p.id}`,
+        entityLabel: `Protótipo ${p.code}`,
       });
     }
+
 
     // 6. Marketing
     for (const m of mkt ?? []) {
