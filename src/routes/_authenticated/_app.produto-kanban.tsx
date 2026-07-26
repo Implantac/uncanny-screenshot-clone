@@ -23,7 +23,8 @@ import { cn } from "@/lib/utils";
 
 
 type QuickFilter = "all" | "blocked" | "overdue" | "pinned";
-type KanbanSearch = { q: string; f: QuickFilter };
+type Scope = "mine" | "all";
+type KanbanSearch = { q: string; f: QuickFilter; scope: Scope };
 
 export const Route = createFileRoute("/_authenticated/_app/produto-kanban")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/_authenticated/_app/produto-kanban")({
       s.f === "blocked" || s.f === "overdue" || s.f === "pinned" || s.f === "all"
         ? (s.f as QuickFilter)
         : "all",
+    scope: s.scope === "all" ? "all" : "mine",
   }),
   component: ProductLifecycleKanban,
   head: () => ({
