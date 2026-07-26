@@ -56,6 +56,7 @@ import {
   Flame,
   FolderOpen,
   Library,
+  Palette,
   type LucideIcon,
 } from "lucide-react";
 
@@ -305,6 +306,15 @@ export const MODULES: ModuleDef[] = [
     short: "Provas estruturadas",
     description: "Iterações de prova com comentários por ponto de medida (POM).",
     icon: Ruler,
+    group: "Desenvolvimento",
+  },
+  {
+    slug: "estampas",
+    path: "/estampas",
+    title: "Estampas & Silk",
+    short: "Aprovação de arte e prova",
+    description: "Arte final → prova de cor → liberação para o fornecedor, com rounds e responsáveis.",
+    icon: Palette,
     group: "Desenvolvimento",
   },
   {

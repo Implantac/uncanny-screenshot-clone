@@ -82,6 +82,7 @@ import { Route as AuthenticatedAppFashionGptRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppFashionCalendarRouteImport } from './routes/_authenticated/_app.fashion-calendar'
 import { Route as AuthenticatedAppFaccoesRouteImport } from './routes/_authenticated/_app.faccoes'
 import { Route as AuthenticatedAppExecutivoRouteImport } from './routes/_authenticated/_app.executivo'
+import { Route as AuthenticatedAppEstampasRouteImport } from './routes/_authenticated/_app.estampas'
 import { Route as AuthenticatedAppErpUsesoftRouteImport } from './routes/_authenticated/_app.erp-usesoft'
 import { Route as AuthenticatedAppErpIntegrationRouteImport } from './routes/_authenticated/_app.erp-integration'
 import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/_app.equipe'
@@ -554,6 +555,12 @@ const AuthenticatedAppExecutivoRoute =
     path: '/executivo',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppEstampasRoute =
+  AuthenticatedAppEstampasRouteImport.update({
+    id: '/estampas',
+    path: '/estampas',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const AuthenticatedAppErpUsesoftRoute =
   AuthenticatedAppErpUsesoftRouteImport.update({
     id: '/erp-usesoft',
@@ -918,6 +925,7 @@ export interface FileRoutesByFullPath {
   '/equipe': typeof AuthenticatedAppEquipeRoute
   '/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
   '/erp-usesoft': typeof AuthenticatedAppErpUsesoftRoute
+  '/estampas': typeof AuthenticatedAppEstampasRoute
   '/executivo': typeof AuthenticatedAppExecutivoRoute
   '/faccoes': typeof AuthenticatedAppFaccoesRoute
   '/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
@@ -1047,6 +1055,7 @@ export interface FileRoutesByTo {
   '/equipe': typeof AuthenticatedAppEquipeRoute
   '/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
   '/erp-usesoft': typeof AuthenticatedAppErpUsesoftRoute
+  '/estampas': typeof AuthenticatedAppEstampasRoute
   '/executivo': typeof AuthenticatedAppExecutivoRoute
   '/faccoes': typeof AuthenticatedAppFaccoesRoute
   '/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
@@ -1178,6 +1187,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/equipe': typeof AuthenticatedAppEquipeRoute
   '/_authenticated/_app/erp-integration': typeof AuthenticatedAppErpIntegrationRoute
   '/_authenticated/_app/erp-usesoft': typeof AuthenticatedAppErpUsesoftRoute
+  '/_authenticated/_app/estampas': typeof AuthenticatedAppEstampasRoute
   '/_authenticated/_app/executivo': typeof AuthenticatedAppExecutivoRoute
   '/_authenticated/_app/faccoes': typeof AuthenticatedAppFaccoesRoute
   '/_authenticated/_app/fashion-calendar': typeof AuthenticatedAppFashionCalendarRoute
@@ -1310,6 +1320,7 @@ export interface FileRouteTypes {
     | '/equipe'
     | '/erp-integration'
     | '/erp-usesoft'
+    | '/estampas'
     | '/executivo'
     | '/faccoes'
     | '/fashion-calendar'
@@ -1439,6 +1450,7 @@ export interface FileRouteTypes {
     | '/equipe'
     | '/erp-integration'
     | '/erp-usesoft'
+    | '/estampas'
     | '/executivo'
     | '/faccoes'
     | '/fashion-calendar'
@@ -1569,6 +1581,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/equipe'
     | '/_authenticated/_app/erp-integration'
     | '/_authenticated/_app/erp-usesoft'
+    | '/_authenticated/_app/estampas'
     | '/_authenticated/_app/executivo'
     | '/_authenticated/_app/faccoes'
     | '/_authenticated/_app/fashion-calendar'
@@ -2197,6 +2210,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppExecutivoRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/_app/estampas': {
+      id: '/_authenticated/_app/estampas'
+      path: '/estampas'
+      fullPath: '/estampas'
+      preLoaderRoute: typeof AuthenticatedAppEstampasRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/_app/erp-usesoft': {
       id: '/_authenticated/_app/erp-usesoft'
       path: '/erp-usesoft'
@@ -2654,6 +2674,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppEquipeRoute: typeof AuthenticatedAppEquipeRoute
   AuthenticatedAppErpIntegrationRoute: typeof AuthenticatedAppErpIntegrationRoute
   AuthenticatedAppErpUsesoftRoute: typeof AuthenticatedAppErpUsesoftRoute
+  AuthenticatedAppEstampasRoute: typeof AuthenticatedAppEstampasRoute
   AuthenticatedAppExecutivoRoute: typeof AuthenticatedAppExecutivoRoute
   AuthenticatedAppFaccoesRoute: typeof AuthenticatedAppFaccoesRoute
   AuthenticatedAppFashionCalendarRoute: typeof AuthenticatedAppFashionCalendarRoute
@@ -2765,6 +2786,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppEquipeRoute: AuthenticatedAppEquipeRoute,
   AuthenticatedAppErpIntegrationRoute: AuthenticatedAppErpIntegrationRoute,
   AuthenticatedAppErpUsesoftRoute: AuthenticatedAppErpUsesoftRoute,
+  AuthenticatedAppEstampasRoute: AuthenticatedAppEstampasRoute,
   AuthenticatedAppExecutivoRoute: AuthenticatedAppExecutivoRoute,
   AuthenticatedAppFaccoesRoute: AuthenticatedAppFaccoesRoute,
   AuthenticatedAppFashionCalendarRoute: AuthenticatedAppFashionCalendarRoute,
