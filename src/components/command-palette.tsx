@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { MODULES } from "@/lib/modules";
+import { getRecentProducts } from "@/lib/recent-products";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -82,17 +83,33 @@ export function CommandPalette() {
           </CommandEmpty>
 
           {!term && (
-            <CommandGroup heading="Módulos">
-              {MODULES.map((m) => {
-                const Icon = m.icon;
+            <>
+              {(() => {
+                const recents = getRecentProducts();
+                if (!recents.length) return null;
                 return (
-                  <CommandItem key={m.slug} onSelect={() => go(m.path)}>
-                    <Icon className="size-4 mr-2" />
-                    {m.title}
-                  </CommandItem>
+                  <CommandGroup heading="Recentes">
+                    {recents.map((r) => (
+                      <CommandItem key={r.id} onSelect={() => go(`/produto/${r.id}`)}>
+                        <span className="font-mono text-xs text-muted-foreground mr-2">{r.sku}</span>
+                        {r.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
                 );
-              })}
-            </CommandGroup>
+              })()}
+              <CommandGroup heading="Módulos">
+                {MODULES.map((m) => {
+                  const Icon = m.icon;
+                  return (
+                    <CommandItem key={m.slug} onSelect={() => go(m.path)}>
+                      <Icon className="size-4 mr-2" />
+                      {m.title}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </>
           )}
 
           {data?.products.length ? (

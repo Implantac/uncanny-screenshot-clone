@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { logProductView } from "@/lib/product-audit.functions";
+import { pushRecentProduct } from "@/lib/recent-products";
 import { useRealtime } from "@/hooks/use-realtime";
 import {
   ArrowLeft,
@@ -107,6 +108,10 @@ function ProductWorkspace() {
       return data as ProductRow | null;
     },
   });
+
+  useEffect(() => {
+    if (product?.id) pushRecentProduct({ id: product.id, sku: product.sku, name: product.name });
+  }, [product?.id, product?.sku, product?.name]);
 
   const { data: sheet } = useQuery({
     enabled: !!product,
