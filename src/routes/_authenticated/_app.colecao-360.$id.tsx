@@ -504,6 +504,12 @@ function Colecao360() {
 
   return (
     <div className="p-6 space-y-6">
+      <PlmBreadcrumb
+        items={[
+          { label: "Coleções", link: { to: "/colecoes" } },
+          { label: current?.collection?.name ?? "Coleção 360º" },
+        ]}
+      />
       <header className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
