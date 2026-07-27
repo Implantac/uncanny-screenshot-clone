@@ -17,6 +17,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
