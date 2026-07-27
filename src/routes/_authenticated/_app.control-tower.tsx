@@ -21,6 +21,16 @@ import { AutoPushSentinel } from "@/components/auto-push-sentinel";
 import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/control-tower")({
+  head: () => ({
+    meta: [
+      { title: "Torre de Controle · USE MODA PLM" },
+      { name: "description", content: "Visão unificada de ordens, gargalos, riscos e ações críticas do dia." },
+      { property: "og:title", content: "Torre de Controle · USE MODA PLM" },
+      { property: "og:description", content: "Visão unificada de ordens, gargalos, riscos e ações críticas do dia." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: ControlTower,
 });
 

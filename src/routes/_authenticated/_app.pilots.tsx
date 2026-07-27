@@ -6,7 +6,19 @@ import { Scissors, CheckCircle2, XCircle, Clock, ArrowRight, MessageSquare } fro
 import { toast } from "sonner";
 import { useRealtime } from "@/hooks/use-realtime";
 
-export const Route = createFileRoute("/_authenticated/_app/pilots")({ component: Pilots });
+export const Route = createFileRoute("/_authenticated/_app/pilots")({
+  head: () => ({
+    meta: [
+      { title: "Peças Piloto · USE MODA PLM" },
+      { name: "description", content: "Ciclo de piloto: solicitação, confecção, prova, ajustes e aprovação comercial." },
+      { property: "og:title", content: "Peças Piloto · USE MODA PLM" },
+      { property: "og:description", content: "Ciclo de piloto: solicitação, confecção, prova, ajustes e aprovação comercial." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: Pilots,
+});
 
 type Stage = "solicitado" | "em_confeccao" | "em_prova" | "aprovado" | "reprovado";
 type Pilot = {

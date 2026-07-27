@@ -7,6 +7,16 @@ import { Calendar, Package, CheckCircle2, Clock, AlertTriangle } from "lucide-re
 import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/fashion-calendar")({
+  head: () => ({
+    meta: [
+      { title: "Fashion Calendar · USE MODA PLM" },
+      { name: "description", content: "Calendário de coleções, deadlines, drops e milestones da temporada." },
+      { property: "og:title", content: "Fashion Calendar · USE MODA PLM" },
+      { property: "og:description", content: "Calendário de coleções, deadlines, drops e milestones da temporada." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: FashionCalendar,
 });
 

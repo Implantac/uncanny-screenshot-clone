@@ -15,6 +15,16 @@ import {
 } from "@/components/ui/toggle-group";
 
 export const Route = createFileRoute("/_authenticated/_app/biblioteca")({
+  head: () => ({
+    meta: [
+      { title: "Biblioteca de Referências · USE MODA PLM" },
+      { name: "description", content: "Repositório de referências, imagens, moodboards e materiais reutilizáveis por coleção." },
+      { property: "og:title", content: "Biblioteca de Referências · USE MODA PLM" },
+      { property: "og:description", content: "Repositório de referências, imagens, moodboards e materiais reutilizáveis por coleção." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: BibliotecaPage,
 });
 

@@ -22,6 +22,16 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/documentos")({
+  head: () => ({
+    meta: [
+      { title: "Central de Documentos · USE MODA PLM" },
+      { name: "description", content: "Fichas técnicas, laudos, notas fiscais e anexos consolidados por produto e OP." },
+      { property: "og:title", content: "Central de Documentos · USE MODA PLM" },
+      { property: "og:description", content: "Fichas técnicas, laudos, notas fiscais e anexos consolidados por produto e OP." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: DocumentsHub,
 });
 

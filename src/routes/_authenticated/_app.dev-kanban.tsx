@@ -11,7 +11,19 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
-export const Route = createFileRoute("/_authenticated/_app/dev-kanban")({ component: DevKanban });
+export const Route = createFileRoute("/_authenticated/_app/dev-kanban")({
+  head: () => ({
+    meta: [
+      { title: "Kanban do Desenvolvimento · USE MODA PLM" },
+      { name: "description", content: "Acompanhamento de peças piloto, aprovações e handoff entre design, modelagem e engenharia." },
+      { property: "og:title", content: "Kanban do Desenvolvimento · USE MODA PLM" },
+      { property: "og:description", content: "Acompanhamento de peças piloto, aprovações e handoff entre design, modelagem e engenharia." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: DevKanban,
+});
 
 type Status = "rascunho" | "desenvolvimento" | "aprovado" | "producao" | "descontinuado";
 type Product = {

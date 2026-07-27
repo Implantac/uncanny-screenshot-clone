@@ -7,6 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/faccoes")({
+  head: () => ({
+    meta: [
+      { title: "Facções · USE MODA PLM" },
+      { name: "description", content: "Gestão de ordens de serviço, capacidade e performance de facções parceiras." },
+      { property: "og:title", content: "Facções · USE MODA PLM" },
+      { property: "og:description", content: "Gestão de ordens de serviço, capacidade e performance de facções parceiras." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: FaccoesPage,
   errorComponent: ({ error }) => (
     <div className="p-6 text-sm text-destructive">{error.message}</div>
