@@ -4,7 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Database, Layers as LayersIcon } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/_app/data-lake")({ component: DataLake });
+export const Route = createFileRoute("/_authenticated/_app/data-lake")({ head: () => ({
+    meta: [
+      { title: "Data Lake · USE MODA OS" },
+      { name: "description", content: "Exploração de dados unificados do PLM." },
+      { property: "og:title", content: "Data Lake · USE MODA OS" },
+      { property: "og:description", content: "Exploração de dados unificados do PLM." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Data Lake · USE MODA OS" },
+      { name: "twitter:description", content: "Exploração de dados unificados do PLM." },
+    ],
+  }), component: DataLake });
 
 const DOMAINS = [
   { key: "products", label: "Produtos", color: "bg-violet-500" },

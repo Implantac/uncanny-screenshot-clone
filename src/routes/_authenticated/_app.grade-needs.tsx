@@ -4,7 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { Ruler, TrendingUp } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/_app/grade-needs")({ component: GradeNeeds });
+export const Route = createFileRoute("/_authenticated/_app/grade-needs")({ head: () => ({
+    meta: [
+      { title: "Necessidades por Grade · USE MODA OS" },
+      { name: "description", content: "Grade de tamanhos e necessidades de produção." },
+      { property: "og:title", content: "Necessidades por Grade · USE MODA OS" },
+      { property: "og:description", content: "Grade de tamanhos e necessidades de produção." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Necessidades por Grade · USE MODA OS" },
+      { name: "twitter:description", content: "Grade de tamanhos e necessidades de produção." },
+    ],
+  }), component: GradeNeeds });
 
 type Product = { id: string; sku: string; name: string; sizes: string[] | null };
 type Sale = { product_id: string | null; size: string | null; quantity: number };

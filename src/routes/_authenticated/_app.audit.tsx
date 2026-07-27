@@ -4,7 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
 import { ShieldCheck, Activity, AlertTriangle, Download } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/_app/audit")({ component: Audit });
+export const Route = createFileRoute("/_authenticated/_app/audit")({ head: () => ({
+    meta: [
+      { title: "Auditoria · USE MODA OS" },
+      { name: "description", content: "Trilha de auditoria completa do sistema." },
+      { property: "og:title", content: "Auditoria · USE MODA OS" },
+      { property: "og:description", content: "Trilha de auditoria completa do sistema." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Auditoria · USE MODA OS" },
+      { name: "twitter:description", content: "Trilha de auditoria completa do sistema." },
+    ],
+  }), component: Audit });
 
 type Log = {
   id: string;
