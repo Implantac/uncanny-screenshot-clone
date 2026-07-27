@@ -276,8 +276,14 @@ function WarRoomProducao() {
             )}
           </div>
           {isLoading ? (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Loader2 className="size-3.5 animate-spin" /> Carregando heatmap…
+            <div className="space-y-2.5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-3 flex-1 rounded-full" />
+                  <Skeleton className="h-3 w-10" />
+                </div>
+              ))}
             </div>
           ) : (
             <div className="space-y-2.5">
