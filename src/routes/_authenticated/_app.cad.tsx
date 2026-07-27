@@ -9,6 +9,7 @@ import { useRealtime } from "@/hooks/use-realtime";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
@@ -201,8 +202,20 @@ function CAD() {
       </div>
 
       {isLoading ? (
-        <div className="glass rounded-xl p-12 grid place-items-center text-muted-foreground">
-          <Loader2 className="size-5 animate-spin" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="glass rounded-xl overflow-hidden">
+              <Skeleton className="h-32 w-full" />
+              <div className="p-3 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+                <div className="flex gap-1 pt-1">
+                  <Skeleton className="h-5 w-12 rounded-full" />
+                  <Skeleton className="h-5 w-10 rounded-full" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : filtered.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center text-sm text-muted-foreground">
