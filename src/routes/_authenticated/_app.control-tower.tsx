@@ -474,9 +474,9 @@ function LiveTab() {
           )}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {isLoading && (
-            <div className="col-span-full text-sm text-muted-foreground">Carregando…</div>
-          )}
+          {isLoading && Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-xl" />
+          ))}
           {!isLoading && stages.length === 0 && (
             <div className="col-span-full text-sm text-muted-foreground">Sem OPs ativas.</div>
           )}
@@ -661,13 +661,9 @@ function DemandTab() {
               </tr>
             </thead>
             <tbody>
-              {isLoading && (
-                <tr>
-                  <td colSpan={16} className="p-8 text-center text-muted-foreground">
-                    Carregando…
-                  </td>
-                </tr>
-              )}
+              {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}><td colSpan={16} className="p-2"><Skeleton className="h-8 w-full" /></td></tr>
+              ))}
               {!isLoading && rows.length === 0 && (
                 <tr>
                   <td colSpan={16} className="p-8 text-center text-muted-foreground">

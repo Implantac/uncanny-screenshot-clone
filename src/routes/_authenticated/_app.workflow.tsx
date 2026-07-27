@@ -52,9 +52,7 @@ function WorkflowInbox() {
       />
 
       {q.isLoading ? (
-        <div className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
-          Carregando…
-        </div>
+        <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => (<Skeleton key={i} className="h-16 w-full rounded-xl" />))}</div>
       ) : rows.length === 0 ? (
         <EmptyState
           icon={Workflow}
