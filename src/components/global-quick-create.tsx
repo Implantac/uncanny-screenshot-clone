@@ -4,6 +4,7 @@ import { useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ProductQuickCreateDialog } from "@/components/product-quick-create-dialog-lazy";
+import { ProductCreationWizard } from "@/components/product-creation-wizard";
 import { FAB_EVENT } from "@/components/contextual-fab";
 
 /**
@@ -24,7 +25,9 @@ const FAB_ROUTES = new Set([
 export function GlobalQuickCreate() {
   const { user } = useAuth();
   const { location } = useRouterState();
-  const [open, setOpen] = useState(false);
+  const [openQuick, setOpenQuick] = useState(false);
+  const [openWizard, setOpenWizard] = useState(false);
+  const [useWizard, setUseWizard] = useState(false);
 
   const { data: collections = [] } = useQuery({
     queryKey: ["collections-ref"],
@@ -58,20 +61,48 @@ export function GlobalQuickCreate() {
         return;
       }
       e.preventDefault();
-      setOpen(true);
+
+      // Check if user has any products yet — if not, use wizard
+      supabase
+        .from("products")
+        .select("id", { count: "exact", head: true })
+        .eq("owner_id", user?.id ?? "")
+        .limit(1)
+        .then(({ count }) => {
+          if (count === 0) {
+            setUseWizard(true);
+            setOpenWizard(true);
+          } else {
+            setUseWizard(false);
+            setOpenQuick(true);
+          }
+        })
+        .catch(() => {
+          // Fallback: quick dialog on error
+          setOpenQuick(true);
+        });
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [location.pathname]);
+  }, [location.pathname, user?.id]);
 
   if (!user) return null;
 
   return (
-    <ProductQuickCreateDialog
-      open={open}
-      onOpenChange={setOpen}
-      userId={user.id}
-      collections={collections}
-    />
+    <>
+      <ProductQuickCreateDialog
+        open={openQuick}
+        onOpenChange={setOpenQuick}
+        userId={user.id}
+        collections={collections}
+      />
+      <ProductCreationWizard
+        open={openWizard}
+        onOpenChange={(v) => {
+          setOpenWizard(v);
+          if (!v) setUseWizard(false);
+        }}
+      />
+    </>
   );
 }
