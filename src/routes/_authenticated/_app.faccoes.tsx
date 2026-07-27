@@ -38,7 +38,24 @@ function FaccoesPage() {
 
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando facções…</p>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="glass rounded-2xl p-4 space-y-3 animate-pulse">
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-3/5 bg-muted rounded" />
+                  <div className="h-3 w-2/5 bg-muted rounded" />
+                </div>
+                <div className="h-6 w-16 bg-muted rounded-full" />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="h-12 bg-muted rounded" />
+                <div className="h-12 bg-muted rounded" />
+                <div className="h-12 bg-muted rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : items.length === 0 ? (
         <div className="glass rounded-2xl p-8 text-center">
           <Factory className="size-8 mx-auto text-muted-foreground mb-2" />
