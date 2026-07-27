@@ -199,8 +199,16 @@ function DocumentsHub() {
       </div>
 
       {isLoading && !data ? (
-        <div className="text-sm text-muted-foreground inline-flex items-center gap-2 p-8">
-          <Loader2 className="size-4 animate-spin" /> Carregando documentos…
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="rounded-xl border overflow-hidden animate-pulse">
+              <div className="aspect-square bg-muted" />
+              <div className="p-2 space-y-2">
+                <div className="h-3 w-3/4 bg-muted rounded" />
+                <div className="h-2 w-1/2 bg-muted rounded" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : items.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center text-sm text-muted-foreground">

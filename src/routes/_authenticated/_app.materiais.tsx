@@ -336,7 +336,17 @@ function Page() {
       </div>
 
       {items.isLoading ? (
-        <div className="text-center text-muted-foreground py-12">Carregando biblioteca…</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="rounded-xl border overflow-hidden animate-pulse">
+              <div className="aspect-square bg-muted" />
+              <div className="p-2 space-y-2">
+                <div className="h-3 w-4/5 bg-muted rounded" />
+                <div className="h-3 w-2/5 bg-muted rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="border border-dashed rounded-xl py-16 text-center text-muted-foreground">
           <Package className="size-10 mx-auto mb-2 opacity-40" />
