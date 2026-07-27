@@ -35,6 +35,16 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export const Route = createFileRoute("/_authenticated/_app/timeline")({
+  head: () => ({
+    meta: [
+      { title: "Timeline do Produto · USE MODA PLM" },
+      { name: "description", content: "Linha do tempo unificada de eventos: auditoria, estágios de produção, ocorrências, qualidade, protótipos e marketing." },
+      { property: "og:title", content: "Timeline do Produto · USE MODA PLM" },
+      { property: "og:description", content: "Eventos consolidados do ciclo de vida do produto em uma única linha do tempo." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: TimelinePage,
 });
 
