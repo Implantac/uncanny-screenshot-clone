@@ -133,7 +133,7 @@ function TimeActionPage() {
           Selecione uma coleção para ver o cronograma.
         </p>
       ) : isLoading ? (
-        <p className="text-sm text-muted-foreground p-6">Carregando…</p>
+        <div className="p-4 space-y-2">{Array.from({ length: 6 }).map((_, i) => (<Skeleton key={i} className="h-12 w-full" />))}</div>
       ) : items.length === 0 ? (
         <div className="glass rounded-2xl p-8 text-center">
           <CalendarClock className="size-8 mx-auto text-muted-foreground mb-2" />

@@ -109,7 +109,7 @@ function DesignerWorkspace() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando…</p>
+              <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => (<Skeleton key={i} className="h-10 w-full" />))}</div>
             ) : (
               <div className="space-y-2 max-h-80 overflow-auto">
                 {openProtos.slice(0, 15).map((p) => (

@@ -159,7 +159,7 @@ function Approvals() {
         </CardHeader>
         <CardContent className="space-y-6">
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Carregando…</p>
+            <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => (<Skeleton key={i} className="h-14 w-full rounded-xl" />))}</div>
           ) : (
             (data ?? []).map((g) => (
               <div key={g.key}>

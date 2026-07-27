@@ -182,7 +182,7 @@ function GeoSales() {
           </div>
         </div>
         {isLoading ? (
-          <div className="text-muted-foreground">Carregando…</div>
+          <Skeleton className="h-80 w-full" />
         ) : (
           <div className="grid md:grid-cols-[2fr_1fr] gap-4 items-start">
             <div className="relative">

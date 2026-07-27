@@ -110,7 +110,7 @@ function FashionCalendar() {
           <Calendar className="size-4 text-primary" /> Linha do tempo
         </div>
         {isLoading ? (
-          <div className="p-8 text-center text-muted-foreground">Carregando…</div>
+          <div className="p-4 space-y-2">{Array.from({ length: 5 }).map((_, i) => (<Skeleton key={i} className="h-16 w-full" />))}</div>
         ) : enriched.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">Nenhuma coleção cadastrada.</div>
         ) : (
