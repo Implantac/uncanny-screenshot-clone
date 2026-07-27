@@ -47,6 +47,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { exportToCsv } from "@/lib/csv";
+import { Skeleton } from "@/components/ui/skeleton";
+
 
 type MrpSearch = { status?: MrpStatus | "all"; q?: string; category?: string };
 
@@ -438,13 +440,17 @@ function MrpPage() {
               </tr>
             </thead>
             <tbody>
-              {isLoading && (
-                <tr>
-                  <td colSpan={17} className="px-3 py-12 text-center text-muted-foreground">
-                    <Loader2 className="size-5 animate-spin inline-block mr-2" /> Calculando MRP…
-                  </td>
-                </tr>
-              )}
+              {isLoading &&
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={`sk-${i}`} className="border-t border-border/40">
+                    {Array.from({ length: 17 }).map((_, j) => (
+                      <td key={j} className="px-3 py-3">
+                        <Skeleton className="h-4 w-full" />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+
               {!isLoading && filtered.length === 0 && (
                 <tr>
                   <td colSpan={17} className="px-3 py-12 text-center text-muted-foreground">
