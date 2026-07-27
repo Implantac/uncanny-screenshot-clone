@@ -22,6 +22,7 @@ import {
   type TimelineSource,
 } from "@/lib/timeline-global.functions";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -181,9 +182,30 @@ function TimelinePage() {
       </div>
 
       {q.isLoading ? (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground p-8">
-          <Loader2 className="size-4 animate-spin" /> Coletando eventos…
+        <div className="space-y-6">
+          {[0, 1].map((g) => (
+            <section key={g}>
+              <Skeleton className="h-3 w-24 mb-3" />
+              <ol className="space-y-1.5">
+                {[0, 1, 2, 3].map((i) => (
+                  <li key={i} className="flex items-start gap-3 rounded-lg border p-3">
+                    <Skeleton className="size-8 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/5" />
+                      <Skeleton className="h-3 w-4/5" />
+                      <div className="flex gap-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-3 w-12" />
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ))}
         </div>
+
       ) : !grouped.length ? (
         <div className="text-sm text-muted-foreground p-8 text-center border border-dashed rounded-xl">
           Nenhum evento no período/filtros selecionados.
