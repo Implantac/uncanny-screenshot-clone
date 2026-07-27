@@ -36,6 +36,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_authenticated/_app/alertas")({
+  head: () => ({
+    meta: [
+      { title: "Central de Alertas · USE MODA PLM" },
+      { name: "description", content: "Alertas inteligentes de estoque, atrasos, lotes parados, qualidade e prazos críticos do ciclo de vida do produto." },
+      { property: "og:title", content: "Central de Alertas · USE MODA PLM" },
+      { property: "og:description", content: "Notificações inteligentes com causa raiz e ação sugerida para operações de moda." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AlertsCenterPage,
   errorComponent: ({ error, reset }) => (
     <div className="p-6 text-sm text-destructive">
