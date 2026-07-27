@@ -16,6 +16,16 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/_app/capacity")({
+  head: () => ({
+    meta: [
+      { title: "Capacidade Produtiva · USE MODA PLM" },
+      { name: "description", content: "Planejamento de capacidade por célula, gargalos e balanceamento de carga." },
+      { property: "og:title", content: "Capacidade Produtiva · USE MODA PLM" },
+      { property: "og:description", content: "Planejamento de capacidade por célula, gargalos e balanceamento de carga." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: Capacity,
   validateSearch: zodValidator(searchSchema),
 });

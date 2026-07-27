@@ -9,7 +9,19 @@ import { analyzeTrendImage } from "@/lib/trends.functions";
 import { TrendRadarPanelLazy as TrendRadarPanel } from "@/components/trend-radar-panel-lazy";
 import { PageHeader } from "@/components/ui/page-header";
 
-export const Route = createFileRoute("/_authenticated/_app/trends")({ component: Trends });
+export const Route = createFileRoute("/_authenticated/_app/trends")({
+  head: () => ({
+    meta: [
+      { title: "Tendências · USE MODA PLM" },
+      { name: "description", content: "Radar de tendências, cores e temas para embasar novas coleções." },
+      { property: "og:title", content: "Tendências · USE MODA PLM" },
+      { property: "og:description", content: "Radar de tendências, cores e temas para embasar novas coleções." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: Trends,
+});
 
 type Product = {
   id: string;

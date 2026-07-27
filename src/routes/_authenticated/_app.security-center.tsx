@@ -13,6 +13,16 @@ import {
 import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/security-center")({
+  head: () => ({
+    meta: [
+      { title: "Centro de Segurança · USE MODA PLM" },
+      { name: "description", content: "MFA, política de senhas, criptografia e postura de segurança da plataforma." },
+      { property: "og:title", content: "Centro de Segurança · USE MODA PLM" },
+      { property: "og:description", content: "MFA, política de senhas, criptografia e postura de segurança da plataforma." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: SecurityCenter,
 });
 

@@ -43,7 +43,19 @@ import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
 
 
-export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({ component: PcpKanban });
+export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({
+  head: () => ({
+    meta: [
+      { title: "Kanban do PCP · USE MODA PLM" },
+      { name: "description", content: "Fluxo de ordens de produção por estágio produtivo com SLA e prioridade." },
+      { property: "og:title", content: "Kanban do PCP · USE MODA PLM" },
+      { property: "og:description", content: "Fluxo de ordens de produção por estágio produtivo com SLA e prioridade." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: PcpKanban,
+});
 
 type Stage =
   | "compras"

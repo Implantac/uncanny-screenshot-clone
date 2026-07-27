@@ -7,7 +7,19 @@ import { InventorySmartPanel } from "@/components/inventory-smart-panel-lazy";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 
-export const Route = createFileRoute("/_authenticated/_app/compras")({ component: Compras });
+export const Route = createFileRoute("/_authenticated/_app/compras")({
+  head: () => ({
+    meta: [
+      { title: "Compras · USE MODA PLM" },
+      { name: "description", content: "Ordens de compra, cotações, follow-up de fornecedores e recebimento de materiais." },
+      { property: "og:title", content: "Compras · USE MODA PLM" },
+      { property: "og:description", content: "Ordens de compra, cotações, follow-up de fornecedores e recebimento de materiais." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: Compras,
+});
 
 type Item = {
   id: string;
