@@ -7,6 +7,18 @@ import { useMemo } from "react";
 import { Users, Instagram, TrendingUp, DollarSign } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/influencers")({
+  head: () => ({
+    meta: [
+      { title: "Influenciadores · USE MODA OS" },
+      { name: "description", content: "Gestão de influenciadores e envios." },
+      { property: "og:title", content: "Influenciadores · USE MODA OS" },
+      { property: "og:description", content: "Gestão de influenciadores e envios." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Influenciadores · USE MODA OS" },
+      { name: "twitter:description", content: "Gestão de influenciadores e envios." },
+    ],
+  }),
   validateSearch: zodValidator(
     z.object({ q: fallback(z.string().trim().max(80), "").default("") }),
   ),

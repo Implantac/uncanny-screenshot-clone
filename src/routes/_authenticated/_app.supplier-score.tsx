@@ -5,6 +5,18 @@ import { useMemo } from "react";
 import { Star, Truck, CheckCircle2, AlertTriangle, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/supplier-score")({
+  head: () => ({
+    meta: [
+      { title: "Score de Fornecedores · USE MODA OS" },
+      { name: "description", content: "Ranking e desempenho dos fornecedores." },
+      { property: "og:title", content: "Score de Fornecedores · USE MODA OS" },
+      { property: "og:description", content: "Ranking e desempenho dos fornecedores." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Score de Fornecedores · USE MODA OS" },
+      { name: "twitter:description", content: "Ranking e desempenho dos fornecedores." },
+    ],
+  }),
   component: SupplierScore,
 });
 

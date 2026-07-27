@@ -5,6 +5,18 @@ import { useMemo } from "react";
 import { Route as RouteIcon, TrendingUp, Users } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/attribution")({
+  head: () => ({
+    meta: [
+      { title: "Atribuição · USE MODA OS" },
+      { name: "description", content: "Análise de atribuição de vendas e marketing." },
+      { property: "og:title", content: "Atribuição · USE MODA OS" },
+      { property: "og:description", content: "Análise de atribuição de vendas e marketing." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Atribuição · USE MODA OS" },
+      { name: "twitter:description", content: "Análise de atribuição de vendas e marketing." },
+    ],
+  }),
   component: Attribution,
 });
 

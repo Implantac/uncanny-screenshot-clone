@@ -19,6 +19,18 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/onboarding")({
+  head: () => ({
+    meta: [
+      { title: "Onboarding · USE MODA OS" },
+      { name: "description", content: "Configure sua conta USE MODA." },
+      { property: "og:title", content: "Onboarding · USE MODA OS" },
+      { property: "og:description", content: "Configure sua conta USE MODA." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Onboarding · USE MODA OS" },
+      { name: "twitter:description", content: "Configure sua conta USE MODA." },
+    ],
+  }),
   component: OnboardingPage,
 });
 

@@ -5,6 +5,18 @@ import { useMemo } from "react";
 import { Sparkles, TrendingUp, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/product-success")({
+  head: () => ({
+    meta: [
+      { title: "Sucesso do Produto · USE MODA OS" },
+      { name: "description", content: "Análise de sucesso comercial dos produtos." },
+      { property: "og:title", content: "Sucesso do Produto · USE MODA OS" },
+      { property: "og:description", content: "Análise de sucesso comercial dos produtos." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Sucesso do Produto · USE MODA OS" },
+      { name: "twitter:description", content: "Análise de sucesso comercial dos produtos." },
+    ],
+  }),
   component: ProductSuccess,
 });
 

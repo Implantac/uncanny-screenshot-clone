@@ -18,6 +18,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/time-and-action")({
+  head: () => ({
+    meta: [
+      { title: "Time & Action · USE MODA OS" },
+      { name: "description", content: "Cronograma T&A da coleção." },
+      { property: "og:title", content: "Time & Action · USE MODA OS" },
+      { property: "og:description", content: "Cronograma T&A da coleção." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Time & Action · USE MODA OS" },
+      { name: "twitter:description", content: "Cronograma T&A da coleção." },
+    ],
+  }),
   component: TimeActionPage,
   errorComponent: ({ error }) => (
     <div className="p-6 text-sm text-destructive">{error.message}</div>

@@ -16,6 +16,18 @@ import {
 import { useRealtime } from "@/hooks/use-realtime";
 
 export const Route = createFileRoute("/_authenticated/_app/twin-factory")({
+  head: () => ({
+    meta: [
+      { title: "Twin Factory · USE MODA OS" },
+      { name: "description", content: "Gêmeo digital da fábrica." },
+      { property: "og:title", content: "Twin Factory · USE MODA OS" },
+      { property: "og:description", content: "Gêmeo digital da fábrica." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Twin Factory · USE MODA OS" },
+      { name: "twitter:description", content: "Gêmeo digital da fábrica." },
+    ],
+  }),
   component: TwinFactory,
 });
 

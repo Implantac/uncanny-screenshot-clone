@@ -19,6 +19,18 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/marketing-envios")({
+  head: () => ({
+    meta: [
+      { title: "Envios de Marketing · USE MODA OS" },
+      { name: "description", content: "Controle de envios para influenciadores e imprensa." },
+      { property: "og:title", content: "Envios de Marketing · USE MODA OS" },
+      { property: "og:description", content: "Controle de envios para influenciadores e imprensa." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Envios de Marketing · USE MODA OS" },
+      { name: "twitter:description", content: "Controle de envios para influenciadores e imprensa." },
+    ],
+  }),
   component: MarketingEnvios,
 });
 

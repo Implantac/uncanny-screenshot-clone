@@ -11,6 +11,18 @@ import { BRAZIL_VIEWBOX, BRAZIL_PATHS } from "@/lib/brazil-map-paths";
 const searchSchema = z.object({ uf: z.string().length(2).optional().catch(undefined) });
 
 export const Route = createFileRoute("/_authenticated/_app/geo-sales")({
+  head: () => ({
+    meta: [
+      { title: "Vendas Geográficas · USE MODA OS" },
+      { name: "description", content: "Mapa de vendas por região." },
+      { property: "og:title", content: "Vendas Geográficas · USE MODA OS" },
+      { property: "og:description", content: "Mapa de vendas por região." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Vendas Geográficas · USE MODA OS" },
+      { name: "twitter:description", content: "Mapa de vendas por região." },
+    ],
+  }),
   component: GeoSales,
   validateSearch: zodValidator(searchSchema),
 });
