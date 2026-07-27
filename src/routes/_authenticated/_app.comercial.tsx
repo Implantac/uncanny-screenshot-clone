@@ -243,7 +243,7 @@ function Comercial() {
 
 
       {isLoading ? (
-        <p className="text-muted-foreground">Carregando…</p>
+        <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => (<Skeleton key={i} className="h-12 w-full" />))}</div>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm">

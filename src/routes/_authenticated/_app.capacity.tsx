@@ -181,7 +181,7 @@ function Capacity() {
           Carga por fornecedor / facção
         </div>
         {isLoading ? (
-          <div className="p-8 text-center text-muted-foreground">Carregando…</div>
+          <div className="p-4 space-y-2">{Array.from({ length: 5 }).map((_, i) => (<Skeleton key={i} className="h-14 w-full" />))}</div>
         ) : bySupplier.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">Sem ordens de produção.</div>
         ) : (

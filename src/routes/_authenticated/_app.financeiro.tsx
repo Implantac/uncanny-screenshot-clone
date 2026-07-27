@@ -246,7 +246,7 @@ function Financeiro() {
       </div>
 
       {isLoading ? (
-        <div className="text-muted-foreground">Carregando…</div>
+        <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => (<Skeleton key={i} className="h-12 w-full" />))}</div>
       ) : filtered.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center">
           <Sparkles className="size-10 text-primary mx-auto mb-3" />
