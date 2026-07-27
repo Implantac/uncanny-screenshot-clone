@@ -1,3 +1,4 @@
+import { Skeleton } from "@/components/ui/skeleton";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -127,7 +128,7 @@ function Cashflow() {
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="font-medium mb-3">Projeção de saldo — próximos 30 dias</div>
         {isLoading ? (
-          <div className="text-muted-foreground text-sm">Carregando…</div>
+          <Skeleton className="h-32 w-full" />
         ) : (
           <div className="flex items-end gap-1 h-32 relative">
             <div className="absolute left-0 right-0 top-1/2 border-t border-dashed border-border" />
