@@ -53,6 +53,7 @@ import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
 import { ProductReadinessCard } from "@/components/product-readiness-card";
 import { ProductNextStepBanner } from "@/components/product-next-step-banner";
 import { ProductPrintArtworksPanel } from "@/components/product-print-artworks-panel";
+import { ProductLifecycleGuide } from "@/components/product-lifecycle-guide";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
   head: ({ params }) => ({
@@ -319,7 +320,7 @@ function ProductWorkspace() {
         </div>
       </div>
 
-      <ProductWorkflowStepper productId={product.id} />
+      <ProductLifecycleGuide productId={product.id} />
 
       <ProductNextStepBanner productId={product.id} />
 
