@@ -5,6 +5,18 @@ import { useMemo } from "react";
 import { Wallet, TrendingUp, TrendingDown, Layers } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/profitability")({
+  head: () => ({
+    meta: [
+      { title: "Rentabilidade · USE MODA OS" },
+      { name: "description", content: "Análise de margem e rentabilidade." },
+      { property: "og:title", content: "Rentabilidade · USE MODA OS" },
+      { property: "og:description", content: "Análise de margem e rentabilidade." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Rentabilidade · USE MODA OS" },
+      { name: "twitter:description", content: "Análise de margem e rentabilidade." },
+    ],
+  }),
   component: Profitability,
 });
 

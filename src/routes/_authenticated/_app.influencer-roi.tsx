@@ -5,6 +5,18 @@ import { useMemo } from "react";
 import { Users, TrendingUp, DollarSign, Award } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/influencer-roi")({
+  head: () => ({
+    meta: [
+      { title: "ROI de Influenciadores · USE MODA OS" },
+      { name: "description", content: "Retorno de campanhas com influenciadores." },
+      { property: "og:title", content: "ROI de Influenciadores · USE MODA OS" },
+      { property: "og:description", content: "Retorno de campanhas com influenciadores." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "ROI de Influenciadores · USE MODA OS" },
+      { name: "twitter:description", content: "Retorno de campanhas com influenciadores." },
+    ],
+  }),
   component: InfluencerROI,
 });
 

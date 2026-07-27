@@ -5,6 +5,18 @@ import { useMemo } from "react";
 import { Megaphone, Target, DollarSign, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/campaigns")({
+  head: () => ({
+    meta: [
+      { title: "Campanhas · USE MODA OS" },
+      { name: "description", content: "Gestão de campanhas de marketing e ROI." },
+      { property: "og:title", content: "Campanhas · USE MODA OS" },
+      { property: "og:description", content: "Gestão de campanhas de marketing e ROI." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Campanhas · USE MODA OS" },
+      { name: "twitter:description", content: "Gestão de campanhas de marketing e ROI." },
+    ],
+  }),
   component: Campaigns,
 });
 

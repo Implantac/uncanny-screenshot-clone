@@ -52,6 +52,18 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/_app/acompanhamento-producao")({
+  head: () => ({
+    meta: [
+      { title: "Acompanhamento de Produção · USE MODA OS" },
+      { name: "description", content: "Acompanhe o status da produção em tempo real." },
+      { property: "og:title", content: "Acompanhamento de Produção · USE MODA OS" },
+      { property: "og:description", content: "Acompanhe o status da produção em tempo real." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Acompanhamento de Produção · USE MODA OS" },
+      { name: "twitter:description", content: "Acompanhe o status da produção em tempo real." },
+    ],
+  }),
   validateSearch: zodValidator(searchSchema),
   component: AcompanhamentoProducao,
 });

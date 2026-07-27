@@ -5,6 +5,18 @@ import { useMemo } from "react";
 import { Star, DollarSign, Repeat } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/product-score")({
+  head: () => ({
+    meta: [
+      { title: "Score de Produto · USE MODA OS" },
+      { name: "description", content: "Ranking de performance por produto." },
+      { property: "og:title", content: "Score de Produto · USE MODA OS" },
+      { property: "og:description", content: "Ranking de performance por produto." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Score de Produto · USE MODA OS" },
+      { name: "twitter:description", content: "Ranking de performance por produto." },
+    ],
+  }),
   component: ProductScore,
 });
 

@@ -5,6 +5,18 @@ import { useMemo } from "react";
 import { TrendingUp, ShoppingBag, Receipt, Target } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/_app/sales-performance")({
+  head: () => ({
+    meta: [
+      { title: "Performance de Vendas · USE MODA OS" },
+      { name: "description", content: "Desempenho comercial por canal e período." },
+      { property: "og:title", content: "Performance de Vendas · USE MODA OS" },
+      { property: "og:description", content: "Desempenho comercial por canal e período." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Performance de Vendas · USE MODA OS" },
+      { name: "twitter:description", content: "Desempenho comercial por canal e período." },
+    ],
+  }),
   component: SalesPerformance,
 });
 

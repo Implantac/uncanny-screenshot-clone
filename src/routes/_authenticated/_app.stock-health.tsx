@@ -6,6 +6,18 @@ import { Boxes, AlertTriangle, Skull, Package } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 
 export const Route = createFileRoute("/_authenticated/_app/stock-health")({
+  head: () => ({
+    meta: [
+      { title: "Saúde do Estoque · USE MODA OS" },
+      { name: "description", content: "Indicadores de giro e saúde do estoque." },
+      { property: "og:title", content: "Saúde do Estoque · USE MODA OS" },
+      { property: "og:description", content: "Indicadores de giro e saúde do estoque." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Saúde do Estoque · USE MODA OS" },
+      { name: "twitter:description", content: "Indicadores de giro e saúde do estoque." },
+    ],
+  }),
   component: StockHealth,
 });
 

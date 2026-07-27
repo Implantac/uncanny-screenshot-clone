@@ -49,6 +49,18 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as RcTooltip 
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/_app/demand-planning")({
+  head: () => ({
+    meta: [
+      { title: "Planejamento de Demanda · USE MODA OS" },
+      { name: "description", content: "Previsão de demanda por produto e canal." },
+      { property: "og:title", content: "Planejamento de Demanda · USE MODA OS" },
+      { property: "og:description", content: "Previsão de demanda por produto e canal." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Planejamento de Demanda · USE MODA OS" },
+      { name: "twitter:description", content: "Previsão de demanda por produto e canal." },
+    ],
+  }),
   component: DemandPlanningPage,
 });
 
