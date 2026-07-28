@@ -86,6 +86,32 @@ const CATEGORIES = [
   "Outro",
 ];
 
+const SILHOUETTES = [
+  { value: "justo", label: "Justo", desc: "Colado ao corpo" },
+  { value: "semi-justo", label: "Semi-justo", desc: "Ajustado, mas confortável" },
+  { value: "reto", label: "Reto", desc: "Linha reta, sem definição de cintura" },
+  { value: "evase", label: "Evasê", desc: "Abre da cintura para baixo" },
+  { value: "godê", label: "Godê", desc: "Amplo, rodado" },
+  { value: "envelope", label: "Envelope", desc: "Sobreposição frontal" },
+  { value: "assimetrico", label: "Assimétrico", desc: "Comprimento ou corte irregular" },
+  { value: "oversized", label: "Oversized", desc: "Intencionalmente grande" },
+];
+
+const OCCASIONS = [
+  "Casual Dia",
+  "Casual Noite",
+  "Trabalho Escritório",
+  "Trabalho Operacional",
+  "Social Formal",
+  "Social Festa",
+  "Praia / Resort",
+  "Esporte / Lazer",
+  "Íntimo / Dormir",
+  "Plus Size",
+  "Gestante",
+  "Infantil",
+];
+
 const COLOR_OPTIONS = [
   { value: "preto", label: "Preto" },
   { value: "branco", label: "Branco" },
@@ -119,12 +145,15 @@ export function ProductCreationWizard({
   const { user } = useAuth();
   const [step, setStep] = useState(0);
 
-  // —— Dados do formulário ——
+// —— Dados do formulário ——
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
   const [skuAuto, setSkuAuto] = useState(true);
   const [collectionId, setCollectionId] = useState<string>("none");
   const [category, setCategory] = useState("");
+  const [silhueta, setSilhueta] = useState("");
+  const [ocasiao, setOcasiao] = useState("");
+  const [tecidoSugerido, setTecidoSugerido] = useState("");
   const [colors, setColors] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [imageUrl, setImageUrl] = useState("");
@@ -591,20 +620,63 @@ export function ProductCreationWizard({
                 )}
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Silhueta</Label>
+                  <Select value={silhueta} onValueChange={setSilhueta}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Tipo de silhueta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SILHOUETTES.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>
+                          {s.label} — {s.desc}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Ocasião de uso</Label>
+                  <Select value={ocasiao} onValueChange={setOcasiao}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Quando usar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {OCCASIONS.map((o) => (
+                        <SelectItem key={o} value={o}>
+                          {o}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="w-tecido">Tecido sugerido (opcional)</Label>
+                <Input
+                  id="w-tecido"
+                  value={tecidoSugerido}
+                  onChange={(e) => setTecidoSugerido(e.target.value)}
+                  placeholder="Ex.: Crepe Seda, Malha Algodão 30.1, Linho Viscose…"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="w-desc">Descrição (opcional)</Label>
                 <Textarea
                   id="w-desc"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Breve descrição do produto, inspiração, tecido sugerido…"
+                  placeholder="Breve descrição do produto, inspiração, referências…"
                   rows={2}
                 />
               </div>
 
               <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-xs">
                 <div className="font-medium text-amber-700 dark:text-amber-300 mb-1">💡 Dica</div>
-                Não se preocupe em acertar tudo agora. Cores, tamanhos e imagem podem ser ajustados depois.
+                Não se preocupe em acertar tudo agora. Cores, tamanhos, silhueta e imagem podem ser ajustados depois.
               </div>
             </div>
           )}

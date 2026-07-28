@@ -481,7 +481,7 @@ function getStepAction(
       return {
         to: "/ficha-tecnica",
         label: "Abrir ficha técnica",
-        search: { product: productId },
+        search: { productId },
       };
     case "custos":
       return {
