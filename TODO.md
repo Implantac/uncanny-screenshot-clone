@@ -32,5 +32,11 @@ Integrar Ficha Técnica (materiais + operações) e Ficha de Custos diretamente 
 ### Finalização
 
 - [x] 11. Implementado visualmente o wizard completo
-- [ ] 12. Fazer commit e push para o GitHub
+- [x] 12. Commit e push realizados com sucesso para o GitHub (main)
+
+### Otimização de Performance
+
+- [x] 13. Extrair MaterialRow e OperationRow como componentes React.memo com useCallback
+- [x] 14. Adicionar callbacks estáveis (updateMaterial, deleteMaterial, updateOperation, deleteOperation) com useCallback vazio
+- [x] 15. Substituir JSX inline do Step 2 pelos componentes memoizados
 

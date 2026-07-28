@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -144,6 +144,110 @@ function fmt(n: number) {
   return `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+// —— Componente memoizado para linha de material —
+const MaterialRow = memo(function MaterialRow({
+  mat,
+  idx,
+  onUpdate,
+  onDelete,
+}: {
+  mat: MaterialInline;
+  idx: number;
+  onUpdate: (idx: number, partial: Partial<MaterialInline>) => void;
+  onDelete: (id: string) => void;
+}) {
+  const handleName = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { name: e.target.value }), [idx, onUpdate]);
+  const handleUnit = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { unit: e.target.value }), [idx, onUpdate]);
+  const handleConsumption = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { consumption: Number(e.target.value) || 0 }), [idx, onUpdate]);
+  const handleUnitCost = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { unit_cost: Number(e.target.value) || 0 }), [idx, onUpdate]);
+  const handleLoss = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { loss_pct: Number(e.target.value) || 0 }), [idx, onUpdate]);
+  const handleDelete = useCallback(() => onDelete(mat.id), [mat.id, onDelete]);
+
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap border border-border/60 rounded-lg p-1.5 bg-background">
+      <Input value={mat.name} onChange={handleName} placeholder="Nome do material" className="h-7 text-xs min-w-[120px] flex-1" />
+      <div className="flex items-center gap-1 text-xs">
+        <span className="text-muted-foreground">Un</span>
+        <Input value={mat.unit} onChange={handleUnit} className="h-7 text-xs w-12" />
+      </div>
+      <div className="flex items-center gap-1 text-xs">
+        <span className="text-muted-foreground">Cons</span>
+        <input type="number" step="0.01" value={mat.consumption || ""} onChange={handleConsumption}
+          className="h-7 w-16 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums" />
+      </div>
+      <div className="flex items-center gap-1 text-xs">
+        <span className="text-muted-foreground">R$/un</span>
+        <input type="number" step="0.01" value={mat.unit_cost || ""} onChange={handleUnitCost}
+          className="h-7 w-16 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums" />
+      </div>
+      <div className="flex items-center gap-1 text-xs">
+        <span className="text-muted-foreground">Perda%</span>
+        <input type="number" step="0.1" value={mat.loss_pct || ""} onChange={handleLoss}
+          className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums" />
+      </div>
+      <span className="text-xs font-medium tabular-nums shrink-0 w-20 text-right">
+        {fmt(mat.consumption * mat.unit_cost * (1 + mat.loss_pct / 100))}
+      </span>
+      <Button size="icon" variant="ghost" className="size-6 shrink-0 text-destructive" onClick={handleDelete}>
+        <Trash2 className="size-3" />
+      </Button>
+    </div>
+  );
+});
+
+// —— Componente memoizado para linha de operação —
+const OperationRow = memo(function OperationRow({
+  op,
+  idx,
+  onUpdate,
+  onDelete,
+}: {
+  op: OperationInline;
+  idx: number;
+  onUpdate: (idx: number, partial: Partial<OperationInline>) => void;
+  onDelete: (id: string) => void;
+}) {
+  const handleName = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { name: e.target.value }), [idx, onUpdate]);
+  const handleMachine = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { machine: e.target.value }), [idx, onUpdate]);
+  const handleRole = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => onUpdate(idx, { role: e.target.value }), [idx, onUpdate]);
+  const handleSam = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { sam: Number(e.target.value) || 0 }), [idx, onUpdate]);
+  const handleRate = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { rate_per_min: Number(e.target.value) || 0 }), [idx, onUpdate]);
+  const handleDelete = useCallback(() => onDelete(op.id), [op.id, onDelete]);
+
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap border border-border/60 rounded-lg p-1.5 bg-background">
+      <Input value={op.name} onChange={handleName} placeholder="Operação" className="h-7 text-xs min-w-[100px] flex-1" />
+      <Input value={op.machine} onChange={handleMachine} placeholder="Máquina" className="h-7 text-xs w-20" />
+      <select value={op.role} onChange={handleRole} className="h-7 text-xs border border-border rounded bg-background px-1">
+        <option value="">Resp.</option>
+        <option value="Corte">Corte</option>
+        <option value="Costura">Costura</option>
+        <option value="Acabamento">Acabamento</option>
+        <option value="Bordado/Silk">Bordado/Silk</option>
+        <option value="Qualidade">Qualidade</option>
+        <option value="Modelagem">Modelagem</option>
+        <option value="Pilotagem">Pilotagem</option>
+      </select>
+      <div className="flex items-center gap-1 text-xs">
+        <span className="text-muted-foreground">SAM</span>
+        <input type="number" step="0.01" value={op.sam || ""} onChange={handleSam}
+          className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums" />
+      </div>
+      <div className="flex items-center gap-1 text-xs">
+        <span className="text-muted-foreground">R$/min</span>
+        <input type="number" step="0.01" value={op.rate_per_min || ""} onChange={handleRate}
+          className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums" />
+      </div>
+      <span className="text-xs font-medium tabular-nums shrink-0 w-20 text-right">
+        {fmt(op.sam * op.rate_per_min)}
+      </span>
+      <Button size="icon" variant="ghost" className="size-6 shrink-0 text-destructive" onClick={handleDelete}>
+        <Trash2 className="size-3" />
+      </Button>
+    </div>
+  );
+});
+
 export function ProductCreationWizard({
   open,
   onOpenChange,
@@ -174,11 +278,32 @@ export function ProductCreationWizard({
   const [materials, setMaterials] = useState<MaterialInline[]>([]);
   const [operations, setOperations] = useState<OperationInline[]>([]);
 
+  // —— Callbacks estáveis para MaterialRow / OperationRow ——
+  const updateMaterial = useCallback((idx: number, partial: Partial<MaterialInline>) => {
+    setMaterials((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], ...partial };
+      return next;
+    });
+  }, []);
+  const deleteMaterial = useCallback((id: string) => {
+    setMaterials((prev) => prev.filter((m) => m.id !== id));
+  }, []);
+  const updateOperation = useCallback((idx: number, partial: Partial<OperationInline>) => {
+    setOperations((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], ...partial };
+      return next;
+    });
+  }, []);
+  const deleteOperation = useCallback((id: string) => {
+    setOperations((prev) => prev.filter((o) => o.id !== id));
+  }, []);
+
   // —— Custos (Step 3) ——
   const [sellPrice, setSellPrice] = useState(0);
   const [overheadPct, setOverheadPct] = useState(20);
 
-  // —— Cálculos memoizados ——
   const materialsCost = useMemo(
     () => materials.reduce((s, m) => s + m.consumption * m.unit_cost * (1 + m.loss_pct / 100), 0),
     [materials],
@@ -768,78 +893,7 @@ export function ProductCreationWizard({
                 ) : (
                   <div className="space-y-1.5">
                     {materials.map((mat, idx) => (
-                      <div key={mat.id} className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap border border-border/60 rounded-lg p-1.5 bg-background">
-                        <Input
-                          value={mat.name}
-                          onChange={(e) => {
-                            const next = [...materials];
-                            next[idx] = { ...next[idx], name: e.target.value };
-                            setMaterials(next);
-                          }}
-                          placeholder="Nome do material"
-                          className="h-7 text-xs min-w-[120px] flex-1"
-                        />
-                        <div className="flex items-center gap-1 text-xs">
-                          <span className="text-muted-foreground">Un</span>
-                          <Input
-                            value={mat.unit}
-                            onChange={(e) => {
-                              const next = [...materials];
-                              next[idx] = { ...next[idx], unit: e.target.value };
-                              setMaterials(next);
-                            }}
-                            className="h-7 text-xs w-12"
-                          />
-                        </div>
-                        <div className="flex items-center gap-1 text-xs">
-                          <span className="text-muted-foreground">Cons</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={mat.consumption || ""}
-                            onChange={(e) => {
-                              const next = [...materials];
-                              next[idx] = { ...next[idx], consumption: Number(e.target.value) || 0 };
-                              setMaterials(next);
-                            }}
-                            className="h-7 w-16 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
-                          />
-                        </div>
-                        <div className="flex items-center gap-1 text-xs">
-                          <span className="text-muted-foreground">R$/un</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={mat.unit_cost || ""}
-                            onChange={(e) => {
-                              const next = [...materials];
-                              next[idx] = { ...next[idx], unit_cost: Number(e.target.value) || 0 };
-                              setMaterials(next);
-                            }}
-                            className="h-7 w-16 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
-                          />
-                        </div>
-                        <div className="flex items-center gap-1 text-xs">
-                          <span className="text-muted-foreground">Perda%</span>
-                          <input
-                            type="number"
-                            step="0.1"
-                            value={mat.loss_pct || ""}
-                            onChange={(e) => {
-                              const next = [...materials];
-                              next[idx] = { ...next[idx], loss_pct: Number(e.target.value) || 0 };
-                              setMaterials(next);
-                            }}
-                            className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
-                          />
-                        </div>
-                        <span className="text-xs font-medium tabular-nums shrink-0 w-20 text-right">
-                          {fmt(mat.consumption * mat.unit_cost * (1 + mat.loss_pct / 100))}
-                        </span>
-                        <Button size="icon" variant="ghost" className="size-6 shrink-0 text-destructive" onClick={() => setMaterials((prev) => prev.filter((m) => m.id !== mat.id))}>
-                          <Trash2 className="size-3" />
-                        </Button>
-                      </div>
+                      <MaterialRow key={mat.id} mat={mat} idx={idx} onUpdate={updateMaterial} onDelete={deleteMaterial} />
                     ))}
                   </div>
                 )}
@@ -867,80 +921,7 @@ export function ProductCreationWizard({
                 ) : (
                   <div className="space-y-1.5">
                     {operations.map((op, idx) => (
-                      <div key={op.id} className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap border border-border/60 rounded-lg p-1.5 bg-background">
-                        <Input
-                          value={op.name}
-                          onChange={(e) => {
-                            const next = [...operations];
-                            next[idx] = { ...next[idx], name: e.target.value };
-                            setOperations(next);
-                          }}
-                          placeholder="Operação"
-                          className="h-7 text-xs min-w-[100px] flex-1"
-                        />
-                        <Input
-                          value={op.machine}
-                          onChange={(e) => {
-                            const next = [...operations];
-                            next[idx] = { ...next[idx], machine: e.target.value };
-                            setOperations(next);
-                          }}
-                          placeholder="Máquina"
-                          className="h-7 text-xs w-20"
-                        />
-                        <select
-                          value={op.role}
-                          onChange={(e) => {
-                            const next = [...operations];
-                            next[idx] = { ...next[idx], role: e.target.value };
-                            setOperations(next);
-                          }}
-                          className="h-7 text-xs border border-border rounded bg-background px-1"
-                        >
-                          <option value="">Resp.</option>
-                          <option value="Corte">Corte</option>
-                          <option value="Costura">Costura</option>
-                          <option value="Acabamento">Acabamento</option>
-                          <option value="Bordado/Silk">Bordado/Silk</option>
-                          <option value="Qualidade">Qualidade</option>
-                          <option value="Modelagem">Modelagem</option>
-                          <option value="Pilotagem">Pilotagem</option>
-                        </select>
-                        <div className="flex items-center gap-1 text-xs">
-                          <span className="text-muted-foreground">SAM</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={op.sam || ""}
-                            onChange={(e) => {
-                              const next = [...operations];
-                              next[idx] = { ...next[idx], sam: Number(e.target.value) || 0 };
-                              setOperations(next);
-                            }}
-                            className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
-                          />
-                        </div>
-                        <div className="flex items-center gap-1 text-xs">
-                          <span className="text-muted-foreground">R$/min</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={op.rate_per_min || ""}
-                            onChange={(e) => {
-                              const next = [...operations];
-                              next[idx] = { ...next[idx], rate_per_min: Number(e.target.value) || 0 };
-                              setOperations(next);
-                            }}
-                            className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
-                          />
-                        </div>
-                        <span className="text-xs font-medium tabular-nums shrink-0 w-20 text-right">
-                          {fmt(op.sam * op.rate_per_min)}
-                        </span>
-                        <Button size="icon" variant="ghost" className="size-6 shrink-0 text-destructive" onClick={() => setOperations((prev) => prev.filter((o) => o.id !== op.id))}>
-                          <Trash2 className="size-3" />
-                        </Button>
-                      </div>
+                      <OperationRow key={op.id} op={op} idx={idx} onUpdate={updateOperation} onDelete={deleteOperation} />
                     ))}
                   </div>
                 )}
