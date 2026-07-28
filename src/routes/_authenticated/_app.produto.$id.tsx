@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,8 @@ import {
   ExternalLink,
   AlertTriangle,
   CheckCircle2,
+  Edit3,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -99,6 +101,7 @@ function ProductWorkspace() {
   const navigate = useNavigate();
   useRealtime("products", ["product-workspace", id]);
   const audit = useServerFn(logProductView);
+  const [editMode, setEditMode] = useState(false);
   useEffect(() => {
     audit({ data: { productId: id } }).catch(() => {});
   }, [id, audit]);
@@ -341,19 +344,35 @@ function ProductWorkspace() {
 
       <Tabs defaultValue="overview" className="space-y-4">
 
-        <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/40 p-1">
-          <TabTrig value="overview" icon={<Sparkles className="size-3.5" />}>Overview</TabTrig>
-          <TabTrig value="ficha" icon={<FileText className="size-3.5" />}>Ficha técnica</TabTrig>
-          <TabTrig value="bom" icon={<Layers className="size-3.5" />}>BOM</TabTrig>
-          <TabTrig value="bop" icon={<ListChecks className="size-3.5" />}>Processo</TabTrig>
-          <TabTrig value="medidas" icon={<Ruler className="size-3.5" />}>Medidas</TabTrig>
-          <TabTrig value="custos" icon={<ShieldCheck className="size-3.5" />}>Custos</TabTrig>
-          <TabTrig value="prototipos" icon={<Scissors className="size-3.5" />}>Protótipos</TabTrig>
-          <TabTrig value="pcp" icon={<Factory className="size-3.5" />}>PCP</TabTrig>
-          <TabTrig value="marketing" icon={<Megaphone className="size-3.5" />}>Marketing</TabTrig>
-          <TabTrig value="bi" icon={<BarChart3 className="size-3.5" />}>BI</TabTrig>
-          <TabTrig value="timeline" icon={<Clock className="size-3.5" />}>Timeline</TabTrig>
-        </TabsList>
+        <div className="flex items-center gap-2">
+          <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/40 p-1 flex-1">
+            <TabTrig value="overview" icon={<Sparkles className="size-3.5" />}>Overview</TabTrig>
+            <TabTrig value="ficha" icon={<FileText className="size-3.5" />}>Ficha técnica</TabTrig>
+            <TabTrig value="bom" icon={<Layers className="size-3.5" />}>BOM</TabTrig>
+            <TabTrig value="bop" icon={<ListChecks className="size-3.5" />}>Processo</TabTrig>
+            <TabTrig value="medidas" icon={<Ruler className="size-3.5" />}>Medidas</TabTrig>
+            <TabTrig value="custos" icon={<ShieldCheck className="size-3.5" />}>Custos</TabTrig>
+            <TabTrig value="prototipos" icon={<Scissors className="size-3.5" />}>Protótipos</TabTrig>
+            <TabTrig value="pcp" icon={<Factory className="size-3.5" />}>PCP</TabTrig>
+            <TabTrig value="marketing" icon={<Megaphone className="size-3.5" />}>Marketing</TabTrig>
+            <TabTrig value="bi" icon={<BarChart3 className="size-3.5" />}>BI</TabTrig>
+            <TabTrig value="timeline" icon={<Clock className="size-3.5" />}>Timeline</TabTrig>
+          </TabsList>
+          {sheet && (
+            <Button
+              size="sm"
+              variant={editMode ? "default" : "outline"}
+              className="gap-1.5 h-8 shrink-0 text-xs"
+              onClick={() => setEditMode((v) => !v)}
+            >
+              {editMode ? (
+                <><Lock className="size-3.5" /> Bloquear edição</>
+              ) : (
+                <><Edit3 className="size-3.5" /> Editar ficha</>
+              )}
+            </Button>
+          )}
+        </div>
 
         <TabsContent value="overview" className="space-y-4">
           <ProductReadinessCard productId={product.id} />
@@ -410,7 +429,7 @@ function ProductWorkspace() {
         <TabsContent value="bom">
           {sheet ? (
             <div className="rounded-xl border border-border bg-card p-4">
-              <MaterialsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={false} />
+              <MaterialsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={editMode} />
             </div>
           ) : (
             <NoSheet productId={product.id} />
@@ -420,7 +439,7 @@ function ProductWorkspace() {
         <TabsContent value="bop">
           {sheet ? (
             <div className="rounded-xl border border-border bg-card p-4">
-              <OperationsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={false} />
+              <OperationsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={editMode} />
             </div>
           ) : (
             <NoSheet productId={product.id} />
@@ -430,7 +449,7 @@ function ProductWorkspace() {
         <TabsContent value="medidas">
           {sheet ? (
             <div className="rounded-xl border border-border bg-card p-4">
-              <MeasurementsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={false} />
+              <MeasurementsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={editMode} />
             </div>
           ) : (
             <NoSheet productId={product.id} />
@@ -442,7 +461,7 @@ function ProductWorkspace() {
           <ProductCostEnginePanel productId={product.id} />
           {sheet ? (
             <div className="rounded-xl border border-border bg-card p-4">
-              <CostsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={false} />
+              <CostsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={editMode} />
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-border bg-card p-4">

@@ -1,5 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, Search, type LucideIcon } from "lucide-react";
+import { useState, useMemo, useCallback, type ReactNode } from "react";
 import {
   Table,
   TableBody,
@@ -10,116 +9,136 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/**
- * Sprint C — DataTable unificada.
- *
- * Componente único para listagens tabulares no PLM: sort por coluna,
- * busca global, sticky header, skeleton e empty state integrados.
- * Mantém o visual dos badges/StatusBadge — apenas normaliza a moldura.
- */
 export type DataTableColumn<T> = {
+  /** Chave única */
   key: string;
-  header: ReactNode;
-  cell: (row: T) => ReactNode;
-  /** Valor para sort/busca. Se omitido, coluna não é sortable/buscável. */
-  value?: (row: T) => string | number | null | undefined;
-  className?: string;
-  headerClassName?: string;
+  /** Rótulo do cabeçalho */
+  label: ReactNode;
+  /** Renderizador customizado (fallback: row[key]) */
+  render?: (row: T, idx: number) => ReactNode;
+  /** Se é ordenável */
   sortable?: boolean;
-  align?: "left" | "right" | "center";
-};
-
-type Props<T> = {
-  data: T[];
-  columns: DataTableColumn<T>[];
-  loading?: boolean;
-  getRowId: (row: T) => string;
-  onRowClick?: (row: T) => void;
-  emptyTitle?: string;
-  emptyDescription?: string;
-  emptyIcon?: LucideIcon;
-  searchPlaceholder?: string;
-  toolbar?: ReactNode;
-  initialSort?: { key: string; dir: "asc" | "desc" };
+  /** Largura (ex: "w-24") */
   className?: string;
-  stickyHeader?: boolean;
-  pageSize?: number;
+  /** Alinhamento */
+  align?: "left" | "center" | "right";
+  /** Função para extrair valor ordenável (padrão: String(row[key])) */
+  sortValue?: (row: T) => string | number;
+  /** Ocultar no mobile */
+  hideOnMobile?: boolean;
 };
 
-export function DataTable<T>({
-  data,
+type SortDir = "asc" | "desc" | null;
+
+type DataTableProps<T> = {
+  columns: DataTableColumn<T>[];
+  data: T[];
+  /** Chave única para cada linha */
+  rowKey: (row: T) => string;
+  /** Placeholder da busca */
+  searchPlaceholder?: string;
+  /** Callback de busca customizada (padrão: busca em todos os campos) */
+  onSearch?: (query: string, rows: T[]) => T[];
+  /** Classe extra */
+  className?: string;
+  /** Ações extras no toolbar */
+  toolbar?: ReactNode;
+  /** Estado vazio */
+  emptyLabel?: string;
+  /** Paginação */
+  pageSize?: number;
+  /** Callback ao clicar na linha */
+  onRowClick?: (row: T) => void;
+};
+
+/**
+ * DataTable — Wrapper padronizado sobre Table do shadcn/ui
+ * com busca, ordenação, paginação e responsividade.
+ */
+export function DataTable<T extends Record<string, unknown>>({
   columns,
-  loading,
-  getRowId,
-  onRowClick,
-  emptyTitle = "Nenhum resultado",
-  emptyDescription = "Ajuste os filtros ou tente outra busca.",
-  emptyIcon,
+  data,
+  rowKey,
   searchPlaceholder = "Buscar…",
-  toolbar,
-  initialSort,
+  onSearch,
   className,
-  stickyHeader = true,
-  pageSize,
-}: Props<T>) {
+  toolbar,
+  emptyLabel = "Nenhum resultado encontrado.",
+  pageSize = 25,
+  onRowClick,
+}: DataTableProps<T>) {
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<{ key: string; dir: "asc" | "desc" } | null>(
-    initialSort ?? null,
-  );
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>(null);
   const [page, setPage] = useState(0);
 
+  const handleSort = useCallback(
+    (key: string) => {
+      if (sortKey === key) {
+        if (sortDir === "asc") {
+          setSortDir("desc");
+        } else if (sortDir === "desc") {
+          setSortKey(null);
+          setSortDir(null);
+        }
+      } else {
+        setSortKey(key);
+        setSortDir("asc");
+      }
+      setPage(0);
+    },
+    [sortKey, sortDir],
+  );
+
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return data;
-    const searchable = columns.filter((c) => c.value);
+    if (!query.trim()) return data;
+    if (onSearch) return onSearch(query.trim(), data);
+    const q = query.toLowerCase();
     return data.filter((row) =>
-      searchable.some((c) => {
-        const v = c.value?.(row);
-        return v != null && String(v).toLowerCase().includes(q);
+      Object.values(row).some((v) => {
+        if (v == null) return false;
+        return String(v).toLowerCase().includes(q);
       }),
     );
-  }, [data, query, columns]);
+  }, [data, query, onSearch]);
 
   const sorted = useMemo(() => {
-    if (!sort) return filtered;
-    const col = columns.find((c) => c.key === sort.key);
-    if (!col?.value) return filtered;
-    const dir = sort.dir === "asc" ? 1 : -1;
+    if (!sortKey || !sortDir) return filtered;
+    const col = columns.find((c) => c.key === sortKey);
+    if (!col) return filtered;
     return [...filtered].sort((a, b) => {
-      const av = col.value!(a);
-      const bv = col.value!(b);
-      if (av == null && bv == null) return 0;
-      if (av == null) return 1;
-      if (bv == null) return -1;
-      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
-      return String(av).localeCompare(String(bv), "pt-BR", { numeric: true }) * dir;
+      const aVal = col.sortValue ? col.sortValue(a) : String(a[sortKey] ?? "");
+      const bVal = col.sortValue ? col.sortValue(b) : String(b[sortKey] ?? "");
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return sortDir === "asc" ? aVal - bVal : bVal - aVal;
+      }
+      const cmp = String(aVal).localeCompare(String(bVal), "pt-BR", { numeric: true });
+      return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [filtered, sort, columns]);
+  }, [filtered, sortKey, sortDir, columns]);
 
-  const pageCount = pageSize ? Math.max(1, Math.ceil(sorted.length / pageSize)) : 1;
-  const paged = pageSize ? sorted.slice(page * pageSize, (page + 1) * pageSize) : sorted;
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const safePage = Math.min(page, totalPages - 1);
+  const paged = sorted.slice(safePage * pageSize, (safePage + 1) * pageSize);
 
-  const toggleSort = (key: string) => {
-    const col = columns.find((c) => c.key === key);
-    if (!col?.value || col.sortable === false) return;
-    setSort((prev) =>
-      prev?.key === key
-        ? prev.dir === "asc"
-          ? { key, dir: "desc" }
-          : null
-        : { key, dir: "asc" },
+  const SortIcon = ({ colKey }: { colKey: string }) => {
+    if (sortKey !== colKey) return <ArrowUpDown className="size-3 text-muted-foreground/40" />;
+    return sortDir === "asc" ? (
+      <ArrowUp className="size-3 text-primary" />
+    ) : (
+      <ArrowDown className="size-3 text-primary" />
     );
   };
 
   return (
-    <div className={cn("flex flex-col gap-3", className)}>
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[220px] max-w-md">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+    <div className={cn("space-y-3", className)}>
+      {/* Toolbar */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="relative flex-1 min-w-[160px] max-w-xs">
+          <Search className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => {
@@ -127,111 +146,114 @@ export function DataTable<T>({
               setPage(0);
             }}
             placeholder={searchPlaceholder}
-            className="pl-8 h-9"
+            className="h-8 pl-8 text-xs"
           />
         </div>
-        {toolbar}
-        <div className="ml-auto text-xs text-muted-foreground">
-          {sorted.length} {sorted.length === 1 ? "item" : "itens"}
-        </div>
-      </div>
-
-      <div className="rounded-xl border bg-card overflow-hidden">
-        {loading ? (
-          <div className="p-4">
-            <TableSkeleton rows={6} columns={Math.min(columns.length, 6)} />
-          </div>
-        ) : sorted.length === 0 ? (
-          <EmptyState title={emptyTitle} description={emptyDescription} icon={emptyIcon} />
-        ) : (
-          <div className="overflow-auto">
-            <Table>
-              <TableHeader
-                className={cn(stickyHeader && "sticky top-0 bg-card/95 backdrop-blur z-10")}
-              >
-                <TableRow>
-                  {columns.map((c) => {
-                    const active = sort?.key === c.key;
-                    const canSort = !!c.value && c.sortable !== false;
-                    return (
-                      <TableHead
-                        key={c.key}
-                        className={cn(
-                          c.headerClassName,
-                          c.align === "right" && "text-right",
-                          c.align === "center" && "text-center",
-                          canSort && "cursor-pointer select-none",
-                        )}
-                        onClick={canSort ? () => toggleSort(c.key) : undefined}
-                      >
-                        <span className="inline-flex items-center gap-1">
-                          {c.header}
-                          {canSort &&
-                            (active ? (
-                              sort!.dir === "asc" ? (
-                                <ArrowUp className="size-3" />
-                              ) : (
-                                <ArrowDown className="size-3" />
-                              )
-                            ) : (
-                              <ArrowUpDown className="size-3 opacity-30" />
-                            ))}
-                        </span>
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paged.map((row) => (
-                  <TableRow
-                    key={getRowId(row)}
-                    onClick={onRowClick ? () => onRowClick(row) : undefined}
-                    className={cn(onRowClick && "cursor-pointer hover:bg-muted/40")}
-                  >
-                    {columns.map((c) => (
-                      <TableCell
-                        key={c.key}
-                        className={cn(
-                          c.className,
-                          c.align === "right" && "text-right",
-                          c.align === "center" && "text-center",
-                        )}
-                      >
-                        {c.cell(row)}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+        {toolbar && <div className="flex items-center gap-2">{toolbar}</div>}
+        {query && (
+          <span className="text-xs text-muted-foreground">
+            {filtered.length} de {data.length}
+          </span>
         )}
       </div>
 
-      {pageSize && pageCount > 1 && (
-        <div className="flex items-center justify-end gap-2 text-xs">
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={page === 0}
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-          >
-            Anterior
-          </Button>
-          <span className="text-muted-foreground">
-            Página {page + 1} de {pageCount}
+      {/* Tabela */}
+      {paged.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+          {emptyLabel}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-border overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {columns.map((col) => (
+                  <TableHead
+                    key={col.key}
+                    className={cn(
+                      col.className,
+                      col.align === "center" && "text-center",
+                      col.align === "right" && "text-right",
+                      col.hideOnMobile && "hidden md:table-cell",
+                      col.sortable && "cursor-pointer select-none hover:bg-muted/50",
+                    )}
+                    onClick={() => col.sortable && handleSort(col.key)}
+                  >
+                    <div className="flex items-center gap-1">
+                      {col.label}
+                      {col.sortable && <SortIcon colKey={col.key} />}
+                    </div>
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paged.map((row, idx) => (
+                <TableRow
+                  key={rowKey(row)}
+                  className={cn(onRowClick && "cursor-pointer hover:bg-muted/50")}
+                  onClick={() => onRowClick?.(row)}
+                >
+                  {columns.map((col) => (
+                    <TableCell
+                      key={`${rowKey(row)}-${col.key}`}
+                      className={cn(
+                        col.className,
+                        col.align === "center" && "text-center",
+                        col.align === "right" && "text-right",
+                        col.hideOnMobile && "hidden md:table-cell",
+                      )}
+                    >
+                      {col.render ? col.render(row, idx) : (row[col.key] as ReactNode) ?? "—"}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>
+            Página {safePage + 1} de {totalPages}
           </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={page >= pageCount - 1}
-            onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
-          >
-            Próxima
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-7"
+              disabled={safePage === 0}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+            >
+              <ChevronLeft className="size-3.5" />
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => i).map((i) => (
+              <Button
+                key={i}
+                size="icon"
+                variant={i === safePage ? "default" : "ghost"}
+                className="size-7 text-[11px]"
+                onClick={() => setPage(i)}
+              >
+                {i + 1}
+              </Button>
+            ))}
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-7"
+              disabled={safePage >= totalPages - 1}
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            >
+              <ChevronRight className="size-3.5" />
+            </Button>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
