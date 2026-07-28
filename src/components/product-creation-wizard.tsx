@@ -24,9 +24,7 @@ import {
 } from "@/components/ui/select";
 import {
   Sparkles,
-  PenTool,
   FileText,
-  Scissors,
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
@@ -39,51 +37,38 @@ import {
   Plus,
   X,
   HelpCircle,
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 type CollectionRef = { id: string; name: string; season: string; year: number };
 
 /**
- * WIZARD DE CRIAÇÃO — 4 passos simples
+ * WIZARD DE CRIAÇÃO — 5 passos
  *
- * Passo 1: Identidade — Nome, SKU, Coleção
- * Passo 2: Características — Categoria, Cores, Tamanhos, Imagem
- * Passo 3: Ficha Técnica — Materiais, Medidas (opcional no início)
- * Passo 4: Revisão e próximo passo — Resumo + o que fazer agora
+ * Passo 0: Identidade — Nome, SKU, Coleção
+ * Passo 1: Características — Categoria, Cores, Tamanhos, Imagem
+ * Passo 2: Ficha Técnica — Materiais, Operações (BOM + BOP inline)
+ * Passo 3: Custos — Preço de venda, Overhead, Margem estimada
+ * Passo 4: Revisão — Resumo completo + custos, criar
  */
 const WIZARD_STEPS = [
   { id: "identidade", label: "Identidade", icon: Shirt },
   { id: "caracteristicas", label: "Características", icon: Palette },
   { id: "ficha", label: "Ficha técnica", icon: FileText },
+  { id: "custos", label: "Custos", icon: DollarSign },
   { id: "revisao", label: "Revisão", icon: CheckCircle2 },
 ] as const;
 
 const CATEGORIES = [
-  "Vestido",
-  "Blusa",
-  "Camisa",
-  "Calça",
-  "Saia",
-  "Short",
-  "Jaqueta",
-  "Casaco",
-  "Macacão",
-  "Body",
-  "Top",
-  "Cropped",
-  "Bermuda",
-  "Kimono",
-  "Coletê",
-  "Outro",
+  "Vestido", "Blusa", "Camisa", "Calça", "Saia", "Short",
+  "Jaqueta", "Casaco", "Macacão", "Body", "Top", "Cropped",
+  "Bermuda", "Kimono", "Coletê", "Outro",
 ];
 
 const SILHOUETTES = [
@@ -98,40 +83,66 @@ const SILHOUETTES = [
 ];
 
 const OCCASIONS = [
-  "Casual Dia",
-  "Casual Noite",
-  "Trabalho Escritório",
-  "Trabalho Operacional",
-  "Social Formal",
-  "Social Festa",
-  "Praia / Resort",
-  "Esporte / Lazer",
-  "Íntimo / Dormir",
-  "Plus Size",
-  "Gestante",
-  "Infantil",
+  "Casual Dia", "Casual Noite", "Trabalho Escritório", "Trabalho Operacional",
+  "Social Formal", "Social Festa", "Praia / Resort", "Esporte / Lazer",
+  "Íntimo / Dormir", "Plus Size", "Gestante", "Infantil",
 ];
 
 const COLOR_OPTIONS = [
-  { value: "preto", label: "Preto" },
-  { value: "branco", label: "Branco" },
-  { value: "vermelho", label: "Vermelho" },
-  { value: "azul", label: "Azul" },
-  { value: "verde", label: "Verde" },
-  { value: "amarelo", label: "Amarelo" },
-  { value: "rosa", label: "Rosa" },
-  { value: "roxo", label: "Roxo" },
-  { value: "laranja", label: "Laranja" },
-  { value: "marrom", label: "Marrom" },
-  { value: "cinza", label: "Cinza" },
-  { value: "bege", label: "Bege" },
-  { value: "estampa", label: "Estampado" },
-  { value: "listrado", label: "Listrado" },
+  { value: "preto", label: "Preto" }, { value: "branco", label: "Branco" },
+  { value: "vermelho", label: "Vermelho" }, { value: "azul", label: "Azul" },
+  { value: "verde", label: "Verde" }, { value: "amarelo", label: "Amarelo" },
+  { value: "rosa", label: "Rosa" }, { value: "roxo", label: "Roxo" },
+  { value: "laranja", label: "Laranja" }, { value: "marrom", label: "Marrom" },
+  { value: "cinza", label: "Cinza" }, { value: "bege", label: "Bege" },
+  { value: "estampa", label: "Estampado" }, { value: "listrado", label: "Listrado" },
   { value: "poa", label: "Poá" },
 ];
 
 const SIZE_OPTIONS = ["PP", "P", "M", "G", "GG", "XG", "36", "38", "40", "42", "44", "46", "48"];
 const SEASONS = ["Verão", "Inverno", "Alto Verão", "Meia Estação", "Resort", "Cápsula"];
+
+// -- Tipos inline para ficha técnica -
+type MaterialInline = {
+  id: string;
+  name: string;
+  unit: string;
+  consumption: number;
+  unit_cost: number;
+  loss_pct: number;
+};
+type OperationInline = {
+  id: string;
+  name: string;
+  machine: string;
+  role: string;
+  sam: number;
+  rate_per_min: number;
+};
+
+let _matId = 0;
+let _opId = 0;
+
+const newMat = (): MaterialInline => ({
+  id: `mat_${++_matId}`,
+  name: "",
+  unit: "m",
+  consumption: 0,
+  unit_cost: 0,
+  loss_pct: 0,
+});
+const newOp = (): OperationInline => ({
+  id: `op_${++_opId}`,
+  name: "",
+  machine: "",
+  role: "",
+  sam: 0,
+  rate_per_min: 0,
+});
+
+function fmt(n: number) {
+  return `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
 export function ProductCreationWizard({
   open,
@@ -145,7 +156,7 @@ export function ProductCreationWizard({
   const { user } = useAuth();
   const [step, setStep] = useState(0);
 
-// —— Dados do formulário ——
+  // —— Dados do formulário ——
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
   const [skuAuto, setSkuAuto] = useState(true);
@@ -158,6 +169,33 @@ export function ProductCreationWizard({
   const [sizes, setSizes] = useState<string[]>([]);
   const [imageUrl, setImageUrl] = useState("");
   const [description, setDescription] = useState("");
+
+  // —— Ficha técnica inline (Step 2) ——
+  const [materials, setMaterials] = useState<MaterialInline[]>([]);
+  const [operations, setOperations] = useState<OperationInline[]>([]);
+
+  // —— Custos (Step 3) ——
+  const [sellPrice, setSellPrice] = useState(0);
+  const [overheadPct, setOverheadPct] = useState(20);
+
+  // —— Cálculos memoizados ——
+  const materialsCost = useMemo(
+    () => materials.reduce((s, m) => s + m.consumption * m.unit_cost * (1 + m.loss_pct / 100), 0),
+    [materials],
+  );
+  const laborCost = useMemo(
+    () => operations.reduce((s, o) => s + o.sam * o.rate_per_min, 0),
+    [operations],
+  );
+  const subtotal = useMemo(() => materialsCost + laborCost, [materialsCost, laborCost]);
+  const totalCost = useMemo(
+    () => subtotal * (1 + overheadPct / 100),
+    [subtotal, overheadPct],
+  );
+  const estimatedMargin = useMemo(() => {
+    if (!sellPrice || sellPrice <= 0) return null;
+    return ((sellPrice - totalCost) / sellPrice) * 100;
+  }, [sellPrice, totalCost]);
 
   // —— Nova coleção inline ——
   const [showNewColl, setShowNewColl] = useState(false);
@@ -201,12 +239,8 @@ export function ProductCreationWizard({
         return !!name.trim() && collectionId !== "none";
       case 1:
         return !!category;
-      case 2:
-        return true; // opcional
-      case 3:
-        return true;
       default:
-        return true;
+        return true; // steps 2,3,4 são opcionais
     }
   }, [step, name, collectionId, category]);
 
@@ -238,7 +272,7 @@ export function ProductCreationWizard({
     onError: (e: Error) => toast.error(e.message),
   });
 
-  // —— Criar produto (final) ——
+  // —— Criar produto + ficha técnica + materiais + operações (final) ——
   const createMut = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error("Sessão expirada");
@@ -257,26 +291,96 @@ export function ProductCreationWizard({
           sizes: sizes.length ? sizes : null,
           image_url: imageUrl || null,
           description: description || null,
-          cost_price: 0,
-          sell_price: 0,
+          cost_price: totalCost,
+          sell_price: sellPrice || 0,
           owner_id: user.id,
         })
         .select("id, sku, name")
         .single();
       if (prodErr) throw prodErr;
 
-      // 2. Auto-follow: usuário vira watcher
+      // 2. Se materiais ou operações foram preenchidos, cria ficha técnica
+      const hasFicha = materials.length > 0 || operations.length > 0;
+      if (hasFicha) {
+        // Criar a tech_sheet
+        const { data: sheet, error: sheetErr } = await supabase
+          .from("tech_sheets")
+          .insert({
+            product_id: product.id,
+            owner_id: user.id,
+            code: `FT-${finalSku}`,
+            version: 1,
+            status: "rascunho",
+            materials_cost: materialsCost,
+            labor_cost: laborCost,
+            overhead_pct: overheadPct,
+            cost_price: totalCost,
+          } as never)
+          .select("id")
+          .single();
+        if (sheetErr) throw sheetErr;
+
+        // Inserir materiais
+        if (materials.length > 0) {
+          const matRows = materials
+            .filter((m) => m.name.trim())
+            .map((m, idx) => ({
+              owner_id: user.id,
+              tech_sheet_id: sheet.id,
+              name: m.name.trim(),
+              unit: m.unit || "un",
+              consumption: m.consumption || 0,
+              loss_pct: m.loss_pct || 0,
+              unit_cost: m.unit_cost || 0,
+              total_cost: (m.consumption || 0) * (m.unit_cost || 0) * (1 + (m.loss_pct || 0) / 100),
+              position: idx,
+            }));
+          if (matRows.length > 0) {
+            const { error: matErr } = await supabase
+              .from("tech_sheet_materials")
+              .insert(matRows as never);
+            if (matErr) throw matErr;
+          }
+        }
+
+        // Inserir operações
+        if (operations.length > 0) {
+          const opRows = operations
+            .filter((o) => o.name.trim())
+            .map((o, idx) => ({
+              owner_id: user.id,
+              tech_sheet_id: sheet.id,
+              name: o.name.trim(),
+              machine: o.machine || null,
+              responsible_role: o.role || null,
+              sam: o.sam || 0,
+              rate_per_min: o.rate_per_min || 0,
+              total_cost: (o.sam || 0) * (o.rate_per_min || 0),
+              position: idx,
+            }));
+          if (opRows.length > 0) {
+            const { error: opErr } = await supabase
+              .from("tech_sheet_operations")
+              .insert(opRows as never);
+            if (opErr) throw opErr;
+          }
+        }
+      }
+
+      // 3. Auto-follow: usuário vira watcher
       await supabase
         .from("product_watchers")
         .insert({ product_id: product.id, user_id: user.id, owner_id: user.id });
 
-      return product as { id: string; sku: string; name: string };
+      return { id: product.id, sku: product.sku, name: product.name, hasFicha };
     },
-    onSuccess: (product) => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success(`"${product.name}" criado com sucesso!`);
+      toast.success(
+        `"${result.name}" criado${result.hasFicha ? " com ficha técnica!" : "!"}`,
+      );
       onOpenChange(false);
-      navigate({ to: "/produto/$id", params: { id: product.id } });
+      navigate({ to: "/produto/$id", params: { id: result.id } });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -289,16 +393,24 @@ export function ProductCreationWizard({
     setSkuAuto(true);
     setCollectionId(collections[0]?.id ?? "none");
     setCategory("");
+    setSilhueta("");
+    setOcasiao("");
+    setTecidoSugerido("");
     setColors([]);
     setSizes([]);
     setImageUrl("");
     setDescription("");
+    setMaterials([]);
+    setOperations([]);
+    setSellPrice(0);
+    setOverheadPct(20);
     setShowNewColl(collections.length === 0);
+    _matId = 0;
+    _opId = 0;
   };
 
   // —— Render ——
   const currentStep = WIZARD_STEPS[step];
-  const StepIcon = currentStep.icon;
   const isLastStep = step === WIZARD_STEPS.length - 1;
   const progress = ((step + 1) / WIZARD_STEPS.length) * 100;
 
@@ -310,7 +422,7 @@ export function ProductCreationWizard({
         onOpenChange(v);
       }}
     >
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-primary/10 text-primary grid place-items-center">
@@ -372,7 +484,7 @@ export function ProductCreationWizard({
         </DialogHeader>
 
         <div className="py-4">
-          {/* ========== PASSO 1: IDENTIDADE ========== */}
+          {/* ========== PASSO 0: IDENTIDADE ========== */}
           {step === 0 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -418,7 +530,6 @@ export function ProductCreationWizard({
                     )
                   )}
                 </div>
-
                 {!showNewColl ? (
                   <Select value={collectionId} onValueChange={setCollectionId}>
                     <SelectTrigger id="w-coll">
@@ -474,9 +585,7 @@ export function ProductCreationWizard({
                       onClick={() => createCollectionMut.mutate()}
                     >
                       {createCollectionMut.isPending ? (
-                        <>
-                          <Loader2 className="size-3.5 animate-spin mr-2" /> Criando…
-                        </>
+                        <><Loader2 className="size-3.5 animate-spin mr-2" /> Criando…</>
                       ) : (
                         "Criar coleção e usar"
                       )}
@@ -505,34 +614,26 @@ export function ProductCreationWizard({
                     />
                   </div>
                   {!skuAuto && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSkuAuto(true);
-                        setSku("");
-                      }}
-                    >
+                    <Button type="button" variant="outline" size="sm" onClick={() => { setSkuAuto(true); setSku(""); }}>
                       Gerar auto
                     </Button>
                   )}
                 </div>
                 {skuAuto && suggestedSku && (
                   <p className="text-[11px] text-muted-foreground">
-                    SKU gerado automaticamente baseado no nome. Digite para personalizar.
+                    SKU gerado automaticamente baseado no nome.
                   </p>
                 )}
               </div>
 
               <div className="rounded-lg bg-muted/30 p-3 text-xs text-muted-foreground">
                 <div className="font-medium text-foreground mb-1">📌 O que é SKU?</div>
-                É o código único que identifica este produto no sistema. Use o gerado ou crie o seu.
+                É o código único que identifica este produto no sistema.
               </div>
             </div>
           )}
 
-          {/* ========== PASSO 2: CARACTERÍSTICAS ========== */}
+          {/* ========== PASSO 1: CARACTERÍSTICAS ========== */}
           {step === 1 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -548,9 +649,7 @@ export function ProductCreationWizard({
                   </SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
-                      <SelectItem key={c} value={c.toLowerCase()}>
-                        {c}
-                      </SelectItem>
+                      <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -563,13 +662,7 @@ export function ProductCreationWizard({
                     <button
                       key={c.value}
                       type="button"
-                      onClick={() =>
-                        setColors((prev) =>
-                          prev.includes(c.value)
-                            ? prev.filter((v) => v !== c.value)
-                            : [...prev, c.value],
-                        )
-                      }
+                      onClick={() => setColors((prev) => prev.includes(c.value) ? prev.filter((v) => v !== c.value) : [...prev, c.value])}
                       className={cn(
                         "rounded-full px-3 py-1 text-[11px] border transition-colors",
                         colors.includes(c.value)
@@ -581,11 +674,6 @@ export function ProductCreationWizard({
                     </button>
                   ))}
                 </div>
-                {colors.length === 0 && (
-                  <p className="text-[11px] text-muted-foreground">
-                    Nenhuma cor selecionada. Você pode adicionar depois.
-                  </p>
-                )}
               </div>
 
               <div className="space-y-2">
@@ -595,13 +683,7 @@ export function ProductCreationWizard({
                     <button
                       key={s}
                       type="button"
-                      onClick={() =>
-                        setSizes((prev) =>
-                          prev.includes(s)
-                            ? prev.filter((v) => v !== s)
-                            : [...prev, s],
-                        )
-                      }
+                      onClick={() => setSizes((prev) => prev.includes(s) ? prev.filter((v) => v !== s) : [...prev, s])}
                       className={cn(
                         "rounded px-2.5 py-1 text-[11px] border transition-colors",
                         sizes.includes(s)
@@ -613,11 +695,6 @@ export function ProductCreationWizard({
                     </button>
                   ))}
                 </div>
-                {sizes.length === 0 && (
-                  <p className="text-[11px] text-muted-foreground">
-                    Nenhum tamanho selecionado. Você pode definir a grade depois.
-                  </p>
-                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -629,9 +706,7 @@ export function ProductCreationWizard({
                     </SelectTrigger>
                     <SelectContent>
                       {SILHOUETTES.map((s) => (
-                        <SelectItem key={s.value} value={s.value}>
-                          {s.label} — {s.desc}
-                        </SelectItem>
+                        <SelectItem key={s.value} value={s.value}>{s.label} — {s.desc}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -644,9 +719,7 @@ export function ProductCreationWizard({
                     </SelectTrigger>
                     <SelectContent>
                       {OCCASIONS.map((o) => (
-                        <SelectItem key={o} value={o}>
-                          {o}
-                        </SelectItem>
+                        <SelectItem key={o} value={o}>{o}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -655,93 +728,347 @@ export function ProductCreationWizard({
 
               <div className="space-y-2">
                 <Label htmlFor="w-tecido">Tecido sugerido (opcional)</Label>
-                <Input
-                  id="w-tecido"
-                  value={tecidoSugerido}
-                  onChange={(e) => setTecidoSugerido(e.target.value)}
-                  placeholder="Ex.: Crepe Seda, Malha Algodão 30.1, Linho Viscose…"
-                />
+                <Input id="w-tecido" value={tecidoSugerido} onChange={(e) => setTecidoSugerido(e.target.value)} placeholder="Ex.: Crepe Seda, Malha Algodão 30.1, Linho Viscose…" />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="w-desc">Descrição (opcional)</Label>
-                <Textarea
-                  id="w-desc"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Breve descrição do produto, inspiração, referências…"
-                  rows={2}
-                />
+                <Textarea id="w-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Breve descrição do produto, inspiração, referências…" rows={2} />
               </div>
 
               <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-xs">
                 <div className="font-medium text-amber-700 dark:text-amber-300 mb-1">💡 Dica</div>
-                Não se preocupe em acertar tudo agora. Cores, tamanhos, silhueta e imagem podem ser ajustados depois.
+                Cores, tamanhos, silhueta e imagem podem ser ajustados depois.
               </div>
             </div>
           )}
 
-          {/* ========== PASSO 3: FICHA TÉCNICA (OPCIONAL NO INÍCIO) ========== */}
+          {/* ========== PASSO 2: FICHA TÉCNICA ========== */}
           {step === 2 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                 <HelpCircle className="size-3.5" />
-                Configure os detalhes técnicos ou pule e faça depois
+                Materiais e operações da ficha técnica
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <FileText className="size-4 text-primary" />
-                    <span className="text-sm font-medium">Ficha técnica</span>
+              {/* ---- MATERIAIS ---- */}
+              <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold flex items-center gap-2">
+                    <Ruler className="size-4 text-primary" /> Materiais (BOM)
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Materiais, aviamentos, medidas e operações de costura.
-                  </p>
-                  <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-500/30 bg-amber-500/10">
-                    ⏳ Fazer depois
-                  </Badge>
+                  <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => setMaterials((prev) => [...prev, newMat()])}>
+                    <Plus className="size-3" /> Material
+                  </Button>
                 </div>
-
-                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Ruler className="size-4 text-primary" />
-                    <span className="text-sm font-medium">Tabela de medidas</span>
+                {materials.length === 0 ? (
+                  <div className="text-xs text-muted-foreground py-2">
+                    Nenhum material adicionado. Clique em "Material" para adicionar.
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Pontos de medida por tamanho com tolerâncias.
-                  </p>
-                  <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-500/30 bg-amber-500/10">
-                    ⏳ Fazer depois
-                  </Badge>
-                </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {materials.map((mat, idx) => (
+                      <div key={mat.id} className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap border border-border/60 rounded-lg p-1.5 bg-background">
+                        <Input
+                          value={mat.name}
+                          onChange={(e) => {
+                            const next = [...materials];
+                            next[idx] = { ...next[idx], name: e.target.value };
+                            setMaterials(next);
+                          }}
+                          placeholder="Nome do material"
+                          className="h-7 text-xs min-w-[120px] flex-1"
+                        />
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className="text-muted-foreground">Un</span>
+                          <Input
+                            value={mat.unit}
+                            onChange={(e) => {
+                              const next = [...materials];
+                              next[idx] = { ...next[idx], unit: e.target.value };
+                              setMaterials(next);
+                            }}
+                            className="h-7 text-xs w-12"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className="text-muted-foreground">Cons</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={mat.consumption || ""}
+                            onChange={(e) => {
+                              const next = [...materials];
+                              next[idx] = { ...next[idx], consumption: Number(e.target.value) || 0 };
+                              setMaterials(next);
+                            }}
+                            className="h-7 w-16 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className="text-muted-foreground">R$/un</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={mat.unit_cost || ""}
+                            onChange={(e) => {
+                              const next = [...materials];
+                              next[idx] = { ...next[idx], unit_cost: Number(e.target.value) || 0 };
+                              setMaterials(next);
+                            }}
+                            className="h-7 w-16 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className="text-muted-foreground">Perda%</span>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={mat.loss_pct || ""}
+                            onChange={(e) => {
+                              const next = [...materials];
+                              next[idx] = { ...next[idx], loss_pct: Number(e.target.value) || 0 };
+                              setMaterials(next);
+                            }}
+                            className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
+                          />
+                        </div>
+                        <span className="text-xs font-medium tabular-nums shrink-0 w-20 text-right">
+                          {fmt(mat.consumption * mat.unit_cost * (1 + mat.loss_pct / 100))}
+                        </span>
+                        <Button size="icon" variant="ghost" className="size-6 shrink-0 text-destructive" onClick={() => setMaterials((prev) => prev.filter((m) => m.id !== mat.id))}>
+                          <Trash2 className="size-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {materials.length > 0 && (
+                  <div className="text-xs text-right text-muted-foreground font-medium tabular-nums">
+                    Total materiais: {fmt(materialsCost)}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="w-image">URL da imagem (opcional)</Label>
-                <Input
-                  id="w-image"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://…"
-                />
+              {/* ---- OPERAÇÕES ---- */}
+              <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-semibold flex items-center gap-2">
+                    <FileText className="size-4 text-primary" /> Operações (BOP)
+                  </div>
+                  <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => setOperations((prev) => [...prev, newOp()])}>
+                    <Plus className="size-3" /> Operação
+                  </Button>
+                </div>
+                {operations.length === 0 ? (
+                  <div className="text-xs text-muted-foreground py-2">
+                    Nenhuma operação adicionada.
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {operations.map((op, idx) => (
+                      <div key={op.id} className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap border border-border/60 rounded-lg p-1.5 bg-background">
+                        <Input
+                          value={op.name}
+                          onChange={(e) => {
+                            const next = [...operations];
+                            next[idx] = { ...next[idx], name: e.target.value };
+                            setOperations(next);
+                          }}
+                          placeholder="Operação"
+                          className="h-7 text-xs min-w-[100px] flex-1"
+                        />
+                        <Input
+                          value={op.machine}
+                          onChange={(e) => {
+                            const next = [...operations];
+                            next[idx] = { ...next[idx], machine: e.target.value };
+                            setOperations(next);
+                          }}
+                          placeholder="Máquina"
+                          className="h-7 text-xs w-20"
+                        />
+                        <select
+                          value={op.role}
+                          onChange={(e) => {
+                            const next = [...operations];
+                            next[idx] = { ...next[idx], role: e.target.value };
+                            setOperations(next);
+                          }}
+                          className="h-7 text-xs border border-border rounded bg-background px-1"
+                        >
+                          <option value="">Resp.</option>
+                          <option value="Corte">Corte</option>
+                          <option value="Costura">Costura</option>
+                          <option value="Acabamento">Acabamento</option>
+                          <option value="Bordado/Silk">Bordado/Silk</option>
+                          <option value="Qualidade">Qualidade</option>
+                          <option value="Modelagem">Modelagem</option>
+                          <option value="Pilotagem">Pilotagem</option>
+                        </select>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className="text-muted-foreground">SAM</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={op.sam || ""}
+                            onChange={(e) => {
+                              const next = [...operations];
+                              next[idx] = { ...next[idx], sam: Number(e.target.value) || 0 };
+                              setOperations(next);
+                            }}
+                            className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1 text-xs">
+                          <span className="text-muted-foreground">R$/min</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={op.rate_per_min || ""}
+                            onChange={(e) => {
+                              const next = [...operations];
+                              next[idx] = { ...next[idx], rate_per_min: Number(e.target.value) || 0 };
+                              setOperations(next);
+                            }}
+                            className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
+                          />
+                        </div>
+                        <span className="text-xs font-medium tabular-nums shrink-0 w-20 text-right">
+                          {fmt(op.sam * op.rate_per_min)}
+                        </span>
+                        <Button size="icon" variant="ghost" className="size-6 shrink-0 text-destructive" onClick={() => setOperations((prev) => prev.filter((o) => o.id !== op.id))}>
+                          <Trash2 className="size-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {operations.length > 0 && (
+                  <div className="text-xs text-right text-muted-foreground font-medium tabular-nums">
+                    Total mão de obra: {fmt(laborCost)}
+                  </div>
+                )}
               </div>
 
               <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs">
-                <div className="font-medium text-primary mb-1">✅ Ficha técnica pode vir depois</div>
-                O produto será criado como "rascunho". Quando estiver pronto, acesse a aba "Ficha técnica" dentro do produto para preencher materiais, medidas e custos.
+                <div className="font-medium text-primary mb-1">Dica</div>
+                Preencha os materiais e operações agora, ou deixe para completar depois no Workspace do Produto.
+              </div>
+            </div>
+          )}
+
+          {/* ========== PASSO 3: CUSTOS ========== */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                <HelpCircle className="size-3.5" />
+                Configure o preço de venda e veja a margem estimada
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="w-sell">Preço de venda sugerido (R$)</Label>
+                  <Input
+                    id="w-sell"
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    value={sellPrice || ""}
+                    onChange={(e) => setSellPrice(Number(e.target.value) || 0)}
+                    placeholder="0,00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="w-overhead">Overhead (%)</Label>
+                  <Input
+                    id="w-overhead"
+                    type="number"
+                    step="1"
+                    min={0}
+                    max={100}
+                    value={overheadPct}
+                    onChange={(e) => setOverheadPct(Number(e.target.value) || 0)}
+                  />
+                </div>
+              </div>
+
+              {/* Card de resumo de custos */}
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Wallet className="size-4 text-primary" />
+                  <span className="text-sm font-medium">Resumo de custos</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="rounded-lg bg-muted/30 p-2">
+                    <div className="text-[10px] text-muted-foreground uppercase">Materiais</div>
+                    <div className="text-base font-semibold tabular-nums">{fmt(materialsCost)}</div>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-2">
+                    <div className="text-[10px] text-muted-foreground uppercase">Mão de obra</div>
+                    <div className="text-base font-semibold tabular-nums">{fmt(laborCost)}</div>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-2">
+                    <div className="text-[10px] text-muted-foreground uppercase">Overhead ({overheadPct}%)</div>
+                    <div className="text-base font-semibold tabular-nums">{fmt(subtotal * overheadPct / 100)}</div>
+                  </div>
+                  <div className="rounded-lg bg-primary/10 border border-primary/30 p-2">
+                    <div className="text-[10px] text-primary uppercase font-medium">Custo total</div>
+                    <div className="text-base font-semibold tabular-nums text-primary">{fmt(totalCost)}</div>
+                  </div>
+                </div>
+
+                {/* Indicador de margem */}
+                {sellPrice > 0 && estimatedMargin !== null && (
+                  <div className={cn(
+                    "rounded-lg p-3 flex items-center gap-3",
+                    estimatedMargin >= 50
+                      ? "bg-emerald-500/10 border border-emerald-500/30"
+                      : estimatedMargin >= 30
+                        ? "bg-amber-500/10 border border-amber-500/30"
+                        : "bg-rose-500/10 border border-rose-500/30",
+                  )}>
+                    {estimatedMargin >= 50 ? (
+                      <TrendingUp className="size-5 text-emerald-600" />
+                    ) : estimatedMargin >= 30 ? (
+                      <TrendingDown className="size-5 text-amber-600" />
+                    ) : (
+                      <TrendingDown className="size-5 text-rose-600" />
+                    )}
+                    <div>
+                      <div className="text-xs font-semibold">
+                        Margem estimada: <span className={cn(
+                          "text-base",
+                          estimatedMargin >= 50 ? "text-emerald-600" : estimatedMargin >= 30 ? "text-amber-600" : "text-rose-600",
+                        )}>
+                          {estimatedMargin.toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">
+                        Preço R$ {sellPrice.toFixed(2)} · Custo R$ {totalCost.toFixed(2)}
+                        {estimatedMargin < 30 && " · ⚠️ Margem baixa"}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {(!sellPrice || sellPrice <= 0) && (
+                  <div className="text-xs text-muted-foreground">
+                    Defina um preço de venda para ver a margem estimada.
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* ========== PASSO 4: REVISÃO ========== */}
-          {step === 3 && (
+          {step === 4 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                 <CheckCircle2 className="size-3.5 text-emerald-600" />
                 Revise os dados antes de criar
               </div>
 
+              {/* Dados do produto */}
               <div className="rounded-xl border border-border bg-card divide-y divide-border">
                 <div className="p-3 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Nome</span>
@@ -753,9 +1080,7 @@ export function ProductCreationWizard({
                 </div>
                 <div className="p-3 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Coleção</span>
-                  <span className="text-sm">
-                    {collections.find((c) => c.id === collectionId)?.name ?? "—"}
-                  </span>
+                  <span className="text-sm">{collections.find((c) => c.id === collectionId)?.name ?? "—"}</span>
                 </div>
                 <div className="p-3 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Categoria</span>
@@ -764,19 +1089,57 @@ export function ProductCreationWizard({
                 <div className="p-3 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Cores</span>
                   <span className="text-sm">
-                    {colors.length
-                      ? colors
-                          .map(
-                            (c) =>
-                              COLOR_OPTIONS.find((o) => o.value === c)?.label ?? c,
-                          )
-                          .join(", ")
-                      : "—"}
+                    {colors.length ? colors.map((c) => COLOR_OPTIONS.find((o) => o.value === c)?.label ?? c).join(", ") : "—"}
                   </span>
                 </div>
                 <div className="p-3 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Tamanhos</span>
                   <span className="text-sm">{sizes.length ? sizes.join(", ") : "—"}</span>
+                </div>
+              </div>
+
+              {/* Resumo da ficha técnica */}
+              <div className="rounded-xl border border-border bg-card p-3">
+                <div className="text-xs font-semibold mb-2 flex items-center gap-2">
+                  <FileText className="size-3.5 text-primary" /> Ficha técnica
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex items-center justify-between p-1.5 rounded bg-muted/30">
+                    <span className="text-muted-foreground">Materiais</span>
+                    <span className="font-medium tabular-nums">{materials.length} itens · {fmt(materialsCost)}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-1.5 rounded bg-muted/30">
+                    <span className="text-muted-foreground">Operações</span>
+                    <span className="font-medium tabular-nums">{operations.length} itens · {fmt(laborCost)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Resumo de custos */}
+              <div className="rounded-xl border border-primary/40 bg-primary/5 p-3">
+                <div className="text-xs font-semibold flex items-center gap-2 mb-2">
+                  <Wallet className="size-3.5 text-primary" /> Custos
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <div className="text-muted-foreground">Custo total</div>
+                    <div className="text-base font-bold tabular-nums text-primary">{fmt(totalCost)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Preço venda</div>
+                    <div className="text-base font-bold tabular-nums">{sellPrice > 0 ? fmt(sellPrice) : "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Margem</div>
+                    <div className={cn(
+                      "text-base font-bold tabular-nums",
+                      estimatedMargin !== null && estimatedMargin >= 50 ? "text-emerald-600" :
+                      estimatedMargin !== null && estimatedMargin >= 30 ? "text-amber-600" :
+                      estimatedMargin !== null ? "text-rose-600" : ""
+                    )}>
+                      {estimatedMargin !== null ? `${estimatedMargin.toFixed(1)}%` : "—"}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -790,15 +1153,11 @@ export function ProductCreationWizard({
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="size-5 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 text-[10px] font-medium">2</span>
-                    O <strong>Ciclo de Vida</strong> mostrará as 9 etapas do produto (Concepção → Produção)
+                    O <strong>Ciclo de Vida</strong> mostrará as etapas do produto
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="size-5 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 text-[10px] font-medium">3</span>
-                    Complete a <strong>Ficha Técnica</strong> e solicite <strong>Protótipo</strong> para avançar
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="size-5 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 text-[10px] font-medium">4</span>
-                    Após aprovações, o produto segue para <strong>PCP e Produção</strong>
+                    Complete a <strong>Ficha Técnica</strong> e solicite <strong>Protótipo</strong>
                   </li>
                 </ol>
               </div>
@@ -818,12 +1177,8 @@ export function ProductCreationWizard({
 
           <div className="flex gap-2">
             {!isLastStep ? (
-              <Button
-                type="button"
-                onClick={() => setStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1))}
-                disabled={!canAdvance}
-              >
-                {step === WIZARD_STEPS.length - 2 ? "Revisar" : "Continuar"}{" "}
+              <Button type="button" onClick={() => setStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1))} disabled={!canAdvance}>
+                {step === WIZARD_STEPS.length - 2 ? "Revisar" : "Continuar"}
                 <ArrowRight className="size-4 ml-1" />
               </Button>
             ) : (
@@ -837,13 +1192,9 @@ export function ProductCreationWizard({
                   disabled={createMut.isPending || !name.trim() || collectionId === "none"}
                 >
                   {createMut.isPending ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin mr-2" /> Criando…
-                    </>
+                    <><Loader2 className="size-4 animate-spin mr-2" /> Criando…</>
                   ) : (
-                    <>
-                      <Sparkles className="size-4 mr-1.5" /> Criar Produto
-                    </>
+                    <><Sparkles className="size-4 mr-1.5" /> Criar Produto</>
                   )}
                 </Button>
               </>

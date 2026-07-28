@@ -1,36 +1,36 @@
-# PLM Transformation — Concluído ✅
+# TODO - Melhoria no Cadastro de Produto
 
-## Fase 1 — Correções Críticas (TypeScript + Links)
-- [x] Corrigir `search={{ product }}` → `search={{ productId }}` em `_app.produto.$id.tsx` (2 links)
-- [x] Corrigir `search: { product: productId }` → `search: { productId }` em `product-lifecycle-guide.tsx`
-- [x] Corrigir `search={{ product: productId }}` → `search={{ productId }}` em `tech-sheet-drawer.tsx` (2 links)
+## Objetivo
+Integrar Ficha Técnica (materiais + operações) e Ficha de Custos diretamente no wizard de criação de produto.
 
-## Fase 2 — Single Source of Truth (Materiais)
-- [x] `MaterialLibrarySyncPanel` — modal de rastreamento e sincronização de custos de materiais
-- [x] `MaterialCostDivergenceBadge` — badge de divergência de custo BOM vs Biblioteca Global
+## Tarefas
 
-## Fase 3 — Empty States + UX
-- [x] Tab Custos: empty state com guia rápida + link "Criar ficha técnica"
-- [x] Tab Marketing: 3 cards de guia rápida + links para marketing/influenciadores
+- [x] 1. Analisar código atual (ProductCreationWizard, TechSheet panels, ProductCostCockpit)
+- [x] 2. Criar plano de melhoria e obter aprovação
 
-## Fase 4 — Prototype Approval Flow
-- [x] Cards de approval flow visual com progressão (em_producao → fitting → ajuste → aprovado)
-- [x] Botão "Solicitar protótipo" no empty state
-- [x] Mini stats (Total/Abertos/Aprovados)
+### Implementação
 
-## Fase 5 — Grade Integration
-- [x] `ProductSizeGridCard` — card expansível com grade de tamanhos e distribuição percentual
+- [x] 3. Adicionar Step "Custos" entre "Ficha Técnica" e "Revisão" no WIZARD_STEPS
+- [x] 4. Adicionar estados para materiais, operações, preço de venda e overhead
+- [x] 5. Substituir Step 2 (Ficha Técnica) - placeholder → formulários inline editáveis:
+  - [x] 5a. Tabela de Materiais (nome, unidade, consumo, custo unitário, perda)
+  - [x] 5b. Tabela de Operações (nome, máquina, responsável, SAM, R$/min)
+  - [x] 5c. Totais calculados automaticamente
+- [x] 6. Implementar Step 3 (Custos):
+  - [x] 6a. Campo: Preço de venda sugerido
+  - [x] 6b. Campo: Overhead %
+  - [x] 6c. Card de margem estimada com indicador visual
+- [x] 7. Atualizar Step 4 (Revisão) - adicionar resumo de custos
+- [x] 8. Atualizar `createMut` para:
+  - [x] 8a. Criar `tech_sheet` automaticamente
+  - [x] 8b. Inserir materiais em `tech_sheet_materials`
+  - [x] 8c. Inserir operações em `tech_sheet_operations`
+  - [x] 8d. Calcular e salvar custos na `tech_sheet`
+- [x] 9. Atualizar `canAdvance` para novos steps
+- [x] 10. Atualizar navegação (voltar) para incluir novo step
 
-## Fase 6 — Preço Sugerido
-- [x] `ProductPriceSuggestionCard` — card reativo via RPC `suggest_retail_price` com gap indicator
+### Finalização
 
----
-
-### Novos arquivos criados
-| Arquivo | Descrição |
-|---------|-----------|
-| `src/components/material-library-sync-panel.tsx` | Modal de sincronização de materiais |
-| `src/components/material-cost-divergence-badge.tsx` | Badge de divergência de custo |
-| `src/components/product-size-grid-card.tsx` | Card de grade de tamanhos |
-| `src/components/product-price-suggestion-card.tsx` | Card de preço sugerido |
+- [x] 11. Implementado visualmente o wizard completo
+- [ ] 12. Fazer commit e push para o GitHub
 
