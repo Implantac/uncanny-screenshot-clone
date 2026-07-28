@@ -41,10 +41,12 @@ import {
   TrendingUp,
   TrendingDown,
   Trash2,
+  Library,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { MaterialPickerDialog, type LibraryMaterial } from "@/components/material-picker-dialog";
 
 type CollectionRef = { id: string; name: string; season: string; year: number };
 
@@ -277,6 +279,7 @@ export function ProductCreationWizard({
   // —— Ficha técnica inline (Step 2) ——
   const [materials, setMaterials] = useState<MaterialInline[]>([]);
   const [operations, setOperations] = useState<OperationInline[]>([]);
+  const [matPickerOpen, setMatPickerOpen] = useState(false);
 
   // —— Callbacks estáveis para MaterialRow / OperationRow ——
   const updateMaterial = useCallback((idx: number, partial: Partial<MaterialInline>) => {
@@ -298,6 +301,21 @@ export function ProductCreationWizard({
   }, []);
   const deleteOperation = useCallback((id: string) => {
     setOperations((prev) => prev.filter((o) => o.id !== id));
+  }, []);
+
+  // —— Handler para adicionar material da biblioteca ——
+  const handlePickFromLibrary = useCallback((m: LibraryMaterial) => {
+    setMaterials((prev) => [
+      ...prev,
+      {
+        id: `mat_${++_matId}`,
+        name: m.name,
+        unit: m.unit ?? "un",
+        consumption: 0,
+        unit_cost: Number(m.reference_cost ?? 0),
+        loss_pct: 0,
+      },
+    ]);
   }, []);
 
   // —— Custos (Step 3) ——
@@ -882,9 +900,14 @@ export function ProductCreationWizard({
                   <div className="text-sm font-semibold flex items-center gap-2">
                     <Ruler className="size-4 text-primary" /> Materiais (BOM)
                   </div>
-                  <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => setMaterials((prev) => [...prev, newMat()])}>
-                    <Plus className="size-3" /> Material
-                  </Button>
+                  <div className="flex items-center gap-1.5">
+                    <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => setMatPickerOpen(true)}>
+                      <Library className="size-3" /> Biblioteca
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => setMaterials((prev) => [...prev, newMat()])}>
+                      <Plus className="size-3" /> Em branco
+                    </Button>
+                  </div>
                 </div>
                 {materials.length === 0 ? (
                   <div className="text-xs text-muted-foreground py-2">
@@ -936,6 +959,19 @@ export function ProductCreationWizard({
                 <div className="font-medium text-primary mb-1">Dica</div>
                 Preencha os materiais e operações agora, ou deixe para completar depois no Workspace do Produto.
               </div>
+
+              {user && (
+                <MaterialPickerDialog
+                  ownerId={user.id}
+                  open={matPickerOpen}
+                  onOpenChange={setMatPickerOpen}
+                  onPick={handlePickFromLibrary}
+                  onCreateBlank={() => {
+                    setMaterials((prev) => [...prev, newMat()]);
+                    setMatPickerOpen(false);
+                  }}
+                />
+              )}
             </div>
           )}
 
