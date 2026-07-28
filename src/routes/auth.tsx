@@ -13,17 +13,20 @@ import { mapSignInError, mapSignUpError } from "@/lib/auth-errors";
 import logoAsset from "@/assets/logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   component: AuthPage,
 });
 
 function AuthPage() {
   const navigate = useNavigate();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
 
   useEffect(() => {
+    setMounted(true);
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/" });
     });
@@ -93,6 +96,8 @@ function AuthPage() {
     if (result.redirected) return;
     navigate({ to: "/" });
   }
+
+  if (!mounted) return null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/10 px-4">

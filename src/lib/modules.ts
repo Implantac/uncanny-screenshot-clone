@@ -61,7 +61,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-
 export type ModuleGroup =
   | "Operação"
   | "Coleções"
@@ -94,6 +93,7 @@ export const PRIMARY_SLUGS = new Set<string>([
   "command-center",
   "fashion-calendar",
   "approvals",
+  "designer-workspace",
   "colecoes",
   "colecao-360",
   "dev-kanban",
@@ -139,7 +139,6 @@ export const PRIMARY_SLUGS = new Set<string>([
   "security-center",
   "onboarding",
 ]);
-
 
 export const isPrimaryModule = (m: ModuleDef) => PRIMARY_SLUGS.has(m.slug);
 
@@ -222,7 +221,8 @@ export const MODULES: ModuleDef[] = [
     path: "/biblioteca",
     title: "Biblioteca de Referências",
     short: "Catálogo global",
-    description: "Acervo navegável de produtos e protótipos com filtros por categoria, estação, cor e coleção. Base para novas referências.",
+    description:
+      "Acervo navegável de produtos e protótipos com filtros por categoria, estação, cor e coleção. Base para novas referências.",
     icon: Library,
     group: "Coleções",
   },
@@ -317,7 +317,8 @@ export const MODULES: ModuleDef[] = [
     path: "/estampas",
     title: "Estampas & Silk",
     short: "Aprovação de arte e prova",
-    description: "Arte final → prova de cor → liberação para o fornecedor, com rounds e responsáveis.",
+    description:
+      "Arte final → prova de cor → liberação para o fornecedor, com rounds e responsáveis.",
     icon: Palette,
     group: "Desenvolvimento",
   },
@@ -1036,7 +1037,8 @@ export const MODULES: ModuleDef[] = [
     path: "/timeline",
     title: "Timeline Global",
     short: "Tudo o que aconteceu",
-    description: "Feed cronológico unificado: auditoria, estágios, ocorrências, qualidade, protótipos e marketing.",
+    description:
+      "Feed cronológico unificado: auditoria, estágios, ocorrências, qualidade, protótipos e marketing.",
     icon: Activity,
     group: "Plataforma",
   },
@@ -1090,7 +1092,6 @@ export const MODULES: ModuleDef[] = [
   },
 ];
 
-
 export const MODULE_GROUPS: ModuleGroup[] = [
   "Operação",
   "Coleções",
@@ -1134,42 +1135,42 @@ export const LIFECYCLE_PHASES: LifecyclePhase[] = [
 
 /** Grupo → fase padrão (fallback quando não há override por slug). */
 const GROUP_TO_PHASE: Record<ModuleGroup, LifecyclePhase> = {
-  "Operação": "Planejamento",
-  "Coleções": "Planejamento",
-  "Desenvolvimento": "Desenvolvimento",
+  Operação: "Planejamento",
+  Coleções: "Planejamento",
+  Desenvolvimento: "Desenvolvimento",
   "PCP & Produção": "Produção",
   "Cadeia (PLM)": "Produção",
-  "Marketing": "Comercial",
-  "Inteligência": "Inteligência",
+  Marketing: "Comercial",
+  Inteligência: "Inteligência",
   "ERP (Integração)": "Ferramentas",
-  "Plataforma": "Ferramentas",
+  Plataforma: "Ferramentas",
 };
 
 /** Override por slug — tira o módulo do fallback do grupo. */
 const SLUG_TO_PHASE: Record<string, LifecyclePhase> = {
   // Ideia
-  "trends": "Ideia",
-  "biblioteca": "Ideia",
+  trends: "Ideia",
+  biblioteca: "Ideia",
   // Planejamento (mantém coleções + calendar + command)
   "fashion-calendar": "Planejamento",
   "time-and-action": "Planejamento",
   "command-center": "Planejamento",
-  "executivo": "Planejamento",
+  executivo: "Planejamento",
   // Desenvolvimento
-  "produtos": "Desenvolvimento",
+  produtos: "Desenvolvimento",
   "meus-produtos": "Desenvolvimento",
   "ficha-tecnica": "Desenvolvimento",
-  "materiais": "Desenvolvimento",
-  "variantes": "Desenvolvimento",
+  materiais: "Desenvolvimento",
+  variantes: "Desenvolvimento",
   "dev-kanban": "Desenvolvimento",
   // Pilotagem
-  "prototipos": "Pilotagem",
+  prototipos: "Pilotagem",
   "prototipo-kanban": "Pilotagem",
-  "approvals": "Pilotagem",
+  approvals: "Pilotagem",
   "fit-sessions": "Pilotagem",
   "sample-review": "Pilotagem",
   // Inteligência
-  "bi": "Inteligência",
+  bi: "Inteligência",
   "fashion-gpt": "Inteligência",
   "use-ai": "Inteligência",
   "data-lake": "Inteligência",
@@ -1179,17 +1180,16 @@ const SLUG_TO_PHASE: Record<string, LifecyclePhase> = {
   "closed-loop": "Inteligência",
   "intel-hub": "Inteligência",
   "product-success": "Inteligência",
-  "margem": "Inteligência",
+  margem: "Inteligência",
   "abc-colecao": "Inteligência",
   // Ferramentas
   "security-center": "Ferramentas",
-  "equipe": "Ferramentas",
+  equipe: "Ferramentas",
 };
 
 export function modulePhase(m: ModuleDef): LifecyclePhase {
   return SLUG_TO_PHASE[m.slug] ?? GROUP_TO_PHASE[m.group] ?? "Ferramentas";
 }
-
 
 export type AppSector = "marketing" | "pcp" | "desenvolvimento";
 export const APP_SECTORS: AppSector[] = ["marketing", "pcp", "desenvolvimento"];
@@ -1227,14 +1227,49 @@ export type AppRoleName = "admin" | "gerente" | "designer" | "comprador" | "vend
 const ROLE_ALLOWED_GROUPS: Record<AppRoleName, ModuleGroup[] | "all"> = {
   admin: "all",
   gerente: "all",
-  designer: ["Operação", "Coleções", "Desenvolvimento", "Marketing", "Inteligência", "Plataforma"],
-  comprador: ["Operação", "Cadeia (PLM)", "PCP & Produção", "Inteligência", "ERP (Integração)", "Plataforma"],
+  designer: ["Coleções", "Desenvolvimento"],
+  comprador: [
+    "Operação",
+    "Cadeia (PLM)",
+    "PCP & Produção",
+    "Inteligência",
+    "ERP (Integração)",
+    "Plataforma",
+  ],
   vendedor: ["Operação", "Marketing", "Inteligência", "ERP (Integração)", "Plataforma"],
 };
 
+const ROLE_ALLOWED_SLUGS: Partial<Record<AppRoleName, Set<string>>> = {
+  designer: new Set([
+    "designer-workspace",
+    "fashion-calendar",
+    "approvals",
+    "colecoes",
+    "colecao-360",
+    "trends",
+    "biblioteca",
+    "dev-kanban",
+    "produtos",
+    "meus-produtos",
+    "ficha-tecnica",
+    "cad",
+    "prototipos",
+    "pilots",
+    "materiais",
+    "fit-sessions",
+    "estampas",
+    "variantes",
+    "dpp",
+    "fashion-gpt",
+    "use-ai",
+  ]),
+};
+
 export function moduleAllowedForRole(m: ModuleDef, role: AppRoleName): boolean {
+  const slugs = ROLE_ALLOWED_SLUGS[role];
+  if (slugs) return slugs.has(m.slug);
+
   const allow = ROLE_ALLOWED_GROUPS[role];
   if (allow === "all") return true;
   return allow.includes(m.group);
 }
-

@@ -22,7 +22,10 @@ import {
   Sparkles,
   ImageIcon,
   ExternalLink,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
@@ -54,6 +57,9 @@ import { ProductReadinessCard } from "@/components/product-readiness-card";
 import { ProductNextStepBanner } from "@/components/product-next-step-banner";
 import { ProductPrintArtworksPanel } from "@/components/product-print-artworks-panel";
 import { ProductLifecycleGuide } from "@/components/product-lifecycle-guide";
+import { ProductSizeGridCard } from "@/components/product-size-grid-card";
+import { ProductPriceSuggestionCard } from "@/components/product-price-suggestion-card";
+import { DesignerNotes } from "@/components/designer-notes";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
   head: ({ params }) => ({
@@ -314,13 +320,22 @@ function ProductWorkspace() {
         <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
           <Metric label="Custo" value={product.cost_price != null ? `R$ ${Number(product.cost_price).toFixed(2)}` : "—"} />
           <Metric label="Preço" value={product.sell_price != null ? `R$ ${Number(product.sell_price).toFixed(2)}` : "—"} />
-          <Metric label="Margem" value={margin(product.cost_price, product.sell_price)} />
+          <Metric label="Margem" value={margin(product.cost_price, product.sell_price)} tone={sellPriceToMarginTone(product.cost_price, product.sell_price)} />
           <Metric label="Protótipos abertos" value={String(openProtos)} tone={openProtos > 0 ? "warning" : "default"} />
           <Metric label="OPs em andamento" value={String(openOps)} tone={openOps > 0 ? "primary" : "default"} />
         </div>
       </div>
 
+      {/* Notas do Designer — post-it persistente */}
+      <DesignerNotes productId={product.id} />
+
       <ProductLifecycleGuide productId={product.id} />
+
+      {/* Grade de Tamanhos + Preço Sugerido */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <ProductSizeGridCard productId={product.id} category={product.category} />
+        <ProductPriceSuggestionCard productId={product.id} />
+      </div>
 
       <ProductNextStepBanner productId={product.id} />
 
@@ -375,7 +390,7 @@ function ProductWorkspace() {
                 <span className="text-xs text-muted-foreground font-mono">{sheet.code}</span>
                 <Link
                   to="/ficha-tecnica"
-                  search={{ product: product.id }}
+                  search={{ productId: product.id }}
                   className="ml-auto text-xs inline-flex items-center gap-1 px-2 py-1 rounded border border-border hover:bg-muted"
                 >
                   <ExternalLink className="size-3" /> Editor completo
@@ -429,43 +444,151 @@ function ProductWorkspace() {
             <div className="rounded-xl border border-border bg-card p-4">
               <CostsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={false} />
             </div>
-          ) : null}
+          ) : (
+            <div className="rounded-xl border border-dashed border-border bg-card p-4">
+              <EmptyState
+                icon={ShieldCheck}
+                title="Custos disponíveis após criar ficha técnica"
+                description="Crie uma ficha técnica com BOM (materiais) e BOP (operações) para ver o detalhamento de custos automaticamente."
+                action={
+                  <Link
+                    to="/ficha-tecnica"
+                    search={{ productId: product.id }}
+                    className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    <ExternalLink className="size-3.5" /> Criar ficha técnica
+                  </Link>
+                }
+              />
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="prototipos">
-          <div className="rounded-xl border border-border bg-card p-4">
-            {prototypes.length === 0 ? (
+          {prototypes.length === 0 ? (
+            <div className="rounded-xl border border-border bg-card p-4">
               <EmptyState
                 icon={Scissors}
-                title="Nenhum protótipo"
-                description="Ainda não há solicitações de protótipo para este produto."
+                title="Nenhum protótipo solicitado"
+                description="Solicite um piloto para iniciar o ciclo de prototipagem. O protótipo passará por: Corte/Pilotagem → Prova/Piloto → Ajustes (se necessário) → Aprovação final."
+                action={
+                  <div className="flex flex-wrap gap-2 justify-center mt-1">
+                    <Button
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => {
+                        const dialog = document.getElementById("request-prototype-dialog") as HTMLDialogElement | null;
+                        dialog?.showModal();
+                      }}
+                    >
+                      <Scissors className="size-3.5" /> Solicitar protótipo
+                    </Button>
+                    <Link
+                      to="/prototipos"
+                      className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1"
+                    >
+                      Ver todos os protótipos <ExternalLink className="size-2.5" />
+                    </Link>
+                  </div>
+                }
               />
-            ) : (
-              <div className="space-y-2">
-                {prototypes.map((p) => (
-                  <Link
-                    key={p.id}
-                    to="/prototipo/$id"
-                    params={{ id: p.id }}
-                    className="flex items-center justify-between border border-border rounded-lg px-3 py-2 hover:bg-muted transition"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Scissors className="size-3.5 text-muted-foreground" />
-                      <span className="font-mono text-xs">{p.code}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] capitalize">
-                        {p.stage.replace(/_/g, " ")}
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground">
-                        {new Date(p.created_at).toLocaleDateString("pt-BR")}
-                      </span>
-                    </div>
-                  </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Visual Approval Flow */}
+              <div className="rounded-xl border border-border bg-card p-4">
+                <div className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <Scissors className="size-4 text-primary" /> Fluxo de Prototipagem
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {prototypes.map((p) => {
+                    const stage = p.stage as string;
+                    const stages = ["em_producao", "fitting", "ajuste", "aprovado"];
+                    const currentIdx = stages.indexOf(stage);
+                    const isApproved = stage === "aprovado";
+                    const isRejected = stage === "reprovado";
+                    return (
+                      <Link
+                        key={p.id}
+                        to="/prototipo/$id"
+                        params={{ id: p.id }}
+                        className={`
+                          flex-1 min-w-[140px] rounded-xl border p-3 hover:shadow-md transition
+                          ${isApproved
+                            ? "border-emerald-500/40 bg-emerald-500/5"
+                            : isRejected
+                              ? "border-rose-500/40 bg-rose-500/5"
+                              : "border-border bg-card hover:border-primary/30"
+                          }
+                        `}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-mono text-xs font-semibold">{p.code}</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {new Date(p.created_at).toLocaleDateString("pt-BR")}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 mb-2">
+                          {stages.map((s, i) => {
+                            const done = stages.indexOf(stage) >= i;
+                            const isCurrent = stages.indexOf(stage) === i;
+                            return (
+                              <div
+                                key={s}
+                                className={`h-1.5 flex-1 rounded-full ${
+                                  done
+                                    ? i <= stages.indexOf(stage)
+                                      ? stage === "aprovado"
+                                        ? "bg-emerald-500"
+                                        : "bg-primary"
+                                      : "bg-muted"
+                                    : "bg-muted/60"
+                                } ${isCurrent && !isApproved ? "animate-pulse" : ""}`}
+                              />
+                            );
+                          })}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Badge
+                            variant="outline"
+                            className={`text-[9px] capitalize ${
+                              isApproved
+                                ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
+                                : isRejected
+                                  ? "bg-rose-500/15 text-rose-600 border-rose-500/30"
+                                  : "bg-primary/10 text-primary border-primary/30"
+                            }`}
+                          >
+                            {stage.replace(/_/g, " ")}
+                          </Badge>
+                          {isApproved && (
+                            <CheckCircle2 className="size-3.5 text-emerald-600" />
+                          )}
+                          {isRejected && (
+                            <AlertTriangle className="size-3.5 text-rose-600" />
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Quick stats */}
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { l: "Total", v: prototypes.length },
+                  { l: "Abertos", v: prototypes.filter((p) => p.stage !== "aprovado" && p.stage !== "reprovado").length, tone: "text-amber-600" },
+                  { l: "Aprovados", v: prototypes.filter((p) => p.stage === "aprovado").length, tone: "text-emerald-600" },
+                ].map((s) => (
+                  <div key={s.l} className="rounded-lg border border-border bg-card p-3 text-center">
+                    <div className={`text-lg font-semibold tabular-nums ${s.tone ?? ""}`}>{s.v}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase">{s.l}</div>
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="pcp" className="space-y-4">
@@ -516,16 +639,36 @@ function ProductWorkspace() {
             <EmptyState
               icon={Megaphone}
               title="Marketing do produto"
-              description="Abra o módulo de Marketing/ROI para ver campanhas, envios e retorno por peça."
+              description="Gerencie campanhas, envios para influenciadores e retorno sobre investimento (ROI) por peça."
               action={
-                <Link
-                  to="/marketing"
-                  className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-                >
-                  <ExternalLink className="size-3.5" /> Abrir marketing
-                </Link>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <Link
+                    to="/marketing"
+                    className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    <ExternalLink className="size-3.5" /> Abrir marketing
+                  </Link>
+                  <Link
+                    to="/influencers"
+                    className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    <ExternalLink className="size-3.5" /> Influenciadores
+                  </Link>
+                </div>
               }
             />
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 border-t pt-4">
+              {[
+                { t: "📸 Envio para creators", d: "Selecione influenciadores, registre envios e acompanhe conteúdo gerado." },
+                { t: "📊 ROI por peça", d: "Compare custo de produção vs retorno de vendas impulsionadas por campanha." },
+                { t: "📅 Calendário de campanhas", d: "Visualize lançamentos, drops e ações sazonais em linha do tempo." },
+              ].map((card) => (
+                <div key={card.t} className="rounded-lg border border-border/60 bg-muted/20 p-3 text-left">
+                  <div className="text-sm font-medium mb-1">{card.t}</div>
+                  <div className="text-xs text-muted-foreground leading-relaxed">{card.d}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </TabsContent>
 
@@ -602,6 +745,14 @@ function margin(cost: number | null, sell: number | null) {
   return `${m.toFixed(1)}%`;
 }
 
+function sellPriceToMarginTone(cost: number | null, sell: number | null): "default" | "primary" | "warning" {
+  if (!cost || !sell || sell <= 0) return "default";
+  const m = ((sell - cost) / sell) * 100;
+  if (m >= 55) return "primary";
+  if (m >= 40) return "warning";
+  return "default";
+}
+
 function NoSheet({ productId }: { productId: string }) {
   return (
     <div className="rounded-xl border border-dashed border-border bg-card p-6">
@@ -612,7 +763,7 @@ function NoSheet({ productId }: { productId: string }) {
         action={
           <Link
             to="/ficha-tecnica"
-            search={{ product: productId }}
+            search={{ productId }}
             className="text-sm text-primary hover:underline inline-flex items-center gap-1"
           >
             <ExternalLink className="size-3.5" /> Abrir editor de ficha
