@@ -192,6 +192,9 @@ function ProductLifecycleKanban() {
 
   return (
     <div className="flex h-full flex-col">
+      <div className="px-4 pt-3">
+        <PlmBreadcrumb items={[{ label: "Desenvolvimento" }, { label: "Ciclo de Vida" }]} />
+      </div>
       <PageHeader
         className="border-b px-4 py-3"
         title="Ciclo de Vida do Produto"
