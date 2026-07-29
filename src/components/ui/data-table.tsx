@@ -21,6 +21,8 @@ export type DataTableColumn<T> = {
   header?: ReactNode;
   /** Renderizador customizado (fallback: row[key]) */
   render?: (row: T, idx: number) => ReactNode;
+  /** Alias de render (compat) */
+  cell?: (row: T, idx: number) => ReactNode;
   /** Se é ordenável */
   sortable?: boolean;
   /** Largura (ex: "w-24") */
@@ -29,6 +31,8 @@ export type DataTableColumn<T> = {
   align?: "left" | "center" | "right";
   /** Função para extrair valor ordenável (padrão: String(row[key])) */
   sortValue?: (row: T) => string | number;
+  /** Alias de sortValue (compat) */
+  value?: (row: T) => string | number;
   /** Ocultar no mobile */
   hideOnMobile?: boolean;
 };
@@ -112,8 +116,9 @@ export function DataTable<T>({
     const col = columns.find((c) => c.key === sortKey);
     if (!col) return filtered;
     return [...filtered].sort((a, b) => {
-      const aVal = col.sortValue ? col.sortValue(a) : String((a as Record<string, unknown>)[sortKey] ?? "");
-      const bVal = col.sortValue ? col.sortValue(b) : String((b as Record<string, unknown>)[sortKey] ?? "");
+      const sv = col.sortValue ?? col.value;
+      const aVal = sv ? sv(a) : String((a as Record<string, unknown>)[sortKey] ?? "");
+      const bVal = sv ? sv(b) : String((b as Record<string, unknown>)[sortKey] ?? "");
       if (typeof aVal === "number" && typeof bVal === "number") {
         return sortDir === "asc" ? aVal - bVal : bVal - aVal;
       }
