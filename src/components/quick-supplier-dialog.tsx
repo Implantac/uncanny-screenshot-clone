@@ -54,14 +54,14 @@ export function QuickSupplierDialog({
         .insert({
           owner_id: user.id,
           name: name.trim(),
-          trade_name: tradeName.trim() || null,
           contact_name: contactName.trim() || null,
           email: email.trim() || null,
           phone: phone.trim() || null,
-          website: website.trim() || null,
-          address: address.trim() || null,
-          notes: notes.trim() || null,
-          status: "ativo",
+          city: address.trim() || null,
+          notes: [tradeName && `Nome fantasia: ${tradeName}`, website && `Site: ${website}`, notes]
+            .filter(Boolean)
+            .join("\n") || null,
+          active: true,
         })
         .select("id, name")
         .single();
