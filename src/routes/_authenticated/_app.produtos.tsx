@@ -177,10 +177,14 @@ function ProdutosPage() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [duplicating, setDuplicating] = useState<Product | null>(null);
   const [prefill, setPrefill] = useState<Prefill | null>(null);
+  // FAB e botão do header abrem o MESMO fluxo (Quick Create) — sem duplicidade.
   useFabNewAction(() => {
     setEditing(null);
-    setOpen(true);
+    setQuickOpen(true);
   });
+  const [statusFilter, setStatusFilter] = useState<"all" | Product["status"]>("all");
+  const [collectionFilter, setCollectionFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"recent" | "name" | "margin" | "price">("recent");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const sp = Route.useSearch();
   const { q: search, prefillName, prefillCategory, prefillColors } = sp;
