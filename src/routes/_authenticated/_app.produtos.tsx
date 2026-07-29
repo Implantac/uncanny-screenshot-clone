@@ -423,7 +423,36 @@ function ProdutosPage() {
                 className="pl-9"
               />
             </div>
-            <div className="flex items-center gap-2 text-xs">
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="rascunho">Rascunho</SelectItem>
+                  <SelectItem value="desenvolvimento">Em desenvolvimento</SelectItem>
+                  <SelectItem value="aprovado">Aprovado</SelectItem>
+                  <SelectItem value="producao">Em produção</SelectItem>
+                  <SelectItem value="descontinuado">Descontinuado</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={collectionFilter} onValueChange={setCollectionFilter}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Coleção" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as coleções</SelectItem>
+                  <SelectItem value="none">Sem coleção</SelectItem>
+                  {collections.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name} ({c.season} {c.year})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => setPinnedOnly((v) => !v)}
@@ -436,7 +465,41 @@ function ProdutosPage() {
                   <span className="ml-0.5 text-[10px] opacity-70">({pinnedIds.size})</span>
                 )}
               </button>
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                <SelectTrigger className="h-8 w-[150px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Mais recentes</SelectItem>
+                  <SelectItem value="name">Nome (A→Z)</SelectItem>
+                  <SelectItem value="price">Maior preço</SelectItem>
+                  <SelectItem value="margin">Maior margem</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
+              <span>
+                {filtered.length} de {products.length} produto{products.length === 1 ? "" : "s"}
+              </span>
+              {(statusFilter !== "all" ||
+                collectionFilter !== "all" ||
+                pinnedOnly ||
+                search.trim() !== "") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter("all");
+                    setCollectionFilter("all");
+                    setPinnedOnly(false);
+                    setSearch("");
+                  }}
+                  className="hover:text-foreground underline underline-offset-2"
+                >
+                  Limpar filtros
+                </button>
+              )}
+            </div>
+
             <div className="space-y-2">
               {filtered.map((product) => {
                 const active = product.id === selected?.id;
