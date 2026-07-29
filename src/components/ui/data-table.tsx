@@ -96,8 +96,8 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const keyFor = rowKey ?? getRowId ?? ((row: T) => String((row as Record<string, unknown>).id ?? Math.random()));
   const [query, setQuery] = useState("");
-  const [sortKey, setSortKey] = useState<string | null>(null);
-  const [sortDir, setSortDir] = useState<SortDir>(null);
+  const [sortKey, setSortKey] = useState<string | null>(initialSort?.key ?? null);
+  const [sortDir, setSortDir] = useState<SortDir>(initialSort?.dir ?? null);
   const [page, setPage] = useState(0);
 
   const handleSort = useCallback(
