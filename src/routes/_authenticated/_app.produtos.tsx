@@ -541,8 +541,20 @@ function ProdutosPage() {
                 );
               })}
               {!filtered.length && (
-                <div className="text-sm text-muted-foreground text-center py-8">
-                  Nenhum resultado para essa busca.
+                <div className="text-sm text-muted-foreground text-center py-8 space-y-2">
+                  <div>Nenhum produto corresponde aos filtros atuais.</div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusFilter("all");
+                      setCollectionFilter("all");
+                      setPinnedOnly(false);
+                      setSearch("");
+                    }}
+                    className="text-primary hover:underline text-xs"
+                  >
+                    Limpar filtros
+                  </button>
                 </div>
               )}
             </div>
