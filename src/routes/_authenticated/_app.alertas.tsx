@@ -28,6 +28,7 @@ import {
 } from "@/lib/alerts-center.functions";
 
 import { PageHeader } from "@/components/ui/page-header";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -224,6 +225,7 @@ function AlertsCenterPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
+      <PlmBreadcrumb items={[{ label: "Central de Alertas" }]} />
       <PageHeader
         eyebrow="Prioridades do dia"
         title={

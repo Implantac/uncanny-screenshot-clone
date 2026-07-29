@@ -6,6 +6,7 @@ import { AlertTriangle, ChevronRight, Clock, Download, Search, Share2, Sparkles 
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ui/page-header";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -191,6 +192,9 @@ function ProductLifecycleKanban() {
 
   return (
     <div className="flex h-full flex-col">
+      <div className="px-4 pt-3">
+        <PlmBreadcrumb items={[{ label: "Desenvolvimento" }, { label: "Ciclo de Vida" }]} />
+      </div>
       <PageHeader
         className="border-b px-4 py-3"
         title="Ciclo de Vida do Produto"
