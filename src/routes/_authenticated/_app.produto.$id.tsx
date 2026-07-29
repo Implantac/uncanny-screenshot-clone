@@ -612,11 +612,11 @@ function ProductWorkspace() {
                         />
                       ))}
                   </div>
+                </div>
               )}
 
               {/* Quick stats */}
-              <div className="grid grid-cols-3 gap-2"></old_str>
-</edit_file>
+              <div className="grid grid-cols-3 gap-2">
                 {[
                   { l: "Total", v: prototypes.length },
                   { l: "Abertos", v: prototypes.filter((p) => p.stage !== "aprovado" && p.stage !== "reprovado").length, tone: "text-amber-600" },

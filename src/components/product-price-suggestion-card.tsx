@@ -158,6 +158,7 @@ export function ProductPriceSuggestionCard({ productId }: Props) {
             <span className="text-muted-foreground">Preço mínimo ({minMarginPct}% margem):</span>{" "}
             <span className="font-semibold tabular-nums">{brl(minPrice)}</span>
           </div>
+        </div>
       </div>
 
       {/* Auto-fill sell_price button */}

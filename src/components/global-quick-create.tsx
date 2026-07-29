@@ -76,8 +76,7 @@ export function GlobalQuickCreate() {
             setUseWizard(false);
             setOpenQuick(true);
           }
-        })
-        .catch(() => {
+        }, () => {
           // Fallback: quick dialog on error
           setOpenQuick(true);
         });
