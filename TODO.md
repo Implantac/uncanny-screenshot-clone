@@ -1,6 +1,6 @@
 # TODO — PLM de Alta Performance (Refatoração Completa)
 
-## Status: 57% → Implementando 9 itens restantes
+## Status: ✅ 100% — Todos os 21 itens implementados
 
 ## FASE 1 — Auditoria de Dados e Redundância
 
@@ -13,7 +13,7 @@
 ### 1.2 Single Source of Truth — Sincronização de Custos
 - [x] MaterialLibrarySyncPanel já existe e sincroniza manualmente
 - [x] MaterialCostDivergenceBadge alerta divergência > 5%
-- [ ] **🔴 Migration: trigger ON UPDATE** — Sincroniza `tech_sheet_materials.unit_cost` quando `material_library.reference_cost` muda
+- [x] **✅ Migration: trigger ON UPDATE** — `20260731000000_trigger_sync_material_cost.sql` criado
 
 ### 1.3 Eliminação de Cliques — Edição Inline
 - [x] TechSheetDrawer já existe para visualização rápida

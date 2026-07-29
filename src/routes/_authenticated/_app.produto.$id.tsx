@@ -44,6 +44,7 @@ import {
 import { ProductTimeline } from "@/components/product-timeline";
 import { ProductTimelineCollab } from "@/components/product-timeline-collab-lazy";
 import { TimelineFeed } from "@/components/timeline-feed";
+import { PrototypeApprovalGate } from "@/components/prototype-approval-gate";
 
 import { ProductGallery } from "@/components/product-gallery";
 import { SkuPerformancePanel } from "@/components/sku-performance-panel";
@@ -593,8 +594,29 @@ function ProductWorkspace() {
                 </div>
               </div>
 
+{/* PrototypeApprovalGate — selos de aprovação para cada protótipo */}
+              {prototypes.filter((p) => p.stage !== "reprovado").length > 0 && (
+                <div className="space-y-3">
+                  <div className="text-sm font-semibold flex items-center gap-2">
+                    <ShieldCheck className="size-4 text-primary" />
+                    Gates de aprovação por protótipo
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {prototypes
+                      .filter((p) => p.stage !== "reprovado")
+                      .map((p) => (
+                        <PrototypeApprovalGate
+                          key={p.id}
+                          prototypeId={p.id}
+                          currentStage={p.stage}
+                        />
+                      ))}
+                  </div>
+              )}
+
               {/* Quick stats */}
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2"></old_str>
+</edit_file>
                 {[
                   { l: "Total", v: prototypes.length },
                   { l: "Abertos", v: prototypes.filter((p) => p.stage !== "aprovado" && p.stage !== "reprovado").length, tone: "text-amber-600" },
