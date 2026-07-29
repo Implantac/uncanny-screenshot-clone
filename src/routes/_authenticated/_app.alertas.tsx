@@ -28,6 +28,7 @@ import {
 } from "@/lib/alerts-center.functions";
 
 import { PageHeader } from "@/components/ui/page-header";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import {
   DropdownMenu,
   DropdownMenuContent,
