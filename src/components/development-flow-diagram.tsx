@@ -175,14 +175,10 @@ function ProcessCard({
     </div>
   );
 
-  // Deep link para o kanban filtrando por etapa
+  // Deep link para o kanban (visão geral do ciclo)
   if (node.step) {
     return (
-      <Link
-        to="/produto-kanban"
-        search={{ step: node.step } as never}
-        className="block"
-      >
+      <Link to="/produto-kanban" className="block">
         {body}
       </Link>
     );
