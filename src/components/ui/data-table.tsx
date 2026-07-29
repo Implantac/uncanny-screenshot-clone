@@ -184,9 +184,15 @@ export function DataTable<T>({
       </div>
 
       {/* Tabela */}
-      {paged.length === 0 ? (
+      {loading ? (
+        <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground animate-pulse">
+          Carregando…
+        </div>
+      ) : paged.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          {emptyLabel}
+          {EmptyIcon && <EmptyIcon className="size-8 mx-auto mb-2 opacity-50" />}
+          {emptyTitle && <div className="font-medium text-foreground">{emptyTitle}</div>}
+          {emptyDescription ?? emptyLabel ?? "Nenhum resultado encontrado."}
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-x-auto">
@@ -216,23 +222,26 @@ export function DataTable<T>({
             <TableBody>
               {paged.map((row, idx) => (
                 <TableRow
-                  key={rowKey(row)}
+                  key={keyFor(row)}
                   className={cn(onRowClick && "cursor-pointer hover:bg-muted/50")}
                   onClick={() => onRowClick?.(row)}
                 >
-                  {columns.map((col) => (
-                    <TableCell
-                      key={`${rowKey(row)}-${col.key}`}
-                      className={cn(
-                        col.className,
-                        col.align === "center" && "text-center",
-                        col.align === "right" && "text-right",
-                        col.hideOnMobile && "hidden md:table-cell",
-                      )}
-                    >
-                      {col.render ? col.render(row, idx) : ((row as Record<string, unknown>)[col.key] as ReactNode) ?? "—"}
-                    </TableCell>
-                  ))}
+                  {columns.map((col) => {
+                    const renderer = col.render ?? col.cell;
+                    return (
+                      <TableCell
+                        key={`${keyFor(row)}-${col.key}`}
+                        className={cn(
+                          col.className,
+                          col.align === "center" && "text-center",
+                          col.align === "right" && "text-right",
+                          col.hideOnMobile && "hidden md:table-cell",
+                        )}
+                      >
+                        {renderer ? renderer(row, idx) : ((row as Record<string, unknown>)[col.key] as ReactNode) ?? "—"}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableBody>
