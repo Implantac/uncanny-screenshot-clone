@@ -57,6 +57,7 @@ import { Route as AuthenticatedAppFashionGptRouteImport } from './routes/_authen
 import { Route as AuthenticatedAppFichaTecnicaRouteImport } from './routes/_authenticated/_app.ficha-tecnica'
 import { Route as AuthenticatedAppFinanceiroRouteImport } from './routes/_authenticated/_app.financeiro'
 import { Route as AuthenticatedAppFitSessionsRouteImport } from './routes/_authenticated/_app.fit-sessions'
+import { Route as AuthenticatedAppFluxoDesenvolvimentoRouteImport } from './routes/_authenticated/_app.fluxo-desenvolvimento'
 import { Route as AuthenticatedAppFornecedoresRouteImport } from './routes/_authenticated/_app.fornecedores'
 import { Route as AuthenticatedAppFpaRouteImport } from './routes/_authenticated/_app.fpa'
 import { Route as AuthenticatedAppGeoSalesRouteImport } from './routes/_authenticated/_app.geo-sales'
@@ -409,6 +410,12 @@ const AuthenticatedAppFitSessionsRoute =
   AuthenticatedAppFitSessionsRouteImport.update({
     id: '/fit-sessions',
     path: '/fit-sessions',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppFluxoDesenvolvimentoRoute =
+  AuthenticatedAppFluxoDesenvolvimentoRouteImport.update({
+    id: '/fluxo-desenvolvimento',
+    path: '/fluxo-desenvolvimento',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
 const AuthenticatedAppFornecedoresRoute =
@@ -947,6 +954,7 @@ export interface FileRoutesByFullPath {
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedAppFinanceiroRoute
   '/fit-sessions': typeof AuthenticatedAppFitSessionsRoute
+  '/fluxo-desenvolvimento': typeof AuthenticatedAppFluxoDesenvolvimentoRoute
   '/fornecedores': typeof AuthenticatedAppFornecedoresRoute
   '/fpa': typeof AuthenticatedAppFpaRoute
   '/geo-sales': typeof AuthenticatedAppGeoSalesRoute
@@ -1079,6 +1087,7 @@ export interface FileRoutesByTo {
   '/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/financeiro': typeof AuthenticatedAppFinanceiroRoute
   '/fit-sessions': typeof AuthenticatedAppFitSessionsRoute
+  '/fluxo-desenvolvimento': typeof AuthenticatedAppFluxoDesenvolvimentoRoute
   '/fornecedores': typeof AuthenticatedAppFornecedoresRoute
   '/fpa': typeof AuthenticatedAppFpaRoute
   '/geo-sales': typeof AuthenticatedAppGeoSalesRoute
@@ -1213,6 +1222,7 @@ export interface FileRoutesById {
   '/_authenticated/_app/ficha-tecnica': typeof AuthenticatedAppFichaTecnicaRoute
   '/_authenticated/_app/financeiro': typeof AuthenticatedAppFinanceiroRoute
   '/_authenticated/_app/fit-sessions': typeof AuthenticatedAppFitSessionsRoute
+  '/_authenticated/_app/fluxo-desenvolvimento': typeof AuthenticatedAppFluxoDesenvolvimentoRoute
   '/_authenticated/_app/fornecedores': typeof AuthenticatedAppFornecedoresRoute
   '/_authenticated/_app/fpa': typeof AuthenticatedAppFpaRoute
   '/_authenticated/_app/geo-sales': typeof AuthenticatedAppGeoSalesRoute
@@ -1348,6 +1358,7 @@ export interface FileRouteTypes {
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fit-sessions'
+    | '/fluxo-desenvolvimento'
     | '/fornecedores'
     | '/fpa'
     | '/geo-sales'
@@ -1480,6 +1491,7 @@ export interface FileRouteTypes {
     | '/ficha-tecnica'
     | '/financeiro'
     | '/fit-sessions'
+    | '/fluxo-desenvolvimento'
     | '/fornecedores'
     | '/fpa'
     | '/geo-sales'
@@ -1613,6 +1625,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_app/ficha-tecnica'
     | '/_authenticated/_app/financeiro'
     | '/_authenticated/_app/fit-sessions'
+    | '/_authenticated/_app/fluxo-desenvolvimento'
     | '/_authenticated/_app/fornecedores'
     | '/_authenticated/_app/fpa'
     | '/_authenticated/_app/geo-sales'
@@ -2059,6 +2072,13 @@ declare module '@tanstack/react-router' {
       path: '/fit-sessions'
       fullPath: '/fit-sessions'
       preLoaderRoute: typeof AuthenticatedAppFitSessionsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/fluxo-desenvolvimento': {
+      id: '/_authenticated/_app/fluxo-desenvolvimento'
+      path: '/fluxo-desenvolvimento'
+      fullPath: '/fluxo-desenvolvimento'
+      preLoaderRoute: typeof AuthenticatedAppFluxoDesenvolvimentoRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/fornecedores': {
@@ -2722,6 +2742,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppFichaTecnicaRoute: typeof AuthenticatedAppFichaTecnicaRoute
   AuthenticatedAppFinanceiroRoute: typeof AuthenticatedAppFinanceiroRoute
   AuthenticatedAppFitSessionsRoute: typeof AuthenticatedAppFitSessionsRoute
+  AuthenticatedAppFluxoDesenvolvimentoRoute: typeof AuthenticatedAppFluxoDesenvolvimentoRoute
   AuthenticatedAppFornecedoresRoute: typeof AuthenticatedAppFornecedoresRoute
   AuthenticatedAppFpaRoute: typeof AuthenticatedAppFpaRoute
   AuthenticatedAppGeoSalesRoute: typeof AuthenticatedAppGeoSalesRoute
@@ -2836,6 +2857,8 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppFichaTecnicaRoute: AuthenticatedAppFichaTecnicaRoute,
   AuthenticatedAppFinanceiroRoute: AuthenticatedAppFinanceiroRoute,
   AuthenticatedAppFitSessionsRoute: AuthenticatedAppFitSessionsRoute,
+  AuthenticatedAppFluxoDesenvolvimentoRoute:
+    AuthenticatedAppFluxoDesenvolvimentoRoute,
   AuthenticatedAppFornecedoresRoute: AuthenticatedAppFornecedoresRoute,
   AuthenticatedAppFpaRoute: AuthenticatedAppFpaRoute,
   AuthenticatedAppGeoSalesRoute: AuthenticatedAppGeoSalesRoute,

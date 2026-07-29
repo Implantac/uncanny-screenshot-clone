@@ -229,6 +229,16 @@ export const MODULES: ModuleDef[] = [
 
   // === Desenvolvimento ===
   {
+    slug: "fluxo-desenvolvimento",
+    path: "/fluxo-desenvolvimento",
+    title: "Fluxo de Desenvolvimento",
+    short: "Do desenho ao PCP",
+    description:
+      "Fluxograma visual do processo: concepção, reuniões, ficha técnica, piloto, aprovações e liberação para PCP.",
+    icon: Workflow,
+    group: "Desenvolvimento",
+  },
+  {
     slug: "dev-kanban",
     path: "/dev-kanban",
     title: "Kanban de Desenvolvimento",
