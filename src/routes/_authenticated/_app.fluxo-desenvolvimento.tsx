@@ -29,7 +29,7 @@ function DevelopmentFlowPage() {
     <div className="p-4 md:p-6 space-y-4">
       <PageHeader
         title="Fluxo de Desenvolvimento"
-        subtitle="Do desenho ao PCP · reuniões, gates e etapas oficiais do PLM"
+        description="Do desenho ao PCP · reuniões, gates e etapas oficiais do PLM"
         actions={
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline" size="sm">
