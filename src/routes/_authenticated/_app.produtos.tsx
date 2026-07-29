@@ -248,13 +248,33 @@ function ProdutosPage() {
     const term = search.trim().toLowerCase();
     let list = products;
     if (pinnedOnly) list = list.filter((p) => pinnedIds.has(p.id));
-    if (!term) return list;
-    return list.filter((product) =>
-      [product.name, product.sku, product.category || "", STATUS_LABELS[product.status]].some(
-        (value) => value.toLowerCase().includes(term),
-      ),
-    );
-  }, [products, search, pinnedOnly, pinnedIds]);
+    if (statusFilter !== "all") list = list.filter((p) => p.status === statusFilter);
+    if (collectionFilter !== "all") {
+      list = list.filter((p) =>
+        collectionFilter === "none" ? !p.collection_id : p.collection_id === collectionFilter,
+      );
+    }
+    if (term) {
+      list = list.filter((product) =>
+        [product.name, product.sku, product.category || "", STATUS_LABELS[product.status]].some(
+          (value) => value.toLowerCase().includes(term),
+        ),
+      );
+    }
+    const sorted = [...list];
+    sorted.sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name, "pt-BR");
+      if (sortBy === "price") return Number(b.sell_price || 0) - Number(a.sell_price || 0);
+      if (sortBy === "margin") {
+        const ma = Number(a.sell_price || 0) - Number(a.cost_price || 0);
+        const mb = Number(b.sell_price || 0) - Number(b.cost_price || 0);
+        return mb - ma;
+      }
+      return (b.created_at || "").localeCompare(a.created_at || "");
+    });
+    return sorted;
+  }, [products, search, pinnedOnly, pinnedIds, statusFilter, collectionFilter, sortBy]);
+
 
   useEffect(() => {
     if (!filtered.length) {
