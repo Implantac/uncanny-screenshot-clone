@@ -6,6 +6,7 @@ import { AlertTriangle, ChevronRight, Clock, Download, Search, Share2, Sparkles 
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ui/page-header";
+import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
