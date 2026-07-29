@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, type ReactNode } from "react";
+import { useState, useMemo, useCallback, type ReactNode, type ComponentType } from "react";
 import {
   Table,
   TableBody,
@@ -12,17 +12,17 @@ import { Button } from "@/components/ui/button";
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type DataTableColumn<T> = {
+export interface DataTableColumn<T> {
   /** Chave única */
   key: string;
   /** Rótulo do cabeçalho */
   label?: ReactNode;
   /** Alias de label (compat) */
   header?: ReactNode;
-  /** Renderizador customizado (fallback: row[key]) */
-  render?: (row: T, idx: number) => ReactNode;
+  /** Renderizador customizado (fallback: row[key]) — método p/ ser bivariante */
+  render?(row: T, idx: number): ReactNode;
   /** Alias de render (compat) */
-  cell?: (row: T, idx: number) => ReactNode;
+  cell?(row: T, idx: number): ReactNode;
   /** Se é ordenável */
   sortable?: boolean;
   /** Largura (ex: "w-24") */
@@ -30,35 +30,47 @@ export type DataTableColumn<T> = {
   /** Alinhamento */
   align?: "left" | "center" | "right";
   /** Função para extrair valor ordenável (padrão: String(row[key])) */
-  sortValue?: (row: T) => string | number;
+  sortValue?(row: T): string | number;
   /** Alias de sortValue (compat) */
-  value?: (row: T) => string | number;
+  value?(row: T): string | number;
   /** Ocultar no mobile */
   hideOnMobile?: boolean;
-};
+}
 
 type SortDir = "asc" | "desc" | null;
 
-type DataTableProps<T> = {
+interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   data: T[];
   /** Chave única para cada linha */
-  rowKey: (row: T) => string;
+  rowKey?(row: T): string;
+  /** Alias de rowKey (compat) */
+  getRowId?(row: T): string;
   /** Placeholder da busca */
   searchPlaceholder?: string;
-  /** Callback de busca customizada (padrão: busca em todos os campos) */
-  onSearch?: (query: string, rows: T[]) => T[];
+  /** Callback de busca customizada */
+  onSearch?(query: string, rows: T[]): T[];
   /** Classe extra */
   className?: string;
   /** Ações extras no toolbar */
   toolbar?: ReactNode;
-  /** Estado vazio */
+  /** Estado vazio (legado) */
   emptyLabel?: string;
+  /** Título do estado vazio */
+  emptyTitle?: string;
+  /** Descrição do estado vazio */
+  emptyDescription?: string;
+  /** Ícone do estado vazio */
+  emptyIcon?: ComponentType<{ className?: string }>;
+  /** Ordenação inicial */
+  initialSort?: { key: string; dir: "asc" | "desc" };
+  /** Estado de carregamento */
+  loading?: boolean;
   /** Paginação */
   pageSize?: number;
   /** Callback ao clicar na linha */
-  onRowClick?: (row: T) => void;
-};
+  onRowClick?(row: T): void;
+}
 
 /**
  * DataTable — Wrapper padronizado sobre Table do shadcn/ui
@@ -68,14 +80,21 @@ export function DataTable<T>({
   columns,
   data,
   rowKey,
+  getRowId,
   searchPlaceholder = "Buscar…",
   onSearch,
   className,
   toolbar,
-  emptyLabel = "Nenhum resultado encontrado.",
+  emptyLabel,
+  emptyTitle,
+  emptyDescription,
+  emptyIcon: EmptyIcon,
+  initialSort,
+  loading,
   pageSize = 25,
   onRowClick,
 }: DataTableProps<T>) {
+  const keyFor = rowKey ?? getRowId ?? ((row: T) => String((row as Record<string, unknown>).id ?? Math.random()));
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>(null);
