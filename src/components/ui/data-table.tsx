@@ -16,7 +16,9 @@ export type DataTableColumn<T> = {
   /** Chave única */
   key: string;
   /** Rótulo do cabeçalho */
-  label: ReactNode;
+  label?: ReactNode;
+  /** Alias de label (compat) */
+  header?: ReactNode;
   /** Renderizador customizado (fallback: row[key]) */
   render?: (row: T, idx: number) => ReactNode;
   /** Se é ordenável */
@@ -58,7 +60,7 @@ type DataTableProps<T> = {
  * DataTable — Wrapper padronizado sobre Table do shadcn/ui
  * com busca, ordenação, paginação e responsividade.
  */
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T>({
   columns,
   data,
   rowKey,
@@ -98,7 +100,7 @@ export function DataTable<T extends Record<string, unknown>>({
     if (onSearch) return onSearch(query.trim(), data);
     const q = query.toLowerCase();
     return data.filter((row) =>
-      Object.values(row).some((v) => {
+      Object.values(row as Record<string, unknown>).some((v) => {
         if (v == null) return false;
         return String(v).toLowerCase().includes(q);
       }),
@@ -110,8 +112,8 @@ export function DataTable<T extends Record<string, unknown>>({
     const col = columns.find((c) => c.key === sortKey);
     if (!col) return filtered;
     return [...filtered].sort((a, b) => {
-      const aVal = col.sortValue ? col.sortValue(a) : String(a[sortKey] ?? "");
-      const bVal = col.sortValue ? col.sortValue(b) : String(b[sortKey] ?? "");
+      const aVal = col.sortValue ? col.sortValue(a) : String((a as Record<string, unknown>)[sortKey] ?? "");
+      const bVal = col.sortValue ? col.sortValue(b) : String((b as Record<string, unknown>)[sortKey] ?? "");
       if (typeof aVal === "number" && typeof bVal === "number") {
         return sortDir === "asc" ? aVal - bVal : bVal - aVal;
       }
@@ -180,7 +182,7 @@ export function DataTable<T extends Record<string, unknown>>({
                     onClick={() => col.sortable && handleSort(col.key)}
                   >
                     <div className="flex items-center gap-1">
-                      {col.label}
+                      {col.label ?? col.header}
                       {col.sortable && <SortIcon colKey={col.key} />}
                     </div>
                   </TableHead>
@@ -204,7 +206,7 @@ export function DataTable<T extends Record<string, unknown>>({
                         col.hideOnMobile && "hidden md:table-cell",
                       )}
                     >
-                      {col.render ? col.render(row, idx) : (row[col.key] as ReactNode) ?? "—"}
+                      {col.render ? col.render(row, idx) : ((row as Record<string, unknown>)[col.key] as ReactNode) ?? "—"}
                     </TableCell>
                   ))}
                 </TableRow>
