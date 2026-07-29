@@ -177,10 +177,14 @@ function ProdutosPage() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [duplicating, setDuplicating] = useState<Product | null>(null);
   const [prefill, setPrefill] = useState<Prefill | null>(null);
+  // FAB e botão do header abrem o MESMO fluxo (Quick Create) — sem duplicidade.
   useFabNewAction(() => {
     setEditing(null);
-    setOpen(true);
+    setQuickOpen(true);
   });
+  const [statusFilter, setStatusFilter] = useState<"all" | Product["status"]>("all");
+  const [collectionFilter, setCollectionFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"recent" | "name" | "margin" | "price">("recent");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const sp = Route.useSearch();
   const { q: search, prefillName, prefillCategory, prefillColors } = sp;
@@ -244,13 +248,33 @@ function ProdutosPage() {
     const term = search.trim().toLowerCase();
     let list = products;
     if (pinnedOnly) list = list.filter((p) => pinnedIds.has(p.id));
-    if (!term) return list;
-    return list.filter((product) =>
-      [product.name, product.sku, product.category || "", STATUS_LABELS[product.status]].some(
-        (value) => value.toLowerCase().includes(term),
-      ),
-    );
-  }, [products, search, pinnedOnly, pinnedIds]);
+    if (statusFilter !== "all") list = list.filter((p) => p.status === statusFilter);
+    if (collectionFilter !== "all") {
+      list = list.filter((p) =>
+        collectionFilter === "none" ? !p.collection_id : p.collection_id === collectionFilter,
+      );
+    }
+    if (term) {
+      list = list.filter((product) =>
+        [product.name, product.sku, product.category || "", STATUS_LABELS[product.status]].some(
+          (value) => value.toLowerCase().includes(term),
+        ),
+      );
+    }
+    const sorted = [...list];
+    sorted.sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name, "pt-BR");
+      if (sortBy === "price") return Number(b.sell_price || 0) - Number(a.sell_price || 0);
+      if (sortBy === "margin") {
+        const ma = Number(a.sell_price || 0) - Number(a.cost_price || 0);
+        const mb = Number(b.sell_price || 0) - Number(b.cost_price || 0);
+        return mb - ma;
+      }
+      return (b.created_at || "").localeCompare(a.created_at || "");
+    });
+    return sorted;
+  }, [products, search, pinnedOnly, pinnedIds, statusFilter, collectionFilter, sortBy]);
+
 
   useEffect(() => {
     if (!filtered.length) {
@@ -399,7 +423,36 @@ function ProdutosPage() {
                 className="pl-9"
               />
             </div>
-            <div className="flex items-center gap-2 text-xs">
+            <div className="grid grid-cols-2 gap-2">
+              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="rascunho">Rascunho</SelectItem>
+                  <SelectItem value="desenvolvimento">Em desenvolvimento</SelectItem>
+                  <SelectItem value="aprovado">Aprovado</SelectItem>
+                  <SelectItem value="producao">Em produção</SelectItem>
+                  <SelectItem value="descontinuado">Descontinuado</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={collectionFilter} onValueChange={setCollectionFilter}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Coleção" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as coleções</SelectItem>
+                  <SelectItem value="none">Sem coleção</SelectItem>
+                  {collections.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name} ({c.season} {c.year})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => setPinnedOnly((v) => !v)}
@@ -412,7 +465,41 @@ function ProdutosPage() {
                   <span className="ml-0.5 text-[10px] opacity-70">({pinnedIds.size})</span>
                 )}
               </button>
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                <SelectTrigger className="h-8 w-[150px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Mais recentes</SelectItem>
+                  <SelectItem value="name">Nome (A→Z)</SelectItem>
+                  <SelectItem value="price">Maior preço</SelectItem>
+                  <SelectItem value="margin">Maior margem</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
+              <span>
+                {filtered.length} de {products.length} produto{products.length === 1 ? "" : "s"}
+              </span>
+              {(statusFilter !== "all" ||
+                collectionFilter !== "all" ||
+                pinnedOnly ||
+                search.trim() !== "") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter("all");
+                    setCollectionFilter("all");
+                    setPinnedOnly(false);
+                    setSearch("");
+                  }}
+                  className="hover:text-foreground underline underline-offset-2"
+                >
+                  Limpar filtros
+                </button>
+              )}
+            </div>
+
             <div className="space-y-2">
               {filtered.map((product) => {
                 const active = product.id === selected?.id;
@@ -454,8 +541,20 @@ function ProdutosPage() {
                 );
               })}
               {!filtered.length && (
-                <div className="text-sm text-muted-foreground text-center py-8">
-                  Nenhum resultado para essa busca.
+                <div className="text-sm text-muted-foreground text-center py-8 space-y-2">
+                  <div>Nenhum produto corresponde aos filtros atuais.</div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusFilter("all");
+                      setCollectionFilter("all");
+                      setPinnedOnly(false);
+                      setSearch("");
+                    }}
+                    className="text-primary hover:underline text-xs"
+                  >
+                    Limpar filtros
+                  </button>
                 </div>
               )}
             </div>
