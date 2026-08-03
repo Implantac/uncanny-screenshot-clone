@@ -25,7 +25,7 @@ import { FitSessionTimeline } from "@/components/fit-session-timeline";
 export const Route = createFileRoute("/_authenticated/_app/fit-sessions")({
   head: () => ({
     meta: [
-      { title: "Fit Sessions · USE MODA PLM" },
+      { title: "Sessões de Prova · USE MODA PLM" },
       { name: "description", content: "Histórico de provas com fotos, comentários técnicos e status de aprovação." },
     ],
   }),

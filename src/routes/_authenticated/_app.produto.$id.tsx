@@ -26,10 +26,23 @@ import {
   CheckCircle2,
   Edit3,
   Lock,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProductPinButton } from "@/components/product-pin-button";
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
@@ -103,6 +116,7 @@ function ProductWorkspace() {
   useRealtime("products", ["product-workspace", id]);
   const audit = useServerFn(logProductView);
   const [editMode, setEditMode] = useState(false);
+  const [tab, setTab] = useState("overview");
   useEffect(() => {
     audit({ data: { productId: id } }).catch(() => {});
   }, [id, audit]);
@@ -343,36 +357,79 @@ function ProductWorkspace() {
 
       <ProductNextStepBanner productId={product.id} />
 
-      <Tabs defaultValue="overview" className="space-y-4">
+<Tabs value={tab} onValueChange={setTab} className="space-y-4">
 
         <div className="flex items-center gap-2">
-          <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/40 p-1 flex-1">
+          <TabsList className="flex flex-wrap h-auto justify-start gap-1 bg-muted/40 p-1 flex-1">
+            {/* Principais — sempre visíveis */}
             <TabTrig value="overview" icon={<Sparkles className="size-3.5" />}>Overview</TabTrig>
             <TabTrig value="ficha" icon={<FileText className="size-3.5" />}>Ficha técnica</TabTrig>
-            <TabTrig value="bom" icon={<Layers className="size-3.5" />}>BOM</TabTrig>
-            <TabTrig value="bop" icon={<ListChecks className="size-3.5" />}>Processo</TabTrig>
-            <TabTrig value="medidas" icon={<Ruler className="size-3.5" />}>Medidas</TabTrig>
-            <TabTrig value="custos" icon={<ShieldCheck className="size-3.5" />}>Custos</TabTrig>
             <TabTrig value="prototipos" icon={<Scissors className="size-3.5" />}>Protótipos</TabTrig>
-            <TabTrig value="pcp" icon={<Factory className="size-3.5" />}>PCP</TabTrig>
-            <TabTrig value="marketing" icon={<Megaphone className="size-3.5" />}>Marketing</TabTrig>
-            <TabTrig value="bi" icon={<BarChart3 className="size-3.5" />}>BI</TabTrig>
             <TabTrig value="timeline" icon={<Clock className="size-3.5" />}>Timeline</TabTrig>
+
+            {/* Separador visual + Avançadas em dropdown */}
+            <div className="w-px h-6 bg-border/60 mx-1" aria-hidden />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
+                  <ChevronDown className="size-3" />
+                  Avançadas
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem onSelect={() => setTab("bom")}>
+                  <Layers className="size-3.5 mr-2" /> BOM
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setTab("bop")}>
+                  <ListChecks className="size-3.5 mr-2" /> Processo
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setTab("medidas")}>
+                  <Ruler className="size-3.5 mr-2" /> Medidas
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setTab("custos")}>
+                  <ShieldCheck className="size-3.5 mr-2" /> Custos
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setTab("pcp")}>
+                  <Factory className="size-3.5 mr-2" /> PCP
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setTab("marketing")}>
+                  <Megaphone className="size-3.5 mr-2" /> Marketing
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setTab("bi")}>
+                  <BarChart3 className="size-3.5 mr-2" /> BI
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TabsList>
-          {sheet && (
-            <Button
-              size="sm"
-              variant={editMode ? "default" : "outline"}
-              className="gap-1.5 h-8 shrink-0 text-xs"
-              onClick={() => setEditMode((v) => !v)}
-            >
-              {editMode ? (
-                <><Lock className="size-3.5" /> Bloquear edição</>
-              ) : (
-                <><Edit3 className="size-3.5" /> Editar ficha</>
-              )}
-            </Button>
-          )}
+          <TooltipProvider>
+            <Tooltip delayDuration={150}>
+              <TooltipTrigger asChild>
+                <span tabIndex={0} className={sheet ? "" : "cursor-not-allowed"}>
+                  <Button
+                    size="sm"
+                    variant={editMode ? "default" : "outline"}
+                    className="gap-1.5 h-8 shrink-0 text-xs"
+                    disabled={!sheet}
+                    aria-disabled={!sheet}
+                    onClick={() => setEditMode((v) => !v)}
+                  >
+                    {editMode ? (
+                      <><Lock className="size-3.5" /> Bloquear edição</>
+                    ) : (
+                      <><Edit3 className="size-3.5" /> Editar ficha</>
+                    )}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {sheet
+                  ? editMode
+                    ? "Bloquear edição desta ficha técnica"
+                    : "Editar ficha técnica (BOM, BOP, Medidas)"
+                  : "Crie uma ficha técnica primeiro"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         <TabsContent value="overview" className="space-y-4">

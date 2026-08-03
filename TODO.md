@@ -97,4 +97,38 @@
 | 8 | PrototypeApprovalGate + Timeline | `src/components/prototype-approval-gate.tsx` | ✅ |
 | 9 | Auto-fill sell_price + Break-even | `src/components/product-price-suggestion-card.tsx` | ✅ |
 
-**Total: 21/21 itens — 100% concluído** 🎉
+## 📋 MELHORIAS DE USABILIDADE — PLANO-MELHORIAS-USABILIDADE
+
+### 1.1 — Breadcrumb Global em Rotas Dinâmicas
+**Status:** ✅ Concluído
+**Descrição:** `GlobalBreadcrumb` agora detecta rotas filhas dinâmicas (`/produto/$id`) e renderiza breadcrumb com fallback para o módulo pai. Inclui mapeamento singular/plural (ex: `/produto/123` → módulo `Produtos`).
+**Arquivos:** `src/components/global-breadcrumb.tsx`
+**Progresso:** 100%
+
+### 1.2 — Sidebar Destacar Módulo Ativo em Rotas Filhas
+**Status:** ✅ Concluído
+**Descrição:** Sidebar (`AppShell`) agora destaca o módulo pai como ativo quando em rotas filhas dinâmicas. Comparação usa `active.startsWith(m.path + "/")` + fallback singular/plural.
+**Arquivos:** `src/components/app-shell.tsx`
+**Progresso:** 100%
+
+### 1.3 — Tooltips em termos técnicos
+**Status:** ✅ Concluído
+**Descrição:** Adicionar tooltips explicativos nos termos PLM das abas do workspace (BOM, BOP, PCP) para novos usuários.
+**Arquivos:** `src/routes/_authenticated/_app.produto.$id.tsx`
+**Progresso:** 100%
+
+### 1.4 — Confirmação de exclusão de produto
+**Status:** ✅ Concluído
+**Descrição:** Adicionar `AlertDialog` de confirmação antes de remover um produto, prevenindo exclusões acidentais.
+**Arquivos:** `src/routes/_authenticated/_app.produtos.tsx`
+**Progresso:** 100%
+
+### 2.1 — Agrupar Abas Técnicas no Workspace
+**Status:** ✅ Concluído
+**Descrição:** Separar as 11 abas do workspace de produto em "Principais" (Overview, Ficha técnica, Protótipos, Timeline) e "Avançadas" (BOM, BOP, Medidas, Custos, PCP, Marketing, BI) em dropdown menu, reduzindo a carga cognitiva para novos usuários.
+**Arquivos:** `src/routes/_authenticated/_app.produto.$id.tsx`
+**Progresso:** 100%
+
+---
+
+**Total: 26/26 itens — 100% concluído** 🎉

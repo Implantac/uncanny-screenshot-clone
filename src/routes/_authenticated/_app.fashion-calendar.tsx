@@ -9,9 +9,9 @@ import { PageHeader } from "@/components/ui/page-header";
 export const Route = createFileRoute("/_authenticated/_app/fashion-calendar")({
   head: () => ({
     meta: [
-      { title: "Fashion Calendar · USE MODA PLM" },
+      { title: "Calendário de Coleções · USE MODA PLM" },
       { name: "description", content: "Calendário de coleções, deadlines, drops e milestones da temporada." },
-      { property: "og:title", content: "Fashion Calendar · USE MODA PLM" },
+      { property: "og:title", content: "Calendário de Coleções · USE MODA PLM" },
       { property: "og:description", content: "Calendário de coleções, deadlines, drops e milestones da temporada." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -89,10 +89,9 @@ function FashionCalendar() {
     <div className="p-6 space-y-6">
       <PageHeader
         eyebrow="Coleções"
-        title="Fashion Calendar"
+        title="Calendário de Coleções"
         description="Linha do tempo de coleções: desenvolvimento, produção, lançamento e sell-in."
       />
-
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KPI label="Coleções" value={summary.total} icon={<Package className="size-4" />} />

@@ -171,7 +171,7 @@ export const MODULES: ModuleDef[] = [
   {
     slug: "fashion-calendar",
     path: "/fashion-calendar",
-    title: "Fashion Calendar",
+    title: "Calendário de Coleções",
     short: "Linha do tempo",
     description: "Cronograma de coleções: desenvolvimento, produção e lançamento.",
     icon: Calendar,
@@ -316,7 +316,7 @@ export const MODULES: ModuleDef[] = [
   {
     slug: "fit-sessions",
     path: "/fit-sessions",
-    title: "Fit Sessions",
+    title: "Sessões de Prova",
     short: "Provas estruturadas",
     description: "Iterações de prova com comentários por ponto de medida (POM).",
     icon: Ruler,
@@ -335,7 +335,7 @@ export const MODULES: ModuleDef[] = [
   {
     slug: "target-costing",
     path: "/target-costing",
-    title: "Target Costing",
+    title: "Custo Alvo",
     short: "Custo alvo × real",
     description: "Meta de custo e margem por produto comparada ao custo real da ficha técnica.",
     icon: Target,

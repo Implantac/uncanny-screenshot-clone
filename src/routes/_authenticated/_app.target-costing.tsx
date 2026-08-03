@@ -13,7 +13,7 @@ import { CostWatchPanel } from "@/components/cost-watch-panel";
 export const Route = createFileRoute("/_authenticated/_app/target-costing")({
   head: () => ({
     meta: [
-      { title: "Target Costing · USE MODA PLM" },
+      { title: "Custo Alvo · USE MODA PLM" },
       { name: "description", content: "Meta de custo e margem por produto vs custo real." },
     ],
   }),
@@ -88,7 +88,7 @@ function Page() {
       <div className="flex items-center gap-3">
         <Target className="h-6 w-6 text-primary" />
         <div>
-          <h1 className="text-2xl font-bold">Target Costing</h1>
+          <h1 className="text-2xl font-bold">Custo Alvo</h1>
           <p className="text-sm text-muted-foreground">
             Meta de custo e margem por produto, comparada ao custo real da ficha técnica.
           </p>

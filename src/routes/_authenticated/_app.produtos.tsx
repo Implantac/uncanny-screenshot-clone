@@ -29,6 +29,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -53,13 +63,26 @@ import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ProductTimeline } from "@/components/product-timeline";
 import { ProductGallery } from "@/components/product-gallery";
 import { PageHeader } from "@/components/ui/page-header";
+import { ChipInput } from "@/components/ui/chip-input";
 import { ProductDuplicateDialog } from "@/components/product-duplicate-dialog-lazy";
 import { ProductQuickCreateDialog } from "@/components/product-quick-create-dialog-lazy";
+
+const STATUS_FILTER_VALUES = [
+  "all",
+  "rascunho",
+  "desenvolvimento",
+  "aprovado",
+  "producao",
+  "descontinuado",
+] as const;
 
 export const Route = createFileRoute("/_authenticated/_app/produtos")({
   validateSearch: zodValidator(
     z.object({
       q: fallback(z.string().trim().max(80), "").default(""),
+      status: fallback(z.enum(STATUS_FILTER_VALUES).optional(), undefined),
+      collection: fallback(z.string().trim().max(120).optional(), undefined),
+      pinned: fallback(z.boolean().optional(), undefined),
       prefillName: fallback(z.string().trim().max(120).optional(), undefined),
       prefillCategory: fallback(z.string().trim().max(60).optional(), undefined),
       prefillColors: fallback(z.string().trim().max(300).optional(), undefined),
@@ -167,6 +190,36 @@ async function resolveImageUrl(path: string | null): Promise<string | null> {
   return data?.signedUrl ?? null;
 }
 
+/** Constrói linhas de CSV com grade expandida (cores/tamanhos em colunas separadas). */
+function toCsvRows(products: Product[]) {
+  return products.map((p) => {
+    const sizes = p.sizes ?? [];
+    const colors = p.colors ?? [];
+    const row: Record<string, unknown> = {
+      sku: p.sku,
+      name: p.name,
+      category: p.category ?? "",
+      status: STATUS_LABELS[p.status],
+      cost_price: p.cost_price,
+      sell_price: p.sell_price,
+      grade: p.grade ?? "",
+      size_1: sizes[0] ?? "",
+      size_2: sizes[1] ?? "",
+      size_3: sizes[2] ?? "",
+      size_4: sizes[3] ?? "",
+      size_5: sizes[4] ?? "",
+      size_6: sizes[5] ?? "",
+      color_1: colors[0] ?? "",
+      color_2: colors[1] ?? "",
+      color_3: colors[2] ?? "",
+      color_4: colors[3] ?? "",
+      color_5: colors[4] ?? "",
+      color_6: colors[5] ?? "",
+    };
+    return row;
+  });
+}
+
 function ProdutosPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -177,20 +230,42 @@ function ProdutosPage() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [duplicating, setDuplicating] = useState<Product | null>(null);
   const [prefill, setPrefill] = useState<Prefill | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   // FAB e botão do header abrem o MESMO fluxo (Quick Create) — sem duplicidade.
   useFabNewAction(() => {
     setEditing(null);
     setQuickOpen(true);
   });
-  const [statusFilter, setStatusFilter] = useState<"all" | Product["status"]>("all");
-  const [collectionFilter, setCollectionFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"recent" | "name" | "margin" | "price">("recent");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const sp = Route.useSearch();
-  const { q: search, prefillName, prefillCategory, prefillColors } = sp;
+  const {
+    q: search,
+    prefillName,
+    prefillCategory,
+    prefillColors,
+    status: statusFilter,
+    collection: collectionFilter,
+    pinned: pinnedOnly,
+  } = sp;
   const navigate = useNavigate({ from: Route.fullPath });
   const setSearch = (v: string) =>
     navigate({ search: (p: typeof sp) => ({ ...p, q: v }), replace: true });
+  const setStatusFilter = (v: string) =>
+    navigate({
+      search: (p: typeof sp) => ({ ...p, status: v === "all" ? undefined : (v as Product["status"]) }),
+      replace: true,
+    });
+  const setCollectionFilter = (v: string) =>
+    navigate({
+      search: (p: typeof sp) => ({ ...p, collection: v === "all" ? undefined : v }),
+      replace: true,
+    });
+  const setPinnedOnly = (v: boolean) =>
+    navigate({
+      search: (p: typeof sp) => ({ ...p, pinned: v ? true : undefined }),
+      replace: true,
+    });
 
   const prefillHandledRef = useRef(false);
   useEffect(() => {
@@ -235,7 +310,6 @@ function ProdutosPage() {
     },
   });
 
-  const [pinnedOnly, setPinnedOnly] = useState(false);
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
   useEffect(() => {
     const refresh = () => setPinnedIds(new Set(getPinnedProducts().map((p) => p.id)));
@@ -248,8 +322,8 @@ function ProdutosPage() {
     const term = search.trim().toLowerCase();
     let list = products;
     if (pinnedOnly) list = list.filter((p) => pinnedIds.has(p.id));
-    if (statusFilter !== "all") list = list.filter((p) => p.status === statusFilter);
-    if (collectionFilter !== "all") {
+    if (statusFilter && statusFilter !== "all") list = list.filter((p) => p.status === statusFilter);
+    if (collectionFilter && collectionFilter !== "all") {
       list = list.filter((p) =>
         collectionFilter === "none" ? !p.collection_id : p.collection_id === collectionFilter,
       );
@@ -338,7 +412,7 @@ function ProdutosPage() {
               onClick={() =>
                 exportToCsv(
                   "produtos",
-                  products.map((product) => ({ ...product, status: STATUS_LABELS[product.status] })),
+                  toCsvRows(products),
                   [
                     { key: "sku", label: "SKU" },
                     { key: "name", label: "Nome" },
@@ -346,8 +420,19 @@ function ProdutosPage() {
                     { key: "status", label: "Status" },
                     { key: "cost_price", label: "Custo" },
                     { key: "sell_price", label: "Venda" },
-                    { key: "sizes", label: "Tamanhos" },
-                    { key: "colors", label: "Cores" },
+                    { key: "grade", label: "Grade" },
+                    { key: "size_1", label: "Tamanho 1" },
+                    { key: "size_2", label: "Tamanho 2" },
+                    { key: "size_3", label: "Tamanho 3" },
+                    { key: "size_4", label: "Tamanho 4" },
+                    { key: "size_5", label: "Tamanho 5" },
+                    { key: "size_6", label: "Tamanho 6" },
+                    { key: "color_1", label: "Cor 1" },
+                    { key: "color_2", label: "Cor 2" },
+                    { key: "color_3", label: "Cor 3" },
+                    { key: "color_4", label: "Cor 4" },
+                    { key: "color_5", label: "Cor 5" },
+                    { key: "color_6", label: "Cor 6" },
                   ],
                 )
               }
@@ -424,7 +509,7 @@ function ProdutosPage() {
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+              <Select value={statusFilter ?? "all"} onValueChange={(v) => setStatusFilter(v)}>
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -437,7 +522,7 @@ function ProdutosPage() {
                   <SelectItem value="descontinuado">Descontinuado</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={collectionFilter} onValueChange={setCollectionFilter}>
+              <Select value={collectionFilter ?? "all"} onValueChange={setCollectionFilter}>
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder="Coleção" />
                 </SelectTrigger>
@@ -455,7 +540,7 @@ function ProdutosPage() {
             <div className="flex items-center justify-between gap-2 text-xs">
               <button
                 type="button"
-                onClick={() => setPinnedOnly((v) => !v)}
+                onClick={() => setPinnedOnly(!pinnedOnly)}
                 aria-pressed={pinnedOnly}
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors ${pinnedOnly ? "border-primary/40 bg-primary/10 text-primary" : "border-border hover:bg-muted/40 text-muted-foreground"}`}
               >
@@ -481,10 +566,10 @@ function ProdutosPage() {
               <span>
                 {filtered.length} de {products.length} produto{products.length === 1 ? "" : "s"}
               </span>
-              {(statusFilter !== "all" ||
-                collectionFilter !== "all" ||
-                pinnedOnly ||
-                search.trim() !== "") && (
+              {(statusFilter && statusFilter !== "all") ||
+              (collectionFilter && collectionFilter !== "all") ||
+              pinnedOnly ||
+              search.trim() !== "" ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -497,7 +582,7 @@ function ProdutosPage() {
                 >
                   Limpar filtros
                 </button>
-              )}
+              ) : null}
             </div>
 
             <div className="space-y-2">
@@ -747,9 +832,33 @@ function ProductDetail({
   const margin = Number(product.sell_price || 0) - Number(product.cost_price || 0);
   const marginPct =
     Number(product.sell_price || 0) > 0 ? (margin / Number(product.sell_price)) * 100 : 0;
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   return (
     <section className="space-y-4">
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover "{product.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação é irreversível. O produto <strong>{product.sku}</strong> será excluído permanentemente,
+              incluindo fichas técnicas, protótipos e vínculos associados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                onDelete();
+              }}
+            >
+              Sim, remover produto
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="glass rounded-xl overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-0">
           <div className="min-h-[320px] bg-muted/20 overflow-hidden relative group">
@@ -956,7 +1065,7 @@ function ProductDetail({
                 <Scissors className="size-4" /> Solicitar piloto
               </Link>
             </Button>
-            {canEdit && (
+{canEdit && (
               <>
                 <Button variant="outline" onClick={onEdit} className="gap-2">
                   <Pencil className="size-4" /> Editar
@@ -966,7 +1075,7 @@ function ProductDetail({
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={onDelete}
+                  onClick={() => setShowDeleteConfirm(true)}
                   className="gap-2 text-destructive hover:text-destructive"
                 >
                   <Trash2 className="size-4" /> Remover
@@ -1003,15 +1112,15 @@ function ProductDialog({
   const [category, setCategory] = useState("");
   const [productGroup, setProductGroup] = useState<string>("none");
   const [subgroup, setSubgroup] = useState<string>("none");
-  const [productClass, setProductClass] = useState<string>("none");
+const [productClass, setProductClass] = useState<string>("none");
   const [grade, setGrade] = useState<string>("none");
   const [description, setDescription] = useState("");
   const [costPrice, setCostPrice] = useState(0);
   const [sellPrice, setSellPrice] = useState(0);
   const [status, setStatus] = useState<Product["status"]>("rascunho");
   const [collectionId, setCollectionId] = useState<string>("none");
-  const [sizesStr, setSizesStr] = useState("");
-  const [colorsStr, setColorsStr] = useState("");
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [colors, setColors] = useState<string[]>([]);
   const [imagePath, setImagePath] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -1025,15 +1134,15 @@ function ProductDialog({
       setCategory(editing.category || "");
       setProductGroup(editing.product_group || "none");
       setSubgroup(editing.subgroup || "none");
-      setProductClass(editing.product_class || "none");
+setProductClass(editing.product_class || "none");
       setGrade(editing.grade || "none");
       setDescription(editing.description || "");
       setCostPrice(Number(editing.cost_price));
       setSellPrice(Number(editing.sell_price));
       setStatus(editing.status);
       setCollectionId(editing.collection_id || "none");
-      setSizesStr(editing.sizes.join(", "));
-      setColorsStr(editing.colors.join(", "));
+      setSizes(editing.sizes ?? []);
+      setColors(editing.colors ?? []);
       setImagePath(editing.image_url);
       resolveImageUrl(editing.image_url).then(setPreviewUrl);
       return;
@@ -1042,7 +1151,7 @@ function ProductDialog({
     if (prefill) {
       if (prefill.name) setName(prefill.name);
       if (prefill.category) setCategory(prefill.category);
-      if (prefill.colors) setColorsStr(prefill.colors);
+      if (prefill.colors) setColors(prefill.colors.split(",").map((c) => c.trim()).filter(Boolean));
     }
   }, [editing, open, prefill]);
 
@@ -1052,15 +1161,15 @@ function ProductDialog({
     setCategory("");
     setProductGroup("none");
     setSubgroup("none");
-    setProductClass("none");
+setProductClass("none");
     setGrade("none");
     setDescription("");
     setCostPrice(0);
     setSellPrice(0);
     setStatus("rascunho");
     setCollectionId("none");
-    setSizesStr("");
-    setColorsStr("");
+    setSizes([]);
+    setColors([]);
     setImagePath(null);
     setPreviewUrl(null);
   }
@@ -1099,7 +1208,7 @@ function ProductDialog({
         category: category || null,
         product_group: productGroup === "none" ? null : productGroup,
         subgroup: subgroup === "none" ? null : subgroup,
-        product_class: productClass === "none" ? null : productClass,
+product_class: productClass === "none" ? null : productClass,
         grade: grade === "none" ? null : grade,
         description: description || null,
         cost_price: costPrice,
@@ -1107,14 +1216,8 @@ function ProductDialog({
         status,
         collection_id: collectionId === "none" ? null : collectionId,
         image_url: imagePath,
-        sizes: sizesStr
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-        colors: colorsStr
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
+        sizes,
+        colors,
       };
       if (editing) {
         const { error } = await supabase.from("products").update(payload).eq("id", editing.id);
@@ -1377,27 +1480,29 @@ function ProductDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+<div className="space-y-2">
               <Label>Tamanhos da grade</Label>
-              <Input
-                value={sizesStr}
-                onChange={(event) => setSizesStr(event.target.value)}
-                placeholder="P, M, G, GG"
+              <ChipInput
+                value={sizes}
+                onChange={setSizes}
+                suggestions={GRADES.flatMap((g) => g.split("-"))}
+                placeholder="Digite e Enter: P, M, G, GG"
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label>Cores</Label>
-            <Input
-              value={colorsStr}
-              onChange={(event) => setColorsStr(event.target.value)}
-              placeholder="#111111, #f4ede2 ou Preto, Off-white"
+            <ChipInput
+              value={colors}
+              onChange={setColors}
+              colorSwatch
+              placeholder="#111111 ou Preto"
             />
             <CollectionPaletteSuggestion
               collectionId={collectionId === "none" ? null : collectionId}
-              currentValue={colorsStr}
-              onApply={(str) => setColorsStr(str)}
+              currentColors={colors}
+              onApply={(list) => setColors(list)}
             />
           </div>
 
@@ -1406,8 +1511,16 @@ function ProductDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={saveMut.isPending}>
-              {saveMut.isPending ? "Salvando…" : editing ? "Atualizar" : "Criar"}
+<Button type="submit" disabled={saveMut.isPending}>
+              {saveMut.isPending
+                ? "Salvando…"
+                : status === "rascunho"
+                  ? editing
+                    ? "Salvar rascunho"
+                    : "Criar rascunho"
+                  : editing
+                    ? "Salvar alterações"
+                    : "Publicar"}
             </Button>
           </DialogFooter>
         </form>
@@ -1418,12 +1531,12 @@ function ProductDialog({
 
 function CollectionPaletteSuggestion({
   collectionId,
-  currentValue,
+  currentColors,
   onApply,
 }: {
   collectionId: string | null;
-  currentValue: string;
-  onApply: (str: string) => void;
+  currentColors: string[];
+  onApply: (list: string[]) => void;
 }) {
   const { data: colors = [] } = useQuery({
     enabled: !!collectionId,
@@ -1439,10 +1552,11 @@ function CollectionPaletteSuggestion({
     },
   });
   if (!collectionId || colors.length === 0) return null;
-  const suggested = colors.map((c: any) => c.hex_value).filter(Boolean).join(", ");
+  const suggested = colors.map((c: any) => c.hex_value).filter(Boolean) as string[];
   const alreadyApplied =
-    currentValue.trim().length > 0 &&
-    colors.every((c: any) => currentValue.toLowerCase().includes(String(c.hex_value).toLowerCase()));
+    currentColors.length > 0 &&
+    suggested.length > 0 &&
+    suggested.every((hex) => currentColors.includes(hex));
   return (
     <div className="rounded-lg border border-dashed border-border bg-muted/30 p-2 space-y-1.5">
       <div className="flex items-center justify-between gap-2">
@@ -1455,7 +1569,7 @@ function CollectionPaletteSuggestion({
           onClick={() => onApply(suggested)}
           className="text-[11px] text-primary hover:underline disabled:text-muted-foreground disabled:no-underline"
         >
-          {alreadyApplied ? "Aplicada" : currentValue.trim() ? "Substituir" : "Aplicar cartela"}
+          {alreadyApplied ? "Aplicada" : currentColors.length ? "Substituir" : "Aplicar cartela"}
         </button>
       </div>
       <div className="flex flex-wrap gap-1.5">

@@ -97,7 +97,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     });
   };
 
-  // Fase (ciclo de vida) → módulos, marcando a fase que contém a rota ativa
+// Fase (ciclo de vida) → módulos, marcando a fase que contém a rota ativa
   const grouped = useMemo(() => {
     const map = new Map<LifecyclePhase, { items: ModuleDef[]; activeIn: boolean }>();
     for (const p of LIFECYCLE_PHASES) map.set(p, { items: [], activeIn: false });
@@ -105,7 +105,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       const bucket = map.get(modulePhase(m));
       if (!bucket) continue;
       bucket.items.push(m);
-      if (active === m.path) bucket.activeIn = true;
+      // Child route match: exact, startsWith(path + "/"), or singular/plural fallback
+      const isActive =
+        active === m.path ||
+        (active.startsWith(m.path + "/") && m.path !== "/") ||
+        (m.path.endsWith("s") && active.startsWith(m.path.slice(0, -1) + "/"));
+      if (isActive) bucket.activeIn = true;
     }
     return map;
   }, [visibleModules, active]);
@@ -166,8 +171,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           const isOpen = openGroups[group] ?? bucket.activeIn ?? false;
           const totalCount = bucket.items.length;
 
-          const renderItem = (m: ModuleDef) => {
-            const isActive = active === m.path;
+const renderItem = (m: ModuleDef) => {
+            const isActive =
+              active === m.path ||
+              (active.startsWith(m.path + "/") && m.path !== "/") ||
+              (m.path.endsWith("s") && active.startsWith(m.path.slice(0, -1) + "/"));
             const Icon = m.icon;
             const isErp = m.source === "erp-mirror";
 
