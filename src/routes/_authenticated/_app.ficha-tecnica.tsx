@@ -56,7 +56,12 @@ import { TechSheetBomReviewPanel } from "@/components/tech-sheet-bom-review-pane
 import { TechPackImportButton } from "@/components/tech-pack-import-button";
 import { TechPackExportButtonLazy as TechPackExportButton } from "@/components/tech-pack-export-button-lazy";
 import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
-import { ShieldCheck, Camera } from "lucide-react";
+import { ShieldCheck, Camera, Lock } from "lucide-react";
+import { FichaDocument } from "@/components/tech-pack/sheet-document";
+import type {
+  CompletenessItem,
+  DocMaterial,
+} from "@/components/tech-pack/sheet-document";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
@@ -101,6 +106,7 @@ type ProductRef = {
   sku: string;
   category: string | null;
   image_url: string | null;
+  colors?: string[] | null;
 };
 
 type SheetContent = {
@@ -111,6 +117,13 @@ type SheetContent = {
   consumption: string[];
   costs: string[];
   documents: string[];
+  composition: Record<string, string>[];
+  packaging: Record<string, string>[];
+  treatments: Record<string, string>[];
+  printing: Record<string, string>[];
+  embroidery: Record<string, string>[];
+  laundry: Record<string, string>[];
+  quality: Record<string, string>[];
 };
 
 const LABEL: Record<Status, string> = {
@@ -133,13 +146,37 @@ const EMPTY_CONTENT: SheetContent = {
   consumption: [],
   costs: [],
   documents: [],
+  composition: [],
+  packaging: [],
+  treatments: [],
+  printing: [],
+  embroidery: [],
+  laundry: [],
+  quality: [],
 };
+
+const BLOCK_KEYS = [
+  "composition",
+  "packaging",
+  "treatments",
+  "printing",
+  "embroidery",
+  "laundry",
+  "quality",
+] as const;
+
+function parseBlocks(value: unknown): Record<string, string>[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (x): x is Record<string, string> => x !== null && typeof x === "object",
+  );
+}
 
 function parseSheetContent(content: string | null): SheetContent {
   if (!content) return EMPTY_CONTENT;
   try {
     const parsed = JSON.parse(content) as Partial<SheetContent>;
-    return {
+    const base: SheetContent = {
       overview: parsed.overview ?? "",
       materials: Array.isArray(parsed.materials) ? parsed.materials : [],
       operations: Array.isArray(parsed.operations) ? parsed.operations : [],
@@ -147,7 +184,18 @@ function parseSheetContent(content: string | null): SheetContent {
       consumption: Array.isArray(parsed.consumption) ? parsed.consumption : [],
       costs: Array.isArray(parsed.costs) ? parsed.costs : [],
       documents: Array.isArray(parsed.documents) ? parsed.documents : [],
+      composition: [],
+      packaging: [],
+      treatments: [],
+      printing: [],
+      embroidery: [],
+      laundry: [],
+      quality: [],
     };
+    for (const key of BLOCK_KEYS) {
+      base[key] = parseBlocks(parsed[key]);
+    }
+    return base;
   } catch {
     return { ...EMPTY_CONTENT, overview: content };
   }
@@ -203,7 +251,7 @@ function FichaTecnicaPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, sku, category, image_url")
+        .select("id, name, sku, category, image_url, colors")
         .order("name");
       if (error) throw error;
       return data as ProductRef[];
@@ -246,6 +294,64 @@ function FichaTecnicaPage() {
     () => products.find((product) => product.id === selected?.product_id) ?? null,
     [products, selected?.product_id],
   );
+
+  const { data: docMaterials = [] } = useQuery({
+    enabled: !!selected?.id,
+    queryKey: ["ts-doc-materials", selected?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tech_sheet_materials")
+        .select(
+          "id, name, type, code, description, supplier, color, unit, consumption, loss_pct, unit_cost, total_cost",
+        )
+        .eq("tech_sheet_id", selected!.id)
+        .order("position");
+      if (error) throw error;
+      return (data ?? []) as unknown as DocMaterial[];
+    },
+  });
+
+  const canEdit = selected?.owner_id === user?.id && selected?.status !== "aprovada";
+
+  const completeness = useMemo<CompletenessItem[]>(() => {
+    if (!selected) return [];
+    const hasCost = selectedContent.costs.length > 0;
+    return [
+      { key: "dados", label: "Dados gerais preenchidos", ok: Boolean(selected.code && selectedProduct) },
+      { key: "imagem", label: "Imagem principal enviada", ok: Boolean(selectedProduct?.image_url) },
+      { key: "materiais", label: "Materiais definidos", ok: docMaterials.length > 0 },
+      { key: "grade", label: "Grade definida", ok: selectedContent.measurements.length > 0 },
+      { key: "cores", label: "Cores definidas", ok: Boolean(selectedProduct?.colors?.length) },
+      { key: "medidas", label: "Medidas preenchidas", ok: selectedContent.measurements.length > 0 },
+      { key: "custo", label: "Custo calculado", ok: hasCost },
+      { key: "amostra", label: "Amostra aprovada", ok: false },
+      { key: "aprovacao", label: "Aprovação final realizada", ok: selected.status === "aprovada" },
+    ];
+  }, [selected, selectedContent, selectedProduct, docMaterials]);
+
+  const saveSheetContent = useMutation({
+    mutationFn: async (content: SheetContent) => {
+      if (!selected?.id) throw new Error("Selecione uma ficha");
+      const { error } = await supabase
+        .from("tech_sheets")
+        .update({ content: stringifySheetContent(content) })
+        .eq("id", selected.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tech_sheets"] });
+      toast.success("Ficha atualizada");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  function updateBlock(
+    block: keyof Omit<SheetContent, "overview" | "materials" | "operations" | "measurements" | "consumption" | "costs" | "documents">,
+    items: Record<string, string>[],
+  ) {
+    const next = { ...selectedContent, [block]: items };
+    saveSheetContent.mutate(next);
+  }
 
   const versionHistory = useMemo(() => {
     if (!selected) return [];
@@ -474,15 +580,16 @@ function FichaTecnicaPage() {
                     />
                     <BomTemplatesButton sheetId={selected.id} ownerId={selected.owner_id} />
                   </div>
-                  <Tabs defaultValue="materiais" className="space-y-4">
+                  <Tabs defaultValue="documento" className="space-y-4">
                     <TabsList className="w-full flex flex-wrap h-auto justify-start bg-transparent p-0 gap-2">
                       {[
+                        ["documento", "Documento"],
                         ["materiais", "Materiais"],
                         ["operacoes", "Operações"],
                         ["medidas", "Medidas"],
                         ["consumo", "Consumo"],
                         ["custos", "Custos"],
-                        ["documentos", "Documentos"],
+                        ["documentos", "Anexos"],
                         ["ia", "IA"],
                       ].map(([value, label]) => (
                         <TabsTrigger
@@ -495,25 +602,51 @@ function FichaTecnicaPage() {
                       ))}
                     </TabsList>
 
+                    <TabsContent value="documento" className="mt-0">
+                      <FichaDocument
+                        status={selected.status}
+                        completeness={completeness}
+                        productName={selectedProduct?.name}
+                        productSku={selectedProduct?.sku}
+                        code={selected.code}
+                        version={selected.version}
+                        materials={docMaterials}
+                        blockFields={{
+                          composition: selectedContent.composition,
+                          packaging: selectedContent.packaging,
+                          treatments: selectedContent.treatments,
+                          printing: selectedContent.printing,
+                          embroidery: selectedContent.embroidery,
+                          laundry: selectedContent.laundry,
+                          quality: selectedContent.quality,
+                        }}
+                        observations={selectedContent.overview}
+                        canEdit={canEdit}
+                        onObservationChange={(v) =>
+                          saveSheetContent.mutate({ ...selectedContent, overview: v })
+                        }
+                        onBlockChange={(block, items) => updateBlock(block, items)}
+                      />
+                    </TabsContent>
                     <TabsContent value="materiais" className="mt-0">
                       <MaterialsPanel
                         sheetId={selected.id}
                         ownerId={selected.owner_id}
-                        canEdit={selected.owner_id === user?.id}
+                        canEdit={canEdit}
                       />
                     </TabsContent>
                     <TabsContent value="operacoes" className="mt-0">
                       <OperationsPanel
                         sheetId={selected.id}
                         ownerId={selected.owner_id}
-                        canEdit={selected.owner_id === user?.id}
+                        canEdit={canEdit}
                       />
                     </TabsContent>
                     <TabsContent value="medidas" className="mt-0">
                       <MeasurementsPanel
                         sheetId={selected.id}
                         ownerId={selected.owner_id}
-                        canEdit={selected.owner_id === user?.id}
+                        canEdit={canEdit}
                       />
                     </TabsContent>
                     <TabsContent value="consumo" className="mt-0">
@@ -528,7 +661,7 @@ function FichaTecnicaPage() {
                       <CostsPanel
                         sheetId={selected.id}
                         ownerId={selected.owner_id}
-                        canEdit={selected.owner_id === user?.id}
+                        canEdit={canEdit}
                       />
                     </TabsContent>
                     <TabsContent value="documentos" className="mt-0">
@@ -600,7 +733,33 @@ function FichaTecnicaPage() {
                 </div>
               </div>
 
-              {selected.owner_id === user?.id && (
+              {selected.status === "aprovada" && (
+                <div className="flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4">
+                  <Lock className="size-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                      Ficha aprovada e bloqueada
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Esta versão está aprovada e bloqueada. Para alterar, crie uma nova versão.
+                    </p>
+                    <div className="mt-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => newVersion.mutate(selected)}
+                        disabled={newVersion.isPending}
+                        className="gap-2"
+                        title={`Cria ${bumpVersion(selected.version)} a partir desta ficha`}
+                      >
+                        <Copy className="size-4" /> Criar nova versão (
+                        {bumpVersion(selected.version)})
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selected.owner_id === user?.id && selected.status !== "aprovada" && (
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => openEdit(selected)} className="gap-2">
                     <Pencil className="size-4" /> Editar ficha
@@ -831,6 +990,7 @@ function SheetDialog({
     mutationFn: async () => {
       if (!userId) throw new Error("Não autenticado");
       if (!code.trim()) throw new Error("Código obrigatório");
+      const existing = editing ? parseSheetContent(editing.content) : null;
       const payload = {
         owner_id: userId,
         code: code.trim(),
@@ -845,6 +1005,13 @@ function SheetDialog({
           consumption: splitLines(consumption),
           costs: splitLines(costs),
           documents: splitLines(documents),
+          composition: existing?.composition ?? [],
+          packaging: existing?.packaging ?? [],
+          treatments: existing?.treatments ?? [],
+          printing: existing?.printing ?? [],
+          embroidery: existing?.embroidery ?? [],
+          laundry: existing?.laundry ?? [],
+          quality: existing?.quality ?? [],
         }),
       };
       if (editing) {
