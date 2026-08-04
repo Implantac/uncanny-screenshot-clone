@@ -22,6 +22,11 @@ type Props = { sheetId: string; ownerId: string; canEdit: boolean };
 type Material = {
   id: string;
   name: string;
+  type: string | null;
+  code: string | null;
+  description: string | null;
+  supplier: string | null;
+  color: string | null;
   unit: string;
   consumption: number;
   consumption_by_size: Record<string, number> | null;
@@ -31,6 +36,25 @@ type Material = {
   position: number;
   inventory_item_id: string | null;
 };
+
+const MATERIAL_TYPES = [
+  "Tecido",
+  "Malha",
+  "Forro",
+  "Botão",
+  "Zíper",
+  "Linha",
+  "Elástico",
+  "Etiqueta",
+  "Tag",
+  "Embalagem",
+  "Renda",
+  "Entretela",
+  "Aviamento",
+  "Insumo de lavanderia",
+  "Serviço de estamparia",
+  "Serviço de bordado",
+];
 
 
 type Operation = {
@@ -71,6 +95,7 @@ const fmt = (n: number) => n.toLocaleString("pt-BR", { style: "currency", curren
 export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
   const qc = useQueryClient();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [typeFilter, setTypeFilter] = useState("todos");
   const { data = [], isLoading } = useQuery({
     queryKey: ["ts-materials", sheetId],
     queryFn: async () => {
@@ -80,9 +105,13 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
         .eq("tech_sheet_id", sheetId)
         .order("position");
       if (error) throw error;
-      return data as Material[];
+      return (data ?? []) as unknown as Material[];
     },
   });
+  const filtered = useMemo(
+    () => (typeFilter === "todos" ? data : data.filter((m) => (m.type ?? "Outros") === typeFilter)),
+    [data, typeFilter],
+  );
 
   // Lookup de foto/cor a partir da Biblioteca Global (best-effort por nome)
   const { data: library = [] } = useQuery({
@@ -119,6 +148,11 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
         tech_sheet_id: sheetId,
         material_id: m.id,
         name: m.name,
+        type: MATERIAL_TYPES.includes(m.kind) ? m.kind : (m.kind as string) ?? null,
+        code: m.code ?? null,
+        description: null,
+        supplier: null,
+        color: null,
         unit: m.unit ?? "un",
         consumption: 0,
         loss_pct: 0,
@@ -156,7 +190,10 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
 
   const upd = useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: Partial<Material> }) => {
-      const { error } = await supabase.from("tech_sheet_materials").update(patch).eq("id", id);
+      const { error } = await supabase
+        .from("tech_sheet_materials")
+        .update(patch as Record<string, never>)
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -188,8 +225,23 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
         onCreateBlank={() => addBlank.mutate()}
       />
       <div className="flex items-center justify-between">
-        <div className="text-sm font-semibold flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <Layers3 className="size-4 text-primary" /> BOM · Materiais
+          {data.length > 0 && (
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="h-7 rounded-md border border-border bg-background px-1.5 text-[11px] text-muted-foreground"
+              title="Filtrar por tipo de material"
+            >
+              <option value="todos">Todos os tipos</option>
+              {MATERIAL_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {data.length > 0 && (
@@ -223,7 +275,11 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-14">Foto</TableHead>
+                  <TableHead>Tipo</TableHead>
                   <TableHead>Material</TableHead>
+                  <TableHead className="w-20">Código</TableHead>
+                  <TableHead className="w-28">Fornecedor</TableHead>
+                  <TableHead className="w-20">Cor</TableHead>
                   <TableHead className="w-40">Almox.</TableHead>
                   <TableHead className="w-20">Un</TableHead>
                   <TableHead className="w-24 text-right">Consumo</TableHead>
@@ -234,7 +290,7 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((m) => {
+                {filtered.map((m) => {
                   const lib = libMap.get(m.name.trim().toLowerCase());
                   return (
                     <TableRow key={m.id}>
@@ -254,10 +310,49 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                         </div>
                       </TableCell>
                       <TableCell>
+                        {canEdit ? (
+                          <select
+                            value={m.type ?? ""}
+                            onChange={(e) => upd.mutate({ id: m.id, patch: { type: e.target.value || null } })}
+                            className="w-full h-7 rounded-md border border-transparent bg-transparent px-1.5 text-xs hover:border-border focus:border-border"
+                          >
+                            <option value="">—</option>
+                            {MATERIAL_TYPES.map((t) => (
+                              <option key={t} value={t}>
+                                {t}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">{m.type ?? "—"}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <EditableText
                           value={m.name}
                           disabled={!canEdit}
                           onSave={(v) => upd.mutate({ id: m.id, patch: { name: v } })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <EditableText
+                          value={m.code ?? ""}
+                          disabled={!canEdit}
+                          onSave={(v) => upd.mutate({ id: m.id, patch: { code: v || null } })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <EditableText
+                          value={m.supplier ?? ""}
+                          disabled={!canEdit}
+                          onSave={(v) => upd.mutate({ id: m.id, patch: { supplier: v || null } })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <EditableText
+                          value={m.color ?? ""}
+                          disabled={!canEdit}
+                          onSave={(v) => upd.mutate({ id: m.id, patch: { color: v || null } })}
                         />
                       </TableCell>
                       <TableCell>
@@ -361,7 +456,11 @@ function exportBomPdf(
       return `
         <tr>
           <td style="padding:8px;border-bottom:1px solid #eee">${img}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee">${escapeHtml(m.type || "")}</td>
           <td style="padding:8px;border-bottom:1px solid #eee;font-weight:500">${escapeHtml(m.name)}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;font-family:monospace;font-size:11px">${escapeHtml(m.code || "")}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee">${escapeHtml(m.supplier || "")}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee">${escapeHtml(m.color || "")}</td>
           <td style="padding:8px;border-bottom:1px solid #eee">${escapeHtml(m.unit || "")}</td>
           <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${Number(m.consumption || 0).toFixed(3)}</td>
           <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${Number(m.loss_pct || 0).toFixed(1)}%</td>
@@ -387,8 +486,9 @@ function exportBomPdf(
     <div class="sub">Gerado em ${new Date().toLocaleString("pt-BR")} · ${data.length} ${data.length === 1 ? "item" : "itens"}</div>
     <table>
       <thead><tr>
-        <th></th><th>Material</th><th>Un</th><th style="text-align:right">Consumo</th>
-        <th style="text-align:right">Perda</th><th style="text-align:right">Custo un.</th><th style="text-align:right">Total</th>
+        <th></th><th>Tipo</th><th>Material</th><th>Código</th><th>Fornecedor</th><th>Cor</th><th>Un</th>
+        <th style="text-align:right">Consumo</th><th style="text-align:right">Perda</th>
+        <th style="text-align:right">Custo un.</th><th style="text-align:right">Total</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
