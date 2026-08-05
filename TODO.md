@@ -26,3 +26,27 @@
 - [x] Validar build/lint (tsc — apenas erros pré-existentes em arquivos não relacionados).
 - [ ] Aplicar migration no Supabase local.
 
+---
+
+## Sprint 1 (P0) — Melhorias pós-revisão (PLANO-MELHORIAS-POS-REVISAO.md v2.1)
+
+### 1.1 ✅ Embutir FichaDocument na aba "Ficha Técnica" do Product Workspace
+- `src/routes/_authenticated/_app.produto.$id.tsx`
+- Ficha técnica completa (documento técnico) renderizada dentro do produto, sem redirecionar.
+- Query `ts-doc-materials`, cálculo de `completeness`, mutation `saveSheetContent`, `updateBlock`.
+- `canEditSheet = status !== 'aprovada'` (bloqueio pós-aprovação, mesmo comportamento da rota `/ficha-tecnica`).
+- tsc sem novos erros.
+
+### 1.2 ✅ Filtrar alertas de insumos no Dashboard por categoria de confecção
+- `src/routes/_authenticated/_app.index.tsx`
+- Coluna `category` já existe em `inventory_items` (usada no select `category`).
+- Filtro `CONFECCAO_CATEGORIES` — só insumos de confecção (tecido, malha, forro, aviamento, etiqueta, tag, embalagem, linha, elástico, renda, entretela, acabado) com saldo ≤ mínimo.
+- Exibe nome amigável da categoria (`category_label`) em cada item do alerta.
+- Migration `20260731000002_inventory_category.sql` não é necessária.
+
+### 1.3 ✅ Tooltips para orientar modelistas
+- `src/components/tech-pack/panels.tsx`
+- Tooltip no `SizeConsumptionPopover` (consumo por tamanho) e `GradeRulePopover` (regra de salto).
+- Textos em pt-BR, orientando o usuário a definir consumo por tamanho e aplicar regra de salto.
+- tsc sem novos erros.
+

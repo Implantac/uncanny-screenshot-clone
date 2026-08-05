@@ -54,7 +54,7 @@ function useDashboard() {
           .select("id, name, status, progress, year, created_at")
           .order("created_at", { ascending: false })
           .limit(6),
-        supabase.from("inventory_items").select("name, balance, minimum, unit"),
+        supabase.from("inventory_items").select("name, balance, minimum, unit, category"),
         supabase
           .from("products")
           .select("id, name, category, colors, status, created_at")
@@ -94,7 +94,48 @@ function useDashboard() {
         .filter((r) => r.status !== "concluida")
         .reduce((a, b) => a + (b.quantity ?? 0), 0);
       const protosOpen = pt.filter((r: any) => r.stage && !/aprov|conclu/i.test(r.stage)).length;
-      const critical = i.filter((r) => Number(r.balance ?? 0) <= Number(r.minimum ?? 0));
+      // Categorias relevantes para confecção — ignora ferramentas/máquinas/outros
+      const CONFECCAO_CATEGORIES = new Set([
+        "tecido",
+        "malha",
+        "forro",
+        "aviamento",
+        "etiqueta",
+        "tag",
+        "embalagem",
+        "linha",
+        "elástico",
+        "elastico",
+        "renda",
+        "entretela",
+        "acabado",
+      ]);
+      const CATEGORY_LABEL: Record<string, string> = {
+        tecido: "Tecido",
+        malha: "Malha",
+        forro: "Forro",
+        aviamento: "Aviamento",
+        etiqueta: "Etiqueta",
+        tag: "Tag",
+        embalagem: "Embalagem",
+        linha: "Linha",
+        elástico: "Elástico",
+        elastico: "Elástico",
+        renda: "Renda",
+        entretela: "Entretela",
+        acabado: "Acabado",
+      };
+      const critical = i
+        .filter(
+          (r) =>
+            CONFECCAO_CATEGORIES.has(String(r.category ?? "outros").toLowerCase()) &&
+            Number(r.balance ?? 0) <= Number(r.minimum ?? 0),
+        )
+        .map((r) => ({
+          ...r,
+          category_label:
+            CATEGORY_LABEL[String(r.category ?? "").toLowerCase()] ?? String(r.category ?? ""),
+        }));
 
       // === Alertas operacionais (Onda 2) ===
       const productsWithApprovedSheet = new Set(
@@ -863,6 +904,11 @@ function CommandCenter() {
                     <div className="text-xs text-muted-foreground mt-0.5 tabular-nums">
                       {Number(i.balance)} {i.unit} · min {Number(i.minimum)}
                     </div>
+                    {(i as any).category_label && (
+                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mt-0.5">
+                        {(i as any).category_label}
+                      </div>
+                    )}
                   </div>
                 </li>
               ))}
