@@ -178,7 +178,7 @@ function ProcessCard({
   // Deep link para o kanban (visão geral do ciclo)
   if (node.step) {
     return (
-      <Link to="/produto-kanban" className="block">
+      <Link to="/produto-kanban" search={{ q: "", f: "all", scope: "mine" }} className="block">
         {body}
       </Link>
     );

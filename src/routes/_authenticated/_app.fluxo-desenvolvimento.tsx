@@ -33,7 +33,7 @@ function DevelopmentFlowPage() {
         actions={
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline" size="sm">
-              <Link to="/produto-kanban">
+              <Link to="/produto-kanban" search={{ q: "", f: "all", scope: "mine" }}>
                 <LayoutGrid className="size-4 mr-1.5" />
                 Kanban por etapa
               </Link>

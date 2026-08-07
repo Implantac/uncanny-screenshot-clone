@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/_app/produto-kanban")({
       s.f === "blocked" || s.f === "overdue" || s.f === "pinned" || s.f === "all"
         ? (s.f as QuickFilter)
         : "all",
-    scope: s.scope === "all" ? "all" : "mine",
+    scope: (s.scope === "all" ? "all" : "mine") as Scope,
   }),
   component: ProductLifecycleKanban,
   head: () => ({
@@ -121,11 +121,11 @@ function ProductLifecycleKanban() {
   const quick = search.f;
   const scope = search.scope;
   const setQ = (val: string) =>
-    navigate({ search: (prev: KanbanSearch) => ({ ...prev, q: val }), replace: true });
+    navigate({ search: (prev) => ({ ...prev, q: val }), replace: true });
   const setQuick = (val: QuickFilter) =>
-    navigate({ search: (prev: KanbanSearch) => ({ ...prev, f: val }), replace: true });
+    navigate({ search: (prev) => ({ ...prev, f: val }), replace: true });
   const setScope = (val: Scope) =>
-    navigate({ search: (prev: KanbanSearch) => ({ ...prev, scope: val }), replace: true });
+    navigate({ search: (prev) => ({ ...prev, scope: val }), replace: true });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["product-lifecycle-kanban", scope],

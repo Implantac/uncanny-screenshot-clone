@@ -57,7 +57,7 @@ export function GlobalBreadcrumb() {
 
   // If it's a detail page, add parent module link + current page label
   if (path !== mod.path) {
-    items.push({ label: mod.title, icon: mod.icon, link: { to: mod.path } });
+    items.push({ label: mod.title, icon: mod.icon, link: { to: mod.path as never } });
     // Extract the last segment as the detail label
     const segments = path.split("/").filter(Boolean);
     const lastSegment = segments[segments.length - 1];

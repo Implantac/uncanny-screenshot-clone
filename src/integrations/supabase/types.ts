@@ -92,6 +92,69 @@ export type Database = {
         }
         Relationships: []
       }
+      approval_workflow: {
+        Row: {
+          assigned_to: string | null
+          comment: string | null
+          created_at: string
+          decided_at: string | null
+          id: string
+          owner_id: string
+          product_id: string | null
+          role: string
+          sent_at: string | null
+          stage: number
+          status: Database["public"]["Enums"]["approval_workflow_status"]
+          tech_sheet_id: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          comment?: string | null
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          owner_id: string
+          product_id?: string | null
+          role: string
+          sent_at?: string | null
+          stage: number
+          status?: Database["public"]["Enums"]["approval_workflow_status"]
+          tech_sheet_id: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          comment?: string | null
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          owner_id?: string
+          product_id?: string | null
+          role?: string
+          sent_at?: string | null
+          stage?: number
+          status?: Database["public"]["Enums"]["approval_workflow_status"]
+          tech_sheet_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_workflow_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "approval_workflow_tech_sheet_id_fkey"
+            columns: ["tech_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "tech_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assortment_plan: {
         Row: {
           channel: Database["public"]["Enums"]["sales_channel"]
@@ -5980,6 +6043,10 @@ export type Database = {
         Args: { _payload: Json; _reason: string }
         Returns: string
       }
+      ensure_approval_workflow: {
+        Args: { _tech_sheet_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -6047,6 +6114,10 @@ export type Database = {
           total: number
         }[]
       }
+      reset_approval_workflow: {
+        Args: { _tech_sheet_id: string }
+        Returns: undefined
+      }
       suggest_retail_price: {
         Args: { _product_id: string }
         Returns: {
@@ -6064,6 +6135,13 @@ export type Database = {
       ai_agent_status: "ativo" | "pausado" | "erro"
       app_role: "admin" | "gerente" | "designer" | "comprador" | "vendedor"
       app_sector: "marketing" | "pcp" | "desenvolvimento"
+      approval_workflow_status:
+        | "pendente"
+        | "em_analise"
+        | "aprovado"
+        | "reprovado"
+        | "pulado"
+        | "cancelado"
       attachment_kind: "sample" | "photo" | "document" | "invoice" | "other"
       b2b_order_status:
         | "rascunho"
@@ -6343,6 +6421,14 @@ export const Constants = {
       ai_agent_status: ["ativo", "pausado", "erro"],
       app_role: ["admin", "gerente", "designer", "comprador", "vendedor"],
       app_sector: ["marketing", "pcp", "desenvolvimento"],
+      approval_workflow_status: [
+        "pendente",
+        "em_analise",
+        "aprovado",
+        "reprovado",
+        "pulado",
+        "cancelado",
+      ],
       attachment_kind: ["sample", "photo", "document", "invoice", "other"],
       b2b_order_status: [
         "rascunho",
