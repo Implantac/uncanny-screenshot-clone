@@ -26,6 +26,6 @@
   - **Status:** ✅ Concluído — skeleton do catálogo refeito para espelhar o layout real (lista de filtros + cards + painel de detalhe).
 
 ## Verificação
-- [ ] `npx prettier --write` nos arquivos alterados
-- [ ] `npx tsc --noEmit` sem novos erros
-- [ ] Commit e push no GitHub
+- [x] `npx prettier --write` nos arquivos alterados — ✅ todos "unchanged" (já formatados)
+- [x] `npx tsc --noEmit` sem novos erros — ✅ 0 erros nos arquivos editados (`_app.produtos`, `_app.index`, `app-shell`, `product-mini-next-step`, `lazy-reveal`, `use-in-view`); erros pré-existentes fora de escopo permanecem
+- [x] Commit e push no GitHub — ✅ head `dc3b76e2`, branch `blackboxai/ficha-tecnica-revisao` sincronizada com `origin`
