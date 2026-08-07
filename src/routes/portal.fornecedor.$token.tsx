@@ -44,6 +44,9 @@ type ProductionOrder = {
   stage: string | null;
   status: string;
   products: { name: string | null; sku: string | null } | null;
+  /** Ficha técnica computada para o modo fornecedor (apenas quando a OP tem produto). */
+  sheet_id?: string | null;
+  sheet_code?: string | null;
 };
 type Ack = {
   id: string;
@@ -291,6 +294,19 @@ function OrderCard({
       </div>
 
       <div className="flex flex-wrap gap-2 pt-1">
+        {po.sheet_id && (
+          <Button
+            size="sm"
+            variant="outline"
+            asChild
+            title="Ver ficha técnica (somente leitura, sem custos)"
+          >
+            <a href={`/portal/fornecedor/${token}/ficha/${po.sheet_id}`}>
+              <FileText className="size-3.5 mr-1" />
+              Ficha técnica
+            </a>
+          </Button>
+        )}
         {!ack && (
           <>
             <Button

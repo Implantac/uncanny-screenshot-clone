@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   CheckCircle2,
   XCircle,
@@ -18,12 +18,14 @@ import {
   ListChecks,
   Sparkles,
   BadgeIcon,
+  Grid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { TermTip } from "@/components/ui/term-tip";
 
 /* ============================================================
  * Visual da Ficha Técnica como documento técnico real.
@@ -110,8 +112,10 @@ export function FichaStatusSeal({ status }: { status: SheetStatus }) {
       variant="outline"
       className={cn(
         "gap-1",
-        tone === "success" && "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
-        tone === "warning" && "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
+        tone === "success" &&
+          "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+        tone === "warning" &&
+          "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
         tone === "neutral" && "bg-muted text-muted-foreground border-border",
       )}
     >
@@ -306,6 +310,167 @@ export function SheetBlockText({
   );
 }
 
+/* ------------------------- Matriz visual SKU (cor × tamanho) ------------------------- */
+
+export type SkuVariant = {
+  id: string;
+  sku: string;
+  active: boolean;
+  color: { name: string } | null;
+  size: { label: string } | null;
+};
+
+/**
+ * Matriz de SKUs: cores em linha, tamanhos em coluna, status no cruzamento.
+ * Componente puro (props-driven). Quando `canEdit`, cada célula vira um toggle
+ * que chama `onToggleActive`.
+ */
+export function SkuMatrix({
+  variants,
+  canEdit,
+  onToggleActive,
+}: {
+  variants: SkuVariant[];
+  canEdit: boolean;
+  onToggleActive?: (variantId: string, active: boolean) => void;
+}) {
+  const colors = useMemo(
+    () => Array.from(new Set(variants.map((v) => v.color?.name).filter(Boolean) as string[])),
+    [variants],
+  );
+  const sizes = useMemo(
+    () => Array.from(new Set(variants.map((v) => v.size?.label).filter(Boolean) as string[])),
+    [variants],
+  );
+
+  if (variants.length === 0) {
+    return (
+      <div className="rounded-lg border border-dashed border-border p-4 text-xs text-muted-foreground">
+        Nenhuma variante/SKU gerada para este produto ainda.
+      </div>
+    );
+  }
+
+  const cell = (color: string, size: string) =>
+    variants.find((v) => v.color?.name === color && v.size?.label === size) ?? null;
+
+  return (
+    <div className="rounded-xl border border-border bg-card/40 overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border/60">
+        <Grid className="size-4 text-primary" />
+        <span className="text-sm font-semibold">
+          <TermTip
+            term="Matriz de SKUs (Cor × Tamanho)"
+            tooltip="Cada combinação de cor e tamanho vira um código de venda (SKU). Ex.: 'Vestido Florença' na cor Preto e tamanho P gera o SKU VST-001-PR-P."
+          />
+        </span>
+        <span className="ml-auto text-[10px] text-muted-foreground tabular-nums">
+          {variants.length} {variants.length === 1 ? "SKU" : "SKUs"}
+        </span>
+      </div>
+      <div className="overflow-x-auto p-1">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[10px] uppercase tracking-wide text-muted-foreground border-b border-border/60">
+              <th className="px-4 py-2 font-medium">Cor \ Tamanho</th>
+              {sizes.map((s) => (
+                <th key={s} className="px-3 py-2 text-center font-medium">
+                  {s}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {colors.map((color) => (
+              <tr key={color} className="border-b border-border/40 last:border-0">
+                <td className="px-4 py-2">
+                  <span className="inline-flex items-center gap-2">
+                    <span
+                      className="size-3 rounded-full border border-border/60 shrink-0"
+                      style={{ background: colorToHex(color) }}
+                      aria-hidden
+                    />
+                    {color}
+                  </span>
+                </td>
+                {sizes.map((size) => {
+                  const v = cell(color, size);
+                  return (
+                    <td key={`${color}-${size}`} className="px-3 py-2 text-center">
+                      {v ? (
+                        canEdit ? (
+                          <button
+                            type="button"
+                            onClick={() => onToggleActive?.(v.id, !v.active)}
+                            className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors hover:border-primary/50 cursor-pointer"
+                            title={`${v.sku} — ${v.active ? "clicar para desativar" : "clicar para ativar"}`}
+                          >
+                            {v.active ? (
+                              <CheckCircle2 className="size-3.5 text-emerald-600" />
+                            ) : (
+                              <XCircle className="size-3.5 text-muted-foreground/70" />
+                            )}
+                            <span className="font-mono text-[10px] text-muted-foreground">
+                              {v.sku}
+                            </span>
+                          </button>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5" title={v.sku}>
+                            {v.active ? (
+                              <CheckCircle2 className="size-3.5 text-emerald-600" />
+                            ) : (
+                              <XCircle className="size-3.5 text-muted-foreground/70" />
+                            )}
+                            <span className="font-mono text-[10px] text-muted-foreground">
+                              {v.sku}
+                            </span>
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-muted-foreground/40">—</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/** Converte um nome de cor em um hex aproximado para o swatch (fallback neutro). */
+function colorToHex(name: string) {
+  const map: Record<string, string> = {
+    preto: "#111111",
+    branco: "#F5F5F5",
+    offwhite: "#FAF9F6",
+    "off-white": "#FAF9F6",
+    cinza: "#9CA3AF",
+    "cinza mescla": "#8B8B8B",
+    vermelho: "#DC2626",
+    azul: "#2563EB",
+    "azul marinho": "#1E3A8A",
+    verde: "#16A34A",
+    amarelo: "#EAB308",
+    rosa: "#EC4899",
+    lilas: "#A855F7",
+    roxa: "#9333EA",
+    marrom: "#92400E",
+    bege: "#D6C7A1",
+    laranja: "#F97316",
+    "jeans denim": "#3B5B8C",
+    jeans: "#3B5B8C",
+    denim: "#3B5B8C",
+    nude: "#E8C4A0",
+    coral: "#FB7185",
+  };
+  const key = name.trim().toLowerCase();
+  return map[key] ?? "hsl(var(--muted))";
+}
+
 /* ------------------------- Documento: materiais por tipo ------------------------- */
 
 export type DocMaterial = {
@@ -344,7 +509,13 @@ const MATERIAL_TYPE_ORDER = [
 
 const fmt = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-export function MaterialsByType({ materials }: { materials: DocMaterial[] }) {
+export function MaterialsByType({
+  materials,
+  supplierView = false,
+}: {
+  materials: DocMaterial[];
+  supplierView?: boolean;
+}) {
   const groups = new Map<string, DocMaterial[]>();
   for (const m of materials) {
     const t = m.type?.trim() || "Outros";
@@ -381,11 +552,11 @@ export function MaterialsByType({ materials }: { materials: DocMaterial[] }) {
                     <tr className="text-left text-[10px] uppercase tracking-wide text-muted-foreground border-b border-border/60">
                       <th className="px-4 py-2">Código</th>
                       <th className="px-4 py-2">Descrição</th>
-                      <th className="px-4 py-2">Fornecedor</th>
+                      {!supplierView && <th className="px-4 py-2">Fornecedor</th>}
                       <th className="px-4 py-2">Cor</th>
                       <th className="px-4 py-2 text-right">Consumo</th>
                       <th className="px-4 py-2 text-right">Perda</th>
-                      <th className="px-4 py-2 text-right">Custo</th>
+                      {!supplierView && <th className="px-4 py-2 text-right">Custo</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -398,7 +569,9 @@ export function MaterialsByType({ materials }: { materials: DocMaterial[] }) {
                             <div className="text-xs text-muted-foreground">{m.description}</div>
                           )}
                         </td>
-                        <td className="px-4 py-2 text-xs">{m.supplier || "—"}</td>
+                        {!supplierView && (
+                          <td className="px-4 py-2 text-xs">{m.supplier || "—"}</td>
+                        )}
                         <td className="px-4 py-2 text-xs">{m.color || "—"}</td>
                         <td className="px-4 py-2 text-right tabular-nums">
                           {Number(m.consumption || 0).toFixed(3)} {m.unit}
@@ -406,9 +579,11 @@ export function MaterialsByType({ materials }: { materials: DocMaterial[] }) {
                         <td className="px-4 py-2 text-right tabular-nums">
                           {Number(m.loss_pct || 0).toFixed(1)}%
                         </td>
-                        <td className="px-4 py-2 text-right tabular-nums font-medium">
-                          {fmt(Number(m.total_cost || 0))}
-                        </td>
+                        {!supplierView && (
+                          <td className="px-4 py-2 text-right tabular-nums font-medium">
+                            {fmt(Number(m.total_cost || 0))}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -444,7 +619,11 @@ export type FichaDocumentProps = {
   observations: string;
   onObservationChange?: (v: string) => void;
   onBlockChange?: (block: keyof FichaDocumentProps["blockFields"], items: SheetBlock[]) => void;
+  skuVariants?: SkuVariant[];
+  onToggleVariantActive?: (variantId: string, active: boolean) => void;
   canEdit: boolean;
+  /** Modo fornecedor: oculta custos e fornecedores e força somente-leitura. */
+  supplierView?: boolean;
 };
 
 export function FichaDocument(props: FichaDocumentProps) {
@@ -461,8 +640,14 @@ export function FichaDocument(props: FichaDocumentProps) {
     canEdit,
     onObservationChange,
     onBlockChange,
+    skuVariants,
+    onToggleVariantActive,
+    supplierView = false,
   } = props;
 
+  // No modo fornecedor, a ficha é sempre somente-leitura (blocos + observações)
+  // e os custos/fornecedores ficam ocultos.
+  const effectiveCanEdit = supplierView ? false : canEdit;
   const incomplete = completeness.filter((i) => !i.ok).length > 0;
   const isApproved = status === "aprovada";
 
@@ -481,7 +666,7 @@ export function FichaDocument(props: FichaDocumentProps) {
         accent={accent}
         fields={fields}
         items={items}
-        canEdit={canEdit}
+        canEdit={effectiveCanEdit}
         onChange={(v) => onBlockChange?.(key, v)}
         emptyLabel={`Nenhum registro de ${title.toLowerCase()} na ficha.`}
         addLabel={`Adicionar ${title.toLowerCase()}`}
@@ -524,6 +709,15 @@ export function FichaDocument(props: FichaDocumentProps) {
       {/* Completude */}
       <FichaCompletenessBar items={completeness} />
 
+      {/* Matriz de SKUs (cor × tamanho) */}
+      {skuVariants && (
+        <SkuMatrix
+          variants={skuVariants}
+          canEdit={effectiveCanEdit}
+          onToggleActive={onToggleVariantActive}
+        />
+      )}
+
       {/* Aprovação */}
       {isApproved && (
         <div className="flex items-center gap-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4">
@@ -543,9 +737,14 @@ export function FichaDocument(props: FichaDocumentProps) {
       <div>
         <div className="flex items-center gap-2 mb-2">
           <Layers className="size-4 text-primary" />
-          <span className="text-sm font-semibold">Materiais da ficha</span>
+          <span className="text-sm font-semibold">
+            <TermTip
+              term="Materiais da ficha"
+              tooltip="A lista de tecidos, aviamentos e insumos usados para produzir a peça (também chamada de BOM — Bill of Materials)."
+            />
+          </span>
         </div>
-        <MaterialsByType materials={materials} />
+        <MaterialsByType materials={materials} supplierView={supplierView} />
       </div>
 
       {/* Composição */}
@@ -634,7 +833,14 @@ export function FichaDocument(props: FichaDocumentProps) {
         "quality",
         "Instruções de qualidade",
         CheckCircle2,
-        [{ key: "instruction", label: "Instrução", placeholder: "Verificar costura…", width: "full" }],
+        [
+          {
+            key: "instruction",
+            label: "Instrução",
+            placeholder: "Verificar costura…",
+            width: "full",
+          },
+        ],
         "#16A34A",
       )}
 
@@ -644,7 +850,7 @@ export function FichaDocument(props: FichaDocumentProps) {
         icon={FileText}
         value={observations}
         onChange={(v) => onObservationChange?.(v)}
-        canEdit={canEdit}
+        canEdit={effectiveCanEdit}
         placeholder="Resumo técnico, alertas de engenharia, revisões…"
       />
     </div>

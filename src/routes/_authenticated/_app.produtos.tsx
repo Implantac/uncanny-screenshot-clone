@@ -64,6 +64,7 @@ import { ProductTimeline } from "@/components/product-timeline";
 import { ProductGallery } from "@/components/product-gallery";
 import { PageHeader } from "@/components/ui/page-header";
 import { ChipInput } from "@/components/ui/chip-input";
+import { EmptyStateGuided } from "@/components/ui/empty-state-guided";
 import { ProductDuplicateDialog } from "@/components/product-duplicate-dialog-lazy";
 import { ProductQuickCreateDialog } from "@/components/product-quick-create-dialog-lazy";
 
@@ -238,6 +239,8 @@ function ProdutosPage() {
   });
   const [sortBy, setSortBy] = useState<"recent" | "name" | "margin" | "price">("recent");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(12);
+  const PAGE_SIZE = 12;
   const sp = Route.useSearch();
   const {
     q: search,
@@ -253,7 +256,10 @@ function ProdutosPage() {
     navigate({ search: (p: typeof sp) => ({ ...p, q: v }), replace: true });
   const setStatusFilter = (v: string) =>
     navigate({
-      search: (p: typeof sp) => ({ ...p, status: v === "all" ? undefined : (v as Product["status"]) }),
+      search: (p: typeof sp) => ({
+        ...p,
+        status: v === "all" ? undefined : (v as Product["status"]),
+      }),
       replace: true,
     });
   const setCollectionFilter = (v: string) =>
@@ -266,6 +272,11 @@ function ProdutosPage() {
       search: (p: typeof sp) => ({ ...p, pinned: v ? true : undefined }),
       replace: true,
     });
+
+  // Sempre que filtros mudarem, reinicia o "ver mais" para evitar listas vazias falsas.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [search, statusFilter, collectionFilter, pinnedOnly, sortBy]);
 
   const prefillHandledRef = useRef(false);
   useEffect(() => {
@@ -322,7 +333,8 @@ function ProdutosPage() {
     const term = search.trim().toLowerCase();
     let list = products;
     if (pinnedOnly) list = list.filter((p) => pinnedIds.has(p.id));
-    if (statusFilter && statusFilter !== "all") list = list.filter((p) => p.status === statusFilter);
+    if (statusFilter && statusFilter !== "all")
+      list = list.filter((p) => p.status === statusFilter);
     if (collectionFilter && collectionFilter !== "all") {
       list = list.filter((p) =>
         collectionFilter === "none" ? !p.collection_id : p.collection_id === collectionFilter,
@@ -348,7 +360,6 @@ function ProdutosPage() {
     });
     return sorted;
   }, [products, search, pinnedOnly, pinnedIds, statusFilter, collectionFilter, sortBy]);
-
 
   useEffect(() => {
     if (!filtered.length) {
@@ -410,31 +421,27 @@ function ProdutosPage() {
             <Button
               variant="outline"
               onClick={() =>
-                exportToCsv(
-                  "produtos",
-                  toCsvRows(products),
-                  [
-                    { key: "sku", label: "SKU" },
-                    { key: "name", label: "Nome" },
-                    { key: "category", label: "Categoria" },
-                    { key: "status", label: "Status" },
-                    { key: "cost_price", label: "Custo" },
-                    { key: "sell_price", label: "Venda" },
-                    { key: "grade", label: "Grade" },
-                    { key: "size_1", label: "Tamanho 1" },
-                    { key: "size_2", label: "Tamanho 2" },
-                    { key: "size_3", label: "Tamanho 3" },
-                    { key: "size_4", label: "Tamanho 4" },
-                    { key: "size_5", label: "Tamanho 5" },
-                    { key: "size_6", label: "Tamanho 6" },
-                    { key: "color_1", label: "Cor 1" },
-                    { key: "color_2", label: "Cor 2" },
-                    { key: "color_3", label: "Cor 3" },
-                    { key: "color_4", label: "Cor 4" },
-                    { key: "color_5", label: "Cor 5" },
-                    { key: "color_6", label: "Cor 6" },
-                  ],
-                )
+                exportToCsv("produtos", toCsvRows(products), [
+                  { key: "sku", label: "SKU" },
+                  { key: "name", label: "Nome" },
+                  { key: "category", label: "Categoria" },
+                  { key: "status", label: "Status" },
+                  { key: "cost_price", label: "Custo" },
+                  { key: "sell_price", label: "Venda" },
+                  { key: "grade", label: "Grade" },
+                  { key: "size_1", label: "Tamanho 1" },
+                  { key: "size_2", label: "Tamanho 2" },
+                  { key: "size_3", label: "Tamanho 3" },
+                  { key: "size_4", label: "Tamanho 4" },
+                  { key: "size_5", label: "Tamanho 5" },
+                  { key: "size_6", label: "Tamanho 6" },
+                  { key: "color_1", label: "Cor 1" },
+                  { key: "color_2", label: "Cor 2" },
+                  { key: "color_3", label: "Cor 3" },
+                  { key: "color_4", label: "Cor 4" },
+                  { key: "color_5", label: "Cor 5" },
+                  { key: "color_6", label: "Cor 6" },
+                ])
               }
               disabled={!products.length}
               className="gap-2"
@@ -481,21 +488,36 @@ function ProdutosPage() {
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="glass rounded-xl p-12 text-center">
-          <Package className="size-10 text-primary mx-auto mb-3" />
-          <h2 className="font-semibold mb-1">Nenhum produto cadastrado</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Comece o catálogo adicionando o primeiro SKU da operação.
-          </p>
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setQuickOpen(true);
-            }}
-          >
-            Cadastrar produto
-          </Button>
-        </div>
+        <EmptyStateGuided
+          icon={Package}
+          title="Nenhum produto cadastrado"
+          description="Comece o catálogo adicionando o primeiro SKU da operação. É rápido e você pode preencher o restante depois."
+          steps={[
+            {
+              label: "Cadastre o primeiro produto",
+              description: "Informe nome, coleção e preços. O produto começa como rascunho.",
+              action: (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditing(null);
+                    setQuickOpen(true);
+                  }}
+                >
+                  Cadastrar produto
+                </Button>
+              ),
+            },
+            {
+              label: "Adicione o croqui",
+              description: "Uma imagem ajuda o time a aprovar a peça e solicitar piloto.",
+            },
+            {
+              label: "Crie a ficha técnica",
+              description: "Materiais, composição, medidas e aproveitamento.",
+            },
+          ]}
+        />
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-4">
           <section className="glass rounded-xl p-4 space-y-3">
@@ -586,7 +608,7 @@ function ProdutosPage() {
             </div>
 
             <div className="space-y-2">
-              {filtered.map((product) => {
+              {filtered.slice(0, visibleCount).map((product) => {
                 const active = product.id === selected?.id;
                 return (
                   <div
@@ -643,6 +665,18 @@ function ProdutosPage() {
                 </div>
               )}
             </div>
+            {filtered.length > visibleCount && (
+              <div className="flex justify-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors"
+                >
+                  <Package className="size-3.5" />
+                  Ver mais ({filtered.length - visibleCount} restantes)
+                </button>
+              </div>
+            )}
           </section>
 
           {selected && (
@@ -841,8 +875,8 @@ function ProductDetail({
           <AlertDialogHeader>
             <AlertDialogTitle>Remover "{product.name}"?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação é irreversível. O produto <strong>{product.sku}</strong> será excluído permanentemente,
-              incluindo fichas técnicas, protótipos e vínculos associados.
+              Esta ação é irreversível. O produto <strong>{product.sku}</strong> será excluído
+              permanentemente, incluindo fichas técnicas, protótipos e vínculos associados.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1065,7 +1099,7 @@ function ProductDetail({
                 <Scissors className="size-4" /> Solicitar piloto
               </Link>
             </Button>
-{canEdit && (
+            {canEdit && (
               <>
                 <Button variant="outline" onClick={onEdit} className="gap-2">
                   <Pencil className="size-4" /> Editar
@@ -1112,7 +1146,7 @@ function ProductDialog({
   const [category, setCategory] = useState("");
   const [productGroup, setProductGroup] = useState<string>("none");
   const [subgroup, setSubgroup] = useState<string>("none");
-const [productClass, setProductClass] = useState<string>("none");
+  const [productClass, setProductClass] = useState<string>("none");
   const [grade, setGrade] = useState<string>("none");
   const [description, setDescription] = useState("");
   const [costPrice, setCostPrice] = useState(0);
@@ -1134,7 +1168,7 @@ const [productClass, setProductClass] = useState<string>("none");
       setCategory(editing.category || "");
       setProductGroup(editing.product_group || "none");
       setSubgroup(editing.subgroup || "none");
-setProductClass(editing.product_class || "none");
+      setProductClass(editing.product_class || "none");
       setGrade(editing.grade || "none");
       setDescription(editing.description || "");
       setCostPrice(Number(editing.cost_price));
@@ -1151,7 +1185,13 @@ setProductClass(editing.product_class || "none");
     if (prefill) {
       if (prefill.name) setName(prefill.name);
       if (prefill.category) setCategory(prefill.category);
-      if (prefill.colors) setColors(prefill.colors.split(",").map((c) => c.trim()).filter(Boolean));
+      if (prefill.colors)
+        setColors(
+          prefill.colors
+            .split(",")
+            .map((c) => c.trim())
+            .filter(Boolean),
+        );
     }
   }, [editing, open, prefill]);
 
@@ -1161,7 +1201,7 @@ setProductClass(editing.product_class || "none");
     setCategory("");
     setProductGroup("none");
     setSubgroup("none");
-setProductClass("none");
+    setProductClass("none");
     setGrade("none");
     setDescription("");
     setCostPrice(0);
@@ -1208,7 +1248,7 @@ setProductClass("none");
         category: category || null,
         product_group: productGroup === "none" ? null : productGroup,
         subgroup: subgroup === "none" ? null : subgroup,
-product_class: productClass === "none" ? null : productClass,
+        product_class: productClass === "none" ? null : productClass,
         grade: grade === "none" ? null : grade,
         description: description || null,
         cost_price: costPrice,
@@ -1480,7 +1520,7 @@ product_class: productClass === "none" ? null : productClass,
                 </SelectContent>
               </Select>
             </div>
-<div className="space-y-2">
+            <div className="space-y-2">
               <Label>Tamanhos da grade</Label>
               <ChipInput
                 value={sizes}
@@ -1506,12 +1546,11 @@ product_class: productClass === "none" ? null : productClass,
             />
           </div>
 
-
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-<Button type="submit" disabled={saveMut.isPending}>
+            <Button type="submit" disabled={saveMut.isPending}>
               {saveMut.isPending
                 ? "Salvando…"
                 : status === "rascunho"
@@ -1590,4 +1629,3 @@ function CollectionPaletteSuggestion({
     </div>
   );
 }
-

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { notifyTechSheetEvent } from "@/lib/tech-sheet-notify.functions";
 
 /**
  * Aprova uma ficha técnica.
@@ -31,7 +32,7 @@ export const approveTechSheet = createServerFn({ method: "POST" })
 
     const { data: sheet, error: sErr } = await supabase
       .from("tech_sheets")
-      .select("id, status")
+      .select("id, status, owner_id, code, version, product_id")
       .eq("id", data.sheetId)
       .maybeSingle();
     if (sErr) throw new Error(sErr.message);
@@ -49,6 +50,19 @@ export const approveTechSheet = createServerFn({ method: "POST" })
       })
       .eq("id", data.sheetId);
     if (uErr) throw new Error(uErr.message);
+
+    // Notifica o responsável pela ficha (Estilo/área dona do produto)
+    await notifyTechSheetEvent({
+      data: {
+        recipientId: sheet.owner_id,
+        event: "aprovada",
+        sheetId: sheet.id,
+        sheetCode: sheet.code ?? undefined,
+        version: sheet.version ?? undefined,
+        link: `/ficha-tecnica?productId=${sheet.product_id ?? ""}`,
+        comment: data.note ?? undefined,
+      },
+    }).catch(() => undefined);
 
     return { ok: true, approvedAt: nowIso };
   });

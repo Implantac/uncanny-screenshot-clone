@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { MaterialPickerDialog, type LibraryMaterial } from "@/components/material-picker-dialog";
 import {
   Table,
@@ -1206,20 +1212,29 @@ function SizeConsumptionPopover({
   }, [value]);
   const [text, setText] = useState(initial);
   const active = !!value && Object.keys(value).length > 0;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          size="icon"
-          variant={active ? "default" : "ghost"}
-          className="size-6 shrink-0 text-[10px]"
-          disabled={disabled}
-          title="Consumo por tamanho"
-          onClick={() => setText(initial)}
-        >
-          <Ruler className="size-3" />
-        </Button>
-      </PopoverTrigger>
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              variant={active ? "default" : "ghost"}
+              className="size-6 shrink-0 text-[10px]"
+              disabled={disabled}
+              title="Consumo por tamanho"
+              onClick={() => setText(initial)}
+            >
+              <Ruler className="size-3" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs text-xs">
+            Definir consumo específico por tamanho (ex.: P=1.2m, M=1.35m, G=1.5m). Sobrepõe o
+            consumo médio para cada faixa da grade.
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <PopoverContent className="w-72 space-y-2">
         <div className="text-xs font-semibold">Consumo por tamanho</div>
         <p className="text-[11px] text-muted-foreground">
@@ -1343,17 +1358,25 @@ function GradeRulePopover({
 
   return (
     <Popover open={open} onOpenChange={handleOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-6 shrink-0"
-          disabled={disabled}
-          title="Aplicar regra de salto"
-        >
-          <span className="text-[11px] font-semibold text-primary">Δ</span>
-        </Button>
-      </PopoverTrigger>
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-6 shrink-0"
+              disabled={disabled}
+              title="Aplicar regra de salto"
+            >
+              <span className="text-[11px] font-semibold text-primary">Δ</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs text-xs">
+            Aplicar regra de salto: defina o tamanho base e os incrementos automáticos entre as
+            faixas da grade.
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <PopoverContent className="w-80 space-y-3" align="start">
         <div>
           <div className="text-xs font-semibold">Regra de salto</div>

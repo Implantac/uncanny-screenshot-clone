@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { logProductView } from "@/lib/product-audit.functions";
@@ -37,12 +37,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProductPinButton } from "@/components/product-pin-button";
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
@@ -76,6 +71,26 @@ import { ProductLifecycleGuide } from "@/components/product-lifecycle-guide";
 import { ProductSizeGridCard } from "@/components/product-size-grid-card";
 import { ProductPriceSuggestionCard } from "@/components/product-price-suggestion-card";
 import { DesignerNotes } from "@/components/designer-notes";
+import {
+  FichaDocument,
+  type DocMaterial,
+  type CompletenessItem,
+} from "@/components/tech-pack/sheet-document";
+import {
+  listTechSheetBlocks,
+  saveTechSheetBlock,
+  type TechSheetBlockKey,
+  type SheetBlockRow,
+} from "@/lib/tech-sheet-blocks.functions";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
+import { useUserRole } from "@/hooks/use-user-role";
+import {
+  canEditDraft,
+  canEditMaterials,
+  canEditMeasurements,
+  canEditCosts,
+} from "@/lib/permissions";
 
 export const Route = createFileRoute("/_authenticated/_app/produto/$id")({
   head: ({ params }) => ({
@@ -110,9 +125,93 @@ type ProductRow = {
   updated_at: string;
 };
 
+type SheetContent = {
+  overview: string;
+  materials: string[];
+  operations: string[];
+  measurements: string[];
+  consumption: string[];
+  costs: string[];
+  documents: string[];
+  composition: Record<string, string>[];
+  packaging: Record<string, string>[];
+  treatments: Record<string, string>[];
+  printing: Record<string, string>[];
+  embroidery: Record<string, string>[];
+  laundry: Record<string, string>[];
+  quality: Record<string, string>[];
+};
+
+const EMPTY_CONTENT: SheetContent = {
+  overview: "",
+  materials: [],
+  operations: [],
+  measurements: [],
+  consumption: [],
+  costs: [],
+  documents: [],
+  composition: [],
+  packaging: [],
+  treatments: [],
+  printing: [],
+  embroidery: [],
+  laundry: [],
+  quality: [],
+};
+
+const BLOCK_KEYS = [
+  "composition",
+  "packaging",
+  "treatments",
+  "printing",
+  "embroidery",
+  "laundry",
+  "quality",
+] as const;
+
+function parseBlocks(value: unknown): Record<string, string>[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((x): x is Record<string, string> => x !== null && typeof x === "object");
+}
+
+function parseSheetContent(content: string | null): SheetContent {
+  if (!content) return EMPTY_CONTENT;
+  try {
+    const parsed = JSON.parse(content) as Partial<SheetContent>;
+    const base: SheetContent = {
+      overview: parsed.overview ?? "",
+      materials: Array.isArray(parsed.materials) ? parsed.materials : [],
+      operations: Array.isArray(parsed.operations) ? parsed.operations : [],
+      measurements: Array.isArray(parsed.measurements) ? parsed.measurements : [],
+      consumption: Array.isArray(parsed.consumption) ? parsed.consumption : [],
+      costs: Array.isArray(parsed.costs) ? parsed.costs : [],
+      documents: Array.isArray(parsed.documents) ? parsed.documents : [],
+      composition: [],
+      packaging: [],
+      treatments: [],
+      printing: [],
+      embroidery: [],
+      laundry: [],
+      quality: [],
+    };
+    for (const key of BLOCK_KEYS) {
+      base[key] = parseBlocks(parsed[key]);
+    }
+    return base;
+  } catch {
+    return { ...EMPTY_CONTENT, overview: content };
+  }
+}
+
+function stringifySheetContent(content: SheetContent) {
+  return JSON.stringify(content);
+}
+
 function ProductWorkspace() {
   const { id } = useParams({ from: "/_authenticated/_app/produto/$id" });
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { roles } = useUserRole();
   useRealtime("products", ["product-workspace", id]);
   const audit = useServerFn(logProductView);
   const [editMode, setEditMode] = useState(false);
@@ -171,7 +270,8 @@ function ProductWorkspace() {
       if (list.length < 2) return;
       const idx = list.findIndex((x) => x.id === product.id);
       if (idx < 0) return;
-      const nextIdx = e.key === "]" ? (idx + 1) % list.length : (idx - 1 + list.length) % list.length;
+      const nextIdx =
+        e.key === "]" ? (idx + 1) % list.length : (idx - 1 + list.length) % list.length;
       const target = list[nextIdx];
       if (!target || target.id === product.id) return;
       e.preventDefault();
@@ -183,7 +283,6 @@ function ProductWorkspace() {
     return () => window.removeEventListener("keydown", onKey);
   }, [product?.id, navigate]);
 
-
   const { data: sheet } = useQuery({
     enabled: !!product,
     queryKey: ["product-workspace-sheet", id],
@@ -191,7 +290,7 @@ function ProductWorkspace() {
       const { data } = await supabase
         .from("tech_sheets")
         .select(
-          "id, owner_id, code, version, status, materials_cost, labor_cost, cost_price, overhead_pct, updated_at",
+          "id, owner_id, code, version, status, materials_cost, labor_cost, cost_price, overhead_pct, updated_at, content",
         )
         .eq("product_id", id)
         .order("status", { ascending: false })
@@ -201,6 +300,158 @@ function ProductWorkspace() {
       return data;
     },
   });
+
+  const { data: docMaterials = [] } = useQuery({
+    enabled: !!sheet?.id,
+    queryKey: ["product-workspace-sheet-materials", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tech_sheet_materials")
+        .select(
+          "id, name, type, code, description, supplier, color, unit, consumption, loss_pct, unit_cost, total_cost",
+        )
+        .eq("tech_sheet_id", sheet!.id)
+        .order("position");
+      if (error) throw error;
+      return (data ?? []) as unknown as DocMaterial[];
+    },
+  });
+
+  const sheetContent = useMemo<SheetContent>(
+    () => parseSheetContent(sheet?.content ?? null),
+    [sheet?.content],
+  );
+
+  const sheetUnlocked = !!sheet && sheet.status !== "aprovada";
+  const isProductOwner = !!user && !!sheet && sheet.owner_id === user.id;
+  // RBAC granular: além de usuário ser dono e ficha não aprovada, cada módulo
+  // respeita a role. Quem não é dono mantém leitura (vendedor/comprador fora do módulo).
+  const canEditDraftBlock = isProductOwner && sheetUnlocked && canEditDraft(roles);
+  const canEditMaterialsBlock = isProductOwner && sheetUnlocked && canEditMaterials(roles);
+  const canEditMeasurementsBlock = isProductOwner && sheetUnlocked && canEditMeasurements(roles);
+  const canEditCostsBlock = isProductOwner && sheetUnlocked && canEditCosts(roles);
+  // No Product Workspace, permitir edição inline quando o usuário tem alguma
+  // permissão de edição (draft abrange blocos/observações).
+  const canEditSheet = canEditDraftBlock;
+
+  // Grade real do produto (color × size via product_variants).
+  const { data: variants = [] } = useQuery({
+    enabled: !!product?.id,
+    queryKey: ["product-workspace-variants", product?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_variants")
+        .select("id, sku, active, color:color_id(name), size:size_id(label)")
+        .eq("product_id", product!.id);
+      if (error) throw error;
+      return (data ?? []) as Array<{
+        id: string;
+        sku: string;
+        active: boolean;
+        color: { name: string } | null;
+        size: { label: string } | null;
+      }>;
+    },
+  });
+  const realSizes = Array.from(
+    new Set(variants.map((v) => v.size?.label).filter(Boolean) as string[]),
+  );
+  const realColors = Array.from(
+    new Set(variants.map((v) => v.color?.name).filter(Boolean) as string[]),
+  );
+
+const queryClient = useQueryClient();
+
+  // Toggle ativo/inativo de variante (matriz SKU no documento).
+  const toggleVariantActive = useMutation({
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const { error } = await supabase
+        .from("product_variants")
+        .update({ active })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["product-workspace-variants", product?.id] });
+      toast.success("Variante atualizada");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const saveSheetContent = useMutation({
+    mutationFn: async (content: SheetContent) => {
+      if (!sheet?.id) throw new Error("Selecione uma ficha");
+      const { error } = await supabase
+        .from("tech_sheets")
+        .update({ content: stringifySheetContent(content) })
+        .eq("id", sheet.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["product-workspace-sheet", id] });
+      toast.success("Ficha atualizada");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const completeness = useMemo<CompletenessItem[]>(() => {
+    if (!sheet) return [];
+    const hasCost = Number(sheet.cost_price ?? 0) > 0 || sheetContent.costs.length > 0;
+    const gradeDefined = realSizes.length > 0 || Number(product?.sizes?.length ?? 0) > 0;
+    const colorsDefined = realColors.length > 0 || Number(product?.colors?.length ?? 0) > 0;
+    return [
+      { key: "dados", label: "Dados gerais preenchidos", ok: Boolean(sheet.code && product) },
+      { key: "imagem", label: "Imagem principal enviada", ok: Boolean(product?.image_url) },
+      { key: "materiais", label: "Materiais definidos", ok: docMaterials.length > 0 },
+      { key: "grade", label: "Grade definida", ok: gradeDefined },
+      { key: "cores", label: "Cores definidas", ok: colorsDefined },
+      { key: "skus", label: "Variantes/SKUs geradas", ok: variants.length > 0 },
+      { key: "medidas", label: "Medidas preenchidas", ok: sheetContent.measurements.length > 0 },
+      { key: "custo", label: "Custo calculado", ok: hasCost },
+      { key: "amostra", label: "Amostra aprovada", ok: false },
+      { key: "aprovacao", label: "Aprovação final realizada", ok: sheet.status === "aprovada" },
+    ];
+  }, [sheet, sheetContent, product, docMaterials, realSizes, realColors, variants]);
+
+  function updateBlock(block: TechSheetBlockKey, items: SheetBlockRow[]) {
+    if (!sheet?.id) return;
+    // Persistência transacional (tabela) + trigger mantém o JSON sincronizado.
+    saveBlock.mutate({ techSheetId: sheet.id, block, items });
+  }
+
+  const listBlocksFn = useServerFn(listTechSheetBlocks);
+  const saveBlocksFn = useServerFn(saveTechSheetBlock);
+
+  const saveBlock = useMutation({
+    mutationFn: (args: { techSheetId: string; block: TechSheetBlockKey; items: SheetBlockRow[] }) =>
+      saveBlocksFn({ data: args }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["product-workspace-sheet-blocks", id] });
+      queryClient.invalidateQueries({ queryKey: ["product-workspace-sheet", id] });
+      toast.success("Bloco atualizado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const { data: blocksData } = useQuery({
+    enabled: !!sheet?.id,
+    queryKey: ["product-workspace-sheet-blocks", id],
+    queryFn: () => listBlocksFn({ data: { techSheetId: sheet!.id } }),
+  });
+
+  // Blocos exibidos no documento: prioriza tabelas, fallback JSON.
+  const displayBlocks = useMemo(() => {
+    const base = blocksData ?? ({} as Record<TechSheetBlockKey, SheetBlockRow[]>);
+    return {
+      composition: base.composition ?? sheetContent.composition,
+      packaging: base.packaging ?? sheetContent.packaging,
+      treatments: base.treatments ?? sheetContent.treatments,
+      printing: base.printing ?? sheetContent.printing,
+      embroidery: base.embroidery ?? sheetContent.embroidery,
+      laundry: base.laundry ?? sheetContent.laundry,
+      quality: base.quality ?? sheetContent.quality,
+    };
+  }, [blocksData, sheetContent]);
 
   const { data: prototypes = [] } = useQuery({
     enabled: !!product,
@@ -232,7 +483,9 @@ function ProductWorkspace() {
   if (isLoading) {
     return (
       <div className="p-6 space-y-4 max-w-7xl mx-auto">
-        <PlmBreadcrumb items={[{ label: "Produtos", link: { to: "/produtos" } }, { label: "Carregando…" }]} />
+        <PlmBreadcrumb
+          items={[{ label: "Produtos", link: { to: "/produtos" } }, { label: "Carregando…" }]}
+        />
         <div className="h-10 w-2/3 bg-muted rounded animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4">
           <div className="h-64 bg-muted rounded-xl animate-pulse" />
@@ -250,7 +503,9 @@ function ProductWorkspace() {
   if (!product) {
     return (
       <div className="p-6 max-w-2xl mx-auto space-y-4">
-        <PlmBreadcrumb items={[{ label: "Produtos", link: { to: "/produtos" } }, { label: "Não encontrado" }]} />
+        <PlmBreadcrumb
+          items={[{ label: "Produtos", link: { to: "/produtos" } }, { label: "Não encontrado" }]}
+        />
         <EmptyState
           icon={Package}
           title="Produto não encontrado"
@@ -276,7 +531,12 @@ function ProductWorkspace() {
   const crumbs = [
     { label: "Produtos", link: { to: "/produtos" as const } },
     ...(product.collection_id
-      ? [{ label: "Coleção", link: { to: "/colecao-360/$id" as const, params: { id: product.collection_id } } }]
+      ? [
+          {
+            label: "Coleção",
+            link: { to: "/colecao-360/$id" as const, params: { id: product.collection_id } },
+          },
+        ]
       : []),
     { label: product.sku },
   ];
@@ -319,16 +579,11 @@ function ProductWorkspace() {
         }
       />
 
-
       {/* Header card com identidade do produto */}
       <div className="rounded-xl border border-border bg-card p-4 flex gap-4">
         <div className="size-24 rounded-lg overflow-hidden bg-muted/40 shrink-0">
           {product.image_url ? (
-            <img
-              src={product.image_url}
-              alt={product.name}
-              className="size-full object-cover"
-            />
+            <img src={product.image_url} alt={product.name} className="size-full object-cover" />
           ) : (
             <div className="size-full grid place-items-center text-muted-foreground">
               <ImageIcon className="size-6" />
@@ -336,11 +591,29 @@ function ProductWorkspace() {
           )}
         </div>
         <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
-          <Metric label="Custo" value={product.cost_price != null ? `R$ ${Number(product.cost_price).toFixed(2)}` : "—"} />
-          <Metric label="Preço" value={product.sell_price != null ? `R$ ${Number(product.sell_price).toFixed(2)}` : "—"} />
-          <Metric label="Margem" value={margin(product.cost_price, product.sell_price)} tone={sellPriceToMarginTone(product.cost_price, product.sell_price)} />
-          <Metric label="Protótipos abertos" value={String(openProtos)} tone={openProtos > 0 ? "warning" : "default"} />
-          <Metric label="OPs em andamento" value={String(openOps)} tone={openOps > 0 ? "primary" : "default"} />
+          <Metric
+            label="Custo"
+            value={product.cost_price != null ? `R$ ${Number(product.cost_price).toFixed(2)}` : "—"}
+          />
+          <Metric
+            label="Preço"
+            value={product.sell_price != null ? `R$ ${Number(product.sell_price).toFixed(2)}` : "—"}
+          />
+          <Metric
+            label="Margem"
+            value={margin(product.cost_price, product.sell_price)}
+            tone={sellPriceToMarginTone(product.cost_price, product.sell_price)}
+          />
+          <Metric
+            label="Protótipos abertos"
+            value={String(openProtos)}
+            tone={openProtos > 0 ? "warning" : "default"}
+          />
+          <Metric
+            label="OPs em andamento"
+            value={String(openOps)}
+            tone={openOps > 0 ? "primary" : "default"}
+          />
         </div>
       </div>
 
@@ -357,15 +630,22 @@ function ProductWorkspace() {
 
       <ProductNextStepBanner productId={product.id} />
 
-<Tabs value={tab} onValueChange={setTab} className="space-y-4">
-
+      <Tabs value={tab} onValueChange={setTab} className="space-y-4">
         <div className="flex items-center gap-2">
           <TabsList className="flex flex-wrap h-auto justify-start gap-1 bg-muted/40 p-1 flex-1">
             {/* Principais — sempre visíveis */}
-            <TabTrig value="overview" icon={<Sparkles className="size-3.5" />}>Overview</TabTrig>
-            <TabTrig value="ficha" icon={<FileText className="size-3.5" />}>Ficha técnica</TabTrig>
-            <TabTrig value="prototipos" icon={<Scissors className="size-3.5" />}>Protótipos</TabTrig>
-            <TabTrig value="timeline" icon={<Clock className="size-3.5" />}>Timeline</TabTrig>
+            <TabTrig value="overview" icon={<Sparkles className="size-3.5" />}>
+              Overview
+            </TabTrig>
+            <TabTrig value="ficha" icon={<FileText className="size-3.5" />}>
+              Ficha técnica
+            </TabTrig>
+            <TabTrig value="prototipos" icon={<Scissors className="size-3.5" />}>
+              Protótipos
+            </TabTrig>
+            <TabTrig value="timeline" icon={<Clock className="size-3.5" />}>
+              Timeline
+            </TabTrig>
 
             {/* Separador visual + Avançadas em dropdown */}
             <div className="w-px h-6 bg-border/60 mx-1" aria-hidden />
@@ -404,29 +684,35 @@ function ProductWorkspace() {
           <TooltipProvider>
             <Tooltip delayDuration={150}>
               <TooltipTrigger asChild>
-                <span tabIndex={0} className={sheet ? "" : "cursor-not-allowed"}>
+                <span tabIndex={0} className={sheet && canEditSheet ? "" : "cursor-not-allowed"}>
                   <Button
                     size="sm"
                     variant={editMode ? "default" : "outline"}
                     className="gap-1.5 h-8 shrink-0 text-xs"
-                    disabled={!sheet}
-                    aria-disabled={!sheet}
+                    disabled={!sheet || !canEditSheet}
+                    aria-disabled={!sheet || !canEditSheet}
                     onClick={() => setEditMode((v) => !v)}
                   >
                     {editMode ? (
-                      <><Lock className="size-3.5" /> Bloquear edição</>
+                      <>
+                        <Lock className="size-3.5" /> Bloquear edição
+                      </>
                     ) : (
-                      <><Edit3 className="size-3.5" /> Editar ficha</>
+                      <>
+                        <Edit3 className="size-3.5" /> Editar ficha
+                      </>
                     )}
                   </Button>
                 </span>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                {sheet
-                  ? editMode
-                    ? "Bloquear edição desta ficha técnica"
-                    : "Editar ficha técnica (BOM, BOP, Medidas)"
-                  : "Crie uma ficha técnica primeiro"}
+                {!sheet
+                  ? "Crie uma ficha técnica primeiro"
+                  : !canEditSheet
+                    ? "Sua role não permite editar esta ficha (somente leitura)"
+                    : editMode
+                      ? "Bloquear edição desta ficha técnica"
+                      : "Editar ficha técnica (BOM, BOP, Medidas)"}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -445,40 +731,83 @@ function ProductWorkspace() {
               <ProductTimeline productId={product.id} createdAt={product.created_at} />
               <ProductTimelineCollab productId={product.id} />
             </div>
-
           </div>
         </TabsContent>
 
-        <TabsContent value="ficha">
+        <TabsContent value="ficha" className="space-y-4">
           {sheet ? (
-            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline">v{sheet.version}</Badge>
-                <Badge
-                  variant="outline"
-                  className={
-                    sheet.status === "aprovada"
-                      ? "bg-success/15 text-success border-success/30"
-                      : "bg-amber-500/15 text-amber-600 border-amber-500/30"
+            <>
+              <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">v{sheet.version}</Badge>
+                  <Badge
+                    variant="outline"
+                    className={
+                      sheet.status === "aprovada"
+                        ? "bg-success/15 text-success border-success/30"
+                        : "bg-amber-500/15 text-amber-600 border-amber-500/30"
+                    }
+                  >
+                    {sheet.status}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground font-mono">{sheet.code}</span>
+                  <Link
+                    to="/ficha-tecnica"
+                    search={{ productId: product.id }}
+                    className="ml-auto text-xs inline-flex items-center gap-1 px-2 py-1 rounded border border-border hover:bg-muted"
+                  >
+                    <ExternalLink className="size-3" /> Editor completo
+                  </Link>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <Metric
+                    label="Materiais"
+                    value={`R$ ${Number(sheet.materials_cost ?? 0).toFixed(2)}`}
+                  />
+                  <Metric
+                    label="Mão de obra"
+                    value={`R$ ${Number(sheet.labor_cost ?? 0).toFixed(2)}`}
+                  />
+                  <Metric
+                    label="Custo final"
+                    value={`R$ ${Number(sheet.cost_price ?? 0).toFixed(2)}`}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-border bg-card p-4">
+                <FichaDocument
+                  status={sheet.status as "rascunho" | "em_revisao" | "aprovada"}
+                  completeness={completeness}
+                  productName={product.name}
+                  productSku={product.sku}
+                  code={sheet.code}
+                  version={sheet.version}
+                  materials={docMaterials}
+                  blockFields={{
+                    composition: displayBlocks.composition,
+                    packaging: displayBlocks.packaging,
+                    treatments: displayBlocks.treatments,
+                    printing: displayBlocks.printing,
+                    embroidery: displayBlocks.embroidery,
+                    laundry: displayBlocks.laundry,
+                    quality: displayBlocks.quality,
+                  }}
+observations={sheetContent.overview}
+                  canEdit={editMode && canEditSheet}
+                  skuVariants={variants}
+                  onToggleVariantActive={(variantId, active) =>
+                    toggleVariantActive.mutate({ id: variantId, active })
                   }
-                >
-                  {sheet.status}
-                </Badge>
-                <span className="text-xs text-muted-foreground font-mono">{sheet.code}</span>
-                <Link
-                  to="/ficha-tecnica"
-                  search={{ productId: product.id }}
-                  className="ml-auto text-xs inline-flex items-center gap-1 px-2 py-1 rounded border border-border hover:bg-muted"
-                >
-                  <ExternalLink className="size-3" /> Editor completo
-                </Link>
+                  onObservationChange={(v) =>
+                    saveSheetContent.mutate({ ...sheetContent, overview: v })
+                  }
+                  onBlockChange={(block, items) =>
+                    updateBlock(block as TechSheetBlockKey, items as SheetBlockRow[])
+                  }
+                />
               </div>
-              <div className="grid grid-cols-3 gap-3 text-sm">
-                <Metric label="Materiais" value={`R$ ${Number(sheet.materials_cost ?? 0).toFixed(2)}`} />
-                <Metric label="Mão de obra" value={`R$ ${Number(sheet.labor_cost ?? 0).toFixed(2)}`} />
-                <Metric label="Custo final" value={`R$ ${Number(sheet.cost_price ?? 0).toFixed(2)}`} />
-              </div>
-            </div>
+            </>
           ) : (
             <NoSheet productId={product.id} />
           )}
@@ -487,7 +816,11 @@ function ProductWorkspace() {
         <TabsContent value="bom">
           {sheet ? (
             <div className="rounded-xl border border-border bg-card p-4">
-              <MaterialsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={editMode} />
+              <MaterialsPanel
+                sheetId={sheet.id}
+                ownerId={sheet.owner_id}
+                canEdit={editMode && canEditMaterialsBlock}
+              />
             </div>
           ) : (
             <NoSheet productId={product.id} />
@@ -497,7 +830,11 @@ function ProductWorkspace() {
         <TabsContent value="bop">
           {sheet ? (
             <div className="rounded-xl border border-border bg-card p-4">
-              <OperationsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={editMode} />
+              <OperationsPanel
+                sheetId={sheet.id}
+                ownerId={sheet.owner_id}
+                canEdit={editMode && canEditDraftBlock}
+              />
             </div>
           ) : (
             <NoSheet productId={product.id} />
@@ -507,7 +844,11 @@ function ProductWorkspace() {
         <TabsContent value="medidas">
           {sheet ? (
             <div className="rounded-xl border border-border bg-card p-4">
-              <MeasurementsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={editMode} />
+              <MeasurementsPanel
+                sheetId={sheet.id}
+                ownerId={sheet.owner_id}
+                canEdit={editMode && canEditMeasurementsBlock}
+              />
             </div>
           ) : (
             <NoSheet productId={product.id} />
@@ -519,7 +860,11 @@ function ProductWorkspace() {
           <ProductCostEnginePanel productId={product.id} />
           {sheet ? (
             <div className="rounded-xl border border-border bg-card p-4">
-              <CostsPanel sheetId={sheet.id} ownerId={sheet.owner_id} canEdit={editMode} />
+              <CostsPanel
+                sheetId={sheet.id}
+                ownerId={sheet.owner_id}
+                canEdit={editMode && canEditCostsBlock}
+              />
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-border bg-card p-4">
@@ -554,7 +899,9 @@ function ProductWorkspace() {
                       size="sm"
                       className="gap-1"
                       onClick={() => {
-                        const dialog = document.getElementById("request-prototype-dialog") as HTMLDialogElement | null;
+                        const dialog = document.getElementById(
+                          "request-prototype-dialog",
+                        ) as HTMLDialogElement | null;
                         dialog?.showModal();
                       }}
                     >
@@ -591,11 +938,12 @@ function ProductWorkspace() {
                         params={{ id: p.id }}
                         className={`
                           flex-1 min-w-[140px] rounded-xl border p-3 hover:shadow-md transition
-                          ${isApproved
-                            ? "border-emerald-500/40 bg-emerald-500/5"
-                            : isRejected
-                              ? "border-rose-500/40 bg-rose-500/5"
-                              : "border-border bg-card hover:border-primary/30"
+                          ${
+                            isApproved
+                              ? "border-emerald-500/40 bg-emerald-500/5"
+                              : isRejected
+                                ? "border-rose-500/40 bg-rose-500/5"
+                                : "border-border bg-card hover:border-primary/30"
                           }
                         `}
                       >
@@ -638,12 +986,8 @@ function ProductWorkspace() {
                           >
                             {stage.replace(/_/g, " ")}
                           </Badge>
-                          {isApproved && (
-                            <CheckCircle2 className="size-3.5 text-emerald-600" />
-                          )}
-                          {isRejected && (
-                            <AlertTriangle className="size-3.5 text-rose-600" />
-                          )}
+                          {isApproved && <CheckCircle2 className="size-3.5 text-emerald-600" />}
+                          {isRejected && <AlertTriangle className="size-3.5 text-rose-600" />}
                         </div>
                       </Link>
                     );
@@ -651,7 +995,7 @@ function ProductWorkspace() {
                 </div>
               </div>
 
-{/* PrototypeApprovalGate — selos de aprovação para cada protótipo */}
+              {/* PrototypeApprovalGate — selos de aprovação para cada protótipo */}
               {prototypes.filter((p) => p.stage !== "reprovado").length > 0 && (
                 <div className="space-y-3">
                   <div className="text-sm font-semibold flex items-center gap-2">
@@ -676,11 +1020,25 @@ function ProductWorkspace() {
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { l: "Total", v: prototypes.length },
-                  { l: "Abertos", v: prototypes.filter((p) => p.stage !== "aprovado" && p.stage !== "reprovado").length, tone: "text-amber-600" },
-                  { l: "Aprovados", v: prototypes.filter((p) => p.stage === "aprovado").length, tone: "text-emerald-600" },
+                  {
+                    l: "Abertos",
+                    v: prototypes.filter((p) => p.stage !== "aprovado" && p.stage !== "reprovado")
+                      .length,
+                    tone: "text-amber-600",
+                  },
+                  {
+                    l: "Aprovados",
+                    v: prototypes.filter((p) => p.stage === "aprovado").length,
+                    tone: "text-emerald-600",
+                  },
                 ].map((s) => (
-                  <div key={s.l} className="rounded-lg border border-border bg-card p-3 text-center">
-                    <div className={`text-lg font-semibold tabular-nums ${s.tone ?? ""}`}>{s.v}</div>
+                  <div
+                    key={s.l}
+                    className="rounded-lg border border-border bg-card p-3 text-center"
+                  >
+                    <div className={`text-lg font-semibold tabular-nums ${s.tone ?? ""}`}>
+                      {s.v}
+                    </div>
                     <div className="text-[10px] text-muted-foreground uppercase">{s.l}</div>
                   </div>
                 ))}
@@ -694,7 +1052,6 @@ function ProductWorkspace() {
           <ProductPrintArtworksPanel productId={product.id} />
           <ProductDigitalTwinPanel productId={product.id} />
           <div className="rounded-xl border border-border bg-card p-4">
-
             {ops.length === 0 ? (
               <EmptyState
                 icon={Factory}
@@ -713,9 +1070,7 @@ function ProductWorkspace() {
                     <div className="flex items-center gap-2">
                       <Factory className="size-3.5 text-muted-foreground" />
                       <span className="font-mono text-xs">{o.code}</span>
-                      <span className="text-xs text-muted-foreground">
-                        qtd {o.quantity ?? "—"}
-                      </span>
+                      <span className="text-xs text-muted-foreground">qtd {o.quantity ?? "—"}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-[10px] capitalize">
@@ -757,11 +1112,23 @@ function ProductWorkspace() {
             />
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 border-t pt-4">
               {[
-                { t: "📸 Envio para creators", d: "Selecione influenciadores, registre envios e acompanhe conteúdo gerado." },
-                { t: "📊 ROI por peça", d: "Compare custo de produção vs retorno de vendas impulsionadas por campanha." },
-                { t: "📅 Calendário de campanhas", d: "Visualize lançamentos, drops e ações sazonais em linha do tempo." },
+                {
+                  t: "📸 Envio para creators",
+                  d: "Selecione influenciadores, registre envios e acompanhe conteúdo gerado.",
+                },
+                {
+                  t: "📊 ROI por peça",
+                  d: "Compare custo de produção vs retorno de vendas impulsionadas por campanha.",
+                },
+                {
+                  t: "📅 Calendário de campanhas",
+                  d: "Visualize lançamentos, drops e ações sazonais em linha do tempo.",
+                },
               ].map((card) => (
-                <div key={card.t} className="rounded-lg border border-border/60 bg-muted/20 p-3 text-left">
+                <div
+                  key={card.t}
+                  className="rounded-lg border border-border/60 bg-muted/20 p-3 text-left"
+                >
                   <div className="text-sm font-medium mb-1">{card.t}</div>
                   <div className="text-xs text-muted-foreground leading-relaxed">{card.d}</div>
                 </div>
@@ -772,12 +1139,7 @@ function ProductWorkspace() {
 
         <TabsContent value="bi">
           <div className="rounded-xl border border-border bg-card p-4">
-            <SkuPerformancePanel
-              productId={product.id}
-              variants={[]}
-              colors={[]}
-              sizes={[]}
-            />
+            <SkuPerformancePanel productId={product.id} variants={[]} colors={[]} sizes={[]} />
           </div>
         </TabsContent>
 
@@ -843,7 +1205,10 @@ function margin(cost: number | null, sell: number | null) {
   return `${m.toFixed(1)}%`;
 }
 
-function sellPriceToMarginTone(cost: number | null, sell: number | null): "default" | "primary" | "warning" {
+function sellPriceToMarginTone(
+  cost: number | null,
+  sell: number | null,
+): "default" | "primary" | "warning" {
   if (!cost || !sell || sell <= 0) return "default";
   const m = ((sell - cost) / sell) * 100;
   if (m >= 55) return "primary";

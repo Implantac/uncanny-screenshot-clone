@@ -21,6 +21,14 @@ import { suggestTechSheetImprovements } from "@/lib/tech-pack-ai.functions";
 import { Markdown } from "@/components/markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useUserRole } from "@/hooks/use-user-role";
+import {
+  canEditDraft,
+  canEditMaterials,
+  canEditMeasurements,
+  canEditCosts,
+  canApproveSheet,
+} from "@/lib/permissions";
 import { useFabNewAction } from "@/components/contextual-fab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,17 +64,22 @@ import { TechSheetBomReviewPanel } from "@/components/tech-sheet-bom-review-pane
 import { TechPackImportButton } from "@/components/tech-pack-import-button";
 import { TechPackExportButtonLazy as TechPackExportButton } from "@/components/tech-pack-export-button-lazy";
 import { approveTechSheet } from "@/lib/tech-sheet-approve.functions";
+import { notifyTechSheetEvent } from "@/lib/tech-sheet-notify.functions";
+import {
+  listTechSheetBlocks,
+  saveTechSheetBlock,
+  type TechSheetBlockKey,
+  type SheetBlockRow,
+} from "@/lib/tech-sheet-blocks.functions";
 import { ShieldCheck, Camera, Lock } from "lucide-react";
 import { FichaDocument } from "@/components/tech-pack/sheet-document";
-import type {
-  CompletenessItem,
-  DocMaterial,
-} from "@/components/tech-pack/sheet-document";
+import type { CompletenessItem, DocMaterial } from "@/components/tech-pack/sheet-document";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 import { StatusBadge } from "@/components/status-badge";
 import { ProductWorkflowStepper } from "@/components/product-workflow-stepper";
+import { ApprovalMultiStage } from "@/components/approval-multi-stage";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -107,6 +120,7 @@ type ProductRef = {
   category: string | null;
   image_url: string | null;
   colors?: string[] | null;
+  sizes?: string[] | null;
 };
 
 type SheetContent = {
@@ -167,9 +181,7 @@ const BLOCK_KEYS = [
 
 function parseBlocks(value: unknown): Record<string, string>[] {
   if (!Array.isArray(value)) return [];
-  return value.filter(
-    (x): x is Record<string, string> => x !== null && typeof x === "object",
-  );
+  return value.filter((x): x is Record<string, string> => x !== null && typeof x === "object");
 }
 
 function parseSheetContent(content: string | null): SheetContent {
@@ -224,6 +236,7 @@ async function resolveProductImage(path: string | null) {
 
 function FichaTecnicaPage() {
   const { user } = useAuth();
+  const { roles } = useUserRole();
   const queryClient = useQueryClient();
   const { productId: deepLinkProductId } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
@@ -251,7 +264,7 @@ function FichaTecnicaPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, sku, category, image_url, colors")
+        .select("id, name, sku, category, image_url, colors, sizes")
         .order("name");
       if (error) throw error;
       return data as ProductRef[];
@@ -295,6 +308,26 @@ function FichaTecnicaPage() {
     [products, selected?.product_id],
   );
 
+  // Grade real do produto selecionado (color × size via product_variants).
+  const { data: variants = [] } = useQuery({
+    enabled: !!selectedProduct?.id,
+    queryKey: ["ts-doc-product-variants", selectedProduct?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_variants")
+        .select("id, sku, active, color:color_id(name), size:size_id(label)")
+        .eq("product_id", selectedProduct!.id);
+      if (error) throw error;
+      return (data ?? []) as Array<{
+        id: string;
+        sku: string;
+        active: boolean;
+        color: { name: string } | null;
+        size: { label: string } | null;
+      }>;
+    },
+  });
+
   const { data: docMaterials = [] } = useQuery({
     enabled: !!selected?.id,
     queryKey: ["ts-doc-materials", selected?.id],
@@ -311,23 +344,104 @@ function FichaTecnicaPage() {
     },
   });
 
-  const canEdit = selected?.owner_id === user?.id && selected?.status !== "aprovada";
+  const listBlocksFn = useServerFn(listTechSheetBlocks);
+  const saveBlocksFn = useServerFn(saveTechSheetBlock);
+
+  // Toggle ativo/inativo de variante (matriz SKU no documento).
+  const toggleVariantActive = useMutation({
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const { error } = await supabase.from("product_variants").update({ active }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["ts-doc-product-variants", selectedProduct?.id],
+      });
+      toast.success("Variante atualizada");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const saveBlock = useMutation({
+    mutationFn: (args: { techSheetId: string; block: TechSheetBlockKey; items: SheetBlockRow[] }) =>
+      saveBlocksFn({ data: args }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ts-doc-blocks", selected?.id] });
+      queryClient.invalidateQueries({ queryKey: ["tech_sheets"] });
+      toast.success("Bloco atualizado");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const { data: techSheetBlocks } = useQuery({
+    enabled: !!selected?.id,
+    queryKey: ["ts-doc-blocks", selected?.id],
+    queryFn: () => listBlocksFn({ data: { techSheetId: selected!.id } }),
+  });
+
+  // Blocos exibidos no documento: prioriza tabelas, fallback JSON, e o
+  // cache local de edição (para não "piscar" ao salvar).
+  const displayBlocks = useMemo(() => {
+    const base = techSheetBlocks ?? ({} as Record<TechSheetBlockKey, SheetBlockRow[]>);
+    return {
+      composition: base.composition ?? selectedContent.composition,
+      packaging: base.packaging ?? selectedContent.packaging,
+      treatments: base.treatments ?? selectedContent.treatments,
+      printing: base.printing ?? selectedContent.printing,
+      embroidery: base.embroidery ?? selectedContent.embroidery,
+      laundry: base.laundry ?? selectedContent.laundry,
+      quality: base.quality ?? selectedContent.quality,
+    };
+  }, [techSheetBlocks, selectedContent]);
+
+  function updateBlock(block: TechSheetBlockKey, items: SheetBlockRow[]) {
+    if (!selected?.id) return;
+    // Persistência transacional (tabela) + trigger mantém o JSON sincronizado.
+    saveBlock.mutate({ techSheetId: selected.id, block, items });
+  }
+
+  const isOwner = selected?.owner_id === user?.id;
+  const statusUnlocked = selected?.status !== "aprovada";
+  // RBAC granular: owner mantém acesso, mas cada módulo respeita a role do usuário.
+  const canEditDraftBlock = isOwner && statusUnlocked && canEditDraft(roles);
+  const canEditMaterialsBlock = isOwner && statusUnlocked && canEditMaterials(roles);
+  const canEditMeasurementsBlock = isOwner && statusUnlocked && canEditMeasurements(roles);
+  const canEditCostsBlock = isOwner && statusUnlocked && canEditCosts(roles);
+  // Doc (blocos + observações) usa a permissão de rascunho.
+  const canEdit = canEditDraftBlock;
+
+  // Grade real derivada das variantes (color × size) do produto vinculado.
+  const realSizes = useMemo(
+    () => Array.from(new Set(variants.map((v) => v.size?.label).filter(Boolean) as string[])),
+    [variants],
+  );
+  const realColors = useMemo(
+    () => Array.from(new Set(variants.map((v) => v.color?.name).filter(Boolean) as string[])),
+    [variants],
+  );
 
   const completeness = useMemo<CompletenessItem[]>(() => {
     if (!selected) return [];
     const hasCost = selectedContent.costs.length > 0;
+    const gradeDefined = realSizes.length > 0 || Number(selectedProduct?.sizes?.length ?? 0) > 0;
+    const colorsDefined = realColors.length > 0 || Boolean(selectedProduct?.colors?.length);
     return [
-      { key: "dados", label: "Dados gerais preenchidos", ok: Boolean(selected.code && selectedProduct) },
+      {
+        key: "dados",
+        label: "Dados gerais preenchidos",
+        ok: Boolean(selected.code && selectedProduct),
+      },
       { key: "imagem", label: "Imagem principal enviada", ok: Boolean(selectedProduct?.image_url) },
       { key: "materiais", label: "Materiais definidos", ok: docMaterials.length > 0 },
-      { key: "grade", label: "Grade definida", ok: selectedContent.measurements.length > 0 },
-      { key: "cores", label: "Cores definidas", ok: Boolean(selectedProduct?.colors?.length) },
+      { key: "grade", label: "Grade definida", ok: gradeDefined },
+      { key: "cores", label: "Cores definidas", ok: colorsDefined },
+      { key: "skus", label: "Variantes/SKUs geradas", ok: variants.length > 0 },
       { key: "medidas", label: "Medidas preenchidas", ok: selectedContent.measurements.length > 0 },
       { key: "custo", label: "Custo calculado", ok: hasCost },
       { key: "amostra", label: "Amostra aprovada", ok: false },
       { key: "aprovacao", label: "Aprovação final realizada", ok: selected.status === "aprovada" },
     ];
-  }, [selected, selectedContent, selectedProduct, docMaterials]);
+  }, [selected, selectedContent, selectedProduct, docMaterials, realSizes, realColors, variants]);
 
   const saveSheetContent = useMutation({
     mutationFn: async (content: SheetContent) => {
@@ -341,17 +455,25 @@ function FichaTecnicaPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tech_sheets"] });
       toast.success("Ficha atualizada");
+      // Notifica se a ficha for um rascunho incompleto com mais de 7 dias
+      if (selected && selected.status === "rascunho" && selected.owner_id !== user?.id) {
+        const created = new Date(selected.created_at).getTime();
+        const daysOld = (Date.now() - created) / (1000 * 60 * 60 * 24);
+        if (daysOld > 7) {
+          notifyTechSheetEvent({
+            data: {
+              recipientId: selected.owner_id,
+              event: "incompleta",
+              sheetId: selected.id,
+              sheetCode: selected.code,
+              link: `/ficha-tecnica?productId=${selected.product_id ?? ""}`,
+            },
+          }).catch(() => undefined);
+        }
+      }
     },
     onError: (e: Error) => toast.error(e.message),
   });
-
-  function updateBlock(
-    block: keyof Omit<SheetContent, "overview" | "materials" | "operations" | "measurements" | "consumption" | "costs" | "documents">,
-    items: Record<string, string>[],
-  ) {
-    const next = { ...selectedContent, [block]: items };
-    saveSheetContent.mutate(next);
-  }
 
   const versionHistory = useMemo(() => {
     if (!selected) return [];
@@ -367,10 +489,12 @@ function FichaTecnicaPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tech_sheets"] });
+      setDeleteOpen(false);
       toast.success("Ficha removida");
     },
     onError: (error: Error) => toast.error(error.message),
   });
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   function bumpVersion(v: string) {
     const m = v.match(/^v?(\d+)\.(\d+)$/i);
@@ -400,6 +524,19 @@ function FichaTecnicaPage() {
       queryClient.invalidateQueries({ queryKey: ["tech_sheets"] });
       setSelectedId(id);
       toast.success("Nova versão criada");
+      // Notifica o responsável pela ficha original sobre a nova versão
+      if (selected) {
+        notifyTechSheetEvent({
+          data: {
+            recipientId: selected.owner_id,
+            event: "nova_versao",
+            sheetId: id,
+            sheetCode: selected.code,
+            version: bumpVersion(selected.version),
+            link: `/ficha-tecnica?productId=${selected.product_id ?? ""}`,
+          },
+        }).catch(() => undefined);
+      }
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -419,7 +556,12 @@ function FichaTecnicaPage() {
     ? [
         { label: "Ficha Técnica", link: { to: "/ficha-tecnica" as const } },
         ...(selectedProduct
-          ? [{ label: selectedProduct.sku, link: { to: "/produto/$id" as const, params: { id: selectedProduct.id } } }]
+          ? [
+              {
+                label: selectedProduct.sku,
+                link: { to: "/produto/$id" as const, params: { id: selectedProduct.id } },
+              },
+            ]
           : []),
         { label: `${selected.code} · ${selected.version}` },
       ]
@@ -450,16 +592,20 @@ function FichaTecnicaPage() {
         <TechSheetBomReviewPanel />
       </div>
 
-
-
       {isLoading ? (
-        <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-4" aria-label="Carregando fichas técnicas">
+        <div
+          className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-4"
+          aria-label="Carregando fichas técnicas"
+        >
           <section className="glass rounded-xl p-4 space-y-3">
             <div className="h-4 w-40 rounded bg-muted animate-pulse" />
             <div className="h-3 w-28 rounded bg-muted/70 animate-pulse" />
             <div className="space-y-2 pt-2">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-14 rounded-lg border border-border bg-muted/40 animate-pulse" />
+                <div
+                  key={i}
+                  className="h-14 rounded-lg border border-border bg-muted/40 animate-pulse"
+                />
               ))}
             </div>
           </section>
@@ -468,7 +614,10 @@ function FichaTecnicaPage() {
             <div className="h-4 w-96 rounded bg-muted/70 animate-pulse" />
             <div className="grid md:grid-cols-2 gap-3 pt-2">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-24 rounded-lg border border-border bg-muted/40 animate-pulse" />
+                <div
+                  key={i}
+                  className="h-24 rounded-lg border border-border bg-muted/40 animate-pulse"
+                />
               ))}
             </div>
             <div className="h-64 rounded-lg border border-border bg-muted/30 animate-pulse" />
@@ -480,17 +629,32 @@ function FichaTecnicaPage() {
             <ClipboardList className="size-10 text-primary mx-auto mb-3" />
             <h2 className="text-lg font-semibold mb-1">Comece sua primeira ficha técnica</h2>
             <p className="text-sm text-muted-foreground mb-6">
-              A ficha é o coração do produto: reúne materiais (BOM), operações (BOP), medidas e custos.
-              Assim que criada, o sistema calcula automaticamente custo total e sinaliza gates de OP.
+              A ficha é o coração do produto: reúne materiais (BOM), operações (BOP), medidas e
+              custos. Assim que criada, o sistema calcula automaticamente custo total e sinaliza
+              gates de OP.
             </p>
             <div className="grid md:grid-cols-3 gap-3 text-left mb-6">
               {[
-                { n: "1", t: "Vincule ao produto", d: "Selecione o SKU. Se ainda não existe, use Quick Create." },
-                { n: "2", t: "Preencha BOM + BOP", d: "Materiais e operações alimentam o custo automaticamente." },
-                { n: "3", t: "Aprove e libere OP", d: "Ficha aprovada + piloto liberam a OP para o PCP." },
+                {
+                  n: "1",
+                  t: "Vincule ao produto",
+                  d: "Selecione o SKU. Se ainda não existe, use Quick Create.",
+                },
+                {
+                  n: "2",
+                  t: "Preencha BOM + BOP",
+                  d: "Materiais e operações alimentam o custo automaticamente.",
+                },
+                {
+                  n: "3",
+                  t: "Aprove e libere OP",
+                  d: "Ficha aprovada + piloto liberam a OP para o PCP.",
+                },
               ].map((s) => (
                 <div key={s.n} className="rounded-xl border border-border bg-background/30 p-4">
-                  <div className="size-6 rounded-full bg-primary/15 text-primary text-xs font-semibold flex items-center justify-center mb-2">{s.n}</div>
+                  <div className="size-6 rounded-full bg-primary/15 text-primary text-xs font-semibold flex items-center justify-center mb-2">
+                    {s.n}
+                  </div>
                   <div className="text-sm font-medium mb-1">{s.t}</div>
                   <div className="text-xs text-muted-foreground leading-5">{s.d}</div>
                 </div>
@@ -503,7 +667,8 @@ function FichaTecnicaPage() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-4">
-              💡 Dica: você também pode criar a ficha direto pelo Product Workspace, clicando em "Próximo passo" no produto.
+              💡 Dica: você também pode criar a ficha direto pelo Product Workspace, clicando em
+              "Próximo passo" no produto.
             </p>
           </div>
         </div>
@@ -535,9 +700,7 @@ function FichaTecnicaPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        {sheet.product_id && (
-                          <ProductReadinessBadge productId={sheet.product_id} />
-                        )}
+                        {sheet.product_id && <ProductReadinessBadge productId={sheet.product_id} />}
                         <Badge variant="outline" className={COLOR[sheet.status]}>
                           {LABEL[sheet.status]}
                         </Badge>
@@ -576,7 +739,7 @@ function FichaTecnicaPage() {
                     <ApproveTechSheetButton
                       sheetId={selected.id}
                       status={selected.status}
-                      isOwner={selected.owner_id === user?.id}
+                      canApprove={canApproveSheet(roles) && selected.owner_id === user?.id}
                     />
                     <BomTemplatesButton sheetId={selected.id} ownerId={selected.owner_id} />
                   </div>
@@ -584,6 +747,7 @@ function FichaTecnicaPage() {
                     <TabsList className="w-full flex flex-wrap h-auto justify-start bg-transparent p-0 gap-2">
                       {[
                         ["documento", "Documento"],
+                        ["aprovacoes", "Aprovações"],
                         ["materiais", "Materiais"],
                         ["operacoes", "Operações"],
                         ["medidas", "Medidas"],
@@ -612,41 +776,50 @@ function FichaTecnicaPage() {
                         version={selected.version}
                         materials={docMaterials}
                         blockFields={{
-                          composition: selectedContent.composition,
-                          packaging: selectedContent.packaging,
-                          treatments: selectedContent.treatments,
-                          printing: selectedContent.printing,
-                          embroidery: selectedContent.embroidery,
-                          laundry: selectedContent.laundry,
-                          quality: selectedContent.quality,
+                          composition: displayBlocks.composition,
+                          packaging: displayBlocks.packaging,
+                          treatments: displayBlocks.treatments,
+                          printing: displayBlocks.printing,
+                          embroidery: displayBlocks.embroidery,
+                          laundry: displayBlocks.laundry,
+                          quality: displayBlocks.quality,
                         }}
                         observations={selectedContent.overview}
                         canEdit={canEdit}
+                        skuVariants={variants}
+                        onToggleVariantActive={(variantId, active) =>
+                          toggleVariantActive.mutate({ id: variantId, active })
+                        }
                         onObservationChange={(v) =>
                           saveSheetContent.mutate({ ...selectedContent, overview: v })
                         }
-                        onBlockChange={(block, items) => updateBlock(block, items)}
+                        onBlockChange={(block, items) =>
+                          updateBlock(block as TechSheetBlockKey, items as SheetBlockRow[])
+                        }
                       />
+                    </TabsContent>
+                    <TabsContent value="aprovacoes" className="mt-0">
+                      <ApprovalMultiStage techSheetId={selected.id} ownerId={selected.owner_id} />
                     </TabsContent>
                     <TabsContent value="materiais" className="mt-0">
                       <MaterialsPanel
                         sheetId={selected.id}
                         ownerId={selected.owner_id}
-                        canEdit={canEdit}
+                        canEdit={canEditMaterialsBlock}
                       />
                     </TabsContent>
                     <TabsContent value="operacoes" className="mt-0">
                       <OperationsPanel
                         sheetId={selected.id}
                         ownerId={selected.owner_id}
-                        canEdit={canEdit}
+                        canEdit={canEditDraftBlock}
                       />
                     </TabsContent>
                     <TabsContent value="medidas" className="mt-0">
                       <MeasurementsPanel
                         sheetId={selected.id}
                         ownerId={selected.owner_id}
-                        canEdit={canEdit}
+                        canEdit={canEditMeasurementsBlock}
                       />
                     </TabsContent>
                     <TabsContent value="consumo" className="mt-0">
@@ -661,7 +834,7 @@ function FichaTecnicaPage() {
                       <CostsPanel
                         sheetId={selected.id}
                         ownerId={selected.owner_id}
-                        canEdit={canEdit}
+                        canEdit={canEditCostsBlock}
                       />
                     </TabsContent>
                     <TabsContent value="documentos" className="mt-0">
@@ -782,7 +955,7 @@ function FichaTecnicaPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => del.mutate(selected.id)}
+                    onClick={() => setDeleteOpen(true)}
                     className="gap-2 text-destructive hover:text-destructive"
                   >
                     <Trash2 className="size-4" /> Remover
@@ -813,6 +986,33 @@ function FichaTecnicaPage() {
           onOpenChange={setSnapshotsOpen}
         />
       )}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Remover ficha técnica</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 text-sm">
+            <p className="text-muted-foreground text-xs">
+              Tem certeza que deseja remover esta ficha? Esta ação é irreversível e pode afetar
+              produtos, custos e lotes vinculados a ela.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => del.mutate(selected.id)}
+              disabled={del.isPending}
+              className="gap-1"
+            >
+              <Trash2 className="size-3.5" />
+              {del.isPending ? "Removendo…" : "Confirmar remoção"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1359,11 +1559,11 @@ function AiSuggestionsPanel({ sheetId }: { sheetId: string }) {
 function ApproveTechSheetButton({
   sheetId,
   status,
-  isOwner,
+  canApprove,
 }: {
   sheetId: string;
   status: Status;
-  isOwner: boolean;
+  canApprove: boolean;
 }) {
   const qc = useQueryClient();
   const approveFn = useServerFn(approveTechSheet);
@@ -1388,7 +1588,7 @@ function ApproveTechSheetButton({
       </Badge>
     );
   }
-  if (!isOwner) return null;
+  if (!canApprove) return null;
 
   return (
     <>
@@ -1433,4 +1633,3 @@ function ApproveTechSheetButton({
     </>
   );
 }
-
