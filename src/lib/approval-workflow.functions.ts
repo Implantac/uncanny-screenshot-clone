@@ -58,14 +58,14 @@ export const listApprovalWorkflow = createServerFn({ method: "GET" })
       _tech_sheet_id: data.techSheetId,
     });
 
-    const { data, error } = await supabase
+    const { data: rows, error } = await supabase
       .from("approval_workflow")
       .select("*")
       .eq("tech_sheet_id", data.techSheetId)
       .order("stage");
     if (error) throw new Error(error.message);
 
-    return (data ?? []) as ApprovalRow[];
+    return (rows ?? []) as ApprovalRow[];
   });
 
 /**
