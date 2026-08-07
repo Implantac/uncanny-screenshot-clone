@@ -113,7 +113,7 @@ export const sendApprovalWorkflow = createServerFn({ method: "POST" })
       stage = (firstPending?.stage as number) ?? 1;
     }
 
-    const patch: Record<string, unknown> = {
+    const patch: { status: "em_analise"; sent_at: string; assigned_to?: string } = {
       status: "em_analise",
       sent_at: new Date().toISOString(),
     };

@@ -120,7 +120,7 @@ function LineSheetPage() {
       <div className="print:hidden space-y-3">
         <PlmBreadcrumb
           items={[
-            { label: "Coleções", link: { to: "/collections" } },
+            { label: "Coleções", link: { to: "/colecoes" as const } },
             ...(collection
               ? [{ label: collection.name, link: { to: "/colecao-360/$id" as const, params: { id } } }]
               : []),

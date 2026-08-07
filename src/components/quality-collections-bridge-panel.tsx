@@ -103,7 +103,7 @@ export function QualityCollectionsBridgePanel() {
                   <tr key={r.id} className="border-b border-border/50 hover:bg-muted/20">
                     <td className="px-2 py-2.5">
                       <Link
-                        to="/colecoes/$id"
+                        to="/colecao-360/$id"
                         params={{ id: r.id }}
                         className="font-medium hover:underline"
                       >
