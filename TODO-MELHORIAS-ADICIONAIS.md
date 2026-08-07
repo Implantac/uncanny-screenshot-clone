@@ -10,8 +10,9 @@
 - [x] **P2.** Dividir `useDashboard()` em queries menores com `staleTime` próprio
   - Arquivo: `src/routes/_authenticated/_app.index.tsx`
   - **Status:** ✅ Concluído — 7 queries individuais com `staleTime: 60s` + query computada que agrega quando os dados estão prontos (`enabled: !isLoading`).
-- [ ] **P3.** Lazy loading dos painéis abaixo da dobra na home (IntersectionObserver)
-  - Arquivo: `src/routes/_authenticated/_app.index.tsx`
+- [x] **P3.** Lazy loading dos painéis abaixo da dobra na home (IntersectionObserver)
+  - Arquivos: `src/components/lazy-reveal.tsx` (novo), `src/hooks/use-in-view.ts` (novo), `src/routes/_authenticated/_app.index.tsx`
+  - **Status:** ✅ Concluído — novo hook `useInView` (IntersectionObserver) + componente `LazyReveal` que só monta o conteúdo quando o usuário rola até ele. Aplicado ao bloco "Coleção em destaque + Marketing ROI" da aba Resumo (evita render/IA extra na 1ª carga). As abas "Operações" e "Módulos" já só montam ao serem abertas (TanStack Tabs).
 
 ## Sprint Clareza
 - [x] **C1.** Reduzir visão da sidebar para módulos essenciais por papel
