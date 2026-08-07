@@ -37,7 +37,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ContextualFab } from "@/components/contextual-fab";
 import { useState, useEffect, useMemo, type ReactNode } from "react";
 
-
 const ROLE_LABEL: Record<string, string> = {
   admin: "Admin",
   gerente: "Gerente",
@@ -48,6 +47,14 @@ const ROLE_LABEL: Record<string, string> = {
 
 const SIDEBAR_COLLAPSED_KEY = "usemoda:sidebar-collapsed";
 const SIDEBAR_SHOW_ALL_KEY = "usemoda:sidebar-show-all";
+
+/**
+ * "Começar por aqui" — módulos essenciais do fluxo PLM básico.
+ * Apresentados no topo da sidebar para orientar usuários leigos pelo
+ * caminho principal sem precisar entender as fases do ciclo de vida.
+ */
+const ESSENTIAL_SLUGS = ["produtos", "ficha-tecnica", "prototipos", "pcp"];
+const ESSENTIAL_MODULES = MODULES.filter((m) => ESSENTIAL_SLUGS.includes(m.slug));
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { location } = useRouterState();
@@ -68,7 +75,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
-
   useEffect(() => {
     try {
       const v = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
@@ -79,7 +85,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       /* ignore */
     }
   }, []);
-
 
   useEffect(() => {
     setMobileOpen(false);
@@ -97,7 +102,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     });
   };
 
-// Fase (ciclo de vida) → módulos, marcando a fase que contém a rota ativa
+  // Fase (ciclo de vida) → módulos, marcando a fase que contém a rota ativa
   const grouped = useMemo(() => {
     const map = new Map<LifecyclePhase, { items: ModuleDef[]; activeIn: boolean }>();
     for (const p of LIFECYCLE_PHASES) map.set(p, { items: [], activeIn: false });
@@ -164,14 +169,60 @@ export function AppShell({ children }: { children: ReactNode }) {
           isCollapsed ? "px-2" : "px-3",
         )}
       >
-        {LIFECYCLE_PHASES.map((group) => {
+        {/* "Começar por aqui" — atalhos essenciais para usuários leigos */}
+        {!isCollapsed && (
+          <div className="mb-2">
+            <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/70">
+              Começar por aqui
+            </div>
+            <ul className="space-y-0.5">
+              {ESSENTIAL_MODULES.filter((m) => moduleAllowed(m, sectors, isAdmin)).map((m) => {
+                const Icon = m.icon;
+                const isActive =
+                  active === m.path || (active.startsWith(m.path + "/") && m.path !== "/");
+                return (
+                  <li key={m.slug}>
+                    <Link
+                      to={m.path}
+                      className={cn(
+                        "group/nav relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 transition-colors duration-150",
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[2px] rounded-full bg-emerald-500 transition-opacity",
+                          isActive ? "opacity-100" : "opacity-0",
+                        )}
+                        aria-hidden
+                      />
+                      <Icon
+                        className={cn(
+                          "size-4 transition-colors",
+                          isActive
+                            ? "text-emerald-500"
+                            : "text-sidebar-foreground/60 group-hover/nav:text-sidebar-foreground",
+                        )}
+                      />
+                      <span className="truncate flex-1">{m.title}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="mx-2 my-2 border-t border-sidebar-border/60" />
+          </div>
+        )}
 
+        {LIFECYCLE_PHASES.map((group) => {
           const bucket = grouped.get(group);
           if (!bucket || bucket.items.length === 0) return null;
           const isOpen = openGroups[group] ?? bucket.activeIn ?? false;
           const totalCount = bucket.items.length;
 
-const renderItem = (m: ModuleDef) => {
+          const renderItem = (m: ModuleDef) => {
             const isActive =
               active === m.path ||
               (active.startsWith(m.path + "/") && m.path !== "/") ||
@@ -230,7 +281,9 @@ const renderItem = (m: ModuleDef) => {
                   <Icon
                     className={cn(
                       "size-4 transition-colors",
-                      isActive ? "text-primary" : "text-sidebar-foreground/60 group-hover/nav:text-sidebar-foreground",
+                      isActive
+                        ? "text-primary"
+                        : "text-sidebar-foreground/60 group-hover/nav:text-sidebar-foreground",
                     )}
                   />
                   <span className="truncate flex-1">{m.title}</span>
@@ -301,7 +354,6 @@ const renderItem = (m: ModuleDef) => {
           )}
         </div>
       )}
-
     </TooltipProvider>
   );
 

@@ -25,6 +25,7 @@ import { ExecutiveKpisPanel } from "@/components/executive-kpis-panel";
 import { MorningBriefingPanel } from "@/components/morning-briefing-panel";
 import { RecentProductsStrip } from "@/components/recent-products-strip";
 import { RecentCollectionsStrip } from "@/components/recent-collections-strip";
+import { FirstRunGuide } from "@/components/first-run-guide";
 
 export const Route = createFileRoute("/_authenticated/_app/")({
   head: () => ({
@@ -468,7 +469,6 @@ function CommandCenter() {
     };
   }, [data]);
 
-
   const kpis = [
     {
       label: "Coleções ativas",
@@ -496,6 +496,18 @@ function CommandCenter() {
     },
   ];
 
+  const sections = [
+    { id: "resumo", label: "Resumo" },
+    { id: "producao", label: "Produção" },
+    { id: "desenvolvimento", label: "Desenvolvimento" },
+    { id: "operacoes", label: "Alertas" },
+    { id: "modulos", label: "Módulos" },
+  ];
+
+  function scrollToSection(id: string) {
+    document.getElementById(`cc-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -515,25 +527,25 @@ function CommandCenter() {
         </div>
       </div>
 
-      {nextAction && (
+      {nextAction &&
         (() => {
           const Icon = nextAction.icon;
           const toneClass =
             nextAction.tone === "danger"
               ? "border-destructive/40 bg-destructive/5"
               : nextAction.tone === "warning"
-              ? "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30"
-              : nextAction.tone === "success"
-              ? "border-emerald-400/40 bg-emerald-50 dark:bg-emerald-950/30"
-              : "border-primary/30 bg-primary/5";
+                ? "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30"
+                : nextAction.tone === "success"
+                  ? "border-emerald-400/40 bg-emerald-50 dark:bg-emerald-950/30"
+                  : "border-primary/30 bg-primary/5";
           const iconClass =
             nextAction.tone === "danger"
               ? "text-destructive"
               : nextAction.tone === "warning"
-              ? "text-amber-600 dark:text-amber-300"
-              : nextAction.tone === "success"
-              ? "text-emerald-600 dark:text-emerald-300"
-              : "text-primary";
+                ? "text-amber-600 dark:text-amber-300"
+                : nextAction.tone === "success"
+                  ? "text-emerald-600 dark:text-emerald-300"
+                  : "text-primary";
           return (
             <div
               className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 ${toneClass}`}
@@ -560,17 +572,34 @@ function CommandCenter() {
               </Link>
             </div>
           );
-        })()
-      )}
+        })()}
+
+      {/* Onboarding de primeiros passos (primeira visita) */}
+      <FirstRunGuide />
+
+      {/* Navegação rápida por seção — ajuda usuários leigos a navegar a home longa */}
+      <nav
+        aria-label="Seções do painel"
+        className="flex flex-wrap gap-2 sticky top-0 z-20 bg-background/90 backdrop-blur rounded-xl border border-border p-2"
+      >
+        {sections.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => scrollToSection(s.id)}
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
+          >
+            {s.label}
+          </button>
+        ))}
+      </nav>
 
       <MorningBriefingPanel />
       <RecentProductsStrip />
       <RecentCollectionsStrip />
       <ExecutiveKpisPanel />
 
-
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" id="cc-resumo">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
@@ -590,7 +619,7 @@ function CommandCenter() {
       </div>
 
       {/* === Alertas operacionais === */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="cc-operacoes">
         {[
           {
             label: "Produtos sem ficha",
@@ -768,7 +797,7 @@ function CommandCenter() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" id="cc-desenvolvimento">
         <div className="lg:col-span-2 glass rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -812,7 +841,7 @@ function CommandCenter() {
           </ResponsiveContainer>
         </div>
 
-        <div className="glass rounded-xl p-5">
+        <div className="glass rounded-xl p-5" id="cc-producao">
           <div className="text-sm font-semibold">Produção</div>
           <div className="text-xs text-muted-foreground mb-4">Peças por estágio</div>
           <ResponsiveContainer width="100%" height={240}>
@@ -985,7 +1014,7 @@ function CommandCenter() {
 
       <div>
         <div className="text-sm font-semibold mb-3">Acesso rápido aos módulos PLM</div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" id="cc-modulos">
           {MODULES.filter((m) => m.path !== "/" && !m.hidden && m.source !== "erp-mirror")
             .slice(0, 12)
             .map((m) => {

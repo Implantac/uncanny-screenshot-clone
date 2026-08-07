@@ -62,7 +62,7 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
             .limit(50),
           supabaseAdmin
             .from("production_orders")
-            .select("id, code, quantity, due_date, stage, status, products(name, sku)")
+            .select("id, code, quantity, due_date, stage, status, products(id, name, sku)")
             .eq("owner_id", tok.owner_id)
             .eq("supplier_id", tok.supplier_id)
             .neq("status", "cancelada")
@@ -99,11 +99,45 @@ export const Route = createFileRoute("/api/public/supplier-portal/$token")({
           .eq("supplier_id", tok.supplier_id)
           .order("created_at", { ascending: false });
 
+        // Resolve a ficha técnica (modo fornecedor) para cada OP ativa.
+        // A OP referencia o produto; buscamos a ficha mais recente do produto.
+        const posWithSheets = pos ?? [];
+        const posTyped = posWithSheets as Array<{ products?: { id: string } | null }>;
+        const productIds = posTyped
+          .map((p) => p.products?.id)
+          .filter((id: string | undefined): id is string => Boolean(id));
+        const sheetByProduct = new Map<string, { id: string; code: string; version: string }>();
+        if (productIds.length > 0) {
+          const { data: sheets } = await supabaseAdmin
+            .from("tech_sheets")
+            .select("id, code, version, product_id, status")
+            .eq("owner_id", tok.owner_id)
+            .neq("status", "rascunho")
+            .in("product_id", productIds)
+            .order("updated_at", { ascending: false });
+          const seen = new Set<string>();
+          for (const s of (sheets ?? []) as Array<{
+            id: string;
+            code: string;
+            version: string;
+            product_id: string | null;
+          }>) {
+            if (!s.product_id || seen.has(s.product_id)) continue;
+            seen.add(s.product_id);
+            sheetByProduct.set(s.product_id, { id: s.id, code: s.code, version: s.version });
+          }
+        }
+        const production_orders = posTyped.map((p) => ({
+          ...p,
+          sheet_id: p.products?.id ? (sheetByProduct.get(p.products.id)?.id ?? null) : null,
+          sheet_code: p.products?.id ? (sheetByProduct.get(p.products.id)?.code ?? null) : null,
+        }));
+
         return Response.json({
           supplier,
           rfqs: rfqs ?? [],
           quotes: myQuotes ?? [],
-          production_orders: pos ?? [],
+          production_orders,
           attachments: attachments ?? [],
           acks: acks ?? [],
         });

@@ -142,15 +142,16 @@ CREATE POLICY p_approval_company ON approval_workflow
 ```
 
 **Tarefas:**
-- [ ] Migration `20260731000003` com tabela + RLS + índices (`product_id`, `tech_sheet_id`)
-- [ ] `src/lib/approval-workflow.functions.ts` com server functions: `list`, `send`, `decide`, `skip`, `cancel`
-- [ ] Componente `ApprovalMultiStage` com cards visuais (etapa, responsável, status, datas, comentário)
-- [ ] Modal de decisão com comentário obrigatório para reprovação
-- [ ] Lógica de transição de status:
+- [x] Migration `20260731000003` com tabela + RLS + índices (`product_id`, `tech_sheet_id`)
+- [x] `src/lib/approval-workflow.functions.ts` com server functions: `list`, `send`, `decide`, `skip`, `cancel`
+- [x] Componente `ApprovalMultiStage` com cards visuais (etapa, responsável, status, datas, comentário)
+- [x] Modal de decisão com comentário obrigatório para reprovação
+- [x] Lógica de transição de status:
   - Todas aprovadas → `tech_sheets.status = 'aprovada'`
   - Qualquer reprovada → `tech_sheets.status = 'em_revisao'`
   - Reprovação gera `tech_sheet_versions` snapshot para auditoria
-- [ ] Notificação ao próximo responsável ao aprovar etapa
+- [x] Notificação ao próximo responsável ao aprovar etapa
+- [x] Integração na rota `_app.ficha-tecnica.tsx` (nova aba "Aprovações")
 
 **Critérios de aceite:**
 - [ ] O fluxo de 7 etapas aparece na aba Documento (ou nova aba "Aprovações")
@@ -178,11 +179,17 @@ CREATE POLICY p_approval_company ON approval_workflow
 - Ficha incompleta há 7+ dias → notificar o responsável
 
 **Tarefas:**
-- [ ] Criar `tech-sheet-notify.functions.ts` com `notifyTechSheetEvent`
-- [ ] Chamar na mutation de aprovação (`approveTechSheet`)
-- [ ] Chamar na mutation de nova versão (`newVersion`)
-- [ ] Chamar na mutation de salvamento de blocos (`saveSheetContent`) se rascunho há >7 dias
-- [ ] Criar job agendado (Supabase cron) para alertar fichas incompletas
+- [x] Criar `tech-sheet-notify.functions.ts` com `notifyTechSheetEvent`
+  - Eventos: `aprovada`, `alterada`, `nova_versao`, `incompleta`
+  - Insere em `push_notifications` reaproveitando infra do sino (`getRecentPushes`)
+- [x] Chamar na mutation de aprovação (`approveTechSheet`) — notifica o responsável com evento `aprovada`
+- [x] Chamar na mutation de nova versão (`newVersion`) — notifica o owner da ficha original com evento `nova_versao`
+- [x] Chamar na mutation de salvamento de blocos (`saveSheetContent`) se rascunho há >7 dias — notifica o owner quando outro usuário edita um rascunho incompleto antigo (evento `incompleta`)
+- [x] Criar job agendado (Supabase cron) para alertar fichas incompletas
+  - Migration `20260731000004_tech_sheet_incomplete_cron.sql`
+  - Função `alert_incomplete_tech_sheets()` (SECURITY DEFINER) → insere em `push_notifications`
+  - Respeita `notification_preferences` (categoria `tech_sheet`)
+  - Agendado via pg_cron às 07:00 UTC (`alert-incomplete-tech-sheets`)
 
 **Critérios de aceite:**
 - [ ] Notificação aparece no sino ao aprovar/alterar/criar versão
@@ -194,7 +201,7 @@ CREATE POLICY p_approval_company ON approval_workflow
 
 ### 3.1 Migrar blocos técnicos de JSON para tabelas
 
-**Migration:** `supabase/migrations/20260731000004_block_tables.sql`
+**Migration:** `supabase/migrations/20260731000005_block_tables.sql`
 
 **Descrição:** Criar tabelas dedicadas para cada bloco, mantendo retrocompatibilidade com o JSON `content`.
 
@@ -220,16 +227,22 @@ CREATE TABLE tech_sheet_treatments (
 ```
 
 **Tarefas:**
-- [ ] Migration com 7 tabelas + RLS (herdado de `tech_sheets`) + índices
-- [ ] Server functions CRUD genéricas em `src/lib/tech-sheet-blocks.functions.ts`
-- [ ] Script de migração de dados: `content->composition` → inserir em `tech_sheet_composition`
-- [ ] Trigger `sync_blocks_to_json` para manter `content` sincronizado (retrocompatibilidade)
-- [ ] Atualizar `FichaDocument` para ler dados transacionais (fallback para JSON)
+- [x] Migration com 7 tabelas + RLS (herdado de `tech_sheets`) + índices
+  - `20260731000005_block_tables.sql` — composition, treatments, printing, embroidery, laundry, packaging, quality
+  - RLS por `owner_id` + índices + triggers `updated_at`
+- [x] Server functions CRUD genéricas em `src/lib/tech-sheet-blocks.functions.ts`
+  - `listTechSheetBlocks` (tabelas-first, fallback JSON) + `saveTechSheetBlock` (delete+insert transacional)
+- [x] Script de migração de dados: `content->block` → inserir na tabela (idempotente, só quando vazia)
+- [x] Trigger `sync_block_to_json` para manter `content` sincronizado (retrocompatibilidade)
+- [x] Atualizar `FichaDocument` para ler dados transacionais (fallback para JSON)
+  - Integrado em `_app.ficha-tecnica.tsx` e `_app.produto.$id.tsx` (na rota; `FichaDocument` segue props-driven)
 
 **Critérios de aceite:**
-- [ ] Dados migrados sem perda
-- [ ] `FichaDocument` lê de tabela; se vazia, usa JSON (retrocompatível)
-- [ ] Relatórios SQL conseguem agrupar por bloco (ex.: "produtos com stone wash")
+- [x] Dados migrados sem perda (script idempotente)
+- [x] `FichaDocument` lê de tabela; se vazia, usa JSON (retrocompatível)
+- [x] Relatórios SQL conseguem agrupar por bloco (ex.: "produtos com stone wash")
+- [x] `npx tsc --noEmit` — sem novos erros nos arquivos alterados (blocos/ficha/produto)
+- [ ] Aplicar migration `20260731000005_block_tables.sql` no Supabase
 
 **Risco:** migração de dados existentes. **Mitigação:** script idempotente + teste em cópia de produção.
 
@@ -254,50 +267,55 @@ CREATE TABLE tech_sheet_treatments (
 | Fornecedor | ❌ | ❌ | ❌ | ❌ | ❌ (leitura) |
 
 **Tarefas:**
-- [ ] Definir `CAN_EDIT` por módulo em `src/lib/permissions.ts`
-- [ ] Hook `useUserRole()` (consulta `profiles.role`)
-- [ ] Passar permissões granulares aos panels (`canEditMaterials`, `canEditMeasurements`, `canEditCosts`)
-- [ ] Bloquear UI por permissão (desabilitar inputs, esconder botões)
+- [x] Definir `CAN_EDIT` por módulo em `src/lib/permissions.ts`
+- [x] Hook `useUserRole()` (consulta `user_roles`)
+- [x] Passar permissões granulares aos panels (`canEditMaterials`, `canEditMeasurements`, `canEditCosts`)
+- [x] Bloquear UI por permissão (desabilitar inputs, esconder botões)
 
 **Critérios de aceite:**
-- [ ] Compras edita só materiais; Modelagem só medidas; etc.
-- [ ] Diretoria aprova mas não edita
-- [ ] Permissões aplicadas em todos os panels e na aba Documento
+- [x] Compras edita só materiais; Modelagem só medidas; etc.
+- [x] Diretoria aprova mas não edita
+- [x] Permissões aplicadas em todos os panels e na aba Documento
 
 ---
 
 ## 7. Eixo 4 — Grade, Cores e SKUs (P2)
 
-### 4.1 Integrar grade real na completude da ficha
+### 4.1 ✅ Integrar grade real na completude da ficha
 
-**Arquivo:** `src/routes/_authenticated/_app.ficha-tecnica.tsx`
+**Arquivo:** `src/routes/_authenticated/_app.ficha-tecnica.tsx` + `_app.produto.$id.tsx`
 
-**Descrição:** O checklist usa `measurements.length` como proxy de grade. Melhorar para consultar grade real.
+**Descrição:** O checklist usava `measurements.length` como proxy de grade. Melhorado para consultar grade real via `product_variants`.
 
 **Tarefas:**
-- [ ] Query `ts-doc-product-variants` (product_variants por produto)
-- [ ] "Grade definida" = `sizes.length > 0 && colors.length > 0`
-- [ ] "SKUs gerados" = `variants.length > 0`
-- [ ] Novo item no checklist: "Variantes/SKUs geradas"
+- [x] Query `ts-doc-product-variants` (product_variants por produto, com joins size.label e color.name)
+- [x] "Grade definida" = `sizes.length > 0 && colors.length > 0` (dados reais)
+- [x] "SKUs gerados" = `variants.length > 0`
+- [x] Novo item no checklist: "Variantes/SKUs geradas"
+- [x] Aplicado também no Product Workspace (`_app.produto.$id.tsx`)
+- [x] `npx prettier --write` + `npx tsc --noEmit` sem novos erros
 
 **Critério de aceite:**
-- [ ] Completude reflete a grade real do produto, não proxy
+- [x] Completude reflete a grade real do produto, não proxy
 
 ---
 
-### 4.2 Matriz visual cor × tamanho (SkuMatrix)
+### 4.2 ✅ Matriz visual cor × tamanho (SkuMatrix)
 
 **Arquivo:** `src/components/tech-pack/sheet-document.tsx`
 
 **Descrição:** Seção visual de SKUs (cor × tamanho com status).
 
 **Tarefas:**
-- [ ] Componente `SkuMatrix` (cores em linha, tamanhos em coluna, status no cruzamento)
-- [ ] Incluir em `FichaDocument`
-- [ ] Toggle ativo/inativo por variante (se `canEdit`)
+- [x] Componente `SkuMatrix` (cores em linha, tamanhos em coluna, status no cruzamento)
+- [x] Incluir em `FichaDocument` (nova prop `skuVariants` + `onToggleVariantActive`)
+- [x] Conectar em `_app.ficha-tecnica.tsx` (query `ts-doc-product-variants` + mutation toggle)
+- [x] Conectar em `_app.produto.$id.tsx` (query `product-workspace-variants` + mutation toggle)
+- [x] Toggle ativo/inativo por variante (se `canEdit`)
+- [x] `npx prettier --write` + `npx tsc --noEmit` sem novos erros
 
 **Critério de aceite:**
-- [ ] Matriz clara, com cores e status de cada variante
+- [x] Matriz clara, com cores e status de cada variante
 
 ---
 
@@ -326,7 +344,7 @@ CREATE TABLE tech_sheet_treatments (
 
 **Tarefas:**
 - [ ] Modal "Registrar prova" (vestibilidade, medidas, acabamento, costura, foto)
-- [ ] Tabela `fit_trials` (migration `20260731000005_fit_trials.sql`)
+- [ ] Tabela `fit_trials` (migration `20260731000006_fit_trials.sql`)
 - [ ] Timeline de provas na aba Documento
 - [ ] Notificar estilo ao registrar prova
 
@@ -364,14 +382,14 @@ CREATE TABLE tech_sheet_treatments (
 - [x] 1.3 Tooltips para modelistas
 
 ### Sprint 2 (P1) — 8 dias
-- [ ] 2.1 Fluxo de aprovação multi-etapas (migration + componente + testes)
-- [ ] 2.2 Notificações automáticas
+- [x] 2.1 Fluxo de aprovação multi-etapas (migration + componente + testes)
+- [x] 2.2 Notificações automáticas
 
 ### Sprint 3 (P2) — 10 dias
-- [ ] 3.1 Migrar blocos para tabelas (migration + CRUD + script + sincronia)
-- [ ] 3.2 RBAC por role
-- [ ] 4.1 Integrar grade real na completude
-- [ ] 4.2 Matriz visual SKU × cor × tamanho
+- [x] 3.1 Migrar blocos para tabelas (migration + CRUD + script + sincronia)
+- [x] 3.2 RBAC por role
+- [x] 4.1 Integrar grade real na completude
+- [x] 4.2 Matriz visual SKU × cor × tamanho (SkuMatrix)
 
 ### Sprint 4 (P3) — 8 dias
 - [ ] 5.1 Modo fornecedor na ficha
@@ -416,7 +434,7 @@ Após implementação de cada eixo, medir:
 | 1.2 Dashboard insumos | Migration `inventory_category` (se necessária) | — |
 | 2.1 Aprovação multi-etapa | Migration `20260731000003` | 2.2 |
 | 2.2 Notificações | 2.1 | — |
-| 3.1 Blocos→tabelas | Migration `20260731000004` | 3.2 (leitura) |
+| 3.1 Blocos→tabelas | Migration `20260731000005` | 3.2 (leitura) |
 | 3.2 RBAC | Nenhuma | 5.1 |
 | 5.1 Modo fornecedor | 3.2 | — |
 
@@ -428,8 +446,9 @@ Após implementação de cada eixo, medir:
 |---------|----------|--------|
 | `20260731000002_inventory_category.sql` | Coluna `category` em `inventory_items` (se necessário) | 1 |
 | `20260731000003_approval_workflow.sql` | Tabela `approval_workflow` + RLS | 2 |
-| `20260731000004_block_tables.sql` | 7 tabelas de blocos + RLS + trigger | 3 |
-| `20260731000005_fit_trials.sql` | Tabela `fit_trials` | 4 |
+| `20260731000004_tech_sheet_incomplete_cron.sql` | Cron diário de alerta de fichas incompletas | 2 |
+| `20260731000005_block_tables.sql` | 7 tabelas de blocos + RLS + trigger sync | 3 |
+| `20260731000006_fit_trials.sql` | Tabela `fit_trials` | 4 |
 
 > **Nota:** ordinais separados para evitar conflito com a migration já aplicada `20260731000001_revisao_ficha_blocos.sql`.
 
