@@ -42,52 +42,121 @@ export const Route = createFileRoute("/_authenticated/_app/")({
 });
 
 function useDashboard() {
+  // Queries individuais com cache próprio — evita refazer todas as 7 buscas
+  // a cada visita e permite que cada uma expire independentemente.
+  const prodQ = useQuery({
+    queryKey: ["dash", "production_orders"],
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("production_orders")
+        .select(
+          "id, code, quantity, progress, status, stage, stage_updated_at, created_at, due_date, product_id",
+        );
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const colsQ = useQuery({
+    queryKey: ["dash", "collections"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("collections")
+        .select("id, name, status, progress, year, created_at")
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const invQ = useQuery({
+    queryKey: ["dash", "inventory"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("inventory_items")
+        .select("name, balance, minimum, unit, category");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const prodsQ = useQuery({
+    queryKey: ["dash", "products"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, category, colors, status, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const protosQ = useQuery({
+    queryKey: ["dash", "prototypes"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("prototypes")
+        .select("id, code, stage, product_id, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const techQ = useQuery({
+    queryKey: ["dash", "tech_sheets"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tech_sheets")
+        .select("id, product_id, status, created_at")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const campsQ = useQuery({
+    queryKey: ["dash", "campaigns"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("marketing_campaigns")
+        .select("name, investment, roas, status")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const isLoading =
+    prodQ.isLoading ||
+    colsQ.isLoading ||
+    invQ.isLoading ||
+    prodsQ.isLoading ||
+    protosQ.isLoading ||
+    techQ.isLoading ||
+    campsQ.isLoading;
+
   return useQuery({
-    queryKey: ["plm-dashboard"],
-    // Cache de 60s: evita refazer as 7 queries do dashboard a cada visita à home.
+    queryKey: ["plm-dashboard-computed"],
+    enabled: !isLoading,
     staleTime: 30_000,
     gcTime: 3 * 60_000,
-    queryFn: async () => {
-      const [prod, cols, inv, prods, protos, tech, camps] = await Promise.all([
-        supabase
-          .from("production_orders")
-          .select(
-            "id, code, quantity, progress, status, stage, stage_updated_at, created_at, due_date, product_id",
-          ),
-        supabase
-          .from("collections")
-          .select("id, name, status, progress, year, created_at")
-          .order("created_at", { ascending: false })
-          .limit(6),
-        supabase.from("inventory_items").select("name, balance, minimum, unit, category"),
-        supabase
-          .from("products")
-          .select("id, name, category, colors, status, created_at")
-          .order("created_at", { ascending: false })
-          .limit(200),
-        supabase
-          .from("prototypes")
-          .select("id, code, stage, product_id, created_at")
-          .order("created_at", { ascending: false })
-          .limit(50),
-        supabase
-          .from("tech_sheets")
-          .select("id, product_id, status, created_at")
-          .order("created_at", { ascending: false })
-          .limit(500),
-        supabase
-          .from("marketing_campaigns")
-          .select("name, investment, roas, status")
-          .order("created_at", { ascending: false })
-          .limit(100),
-      ]);
-      const p = prod.data ?? [];
-      const c = cols.data ?? [];
-      const i = inv.data ?? [];
-      const pr = prods.data ?? [];
-      const pt = protos.data ?? [];
-      const ts = tech.data ?? [];
-      const cmp = camps.data ?? [];
+    queryFn: () => {
+      const p = prodQ.data ?? [];
+      const c = colsQ.data ?? [];
+      const i = invQ.data ?? [];
+      const pr = prodsQ.data ?? [];
+      const pt = protosQ.data ?? [];
+      const ts = techQ.data ?? [];
+      const cmp = campsQ.data ?? [];
 
       const activeCollections = c.filter(
         (r: any) => r.status && !/finaliz|conclu/i.test(r.status),

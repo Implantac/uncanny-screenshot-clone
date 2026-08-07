@@ -66,6 +66,7 @@ import { ChipInput } from "@/components/ui/chip-input";
 import { EmptyStateGuided } from "@/components/ui/empty-state-guided";
 import { ProductDuplicateDialog } from "@/components/product-duplicate-dialog-lazy";
 import { ProductQuickCreateDialog } from "@/components/product-quick-create-dialog-lazy";
+import { ProductMiniNextStep } from "@/components/product-mini-next-step";
 
 const STATUS_FILTER_VALUES = [
   "all",
@@ -82,6 +83,7 @@ export const Route = createFileRoute("/_authenticated/_app/produtos")({
       q: fallback(z.string().trim().max(80), "").default(""),
       status: fallback(z.enum(STATUS_FILTER_VALUES).optional(), undefined),
       collection: fallback(z.string().trim().max(120).optional(), undefined),
+      page: fallback(z.coerce.number().int().min(1).optional(), undefined),
       pinned: fallback(z.boolean().optional(), undefined),
       prefillName: fallback(z.string().trim().max(120).optional(), undefined),
       prefillCategory: fallback(z.string().trim().max(60).optional(), undefined),
@@ -238,8 +240,6 @@ function ProdutosPage() {
   });
   const [sortBy, setSortBy] = useState<"recent" | "name" | "margin" | "price">("recent");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState(12);
-  const PAGE_SIZE = 12;
   const sp = Route.useSearch();
   const {
     q: search,
@@ -248,33 +248,45 @@ function ProdutosPage() {
     prefillColors,
     status: statusFilter,
     collection: collectionFilter,
+    page,
     pinned: pinnedOnly,
   } = sp;
   const navigate = useNavigate({ from: Route.fullPath });
   const setSearch = (v: string) =>
-    navigate({ search: (p: typeof sp) => ({ ...p, q: v }), replace: true });
+    navigate({ search: (p: typeof sp) => ({ ...p, q: v, page: undefined }), replace: true });
   const setStatusFilter = (v: string) =>
     navigate({
       search: (p: typeof sp) => ({
         ...p,
         status: v === "all" ? undefined : (v as Product["status"]),
+        page: undefined,
       }),
       replace: true,
     });
   const setCollectionFilter = (v: string) =>
     navigate({
-      search: (p: typeof sp) => ({ ...p, collection: v === "all" ? undefined : v }),
+      search: (p: typeof sp) => ({
+        ...p,
+        collection: v === "all" ? undefined : v,
+        page: undefined,
+      }),
       replace: true,
     });
   const setPinnedOnly = (v: boolean) =>
     navigate({
-      search: (p: typeof sp) => ({ ...p, pinned: v ? true : undefined }),
+      search: (p: typeof sp) => ({ ...p, pinned: v ? true : undefined, page: undefined }),
       replace: true,
     });
+  const setPage = (v: number) =>
+    navigate({ search: (p: typeof sp) => ({ ...p, page: v || undefined }), replace: true });
 
-  // Sempre que filtros mudarem, reinicia o "ver mais" para evitar listas vazias falsas.
+  // Página atual (padrão 1) — resetado quando filtros mudam via URL.
+  const currentPage = page ?? 1;
+
+  // Sempre que filtros mudarem, volta para a página 1 via URL.
   useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
+    if (currentPage !== 1) setPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, statusFilter, collectionFilter, pinnedOnly, sortBy]);
 
   const prefillHandledRef = useRef(false);
@@ -296,21 +308,46 @@ function ProdutosPage() {
     });
   }, [prefillName, prefillCategory, prefillColors, navigate]);
 
-const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products"],
-    // Seleção de colunas específicas + limite para reduzir payload e tempo de resposta.
+  const PAGE_SIZE = 20;
+  const productsQuery = useQuery({
+    queryKey: ["products", search, statusFilter, collectionFilter, pinnedOnly, currentPage],
+    // Paginação server-side + filtros no banco — reduz payload e tempo de resposta
+    // (antes viava até 300 produtos de uma vez).
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = (currentPage - 1) * PAGE_SIZE;
+      let query = supabase
         .from("products")
         .select(
           "id, owner_id, collection_id, sku, name, category, product_group, subgroup, product_class, grade, description, cost_price, sell_price, status, image_url, sizes, colors, created_at",
-        )
+          { count: "exact" },
+        );
+      if (statusFilter && statusFilter !== "all") query = query.eq("status", statusFilter);
+      if (collectionFilter && collectionFilter !== "all") {
+        query =
+          collectionFilter === "none"
+            ? query.is("collection_id", null)
+            : query.eq("collection_id", collectionFilter);
+      }
+      if (search.trim()) {
+        const term = `%${search.trim()}%`;
+        query = query.or(`name.ilike.${term},sku.ilike.${term},category.ilike.${term}`);
+      }
+      const { data, error, count } = await query
         .order("created_at", { ascending: false })
-        .limit(300);
+        .range(from, from + PAGE_SIZE - 1);
       if (error) throw error;
-      return data as Product[];
+      return {
+        rows: (data ?? []) as Product[],
+        total: count ?? 0,
+        page: currentPage,
+        pageSize: PAGE_SIZE,
+      };
     },
   });
+  const products = productsQuery.data?.rows ?? [];
+  const isLoading = productsQuery.isLoading;
+  const totalProducts = productsQuery.data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE));
 
   const { data: collections = [] } = useQuery({
     queryKey: ["collections-ref"],
@@ -333,24 +370,9 @@ const { data: products = [], isLoading } = useQuery({
   }, []);
 
   const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    let list = products;
-    if (pinnedOnly) list = list.filter((p) => pinnedIds.has(p.id));
-    if (statusFilter && statusFilter !== "all")
-      list = list.filter((p) => p.status === statusFilter);
-    if (collectionFilter && collectionFilter !== "all") {
-      list = list.filter((p) =>
-        collectionFilter === "none" ? !p.collection_id : p.collection_id === collectionFilter,
-      );
-    }
-    if (term) {
-      list = list.filter((product) =>
-        [product.name, product.sku, product.category || "", STATUS_LABELS[product.status]].some(
-          (value) => value.toLowerCase().includes(term),
-        ),
-      );
-    }
-    const sorted = [...list];
+    if (pinnedOnly) return products.filter((p) => pinnedIds.has(p.id));
+    const sorted = [...products];
+    // Ordenação local sobre a página carregada (ordem default já é "recent").
     sorted.sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name, "pt-BR");
       if (sortBy === "price") return Number(b.sell_price || 0) - Number(a.sell_price || 0);
@@ -362,7 +384,7 @@ const { data: products = [], isLoading } = useQuery({
       return (b.created_at || "").localeCompare(a.created_at || "");
     });
     return sorted;
-  }, [products, search, pinnedOnly, pinnedIds, statusFilter, collectionFilter, sortBy]);
+  }, [products, pinnedOnly, pinnedIds, sortBy]);
 
   useEffect(() => {
     if (!filtered.length) {
@@ -390,12 +412,12 @@ const { data: products = [], isLoading } = useQuery({
     );
     const avgMargin = products.length ? totalMargin / products.length : 0;
     return {
-      total: products.length,
+      total: totalProducts,
       active: products.filter((item) => item.status !== "descontinuado").length,
       inDev: products.filter((item) => item.status === "desenvolvimento").length,
       avgMargin,
     };
-  }, [products]);
+  }, [products, totalProducts]);
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
@@ -471,19 +493,36 @@ const { data: products = [], isLoading } = useQuery({
         <SummaryCard label="Margem média" value={brl(summary.avgMargin)} />
       </div>
 
-{isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="glass rounded-xl p-4 space-y-3 animate-pulse">
-              <div className="aspect-square rounded-lg bg-muted/40" />
-              <div className="h-4 w-3/4 bg-muted/40 rounded" />
-              <div className="h-3 w-1/2 bg-muted/30 rounded" />
-              <div className="flex gap-2">
-                <div className="h-5 w-14 bg-muted/30 rounded-full" />
-                <div className="h-5 w-10 bg-muted/30 rounded-full" />
-              </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-4">
+          <div className="glass rounded-xl p-4 space-y-3">
+            <div className="h-9 bg-muted/30 rounded-lg animate-pulse" />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="h-8 bg-muted/20 rounded-md animate-pulse" />
+              <div className="h-8 bg-muted/20 rounded-md animate-pulse" />
             </div>
-          ))}
+            <div className="h-8 w-40 bg-muted/20 rounded-md animate-pulse" />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-border p-3 space-y-2 animate-pulse">
+                <div className="flex justify-between">
+                  <div className="h-4 w-28 bg-muted/30 rounded" />
+                  <div className="h-5 w-16 bg-muted/20 rounded-full" />
+                </div>
+                <div className="h-3 w-20 bg-muted/20 rounded" />
+                <div className="h-3 w-full bg-muted/10 rounded" />
+              </div>
+            ))}
+          </div>
+          <div className="glass rounded-xl p-5 space-y-4 animate-pulse">
+            <div className="aspect-[16/9] rounded-lg bg-muted/20" />
+            <div className="h-6 w-2/3 bg-muted/30 rounded" />
+            <div className="grid grid-cols-4 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-16 bg-muted/20 rounded-lg" />
+              ))}
+            </div>
+            <div className="h-24 bg-muted/10 rounded-lg" />
+          </div>
         </div>
       ) : products.length === 0 ? (
         <EmptyStateGuided
@@ -584,7 +623,8 @@ const { data: products = [], isLoading } = useQuery({
             </div>
             <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
               <span>
-                {filtered.length} de {products.length} produto{products.length === 1 ? "" : "s"}
+                {totalProducts} produto{totalProducts === 1 ? "" : "s"}
+                {totalPages > 1 ? ` · página ${currentPage} de ${totalPages}` : ""}
               </span>
               {(statusFilter && statusFilter !== "all") ||
               (collectionFilter && collectionFilter !== "all") ||
@@ -606,7 +646,7 @@ const { data: products = [], isLoading } = useQuery({
             </div>
 
             <div className="space-y-2">
-              {filtered.slice(0, visibleCount).map((product) => {
+              {filtered.map((product) => {
                 const active = product.id === selected?.id;
                 return (
                   <div
@@ -638,9 +678,15 @@ const { data: products = [], isLoading } = useQuery({
                         <StatusBadge kind="product" value={product.status} />
                       </div>
                     </div>
-                    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{product.category || "Sem categoria"}</span>
-                      <span>{brl(Number(product.sell_price || 0))}</span>
+                    <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span className="truncate">{product.category || "Sem categoria"}</span>
+                      <span className="shrink-0">{brl(Number(product.sell_price || 0))}</span>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/50 pt-2">
+                      <ProductMiniNextStep productId={product.id} />
+                      <span className="text-[10px] text-muted-foreground/60">
+                        {product.sizes.length} tam · {product.colors.length} cor
+                      </span>
                     </div>
                   </div>
                 );
@@ -663,15 +709,26 @@ const { data: products = [], isLoading } = useQuery({
                 </div>
               )}
             </div>
-            {filtered.length > visibleCount && (
-              <div className="flex justify-center pt-2">
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors"
+                  disabled={currentPage <= 1}
+                  onClick={() => setPage(currentPage - 1)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-border bg-background/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Package className="size-3.5" />
-                  Ver mais ({filtered.length - visibleCount} restantes)
+                  ← Anterior
+                </button>
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {currentPage}/{totalPages}
+                </span>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setPage(currentPage + 1)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-border bg-background/40 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Próxima →
                 </button>
               </div>
             )}

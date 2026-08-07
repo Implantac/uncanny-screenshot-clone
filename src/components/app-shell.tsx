@@ -123,6 +123,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const toggleGroup = (g: string) => setOpenGroups((s) => ({ ...s, [g]: !(s[g] ?? false) }));
 
+  // Grupos totalmente expandidos (mostram todos os módulos do grupo).
+  // Por padrão mostramos no máximo MAX_PER_GROUP itens por fase para reduzir o ruído.
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const toggleExpanded = (g: string) => setExpandedGroups((s) => ({ ...s, [g]: !(s[g] ?? false) }));
+  const MAX_PER_GROUP = 6;
+
   async function handleSignOut() {
     await supabase.auth.signOut();
     navigate({ to: "/auth" });
@@ -306,6 +312,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           }
 
+          const isExpanded = expandedGroups[group] ?? false;
+          // Limita os módulos visíveis por fase, a menos que o grupo esteja totalmente expandido
+          // ou a fase contenha a rota ativa (mostrar a fase em uso sempre completa).
+          const showLimited = !isExpanded && !bucket.activeIn && totalCount > MAX_PER_GROUP;
+          const visibleItems = showLimited ? bucket.items.slice(0, MAX_PER_GROUP) : bucket.items;
+          const hiddenCount = totalCount - visibleItems.length;
+
           return (
             <div key={group}>
               <button
@@ -319,7 +332,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                   {totalCount}
                 </span>
               </button>
-              {isOpen && <ul className="space-y-0.5 mt-1 mb-2">{bucket.items.map(renderItem)}</ul>}
+              {isOpen && (
+                <>
+                  <ul className="space-y-0.5 mt-1 mb-2">{visibleItems.map(renderItem)}</ul>
+                  {showLimited && hiddenCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => toggleExpanded(group)}
+                      className="w-full text-left px-2.5 py-1 text-[11px] text-muted-foreground/80 hover:text-primary transition-colors"
+                    >
+                      Ver todos os {totalCount} módulos ({hiddenCount} ocultos)
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           );
         })}
