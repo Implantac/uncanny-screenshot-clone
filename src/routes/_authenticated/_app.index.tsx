@@ -26,6 +26,7 @@ import { MorningBriefingPanel } from "@/components/morning-briefing-panel";
 import { RecentProductsStrip } from "@/components/recent-products-strip";
 import { RecentCollectionsStrip } from "@/components/recent-collections-strip";
 import { FirstRunGuide } from "@/components/first-run-guide";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/_app/")({
   head: () => ({
@@ -43,6 +44,9 @@ export const Route = createFileRoute("/_authenticated/_app/")({
 function useDashboard() {
   return useQuery({
     queryKey: ["plm-dashboard"],
+    // Cache de 60s: evita refazer as 7 queries do dashboard a cada visita à home.
+    staleTime: 30_000,
+    gcTime: 3 * 60_000,
     queryFn: async () => {
       const [prod, cols, inv, prods, protos, tech, camps] = await Promise.all([
         supabase
@@ -498,15 +502,9 @@ function CommandCenter() {
 
   const sections = [
     { id: "resumo", label: "Resumo" },
-    { id: "producao", label: "Produção" },
-    { id: "desenvolvimento", label: "Desenvolvimento" },
-    { id: "operacoes", label: "Alertas" },
+    { id: "operacoes", label: "Operações" },
     { id: "modulos", label: "Módulos" },
   ];
-
-  function scrollToSection(id: string) {
-    document.getElementById(`cc-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
@@ -577,462 +575,463 @@ function CommandCenter() {
       {/* Onboarding de primeiros passos (primeira visita) */}
       <FirstRunGuide />
 
-      {/* Navegação rápida por seção — ajuda usuários leigos a navegar a home longa */}
-      <nav
-        aria-label="Seções do painel"
-        className="flex flex-wrap gap-2 sticky top-0 z-20 bg-background/90 backdrop-blur rounded-xl border border-border p-2"
-      >
-        {sections.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => scrollToSection(s.id)}
-            className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
-          >
-            {s.label}
-          </button>
-        ))}
-      </nav>
+      {/* Abas — organizam a home e reduzem o scroll infinito (menos confusão). */}
+      <Tabs defaultValue="resumo" className="space-y-4">
+        <TabsList className="flex flex-wrap h-auto justify-start gap-1 bg-muted/40 p-1 sticky top-0 z-20 w-full">
+          {sections.map((s) => (
+            <TabsTrigger key={s.id} value={s.id} className="text-xs gap-1.5 h-8 px-3">
+              {s.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      <MorningBriefingPanel />
-      <RecentProductsStrip />
-      <RecentCollectionsStrip />
-      <ExecutiveKpisPanel />
+        <TabsContent value="resumo" className="space-y-4 mt-2">
+          <MorningBriefingPanel />
+          <RecentProductsStrip />
+          <RecentCollectionsStrip />
+          <ExecutiveKpisPanel />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" id="cc-resumo">
-        {kpis.map((kpi) => {
-          const Icon = kpi.icon;
-          return (
-            <div key={kpi.label} className="glass rounded-xl p-5 relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 size-24 rounded-full bg-primary/5 blur-2xl group-hover:bg-primary/10 transition-colors" />
-              <div className="flex items-start justify-between relative">
-                <Icon className={`size-5 ${kpi.color}`} />
-                <ArrowUpRight className="size-3.5 text-muted-foreground" />
-              </div>
-              <div className="mt-4 text-2xl font-semibold tracking-tight tabular-nums">
-                {isLoading ? "…" : kpi.value}
-              </div>
-              <div className="text-xs text-muted-foreground mt-0.5">{kpi.label}</div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* === Alertas operacionais === */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="cc-operacoes">
-        {[
-          {
-            label: "Produtos sem ficha",
-            value: data?.alerts?.productsWithoutSheet.length ?? 0,
-            to: "/ficha-tecnica",
-            tone: "warning" as const,
-          },
-          {
-            label: "Pilotos pendentes",
-            value: data?.alerts?.pendingPilots.length ?? 0,
-            to: "/pilots",
-            tone: "info" as const,
-          },
-          {
-            label: "Lotes parados (5d+)",
-            value: data?.alerts?.stuckBatches.length ?? 0,
-            to: "/pcp-kanban",
-            tone: "warning" as const,
-          },
-          {
-            label: "Lotes atrasados",
-            value: data?.alerts?.lateBatches.length ?? 0,
-            to: "/pcp",
-            tone: "danger" as const,
-          },
-          {
-            label: "Setor gargalo",
-            value: data?.alerts?.bottleneck ? `${data.alerts.bottleneck.stage}` : "—",
-            sub: data?.alerts?.bottleneck ? `${data.alerts.bottleneck.qty} pç` : undefined,
-            to: "/twin-factory",
-            tone: "info" as const,
-          },
-        ].map((a) => {
-          const toneCls =
-            a.tone === "danger"
-              ? "text-destructive"
-              : a.tone === "warning"
-                ? "text-warning"
-                : "text-info";
-          const isZero = typeof a.value === "number" && a.value === 0;
-          return (
-            <Link
-              key={a.label}
-              to={a.to}
-              className="glass rounded-xl p-4 hover:border-primary/40 transition-colors flex items-start gap-3"
-            >
-              <AlertTriangle
-                className={`size-4 mt-0.5 shrink-0 ${isZero ? "text-success" : toneCls}`}
-              />
-              <div className="min-w-0">
-                <div className="text-lg font-semibold tabular-nums leading-tight truncate">
-                  {isLoading ? "…" : isZero ? "✓" : a.value}
-                </div>
-                <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{a.label}</div>
-                {"sub" in a && a.sub && (
-                  <div className="text-[11px] text-muted-foreground/80 tabular-nums">{a.sub}</div>
-                )}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* === Coleção em destaque + Marketing ROI consolidado === */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {data?.hotCollection ? (
-          <Link
-            to="/colecao-360"
-            className="glass rounded-xl p-5 hover:border-primary/40 transition-colors group"
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                  Coleção em destaque
-                </div>
-                <div className="text-lg font-semibold mt-1 flex items-center gap-2">
-                  <Sparkles className="size-4 text-primary" />
-                  {(data.hotCollection as any).name}
-                  <span className="text-xs text-muted-foreground font-normal">
-                    · {(data.hotCollection as any).year}
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  {(data.hotCollection as any).status}
-                </div>
-              </div>
-              <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            </div>
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="text-muted-foreground">Progresso</span>
-              <span className="tabular-nums font-medium">
-                {(data.hotCollection as any).progress ?? 0}%
-              </span>
-            </div>
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full bg-[image:var(--gradient-primary)] transition-all"
-                style={{ width: `${(data.hotCollection as any).progress ?? 0}%` }}
-              />
-            </div>
-            <div className="text-[11px] text-primary mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-              Abrir Coleção 360 →
-            </div>
-          </Link>
-        ) : (
-          <div className="glass rounded-xl p-5 text-sm text-muted-foreground">
-            Nenhuma coleção ativa
-          </div>
-        )}
-
-        <Link
-          to="/marketing"
-          className="glass rounded-xl p-5 hover:border-primary/40 transition-colors group"
-        >
-          <div className="flex items-start justify-between mb-3">
-            <div>
-              <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                Marketing · ROI consolidado
-              </div>
-              <div className="text-lg font-semibold mt-1 flex items-center gap-2">
-                <TrendingUp className="size-4 text-primary" />
-                {data?.marketing ? `${data.marketing.roasAvg.toFixed(2)}x ROAS médio` : "—"}
-                <span className="text-xs text-muted-foreground font-normal">
-                  · {data?.marketing.count ?? 0} campanhas
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground mt-0.5 tabular-nums">
-                Inv R${" "}
-                {(data?.marketing.invTotal ?? 0).toLocaleString("pt-BR", {
-                  maximumFractionDigits: 0,
-                })}{" "}
-                → Receita est. R${" "}
-                {(data?.marketing.recTotal ?? 0).toLocaleString("pt-BR", {
-                  maximumFractionDigits: 0,
-                })}
-              </div>
-            </div>
-            <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-lg bg-success/10 px-3 py-2">
-              <div className="text-[10px] uppercase tracking-wider text-success">Melhor</div>
-              <div className="font-medium truncate">{data?.marketing.best?.name ?? "—"}</div>
-              <div className="text-muted-foreground tabular-nums">
-                {data?.marketing.best ? `${data.marketing.best.roas.toFixed(1)}x` : ""}
-              </div>
-            </div>
-            <div className="rounded-lg bg-destructive/10 px-3 py-2">
-              <div className="text-[10px] uppercase tracking-wider text-destructive">Pior</div>
-              <div className="font-medium truncate">{data?.marketing.worst?.name ?? "—"}</div>
-              <div className="text-muted-foreground tabular-nums">
-                {data?.marketing.worst ? `${data.marketing.worst.roas.toFixed(1)}x` : ""}
-              </div>
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <AICoordinatorPanel persona="development" title="Desenvolvimento · prioridades" />
-        <AICoordinatorPanel persona="pcp" title="Produção · diagnóstico do dia" />
-        <AICoordinatorPanel persona="marketing" title="Marketing · onde investir" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AICoordinatorPanel
-          persona="pcp"
-          title="Qualidade · pontos de atenção"
-          question="Quais defeitos e retrabalhos mais aparecem agora e como reduzir? Liste 3 ações."
-        />
-        <AICoordinatorPanel
-          persona="marketing"
-          title="Comercial · risco de meta"
-          question="Estou no caminho de bater a meta comercial do mês? Onde os riscos e o que fazer hoje?"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" id="cc-desenvolvimento">
-        <div className="lg:col-span-2 glass rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-sm font-semibold">Pipeline de desenvolvimento</div>
-              <div className="text-xs text-muted-foreground">Produtos por etapa do ciclo PLM</div>
-            </div>
-            <Link to="/dev-kanban" className="text-xs text-primary hover:underline">
-              Abrir Kanban →
-            </Link>
-          </div>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={data?.devPipeline ?? []}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="oklch(0.28 0.018 270)"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="d"
-                stroke="oklch(0.68 0.02 270)"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                stroke="oklch(0.68 0.02 270)"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "oklch(0.20 0.015 270)",
-                  border: "1px solid oklch(0.28 0.018 270)",
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
-              />
-              <Bar dataKey="v" fill="oklch(0.72 0.18 295)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="glass rounded-xl p-5" id="cc-producao">
-          <div className="text-sm font-semibold">Produção</div>
-          <div className="text-xs text-muted-foreground mb-4">Peças por estágio</div>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={data?.productionData ?? []}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="oklch(0.28 0.018 270)"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="d"
-                stroke="oklch(0.68 0.02 270)"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                stroke="oklch(0.68 0.02 270)"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "oklch(0.20 0.015 270)",
-                  border: "1px solid oklch(0.28 0.018 270)",
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
-              />
-              <Bar dataKey="v" fill="oklch(0.72 0.18 295)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 glass rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-sm font-semibold">Coleções</div>
-              <div className="text-xs text-muted-foreground">Status do desenvolvimento</div>
-            </div>
-            <Link to="/colecoes" className="text-xs text-primary hover:underline">
-              Ver todas →
-            </Link>
-          </div>
-          {data?.collections.length ? (
-            <div className="space-y-4">
-              {data.collections.map((c) => (
-                <div key={c.name}>
-                  <div className="flex items-center justify-between text-sm mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{c.name}</span>
-                      <span className="text-xs text-muted-foreground">· {c.year}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground">{c.status}</span>
-                      <span className="text-xs font-medium tabular-nums">{c.progress ?? 0}%</span>
-                    </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" id="cc-resumo">
+            {kpis.map((kpi) => {
+              const Icon = kpi.icon;
+              return (
+                <div
+                  key={kpi.label}
+                  className="glass rounded-xl p-5 relative overflow-hidden group"
+                >
+                  <div className="absolute -right-6 -top-6 size-24 rounded-full bg-primary/5 blur-2xl group-hover:bg-primary/10 transition-colors" />
+                  <div className="flex items-start justify-between relative">
+                    <Icon className={`size-5 ${kpi.color}`} />
+                    <ArrowUpRight className="size-3.5 text-muted-foreground" />
                   </div>
-                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full bg-[image:var(--gradient-primary)] transition-all"
-                      style={{ width: `${c.progress ?? 0}%` }}
-                    />
+                  <div className="mt-4 text-2xl font-semibold tracking-tight tabular-nums">
+                    {isLoading ? "…" : kpi.value}
                   </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{kpi.label}</div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              <Sparkles className="size-8 text-primary mx-auto mb-2" />
-              Nenhuma coleção cadastrada
-            </div>
-          )}
-        </div>
+              );
+            })}
+          </div>
 
-        <div className="glass rounded-xl p-5">
-          <div className="text-sm font-semibold mb-1">Alertas de insumos</div>
-          <div className="text-xs text-muted-foreground mb-4">Itens técnicos em nível crítico</div>
-          {data?.critical.length ? (
-            <ul className="space-y-3">
-              {data.critical.slice(0, 6).map((i, idx) => (
-                <li key={idx} className="flex gap-3 text-sm">
-                  <AlertTriangle className="size-4 mt-0.5 shrink-0 text-warning" />
-                  <div className="min-w-0 flex-1">
-                    <div className="leading-snug truncate">{i.name}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5 tabular-nums">
-                      {Number(i.balance)} {i.unit} · min {Number(i.minimum)}
+          {/* === Alertas operacionais === */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="cc-operacoes">
+            {[
+              {
+                label: "Produtos sem ficha",
+                value: data?.alerts?.productsWithoutSheet.length ?? 0,
+                to: "/ficha-tecnica",
+                tone: "warning" as const,
+              },
+              {
+                label: "Pilotos pendentes",
+                value: data?.alerts?.pendingPilots.length ?? 0,
+                to: "/pilots",
+                tone: "info" as const,
+              },
+              {
+                label: "Lotes parados (5d+)",
+                value: data?.alerts?.stuckBatches.length ?? 0,
+                to: "/pcp-kanban",
+                tone: "warning" as const,
+              },
+              {
+                label: "Lotes atrasados",
+                value: data?.alerts?.lateBatches.length ?? 0,
+                to: "/pcp",
+                tone: "danger" as const,
+              },
+              {
+                label: "Setor gargalo",
+                value: data?.alerts?.bottleneck ? `${data.alerts.bottleneck.stage}` : "—",
+                sub: data?.alerts?.bottleneck ? `${data.alerts.bottleneck.qty} pç` : undefined,
+                to: "/twin-factory",
+                tone: "info" as const,
+              },
+            ].map((a) => {
+              const toneCls =
+                a.tone === "danger"
+                  ? "text-destructive"
+                  : a.tone === "warning"
+                    ? "text-warning"
+                    : "text-info";
+              const isZero = typeof a.value === "number" && a.value === 0;
+              return (
+                <Link
+                  key={a.label}
+                  to={a.to}
+                  className="glass rounded-xl p-4 hover:border-primary/40 transition-colors flex items-start gap-3"
+                >
+                  <AlertTriangle
+                    className={`size-4 mt-0.5 shrink-0 ${isZero ? "text-success" : toneCls}`}
+                  />
+                  <div className="min-w-0">
+                    <div className="text-lg font-semibold tabular-nums leading-tight truncate">
+                      {isLoading ? "…" : isZero ? "✓" : a.value}
                     </div>
-                    {(i as any).category_label && (
-                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mt-0.5">
-                        {(i as any).category_label}
+                    <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                      {a.label}
+                    </div>
+                    {"sub" in a && a.sub && (
+                      <div className="text-[11px] text-muted-foreground/80 tabular-nums">
+                        {a.sub}
                       </div>
                     )}
                   </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="py-6 text-center text-sm text-muted-foreground">
-              <CheckCircle2 className="size-8 text-success mx-auto mb-2" />
-              Insumos saudáveis
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 glass rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-sm font-semibold flex items-center gap-2">
-                <Activity className="size-4 text-primary" /> Feed operacional
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Últimos eventos de desenvolvimento e produção
-              </div>
-            </div>
-          </div>
-          {data?.feed?.length ? (
-            <ol className="relative space-y-3 before:absolute before:left-[15px] before:top-1 before:bottom-1 before:w-px before:bg-border">
-              {data.feed.map((f, idx) => {
-                const Icon = FEED_ICON[f.kind] ?? Activity;
-                return (
-                  <li key={idx} className="relative flex gap-3 pl-0">
-                    <div className="size-8 shrink-0 rounded-full bg-primary/10 text-primary grid place-items-center ring-4 ring-background">
-                      <Icon className="size-3.5" />
-                    </div>
-                    <div className="min-w-0 flex-1 pt-1">
-                      <div className="text-sm font-medium truncate">{f.title}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
-                        <span className="uppercase tracking-wide">{f.kind}</span>
-                        {f.meta && (
-                          <>
-                            <span>·</span>
-                            <span className="truncate">{f.meta}</span>
-                          </>
-                        )}
-                        <span>·</span>
-                        <span>{relTime(f.ts)}</span>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-          ) : (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              Sem eventos recentes
-            </div>
-          )}
-        </div>
-
-        <div className="glass rounded-xl p-5">
-          <div className="text-sm font-semibold flex items-center gap-2">
-            <TrendingUp className="size-4 text-primary" /> Radar de tendências
-          </div>
-          <div className="text-xs text-muted-foreground mb-4">Sinais do seu catálogo</div>
-          {data && (
-            <div className="space-y-5">
-              <TrendBlock icon={Palette} title="Cores em alta" items={data.trends.colors} />
-              <TrendBlock icon={Shirt} title="Categorias" items={data.trends.categories} />
-              <TrendBlock icon={Sparkles} title="Coleções ativas" items={data.trends.collections} />
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div>
-        <div className="text-sm font-semibold mb-3">Acesso rápido aos módulos PLM</div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" id="cc-modulos">
-          {MODULES.filter((m) => m.path !== "/" && !m.hidden && m.source !== "erp-mirror")
-            .slice(0, 12)
-            .map((m) => {
-              const Icon = m.icon;
-              return (
-                <Link
-                  key={m.slug}
-                  to={m.path}
-                  className="glass rounded-xl p-4 hover:border-primary/40 hover:-translate-y-0.5 transition-all group"
-                >
-                  <Icon className="size-5 text-primary mb-3 group-hover:scale-110 transition-transform" />
-                  <div className="text-sm font-medium leading-tight">{m.title}</div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{m.short}</div>
                 </Link>
               );
             })}
-        </div>
-      </div>
+          </div>
+
+          {/* === Coleção em destaque + Marketing ROI consolidado === */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {data?.hotCollection ? (
+              <Link
+                to="/colecao-360"
+                className="glass rounded-xl p-5 hover:border-primary/40 transition-colors group"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                      Coleção em destaque
+                    </div>
+                    <div className="text-lg font-semibold mt-1 flex items-center gap-2">
+                      <Sparkles className="size-4 text-primary" />
+                      {(data.hotCollection as any).name}
+                      <span className="text-xs text-muted-foreground font-normal">
+                        · {(data.hotCollection as any).year}
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {(data.hotCollection as any).status}
+                    </div>
+                  </div>
+                  <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+                <div className="flex items-center justify-between text-xs mb-1.5">
+                  <span className="text-muted-foreground">Progresso</span>
+                  <span className="tabular-nums font-medium">
+                    {(data.hotCollection as any).progress ?? 0}%
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-[image:var(--gradient-primary)] transition-all"
+                    style={{ width: `${(data.hotCollection as any).progress ?? 0}%` }}
+                  />
+                </div>
+                <div className="text-[11px] text-primary mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Abrir Coleção 360 →
+                </div>
+              </Link>
+            ) : (
+              <div className="glass rounded-xl p-5 text-sm text-muted-foreground">
+                Nenhuma coleção ativa
+              </div>
+            )}
+
+            <Link
+              to="/marketing"
+              className="glass rounded-xl p-5 hover:border-primary/40 transition-colors group"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                    Marketing · ROI consolidado
+                  </div>
+                  <div className="text-lg font-semibold mt-1 flex items-center gap-2">
+                    <TrendingUp className="size-4 text-primary" />
+                    {data?.marketing ? `${data.marketing.roasAvg.toFixed(2)}x ROAS médio` : "—"}
+                    <span className="text-xs text-muted-foreground font-normal">
+                      · {data?.marketing.count ?? 0} campanhas
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5 tabular-nums">
+                    Inv R${" "}
+                    {(data?.marketing.invTotal ?? 0).toLocaleString("pt-BR", {
+                      maximumFractionDigits: 0,
+                    })}{" "}
+                    → Receita est. R${" "}
+                    {(data?.marketing.recTotal ?? 0).toLocaleString("pt-BR", {
+                      maximumFractionDigits: 0,
+                    })}
+                  </div>
+                </div>
+                <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-lg bg-success/10 px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-wider text-success">Melhor</div>
+                  <div className="font-medium truncate">{data?.marketing.best?.name ?? "—"}</div>
+                  <div className="text-muted-foreground tabular-nums">
+                    {data?.marketing.best ? `${data.marketing.best.roas.toFixed(1)}x` : ""}
+                  </div>
+                </div>
+                <div className="rounded-lg bg-destructive/10 px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-wider text-destructive">Pior</div>
+                  <div className="font-medium truncate">{data?.marketing.worst?.name ?? "—"}</div>
+                  <div className="text-muted-foreground tabular-nums">
+                    {data?.marketing.worst ? `${data.marketing.worst.roas.toFixed(1)}x` : ""}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="operacoes" className="space-y-4 mt-2">
+          {/* Painel de IA consolidado — 1 chamada por vez, com seletor de persona (antes: 5 painéis concorrentes). */}
+          <AICoordinatorPanel personaSelector title="Assistente de IA · análises" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" id="cc-desenvolvimento">
+            <div className="lg:col-span-2 glass rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-sm font-semibold">Pipeline de desenvolvimento</div>
+                  <div className="text-xs text-muted-foreground">
+                    Produtos por etapa do ciclo PLM
+                  </div>
+                </div>
+                <Link to="/dev-kanban" className="text-xs text-primary hover:underline">
+                  Abrir Kanban →
+                </Link>
+              </div>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={data?.devPipeline ?? []}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="oklch(0.28 0.018 270)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="d"
+                    stroke="oklch(0.68 0.02 270)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="oklch(0.68 0.02 270)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "oklch(0.20 0.015 270)",
+                      border: "1px solid oklch(0.28 0.018 270)",
+                      borderRadius: 8,
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar dataKey="v" fill="oklch(0.72 0.18 295)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="glass rounded-xl p-5" id="cc-producao">
+              <div className="text-sm font-semibold">Produção</div>
+              <div className="text-xs text-muted-foreground mb-4">Peças por estágio</div>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={data?.productionData ?? []}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="oklch(0.28 0.018 270)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="d"
+                    stroke="oklch(0.68 0.02 270)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="oklch(0.68 0.02 270)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "oklch(0.20 0.015 270)",
+                      border: "1px solid oklch(0.28 0.018 270)",
+                      borderRadius: 8,
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar dataKey="v" fill="oklch(0.72 0.18 295)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 glass rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-sm font-semibold">Coleções</div>
+                  <div className="text-xs text-muted-foreground">Status do desenvolvimento</div>
+                </div>
+                <Link to="/colecoes" className="text-xs text-primary hover:underline">
+                  Ver todas →
+                </Link>
+              </div>
+              {data?.collections.length ? (
+                <div className="space-y-4">
+                  {data.collections.map((c) => (
+                    <div key={c.name}>
+                      <div className="flex items-center justify-between text-sm mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{c.name}</span>
+                          <span className="text-xs text-muted-foreground">· {c.year}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground">{c.status}</span>
+                          <span className="text-xs font-medium tabular-nums">
+                            {c.progress ?? 0}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full bg-[image:var(--gradient-primary)] transition-all"
+                          style={{ width: `${c.progress ?? 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                  <Sparkles className="size-8 text-primary mx-auto mb-2" />
+                  Nenhuma coleção cadastrada
+                </div>
+              )}
+            </div>
+
+            <div className="glass rounded-xl p-5">
+              <div className="text-sm font-semibold mb-1">Alertas de insumos</div>
+              <div className="text-xs text-muted-foreground mb-4">
+                Itens técnicos em nível crítico
+              </div>
+              {data?.critical.length ? (
+                <ul className="space-y-3">
+                  {data.critical.slice(0, 6).map((i, idx) => (
+                    <li key={idx} className="flex gap-3 text-sm">
+                      <AlertTriangle className="size-4 mt-0.5 shrink-0 text-warning" />
+                      <div className="min-w-0 flex-1">
+                        <div className="leading-snug truncate">{i.name}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5 tabular-nums">
+                          {Number(i.balance)} {i.unit} · min {Number(i.minimum)}
+                        </div>
+                        {(i as any).category_label && (
+                          <div className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mt-0.5">
+                            {(i as any).category_label}
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="py-6 text-center text-sm text-muted-foreground">
+                  <CheckCircle2 className="size-8 text-success mx-auto mb-2" />
+                  Insumos saudáveis
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 glass rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-sm font-semibold flex items-center gap-2">
+                    <Activity className="size-4 text-primary" /> Feed operacional
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Últimos eventos de desenvolvimento e produção
+                  </div>
+                </div>
+              </div>
+              {data?.feed?.length ? (
+                <ol className="relative space-y-3 before:absolute before:left-[15px] before:top-1 before:bottom-1 before:w-px before:bg-border">
+                  {data.feed.map((f, idx) => {
+                    const Icon = FEED_ICON[f.kind] ?? Activity;
+                    return (
+                      <li key={idx} className="relative flex gap-3 pl-0">
+                        <div className="size-8 shrink-0 rounded-full bg-primary/10 text-primary grid place-items-center ring-4 ring-background">
+                          <Icon className="size-3.5" />
+                        </div>
+                        <div className="min-w-0 flex-1 pt-1">
+                          <div className="text-sm font-medium truncate">{f.title}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                            <span className="uppercase tracking-wide">{f.kind}</span>
+                            {f.meta && (
+                              <>
+                                <span>·</span>
+                                <span className="truncate">{f.meta}</span>
+                              </>
+                            )}
+                            <span>·</span>
+                            <span>{relTime(f.ts)}</span>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              ) : (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                  Sem eventos recentes
+                </div>
+              )}
+            </div>
+
+            <div className="glass rounded-xl p-5">
+              <div className="text-sm font-semibold flex items-center gap-2">
+                <TrendingUp className="size-4 text-primary" /> Radar de tendências
+              </div>
+              <div className="text-xs text-muted-foreground mb-4">Sinais do seu catálogo</div>
+              {data && (
+                <div className="space-y-5">
+                  <TrendBlock icon={Palette} title="Cores em alta" items={data.trends.colors} />
+                  <TrendBlock icon={Shirt} title="Categorias" items={data.trends.categories} />
+                  <TrendBlock
+                    icon={Sparkles}
+                    title="Coleções ativas"
+                    items={data.trends.collections}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="modulos" className="space-y-4 mt-2">
+          <div className="text-sm font-semibold mb-3">Acesso rápido aos módulos PLM</div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {MODULES.filter((m) => m.path !== "/" && !m.hidden && m.source !== "erp-mirror").map(
+              (m) => {
+                const Icon = m.icon;
+                return (
+                  <Link
+                    key={m.slug}
+                    to={m.path}
+                    className="glass rounded-xl p-4 hover:border-primary/40 hover:-translate-y-0.5 transition-all group"
+                  >
+                    <Icon className="size-5 text-primary mb-3 group-hover:scale-110 transition-transform" />
+                    <div className="text-sm font-medium leading-tight">{m.title}</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                      {m.short}
+                    </div>
+                  </Link>
+                );
+              },
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

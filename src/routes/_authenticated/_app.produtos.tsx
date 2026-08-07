@@ -59,7 +59,6 @@ import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 import { ProductPinButton } from "@/components/product-pin-button";
 import { getPinnedProducts } from "@/lib/recent-products";
 import { toast } from "sonner";
-import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { ProductTimeline } from "@/components/product-timeline";
 import { ProductGallery } from "@/components/product-gallery";
 import { PageHeader } from "@/components/ui/page-header";
@@ -297,13 +296,17 @@ function ProdutosPage() {
     });
   }, [prefillName, prefillCategory, prefillColors, navigate]);
 
-  const { data: products = [], isLoading } = useQuery({
+const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
+    // Seleção de colunas específicas + limite para reduzir payload e tempo de resposta.
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select(
+          "id, owner_id, collection_id, sku, name, category, product_group, subgroup, product_class, grade, description, cost_price, sell_price, status, image_url, sizes, colors, created_at",
+        )
+        .order("created_at", { ascending: false })
+        .limit(300);
       if (error) throw error;
       return data as Product[];
     },
@@ -468,12 +471,7 @@ function ProdutosPage() {
         <SummaryCard label="Margem média" value={brl(summary.avgMargin)} />
       </div>
 
-      <AICoordinatorPanel
-        persona="development"
-        title="Coordenador de Desenvolvimento — leitura do catálogo"
-      />
-
-      {isLoading ? (
+{isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="glass rounded-xl p-4 space-y-3 animate-pulse">

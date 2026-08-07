@@ -1,37 +1,64 @@
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, Loader2, RefreshCw } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { askInsight } from "@/lib/ai-insights.functions";
 import { Markdown } from "@/components/markdown";
 import { InlineChart } from "@/components/inline-chart";
+import { cn } from "@/lib/utils";
 
-type Persona = "development" | "pcp" | "marketing";
+export type AIPersona = "development" | "pcp" | "marketing";
 
-const LABEL: Record<Persona, string> = {
+const LABEL: Record<AIPersona, string> = {
+  development: "Desenvolvimento",
+  pcp: "Produção (PCP)",
+  marketing: "Marketing",
+};
+
+const FULL_LABEL: Record<AIPersona, string> = {
   development: "Coordenador de Desenvolvimento",
   pcp: "Coordenador de PCP",
   marketing: "Marketing Intelligence",
 };
 
-const DEFAULT_QUESTION: Record<Persona, string> = {
+const DEFAULT_QUESTION: Record<AIPersona, string> = {
   development: "Quais os 3 pontos mais críticos do desenvolvimento agora e o que fazer?",
   pcp: "Quais são os 3 gargalos do dia e qual a prioridade de ação?",
   marketing: "Onde devo investir hoje e por quê? Cite 3 ações concretas.",
 };
 
-/** Painel proativo de IA reutilizável (Dev / PCP / Marketing). */
+type Props =
+  | {
+      persona: AIPersona;
+      question?: string;
+      title?: string;
+      autoLoad?: boolean;
+      /** Se `true`, renderiza abas para alternar entre personas (1 chamada por vez). */
+      personaSelector?: false;
+    }
+  | {
+      persona?: AIPersona;
+      question?: string;
+      title?: string;
+      autoLoad?: boolean;
+      personaSelector: true;
+    };
+
+/**
+ * Painel proativo de IA reutilizável (Dev / PCP / Marketing).
+ * Com `personaSelector`, monta um único painel com abas — reduzindo chamadas
+ * concorrentes ao modelo (antes: 1 painel por persona carregava N vezes).
+ */
 export function AICoordinatorPanel({
-  persona,
+  persona: initialPersona = "development",
   question,
   title,
   autoLoad = true,
-}: {
-  persona: Persona;
-  question?: string;
-  title?: string;
-  autoLoad?: boolean;
-}) {
+  personaSelector = false,
+}: Props) {
+  const [active, setActive] = useState<AIPersona>(initialPersona);
+  const persona = personaSelector ? active : initialPersona;
+
   const ask = useServerFn(askInsight);
   const mutation = useMutation({
     mutationFn: () => ask({ data: { persona, question: question ?? DEFAULT_QUESTION[persona] } }),
@@ -44,11 +71,13 @@ export function AICoordinatorPanel({
 
   return (
     <div className="glass rounded-xl p-5 flex flex-col min-h-[260px]">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-primary" />
           <div>
-            <div className="text-sm font-semibold leading-tight">{title ?? LABEL[persona]}</div>
+            <div className="text-sm font-semibold leading-tight">
+              {title ?? FULL_LABEL[persona]}
+            </div>
             <div className="text-[11px] text-muted-foreground">
               IA explica o motivo, não só o número
             </div>
@@ -69,6 +98,32 @@ export function AICoordinatorPanel({
           )}
         </button>
       </div>
+
+      {personaSelector && (
+        <div
+          role="tablist"
+          aria-label="Selecionar análise de IA"
+          className="flex flex-wrap gap-1 mb-3"
+        >
+          {(Object.keys(LABEL) as AIPersona[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              role="tab"
+              aria-selected={persona === p}
+              onClick={() => setActive(p)}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                persona === p
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              {LABEL[p]}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex-1 text-sm">
         {mutation.isPending && !mutation.data ? (

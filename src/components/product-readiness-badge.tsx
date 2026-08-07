@@ -1,13 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { ShieldCheck, ShieldAlert, Check, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type GateRow = { requirement: string; ok: boolean; detail: string | null };
 
@@ -41,7 +37,35 @@ export function ProductReadinessBadge({
   productId: string;
   className?: string;
 }) {
+  const rootRef = useRef<HTMLSpanElement>(null);
+  const [inView, setInView] = useState(false);
+
+  // Lazy: só busca a RPC quando o card está próximo da viewport (evita N queries
+  // disparando de uma vez ao abrir a lista de produtos).
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setInView(true);
+            obs.disconnect();
+          }
+        }
+      },
+      { rootMargin: "120px" },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   const q = useQuery({
+    enabled: inView,
     queryKey: ["product-gate-status", productId],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("product_gate_status", {
@@ -53,8 +77,12 @@ export function ProductReadinessBadge({
     staleTime: 60_000,
   });
 
+  const critical = q.data ? q.data.filter((r) => CRITICAL.has(r.requirement)) : [];
+  if (!inView) {
+    // Placeholder invisível para o IntersectionObserver detectar o card.
+    return <span ref={rootRef} aria-hidden className="inline-flex" />;
+  }
   if (q.isLoading || !q.data) return null;
-  const critical = q.data.filter((r) => CRITICAL.has(r.requirement));
   if (critical.length === 0) return null;
   const failing = critical.filter((r) => !r.ok);
   const ready = failing.length === 0;
@@ -70,6 +98,7 @@ export function ProductReadinessBadge({
       <Tooltip>
         <TooltipTrigger asChild>
           <span
+            ref={rootRef}
             role="button"
             tabIndex={0}
             aria-label={`Prontidão para produção: ${summary}`}
@@ -93,7 +122,6 @@ export function ProductReadinessBadge({
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" role="tooltip" className="max-w-xs p-0 overflow-hidden">
-
           <div className="px-3 py-2 border-b border-border/50 bg-muted/40">
             <div className="text-[11px] font-semibold">
               {ready ? "Pronto para produção" : "Gates críticos pendentes"}
@@ -114,9 +142,7 @@ export function ProductReadinessBadge({
                 )}
                 <span className="sr-only">{g.ok ? "Aprovado:" : "Pendente:"}</span>
                 <div className="min-w-0">
-                  <div className="text-[11px] font-medium leading-tight">
-                    {g.requirement}
-                  </div>
+                  <div className="text-[11px] font-medium leading-tight">{g.requirement}</div>
                   <div className="text-[10px] text-muted-foreground leading-snug">
                     {g.detail ?? EXPLAIN[g.requirement] ?? ""}
                   </div>
@@ -129,4 +155,3 @@ export function ProductReadinessBadge({
     </TooltipProvider>
   );
 }
-
