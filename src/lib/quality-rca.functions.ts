@@ -27,9 +27,7 @@ export const getSupplierDefectRanking = createServerFn({ method: "POST" })
 
     const { data: insps, error } = await supabase
       .from("quality_inspections")
-      .select(
-        "supplier_id, result, critical_defects, major_defects, minor_defects, created_at",
-      )
+      .select("supplier_id, result, critical_defects, major_defects, minor_defects, created_at")
       .eq("owner_id", userId)
       .gte("created_at", since)
       .not("supplier_id", "is", null);

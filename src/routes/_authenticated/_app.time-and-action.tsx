@@ -14,7 +14,13 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/_app/time-and-action")({
@@ -132,11 +138,7 @@ function TimeActionPage() {
             Gerar cronograma padrão
           </Button>
         )}
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => navigate({ to: "/colecoes" })}
-        >
+        <Button size="sm" variant="ghost" onClick={() => navigate({ to: "/colecoes" })}>
           Gerenciar coleções
         </Button>
       </div>
@@ -146,7 +148,11 @@ function TimeActionPage() {
           Selecione uma coleção para ver o cronograma.
         </p>
       ) : isLoading ? (
-        <div className="p-4 space-y-2">{Array.from({ length: 6 }).map((_, i) => (<Skeleton key={i} className="h-12 w-full" />))}</div>
+        <div className="p-4 space-y-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full" />
+          ))}
+        </div>
       ) : items.length === 0 ? (
         <div className="glass rounded-2xl p-8 text-center">
           <CalendarClock className="size-8 mx-auto text-muted-foreground mb-2" />
@@ -171,14 +177,11 @@ function TimeActionPage() {
             <tbody>
               {items.map((m) => {
                 const overdue =
-                  m.status !== "concluido" &&
-                  m.planned_date &&
-                  m.planned_date < today;
+                  m.status !== "concluido" && m.planned_date && m.planned_date < today;
                 const gap =
                   m.actual_date && m.planned_date
                     ? Math.round(
-                        (new Date(m.actual_date).getTime() -
-                          new Date(m.planned_date).getTime()) /
+                        (new Date(m.actual_date).getTime() - new Date(m.planned_date).getTime()) /
                           86400000,
                       )
                     : null;

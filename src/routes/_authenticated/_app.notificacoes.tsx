@@ -37,8 +37,7 @@ export const Route = createFileRoute("/_authenticated/_app/notificacoes")({
       { title: "Notificações · USE MODA PLM" },
       {
         name: "description",
-        content:
-          "Central de notificações — aprovações pendentes e menções nos seus produtos.",
+        content: "Central de notificações — aprovações pendentes e menções nos seus produtos.",
       },
     ],
   }),
@@ -70,10 +69,8 @@ function NotificationsPage() {
     if (!uid) return;
     const channel = supabase
       .channel(`notif-page-${uid}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "product_approvals" },
-        () => qc.invalidateQueries({ queryKey: ["notif-list"] }),
+      .on("postgres_changes", { event: "*", schema: "public", table: "product_approvals" }, () =>
+        qc.invalidateQueries({ queryKey: ["notif-list"] }),
       )
       .on(
         "postgres_changes",
@@ -85,7 +82,6 @@ function NotificationsPage() {
       supabase.removeChannel(channel);
     };
   }, [uid, qc]);
-
 
   const data = useQuery({
     enabled: !!uid,
@@ -119,9 +115,7 @@ function NotificationsPage() {
       if (wantApprovals) {
         const { data: rows } = await supabase
           .from("product_approvals")
-          .select(
-            "id, product_id, gate_key, created_at, products:product_id(sku, name)",
-          )
+          .select("id, product_id, gate_key, created_at, products:product_id(sku, name)")
           .eq("decision", "pendente")
           .order("created_at", { ascending: false })
           .limit(need);
@@ -148,9 +142,7 @@ function NotificationsPage() {
       if (wantMentions) {
         const { data: rows } = await supabase
           .from("product_timeline_comments")
-          .select(
-            "id, product_id, body, created_at, products:product_id(sku, name)",
-          )
+          .select("id, product_id, body, created_at, products:product_id(sku, name)")
           .contains("mentioned_user_ids", [uid!])
           .neq("author_id", uid!)
           .order("created_at", { ascending: false })
@@ -187,8 +179,7 @@ function NotificationsPage() {
   const safePage = Math.max(1, Math.min(page, totalPages));
   const lastSeen = unread.lastSeen;
 
-  const setFilter = (f: string) =>
-    navigate({ search: { filter: f, page: 1 } });
+  const setFilter = (f: string) => navigate({ search: { filter: f, page: 1 } });
   const setPage = (p: number) =>
     navigate({ search: (prev: { filter: string; page: number }) => ({ ...prev, page: p }) });
 

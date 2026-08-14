@@ -57,7 +57,9 @@ export function PurchaseReceiptDialog({
           .eq("purchase_order_id", purchaseOrderId!),
         supabase
           .from("purchase_order_receipt_items")
-          .select("purchase_order_item_id, qty_received, receipt:purchase_order_receipts!inner(purchase_order_id)")
+          .select(
+            "purchase_order_item_id, qty_received, receipt:purchase_order_receipts!inner(purchase_order_id)",
+          )
           .eq("receipt.purchase_order_id", purchaseOrderId!),
       ]);
       if (itemsRes.error) throw itemsRes.error;
@@ -134,9 +136,7 @@ export function PurchaseReceiptDialog({
         qty_received: l.qty,
         supplier_lot: l.supplier_lot || null,
       }));
-      const { error: itemsErr } = await supabase
-        .from("purchase_order_receipt_items")
-        .insert(rows);
+      const { error: itemsErr } = await supabase.from("purchase_order_receipt_items").insert(rows);
       if (itemsErr) throw itemsErr;
       return rec.id;
     },
@@ -159,8 +159,8 @@ export function PurchaseReceiptDialog({
             <PackageCheck className="size-5 text-primary" /> Registrar recebimento — OC {poCode}
           </DialogTitle>
           <DialogDescription>
-            Informe a quantidade recebida por item. Entradas são lançadas no estoque automaticamente.
-            Quando todos os itens forem totalmente recebidos, a OC é fechada.
+            Informe a quantidade recebida por item. Entradas são lançadas no estoque
+            automaticamente. Quando todos os itens forem totalmente recebidos, a OC é fechada.
           </DialogDescription>
         </DialogHeader>
 
@@ -221,9 +221,7 @@ export function PurchaseReceiptDialog({
                       <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
                         {l.qty_received}
                       </td>
-                      <td className="px-3 py-2 text-right tabular-nums font-medium">
-                        {pending}
-                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums font-medium">{pending}</td>
                       <td className="px-3 py-2">
                         <Input
                           type="number"
@@ -268,10 +266,7 @@ export function PurchaseReceiptDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button
-            onClick={() => register.mutate()}
-            disabled={register.isPending || totalNow <= 0}
-          >
+          <Button onClick={() => register.mutate()} disabled={register.isPending || totalNow <= 0}>
             {register.isPending ? "Registrando…" : "Registrar recebimento"}
           </Button>
         </DialogFooter>

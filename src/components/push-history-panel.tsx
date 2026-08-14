@@ -57,12 +57,8 @@ export function PushHistoryPanel() {
                   </Badge>
                   <span className="text-sm font-medium truncate">{p.title}</span>
                 </div>
-                {p.body && (
-                  <div className="text-xs text-muted-foreground truncate">{p.body}</div>
-                )}
-                {p.error && (
-                  <div className="text-[11px] text-amber-400 mt-0.5">{p.error}</div>
-                )}
+                {p.body && <div className="text-xs text-muted-foreground truncate">{p.body}</div>}
+                {p.error && <div className="text-[11px] text-amber-400 mt-0.5">{p.error}</div>}
                 <div className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">
                   {new Date(p.sent_at).toLocaleString("pt-BR")}
                 </div>

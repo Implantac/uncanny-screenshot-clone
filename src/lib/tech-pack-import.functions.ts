@@ -36,9 +36,7 @@ const OperationSchema = z.object({
 });
 
 const TechPackSchema = z.object({
-  source: z
-    .enum(["clo3d", "illustrator", "browzwear", "manual", "other"])
-    .default("other"),
+  source: z.enum(["clo3d", "illustrator", "browzwear", "manual", "other"]).default("other"),
   code: z.string().min(1),
   product_sku: z.string().optional().nullable(),
   product_id: z.string().uuid().optional().nullable(),
@@ -54,9 +52,7 @@ export type TechPackPayload = z.infer<typeof TechPackSchema>;
 
 export const importTechPack = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) =>
-    z.object({ payload: TechPackSchema }).parse(input),
-  )
+  .inputValidator((input) => z.object({ payload: TechPackSchema }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const p = data.payload;

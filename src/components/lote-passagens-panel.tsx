@@ -172,9 +172,7 @@ export function LotePassagensPanel({
         <div className="text-sm font-semibold mb-2 flex items-center gap-2">
           <GaugeCircle className="size-4 text-primary" /> Passagens por setor
         </div>
-        <p className="text-xs text-muted-foreground">
-          Sem OPs vinculadas para calcular passagens.
-        </p>
+        <p className="text-xs text-muted-foreground">Sem OPs vinculadas para calcular passagens.</p>
       </div>
     );
   }
@@ -196,8 +194,7 @@ export function LotePassagensPanel({
             <span className="text-foreground">{stats.bottleneck.label}</span>{" "}
             <span className="text-muted-foreground">
               · {stats.bottleneck.opsInStage} OP(s) parada(s) há até{" "}
-              {fmtHours(stats.bottleneck.currentStuckHours)} (SLA{" "}
-              {fmtHours(stats.bottleneck.sla)})
+              {fmtHours(stats.bottleneck.currentStuckHours)} (SLA {fmtHours(stats.bottleneck.sla)})
             </span>
           </div>
         </div>

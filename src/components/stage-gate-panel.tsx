@@ -10,11 +10,7 @@ import {
   ThumbsUp,
   ThumbsDown,
 } from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -64,10 +60,7 @@ export function StageGatePanel({ productId }: { productId: string }) {
   });
 
   const decide = useMutation({
-    mutationFn: async (input: {
-      gate_key: string;
-      decision: "aprovado" | "rejeitado";
-    }) => {
+    mutationFn: async (input: { gate_key: string; decision: "aprovado" | "rejeitado" }) => {
       const { data: userRes } = await supabase.auth.getUser();
       const uid = userRes.user?.id;
       if (!uid) throw new Error("Sem sessão");
@@ -137,11 +130,7 @@ export function StageGatePanel({ productId }: { productId: string }) {
                 : "hsl(38 92% 50% / 0.1)",
           }}
         >
-          {ready ? (
-            <CheckCircle2 className="size-3.5" />
-          ) : (
-            <ShieldAlert className="size-3.5" />
-          )}
+          {ready ? <CheckCircle2 className="size-3.5" /> : <ShieldAlert className="size-3.5" />}
           {ready
             ? "Pronto para produção"
             : `${gates.length - missing.length}/${gates.length} gates`}
@@ -158,9 +147,7 @@ export function StageGatePanel({ productId }: { productId: string }) {
         <ul className="divide-y max-h-[420px] overflow-auto">
           {gates.map((g) => {
             const approval = latestByGate.get(g.requirement);
-            const decided =
-              approval?.decision === "aprovado" ||
-              approval?.decision === "rejeitado";
+            const decided = approval?.decision === "aprovado" || approval?.decision === "rejeitado";
             return (
               <li key={g.requirement} className="p-3">
                 <div className="flex items-start gap-2">
@@ -171,11 +158,7 @@ export function StageGatePanel({ productId }: { productId: string }) {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium">{g.requirement}</div>
-                    {g.detail && (
-                      <div className="text-xs text-muted-foreground">
-                        {g.detail}
-                      </div>
-                    )}
+                    {g.detail && <div className="text-xs text-muted-foreground">{g.detail}</div>}
                     {approval && (
                       <div className="mt-1 text-[11px]">
                         <Badge
@@ -235,8 +218,7 @@ export function StageGatePanel({ productId }: { productId: string }) {
         </ul>
         {!ready && (
           <div className="border-t bg-muted/30 p-3 text-xs text-muted-foreground">
-            Resolva os itens acima antes de mover o produto para{" "}
-            <strong>active</strong>.
+            Resolva os itens acima antes de mover o produto para <strong>active</strong>.
           </div>
         )}
       </CollapsibleContent>

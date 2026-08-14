@@ -85,7 +85,9 @@ export function SupplierCapacityEditor() {
                 value={r.pieces_per_day}
                 onChange={(e) => {
                   const v = Math.max(0, Number(e.target.value) || 0);
-                  setRows((arr) => arr.map((x, idx) => (idx === i ? { ...x, pieces_per_day: v } : x)));
+                  setRows((arr) =>
+                    arr.map((x, idx) => (idx === i ? { ...x, pieces_per_day: v } : x)),
+                  );
                 }}
               />
               <Input

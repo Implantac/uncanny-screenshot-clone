@@ -41,9 +41,7 @@ export function ScrapByOpPanel() {
                       {r.product_name ?? r.product_sku ?? "—"}
                     </span>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                    {r.reason}
-                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5 truncate">{r.reason}</div>
                 </div>
                 <div className="text-right shrink-0">
                   <Badge

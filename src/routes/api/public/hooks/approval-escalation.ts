@@ -83,12 +83,8 @@ export const Route = createFileRoute("/api/public/hooks/approval-escalation")({
             .limit(1);
           if (dupe && dupe.length > 0) continue;
 
-          const productName = Array.isArray(r.products)
-            ? r.products[0]?.name
-            : r.products?.name;
-          const ageH = Math.floor(
-            (Date.now() - Date.parse(r.created_at)) / 3_600_000,
-          );
+          const productName = Array.isArray(r.products) ? r.products[0]?.name : r.products?.name;
+          const ageH = Math.floor((Date.now() - Date.parse(r.created_at)) / 3_600_000);
 
           await supabaseAdmin.from("push_notifications").insert({
             owner_id: r.approver_id,

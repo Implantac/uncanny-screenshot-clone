@@ -7,7 +7,6 @@ import { QuickPassButton } from "@/components/quick-pass-lazy";
 import { AICoordinatorPanel } from "@/components/ai-coordinator-panel";
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 
-
 export const Route = createFileRoute("/_authenticated/_app/producao-do-dia/$stage")({
   head: ({ params }) => ({
     meta: [{ title: `Produção do dia · ${params.stage} · USE MODA` }],
@@ -51,7 +50,6 @@ function DayProductionPage() {
           { label: `Produção do dia · ${stage}` },
         ]}
       />
-
 
       <header className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">

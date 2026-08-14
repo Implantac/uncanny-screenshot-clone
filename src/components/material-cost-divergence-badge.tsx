@@ -17,11 +17,7 @@ type Props = {
  * no BOM da ficha técnica vs o custo de referência na Biblioteca Global.
  * Acende alerta se a diferença for > 5%.
  */
-export function MaterialCostDivergenceBadge({
-  materialId,
-  bomUnitCost,
-  compact,
-}: Props) {
+export function MaterialCostDivergenceBadge({ materialId, bomUnitCost, compact }: Props) {
   const { data: refCost, isLoading } = useQuery({
     enabled: !!materialId,
     queryKey: ["material-ref-cost", materialId],
@@ -89,4 +85,3 @@ export function MaterialCostDivergenceBadge({
     </Badge>
   );
 }
-

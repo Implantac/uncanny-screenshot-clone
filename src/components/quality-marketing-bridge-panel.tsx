@@ -40,7 +40,11 @@ export function QualityMarketingBridgePanel() {
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Kpi label="Produtos" value={String(summary.productsTracked)} />
-        <Kpi label="Críticos" value={String(summary.criticos)} tone={summary.criticos ? "danger" : "ok"} />
+        <Kpi
+          label="Críticos"
+          value={String(summary.criticos)}
+          tone={summary.criticos ? "danger" : "ok"}
+        />
         <Kpi label="Investido" value={fmtBRL(summary.totalInvestment)} />
         <Kpi label="Envios influencers" value={String(summary.totalShipments)} />
         <Kpi
@@ -126,11 +130,7 @@ function Kpi({
   tone?: "neutral" | "ok" | "danger";
 }) {
   const toneCls =
-    tone === "danger"
-      ? "text-destructive"
-      : tone === "ok"
-        ? "text-emerald-500"
-        : "text-foreground";
+    tone === "danger" ? "text-destructive" : tone === "ok" ? "text-emerald-500" : "text-foreground";
   return (
     <div className="rounded-xl border border-border bg-muted/10 p-3">
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>

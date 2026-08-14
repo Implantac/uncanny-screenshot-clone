@@ -19,15 +19,31 @@ export const STATE_META: Record<
   CollectionState,
   { label: string; tone: string; next: CollectionState[] }
 > = {
-  briefing:        { label: "Briefing",        tone: "bg-slate-500/15 text-slate-600",     next: ["design"] },
-  design:          { label: "Design",          tone: "bg-violet-500/15 text-violet-600",   next: ["aprovacao", "briefing"] },
-  aprovacao:       { label: "Aprovação",       tone: "bg-amber-500/15 text-amber-600",     next: ["desenvolvimento", "design"] },
-  desenvolvimento: { label: "Desenvolvimento", tone: "bg-blue-500/15 text-blue-600",       next: ["producao", "aprovacao"] },
-  producao:        { label: "Produção",        tone: "bg-indigo-500/15 text-indigo-600",   next: ["entregue"] },
-  entregue:        { label: "Entregue",        tone: "bg-teal-500/15 text-teal-600",       next: ["lancamento"] },
-  lancamento:      { label: "Lançamento",      tone: "bg-emerald-500/15 text-emerald-600", next: ["markdown", "descontinuada"] },
-  markdown:        { label: "Markdown",        tone: "bg-rose-500/15 text-rose-600",       next: ["descontinuada"] },
-  descontinuada:   { label: "Descontinuada",   tone: "bg-zinc-500/15 text-zinc-600",       next: [] },
+  briefing: { label: "Briefing", tone: "bg-slate-500/15 text-slate-600", next: ["design"] },
+  design: {
+    label: "Design",
+    tone: "bg-violet-500/15 text-violet-600",
+    next: ["aprovacao", "briefing"],
+  },
+  aprovacao: {
+    label: "Aprovação",
+    tone: "bg-amber-500/15 text-amber-600",
+    next: ["desenvolvimento", "design"],
+  },
+  desenvolvimento: {
+    label: "Desenvolvimento",
+    tone: "bg-blue-500/15 text-blue-600",
+    next: ["producao", "aprovacao"],
+  },
+  producao: { label: "Produção", tone: "bg-indigo-500/15 text-indigo-600", next: ["entregue"] },
+  entregue: { label: "Entregue", tone: "bg-teal-500/15 text-teal-600", next: ["lancamento"] },
+  lancamento: {
+    label: "Lançamento",
+    tone: "bg-emerald-500/15 text-emerald-600",
+    next: ["markdown", "descontinuada"],
+  },
+  markdown: { label: "Markdown", tone: "bg-rose-500/15 text-rose-600", next: ["descontinuada"] },
+  descontinuada: { label: "Descontinuada", tone: "bg-zinc-500/15 text-zinc-600", next: [] },
 };
 
 const StateEnum = z.enum(COLLECTION_STATES);
@@ -53,10 +69,7 @@ export const previewTransition = createServerFn({ method: "GET" })
         .from("collection_products")
         .select("product_id, role")
         .eq("collection_id", data.collectionId),
-      sb
-        .from("tech_sheets")
-        .select("id, product_id, status")
-        .eq("status", "aprovada"),
+      sb.from("tech_sheets").select("id, product_id, status").eq("status", "aprovada"),
     ]);
 
     type CpRow = { product_id: string; role: string | null };
@@ -67,8 +80,7 @@ export const previewTransition = createServerFn({ method: "GET" })
     if (data.to === "producao") {
       const missing = nonNos.filter((c) => !approvedIds.has(c.product_id)).length;
       if (nonNos.length === 0) warnings.push("Nenhum produto no mix da coleção.");
-      if (missing > 0)
-        warnings.push(`${missing} produto(s) sem ficha técnica aprovada.`);
+      if (missing > 0) warnings.push(`${missing} produto(s) sem ficha técnica aprovada.`);
       effects.push(`${nonNos.length} ordem(ns) de produção em rascunho serão criadas.`);
     }
     if (data.to === "lancamento" || data.to === "entregue") {
@@ -87,11 +99,7 @@ export const previewTransition = createServerFn({ method: "GET" })
 
 export const transitionCollection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: {
-    collectionId: string;
-    to: CollectionState;
-    reason?: string | null;
-  }) =>
+  .inputValidator((d: { collectionId: string; to: CollectionState; reason?: string | null }) =>
     z
       .object({
         collectionId: z.string().uuid(),

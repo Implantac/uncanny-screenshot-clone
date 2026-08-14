@@ -32,8 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
-const brl = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 function DeltaBadge({ pct, hasEstimate }: { pct: number | null; hasEstimate: boolean }) {
   if (!hasEstimate || pct == null) {
@@ -103,7 +102,8 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
       }),
     onMutate: (v) => setPending(v.newSupplierId),
     onSuccess: (res, vars) => {
-      const name = row.alternateSuppliers.find((s) => s.id === vars.newSupplierId)?.name ?? "fornecedor";
+      const name =
+        row.alternateSuppliers.find((s) => s.id === vars.newSupplierId)?.name ?? "fornecedor";
       if (res.blocked) {
         const sign = res.worstPct > 0 ? "+" : "";
         const target = res.worstProductName ?? res.worstSku ?? "produto ativo";
@@ -111,7 +111,10 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
           `⚠️ Guardrail de custo\n\nImpacto estimado ${sign}${res.worstPct.toFixed(1)}% em ${target} (limite ${res.threshold}%, ${res.affectedActive} ficha(s) ativa(s)).\n\nDigite o motivo para prosseguir com a substituição:`,
         );
         if (reason && reason.trim().length >= 5) {
-          mutation.mutate({ newSupplierId: vars.newSupplierId, override: { reason: reason.trim() } });
+          mutation.mutate({
+            newSupplierId: vars.newSupplierId,
+            override: { reason: reason.trim() },
+          });
         } else if (reason !== null) {
           toast.warning("Motivo obrigatório (mínimo 5 caracteres) — substituição cancelada.");
         }
@@ -177,9 +180,7 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
               className="flex flex-col items-stretch gap-0.5 text-xs py-2"
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="truncate font-medium">
-                  {s.name ?? s.id.slice(0, 6)}
-                </span>
+                <span className="truncate font-medium">{s.name ?? s.id.slice(0, 6)}</span>
                 <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
                   {pending === s.id ? (
                     <Loader2 className="size-3 animate-spin" />
@@ -192,15 +193,15 @@ function SwapButton({ row }: { row: MaterialSourcingRisk }) {
               <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
                 <span>
                   {sim?.affectedDrafts ?? 0} ficha(s){" "}
-                  {sim?.estimatedUnitCost != null && (
-                    <>· unit. est. {brl(sim.estimatedUnitCost)}</>
-                  )}
+                  {sim?.estimatedUnitCost != null && <>· unit. est. {brl(sim.estimatedUnitCost)}</>}
                 </span>
                 <DeltaBadge pct={pct} hasEstimate={has} />
               </div>
               {sim?.worst && has && (
                 <div className="text-[10px] text-muted-foreground truncate">
-                  Pior: {sim.worst.productName ?? sim.worst.sku ?? sim.worst.techSheetId.slice(0, 6)} ({sim.worst.deltaPct > 0 ? "+" : ""}
+                  Pior:{" "}
+                  {sim.worst.productName ?? sim.worst.sku ?? sim.worst.techSheetId.slice(0, 6)} (
+                  {sim.worst.deltaPct > 0 ? "+" : ""}
                   {sim.worst.deltaPct.toFixed(1)}%)
                 </div>
               )}

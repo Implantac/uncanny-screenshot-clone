@@ -28,7 +28,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Sparkles,
   RefreshCw,
@@ -64,7 +70,20 @@ export const Route = createFileRoute("/_authenticated/_app/demand-planning")({
   component: DemandPlanningPage,
 });
 
-const MONTHS_LABEL = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const MONTHS_LABEL = [
+  "Jan",
+  "Fev",
+  "Mar",
+  "Abr",
+  "Mai",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Set",
+  "Out",
+  "Nov",
+  "Dez",
+];
 
 function DemandPlanningPage() {
   return (
@@ -72,10 +91,12 @@ function DemandPlanningPage() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-            <Sparkles className="size-5 text-primary" /> Demand Planning · Grade × Sazonalidade × ABC
+            <Sparkles className="size-5 text-primary" /> Demand Planning · Grade × Sazonalidade ×
+            ABC
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Sugestão de compras por fornecedor, em matriz cor × tamanho, com Z dinâmico (ABC) e fator sazonal aplicado ao consumo.
+            Sugestão de compras por fornecedor, em matriz cor × tamanho, com Z dinâmico (ABC) e
+            fator sazonal aplicado ao consumo.
           </p>
         </div>
         <RecalcAbcButton />
@@ -121,7 +142,8 @@ function RecalcAbcButton() {
   });
   return (
     <Button onClick={() => m.mutate()} disabled={m.isPending} variant="outline" size="sm">
-      <RefreshCw className={cn("size-4 mr-1.5", m.isPending && "animate-spin")} /> Recalcular curva ABC
+      <RefreshCw className={cn("size-4 mr-1.5", m.isPending && "animate-spin")} /> Recalcular curva
+      ABC
     </Button>
   );
 }
@@ -208,14 +230,16 @@ function PurchaseBySupplierPanel() {
     onError: (e: any) => toast.error(e?.message ?? "Falha ao gerar pedidos em lote"),
   });
 
-  if (isLoading) return <div className="text-sm text-muted-foreground">Calculando demanda por SKU…</div>;
+  if (isLoading)
+    return <div className="text-sm text-muted-foreground">Calculando demanda por SKU…</div>;
   if (allGroups.length === 0)
     return (
       <Card className="p-8 text-center">
         <Factory className="size-8 mx-auto text-muted-foreground mb-2" />
         <div className="font-medium">Nenhum SKU atingiu o Ponto de Pedido.</div>
         <div className="text-sm text-muted-foreground mt-1">
-          Quando a demanda × sazonalidade ultrapassar o ROP, as sugestões aparecerão aqui agrupadas por fornecedor.
+          Quando a demanda × sazonalidade ultrapassar o ROP, as sugestões aparecerão aqui agrupadas
+          por fornecedor.
         </div>
       </Card>
     );
@@ -254,7 +278,10 @@ function PurchaseBySupplierPanel() {
           ))}
         </div>
         <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
-          <Checkbox checked={onlyMeetingMin} onCheckedChange={(v) => setOnlyMeetingMin(Boolean(v))} />
+          <Checkbox
+            checked={onlyMeetingMin}
+            onCheckedChange={(v) => setOnlyMeetingMin(Boolean(v))}
+          />
           Só fornecedores que atingem o mínimo
         </label>
         <div className="ml-auto flex items-center gap-2">
@@ -343,11 +370,17 @@ function SupplierCard({
               {group.supplierName}
               {hasMin &&
                 (meetsMin ? (
-                  <Badge variant="outline" className="border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <Badge
+                    variant="outline"
+                    className="border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  >
                     <CheckCircle2 className="size-3 mr-1" /> Mínimo atingido
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <Badge
+                    variant="outline"
+                    className="border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                  >
                     <AlertTriangle className="size-3 mr-1" />
                     {group.gapValue > 0
                       ? `Faltam ${group.gapValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
@@ -372,7 +405,9 @@ function SupplierCard({
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Total do pedido</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Total do pedido
+            </div>
             <div className="font-semibold">
               {group.totalQty.toLocaleString("pt-BR")} pç ·{" "}
               {group.totalCost.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
@@ -477,7 +512,9 @@ function ProductMatrix({ product }: { product: any }) {
               );
             })}
             <tr className="border-t border-border bg-muted/30">
-              <td className="py-1.5 px-2 text-xs uppercase tracking-wider text-muted-foreground">Σ</td>
+              <td className="py-1.5 px-2 text-xs uppercase tracking-wider text-muted-foreground">
+                Σ
+              </td>
               {product.cols.map((c: any) => {
                 const colSum = product.rows.reduce(
                   (s: number, r: any) => s + (product.matrix[r.id]?.[c.id] ?? 0),
@@ -539,7 +576,9 @@ function SizeGridEditor() {
           scope: draft.scope,
           scopeValue: draft.scopeValue,
           distribution: Object.fromEntries(
-            draft.sizes.filter((s) => s.label.trim()).map((s) => [s.label.trim(), Number(s.pct) / 100]),
+            draft.sizes
+              .filter((s) => s.label.trim())
+              .map((s) => [s.label.trim(), Number(s.pct) / 100]),
           ),
         },
       }),
@@ -574,7 +613,9 @@ function SizeGridEditor() {
               value={draft.scope}
               onValueChange={(v) => setDraft((d) => ({ ...d, scope: v as SizeGridScope }))}
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="category">Categoria</SelectItem>
                 <SelectItem value="product_group">Grupo de produto</SelectItem>
@@ -640,7 +681,9 @@ function SizeGridEditor() {
                 </tr>
               ))}
               <tr className="border-t border-border bg-muted/20">
-                <td className="px-2 py-1.5 text-xs uppercase tracking-wider text-muted-foreground">Σ</td>
+                <td className="px-2 py-1.5 text-xs uppercase tracking-wider text-muted-foreground">
+                  Σ
+                </td>
                 <td
                   className={cn(
                     "text-right px-2 py-1.5 font-semibold tabular-nums",
@@ -659,9 +702,7 @@ function SizeGridEditor() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() =>
-              setDraft((d) => ({ ...d, sizes: [...d.sizes, { label: "", pct: 0 }] }))
-            }
+            onClick={() => setDraft((d) => ({ ...d, sizes: [...d.sizes, { label: "", pct: 0 }] }))}
           >
             <Plus className="size-3.5 mr-1" /> Tamanho
           </Button>
@@ -685,7 +726,9 @@ function SizeGridEditor() {
               <div key={g.id} className="border border-border rounded-lg p-3 text-sm">
                 <div className="flex items-center justify-between mb-1">
                   <div className="font-medium">
-                    <Badge variant="outline" className="mr-2">{g.scope}</Badge>
+                    <Badge variant="outline" className="mr-2">
+                      {g.scope}
+                    </Badge>
                     {g.scope_value || "—"}
                   </div>
                   <button
@@ -697,10 +740,7 @@ function SizeGridEditor() {
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {Object.entries(g.distribution || {}).map(([k, v]) => (
-                    <span
-                      key={k}
-                      className="text-xs px-2 py-0.5 rounded bg-muted tabular-nums"
-                    >
+                    <span key={k} className="text-xs px-2 py-0.5 rounded bg-muted tabular-nums">
                       {k}: {(Number(v) * 100).toFixed(0)}%
                     </span>
                   ))}
@@ -801,7 +841,9 @@ function SeasonalityEditor() {
               value={draft.scope}
               onValueChange={(v) => setDraft((d) => ({ ...d, scope: v as SeasonalityScope }))}
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="category">Categoria</SelectItem>
                 <SelectItem value="product_group">Grupo</SelectItem>
@@ -876,7 +918,9 @@ function SeasonalityEditor() {
                 <div key={s.id} className="border border-border rounded-lg p-3">
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="text-sm font-medium">
-                      <Badge variant="outline" className="mr-2">{s.scope}</Badge>
+                      <Badge variant="outline" className="mr-2">
+                        {s.scope}
+                      </Badge>
                       {s.scope_value || "—"}
                     </div>
                     <button
@@ -889,7 +933,11 @@ function SeasonalityEditor() {
                   <div className="h-20 -ml-2">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={months}>
-                        <XAxis dataKey="m" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+                        <XAxis
+                          dataKey="m"
+                          tick={{ fontSize: 9 }}
+                          stroke="hsl(var(--muted-foreground))"
+                        />
                         <Bar dataKey="v" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>

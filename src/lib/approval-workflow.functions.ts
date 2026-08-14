@@ -143,12 +143,15 @@ const DECISION_SCHEMA = z.object({
  * Reprovação → ficha volta para em_revisao (destravada para nova versão).
  * Comentário é obrigatório em reprovação.
  */
-async function decide(context: { supabase: any; userId: string }, data: {
-  techSheetId: string;
-  stage: number;
-  decision: Decision;
-  comment?: string;
-}) {
+async function decide(
+  context: { supabase: any; userId: string },
+  data: {
+    techSheetId: string;
+    stage: number;
+    decision: Decision;
+    comment?: string;
+  },
+) {
   const { supabase, userId } = context;
 
   if (data.decision === "reprovado" && !data.comment?.trim()) {
@@ -200,9 +203,7 @@ export const skipApprovalWorkflow = createServerFn({ method: "POST" })
       })
       .parse(d),
   )
-  .handler(async ({ data, context }) =>
-    decide(context, { ...data, decision: "pulado" }),
-  );
+  .handler(async ({ data, context }) => decide(context, { ...data, decision: "pulado" }));
 
 /** Cancela uma etapa. */
 export const cancelApprovalWorkflow = createServerFn({ method: "POST" })
@@ -216,9 +217,7 @@ export const cancelApprovalWorkflow = createServerFn({ method: "POST" })
       })
       .parse(d),
   )
-  .handler(async ({ data, context }) =>
-    decide(context, { ...data, decision: "cancelado" }),
-  );
+  .handler(async ({ data, context }) => decide(context, { ...data, decision: "cancelado" }));
 
 /** Redefine o fluxo (etapas pendentes/em análise voltam ao início). */
 export const resetApprovalWorkflow = createServerFn({ method: "POST" })

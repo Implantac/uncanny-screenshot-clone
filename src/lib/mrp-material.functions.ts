@@ -113,9 +113,7 @@ export const getMaterialDetail = createServerFn({ method: "POST" })
 
     const { data: it, error: iErr } = await supabase
       .from("inventory_items")
-      .select(
-        "id,sku,name,unit,balance,deposit,preferred_supplier_id",
-      )
+      .select("id,sku,name,unit,balance,deposit,preferred_supplier_id")
       .eq("owner_id", userId)
       .eq("id", itemId)
       .single();
@@ -179,22 +177,22 @@ export const getMaterialDetail = createServerFn({ method: "POST" })
       months.push(monthly.get(ym) ?? 0);
     }
     const mean = months.reduce((a, b) => a + b, 0) / months.length;
-    const stdDev = Math.sqrt(
-      months.reduce((a, b) => a + (b - mean) ** 2, 0) / months.length,
-    );
+    const stdDev = Math.sqrt(months.reduce((a, b) => a + (b - mean) ** 2, 0) / months.length);
 
     // POs em aberto
     const { data: poi } = await supabase
       .from("purchase_order_items")
-      .select(
-        "quantity,purchase_orders!inner(id,code,status,expected_date,supplier_id,owner_id)",
-      )
+      .select("quantity,purchase_orders!inner(id,code,status,expected_date,supplier_id,owner_id)")
       .eq("owner_id", userId)
       .eq("inventory_item_id", itemId);
     const supplierIds = Array.from(
       new Set(
         (poi ?? [])
-          .map((p) => (p as { purchase_orders: { supplier_id: string | null } }).purchase_orders?.supplier_id)
+          .map(
+            (p) =>
+              (p as { purchase_orders: { supplier_id: string | null } }).purchase_orders
+                ?.supplier_id,
+          )
           .filter((s): s is string => Boolean(s)),
       ),
     );
@@ -208,15 +206,17 @@ export const getMaterialDetail = createServerFn({ method: "POST" })
     }
     const openPurchaseOrders = (poi ?? [])
       .map((p) => {
-        const po = (p as unknown as {
-          purchase_orders: {
-            id: string;
-            code: string;
-            status: string;
-            expected_date: string | null;
-            supplier_id: string | null;
-          };
-        }).purchase_orders;
+        const po = (
+          p as unknown as {
+            purchase_orders: {
+              id: string;
+              code: string;
+              status: string;
+              expected_date: string | null;
+              supplier_id: string | null;
+            };
+          }
+        ).purchase_orders;
         return {
           id: po.id,
           code: po.code,
@@ -251,7 +251,8 @@ export const getMaterialDetail = createServerFn({ method: "POST" })
       for (const s of sheets ?? []) {
         if (!s.product_id) continue;
         const per = consumptionBySheet.get(s.id) ?? 0;
-        if (!sheetByProduct.has(s.product_id)) sheetByProduct.set(s.product_id, { sheetId: s.id, perPiece: per });
+        if (!sheetByProduct.has(s.product_id))
+          sheetByProduct.set(s.product_id, { sheetId: s.id, perPiece: per });
       }
       const productIds = Array.from(sheetByProduct.keys());
       if (productIds.length) {
@@ -268,7 +269,7 @@ export const getMaterialDetail = createServerFn({ method: "POST" })
           .in("id", productIds);
         const prodById = new Map((prods ?? []).map((p) => [p.id, p.name]));
         productionDemand = (ops ?? []).map((o) => {
-          const per = o.product_id ? sheetByProduct.get(o.product_id)?.perPiece ?? 0 : 0;
+          const per = o.product_id ? (sheetByProduct.get(o.product_id)?.perPiece ?? 0) : 0;
           return {
             opCode: o.code,
             productId: o.product_id,
@@ -359,7 +360,10 @@ export const generatePurchaseSuggestion = createServerFn({ method: "POST" })
       leadTime = Number(s?.lead_time_days ?? 14);
     }
     const expected = new Date(Date.now() + leadTime * 86400000).toISOString().slice(0, 10);
-    const code = "SC-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" +
+    const code =
+      "SC-" +
+      new Date().toISOString().slice(0, 10).replace(/-/g, "") +
+      "-" +
       it.sku.replace(/\s+/g, "").slice(0, 8).toUpperCase();
     const unitPrice = Number(it.avg_unit_cost ?? 0);
     const total = unitPrice * data.quantity;

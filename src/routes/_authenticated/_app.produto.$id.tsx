@@ -360,15 +360,12 @@ function ProductWorkspace() {
     new Set(variants.map((v) => v.color?.name).filter(Boolean) as string[]),
   );
 
-const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
   // Toggle ativo/inativo de variante (matriz SKU no documento).
   const toggleVariantActive = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
-      const { error } = await supabase
-        .from("product_variants")
-        .update({ active })
-        .eq("id", id);
+      const { error } = await supabase.from("product_variants").update({ active }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -793,7 +790,7 @@ const queryClient = useQueryClient();
                     laundry: displayBlocks.laundry,
                     quality: displayBlocks.quality,
                   }}
-observations={sheetContent.overview}
+                  observations={sheetContent.overview}
                   canEdit={editMode && canEditSheet}
                   skuVariants={variants}
                   onToggleVariantActive={(variantId, active) =>

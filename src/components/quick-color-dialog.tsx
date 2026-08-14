@@ -38,7 +38,7 @@ type QuickColorDialogProps = {
 /**
  * QuickColorDialog — Dialog minimalista para adicionar cor à paleta inline,
  * sem precisar navegar para a página de coleção ou produto.
- * 
+ *
  * Cria na tabela `collection_colors` se `collectionId` for informado,
  * ou em `product_color_options` se `productId` for informado.
  */
@@ -123,7 +123,13 @@ export function QuickColorDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) reset();
+        onOpenChange(v);
+      }}
+    >
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <div className="flex items-center gap-3">
@@ -229,9 +235,13 @@ export function QuickColorDialog({
             disabled={!name.trim() || !/^#[0-9a-f]{6}$/.test(hex) || createMut.isPending}
           >
             {createMut.isPending ? (
-              <><Loader2 className="size-4 animate-spin mr-2" /> Salvando…</>
+              <>
+                <Loader2 className="size-4 animate-spin mr-2" /> Salvando…
+              </>
             ) : (
-              <><Plus className="size-4 mr-1.5" /> Adicionar Cor</>
+              <>
+                <Plus className="size-4 mr-1.5" /> Adicionar Cor
+              </>
             )}
           </Button>
         </DialogFooter>

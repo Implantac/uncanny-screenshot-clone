@@ -78,7 +78,10 @@ export const getMaterialCostCascade = createServerFn({ method: "POST" })
       .in("id", sheetIds)
       .eq("owner_id", userId);
 
-    const sheetById = new Map<string, { cost: number; review: boolean; updated: string | null; productId: string | null }>();
+    const sheetById = new Map<
+      string,
+      { cost: number; review: boolean; updated: string | null; productId: string | null }
+    >();
     for (const s of sheets ?? []) {
       sheetById.set(s.id as string, {
         cost: Number(s.cost_price ?? 0),
@@ -128,11 +131,13 @@ export const getMaterialCostCascade = createServerFn({ method: "POST" })
     const rows: CostCascadeRow[] = usageRows.map((r) => {
       const s = sheetById.get(r.tech_sheet_id);
       const current = s?.cost ?? 0;
-      const previous = r.product_id ? previousByProduct.get(r.product_id) ?? null : null;
-      const target = r.product_id ? targetByProduct.get(r.product_id) ?? null : null;
+      const previous = r.product_id ? (previousByProduct.get(r.product_id) ?? null) : null;
+      const target = r.product_id ? (targetByProduct.get(r.product_id) ?? null) : null;
       const deltaAbs = previous != null ? current - previous : null;
-      const deltaPct = previous != null && previous > 0 ? ((current - previous) / previous) * 100 : null;
-      const targetGapPct = target != null && target > 0 ? ((current - target) / target) * 100 : null;
+      const deltaPct =
+        previous != null && previous > 0 ? ((current - previous) / previous) * 100 : null;
+      const targetGapPct =
+        target != null && target > 0 ? ((current - target) / target) * 100 : null;
       return {
         techSheetId: r.tech_sheet_id,
         techSheetCode: r.tech_sheet_code,

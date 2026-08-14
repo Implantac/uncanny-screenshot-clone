@@ -42,7 +42,6 @@ export function PcpApsPanel() {
     onError: (e: Error) => toast.error(e.message || "Falha ao aplicar sequenciamento"),
   });
 
-
   const stallCount = stall.data?.length ?? 0;
 
   return (
@@ -54,8 +53,12 @@ export function PcpApsPanel() {
         </div>
         <div className="flex items-center gap-2">
           {stallCount > 0 && (
-            <Badge variant="outline" className="gap-1 bg-destructive/10 text-destructive border-destructive/30">
-              <AlarmClock className="size-3" /> {stallCount} parado{stallCount > 1 ? "s" : ""} &gt;4h
+            <Badge
+              variant="outline"
+              className="gap-1 bg-destructive/10 text-destructive border-destructive/30"
+            >
+              <AlarmClock className="size-3" /> {stallCount} parado{stallCount > 1 ? "s" : ""}{" "}
+              &gt;4h
             </Badge>
           )}
           <Button
@@ -111,7 +114,10 @@ export function PcpApsPanel() {
                         {r.stage ?? "—"}
                       </Badge>
                       {r.priority >= 4 && (
-                        <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-600 border-amber-500/30">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] bg-amber-500/10 text-amber-600 border-amber-500/30"
+                        >
                           P{r.priority}
                         </Badge>
                       )}
@@ -164,7 +170,8 @@ export function PcpApsPanel() {
                     <div className="text-xs text-muted-foreground mt-0.5">
                       Sem movimentação há{" "}
                       <span className="font-semibold text-foreground">{r.stall_hours}h</span>
-                      {r.due_date && ` · entrega ${new Date(r.due_date).toLocaleDateString("pt-BR")}`}
+                      {r.due_date &&
+                        ` · entrega ${new Date(r.due_date).toLocaleDateString("pt-BR")}`}
                     </div>
                   </div>
                   <Badge

@@ -131,7 +131,9 @@ function GeoSales() {
 
   const activeUf = hoverUf ?? selectedUf ?? null;
   const activeStat = activeUf ? statsByUf.get(activeUf) : null;
-  const activeName = activeUf ? BRAZIL_PATHS.find((p) => p.uf === activeUf)?.name ?? activeUf : null;
+  const activeName = activeUf
+    ? (BRAZIL_PATHS.find((p) => p.uf === activeUf)?.name ?? activeUf)
+    : null;
   const setSelectedUf = (uf: string | undefined) =>
     navigate({
       search: (prev: { uf?: string }) => ({ ...prev, uf }),

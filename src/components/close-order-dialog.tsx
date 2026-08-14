@@ -70,8 +70,8 @@ export function CloseOrderDialog({
             Fechar OP {orderCode}
           </DialogTitle>
           <DialogDescription>
-            Registrar produção final. Reservas de material ativas serão liberadas. O estoque
-            de acabado é gerido pelo ERP.
+            Registrar produção final. Reservas de material ativas serão liberadas. O estoque de
+            acabado é gerido pelo ERP.
           </DialogDescription>
         </DialogHeader>
 
@@ -95,11 +95,7 @@ export function CloseOrderDialog({
             />
           </div>
           {delta !== 0 && (
-            <p
-              className={`text-[11px] ${
-                delta < 0 ? "text-amber-600" : "text-muted-foreground"
-              }`}
-            >
+            <p className={`text-[11px] ${delta < 0 ? "text-amber-600" : "text-muted-foreground"}`}>
               {delta < 0
                 ? `Faltam ${Math.abs(delta)} pç em relação ao planejado.`
                 : `+${delta} pç acima do planejado.`}

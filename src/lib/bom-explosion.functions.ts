@@ -43,7 +43,8 @@ export const getBOMExplosion = createServerFn({ method: "POST" })
     if (!order) throw new Error("OP não encontrada");
 
     const orderQty = Number(order.quantity ?? 0);
-    const productName = (order as { products?: { name?: string | null } | null }).products?.name ?? null;
+    const productName =
+      (order as { products?: { name?: string | null } | null }).products?.name ?? null;
 
     // explode pela grade real se existir (Tam×Cor)
     const { data: gridRows } = await supabase
@@ -78,8 +79,7 @@ export const getBOMExplosion = createServerFn({ method: "POST" })
       .select("id, status, updated_at")
       .eq("product_id", order.product_id)
       .order("updated_at", { ascending: false });
-    const sheet =
-      (sheets ?? []).find((s) => s.status === "aprovada") ?? (sheets ?? [])[0] ?? null;
+    const sheet = (sheets ?? []).find((s) => s.status === "aprovada") ?? (sheets ?? [])[0] ?? null;
 
     if (!sheet) {
       return {
@@ -95,17 +95,23 @@ export const getBOMExplosion = createServerFn({ method: "POST" })
 
     const { data: materials } = await supabase
       .from("tech_sheet_materials")
-      .select("id, name, inventory_item_id, consumption, consumption_by_size, loss_pct, unit, unit_cost")
+      .select(
+        "id, name, inventory_item_id, consumption, consumption_by_size, loss_pct, unit, unit_cost",
+      )
       .eq("tech_sheet_id", sheet.id);
 
     const matList = materials ?? [];
     const invIds = matList.map((m) => m.inventory_item_id).filter((v): v is string => !!v);
     const { data: invItems } = invIds.length
-      ? await supabase
-          .from("inventory_items")
-          .select("id, name, balance, unit")
-          .in("id", invIds)
-      : { data: [] as Array<{ id: string; name: string; balance: number | null; unit: string | null }> };
+      ? await supabase.from("inventory_items").select("id, name, balance, unit").in("id", invIds)
+      : {
+          data: [] as Array<{
+            id: string;
+            name: string;
+            balance: number | null;
+            unit: string | null;
+          }>,
+        };
     const invMap = new Map((invItems ?? []).map((i) => [i.id, i]));
 
     const lines: BOMLine[] = matList.map((m) => {

@@ -70,8 +70,7 @@ export const getApsSuggestion = createServerFn({ method: "GET" })
     }
 
     const now = Date.now();
-    const familyOf = (p: ProductRow | null | undefined) =>
-      p?.product_group ?? p?.category ?? "_";
+    const familyOf = (p: ProductRow | null | undefined) => p?.product_group ?? p?.category ?? "_";
 
     const peerCount = new Map<string, number>();
     for (const o of activeOrders) {
@@ -150,9 +149,7 @@ export const getStalledOrders = createServerFn({ method: "GET" })
       .order("stage_updated_at", { ascending: true });
     if (error) throw new Error(error.message);
 
-    const rows = (data ?? []).filter(
-      (r) => !TERMINAL_STAGES.includes(r.stage ?? ""),
-    ) as OrderRow[];
+    const rows = (data ?? []).filter((r) => !TERMINAL_STAGES.includes(r.stage ?? "")) as OrderRow[];
 
     const pids = Array.from(new Set(rows.map((r) => r.product_id).filter(Boolean) as string[]));
     const products: Record<string, ProductRow> = {};

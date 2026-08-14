@@ -38,9 +38,16 @@ export const Route = createFileRoute("/_authenticated/_app/timeline")({
   head: () => ({
     meta: [
       { title: "Timeline do Produto · USE MODA PLM" },
-      { name: "description", content: "Linha do tempo unificada de eventos: auditoria, estágios de produção, ocorrências, qualidade, protótipos e marketing." },
+      {
+        name: "description",
+        content:
+          "Linha do tempo unificada de eventos: auditoria, estágios de produção, ocorrências, qualidade, protótipos e marketing.",
+      },
       { property: "og:title", content: "Timeline do Produto · USE MODA PLM" },
-      { property: "og:description", content: "Eventos consolidados do ciclo de vida do produto em uma única linha do tempo." },
+      {
+        property: "og:description",
+        content: "Eventos consolidados do ciclo de vida do produto em uma única linha do tempo.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -48,14 +55,39 @@ export const Route = createFileRoute("/_authenticated/_app/timeline")({
   component: TimelinePage,
 });
 
-const SOURCE_META: Record<TimelineSource, { label: string; icon: typeof Activity; tint: string }> = {
-  audit: { label: "Auditoria", icon: ShieldCheck, tint: "bg-slate-500/10 text-slate-600 border-slate-500/30" },
-  stage: { label: "Estágio", icon: Factory, tint: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30" },
-  occurrence: { label: "Ocorrência", icon: AlertTriangle, tint: "bg-amber-500/10 text-amber-600 border-amber-500/30" },
-  inspection: { label: "Qualidade", icon: ClipboardCheck, tint: "bg-blue-500/10 text-blue-600 border-blue-500/30" },
-  prototype: { label: "Protótipo", icon: Sparkles, tint: "bg-fuchsia-500/10 text-fuchsia-600 border-fuchsia-500/30" },
-  marketing: { label: "Marketing", icon: Megaphone, tint: "bg-pink-500/10 text-pink-600 border-pink-500/30" },
-};
+const SOURCE_META: Record<TimelineSource, { label: string; icon: typeof Activity; tint: string }> =
+  {
+    audit: {
+      label: "Auditoria",
+      icon: ShieldCheck,
+      tint: "bg-slate-500/10 text-slate-600 border-slate-500/30",
+    },
+    stage: {
+      label: "Estágio",
+      icon: Factory,
+      tint: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
+    },
+    occurrence: {
+      label: "Ocorrência",
+      icon: AlertTriangle,
+      tint: "bg-amber-500/10 text-amber-600 border-amber-500/30",
+    },
+    inspection: {
+      label: "Qualidade",
+      icon: ClipboardCheck,
+      tint: "bg-blue-500/10 text-blue-600 border-blue-500/30",
+    },
+    prototype: {
+      label: "Protótipo",
+      icon: Sparkles,
+      tint: "bg-fuchsia-500/10 text-fuchsia-600 border-fuchsia-500/30",
+    },
+    marketing: {
+      label: "Marketing",
+      icon: Megaphone,
+      tint: "bg-pink-500/10 text-pink-600 border-pink-500/30",
+    },
+  };
 
 const SEV_TINT: Record<TimelineEvent["severity"], string> = {
   info: "bg-muted/40 text-muted-foreground",
@@ -114,8 +146,8 @@ function TimelinePage() {
           <h1 className="text-xl font-semibold">Timeline Global</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          Tudo o que aconteceu — auditoria, estágios, ocorrências, qualidade,
-          protótipos e marketing — em um único feed cronológico.
+          Tudo o que aconteceu — auditoria, estágios, ocorrências, qualidade, protótipos e marketing
+          — em um único feed cronológico.
         </p>
       </header>
 
@@ -176,7 +208,11 @@ function TimelinePage() {
           const meta = SOURCE_META[src];
           const Icon = meta.icon;
           return (
-            <ToggleGroupItem key={src} value={src} className="h-8 gap-1.5 text-xs data-[state=on]:bg-primary/10">
+            <ToggleGroupItem
+              key={src}
+              value={src}
+              className="h-8 gap-1.5 text-xs data-[state=on]:bg-primary/10"
+            >
               <Icon className="size-3.5" />
               {meta.label}
             </ToggleGroupItem>
@@ -186,9 +222,21 @@ function TimelinePage() {
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <span>{counts.all ?? 0} eventos</span>
-        {counts.critical ? <Badge variant="outline" className={SEV_TINT.critical}>{counts.critical} crítico</Badge> : null}
-        {counts.warning ? <Badge variant="outline" className={SEV_TINT.warning}>{counts.warning} atenção</Badge> : null}
-        {counts.success ? <Badge variant="outline" className={SEV_TINT.success}>{counts.success} sucesso</Badge> : null}
+        {counts.critical ? (
+          <Badge variant="outline" className={SEV_TINT.critical}>
+            {counts.critical} crítico
+          </Badge>
+        ) : null}
+        {counts.warning ? (
+          <Badge variant="outline" className={SEV_TINT.warning}>
+            {counts.warning} atenção
+          </Badge>
+        ) : null}
+        {counts.success ? (
+          <Badge variant="outline" className={SEV_TINT.success}>
+            {counts.success} sucesso
+          </Badge>
+        ) : null}
       </div>
 
       {q.isLoading ? (
@@ -215,7 +263,6 @@ function TimelinePage() {
             </section>
           ))}
         </div>
-
       ) : !grouped.length ? (
         <div className="text-sm text-muted-foreground p-8 text-center border border-dashed rounded-xl">
           Nenhum evento no período/filtros selecionados.
@@ -245,11 +292,18 @@ function TimelinePage() {
 function EventRow({ event }: { event: TimelineEvent }) {
   const meta = SOURCE_META[event.source];
   const Icon = meta.icon;
-  const time = new Date(event.ts).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  const time = new Date(event.ts).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
   const SevIcon =
-    event.severity === "critical" ? AlertTriangle :
-    event.severity === "warning" ? AlertTriangle :
-    event.severity === "success" ? CheckCircle2 : Activity;
+    event.severity === "critical"
+      ? AlertTriangle
+      : event.severity === "warning"
+        ? AlertTriangle
+        : event.severity === "success"
+          ? CheckCircle2
+          : Activity;
 
   const content = (
     <div className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 hover:bg-accent/30 transition group">

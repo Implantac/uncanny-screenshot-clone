@@ -25,7 +25,11 @@ const ROLE_META: Record<
   CollectionRosterRow["role"],
   { label: string; icon: React.ReactNode; tone: string }
 > = {
-  hero: { label: "Hero", icon: <Star className="size-3" />, tone: "bg-amber-500/15 text-amber-600" },
+  hero: {
+    label: "Hero",
+    icon: <Star className="size-3" />,
+    tone: "bg-amber-500/15 text-amber-600",
+  },
   carry_over: {
     label: "Carry-over",
     icon: <Recycle className="size-3" />,
@@ -36,7 +40,11 @@ const ROLE_META: Record<
     icon: <InfinityIcon className="size-3" />,
     tone: "bg-emerald-500/15 text-emerald-600",
   },
-  capsule: { label: "Cápsula", icon: <Sparkles className="size-3" />, tone: "bg-fuchsia-500/15 text-fuchsia-600" },
+  capsule: {
+    label: "Cápsula",
+    icon: <Sparkles className="size-3" />,
+    tone: "bg-fuchsia-500/15 text-fuchsia-600",
+  },
   regular: { label: "Regular", icon: null, tone: "bg-muted text-muted-foreground" },
 };
 
@@ -61,8 +69,7 @@ export function CarryOverPanel({
     staleTime: 30_000,
   });
 
-  const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ["carry-over", collectionId] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["carry-over", collectionId] });
 
   const addMut = useMutation({
     mutationFn: (c: CarryOverCandidate) =>
@@ -123,15 +130,17 @@ export function CarryOverPanel({
         <div className="ms-auto flex items-center gap-1.5 text-xs text-muted-foreground">
           <Badge variant="outline">{counts.total} no mix</Badge>
           <Badge variant="outline">{counts.hero} hero</Badge>
-          <Badge variant="outline">{counts.carry} carry ({carryPct}%)</Badge>
+          <Badge variant="outline">
+            {counts.carry} carry ({carryPct}%)
+          </Badge>
           <Badge variant="outline">{counts.nos} NOS</Badge>
         </div>
       </header>
 
       {carryPct < 15 && counts.total > 0 && (
         <div className="text-xs rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2.5 py-1.5">
-          Coleções com menos de 15% de carry-over costumam sofrer sell-through mais baixo.
-          Considere trazer 1–2 campeões da coleção anterior.
+          Coleções com menos de 15% de carry-over costumam sofrer sell-through mais baixo. Considere
+          trazer 1–2 campeões da coleção anterior.
         </div>
       )}
 
@@ -139,7 +148,9 @@ export function CarryOverPanel({
         <button
           onClick={() => setTab("roster")}
           className={`px-3 py-1.5 -mb-px border-b-2 ${
-            tab === "roster" ? "border-primary text-primary" : "border-transparent text-muted-foreground"
+            tab === "roster"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground"
           }`}
         >
           Mix atual ({roster.length})
@@ -159,7 +170,8 @@ export function CarryOverPanel({
       {tab === "roster" ? (
         roster.length === 0 ? (
           <div className="text-xs text-muted-foreground py-6 text-center">
-            Nenhum produto neste mix ainda. Use a aba <b>Sugestões</b> para puxar campeões da coleção anterior.
+            Nenhum produto neste mix ainda. Use a aba <b>Sugestões</b> para puxar campeões da
+            coleção anterior.
           </div>
         ) : (
           <div className="space-y-1">
@@ -231,8 +243,12 @@ export function CarryOverPanel({
                     <span className="truncate">{c.name}</span>
                   </div>
                   <div className="text-muted-foreground mt-0.5 flex flex-wrap gap-x-2">
-                    <span>de <i>{c.sourceCollectionName}</i></span>
-                    <span>· {c.units90d} un / {fmt(c.revenue90d)}</span>
+                    <span>
+                      de <i>{c.sourceCollectionName}</i>
+                    </span>
+                    <span>
+                      · {c.units90d} un / {fmt(c.revenue90d)}
+                    </span>
                     <span>· {c.lifetimeCollections} coleções</span>
                   </div>
                   <div className="text-muted-foreground/80 mt-0.5">{c.reason}</div>

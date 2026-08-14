@@ -448,7 +448,12 @@ function Colecao360() {
         year: current.collection.year,
       });
     }
-  }, [current?.collection?.id, current?.collection?.name, current?.collection?.season, current?.collection?.year]);
+  }, [
+    current?.collection?.id,
+    current?.collection?.name,
+    current?.collection?.season,
+    current?.collection?.year,
+  ]);
 
   const [pinned, setPinned] = useState(false);
   useEffect(() => {
@@ -476,7 +481,12 @@ function Colecao360() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [current?.collection?.id, current?.collection?.name, current?.collection?.season, current?.collection?.year]);
+  }, [
+    current?.collection?.id,
+    current?.collection?.name,
+    current?.collection?.season,
+    current?.collection?.year,
+  ]);
 
   // Wave 45 — Teclas [ / ] navegam entre coleções recentes
   useEffect(() => {
@@ -491,7 +501,8 @@ function Colecao360() {
       if (recents.length < 2) return;
       const idx = recents.findIndex((r) => r.id === current.collection.id);
       if (idx === -1) return;
-      const nextIdx = e.key === "]" ? (idx + 1) % recents.length : (idx - 1 + recents.length) % recents.length;
+      const nextIdx =
+        e.key === "]" ? (idx + 1) % recents.length : (idx - 1 + recents.length) % recents.length;
       const target = recents[nextIdx];
       if (!target || target.id === current.collection.id) return;
       e.preventDefault();
@@ -500,7 +511,6 @@ function Colecao360() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [current?.collection?.id, navigate]);
-
 
   return (
     <div className="p-6 space-y-6">
@@ -610,7 +620,6 @@ function Colecao360() {
           </div>
 
           {current && <CollectionTabs current={current} navigate={navigate} />}
-
         </>
       )}
     </div>
@@ -658,7 +667,6 @@ function CollectionTabs({
           <Activity className="size-3.5 mr-1.5" /> Histórico
         </TabsTrigger>
       </TabsList>
-
 
       <TabsContent value="visao" className="space-y-4">
         {/* Pipeline visual */}
@@ -775,10 +783,7 @@ function CollectionTabs({
             />
             <WarKPI
               label="OPs em atraso"
-              value={Math.max(
-                0,
-                current.opsActive - current.liberadosPCP - current.opsAguardando,
-              )}
+              value={Math.max(0, current.opsActive - current.liberadosPCP - current.opsAguardando)}
               icon={<AlertTriangle className="size-3.5" />}
               tone="neutral"
               to="/twin-factory"
@@ -820,9 +825,7 @@ function CollectionTabs({
                 <AlertTriangle className="size-3.5" /> Críticos (sem venda)
               </div>
               {current.criticos.length === 0 ? (
-                <div className="text-xs text-muted-foreground">
-                  Todos os produtos têm venda.
-                </div>
+                <div className="text-xs text-muted-foreground">Todos os produtos têm venda.</div>
               ) : (
                 <ul className="space-y-1.5">
                   {current.criticos.map(({ p }) => (
@@ -867,9 +870,7 @@ function CollectionTabs({
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
               <TrendingUp className="size-4" /> Sell-through
             </div>
-            <div className="mt-1 text-2xl font-semibold">
-              {Math.round(current.sellThrough)}%
-            </div>
+            <div className="mt-1 text-2xl font-semibold">{Math.round(current.sellThrough)}%</div>
             <div className="mt-1 text-[10px] text-muted-foreground inline-flex items-center gap-1">
               Decidir carry-over <ArrowRight className="size-3" />
             </div>
@@ -887,13 +888,16 @@ function CollectionTabs({
         <CollectionCapaRiskPanel />
         <LaunchingWeekPanel />
 
-
         {/* Atalhos cruzados */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
           <Shortcut to="/colecoes" label="Editar coleção" />
           <Shortcut to="/line-sheet/$id" params={{ id: collectionId }} label="Line Sheet visual" />
           <Shortcut to="/product-score" label="Score por produto" />
-          <ShortcutPlain href="/abc-colecao" label="Curva ABC da coleção" icon={<Award className="size-3" />} />
+          <ShortcutPlain
+            href="/abc-colecao"
+            label="Curva ABC da coleção"
+            icon={<Award className="size-3" />}
+          />
           <Shortcut to="/war-room-colecao/$id" params={{ id: collectionId }} label="War Room" />
           <Shortcut to="/marketing" label="Marketing da coleção" />
         </div>
@@ -910,7 +914,6 @@ function CollectionTabs({
       <TabsContent value="cartela" className="space-y-4">
         <CollectionColorPalette collectionId={collectionId} />
       </TabsContent>
-
 
       <TabsContent value="assortment" className="space-y-4">
         <AssortmentPanel collectionId={collectionId} collectionName={current.collection.name} />
@@ -957,7 +960,6 @@ function CollectionUnifiedTimeline({ collectionId }: { collectionId: string }) {
       (ops ?? []).forEach((r) => ids.add(r.id as string));
       return Array.from(ids);
     },
-
   });
 
   return (
@@ -970,10 +972,6 @@ function CollectionUnifiedTimeline({ collectionId }: { collectionId: string }) {
     />
   );
 }
-
-
-
-
 
 function CollectionTimelineTab({ collectionId }: { collectionId: string }) {
   const qc = useQueryClient();
@@ -1062,13 +1060,11 @@ function CollectionTimelineTab({ collectionId }: { collectionId: string }) {
         </thead>
         <tbody>
           {items.map((m) => {
-            const overdue =
-              m.status !== "concluido" && m.planned_date && m.planned_date < today;
+            const overdue = m.status !== "concluido" && m.planned_date && m.planned_date < today;
             const gap =
               m.actual_date && m.planned_date
                 ? Math.round(
-                    (new Date(m.actual_date).getTime() -
-                      new Date(m.planned_date).getTime()) /
+                    (new Date(m.actual_date).getTime() - new Date(m.planned_date).getTime()) /
                       86400000,
                   )
                 : null;
@@ -1457,12 +1453,18 @@ function DigitalTwinAggregate({ c }: { c: CollectionAggregate }) {
           <TwinSkuList
             title="Possível excesso"
             icon={<Boxes className="size-3.5" />}
-            rows={c.excessSkus.map((row: { p: { id: string; sku: string; name: string }; stock: number; days: number }) => ({
-              id: row.p.id,
-              sku: row.p.sku,
-              name: row.p.name,
-              meta: `${Math.round(row.stock)} un · ${row.days > 365 ? "365+d" : `${row.days}d`}`,
-            }))}
+            rows={c.excessSkus.map(
+              (row: {
+                p: { id: string; sku: string; name: string };
+                stock: number;
+                days: number;
+              }) => ({
+                id: row.p.id,
+                sku: row.p.sku,
+                name: row.p.name,
+                meta: `${Math.round(row.stock)} un · ${row.days > 365 ? "365+d" : `${row.days}d`}`,
+              }),
+            )}
             tone="yellow"
           />
         </div>
@@ -1626,9 +1628,7 @@ function MetaMood({ c }: { c: CollectionAggregate }) {
       : Math.max(c.revenue * 1.2, 50000);
   const pct = goal > 0 ? Math.min(100, (c.revenue / goal) * 100) : 0;
   const piecesPct =
-    targetPieces && targetPieces > 0
-      ? Math.min(100, (c.unitsSold / targetPieces) * 100)
-      : null;
+    targetPieces && targetPieces > 0 ? Math.min(100, (c.unitsSold / targetPieces) * 100) : null;
   const marginGap = targetMargin != null ? c.margin - Number(targetMargin) : null;
   const moodKey =
     c.avanco >= 80 && c.semPiloto === 0

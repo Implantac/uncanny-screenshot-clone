@@ -5,13 +5,7 @@ const Real = lazy(() =>
   import("./mrp-material-drawer").then((m) => ({ default: m.MrpMaterialDrawer })),
 );
 
-export function MrpMaterialDrawer({
-  row,
-  onClose,
-}: {
-  row: MrpRow | null;
-  onClose: () => void;
-}) {
+export function MrpMaterialDrawer({ row, onClose }: { row: MrpRow | null; onClose: () => void }) {
   if (!row) return null;
   return (
     <Suspense fallback={null}>

@@ -32,12 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Sparkles,
@@ -205,15 +200,13 @@ export function ProductLifecycleGuide({ productId }: { productId: string }) {
                             <div
                               className={cn(
                                 "size-10 rounded-full flex items-center justify-center border-2 transition-all relative z-10",
-                                isDone &&
-                                  "bg-emerald-500/15 border-emerald-500 text-emerald-600",
+                                isDone && "bg-emerald-500/15 border-emerald-500 text-emerald-600",
                                 isCurrent &&
                                   !isBlocked &&
                                   "bg-primary/15 border-primary text-primary ring-2 ring-primary/20",
                                 isBlocked &&
                                   "bg-rose-500/15 border-rose-500 text-rose-600 ring-2 ring-rose-500/20",
-                                isPending &&
-                                  "bg-muted border-border text-muted-foreground",
+                                isPending && "bg-muted border-border text-muted-foreground",
                               )}
                             >
                               {isDone ? (
@@ -327,9 +320,7 @@ export function ProductLifecycleGuide({ productId }: { productId: string }) {
                           Bloqueado
                         </Badge>
                       )}
-                      {isDone && (
-                        <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
-                      )}
+                      {isDone && <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />}
                     </div>
                   </div>
                 );
@@ -452,9 +443,7 @@ function StepActionCard({
       )}
 
       {isPending && (
-        <div className="text-[9px] text-muted-foreground/50 mt-1">
-          Aguardando etapa anterior
-        </div>
+        <div className="text-[9px] text-muted-foreground/50 mt-1">Aguardando etapa anterior</div>
       )}
     </div>
   );
@@ -515,4 +504,3 @@ function getStepAction(
       return null;
   }
 }
-

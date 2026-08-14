@@ -74,9 +74,7 @@ describe("ProductReadinessBadge — regressão visual (DOM snapshot)", () => {
       rpcMock.mockResolvedValue({ data: READY_ROWS, error: null });
       const { container } = renderBadge();
       await screen.findByRole("button", { name: /Prontidão para produção/i });
-      expect(normalize(container.innerHTML)).toMatchSnapshot(
-        `ready-${vp.name}-trigger`,
-      );
+      expect(normalize(container.innerHTML)).toMatchSnapshot(`ready-${vp.name}-trigger`);
     });
 
     it(`estado pronto @ ${vp.name} — tooltip aberto`, async () => {
@@ -104,9 +102,7 @@ describe("ProductReadinessBadge — regressão visual (DOM snapshot)", () => {
       rpcMock.mockResolvedValue({ data: PENDING_ROWS, error: null });
       const { container } = renderBadge();
       await screen.findByRole("button", { name: /Prontidão para produção/i });
-      expect(normalize(container.innerHTML)).toMatchSnapshot(
-        `pending-${vp.name}-trigger`,
-      );
+      expect(normalize(container.innerHTML)).toMatchSnapshot(`pending-${vp.name}-trigger`);
     });
 
     it(`estado pendente @ ${vp.name} — tooltip aberto`, async () => {
@@ -126,9 +122,7 @@ describe("ProductReadinessBadge — regressão visual (DOM snapshot)", () => {
       const tip = screen
         .getAllByRole("tooltip")
         .find((t) => t.textContent?.includes("Gates críticos"))!;
-      expect(normalize(tip.outerHTML)).toMatchSnapshot(
-        `pending-${vp.name}-tooltip`,
-      );
+      expect(normalize(tip.outerHTML)).toMatchSnapshot(`pending-${vp.name}-tooltip`);
     });
   }
 });

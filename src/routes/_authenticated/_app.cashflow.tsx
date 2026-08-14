@@ -9,9 +9,15 @@ export const Route = createFileRoute("/_authenticated/_app/cashflow")({
   head: () => ({
     meta: [
       { title: "Fluxo de Caixa · USE MODA PLM" },
-      { name: "description", content: "Projeção de recebíveis e pagáveis conciliada com OPs e ordens de compra." },
+      {
+        name: "description",
+        content: "Projeção de recebíveis e pagáveis conciliada com OPs e ordens de compra.",
+      },
       { property: "og:title", content: "Fluxo de Caixa · USE MODA PLM" },
-      { property: "og:description", content: "Projeção de recebíveis e pagáveis conciliada com OPs e ordens de compra." },
+      {
+        property: "og:description",
+        content: "Projeção de recebíveis e pagáveis conciliada com OPs e ordens de compra.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

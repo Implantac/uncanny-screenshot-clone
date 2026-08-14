@@ -34,9 +34,7 @@ export const getScrapByOrder = createServerFn({ method: "POST" })
       .not("production_order_id", "is", null);
     if (error) throw error;
 
-    const opIds = Array.from(
-      new Set((scraps ?? []).map((s) => s.production_order_id as string)),
-    );
+    const opIds = Array.from(new Set((scraps ?? []).map((s) => s.production_order_id as string)));
     if (opIds.length === 0) return [];
 
     const { data: ops } = await supabase
@@ -52,10 +50,7 @@ export const getScrapByOrder = createServerFn({ method: "POST" })
     };
     const opMap = new Map<string, OpRow>(((ops ?? []) as OpRow[]).map((o) => [o.id, o]));
 
-    const agg = new Map<
-      string,
-      { qty: number; cost: number; reasons: Map<string, number> }
-    >();
+    const agg = new Map<string, { qty: number; cost: number; reasons: Map<string, number> }>();
     for (const s of scraps ?? []) {
       const id = s.production_order_id as string;
       const a = agg.get(id) ?? { qty: 0, cost: 0, reasons: new Map<string, number>() };

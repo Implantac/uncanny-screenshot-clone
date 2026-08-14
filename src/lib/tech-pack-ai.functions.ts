@@ -62,10 +62,7 @@ ${
 ## Operações
 ${
   (ops ?? [])
-    .map(
-      (o) =>
-        `- ${o.name}: ${o.sam ?? 0}min ${o.machine ?? ""} = R$${o.total_cost}`,
-    )
+    .map((o) => `- ${o.name}: ${o.sam ?? 0}min ${o.machine ?? ""} = R$${o.total_cost}`)
     .join("\n") || "(vazio)"
 }
 

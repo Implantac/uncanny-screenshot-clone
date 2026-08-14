@@ -12,7 +12,12 @@ export type MaterialSourcingRisk = {
   alternateSuppliers: Array<{ id: string; name: string | null; score: number }>;
   materialLibraryIds: string[];
   products: Array<{ id: string; name: string | null; sku: string | null; capaCount: number }>;
-  activeCollections: Array<{ id: string; name: string; launchDate: string | null; daysToLaunch: number | null }>;
+  activeCollections: Array<{
+    id: string;
+    name: string;
+    launchDate: string | null;
+    daysToLaunch: number | null;
+  }>;
   recommendation: string;
   riskScore: number;
   riskLabel: "critico" | "atencao" | "ok";
@@ -69,10 +74,15 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
       sb.from("collection_products").select("collection_id, product_id"),
       sb.from("collections").select("id, name, launch_date, status"),
       sb.from("material_library").select("id, name, preferred_supplier_id").eq("active", true),
-
     ]);
 
-    type CapaRow = { id: string; order_id: string | null; supplier_id: string | null; status: string | null; closed_at: string | null };
+    type CapaRow = {
+      id: string;
+      order_id: string | null;
+      supplier_id: string | null;
+      status: string | null;
+      closed_at: string | null;
+    };
     type OccRow = { id: string; order_id: string | null };
     type OrderRow = { id: string; product_id: string | null };
     type SheetRow = { id: string; product_id: string | null };
@@ -84,7 +94,9 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
     type ColRow = { id: string; name: string; launch_date: string | null; status: string | null };
 
     const orderToProduct = new Map<string, string>();
-    ((orders ?? []) as OrderRow[]).forEach((o) => o.product_id && orderToProduct.set(o.id, o.product_id));
+    ((orders ?? []) as OrderRow[]).forEach(
+      (o) => o.product_id && orderToProduct.set(o.id, o.product_id),
+    );
 
     // product -> approved tech sheets
     const productToSheets = new Map<string, string[]>();
@@ -142,7 +154,11 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
     const rankedSuppliers = [...latestScore.entries()]
       .filter(([, sc]) => sc >= 60)
       .sort((a, b) => b[1] - a[1])
-      .map(([id, score]) => ({ id, name: supplierMap.get(id)?.name ?? null, score: Math.round(score) }));
+      .map(([id, score]) => ({
+        id,
+        name: supplierMap.get(id)?.name ?? null,
+        score: Math.round(score),
+      }));
 
     // productId -> collections
     const productToCols = new Map<string, string[]>();
@@ -182,7 +198,8 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
         agg.capas.add(capa.id);
         const isOpen = !capa.closed_at && capa.status !== "concluida" && capa.status !== "fechada";
         if (isOpen) agg.openCapas++;
-        if (capa.supplier_id) agg.suppliers.set(capa.supplier_id, (agg.suppliers.get(capa.supplier_id) ?? 0) + 1);
+        if (capa.supplier_id)
+          agg.suppliers.set(capa.supplier_id, (agg.suppliers.get(capa.supplier_id) ?? 0) + 1);
         matAgg.set(key, agg);
       }
     };
@@ -250,7 +267,15 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
 
       const nearestDays = activeCollections[0]?.daysToLaunch ?? null;
       const proxPenalty =
-        nearestDays == null ? 5 : nearestDays < 15 ? 40 : nearestDays < 30 ? 30 : nearestDays < 60 ? 20 : 10;
+        nearestDays == null
+          ? 5
+          : nearestDays < 15
+            ? 40
+            : nearestDays < 30
+              ? 30
+              : nearestDays < 60
+                ? 20
+                : 10;
       const raw = agg.openCapas * 6 + agg.products.size * 5 + Math.min(agg.occs, 30) + proxPenalty;
       const riskScore = Math.min(100, Math.round(raw));
       const riskLabel: MaterialSourcingRisk["riskLabel"] =
@@ -309,8 +334,21 @@ export const getMaterialSourcingRisks = createServerFn({ method: "GET" })
   });
 
 export type MaterialSupplierSwapResult =
-  | { blocked: true; worstPct: number; worstProductName: string | null; worstSku: string | null; threshold: number; affectedActive: number }
-  | { blocked: false; updated: number; ids: string[]; worstPct: number | null; overridden: boolean };
+  | {
+      blocked: true;
+      worstPct: number;
+      worstProductName: string | null;
+      worstSku: string | null;
+      threshold: number;
+      affectedActive: number;
+    }
+  | {
+      blocked: false;
+      updated: number;
+      ids: string[];
+      worstPct: number | null;
+      overridden: boolean;
+    };
 
 const GUARDRAIL_PCT = 10;
 const ACTIVE_PRODUCT_STATUS = new Set(["desenvolvimento", "aprovado", "producao"]);
@@ -334,7 +372,13 @@ export const applyMaterialSupplierSwap = createServerFn({ method: "POST" })
     const { data: tsmAll } = await sb
       .from("tech_sheet_materials")
       .select("tech_sheet_id, name, total_cost, consumption, loss_pct");
-    type TsmLite = { tech_sheet_id: string; name: string | null; total_cost: number | null; consumption: number | null; loss_pct: number | null };
+    type TsmLite = {
+      tech_sheet_id: string;
+      name: string | null;
+      total_cost: number | null;
+      consumption: number | null;
+      loss_pct: number | null;
+    };
     const matching = ((tsmAll ?? []) as TsmLite[]).filter((m) => m.name && nk(m.name) === key);
     const sheetIds = [...new Set(matching.map((m) => m.tech_sheet_id))];
 
@@ -348,14 +392,22 @@ export const applyMaterialSupplierSwap = createServerFn({ method: "POST" })
         .from("material_library")
         .select("id, name, preferred_supplier_id, reference_cost")
         .eq("active", true);
-      type MLR = { id: string; name: string | null; preferred_supplier_id: string | null; reference_cost: number | null };
+      type MLR = {
+        id: string;
+        name: string | null;
+        preferred_supplier_id: string | null;
+        reference_cost: number | null;
+      };
       const sameName = ((matLib ?? []) as MLR[]).filter((m) => m.name && nk(m.name) === key);
       let estUnit: number | null = null;
       const specific = sameName.find((m) => m.preferred_supplier_id === data.newSupplierId);
-      if (specific?.reference_cost && specific.reference_cost > 0) estUnit = Number(specific.reference_cost);
+      if (specific?.reference_cost && specific.reference_cost > 0)
+        estUnit = Number(specific.reference_cost);
       else {
         const withCost = sameName.filter((m) => m.reference_cost && m.reference_cost > 0);
-        if (withCost.length) estUnit = withCost.reduce((s, m) => s + Number(m.reference_cost ?? 0), 0) / withCost.length;
+        if (withCost.length)
+          estUnit =
+            withCost.reduce((s, m) => s + Number(m.reference_cost ?? 0), 0) / withCost.length;
       }
 
       if (estUnit != null) {
@@ -363,12 +415,26 @@ export const applyMaterialSupplierSwap = createServerFn({ method: "POST" })
           .from("tech_sheets")
           .select("id, product_id, cost_price, overhead_pct")
           .in("id", sheetIds);
-        type SR = { id: string; product_id: string | null; cost_price: number | null; overhead_pct: number | null };
+        type SR = {
+          id: string;
+          product_id: string | null;
+          cost_price: number | null;
+          overhead_pct: number | null;
+        };
         const sRows = (sheets ?? []) as SR[];
-        const productIds = [...new Set(sRows.map((s) => s.product_id).filter((x): x is string => !!x))];
+        const productIds = [
+          ...new Set(sRows.map((s) => s.product_id).filter((x): x is string => !!x)),
+        ];
         const { data: prods } = productIds.length
           ? await sb.from("products").select("id, name, sku, status").in("id", productIds)
-          : { data: [] as { id: string; name: string | null; sku: string | null; status: string | null }[] };
+          : {
+              data: [] as {
+                id: string;
+                name: string | null;
+                sku: string | null;
+                status: string | null;
+              }[],
+            };
         const prodMap = new Map((prods ?? []).map((p) => [p.id, p]));
 
         const linesBySheet = new Map<string, TsmLite[]>();
@@ -508,10 +574,7 @@ export const simulateMaterialSupplierSwap = createServerFn({ method: "POST" })
     ]);
 
     const supplierName = new Map(
-      ((suppliers ?? []) as { id: string; name: string | null }[]).map((s) => [
-        s.id,
-        s.name,
-      ]),
+      ((suppliers ?? []) as { id: string; name: string | null }[]).map((s) => [s.id, s.name]),
     );
 
     type MatLibRow = {
@@ -521,9 +584,7 @@ export const simulateMaterialSupplierSwap = createServerFn({ method: "POST" })
       reference_cost: number | null;
     };
 
-    const sameName = ((matLib ?? []) as MatLibRow[]).filter(
-      (m) => m.name && norm(m.name) === key,
-    );
+    const sameName = ((matLib ?? []) as MatLibRow[]).filter((m) => m.name && norm(m.name) === key);
 
     // Fallback pool: any material_library row from same supplier (avg reference cost)
     const supplierAvgCost = new Map<string, number>();
@@ -554,9 +615,7 @@ export const simulateMaterialSupplierSwap = createServerFn({ method: "POST" })
       loss_pct: number | null;
     };
 
-    const matching = ((tsm ?? []) as TsmRow[]).filter(
-      (m) => m.name && norm(m.name) === key,
-    );
+    const matching = ((tsm ?? []) as TsmRow[]).filter((m) => m.name && norm(m.name) === key);
     const sheetIds = [...new Set(matching.map((m) => m.tech_sheet_id))];
     if (sheetIds.length === 0) {
       return data.candidateSupplierIds.map((sid) => ({
@@ -594,9 +653,7 @@ export const simulateMaterialSupplierSwap = createServerFn({ method: "POST" })
     type ProdRow = { id: string; name: string | null; sku: string | null };
 
     const sheetRows = (sheets ?? []) as SheetRow[];
-    const prodMap = new Map(
-      ((products ?? []) as ProdRow[]).map((p) => [p.id, p]),
-    );
+    const prodMap = new Map(((products ?? []) as ProdRow[]).map((p) => [p.id, p]));
 
     // Group matching materials by tech_sheet
     const linesBySheet = new Map<string, TsmRow[]>();
@@ -618,13 +675,10 @@ export const simulateMaterialSupplierSwap = createServerFn({ method: "POST" })
         hasReferenceCost = true;
       } else if (sameName.length > 0) {
         // avg of same-name reference costs (best proxy for market)
-        const withCost = sameName.filter(
-          (m) => m.reference_cost != null && m.reference_cost > 0,
-        );
+        const withCost = sameName.filter((m) => m.reference_cost != null && m.reference_cost > 0);
         if (withCost.length > 0) {
           estimatedUnitCost =
-            withCost.reduce((s, m) => s + Number(m.reference_cost ?? 0), 0) /
-            withCost.length;
+            withCost.reduce((s, m) => s + Number(m.reference_cost ?? 0), 0) / withCost.length;
         }
       }
       if (estimatedUnitCost == null && supplierAvgCost.has(sid)) {
@@ -640,10 +694,7 @@ export const simulateMaterialSupplierSwap = createServerFn({ method: "POST" })
         const lines = linesBySheet.get(sheet.id) ?? [];
         if (lines.length === 0) continue;
 
-        const currentLineCost = lines.reduce(
-          (s, l) => s + Number(l.total_cost ?? 0),
-          0,
-        );
+        const currentLineCost = lines.reduce((s, l) => s + Number(l.total_cost ?? 0), 0);
 
         let projectedLineCost = currentLineCost;
         if (estimatedUnitCost != null) {
@@ -660,8 +711,7 @@ export const simulateMaterialSupplierSwap = createServerFn({ method: "POST" })
 
         const currentCost = Number(sheet.cost_price ?? 0);
         const projectedCost = currentCost + finalDelta;
-        const deltaPct =
-          currentCost > 0 ? (finalDelta / currentCost) * 100 : 0;
+        const deltaPct = currentCost > 0 ? (finalDelta / currentCost) * 100 : 0;
 
         const prod = sheet.product_id ? prodMap.get(sheet.product_id) : null;
 
@@ -702,8 +752,7 @@ export const simulateMaterialSupplierSwap = createServerFn({ method: "POST" })
         affectedSheets: details.length,
         affectedDrafts: details.length,
         materialsCostDelta: totalDelta,
-        materialsCostDeltaPct:
-          currentMatTotal > 0 ? (totalDelta / currentMatTotal) * 100 : null,
+        materialsCostDeltaPct: currentMatTotal > 0 ? (totalDelta / currentMatTotal) * 100 : null,
         finalCostDelta: totalFinalDelta,
         worst,
         details: details.slice(0, 6),

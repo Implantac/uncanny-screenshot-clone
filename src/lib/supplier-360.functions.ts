@@ -56,7 +56,9 @@ export const getSupplier360 = createServerFn({ method: "POST" })
     ] = await Promise.all([
       supabase
         .from("suppliers")
-        .select("id, name, category, contact_name, email, phone, city, state, rating, lead_time_days, active, notes")
+        .select(
+          "id, name, category, contact_name, email, phone, city, state, rating, lead_time_days, active, notes",
+        )
         .eq("id", data.supplier_id)
         .eq("owner_id", userId)
         .maybeSingle(),
@@ -104,31 +106,40 @@ export const getSupplier360 = createServerFn({ method: "POST" })
 
     const ordersAll = (orders ?? []) as OrderRow[];
     const ordersActive = ordersAll.filter((o) => ACTIVE.has(o.status ?? ""));
-    const ordersDone = ordersAll.filter((o) => o.status === "entregue" || TERMINAL.has(o.stage ?? ""));
+    const ordersDone = ordersAll.filter(
+      (o) => o.status === "entregue" || TERMINAL.has(o.stage ?? ""),
+    );
 
     // Lead time real: started_at → updated_at em OPs concluídas
     const leadDays = ordersDone
       .map((o) => {
         if (!o.started_at) return null;
-        const d = (new Date(o.updated_at).getTime() - new Date(o.started_at).getTime()) / 86_400_000;
+        const d =
+          (new Date(o.updated_at).getTime() - new Date(o.started_at).getTime()) / 86_400_000;
         return d > 0 ? d : null;
       })
       .filter((x): x is number => x !== null)
       .sort((a, b) => a - b);
     const leadAvg = leadDays.length ? leadDays.reduce((s, x) => s + x, 0) / leadDays.length : null;
-    const leadP90 = leadDays.length ? leadDays[Math.min(leadDays.length - 1, Math.floor(leadDays.length * 0.9))] : null;
+    const leadP90 = leadDays.length
+      ? leadDays[Math.min(leadDays.length - 1, Math.floor(leadDays.length * 0.9))]
+      : null;
 
     // On-time: due_date >= updated_at em entregues
     const onTimeBase = ordersDone.filter((o) => o.due_date);
     const onTime = onTimeBase.filter(
       (o) => new Date(o.updated_at).getTime() <= new Date(o.due_date!).getTime() + 86_400_000,
     );
-    const onTimePct = onTimeBase.length ? Math.round((onTime.length / onTimeBase.length) * 100) : null;
+    const onTimePct = onTimeBase.length
+      ? Math.round((onTime.length / onTimeBase.length) * 100)
+      : null;
 
     // FPY
     const insp = inspections ?? [];
     const fpyTotal = insp.length;
-    const fpyApproved = insp.filter((i) => i.result === "aprovado" || i.result === "aprovada").length;
+    const fpyApproved = insp.filter(
+      (i) => i.result === "aprovado" || i.result === "aprovada",
+    ).length;
     const fpy = fpyTotal ? Math.round((fpyApproved / fpyTotal) * 100) : null;
     const criticalDefects = insp.reduce((s, i) => s + (i.critical_defects ?? 0), 0);
     const majorDefects = insp.reduce((s, i) => s + (i.major_defects ?? 0), 0);
@@ -155,8 +166,10 @@ export const getSupplier360 = createServerFn({ method: "POST" })
     const workingDays = capacity?.working_days_per_week ?? 5;
     const monthlyCapacity = piecesPerDay ? piecesPerDay * Math.round((workingDays / 7) * 30) : null;
     const inProgressQty = ordersActive.reduce((s, o) => s + (o.quantity ?? 0), 0);
-    const utilizationPct = monthlyCapacity && monthlyCapacity > 0
-      ? Math.round((inProgressQty / monthlyCapacity) * 100) : null;
+    const utilizationPct =
+      monthlyCapacity && monthlyCapacity > 0
+        ? Math.round((inProgressQty / monthlyCapacity) * 100)
+        : null;
 
     // Compliance
     const now = Date.now();
@@ -184,15 +197,25 @@ export const getSupplier360 = createServerFn({ method: "POST" })
     const signals: string[] = [];
     if (fpy !== null && fpy < 85) signals.push(`FPY ${fpy}%`);
     if (onTimePct !== null && onTimePct < 80) signals.push(`pontualidade ${onTimePct}%`);
-    if (utilizationPct !== null && utilizationPct > 95) signals.push(`utilização ${utilizationPct}%`);
-    if (occOpen) signals.push(`${occOpen} ocorrência${occOpen > 1 ? "s" : ""} aberta${occOpen > 1 ? "s" : ""}`);
-    if (expiredCount) signals.push(`${expiredCount} certificação${expiredCount > 1 ? "ões" : ""} vencida${expiredCount > 1 ? "s" : ""}`);
+    if (utilizationPct !== null && utilizationPct > 95)
+      signals.push(`utilização ${utilizationPct}%`);
+    if (occOpen)
+      signals.push(
+        `${occOpen} ocorrência${occOpen > 1 ? "s" : ""} aberta${occOpen > 1 ? "s" : ""}`,
+      );
+    if (expiredCount)
+      signals.push(
+        `${expiredCount} certificação${expiredCount > 1 ? "ões" : ""} vencida${expiredCount > 1 ? "s" : ""}`,
+      );
     if (topDefects[0]) signals.push(`defeito recorrente: ${topDefects[0].category}`);
     const recommendation =
-      health === "critico" ? "abrir CAPA e reduzir alocação até estabilizar" :
-      health === "atencao" ? "monitorar próximas OPs e revisar plano de ação" :
-      utilizationPct !== null && utilizationPct > 95 ? "balancear carga com outra facção" :
-      null;
+      health === "critico"
+        ? "abrir CAPA e reduzir alocação até estabilizar"
+        : health === "atencao"
+          ? "monitorar próximas OPs e revisar plano de ação"
+          : utilizationPct !== null && utilizationPct > 95
+            ? "balancear carga com outra facção"
+            : null;
 
     const reason = buildAiReason({
       signals,

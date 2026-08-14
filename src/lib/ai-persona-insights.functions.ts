@@ -15,10 +15,7 @@ export type PersonaInsight = {
   link?: string | null;
 };
 
-const PERSONA_META: Record<
-  PersonaKey,
-  { label: string; system: string; defaultLink: string }
-> = {
+const PERSONA_META: Record<PersonaKey, { label: string; system: string; defaultLink: string }> = {
   "coord-dev": {
     label: "Coordenador de Desenvolvimento",
     system:
@@ -95,7 +92,12 @@ async function buildSignalsCtx(
 Pilotos atrasados (vencidos): ${overdue.length}
 Produtos aprovados SEM ficha técnica: ${semFicha.length}
 Fila por etapa: ${[...stageMap.entries()].map(([s, q]) => `${s}=${q}`).join(", ") || "—"}
-Top travados: ${stuck.slice(0, 5).map((p) => `${p.code}/${p.stage}`).join(" | ") || "—"}`;
+Top travados: ${
+      stuck
+        .slice(0, 5)
+        .map((p) => `${p.code}/${p.stage}`)
+        .join(" | ") || "—"
+    }`;
   }
 
   if (persona === "pcp") {
@@ -112,24 +114,28 @@ Top travados: ${stuck.slice(0, 5).map((p) => `${p.code}/${p.stage}`).join(" | ")
       stage_updated_at: string | null;
     }>;
     const ativas = O.filter((o) => o.stage !== "entregue");
-    const atrasadas = ativas.filter(
-      (o) => o.due_date && new Date(o.due_date).getTime() < now,
-    );
+    const atrasadas = ativas.filter((o) => o.due_date && new Date(o.due_date).getTime() < now);
     const paradas = ativas.filter(
-      (o) =>
-        o.stage_updated_at &&
-        now - new Date(o.stage_updated_at).getTime() > 5 * 86400000,
+      (o) => o.stage_updated_at && now - new Date(o.stage_updated_at).getTime() > 5 * 86400000,
     );
     const fila = new Map<string, number>();
-    ativas.forEach((o) =>
-      fila.set(o.stage, (fila.get(o.stage) ?? 0) + (o.quantity ?? 0)),
-    );
+    ativas.forEach((o) => fila.set(o.stage, (fila.get(o.stage) ?? 0) + (o.quantity ?? 0)));
     return `OPs ativas: ${ativas.length}
 OPs atrasadas: ${atrasadas.length}
 OPs paradas >5d: ${paradas.length}
 Fila por setor (peças): ${[...fila.entries()].map(([s, q]) => `${s}=${q}`).join(", ") || "—"}
-Top atrasadas: ${atrasadas.slice(0, 5).map((o) => `${o.code}/${o.stage}`).join(" | ") || "—"}
-Top paradas: ${paradas.slice(0, 5).map((o) => `${o.code}/${o.stage}`).join(" | ") || "—"}`;
+Top atrasadas: ${
+      atrasadas
+        .slice(0, 5)
+        .map((o) => `${o.code}/${o.stage}`)
+        .join(" | ") || "—"
+    }
+Top paradas: ${
+      paradas
+        .slice(0, 5)
+        .map((o) => `${o.code}/${o.stage}`)
+        .join(" | ") || "—"
+    }`;
   }
 
   if (persona === "marketing") {
@@ -185,10 +191,7 @@ Canais: ${chans.map(([k, v]) => `${k}=${fmt(v)}`).join(", ") || "—"}`;
       .select("result, critical_defects, major_defects, created_at")
       .gte("created_at", iso30)
       .limit(500),
-    sb
-      .from("quality_capa")
-      .select("severity, status, due_date, created_at")
-      .limit(200),
+    sb.from("quality_capa").select("severity, status, due_date, created_at").limit(200),
     sb
       .from("production_occurrences")
       .select("severity, created_at")
@@ -200,9 +203,7 @@ Canais: ${chans.map(([k, v]) => `${k}=${fmt(v)}`).join(", ") || "—"}`;
     critical_defects: number | null;
     major_defects: number | null;
   }>;
-  const aprov = I.filter((x) =>
-    ["aprovado", "aprovada"].includes(String(x.result)),
-  ).length;
+  const aprov = I.filter((x) => ["aprovado", "aprovada"].includes(String(x.result))).length;
   const fpy = I.length ? Math.round((aprov / I.length) * 100) : 100;
   const crit = I.reduce((a, x) => a + (x.critical_defects ?? 0), 0);
   const major = I.reduce((a, x) => a + (x.major_defects ?? 0), 0);
@@ -212,9 +213,7 @@ Canais: ${chans.map(([k, v]) => `${k}=${fmt(v)}`).join(", ") || "—"}`;
     due_date: string | null;
   }>;
   const abertas = C.filter((c) => c.status === "aberta");
-  const vencidas = abertas.filter(
-    (c) => c.due_date && new Date(c.due_date).getTime() < now,
-  );
+  const vencidas = abertas.filter((c) => c.due_date && new Date(c.due_date).getTime() < now);
   const critOpen = abertas.filter((c) => c.severity === "critica");
   return `FPY 30d: ${fpy}% em ${I.length} inspeções
 Defeitos críticos: ${crit} | maiores: ${major}
@@ -240,47 +239,59 @@ export const getPersonaInsights = createServerFn({ method: "POST" })
       })
       .parse(d),
   )
-  .handler(async ({ data, context }): Promise<{ persona: string; items: PersonaInsight[]; error?: string }> => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");
-    const meta = PERSONA_META[data.persona];
-    const ctx = await buildSignalsCtx(context.supabase, data.persona);
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ persona: string; items: PersonaInsight[]; error?: string }> => {
+      const apiKey = process.env.LOVABLE_API_KEY;
+      if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");
+      const meta = PERSONA_META[data.persona];
+      const ctx = await buildSignalsCtx(context.supabase, data.persona);
 
-    const gateway = createLovableAiGatewayProvider(apiKey);
-    const model = gateway("google/gemini-3-flash-preview");
+      const gateway = createLovableAiGatewayProvider(apiKey);
+      const model = gateway("google/gemini-3-flash-preview");
 
-    try {
-      const res = await generateText({
-        model,
-        system: `${meta.system}\n\n${SCHEMA_HINT}`,
-        prompt: `Contexto real (use apenas estes números, não invente):\n${ctx}`,
-        temperature: 0.2,
-      });
-      const raw = res.text.trim().replace(/^```json\s*/i, "").replace(/```$/i, "");
-      let parsed: { insights?: PersonaInsight[] };
       try {
-        parsed = JSON.parse(raw);
-      } catch {
-        // tenta extrair primeiro objeto JSON
-        const match = raw.match(/\{[\s\S]*\}/);
-        parsed = match ? JSON.parse(match[0]) : { insights: [] };
+        const res = await generateText({
+          model,
+          system: `${meta.system}\n\n${SCHEMA_HINT}`,
+          prompt: `Contexto real (use apenas estes números, não invente):\n${ctx}`,
+          temperature: 0.2,
+        });
+        const raw = res.text
+          .trim()
+          .replace(/^```json\s*/i, "")
+          .replace(/```$/i, "");
+        let parsed: { insights?: PersonaInsight[] };
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          // tenta extrair primeiro objeto JSON
+          const match = raw.match(/\{[\s\S]*\}/);
+          parsed = match ? JSON.parse(match[0]) : { insights: [] };
+        }
+        const items = (parsed.insights ?? []).slice(0, 5).map((i) => ({
+          signal: String(i.signal ?? "").slice(0, 80),
+          evidence: String(i.evidence ?? "").slice(0, 140),
+          why: String(i.why ?? "").slice(0, 200),
+          nextAction: String(i.nextAction ?? "").slice(0, 140),
+          severity: (["info", "warn", "critical"].includes(i.severity)
+            ? i.severity
+            : "info") as PersonaInsight["severity"],
+          link: meta.defaultLink,
+        }));
+        return { persona: meta.label, items };
+      } catch (err: unknown) {
+        const e = err as {
+          statusCode?: number;
+          lastError?: { statusCode?: number };
+          message?: string;
+        };
+        const status = e?.statusCode ?? e?.lastError?.statusCode;
+        if (status === 429) return { persona: meta.label, items: [], error: "rate_limited" };
+        if (status === 402) return { persona: meta.label, items: [], error: "credits_exhausted" };
+        throw err;
       }
-      const items = (parsed.insights ?? []).slice(0, 5).map((i) => ({
-        signal: String(i.signal ?? "").slice(0, 80),
-        evidence: String(i.evidence ?? "").slice(0, 140),
-        why: String(i.why ?? "").slice(0, 200),
-        nextAction: String(i.nextAction ?? "").slice(0, 140),
-        severity: (["info", "warn", "critical"].includes(i.severity)
-          ? i.severity
-          : "info") as PersonaInsight["severity"],
-        link: meta.defaultLink,
-      }));
-      return { persona: meta.label, items };
-    } catch (err: unknown) {
-      const e = err as { statusCode?: number; lastError?: { statusCode?: number }; message?: string };
-      const status = e?.statusCode ?? e?.lastError?.statusCode;
-      if (status === 429) return { persona: meta.label, items: [], error: "rate_limited" };
-      if (status === 402) return { persona: meta.label, items: [], error: "credits_exhausted" };
-      throw err;
-    }
-  });
+    },
+  );

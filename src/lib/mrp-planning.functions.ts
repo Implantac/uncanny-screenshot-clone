@@ -97,7 +97,10 @@ export const saveMrpConfig = createServerFn({ method: "POST" })
   .inputValidator((i: Partial<MrpConfig>) =>
     z
       .object({
-        service_level: z.number().refine((v) => [90, 95, 97, 99].includes(v)).optional(),
+        service_level: z
+          .number()
+          .refine((v) => [90, 95, 97, 99].includes(v))
+          .optional(),
         order_cost: z.number().min(0).optional(),
         holding_cost_pct: z.number().min(0).max(100).optional(),
         working_days_per_month: z.number().int().min(1).max(31).optional(),
@@ -122,8 +125,7 @@ export async function runMrpPlanning(
   userId: string,
   data: { category?: string; supplierId?: string; deposit?: string } = {},
 ): Promise<{ rows: MrpRow[]; summary: MrpSummary; cfg: MrpConfig }> {
-    {
-
+  {
     // 1) Config
     const { data: cfgRow } = await supabase
       .from("mrp_config")
@@ -177,7 +179,10 @@ export async function runMrpPlanning(
     const supplierIds = Array.from(
       new Set(itemList.map((i) => i.preferred_supplier_id).filter((s): s is string => Boolean(s))),
     );
-    const suppliersById = new Map<string, { id: string; name: string; lead_time_days: number | null }>();
+    const suppliersById = new Map<
+      string,
+      { id: string; name: string; lead_time_days: number | null }
+    >();
     if (supplierIds.length) {
       const { data: sups } = await supabase
         .from("suppliers")
@@ -224,7 +229,10 @@ export async function runMrpPlanning(
     const out90 = new Map<string, number>();
     for (const m of mvs ?? []) {
       if (m.type !== "saida" || !m.inventory_item_id) continue;
-      out90.set(m.inventory_item_id, (out90.get(m.inventory_item_id) ?? 0) + Number(m.quantity ?? 0));
+      out90.set(
+        m.inventory_item_id,
+        (out90.get(m.inventory_item_id) ?? 0) + Number(m.quantity ?? 0),
+      );
     }
 
     // agrega por mês (últimos 12 meses) para σ
@@ -371,7 +379,9 @@ export async function runMrpPlanning(
       totalStockValue: Number(rows.reduce((a, r) => a + r.capitalEmpatado, 0).toFixed(2)),
       capitalParado: Number(
         rows
-          .filter((r) => r.status === "excesso" || (r.coverageDays !== null && r.coverageDays > 120))
+          .filter(
+            (r) => r.status === "excesso" || (r.coverageDays !== null && r.coverageDays > 120),
+          )
           .reduce((a, r) => a + r.capitalEmpatado, 0)
           .toFixed(2),
       ),
@@ -380,13 +390,9 @@ export async function runMrpPlanning(
       itemsAttention: rows.filter((r) => r.status === "atencao").length,
       rupturas: rows.filter((r) => r.balance <= 0 && r.dailyConsumption > 0).length,
       avgCoverage:
-        covs.length > 0
-          ? Number((covs.reduce((a, b) => a + b, 0) / covs.length).toFixed(1))
-          : null,
+        covs.length > 0 ? Number((covs.reduce((a, b) => a + b, 0) / covs.length).toFixed(1)) : null,
       suggestedItems: rows.filter((r) => r.suggestedPurchase > 0).length,
-      suggestedValue: Number(
-        rows.reduce((a, r) => a + r.suggestedValue, 0).toFixed(2),
-      ),
+      suggestedValue: Number(rows.reduce((a, r) => a + r.suggestedValue, 0).toFixed(2)),
     };
 
     rows.sort((a, b) => {
@@ -412,4 +418,3 @@ export const computeMrpPlanning = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     return runMrpPlanning(context.supabase, context.userId, data);
   });
-

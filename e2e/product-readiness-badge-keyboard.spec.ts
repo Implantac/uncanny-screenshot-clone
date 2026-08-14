@@ -35,9 +35,7 @@ async function findVariants(page: Page) {
   await page.waitForLoadState("networkidle");
 
   const all = page.locator(TRIGGER);
-  await expect
-    .poll(async () => await all.count(), { timeout: 15_000 })
-    .toBeGreaterThan(0);
+  await expect.poll(async () => await all.count(), { timeout: 15_000 }).toBeGreaterThan(0);
 
   const count = await all.count();
   let ready: Locator | null = null;
@@ -90,9 +88,7 @@ test.describe("ProductReadinessBadge — teclado (E2E)", () => {
       await expect(tip).toBeVisible({ timeout: 5_000 });
     });
 
-    test(`[${state}] Shift+Tab tira o foco do trigger e fecha o tooltip`, async ({
-      page,
-    }) => {
+    test(`[${state}] Shift+Tab tira o foco do trigger e fecha o tooltip`, async ({ page }) => {
       const trigger = variants[state];
       test.skip(!trigger, `no ${state} badge in dataset`);
 
@@ -105,9 +101,7 @@ test.describe("ProductReadinessBadge — teclado (E2E)", () => {
       await expect(tip).toBeHidden({ timeout: 5_000 });
     });
 
-    test(`[${state}] Escape fecha o tooltip mantendo o foco no trigger`, async ({
-      page,
-    }) => {
+    test(`[${state}] Escape fecha o tooltip mantendo o foco no trigger`, async ({ page }) => {
       const trigger = variants[state];
       test.skip(!trigger, `no ${state} badge in dataset`);
 

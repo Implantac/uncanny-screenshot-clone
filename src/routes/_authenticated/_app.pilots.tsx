@@ -10,9 +10,15 @@ export const Route = createFileRoute("/_authenticated/_app/pilots")({
   head: () => ({
     meta: [
       { title: "Peças Piloto · USE MODA PLM" },
-      { name: "description", content: "Ciclo de piloto: solicitação, confecção, prova, ajustes e aprovação comercial." },
+      {
+        name: "description",
+        content: "Ciclo de piloto: solicitação, confecção, prova, ajustes e aprovação comercial.",
+      },
       { property: "og:title", content: "Peças Piloto · USE MODA PLM" },
-      { property: "og:description", content: "Ciclo de piloto: solicitação, confecção, prova, ajustes e aprovação comercial." },
+      {
+        property: "og:description",
+        content: "Ciclo de piloto: solicitação, confecção, prova, ajustes e aprovação comercial.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

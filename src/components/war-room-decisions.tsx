@@ -6,31 +6,39 @@ import { useRealtime } from "@/hooks/use-realtime";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ShieldAlert, AlertTriangle, CheckCircle2, ClipboardList, Send, Trash2 } from "lucide-react";
+import {
+  ShieldAlert,
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardList,
+  Send,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 type Kind = "decisao" | "acao" | "risco";
 
-const META: Record<Kind, { label: string; prefix: string; cls: string; Icon: typeof ShieldAlert }> = {
-  decisao: {
-    label: "Decisão",
-    prefix: "🟢 DECISÃO:",
-    cls: "bg-success/15 text-success border-success/30",
-    Icon: CheckCircle2,
-  },
-  acao: {
-    label: "Ação",
-    prefix: "🟡 AÇÃO:",
-    cls: "bg-warning/15 text-warning border-warning/30",
-    Icon: ClipboardList,
-  },
-  risco: {
-    label: "Risco",
-    prefix: "🔴 RISCO:",
-    cls: "bg-destructive/15 text-destructive border-destructive/30",
-    Icon: AlertTriangle,
-  },
-};
+const META: Record<Kind, { label: string; prefix: string; cls: string; Icon: typeof ShieldAlert }> =
+  {
+    decisao: {
+      label: "Decisão",
+      prefix: "🟢 DECISÃO:",
+      cls: "bg-success/15 text-success border-success/30",
+      Icon: CheckCircle2,
+    },
+    acao: {
+      label: "Ação",
+      prefix: "🟡 AÇÃO:",
+      cls: "bg-warning/15 text-warning border-warning/30",
+      Icon: ClipboardList,
+    },
+    risco: {
+      label: "Risco",
+      prefix: "🔴 RISCO:",
+      cls: "bg-destructive/15 text-destructive border-destructive/30",
+      Icon: AlertTriangle,
+    },
+  };
 
 type Row = {
   id: string;

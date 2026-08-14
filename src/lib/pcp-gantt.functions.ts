@@ -82,22 +82,15 @@ export const getApsGantt = createServerFn({ method: "GET" })
         .order("due_date", { ascending: true, nullsFirst: false }),
     ]);
 
-    const stageList = (stages ?? []).filter(
-      (s) => !TERMINAL.has(s.key),
-    );
+    const stageList = (stages ?? []).filter((s) => !TERMINAL.has(s.key));
     const stageIndex = new Map(stageList.map((s, i) => [s.key, i]));
 
-    const rows = ((orders ?? []) as OrderRow[]).filter(
-      (o) => !TERMINAL.has(o.stage ?? ""),
-    );
+    const rows = ((orders ?? []) as OrderRow[]).filter((o) => !TERMINAL.has(o.stage ?? ""));
 
     const pids = Array.from(new Set(rows.map((r) => r.product_id).filter(Boolean) as string[]));
     const products: Record<string, { name: string | null; sku: string | null }> = {};
     if (pids.length) {
-      const { data } = await supabase
-        .from("products")
-        .select("id, name, sku")
-        .in("id", pids);
+      const { data } = await supabase.from("products").select("id, name, sku").in("id", pids);
       for (const p of data ?? []) products[p.id] = { name: p.name, sku: p.sku };
     }
 
@@ -107,9 +100,11 @@ export const getApsGantt = createServerFn({ method: "GET" })
     const built: GanttRow[] = rows.map((o) => {
       const curIdx = stageIndex.get(o.stage ?? "") ?? 0;
       // Start cursor = stage_updated_at or started_at or now
-      let cursor =
-        o.stage_updated_at ? new Date(o.stage_updated_at).getTime() :
-        o.started_at ? new Date(o.started_at).getTime() : now;
+      let cursor = o.stage_updated_at
+        ? new Date(o.stage_updated_at).getTime()
+        : o.started_at
+          ? new Date(o.started_at).getTime()
+          : now;
       if (cursor < now - 14 * DAY_MS) cursor = now; // não retroceder demais
 
       const segments: GanttSegment[] = stageList.map((s, idx) => {

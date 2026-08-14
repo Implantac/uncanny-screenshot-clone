@@ -23,8 +23,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-const brl = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 type MaterialUsage = {
   material_id: string;
@@ -58,11 +57,7 @@ type Props = {
  * da Biblioteca Global está sendo usado (em quais Fichas Técnicas),
  * com indicação de divergência de custo e ação de sincronização.
  */
-export function MaterialLibrarySyncPanel({
-  materialId,
-  open,
-  onOpenChange,
-}: Props) {
+export function MaterialLibrarySyncPanel({ materialId, open, onOpenChange }: Props) {
   const qc = useQueryClient();
 
   const { data: usage, isLoading } = useQuery({
@@ -99,10 +94,7 @@ export function MaterialLibrarySyncPanel({
         ...new Set((sheets ?? []).map((s) => s.product_id).filter(Boolean)),
       ] as string[];
       const { data: products, error: prodErr } = productIds.length
-        ? await supabase
-            .from("products")
-            .select("id, name, sku")
-            .in("id", productIds)
+        ? await supabase.from("products").select("id, name, sku").in("id", productIds)
         : { data: [], error: null };
       if (prodErr) throw prodErr;
 
@@ -112,9 +104,7 @@ export function MaterialLibrarySyncPanel({
 
       const usages = (sheets ?? []).map((sheet) => {
         const bomItem = bomItems.find((b) => b.tech_sheet_id === sheet.id);
-        const product = sheet.product_id
-          ? prodMap.get(sheet.product_id)
-          : null;
+        const product = sheet.product_id ? prodMap.get(sheet.product_id) : null;
         const refCost = Number(mat.reference_cost ?? 0);
         const bomCost = Number(bomItem?.unit_cost ?? 0);
         return {
@@ -343,4 +333,3 @@ export function MaterialLibrarySyncPanel({
     </div>
   );
 }
-

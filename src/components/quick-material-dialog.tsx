@@ -114,11 +114,7 @@ export function QuickMaterialDialog({
             onChange={(e) => setName(e.target.value)}
           />
           <div className="grid grid-cols-2 gap-2">
-            <Input
-              placeholder="Código *"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-            />
+            <Input placeholder="Código *" value={code} onChange={(e) => setCode(e.target.value)} />
             <Input
               type="number"
               min={0}

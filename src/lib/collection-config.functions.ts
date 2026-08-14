@@ -26,10 +26,7 @@ export const listThemes = createServerFn({ method: "GET" })
         .select("id, name, description, color, palette, display_order")
         .eq("collection_id", data.collectionId)
         .order("display_order"),
-      sb
-        .from("collection_products")
-        .select("theme_id")
-        .eq("collection_id", data.collectionId),
+      sb.from("collection_products").select("theme_id").eq("collection_id", data.collectionId),
     ]);
     const counts = new Map<string, number>();
     for (const c of cp ?? []) {
@@ -56,24 +53,25 @@ export const listThemes = createServerFn({ method: "GET" })
 
 export const upsertTheme = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: {
-    id?: string;
-    collectionId: string;
-    name: string;
-    description?: string | null;
-    color?: string | null;
-    palette?: string[] | null;
-  }) =>
-    z
-      .object({
-        id: z.string().uuid().optional(),
-        collectionId: z.string().uuid(),
-        name: z.string().min(1).max(80),
-        description: z.string().max(400).nullable().optional(),
-        color: z.string().max(20).nullable().optional(),
-        palette: z.array(z.string().max(20)).max(12).nullable().optional(),
-      })
-      .parse(d),
+  .inputValidator(
+    (d: {
+      id?: string;
+      collectionId: string;
+      name: string;
+      description?: string | null;
+      color?: string | null;
+      palette?: string[] | null;
+    }) =>
+      z
+        .object({
+          id: z.string().uuid().optional(),
+          collectionId: z.string().uuid(),
+          name: z.string().min(1).max(80),
+          description: z.string().max(400).nullable().optional(),
+          color: z.string().max(20).nullable().optional(),
+          palette: z.array(z.string().max(20)).max(12).nullable().optional(),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
@@ -103,10 +101,7 @@ export const deleteTheme = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("collection_themes")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("collection_themes").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
@@ -158,22 +153,23 @@ export const listLines = createServerFn({ method: "GET" })
 
 export const upsertLine = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: {
-    id?: string;
-    name: string;
-    season?: string | null;
-    year?: number | null;
-    description?: string | null;
-  }) =>
-    z
-      .object({
-        id: z.string().uuid().optional(),
-        name: z.string().min(1).max(80),
-        season: z.string().max(40).nullable().optional(),
-        year: z.number().int().min(2000).max(2100).nullable().optional(),
-        description: z.string().max(400).nullable().optional(),
-      })
-      .parse(d),
+  .inputValidator(
+    (d: {
+      id?: string;
+      name: string;
+      season?: string | null;
+      year?: number | null;
+      description?: string | null;
+    }) =>
+      z
+        .object({
+          id: z.string().uuid().optional(),
+          name: z.string().min(1).max(80),
+          season: z.string().max(40).nullable().optional(),
+          year: z.number().int().min(2000).max(2100).nullable().optional(),
+          description: z.string().max(400).nullable().optional(),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
@@ -202,10 +198,7 @@ export const deleteLine = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("product_lines")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("product_lines").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
@@ -243,7 +236,12 @@ export const getChannelMix = createServerFn({ method: "GET" })
         .eq("collection_id", data.collectionId),
       sb.from("products").select("id, sku, name, image_url"),
     ]);
-    type ProdRow = { id: string; sku: string | null; name: string | null; image_url: string | null };
+    type ProdRow = {
+      id: string;
+      sku: string | null;
+      name: string | null;
+      image_url: string | null;
+    };
     type CpRow = {
       product_id: string;
       role: string;
@@ -268,11 +266,7 @@ export const getChannelMix = createServerFn({ method: "GET" })
 
 export const setProductChannels = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: {
-    productId: string;
-    collectionId: string;
-    channels: ChannelKey[];
-  }) =>
+  .inputValidator((d: { productId: string; collectionId: string; channels: ChannelKey[] }) =>
     z
       .object({
         productId: z.string().uuid(),

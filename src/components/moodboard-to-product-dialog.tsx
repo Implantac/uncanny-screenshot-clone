@@ -25,7 +25,11 @@ type Props = {
 
 function slugSku(caption: string | null) {
   const base = (caption ?? "REF").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const clean = base.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 12);
+  const clean = base
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 12);
   const stamp = Date.now().toString(36).slice(-4).toUpperCase();
   return `${clean || "REF"}-${stamp}`;
 }
@@ -117,11 +121,7 @@ export function MoodboardToProductDialog({ open, onOpenChange, collectionId, moo
           <label className="text-xs text-muted-foreground flex items-center gap-1">
             <Sparkles className="size-3" /> Briefing inicial
           </label>
-          <Textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-          />
+          <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

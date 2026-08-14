@@ -23,7 +23,11 @@ export const listProductRoutings = createServerFn({ method: "POST" })
           .from("product_routing" as never)
           .select("*")
           .order("sequence", { ascending: true }),
-        supabase.from("pcp_stages").select("key, label, position").eq("active", true).order("position"),
+        supabase
+          .from("pcp_stages")
+          .select("key, label, position")
+          .eq("active", true)
+          .order("position"),
         supabase.from("products").select("id, sku, name"),
         supabase.from("product_families").select("id, name"),
       ]);
@@ -54,7 +58,8 @@ export const saveProductRouting = createServerFn({ method: "POST" })
   .inputValidator((d) => upsertSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const scopeFilter = data.scope === "product" ? { product_id: data.scopeId } : { family_id: data.scopeId };
+    const scopeFilter =
+      data.scope === "product" ? { product_id: data.scopeId } : { family_id: data.scopeId };
 
     const { error: delErr } = await supabase
       .from("product_routing" as never)
@@ -75,9 +80,7 @@ export const saveProductRouting = createServerFn({ method: "POST" })
       notes: s.notes ?? null,
     }));
 
-    const { error: insErr } = await supabase
-      .from("product_routing" as never)
-      .insert(rows as never);
+    const { error: insErr } = await supabase.from("product_routing" as never).insert(rows as never);
     if (insErr) throw insErr;
     return { ok: true, inserted: rows.length };
   });
@@ -153,10 +156,7 @@ export const getRoutingsForProducts = createServerFn({ method: "POST" })
     const result: ProductRoutingMap = {};
     if (ids.length === 0) return { map: result, defaultStages };
 
-    const { data: products } = await supabase
-      .from("products")
-      .select("id, line_id")
-      .in("id", ids);
+    const { data: products } = await supabase.from("products").select("id, line_id").in("id", ids);
     const familyIds = Array.from(
       new Set((products ?? []).map((p) => p.line_id).filter(Boolean) as string[]),
     );
@@ -205,4 +205,3 @@ export const getRoutingsForProducts = createServerFn({ method: "POST" })
     }
     return { map: result, defaultStages };
   });
-

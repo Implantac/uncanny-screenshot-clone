@@ -8,8 +8,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/ui/page-header";
 import { StorageUploader } from "@/components/storage-uploader";
@@ -35,7 +47,10 @@ const TECHNIQUES = [
   { v: "transfer", l: "Transfer" },
 ] as const;
 
-const STATUS_META: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
+const STATUS_META: Record<
+  string,
+  { label: string; variant: "default" | "secondary" | "outline" | "destructive" }
+> = {
   rascunho: { label: "Rascunho", variant: "outline" },
   aguardando_prova: { label: "Aguardando prova", variant: "secondary" },
   em_prova: { label: "Em prova", variant: "secondary" },
@@ -65,7 +80,12 @@ function EstampasPage() {
   const [tab, setTab] = useState<string>("todas");
   const [openNew, setOpenNew] = useState(false);
   const [selected, setSelected] = useState<Artwork | null>(null);
-  const [newForm, setNewForm] = useState({ name: "", technique: "silk", position_notes: "", size_notes: "" });
+  const [newForm, setNewForm] = useState({
+    name: "",
+    technique: "silk",
+    position_notes: "",
+    size_notes: "",
+  });
 
   const { data: artworks = [], isLoading } = useQuery({
     queryKey: ["print-artworks"],
@@ -81,8 +101,12 @@ function EstampasPage() {
 
   const filtered = useMemo(() => {
     if (tab === "todas") return artworks;
-    if (tab === "pendentes") return artworks.filter((a) => ["rascunho", "aguardando_prova", "em_prova"].includes(a.status));
-    if (tab === "aprovadas") return artworks.filter((a) => ["aprovada", "liberada_producao"].includes(a.status));
+    if (tab === "pendentes")
+      return artworks.filter((a) =>
+        ["rascunho", "aguardando_prova", "em_prova"].includes(a.status),
+      );
+    if (tab === "aprovadas")
+      return artworks.filter((a) => ["aprovada", "liberada_producao"].includes(a.status));
     if (tab === "rejeitadas") return artworks.filter((a) => a.status === "rejeitada");
     return artworks;
   }, [artworks, tab]);
@@ -114,38 +138,73 @@ function EstampasPage() {
     <div className="space-y-4">
       <PageHeader
         eyebrow="Desenvolvimento"
-        title={<span className="flex items-center gap-2"><Palette className="size-5" /> Aprovação de Estampas & Silk</span>}
+        title={
+          <span className="flex items-center gap-2">
+            <Palette className="size-5" /> Aprovação de Estampas & Silk
+          </span>
+        }
         description="Arte final → prova de cor → liberação para o fornecedor. Rastreia rounds e responsáveis."
         actions={
           <Dialog open={openNew} onOpenChange={setOpenNew}>
             <DialogTrigger asChild>
-              <Button><Plus className="size-4 mr-1" /> Nova arte</Button>
+              <Button>
+                <Plus className="size-4 mr-1" /> Nova arte
+              </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>Nova arte</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>Nova arte</DialogTitle>
+              </DialogHeader>
               <div className="space-y-3">
                 <div>
                   <label className="text-sm">Nome</label>
-                  <Input value={newForm.name} onChange={(e) => setNewForm({ ...newForm, name: e.target.value })} placeholder="Ex: Silk Frente Camiseta SS26" />
+                  <Input
+                    value={newForm.name}
+                    onChange={(e) => setNewForm({ ...newForm, name: e.target.value })}
+                    placeholder="Ex: Silk Frente Camiseta SS26"
+                  />
                 </div>
                 <div>
                   <label className="text-sm">Técnica</label>
-                  <Select value={newForm.technique} onValueChange={(v) => setNewForm({ ...newForm, technique: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={newForm.technique}
+                    onValueChange={(v) => setNewForm({ ...newForm, technique: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      {TECHNIQUES.map((t) => <SelectItem key={t.v} value={t.v}>{t.l}</SelectItem>)}
+                      {TECHNIQUES.map((t) => (
+                        <SelectItem key={t.v} value={t.v}>
+                          {t.l}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <label className="text-sm">Posição na peça</label>
-                  <Input value={newForm.position_notes} onChange={(e) => setNewForm({ ...newForm, position_notes: e.target.value })} placeholder="Ex: Peito esquerdo, 8cm do decote" />
+                  <Input
+                    value={newForm.position_notes}
+                    onChange={(e) => setNewForm({ ...newForm, position_notes: e.target.value })}
+                    placeholder="Ex: Peito esquerdo, 8cm do decote"
+                  />
                 </div>
                 <div>
                   <label className="text-sm">Tamanho</label>
-                  <Input value={newForm.size_notes} onChange={(e) => setNewForm({ ...newForm, size_notes: e.target.value })} placeholder="Ex: 12 x 8 cm" />
+                  <Input
+                    value={newForm.size_notes}
+                    onChange={(e) => setNewForm({ ...newForm, size_notes: e.target.value })}
+                    placeholder="Ex: 12 x 8 cm"
+                  />
                 </div>
-                <Button className="w-full" onClick={() => createArtwork.mutate()} disabled={createArtwork.isPending}>Criar</Button>
+                <Button
+                  className="w-full"
+                  onClick={() => createArtwork.mutate()}
+                  disabled={createArtwork.isPending}
+                >
+                  Criar
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -163,16 +222,30 @@ function EstampasPage() {
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Carregando…</p>
           ) : filtered.length === 0 ? (
-            <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">Nenhuma arte nesta categoria.</CardContent></Card>
+            <Card>
+              <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                Nenhuma arte nesta categoria.
+              </CardContent>
+            </Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map((a) => {
                 const meta = STATUS_META[a.status] ?? STATUS_META.rascunho;
                 return (
-                  <Card key={a.id} className="cursor-pointer hover:border-primary transition" onClick={() => setSelected(a)}>
+                  <Card
+                    key={a.id}
+                    className="cursor-pointer hover:border-primary transition"
+                    onClick={() => setSelected(a)}
+                  >
                     <div className="h-40 w-full bg-muted overflow-hidden rounded-t-lg">
                       {a.artwork_url ? (
-                        <img src={a.artwork_url} alt={a.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
+                        <img
+                          src={a.artwork_url}
+                          alt={a.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-contain"
+                        />
                       ) : (
                         <div className="flex items-center justify-center h-full text-muted-foreground">
                           <ImageIcon className="size-8" />
@@ -186,12 +259,18 @@ function EstampasPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="pt-0 text-xs text-muted-foreground space-y-1">
-                      <p>Técnica: {TECHNIQUES.find((t) => t.v === a.technique)?.l ?? a.technique}</p>
+                      <p>
+                        Técnica: {TECHNIQUES.find((t) => t.v === a.technique)?.l ?? a.technique}
+                      </p>
                       {a.position_notes && <p>Pos: {a.position_notes}</p>}
                       {a.colors.length > 0 && (
                         <div className="flex gap-1 pt-1">
                           {a.colors.slice(0, 6).map((c) => (
-                            <span key={c} className="w-4 h-4 rounded-full border" style={{ backgroundColor: c }} />
+                            <span
+                              key={c}
+                              className="w-4 h-4 rounded-full border"
+                              style={{ backgroundColor: c }}
+                            />
                           ))}
                         </div>
                       )}
@@ -267,10 +346,23 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
   });
 
   const reviewProof = useMutation({
-    mutationFn: async ({ proofId, status, notes }: { proofId: string; status: Proof["status"]; notes?: string }) => {
+    mutationFn: async ({
+      proofId,
+      status,
+      notes,
+    }: {
+      proofId: string;
+      status: Proof["status"];
+      notes?: string;
+    }) => {
       const { error } = await supabase
         .from("print_proofs")
-        .update({ status, reviewer_id: user?.id, reviewed_at: new Date().toISOString(), reviewer_notes: notes ?? null })
+        .update({
+          status,
+          reviewer_id: user?.id,
+          reviewed_at: new Date().toISOString(),
+          reviewer_notes: notes ?? null,
+        })
         .eq("id", proofId);
       if (error) throw error;
       if (status === "aprovada") {
@@ -278,7 +370,10 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
       } else if (status === "rejeitada") {
         await supabase.from("print_artworks").update({ status: "rejeitada" }).eq("id", artwork.id);
       } else if (status === "ajuste") {
-        await supabase.from("print_artworks").update({ status: "aguardando_prova" }).eq("id", artwork.id);
+        await supabase
+          .from("print_artworks")
+          .update({ status: "aguardando_prova" })
+          .eq("id", artwork.id);
       }
     },
     onSuccess: () => {
@@ -293,7 +388,11 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
       if (artwork.status !== "aprovada") throw new Error("Só é possível liberar artes aprovadas");
       const { error } = await supabase
         .from("print_artworks")
-        .update({ status: "liberada_producao", released_at: new Date().toISOString(), released_by: user?.id })
+        .update({
+          status: "liberada_producao",
+          released_at: new Date().toISOString(),
+          released_by: user?.id,
+        })
         .eq("id", artwork.id);
       if (error) throw error;
     },
@@ -319,14 +418,30 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
 
         <div className="space-y-4">
           {artwork.artwork_url && (
-            <img src={artwork.artwork_url} alt={artwork.name} loading="lazy" decoding="async" className="w-full max-h-64 object-contain rounded border" />
+            <img
+              src={artwork.artwork_url}
+              alt={artwork.name}
+              loading="lazy"
+              decoding="async"
+              className="w-full max-h-64 object-contain rounded border"
+            />
           )}
 
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div><span className="text-muted-foreground">Técnica:</span> {TECHNIQUES.find((t) => t.v === artwork.technique)?.l}</div>
-            <div><span className="text-muted-foreground">Posição:</span> {artwork.position_notes ?? "—"}</div>
-            <div><span className="text-muted-foreground">Tamanho:</span> {artwork.size_notes ?? "—"}</div>
-            <div><span className="text-muted-foreground">Cores:</span> {artwork.colors.length}</div>
+            <div>
+              <span className="text-muted-foreground">Técnica:</span>{" "}
+              {TECHNIQUES.find((t) => t.v === artwork.technique)?.l}
+            </div>
+            <div>
+              <span className="text-muted-foreground">Posição:</span>{" "}
+              {artwork.position_notes ?? "—"}
+            </div>
+            <div>
+              <span className="text-muted-foreground">Tamanho:</span> {artwork.size_notes ?? "—"}
+            </div>
+            <div>
+              <span className="text-muted-foreground">Cores:</span> {artwork.colors.length}
+            </div>
           </div>
 
           {artwork.status === "aprovada" && (
@@ -334,7 +449,9 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="size-5 text-green-600" />
-                  <span className="text-sm">Arte aprovada — pronta para liberar ao fornecedor.</span>
+                  <span className="text-sm">
+                    Arte aprovada — pronta para liberar ao fornecedor.
+                  </span>
                 </div>
                 <Button onClick={() => release.mutate()} disabled={release.isPending}>
                   <Send className="size-4 mr-1" /> Liberar para produção
@@ -352,28 +469,60 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
                   <CardContent className="p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <Badge variant="outline">Round #{p.round}</Badge>
-                      <Badge variant={
-                        p.status === "aprovada" ? "default" :
-                        p.status === "rejeitada" ? "destructive" :
-                        p.status === "ajuste" ? "secondary" : "outline"
-                      }>{p.status}</Badge>
+                      <Badge
+                        variant={
+                          p.status === "aprovada"
+                            ? "default"
+                            : p.status === "rejeitada"
+                              ? "destructive"
+                              : p.status === "ajuste"
+                                ? "secondary"
+                                : "outline"
+                        }
+                      >
+                        {p.status}
+                      </Badge>
                     </div>
-                    {p.proof_url && <img src={p.proof_url} alt={`Round ${p.round}`} loading="lazy" decoding="async" className="w-full max-h-40 object-contain rounded border" />}
+                    {p.proof_url && (
+                      <img
+                        src={p.proof_url}
+                        alt={`Round ${p.round}`}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full max-h-40 object-contain rounded border"
+                      />
+                    )}
                     {p.notes && <p className="text-xs text-muted-foreground">Notas: {p.notes}</p>}
                     {p.reviewer_notes && <p className="text-xs">Revisão: {p.reviewer_notes}</p>}
                     {p.status === "pendente" && (
                       <div className="flex gap-2 pt-2">
-                        <Button size="sm" variant="default" onClick={() => reviewProof.mutate({ proofId: p.id, status: "aprovada" })}>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => reviewProof.mutate({ proofId: p.id, status: "aprovada" })}
+                        >
                           <CheckCircle2 className="size-3 mr-1" /> Aprovar
                         </Button>
-                        <Button size="sm" variant="secondary" onClick={() => {
-                          const n = prompt("O que ajustar?"); if (n) reviewProof.mutate({ proofId: p.id, status: "ajuste", notes: n });
-                        }}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            const n = prompt("O que ajustar?");
+                            if (n)
+                              reviewProof.mutate({ proofId: p.id, status: "ajuste", notes: n });
+                          }}
+                        >
                           <AlertTriangle className="size-3 mr-1" /> Pedir ajuste
                         </Button>
-                        <Button size="sm" variant="destructive" onClick={() => {
-                          const n = prompt("Motivo da rejeição?"); if (n) reviewProof.mutate({ proofId: p.id, status: "rejeitada", notes: n });
-                        }}>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            const n = prompt("Motivo da rejeição?");
+                            if (n)
+                              reviewProof.mutate({ proofId: p.id, status: "rejeitada", notes: n });
+                          }}
+                        >
                           <XCircle className="size-3 mr-1" /> Rejeitar
                         </Button>
                       </div>
@@ -381,18 +530,38 @@ function ArtworkDetailDialog({ artwork, onClose }: { artwork: Artwork; onClose: 
                   </CardContent>
                 </Card>
               ))}
-              {proofs.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma prova ainda.</p>}
+              {proofs.length === 0 && (
+                <p className="text-sm text-muted-foreground">Nenhuma prova ainda.</p>
+              )}
             </div>
 
             {/* New proof */}
             {artwork.status !== "liberada_producao" && (
               <Card className="mt-3">
-                <CardHeader><CardTitle className="text-sm">Registrar nova prova</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle className="text-sm">Registrar nova prova</CardTitle>
+                </CardHeader>
                 <CardContent className="space-y-2">
-                  <StorageUploader bucket="prototypes" value={proofUrl || null} onChange={(url) => setProofUrl(url ?? "")} accept="image/*" kind="image" />
-                  {proofUrl && <img src={proofUrl} alt="Preview" className="max-h-32 rounded border" />}
-                  <Textarea value={proofNotes} onChange={(e) => setProofNotes(e.target.value)} placeholder="Observações da prova (cor, malha, alinhamento)…" />
-                  <Button onClick={() => addProof.mutate()} disabled={addProof.isPending || !proofUrl} className="w-full">
+                  <StorageUploader
+                    bucket="prototypes"
+                    value={proofUrl || null}
+                    onChange={(url) => setProofUrl(url ?? "")}
+                    accept="image/*"
+                    kind="image"
+                  />
+                  {proofUrl && (
+                    <img src={proofUrl} alt="Preview" className="max-h-32 rounded border" />
+                  )}
+                  <Textarea
+                    value={proofNotes}
+                    onChange={(e) => setProofNotes(e.target.value)}
+                    placeholder="Observações da prova (cor, malha, alinhamento)…"
+                  />
+                  <Button
+                    onClick={() => addProof.mutate()}
+                    disabled={addProof.isPending || !proofUrl}
+                    className="w-full"
+                  >
                     Enviar prova (Round #{(proofs[0]?.round ?? 0) + 1})
                   </Button>
                 </CardContent>

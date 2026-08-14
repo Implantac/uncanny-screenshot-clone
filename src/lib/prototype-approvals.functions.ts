@@ -45,11 +45,7 @@ export const getPrototypeApprovals = createServerFn({ method: "GET" })
           "id, role, approved_at, note, cost_at_approval, target_cost_at_approval, approved_by",
         )
         .eq("prototype_id", data.prototypeId),
-      sb
-        .from("prototypes")
-        .select("id, product_id")
-        .eq("id", data.prototypeId)
-        .maybeSingle(),
+      sb.from("prototypes").select("id, product_id").eq("id", data.prototypeId).maybeSingle(),
     ]);
 
     let currentCost: number | null = null;

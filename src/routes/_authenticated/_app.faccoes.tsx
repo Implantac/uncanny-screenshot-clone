@@ -10,9 +10,15 @@ export const Route = createFileRoute("/_authenticated/_app/faccoes")({
   head: () => ({
     meta: [
       { title: "Facções · USE MODA PLM" },
-      { name: "description", content: "Gestão de ordens de serviço, capacidade e performance de facções parceiras." },
+      {
+        name: "description",
+        content: "Gestão de ordens de serviço, capacidade e performance de facções parceiras.",
+      },
       { property: "og:title", content: "Facções · USE MODA PLM" },
-      { property: "og:description", content: "Gestão de ordens de serviço, capacidade e performance de facções parceiras." },
+      {
+        property: "og:description",
+        content: "Gestão de ordens de serviço, capacidade e performance de facções parceiras.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -45,7 +51,6 @@ function FaccoesPage() {
         }
         description="Painel consolidado das oficinas externas — perda, defeito, lead time real e OS atrasadas (90 dias)."
       />
-
 
       {isLoading ? (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -118,9 +123,7 @@ function FaccoesPage() {
                 <Kpi
                   label="Lead time médio"
                   value={f.avgLeadTimeDays !== null ? `${f.avgLeadTimeDays}d` : "—"}
-                  tone={
-                    f.avgLeadTimeDays !== null && f.avgLeadTimeDays > 21 ? "warn" : "ok"
-                  }
+                  tone={f.avgLeadTimeDays !== null && f.avgLeadTimeDays > 21 ? "warn" : "ok"}
                   icon={<Clock className="size-3" />}
                 />
                 <Kpi label="Total OS (90d)" value={f.totalOS} />
@@ -152,11 +155,7 @@ function Kpi({
   icon?: React.ReactNode;
 }) {
   const color =
-    tone === "warn"
-      ? "text-amber-600"
-      : tone === "ok"
-        ? "text-foreground"
-        : "text-foreground";
+    tone === "warn" ? "text-amber-600" : tone === "ok" ? "text-foreground" : "text-foreground";
   return (
     <div className="rounded-lg border border-border bg-muted/10 px-2 py-1.5">
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1">

@@ -127,9 +127,7 @@ function ApontarPage() {
   const qc = useQueryClient();
   useRealtime("production_orders", ["apontar", id]);
 
-  const [online, setOnline] = useState(
-    typeof navigator === "undefined" ? true : navigator.onLine,
-  );
+  const [online, setOnline] = useState(typeof navigator === "undefined" ? true : navigator.onLine);
   const [queueSize, setQueueSize] = useState(0);
 
   useEffect(() => {
@@ -307,9 +305,7 @@ function ApontarPage() {
   }
 
   const late =
-    order.due_date &&
-    new Date(order.due_date).getTime() < Date.now() &&
-    order.stage !== "entregue";
+    order.due_date && new Date(order.due_date).getTime() < Date.now() && order.stage !== "entregue";
 
   return (
     <div className="min-h-screen bg-background pb-24">

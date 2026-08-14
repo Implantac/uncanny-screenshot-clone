@@ -228,10 +228,7 @@ function FornecedoresPage() {
     // The plaintext token is shown to the user ONCE here and never stored.
     const token =
       (crypto as any).randomUUID().replace(/-/g, "") + Math.random().toString(36).slice(2, 10);
-    const hashBuf = await crypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(token),
-    );
+    const hashBuf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
     const tokenHash = Array.from(new Uint8Array(hashBuf))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
@@ -473,117 +470,119 @@ function FornecedoresPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {(pinnedOnly ? suppliers.filter((s) => pinnedIds.has(s.id)) : suppliers).map((s) => (
-            <div
-              key={s.id}
-              className="glass rounded-xl p-5 flex flex-col gap-3 hover:border-primary/40 transition-colors"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h3 className="font-semibold truncate">{s.name}</h3>
-                  {s.category && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{s.category}</p>
+              <div
+                key={s.id}
+                className="glass rounded-xl p-5 flex flex-col gap-3 hover:border-primary/40 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <h3 className="font-semibold truncate">{s.name}</h3>
+                    {s.category && (
+                      <p className="text-xs text-muted-foreground mt-0.5">{s.category}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {s.active ? (
+                      <Badge
+                        variant="outline"
+                        className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                      >
+                        Ativo
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-muted text-muted-foreground">
+                        Inativo
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                {s.rating > 0 && (
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`size-3.5 ${i < s.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40"}`}
+                      />
+                    ))}
+                  </div>
+                )}
+                <div className="space-y-1.5 text-sm">
+                  {s.contact_name && <p className="text-muted-foreground">{s.contact_name}</p>}
+                  {s.email && (
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Mail className="size-3" /> {s.email}
+                    </p>
+                  )}
+                  {s.phone && (
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Phone className="size-3" /> {s.phone}
+                    </p>
+                  )}
+                  {(s.city || s.state) && (
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <MapPin className="size-3" /> {[s.city, s.state].filter(Boolean).join(" / ")}
+                    </p>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  {s.active ? (
-                    <Badge
-                      variant="outline"
-                      className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                    >
-                      Ativo
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="bg-muted text-muted-foreground">
-                      Inativo
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              {s.rating > 0 && (
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`size-3.5 ${i < s.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40"}`}
-                    />
-                  ))}
-                </div>
-              )}
-              <div className="space-y-1.5 text-sm">
-                {s.contact_name && <p className="text-muted-foreground">{s.contact_name}</p>}
-                {s.email && (
-                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Mail className="size-3" /> {s.email}
-                  </p>
-                )}
-                {s.phone && (
-                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Phone className="size-3" /> {s.phone}
-                  </p>
-                )}
-                {(s.city || s.state) && (
-                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <MapPin className="size-3" /> {[s.city, s.state].filter(Boolean).join(" / ")}
-                  </p>
-                )}
-              </div>
-              {s.notes && <p className="text-xs text-muted-foreground line-clamp-2">{s.notes}</p>}
-              <div className="flex justify-end gap-1 pt-2 border-t border-border">
-                <button
-                  onClick={() => {
-                    const now = togglePinnedSupplier({
-                      id: s.id,
-                      name: s.name,
-                      category: s.category,
-                    });
-                    toast.success(now ? "Fornecedor fixado" : "Desfixado");
-                  }}
-                  className={`size-7 grid place-items-center rounded hover:bg-muted ${
-                    pinnedIds.has(s.id) ? "text-primary" : "text-muted-foreground"
-                  }`}
-                  title={pinnedIds.has(s.id) ? "Desfixar fornecedor" : "Fixar fornecedor"}
-                >
-                  {pinnedIds.has(s.id) ? (
-                    <PinOff className="size-3.5" />
-                  ) : (
-                    <Pin className="size-3.5" />
-                  )}
-                </button>
-                <button
-                  onClick={() => openView360(s)}
-                  className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 flex items-center gap-1"
-                  title="Visão 360° do fornecedor"
-                >
-                  <Activity className="size-3" /> 360°
-                </button>
-                {s.owner_id === user?.id && (
-                  <>
-                    <button
-                      onClick={() => generatePortalLink(s.id)}
-                      className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border hover:bg-muted"
-                    >
-                      Link do portal
-                    </button>
+                {s.notes && <p className="text-xs text-muted-foreground line-clamp-2">{s.notes}</p>}
+                <div className="flex justify-end gap-1 pt-2 border-t border-border">
                   <button
                     onClick={() => {
-                      setEditing(s);
-                      setOpen(true);
+                      const now = togglePinnedSupplier({
+                        id: s.id,
+                        name: s.name,
+                        category: s.category,
+                      });
+                      toast.success(now ? "Fornecedor fixado" : "Desfixado");
                     }}
-                    className="size-7 grid place-items-center rounded hover:bg-muted"
+                    className={`size-7 grid place-items-center rounded hover:bg-muted ${
+                      pinnedIds.has(s.id) ? "text-primary" : "text-muted-foreground"
+                    }`}
+                    title={pinnedIds.has(s.id) ? "Desfixar fornecedor" : "Fixar fornecedor"}
                   >
-                    <Pencil className="size-3.5" />
+                    {pinnedIds.has(s.id) ? (
+                      <PinOff className="size-3.5" />
+                    ) : (
+                      <Pin className="size-3.5" />
+                    )}
                   </button>
-                    <button
-                      onClick={() => confirm("Remover este fornecedor?") && deleteMut.mutate(s.id)}
-                      className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  </>
-                )}
+                  <button
+                    onClick={() => openView360(s)}
+                    className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 flex items-center gap-1"
+                    title="Visão 360° do fornecedor"
+                  >
+                    <Activity className="size-3" /> 360°
+                  </button>
+                  {s.owner_id === user?.id && (
+                    <>
+                      <button
+                        onClick={() => generatePortalLink(s.id)}
+                        className="text-[10px] uppercase tracking-wider px-2 py-1 rounded border border-border hover:bg-muted"
+                      >
+                        Link do portal
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditing(s);
+                          setOpen(true);
+                        }}
+                        className="size-7 grid place-items-center rounded hover:bg-muted"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                      <button
+                        onClick={() =>
+                          confirm("Remover este fornecedor?") && deleteMut.mutate(s.id)
+                        }
+                        className="size-7 grid place-items-center rounded hover:bg-destructive/20 text-destructive"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
           </div>
         </div>
       )}

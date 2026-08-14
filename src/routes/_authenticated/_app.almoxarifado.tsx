@@ -119,7 +119,6 @@ function reorderPoint(
   return Math.max(dynamic, Number(minimum) || 0);
 }
 
-
 function Almoxarifado() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -232,7 +231,6 @@ function Almoxarifado() {
       .slice(0, 6);
   }, [items, supplierLeadById, suppliers]);
 
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <PageHeader
@@ -288,10 +286,6 @@ function Almoxarifado() {
       <InventoryScrapsPanel />
 
       <ScrapByOpPanel />
-
-
-
-
 
       {items.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
@@ -370,7 +364,6 @@ function Almoxarifado() {
                       : `lead padrão ${r.lead}d`}
                     {` + ${r.safety}d segurança)`}
                   </div>
-
                 </div>
                 <div className="text-right">
                   <div
@@ -406,7 +399,6 @@ function Almoxarifado() {
         query={q}
         onQueryChange={setQ}
       />
-
 
       <ItemDialog open={open} onOpenChange={setOpen} editing={editing} userId={user?.id} />
     </div>
@@ -571,9 +563,7 @@ function InventoryTable({
             </span>
           );
         return (
-          <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/15 text-emerald-400">
-            Ok
-          </span>
+          <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/15 text-emerald-400">Ok</span>
         );
       },
     },
@@ -656,8 +646,6 @@ function InventoryTable({
     </section>
   );
 }
-
-
 
 function ItemDialog({
   open,

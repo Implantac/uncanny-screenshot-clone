@@ -100,7 +100,7 @@ export const getCAPAEffectiveness = createServerFn({ method: "POST" })
         capa_id: c.id,
         title: c.title,
         supplier_id: sup,
-        supplier_name: sup ? supMap.get(sup) ?? null : null,
+        supplier_name: sup ? (supMap.get(sup) ?? null) : null,
         closed_at: c.closed_at!,
         due_check_at: new Date(due).toISOString(),
         reincidencias: reincid,

@@ -132,9 +132,7 @@ export function TimelineFeed({
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="px-4 py-10 text-center text-sm text-muted-foreground">
-          {emptyLabel}
-        </div>
+        <div className="px-4 py-10 text-center text-sm text-muted-foreground">{emptyLabel}</div>
       ) : (
         <ol className="divide-y divide-border">
           {filtered.map((e) => {
@@ -157,7 +155,9 @@ export function TimelineFeed({
                 <Icon className={`size-4 mt-0.5 shrink-0 ${SEV_TONE[e.severity]}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className={`text-sm truncate ${isMilestone ? "font-semibold" : "font-medium"}`}>
+                    <span
+                      className={`text-sm truncate ${isMilestone ? "font-semibold" : "font-medium"}`}
+                    >
                       {e.title}
                     </span>
                     {isMilestone && (
@@ -198,7 +198,6 @@ export function TimelineFeed({
             );
           })}
         </ol>
-
       )}
     </div>
   );

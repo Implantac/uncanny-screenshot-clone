@@ -20,9 +20,7 @@ export const getTechSheetBomReviews = createServerFn({ method: "GET" })
 
     const { data: sheets, error } = await supabase
       .from("tech_sheets")
-      .select(
-        "id, code, version, status, product_id, cost_review_reason, cost_review_flagged_at",
-      )
+      .select("id, code, version, status, product_id, cost_review_reason, cost_review_flagged_at")
       .eq("owner_id", userId)
       .eq("needs_cost_review", true)
       .order("cost_review_flagged_at", { ascending: false })
@@ -30,21 +28,17 @@ export const getTechSheetBomReviews = createServerFn({ method: "GET" })
     if (error) throw error;
     if (!sheets?.length) return [];
 
-    const productIds = sheets
-      .map((s) => s.product_id)
-      .filter((id): id is string => !!id);
+    const productIds = sheets.map((s) => s.product_id).filter((id): id is string => !!id);
 
     const { data: products } = productIds.length
-      ? await supabase
-          .from("products")
-          .select("id, name, sku")
-          .in("id", productIds)
+      ? await supabase.from("products").select("id, name, sku").in("id", productIds)
       : { data: [] as { id: string; name: string | null; sku: string | null }[] };
 
     const pmap = new Map(
-      ((products ?? []) as { id: string; name: string | null; sku: string | null }[]).map(
-        (p) => [p.id, p],
-      ),
+      ((products ?? []) as { id: string; name: string | null; sku: string | null }[]).map((p) => [
+        p.id,
+        p,
+      ]),
     );
 
     return sheets.map((s) => {

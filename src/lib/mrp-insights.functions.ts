@@ -12,8 +12,7 @@ const PERSONA_PROMPT: Record<Persona, string> = {
     "Você é o Diretor Industrial. Foque em: saúde geral do estoque, capital empatado, riscos macro, oportunidades de economia, KPIs estratégicos. Linguagem executiva, números arredondados, decisões.",
   comprador:
     "Você é o Comprador. Foque em: o que comprar agora (priorizado por valor e urgência), consolidação por fornecedor, lead time, negociação, LEC vs lote prático. Liste ações concretas.",
-  pcp:
-    "Você é o PCP. Foque em: riscos de ruptura por material crítico para produção, cobertura vs OPs abertas, materiais que travam linhas. Aponte itens específicos e dias de cobertura.",
+  pcp: "Você é o PCP. Foque em: riscos de ruptura por material crítico para produção, cobertura vs OPs abertas, materiais que travam linhas. Aponte itens específicos e dias de cobertura.",
   financeiro:
     "Você é o Controller. Foque em: capital parado, giro, ROI do estoque, itens em excesso para liquidar, projeção de desembolso com compras sugeridas. Use R$ e percentuais.",
 };
@@ -38,9 +37,7 @@ export type MrpExecKpis = {
 };
 
 function buildKpis(rows: MrpRow[], summary: MrpSummary): MrpExecKpis {
-  const giro = rows.length
-    ? rows.reduce((a, r) => a + r.turnover, 0) / rows.length
-    : 0;
+  const giro = rows.length ? rows.reduce((a, r) => a + r.turnover, 0) / rows.length : 0;
 
   const supMap = new Map<string, { name: string; items: number; capital: number; lt: number }>();
   for (const r of rows) {
@@ -55,9 +52,8 @@ function buildKpis(rows: MrpRow[], summary: MrpSummary): MrpExecKpis {
   return {
     totalStockValue: summary.totalStockValue,
     capitalParado: summary.capitalParado,
-    capitalParadoPct: summary.totalStockValue > 0
-      ? (summary.capitalParado / summary.totalStockValue) * 100
-      : 0,
+    capitalParadoPct:
+      summary.totalStockValue > 0 ? (summary.capitalParado / summary.totalStockValue) * 100 : 0,
     itemsCritical: summary.itemsCritical,
     itemsExcess: summary.itemsExcess,
     rupturas: summary.rupturas,
@@ -69,19 +65,39 @@ function buildKpis(rows: MrpRow[], summary: MrpSummary): MrpExecKpis {
     topCritical: rows
       .filter((r) => r.status === "critico")
       .slice(0, 5)
-      .map((r) => ({ sku: r.sku, name: r.name, coverage: r.coverageDays, suggested: r.suggestedPurchase })),
+      .map((r) => ({
+        sku: r.sku,
+        name: r.name,
+        coverage: r.coverageDays,
+        suggested: r.suggestedPurchase,
+      })),
     topExcess: [...rows]
       .filter((r) => r.status === "excesso")
       .sort((a, b) => b.capitalEmpatado - a.capitalEmpatado)
       .slice(0, 5)
-      .map((r) => ({ sku: r.sku, name: r.name, capital: r.capitalEmpatado, coverage: r.coverageDays })),
+      .map((r) => ({
+        sku: r.sku,
+        name: r.name,
+        capital: r.capitalEmpatado,
+        coverage: r.coverageDays,
+      })),
     topBuy: [...rows]
       .filter((r) => r.suggestedPurchase > 0)
       .sort((a, b) => b.suggestedValue - a.suggestedValue)
       .slice(0, 5)
-      .map((r) => ({ sku: r.sku, name: r.name, supplier: r.supplierName, value: r.suggestedValue })),
+      .map((r) => ({
+        sku: r.sku,
+        name: r.name,
+        supplier: r.supplierName,
+        value: r.suggestedValue,
+      })),
     bySupplier: Array.from(supMap.values())
-      .map((s) => ({ name: s.name, items: s.items, capital: Number(s.capital.toFixed(2)), avgLeadTime: Number((s.lt / s.items).toFixed(1)) }))
+      .map((s) => ({
+        name: s.name,
+        items: s.items,
+        capital: Number(s.capital.toFixed(2)),
+        avgLeadTime: Number((s.lt / s.items).toFixed(1)),
+      }))
       .sort((a, b) => b.capital - a.capital)
       .slice(0, 8),
   };

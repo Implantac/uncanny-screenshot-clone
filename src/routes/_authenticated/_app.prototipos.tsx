@@ -307,8 +307,7 @@ function Prototipos() {
   }
 
   const productName = (id: string | null) => products.find((p) => p.id === id)?.name ?? "—";
-  const productImage = (id: string | null) =>
-    products.find((p) => p.id === id)?.image_url ?? null;
+  const productImage = (id: string | null) => products.find((p) => p.id === id)?.image_url ?? null;
   const supplierName = (id: string | null) => suppliers.find((s) => s.id === id)?.name ?? "—";
 
   // Urgência baseada no prazo — visual enterprise (verde/âmbar/vermelho)
@@ -335,9 +334,7 @@ function Prototipos() {
 
   const productsInCollection = useMemo(() => {
     if (!collectionId) return null;
-    const ids = new Set(
-      products.filter((p) => p.collection_id === collectionId).map((p) => p.id),
-    );
+    const ids = new Set(products.filter((p) => p.collection_id === collectionId).map((p) => p.id));
     return ids;
   }, [collectionId, products]);
 
@@ -433,7 +430,6 @@ function Prototipos() {
         </div>
       )}
 
-
       {isLoading ? (
         <p className="text-muted-foreground">Carregando…</p>
       ) : (
@@ -504,7 +500,6 @@ function Prototipos() {
             />
           </div>
 
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {(Object.keys(STAGE_LABEL) as Stage[]).map((st) => {
               const col = filtered.filter((i) => i.stage === st);
@@ -561,7 +556,8 @@ function Prototipos() {
                         {(() => {
                           const u = dueUrgency(p.due_date);
                           const showReadiness = p.stage === "aprovado" && p.product_id;
-                          if (u.tone === "none" && !p.needs_adjustment && !showReadiness) return null;
+                          if (u.tone === "none" && !p.needs_adjustment && !showReadiness)
+                            return null;
                           return (
                             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                               {u.tone !== "none" && (
@@ -576,9 +572,7 @@ function Prototipos() {
                                   ⚠ Ajuste
                                 </span>
                               )}
-                              {showReadiness && (
-                                <ProductReadinessBadge productId={p.product_id!} />
-                              )}
+                              {showReadiness && <ProductReadinessBadge productId={p.product_id!} />}
                             </div>
                           );
                         })()}
@@ -672,7 +666,6 @@ function Prototipos() {
                     <td className="px-4 py-3">{supplierName(p.supplier_id)}</td>
                     <td className="px-4 py-3">
                       <StatusBadge kind="prototype" value={p.stage} />
-
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{p.due_date ?? "—"}</td>
                     <td className="px-4 py-3 text-right">

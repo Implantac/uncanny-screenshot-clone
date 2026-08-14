@@ -94,7 +94,10 @@ export function DataTable<T>({
   pageSize = 25,
   onRowClick,
 }: DataTableProps<T>) {
-  const keyFor = rowKey ?? getRowId ?? ((row: T) => String((row as Record<string, unknown>).id ?? Math.random()));
+  const keyFor =
+    rowKey ??
+    getRowId ??
+    ((row: T) => String((row as Record<string, unknown>).id ?? Math.random()));
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(initialSort?.key ?? null);
   const [sortDir, setSortDir] = useState<SortDir>(initialSort?.dir ?? null);
@@ -238,7 +241,9 @@ export function DataTable<T>({
                           col.hideOnMobile && "hidden md:table-cell",
                         )}
                       >
-                        {renderer ? renderer(row, idx) : ((row as Record<string, unknown>)[col.key] as ReactNode) ?? "—"}
+                        {renderer
+                          ? renderer(row, idx)
+                          : (((row as Record<string, unknown>)[col.key] as ReactNode) ?? "—")}
                       </TableCell>
                     );
                   })}
@@ -291,4 +296,3 @@ export function DataTable<T>({
     </div>
   );
 }
-

@@ -8,4 +8,4 @@ import { usesoftQuery } from "../src/integrations/usesoft/client.server";
      WHERE t.nnumerotpped IN ('49115','70438','49199','77683','70440','70439','49131','70546','49132','72714','70757')
      GROUP BY 1,2,3,4,5 ORDER BY c DESC`);
   console.log(JSON.stringify(s.rows, null, 2));
-})().catch(e => console.error("ERR:", e.message));
+})().catch((e) => console.error("ERR:", e.message));

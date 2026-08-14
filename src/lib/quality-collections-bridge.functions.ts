@@ -48,11 +48,11 @@ export const getCollectionsBridgeAnalysis = createServerFn({ method: "POST" })
       { data: protos },
       { data: protoAdj },
     ] = await Promise.all([
+      supabase.from("collections").select("id, name, season, year, status").eq("owner_id", userId),
       supabase
-        .from("collections")
-        .select("id, name, season, year, status")
+        .from("collection_products")
+        .select("collection_id, product_id")
         .eq("owner_id", userId),
-      supabase.from("collection_products").select("collection_id, product_id").eq("owner_id", userId),
       supabase.from("products").select("id, cost_price").eq("owner_id", userId),
       supabase
         .from("production_orders")
@@ -159,8 +159,7 @@ export const getCollectionsBridgeAnalysis = createServerFn({ method: "POST" })
           for (const oc of oos) {
             occCount++;
             const qty = Number(oc.quantity_affected ?? 1);
-            const factor =
-              oc.type === "refugo" ? 1.0 : oc.type === "retrabalho" ? 0.5 : 0.3;
+            const factor = oc.type === "refugo" ? 1.0 : oc.type === "retrabalho" ? 0.5 : 0.3;
             conq += qty * cost * factor;
           }
         }
@@ -212,9 +211,7 @@ export const getCollectionsBridgeAnalysis = createServerFn({ method: "POST" })
 
     const active = rows.filter((r) => r.ordersTotal + r.inspectionsTotal > 0);
     const criticos = rows.filter((r) => r.riskLabel === "critico").length;
-    const avgFpy = active.length
-      ? active.reduce((s, r) => s + r.fpyPct, 0) / active.length
-      : 0;
+    const avgFpy = active.length ? active.reduce((s, r) => s + r.fpyPct, 0) / active.length : 0;
     const avgOnTime = active.length
       ? active.reduce((s, r) => s + r.onTimePct, 0) / active.length
       : 0;

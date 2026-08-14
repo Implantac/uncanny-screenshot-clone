@@ -107,7 +107,6 @@ function StockHealth() {
         description="Saúde do estoque: ruptura, baixo, morto, excesso e cobertura por SKU."
       />
 
-
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KPI label="Itens" value={summary.total} icon={<Package className="size-4" />} />
         <KPI

@@ -65,7 +65,9 @@ export const deleteViewPreset = createServerFn({ method: "POST" })
 
 export const toggleFavoriteViewPreset = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), is_favorite: z.boolean() }).parse(i))
+  .inputValidator((i: unknown) =>
+    z.object({ id: z.string().uuid(), is_favorite: z.boolean() }).parse(i),
+  )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("user_view_presets")

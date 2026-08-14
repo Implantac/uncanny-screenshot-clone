@@ -24,11 +24,7 @@ export function QualityConqPanel() {
   if (!data) return null;
 
   const pctColor =
-    data.conqPct > 5
-      ? "text-red-500"
-      : data.conqPct > 3
-        ? "text-amber-500"
-        : "text-emerald-500";
+    data.conqPct > 5 ? "text-red-500" : data.conqPct > 3 ? "text-amber-500" : "text-emerald-500";
 
   return (
     <div className="glass rounded-2xl p-5 space-y-4">
@@ -88,9 +84,7 @@ export function QualityConqPanel() {
                     <td className="py-1.5 px-2 text-right">{r.reworkQty}</td>
                     <td className="py-1.5 px-2 text-right">{r.scrapQty}</td>
                     <td className="py-1.5 px-2 text-right">{r.rejectQty}</td>
-                    <td className="py-1.5 pl-2 text-right font-semibold">
-                      {fmtBRL(r.totalConq)}
-                    </td>
+                    <td className="py-1.5 pl-2 text-right font-semibold">{fmtBRL(r.totalConq)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -102,15 +96,7 @@ export function QualityConqPanel() {
   );
 }
 
-function Card({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
+function Card({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div
       className={`rounded-xl border p-3 ${

@@ -11,12 +11,7 @@ export function ApprovalSlaBadge({
 }) {
   const ageMs = Date.now() - Date.parse(createdAt);
   const ageH = Math.max(0, Math.floor(ageMs / 3_600_000));
-  const label =
-    ageH < 1
-      ? "<1h"
-      : ageH < 48
-        ? `${ageH}h`
-        : `${Math.floor(ageH / 24)}d`;
+  const label = ageH < 1 ? "<1h" : ageH < 48 ? `${ageH}h` : `${Math.floor(ageH / 24)}d`;
 
   const tone =
     ageH >= 48

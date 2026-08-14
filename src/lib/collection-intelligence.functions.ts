@@ -58,9 +58,26 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
         .neq("status", "concluida"),
     ]);
 
-    type SaleRow = { sku: string | null; product_ref: string | null; quantity: number | null; total_value: number | null };
-    type CollectionRow = { id: string; name: string; season: string | null; launch_date: string | null; status: string | null };
-    type ProductRow = { id: string; name: string | null; sku: string | null; collection_id: string | null; status: string | null };
+    type SaleRow = {
+      sku: string | null;
+      product_ref: string | null;
+      quantity: number | null;
+      total_value: number | null;
+    };
+    type CollectionRow = {
+      id: string;
+      name: string;
+      season: string | null;
+      launch_date: string | null;
+      status: string | null;
+    };
+    type ProductRow = {
+      id: string;
+      name: string | null;
+      sku: string | null;
+      collection_id: string | null;
+      status: string | null;
+    };
     type SheetRow = { product_id: string | null; status: string | null };
     type OpRow = { id: string; product_id: string | null; status: string | null };
 
@@ -86,12 +103,13 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
 
     // Risk per active collection
     const approvedSheetByProd = new Set(
-      ((sheets ?? []) as SheetRow[]).filter((s) => s.status === "aprovada").map((s) => s.product_id),
+      ((sheets ?? []) as SheetRow[])
+        .filter((s) => s.status === "aprovada")
+        .map((s) => s.product_id),
     );
     const opsByProd = new Map<string, number>();
     ((ops ?? []) as OpRow[]).forEach(
-      (o) =>
-        o.product_id && opsByProd.set(o.product_id, (opsByProd.get(o.product_id) ?? 0) + 1),
+      (o) => o.product_id && opsByProd.set(o.product_id, (opsByProd.get(o.product_id) ?? 0) + 1),
     );
 
     const now = Date.now();
@@ -109,7 +127,11 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
 
         let risk: CollectionRisk["risk"] = "low";
         let reason = buildAiReason({
-          signals: [days !== null ? `lança em ${days}d` : null, `${pct}% fichas aprovadas`, `${activeOps} OPs ativas`],
+          signals: [
+            days !== null ? `lança em ${days}d` : null,
+            `${pct}% fichas aprovadas`,
+            `${activeOps} OPs ativas`,
+          ],
           fallback: "dentro do ritmo esperado",
         });
         if (days !== null && days < 30 && pct < 50) {
@@ -137,7 +159,6 @@ export const getCollectionIntelligence = createServerFn({ method: "GET" })
             recommendation: "vincular produtos antes de planejar produção",
           });
         }
-
 
         return {
           id: c.id,

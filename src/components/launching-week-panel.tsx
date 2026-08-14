@@ -29,7 +29,9 @@ export function LaunchingWeekPanel() {
             </CardDescription>
           </div>
           {data && data.length > 0 && (
-            <Badge variant="secondary">{data.length} ativa{data.length > 1 ? "s" : ""}</Badge>
+            <Badge variant="secondary">
+              {data.length} ativa{data.length > 1 ? "s" : ""}
+            </Badge>
           )}
         </div>
       </CardHeader>
@@ -69,7 +71,9 @@ export function LaunchingWeekPanel() {
                       <Star className="h-3 w-3 text-amber-500" />
                       <span className="truncate">
                         Carro-chefe: <span className="text-foreground">{it.heroProductName}</span>
-                        {it.heroProductSku && <span className="opacity-60"> · {it.heroProductSku}</span>}
+                        {it.heroProductSku && (
+                          <span className="opacity-60"> · {it.heroProductSku}</span>
+                        )}
                       </span>
                     </div>
                   ) : (

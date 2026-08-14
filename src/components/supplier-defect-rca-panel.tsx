@@ -64,9 +64,7 @@ export function SupplierDefectRcaPanel() {
                       FPY {r.fpy}%
                     </Badge>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                    {r.reason}
-                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5 truncate">{r.reason}</div>
                 </div>
               </li>
             ))}

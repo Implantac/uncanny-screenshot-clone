@@ -70,7 +70,10 @@ export const AiReasonSchema = z.string().max(AI_REASON_MAX_LEN);
  * Faz parse reverso de uma string `reason` no padrão — útil para componentes
  * que querem renderizar sinais como chips e recomendação destacada.
  */
-export function parseAiReason(reason: string): { signals: string[]; recommendation: string | null } {
+export function parseAiReason(reason: string): {
+  signals: string[];
+  recommendation: string | null;
+} {
   if (!reason) return { signals: [], recommendation: null };
   const [left, ...rest] = reason.split(AI_REASON_ARROW);
   const recommendation = rest.length > 0 ? rest.join(AI_REASON_ARROW).trim() : null;

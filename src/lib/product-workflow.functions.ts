@@ -16,15 +16,15 @@ export const WORKFLOW_STEPS = [
 export type WorkflowStep = (typeof WORKFLOW_STEPS)[number];
 
 export const STEP_META: Record<WorkflowStep, { label: string; icon: string; role: string }> = {
-  concepcao:       { label: "Concepção",             icon: "Sparkles",     role: "Designer" },
-  modelagem:       { label: "Modelagem",             icon: "PenTool",      role: "Modelista" },
-  engenharia:      { label: "Engenharia / Ficha",    icon: "FileText",     role: "Engenharia" },
-  custos:          { label: "Custos & Fornecedor",   icon: "DollarSign",   role: "Compras" },
-  piloto:          { label: "Pilotagem",             icon: "Scissors",     role: "Piloto" },
-  aprov_comercial: { label: "Aprovação Comercial",   icon: "ShoppingBag",  role: "Comercial" },
-  aprov_diretoria: { label: "Aprovação Diretoria",   icon: "Crown",        role: "Diretoria" },
-  liberacao_pcp:   { label: "Liberação PCP",         icon: "ShieldCheck",  role: "PCP" },
-  producao:        { label: "Produção",              icon: "Factory",      role: "PCP" },
+  concepcao: { label: "Concepção", icon: "Sparkles", role: "Designer" },
+  modelagem: { label: "Modelagem", icon: "PenTool", role: "Modelista" },
+  engenharia: { label: "Engenharia / Ficha", icon: "FileText", role: "Engenharia" },
+  custos: { label: "Custos & Fornecedor", icon: "DollarSign", role: "Compras" },
+  piloto: { label: "Pilotagem", icon: "Scissors", role: "Piloto" },
+  aprov_comercial: { label: "Aprovação Comercial", icon: "ShoppingBag", role: "Comercial" },
+  aprov_diretoria: { label: "Aprovação Diretoria", icon: "Crown", role: "Diretoria" },
+  liberacao_pcp: { label: "Liberação PCP", icon: "ShieldCheck", role: "PCP" },
+  producao: { label: "Produção", icon: "Factory", role: "PCP" },
 };
 
 export type WorkflowRow = {
@@ -45,9 +45,7 @@ export type WorkflowRow = {
 
 export const listProductWorkflow = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { productId: string }) =>
-    z.object({ productId: z.string().uuid() }).parse(d),
-  )
+  .inputValidator((d: { productId: string }) => z.object({ productId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<WorkflowRow[]> => {
     const { data: rows, error } = await context.supabase
       .from("product_workflow_steps")
@@ -87,10 +85,7 @@ export const advanceProductWorkflow = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const args: { _product_id: string; _note?: string } = { _product_id: data.productId };
     if (data.note) args._note = data.note;
-    const { data: res, error } = await context.supabase.rpc(
-      "product_workflow_advance",
-      args,
-    );
+    const { data: res, error } = await context.supabase.rpc("product_workflow_advance", args);
     if (error) throw new Error(error.message);
     const row = Array.isArray(res) ? res[0] : res;
     return row as {

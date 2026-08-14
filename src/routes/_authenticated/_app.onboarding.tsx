@@ -2,13 +2,27 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, Download, ArrowRight, RotateCcw } from "lucide-react";
+import {
+  Upload,
+  FileSpreadsheet,
+  CheckCircle2,
+  AlertTriangle,
+  Download,
+  ArrowRight,
+  RotateCcw,
+} from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { parseCsv, csvToRecords, exportToCsv } from "@/lib/csv";
 import {
   bulkImport,
@@ -71,7 +85,11 @@ function OnboardingPage() {
 
   // auto-suggest mapping by exact/normalized match
   function autoMap(headers: string[]) {
-    const norm = (s: string) => s.toLowerCase().trim().replace(/[\s_-]+/g, "");
+    const norm = (s: string) =>
+      s
+        .toLowerCase()
+        .trim()
+        .replace(/[\s_-]+/g, "");
     const auto: Record<string, string> = {};
     for (const f of allFields) {
       const nf = norm(f);
@@ -156,7 +174,16 @@ function OnboardingPage() {
             key={s}
             className={`px-3 py-1 rounded-full border ${step === s ? "bg-primary text-primary-foreground border-primary" : ""}`}
           >
-            {i + 1}. {s === "pick" ? "Entidade" : s === "upload" ? "Upload" : s === "map" ? "Mapear" : s === "commit" ? "Revisar" : "Concluído"}
+            {i + 1}.{" "}
+            {s === "pick"
+              ? "Entidade"
+              : s === "upload"
+                ? "Upload"
+                : s === "map"
+                  ? "Mapear"
+                  : s === "commit"
+                    ? "Revisar"
+                    : "Concluído"}
           </span>
         ))}
       </div>
@@ -201,8 +228,9 @@ function OnboardingPage() {
             <Alert>
               <AlertTitle>Antes de subir</AlertTitle>
               <AlertDescription>
-                Baixe o modelo, preencha na sua planilha (Excel/Google Sheets), exporte como CSV e faça upload aqui.
-                Aceita vírgula ou ponto-e-vírgula como separador, com acentuação (UTF-8).
+                Baixe o modelo, preencha na sua planilha (Excel/Google Sheets), exporte como CSV e
+                faça upload aqui. Aceita vírgula ou ponto-e-vírgula como separador, com acentuação
+                (UTF-8).
               </AlertDescription>
             </Alert>
             <div className="flex flex-wrap gap-3">
@@ -243,8 +271,9 @@ function OnboardingPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              {records.length} linhas detectadas. Confirme qual coluna do seu arquivo corresponde a cada campo do PLM.
-              Campos obrigatórios em <span className="text-destructive font-medium">vermelho</span>.
+              {records.length} linhas detectadas. Confirme qual coluna do seu arquivo corresponde a
+              cada campo do PLM. Campos obrigatórios em{" "}
+              <span className="text-destructive font-medium">vermelho</span>.
             </p>
 
             {missingRequired.length > 0 && (
@@ -262,7 +291,9 @@ function OnboardingPage() {
                 const isReq = template.required.includes(f);
                 return (
                   <div key={f} className="flex items-center gap-2">
-                    <label className={`w-40 text-sm ${isReq ? "text-destructive font-medium" : ""}`}>
+                    <label
+                      className={`w-40 text-sm ${isReq ? "text-destructive font-medium" : ""}`}
+                    >
                       {f}
                       {isReq && " *"}
                     </label>
@@ -294,23 +325,29 @@ function OnboardingPage() {
               <table className="text-xs w-full">
                 <thead className="bg-muted">
                   <tr>
-                    {allFields.filter((f) => mapping[f]).map((f) => (
-                      <th key={f} className="px-2 py-1 text-left">
-                        {f}
-                      </th>
-                    ))}
+                    {allFields
+                      .filter((f) => mapping[f])
+                      .map((f) => (
+                        <th key={f} className="px-2 py-1 text-left">
+                          {f}
+                        </th>
+                      ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {projectedRows().slice(0, 5).map((r, i) => (
-                    <tr key={i} className="border-t">
-                      {allFields.filter((f) => mapping[f]).map((f) => (
-                        <td key={f} className="px-2 py-1">
-                          {String(r[f] ?? "")}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+                  {projectedRows()
+                    .slice(0, 5)
+                    .map((r, i) => (
+                      <tr key={i} className="border-t">
+                        {allFields
+                          .filter((f) => mapping[f])
+                          .map((f) => (
+                            <td key={f} className="px-2 py-1">
+                              {String(r[f] ?? "")}
+                            </td>
+                          ))}
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -342,13 +379,19 @@ function OnboardingPage() {
               <StatCard label="Linhas" value={dryResult.received} />
               <StatCard label="Serão criados" value={dryResult.inserted} tone="success" />
               <StatCard label="Serão atualizados" value={dryResult.updated} tone="info" />
-              <StatCard label="Serão ignorados" value={dryResult.skipped} tone={dryResult.skipped ? "warn" : "muted"} />
+              <StatCard
+                label="Serão ignorados"
+                value={dryResult.skipped}
+                tone={dryResult.skipped ? "warn" : "muted"}
+              />
             </div>
 
             {dryResult.errors.length > 0 && (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>{dryResult.errors.length} linha(s) com erro (serão ignoradas)</AlertTitle>
+                <AlertTitle>
+                  {dryResult.errors.length} linha(s) com erro (serão ignoradas)
+                </AlertTitle>
                 <AlertDescription>
                   <ul className="max-h-48 overflow-auto text-xs space-y-1 mt-2">
                     {dryResult.errors.slice(0, 20).map((e, i) => (
@@ -392,7 +435,11 @@ function OnboardingPage() {
               <StatCard label="Recebidos" value={finalResult.received} />
               <StatCard label="Criados" value={finalResult.inserted} tone="success" />
               <StatCard label="Atualizados" value={finalResult.updated} tone="info" />
-              <StatCard label="Ignorados" value={finalResult.skipped} tone={finalResult.skipped ? "warn" : "muted"} />
+              <StatCard
+                label="Ignorados"
+                value={finalResult.skipped}
+                tone={finalResult.skipped ? "warn" : "muted"}
+              />
             </div>
             <div className="flex gap-2">
               <Button onClick={reset} variant="outline">

@@ -312,7 +312,6 @@ function Marketing() {
 
       <PersonaInsightsPanel persona="marketing" />
 
-
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Investimento"
@@ -1696,7 +1695,13 @@ function ReadyToLaunchCard({
             >
               <div className="size-10 rounded bg-muted overflow-hidden shrink-0 grid place-items-center">
                 {prod.image_url ? (
-                  <img src={prod.image_url} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
+                  <img
+                    src={prod.image_url}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="size-full object-cover"
+                  />
                 ) : (
                   <Megaphone className="size-4 text-muted-foreground" />
                 )}

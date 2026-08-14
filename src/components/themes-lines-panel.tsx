@@ -83,7 +83,12 @@ export function ThemesPanel({
         <div className="ms-auto">
           <Dialog open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
             <DialogTrigger asChild>
-              <Button size="sm" variant="outline" className="h-7 gap-1" onClick={() => setEditing("new")}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 gap-1"
+                onClick={() => setEditing("new")}
+              >
                 <Plus className="size-3" /> Tema
               </Button>
             </DialogTrigger>
@@ -99,7 +104,8 @@ export function ThemesPanel({
 
       {themes.length === 0 ? (
         <div className="text-xs text-muted-foreground py-4 text-center">
-          Sem temas. Use temas para contar a história (ex.: "Brisa de Verão", "Noir Urbano") e agrupar produtos por storytelling.
+          Sem temas. Use temas para contar a história (ex.: "Brisa de Verão", "Noir Urbano") e
+          agrupar produtos por storytelling.
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -155,7 +161,11 @@ function ThemeDialog({
       <div className="space-y-3">
         <div>
           <label className="text-xs text-muted-foreground">Nome</label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Brisa de Verão" />
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ex.: Brisa de Verão"
+          />
         </div>
         <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
           <div>
@@ -327,7 +337,11 @@ function LineEditDialog({
       <div className="space-y-3">
         <div>
           <label className="text-xs text-muted-foreground">Nome</label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Jeans Premium" />
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ex.: Jeans Premium"
+          />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>

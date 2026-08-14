@@ -4,12 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { GanttChart, Loader2, AlertTriangle, Calendar } from "lucide-react";
 import { getApsGantt, type GanttResponse } from "@/lib/pcp-gantt.functions";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const DAY_MS = 86_400_000;
 
@@ -32,7 +27,11 @@ export function PcpApsGantt() {
     const ticks = Array.from({ length: Math.min(days + 1, 30) }, (_, i) => {
       const ts = start + i * DAY_MS;
       const left = ((ts - start) / span) * 100;
-      return { ts, left, label: new Date(ts).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) };
+      return {
+        ts,
+        left,
+        label: new Date(ts).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+      };
     });
     const nowLeft = ((Date.now() - start) / span) * 100;
     return { start, end, span, ticks, nowLeft };
@@ -47,9 +46,7 @@ export function PcpApsGantt() {
   }
   if (!data || data.rows.length === 0 || !scale) {
     return (
-      <div className="text-xs text-muted-foreground py-6 px-3">
-        Sem OPs ativas para projetar.
-      </div>
+      <div className="text-xs text-muted-foreground py-6 px-3">Sem OPs ativas para projetar.</div>
     );
   }
 
@@ -64,7 +61,10 @@ export function PcpApsGantt() {
             Gantt APS · projeção por estágio
           </div>
           {critCount > 0 && (
-            <Badge variant="outline" className="gap-1 bg-destructive/10 text-destructive border-destructive/30">
+            <Badge
+              variant="outline"
+              className="gap-1 bg-destructive/10 text-destructive border-destructive/30"
+            >
               <AlertTriangle className="size-3" /> {critCount} crítica{critCount > 1 ? "s" : ""}
             </Badge>
           )}
@@ -100,7 +100,10 @@ export function PcpApsGantt() {
                     <div className="flex items-center gap-1.5">
                       <span className="font-mono text-[11px] truncate">{r.code}</span>
                       {r.critical && (
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 bg-destructive/10 text-destructive border-destructive/30">
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] px-1 py-0 bg-destructive/10 text-destructive border-destructive/30"
+                        >
                           +{r.delay_days}d
                         </Badge>
                       )}
@@ -112,24 +115,26 @@ export function PcpApsGantt() {
 
                   <div className="relative h-7 rounded bg-muted/30">
                     {/* due_date marker */}
-                    {r.due_date && (() => {
-                      const left = ((new Date(r.due_date).getTime() - scale.start) / scale.span) * 100;
-                      if (left < 0 || left > 100) return null;
-                      return (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div
-                              className="absolute top-0 bottom-0 w-px bg-amber-500/80 z-[5]"
-                              style={{ left: `${left}%` }}
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="text-xs">
-                            <Calendar className="size-3 inline mr-1" />
-                            Entrega: {new Date(r.due_date).toLocaleDateString("pt-BR")}
-                          </TooltipContent>
-                        </Tooltip>
-                      );
-                    })()}
+                    {r.due_date &&
+                      (() => {
+                        const left =
+                          ((new Date(r.due_date).getTime() - scale.start) / scale.span) * 100;
+                        if (left < 0 || left > 100) return null;
+                        return (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div
+                                className="absolute top-0 bottom-0 w-px bg-amber-500/80 z-[5]"
+                                style={{ left: `${left}%` }}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                              <Calendar className="size-3 inline mr-1" />
+                              Entrega: {new Date(r.due_date).toLocaleDateString("pt-BR")}
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })()}
 
                     {r.segments.map((s, i) => {
                       const segStart = new Date(s.start).getTime();
@@ -140,8 +145,12 @@ export function PcpApsGantt() {
                       const bg = s.is_done
                         ? "bg-muted-foreground/30"
                         : s.is_current
-                          ? r.critical ? "bg-destructive" : "bg-primary"
-                          : r.critical ? "bg-destructive/40" : "bg-primary/40";
+                          ? r.critical
+                            ? "bg-destructive"
+                            : "bg-primary"
+                          : r.critical
+                            ? "bg-destructive/40"
+                            : "bg-primary/40";
                       return (
                         <Tooltip key={i}>
                           <TooltipTrigger asChild>
@@ -170,12 +179,24 @@ export function PcpApsGantt() {
 
             {/* Legenda */}
             <div className="flex items-center gap-3 mt-3 text-[10px] text-muted-foreground flex-wrap">
-              <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-muted-foreground/30" /> concluído</span>
-              <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-primary" /> em execução</span>
-              <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-primary/40" /> planejado</span>
-              <span className="flex items-center gap-1"><span className="size-2 rounded-sm bg-destructive" /> caminho crítico</span>
-              <span className="flex items-center gap-1"><span className="w-px h-3 bg-amber-500/80" /> entrega</span>
-              <span className="flex items-center gap-1"><span className="w-px h-3 bg-primary/70" /> agora</span>
+              <span className="flex items-center gap-1">
+                <span className="size-2 rounded-sm bg-muted-foreground/30" /> concluído
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="size-2 rounded-sm bg-primary" /> em execução
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="size-2 rounded-sm bg-primary/40" /> planejado
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="size-2 rounded-sm bg-destructive" /> caminho crítico
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-px h-3 bg-amber-500/80" /> entrega
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-px h-3 bg-primary/70" /> agora
+              </span>
             </div>
           </div>
         </div>

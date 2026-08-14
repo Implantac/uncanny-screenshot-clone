@@ -100,7 +100,10 @@ export function TechPackExportButton({
   const [openCfg, setOpenCfg] = useState(false);
   const [opts, setOpts] = useState<CoverOpts>(() => loadOpts());
 
-  const exportPdf = async (coverOpts: CoverOpts, audience: "interna" | "fornecedor" = "interna") => {
+  const exportPdf = async (
+    coverOpts: CoverOpts,
+    audience: "interna" | "fornecedor" = "interna",
+  ) => {
     const showCosts = audience === "interna";
     setBusy(true);
     try {
@@ -124,7 +127,9 @@ export function TechPackExportButton({
           .order("position"),
       ]);
 
-      const autoTable = (autoTableMod as unknown as { default: (doc: unknown, opts: unknown) => void }).default;
+      const autoTable = (
+        autoTableMod as unknown as { default: (doc: unknown, opts: unknown) => void }
+      ).default;
       const materials = materialsRes.data ?? [];
       const operations = opsRes.data ?? [];
       const measurements = measRes.data ?? [];
@@ -219,7 +224,12 @@ export function TechPackExportButton({
                 fmtBRL(m.unit_cost as number),
                 fmtBRL(m.total_cost as number),
               ]
-            : [m.name, m.unit ?? "", String(m.consumption ?? 0), `${((m.loss_pct as number) ?? 0).toFixed(1)}%`],
+            : [
+                m.name,
+                m.unit ?? "",
+                String(m.consumption ?? 0),
+                `${((m.loss_pct as number) ?? 0).toFixed(1)}%`,
+              ],
         ),
         styles: { fontSize: 8 },
         headStyles: { fillColor: [ar, ag, ab] },
@@ -313,8 +323,12 @@ export function TechPackExportButton({
         doc.text(footer, 40, pageH - 24);
       }
 
-      doc.save(`tech-pack-${code}-v${version}${audience === "fornecedor" ? "-fornecedor" : ""}.pdf`);
-      toast.success(`Tech Pack ${audience === "fornecedor" ? "(fornecedor)" : "(interno)"} exportado`);
+      doc.save(
+        `tech-pack-${code}-v${version}${audience === "fornecedor" ? "-fornecedor" : ""}.pdf`,
+      );
+      toast.success(
+        `Tech Pack ${audience === "fornecedor" ? "(fornecedor)" : "(interno)"} exportado`,
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao gerar PDF");
     } finally {
@@ -330,14 +344,30 @@ export function TechPackExportButton({
 
   return (
     <div className="inline-flex items-center gap-1">
-      <Button size="sm" variant="outline" onClick={() => exportPdf(opts, "interna")} disabled={busy} title="Tech Pack com custos e margens (uso interno)">
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => exportPdf(opts, "interna")}
+        disabled={busy}
+        title="Tech Pack com custos e margens (uso interno)"
+      >
         {busy ? (
-          <><Loader2 className="size-4 mr-1 animate-spin" /> Gerando…</>
+          <>
+            <Loader2 className="size-4 mr-1 animate-spin" /> Gerando…
+          </>
         ) : (
-          <><Building2 className="size-4 mr-1" /> Interno</>
+          <>
+            <Building2 className="size-4 mr-1" /> Interno
+          </>
         )}
       </Button>
-      <Button size="sm" variant="outline" onClick={() => exportPdf(opts, "fornecedor")} disabled={busy} title="Tech Pack sem custos nem margens (para fornecedor)">
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => exportPdf(opts, "fornecedor")}
+        disabled={busy}
+        title="Tech Pack sem custos nem margens (para fornecedor)"
+      >
         <Users className="size-4 mr-1" /> Fornecedor
       </Button>
       <Dialog open={openCfg} onOpenChange={setOpenCfg}>

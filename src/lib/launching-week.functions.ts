@@ -48,7 +48,12 @@ export const getLaunchingThisWeek = createServerFn({ method: "GET" })
         .in("collection_id", ids),
     ]);
 
-    type BriefRow = { id: string; collection_id: string | null; status: string | null; product_id: string | null };
+    type BriefRow = {
+      id: string;
+      collection_id: string | null;
+      status: string | null;
+      product_id: string | null;
+    };
     type CpRow = {
       collection_id: string;
       product_id: string;
@@ -57,7 +62,9 @@ export const getLaunchingThisWeek = createServerFn({ method: "GET" })
     };
 
     const briefByCol = new Map<string, BriefRow>();
-    (briefs ?? []).forEach((b) => { if (b.collection_id) briefByCol.set(b.collection_id, b as BriefRow); });
+    (briefs ?? []).forEach((b) => {
+      if (b.collection_id) briefByCol.set(b.collection_id, b as BriefRow);
+    });
 
     const countByCol = new Map<string, number>();
     const heroByCol = new Map<string, { id: string; name: string; sku: string }>();
@@ -83,7 +90,10 @@ export const getLaunchingThisWeek = createServerFn({ method: "GET" })
         season: c.season,
         year: c.year,
         statusChangedAt: c.status_changed_at!,
-        daysInLaunch: Math.max(0, Math.floor((now - new Date(c.status_changed_at!).getTime()) / (24 * 3600 * 1000))),
+        daysInLaunch: Math.max(
+          0,
+          Math.floor((now - new Date(c.status_changed_at!).getTime()) / (24 * 3600 * 1000)),
+        ),
         briefId: b?.id ?? null,
         briefStatus: b?.status ?? null,
         heroProductId: heroId,

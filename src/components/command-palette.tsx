@@ -14,11 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MODULES } from "@/lib/modules";
 import { getRecentProducts, getPinnedProducts } from "@/lib/recent-products";
 import { getRecentCollections, getPinnedCollections } from "@/lib/recent-collections";
-import {
-  getRecentSuppliers,
-  getPinnedSuppliers,
-  pushRecentSupplier,
-} from "@/lib/recent-suppliers";
+import { getRecentSuppliers, getPinnedSuppliers, pushRecentSupplier } from "@/lib/recent-suppliers";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -97,7 +93,9 @@ export function CommandPalette() {
                   <CommandGroup heading="Fixados">
                     {pinned.map((r) => (
                       <CommandItem key={r.id} onSelect={() => go(`/produto/${r.id}`)}>
-                        <span className="font-mono text-xs text-muted-foreground mr-2">{r.sku}</span>
+                        <span className="font-mono text-xs text-muted-foreground mr-2">
+                          {r.sku}
+                        </span>
                         {r.name}
                       </CommandItem>
                     ))}
@@ -112,7 +110,9 @@ export function CommandPalette() {
                   <CommandGroup heading="Recentes">
                     {recents.map((r) => (
                       <CommandItem key={r.id} onSelect={() => go(`/produto/${r.id}`)}>
-                        <span className="font-mono text-xs text-muted-foreground mr-2">{r.sku}</span>
+                        <span className="font-mono text-xs text-muted-foreground mr-2">
+                          {r.sku}
+                        </span>
                         {r.name}
                       </CommandItem>
                     ))}
@@ -146,10 +146,7 @@ export function CommandPalette() {
                 return (
                   <CommandGroup heading="Coleções recentes">
                     {recentCollections.map((c) => (
-                      <CommandItem
-                        key={c.id}
-                        onSelect={() => go(`/colecao-360/${c.id}`)}
-                      >
+                      <CommandItem key={c.id} onSelect={() => go(`/colecao-360/${c.id}`)}>
                         <span className="flex-1">{c.name}</span>
                         {(c.season || c.year) && (
                           <span className="ml-2 text-xs text-muted-foreground">
@@ -211,9 +208,7 @@ export function CommandPalette() {
                   onSelect={() => {
                     setOpen(false);
                     setQ("");
-                    window.dispatchEvent(
-                      new KeyboardEvent("keydown", { key: "n", bubbles: true }),
-                    );
+                    window.dispatchEvent(new KeyboardEvent("keydown", { key: "n", bubbles: true }));
                   }}
                 >
                   <span className="flex-1">Criar novo produto</span>

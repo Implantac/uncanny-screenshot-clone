@@ -16,7 +16,10 @@ export function TableSkeleton({
 }) {
   return (
     <div className={cn("space-y-2", className)}>
-      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}>
+      <div
+        className="grid gap-3"
+        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}
+      >
         {Array.from({ length: columns }).map((_, i) => (
           <Skeleton key={`h-${i}`} className="h-3 w-24" />
         ))}

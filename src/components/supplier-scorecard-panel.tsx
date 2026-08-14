@@ -79,9 +79,7 @@ export function SupplierScorecardMoversPanel({
               >
                 <div className="min-w-0">
                   <div className="font-medium truncate">{r.supplier_name}</div>
-                  <div className="text-[11px] text-muted-foreground truncate">
-                    {r.notes ?? "—"}
-                  </div>
+                  <div className="text-[11px] text-muted-foreground truncate">{r.notes ?? "—"}</div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className={`text-lg font-semibold ${scoreTone(r.score)}`}>
@@ -144,13 +142,9 @@ export function SupplierScorecardMini({ supplierId }: { supplierId: string }) {
     <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
-            Scorecard
-          </div>
+          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Scorecard</div>
           <div className="flex items-baseline gap-2">
-            <span className={`text-2xl font-semibold ${scoreTone(score)}`}>
-              {score.toFixed(0)}
-            </span>
+            <span className={`text-2xl font-semibold ${scoreTone(score)}`}>{score.toFixed(0)}</span>
             <span className={`text-xs flex items-center gap-1 ${deltaTone(delta)}`}>
               <Trend className="size-3" />
               {delta != null ? `${delta > 0 ? "+" : ""}${delta}` : "—"}

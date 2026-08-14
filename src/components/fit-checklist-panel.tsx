@@ -81,7 +81,7 @@ export function FitChecklistPanel({
   const [fotoAntes, setFotoAntes] = useState("");
   const [fotoDepois, setFotoDepois] = useState("");
 
-const { data: checklist, isLoading } = useQuery({
+  const { data: checklist, isLoading } = useQuery({
     queryKey: ["fit-checklist", prototypeId],
     queryFn: async () => {
       const { data } = await (supabase as any)
@@ -255,11 +255,7 @@ const { data: checklist, isLoading } = useQuery({
             <Button variant="ghost" size="sm" onClick={() => setEditMode(false)}>
               Cancelar
             </Button>
-            <Button
-              size="sm"
-              onClick={() => saveMut.mutate()}
-              disabled={saveMut.isPending}
-            >
+            <Button size="sm" onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
               {saveMut.isPending ? "Salvando…" : "Salvar checklist"}
             </Button>
           </div>
@@ -270,10 +266,7 @@ const { data: checklist, isLoading } = useQuery({
             const val = checklist[key as keyof FitChecklistItem] as FitValue;
             const Icon = STATUS_ICONS[val];
             return (
-              <div
-                key={key}
-                className={`rounded-lg border p-2 text-center ${STATUS_COLORS[val]}`}
-              >
+              <div key={key} className={`rounded-lg border p-2 text-center ${STATUS_COLORS[val]}`}>
                 <Icon className="size-4 mx-auto mb-1" />
                 <div className="text-[10px] font-medium">{label}</div>
                 <div className="text-[9px] opacity-70">{STATUS_LABELS[val]}</div>
@@ -318,4 +311,3 @@ const { data: checklist, isLoading } = useQuery({
     </div>
   );
 }
-

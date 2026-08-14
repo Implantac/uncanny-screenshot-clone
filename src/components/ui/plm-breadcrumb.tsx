@@ -86,7 +86,13 @@ export type PlmBreadcrumbItem = {
  * Renders `Coleção > Produto > SKU` style trails without ceremony.
  * The last item is always rendered as the current page with a highlighted icon.
  */
-export function PlmBreadcrumb({ items, className }: { items: PlmBreadcrumbItem[]; className?: string }) {
+export function PlmBreadcrumb({
+  items,
+  className,
+}: {
+  items: PlmBreadcrumbItem[];
+  className?: string;
+}) {
   if (!items.length) return null;
   return (
     <Breadcrumb className={className}>
@@ -99,14 +105,23 @@ export function PlmBreadcrumb({ items, className }: { items: PlmBreadcrumbItem[]
               <BreadcrumbItem>
                 {isLast || !item.link ? (
                   <BreadcrumbPage className="truncate max-w-[280px] flex items-center gap-1.5">
-                    <Icon className={`size-3.5 ${isLast ? "text-primary" : "text-muted-foreground"}`} aria-hidden="true" />
+                    <Icon
+                      className={`size-3.5 ${isLast ? "text-primary" : "text-muted-foreground"}`}
+                      aria-hidden="true"
+                    />
                     <span>{item.label}</span>
                   </BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild>
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    <Link {...(item.link as any)} className="hover:text-foreground truncate max-w-[200px] flex items-center gap-1.5">
-                      <Icon className="size-3.5 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
+                    <Link
+                      {...(item.link as any)}
+                      className="hover:text-foreground truncate max-w-[200px] flex items-center gap-1.5"
+                    >
+                      <Icon
+                        className="size-3.5 text-muted-foreground group-hover:text-foreground"
+                        aria-hidden="true"
+                      />
                       <span>{item.label}</span>
                     </Link>
                   </BreadcrumbLink>

@@ -56,30 +56,27 @@ export const listReferenceLibrary = createServerFn({ method: "POST" })
     const limit = Math.min(data.limit ?? 500, 1000);
     const since = new Date(Date.now() - 180 * 86400_000).toISOString();
 
-    const [{ data: products, error: pErr }, { data: protos, error: ptErr }] =
-      await Promise.all([
-        supabase
-          .from("products")
-          .select(
-            "id, sku, name, image_url, category, colors, cost_price, sell_price, status, updated_at, collection_id, collections(name, season, year)",
-          )
-          .order("updated_at", { ascending: false })
-          .limit(limit),
-        supabase
-          .from("prototypes")
-          .select(
-            "id, code, stage, current_sector, notes, updated_at, product_id, supplier_id, suppliers(name), products(name, image_url, category, colors, collection_id, collections(name, season, year))",
-          )
-          .order("updated_at", { ascending: false })
-          .limit(limit),
-      ]);
+    const [{ data: products, error: pErr }, { data: protos, error: ptErr }] = await Promise.all([
+      supabase
+        .from("products")
+        .select(
+          "id, sku, name, image_url, category, colors, cost_price, sell_price, status, updated_at, collection_id, collections(name, season, year)",
+        )
+        .order("updated_at", { ascending: false })
+        .limit(limit),
+      supabase
+        .from("prototypes")
+        .select(
+          "id, code, stage, current_sector, notes, updated_at, product_id, supplier_id, suppliers(name), products(name, image_url, category, colors, collection_id, collections(name, season, year))",
+        )
+        .order("updated_at", { ascending: false })
+        .limit(limit),
+    ]);
     if (pErr) throw pErr;
     if (ptErr) throw ptErr;
 
     // Sales aggregation by SKU (last 180d)
-    const skus = (products ?? [])
-      .map((p) => p.sku)
-      .filter((s): s is string => !!s);
+    const skus = (products ?? []).map((p) => p.sku).filter((s): s is string => !!s);
     const salesAgg = new Map<string, { qty: number; revenue: number }>();
     if (skus.length > 0) {
       const chunk = 200;
@@ -104,9 +101,11 @@ export const listReferenceLibrary = createServerFn({ method: "POST" })
     const items: RefItem[] = [];
 
     for (const p of products ?? []) {
-      const col = (p as any).collections as
-        | { name?: string; season?: string; year?: number }
-        | null;
+      const col = (p as any).collections as {
+        name?: string;
+        season?: string;
+        year?: number;
+      } | null;
       const sales = salesAgg.get((p.sku ?? "").toLowerCase()) ?? {
         qty: 0,
         revenue: 0,
@@ -114,8 +113,7 @@ export const listReferenceLibrary = createServerFn({ method: "POST" })
       const cost = Number(p.cost_price ?? 0);
       const cmv = cost * sales.qty;
       const margin = sales.revenue - cmv;
-      const marginPct =
-        sales.revenue > 0 ? (margin / sales.revenue) * 100 : null;
+      const marginPct = sales.revenue > 0 ? (margin / sales.revenue) * 100 : null;
       items.push({
         id: p.id,
         source: "product",
@@ -142,9 +140,7 @@ export const listReferenceLibrary = createServerFn({ method: "POST" })
 
     for (const pt of protos ?? []) {
       const prod = (pt as any).products as any;
-      const col = prod?.collections as
-        | { name?: string; season?: string; year?: number }
-        | null;
+      const col = prod?.collections as { name?: string; season?: string; year?: number } | null;
       items.push({
         id: pt.id,
         source: "prototype",
@@ -172,16 +168,15 @@ export const listReferenceLibrary = createServerFn({ method: "POST" })
     // Filters
     const q = (data.search ?? "").trim().toLowerCase();
     const filtered = items.filter((it) => {
-      if (data.source && data.source !== "all" && it.source !== data.source)
-        return false;
+      if (data.source && data.source !== "all" && it.source !== data.source) return false;
       if (data.category && it.category !== data.category) return false;
       if (data.season && it.season !== data.season) return false;
-      if (data.collectionId && it.collectionId !== data.collectionId)
-        return false;
+      if (data.collectionId && it.collectionId !== data.collectionId) return false;
       if (data.color && !it.colors.some((c) => c?.toLowerCase() === data.color!.toLowerCase()))
         return false;
       if (q) {
-        const hay = `${it.code} ${it.name} ${it.collectionName ?? ""} ${it.category ?? ""}`.toLowerCase();
+        const hay =
+          `${it.code} ${it.name} ${it.collectionName ?? ""} ${it.category ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;

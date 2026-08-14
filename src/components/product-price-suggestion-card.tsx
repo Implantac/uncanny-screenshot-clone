@@ -12,8 +12,7 @@ type Props = {
   productId: string;
 };
 
-const brl = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 /**
  * ProductPriceSuggestionCard — Card reativo que mostra
@@ -72,16 +71,10 @@ export function ProductPriceSuggestionCard({ productId }: Props) {
   // Break-even analysis
   const suggested = data.suggestedPrice ?? 0;
   const cost = data.currentCost ?? 0;
-  const margin = cost > 0 && suggested > 0
-    ? ((suggested - cost) / suggested) * 100
-    : null;
-  const markup = cost > 0 && suggested > 0
-    ? ((suggested - cost) / cost) * 100
-    : null;
+  const margin = cost > 0 && suggested > 0 ? ((suggested - cost) / suggested) * 100 : null;
+  const markup = cost > 0 && suggested > 0 ? ((suggested - cost) / cost) * 100 : null;
   const minMarginPct = data.targetMarginPct ?? 30;
-  const minPrice = cost > 0
-    ? cost / (1 - minMarginPct / 100)
-    : 0;
+  const minPrice = cost > 0 ? cost / (1 - minMarginPct / 100) : 0;
 
   return (
     <div className="rounded-xl border border-border bg-card p-3 space-y-2">
@@ -109,9 +102,7 @@ export function ProductPriceSuggestionCard({ productId }: Props) {
 
       <div className="flex items-center gap-1.5 text-xs">
         <span className="text-muted-foreground">Custo:</span>
-        <span className="font-semibold tabular-nums">
-          {brl(data.currentCost)}
-        </span>
+        <span className="font-semibold tabular-nums">{brl(data.currentCost)}</span>
         {data.gapPct != null && (
           <>
             {isAbove ? (
@@ -125,11 +116,7 @@ export function ProductPriceSuggestionCard({ productId }: Props) {
               {isAbove ? "↑" : isBelow ? "↓" : "•"} {Math.abs(data.gapPct).toFixed(1)}%
             </span>
             <span className="text-muted-foreground">
-              {isAbove
-                ? " acima do atual"
-                : isBelow
-                  ? " abaixo do atual"
-                  : " igual ao atual"}
+              {isAbove ? " acima do atual" : isBelow ? " abaixo do atual" : " igual ao atual"}
             </span>
           </>
         )}
@@ -144,15 +131,15 @@ export function ProductPriceSuggestionCard({ productId }: Props) {
         <div className="grid grid-cols-2 gap-2 text-[11px]">
           <div>
             <span className="text-muted-foreground">Margem:</span>{" "}
-            <span className={`font-semibold ${margin != null && margin >= minMarginPct ? "text-emerald-600" : "text-amber-600"}`}>
+            <span
+              className={`font-semibold ${margin != null && margin >= minMarginPct ? "text-emerald-600" : "text-amber-600"}`}
+            >
               {margin != null ? `${margin.toFixed(1)}%` : "—"}
             </span>
           </div>
           <div>
             <span className="text-muted-foreground">Markup:</span>{" "}
-            <span className="font-semibold">
-              {markup != null ? `${markup.toFixed(1)}%` : "—"}
-            </span>
+            <span className="font-semibold">{markup != null ? `${markup.toFixed(1)}%` : "—"}</span>
           </div>
           <div className="col-span-2">
             <span className="text-muted-foreground">Preço mínimo ({minMarginPct}% margem):</span>{" "}

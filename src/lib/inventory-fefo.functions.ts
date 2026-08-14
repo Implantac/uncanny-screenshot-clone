@@ -76,13 +76,7 @@ export const registerLotEntry = createServerFn({ method: "POST" })
 // Scraps (perdas)
 // ============================================================
 
-const SCRAP_REASONS = [
-  "vencimento",
-  "avaria",
-  "qualidade",
-  "sobra_corte",
-  "outros",
-] as const;
+const SCRAP_REASONS = ["vencimento", "avaria", "qualidade", "sobra_corte", "outros"] as const;
 
 export const registerScrap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

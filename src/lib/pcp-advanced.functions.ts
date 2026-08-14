@@ -41,7 +41,9 @@ export const splitProductionOrder = createServerFn({ method: "POST" })
 
     const { data: parent, error: pErr } = await supabase
       .from("production_orders")
-      .select("id, owner_id, product_id, supplier_id, code, quantity, due_date, priority, notes, stage")
+      .select(
+        "id, owner_id, product_id, supplier_id, code, quantity, due_date, priority, notes, stage",
+      )
       .eq("id", data.orderId)
       .single();
     if (pErr || !parent) throw new Error("OP-pai não encontrada");
@@ -74,8 +76,7 @@ export const splitProductionOrder = createServerFn({ method: "POST" })
           due_date: s.dueDate ?? parent.due_date,
           priority: parent.priority,
           notes:
-            (s.notes ? s.notes + " " : "") +
-            `[split-de:${parent.id}] Lote filho de ${baseCode}`,
+            (s.notes ? s.notes + " " : "") + `[split-de:${parent.id}] Lote filho de ${baseCode}`,
         })
         .select("id")
         .single();
@@ -122,7 +123,9 @@ export type SamEfficiencyReport = {
 
 export const getSamEfficiency = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: { days?: number }) => z.object({ days: z.number().int().min(7).max(180).default(30) }).parse(i))
+  .inputValidator((i: { days?: number }) =>
+    z.object({ days: z.number().int().min(7).max(180).default(30) }).parse(i),
+  )
   .handler(async ({ data, context }): Promise<SamEfficiencyReport> => {
     const { supabase, userId } = context;
     const since = new Date(Date.now() - data.days * 86400000).toISOString();
@@ -138,7 +141,9 @@ export const getSamEfficiency = createServerFn({ method: "POST" })
       return { orders: [], insights: ["Sem OPs na janela analisada."], windowDays: data.days };
     }
 
-    const productIds = Array.from(new Set(orders.map((o) => o.product_id).filter(Boolean) as string[]));
+    const productIds = Array.from(
+      new Set(orders.map((o) => o.product_id).filter(Boolean) as string[]),
+    );
 
     // Ficha técnica aprovada por produto → soma de SAM das operações
     const { data: sheets } = productIds.length
@@ -216,7 +221,7 @@ export const getSamEfficiency = createServerFn({ method: "POST" })
         hint = "Aguardando segundo apontamento para calcular tempo decorrido.";
       } else if (eff < 50) {
         status = "critico";
-        hint = `Tempo real ${Math.round(100 / eff * 100) / 100}× o padrão — investigar parada, retrabalho ou SAM desatualizado.`;
+        hint = `Tempo real ${Math.round((100 / eff) * 100) / 100}× o padrão — investigar parada, retrabalho ou SAM desatualizado.`;
       } else if (eff < 80) {
         status = "abaixo";
         hint = `Operando a ${Math.round(eff)}% do padrão SAM — verificar gargalo na célula.`;
@@ -251,8 +256,12 @@ export const getSamEfficiency = createServerFn({ method: "POST" })
     const semSam = rows.filter((r) => r.status === "sem_sam").length;
     if (crit) insights.push(`${crit} OP(s) em estado crítico — tempo real >2× o padrão SAM.`);
     if (ab) insights.push(`${ab} OP(s) abaixo do padrão (50–80%) — revisar célula e setups.`);
-    if (semSam) insights.push(`${semSam} OP(s) sem SAM na ficha — impossível medir eficiência. Cadastrar tempos por operação.`);
-    if (!insights.length && rows.length) insights.push("Todas as OPs com SAM cadastrado estão operando dentro do padrão.");
+    if (semSam)
+      insights.push(
+        `${semSam} OP(s) sem SAM na ficha — impossível medir eficiência. Cadastrar tempos por operação.`,
+      );
+    if (!insights.length && rows.length)
+      insights.push("Todas as OPs com SAM cadastrado estão operando dentro do padrão.");
 
     return { orders: rows, insights, windowDays: data.days };
   });

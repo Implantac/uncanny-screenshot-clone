@@ -39,15 +39,22 @@ export const getCellEfficiency = createServerFn({ method: "GET" })
           .gte("created_at", since),
         sb.from("production_orders").select("id, supplier_id, quantity"),
         sb.from("suppliers").select("id, name"),
-        sb
-          .from("supplier_capacity")
-          .select("supplier_id, pieces_per_day, working_days_per_week"),
+        sb.from("supplier_capacity").select("supplier_id, pieces_per_day, working_days_per_week"),
       ]);
 
     type OrderRow = { id: string; supplier_id: string | null; quantity: number | null };
     type SupplierRow = { id: string; name: string };
-    type CapRow = { supplier_id: string; pieces_per_day: number | null; working_days_per_week: number | null };
-    type LogRow = { order_id: string | null; to_stage: string | null; quantity: number | null; created_at: string };
+    type CapRow = {
+      supplier_id: string;
+      pieces_per_day: number | null;
+      working_days_per_week: number | null;
+    };
+    type LogRow = {
+      order_id: string | null;
+      to_stage: string | null;
+      quantity: number | null;
+      created_at: string;
+    };
 
     const orderSup = new Map<string, string | null>();
     ((orders ?? []) as OrderRow[]).forEach((o) => orderSup.set(o.id, o.supplier_id));
@@ -74,10 +81,7 @@ export const getCellEfficiency = createServerFn({ method: "GET" })
     });
 
     const cells: CellEfficiency[] = [];
-    const allSupplierIds = new Set<string>([
-      ...produced.keys(),
-      ...capMap.keys(),
-    ]);
+    const allSupplierIds = new Set<string>([...produced.keys(), ...capMap.keys()]);
 
     allSupplierIds.forEach((sid) => {
       const cap = capMap.get(sid);

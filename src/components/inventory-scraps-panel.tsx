@@ -3,13 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  AlertTriangle,
-  Trash2,
-  CalendarClock,
-  PackageMinus,
-  TrendingDown,
-} from "lucide-react";
+import { AlertTriangle, Trash2, CalendarClock, PackageMinus, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,15 +22,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  getScrapsSummary,
-  registerScrap,
-  getExpiringLots,
-} from "@/lib/inventory-fefo.functions";
+import { getScrapsSummary, registerScrap, getExpiringLots } from "@/lib/inventory-fefo.functions";
 
 type ItemLite = { id: string; sku: string; name: string; unit: string };
 
-const REASONS: Array<{ value: "vencimento" | "avaria" | "qualidade" | "sobra_corte" | "outros"; label: string }> = [
+const REASONS: Array<{
+  value: "vencimento" | "avaria" | "qualidade" | "sobra_corte" | "outros";
+  label: string;
+}> = [
   { value: "vencimento", label: "Vencimento" },
   { value: "avaria", label: "Avaria" },
   { value: "qualidade", label: "Qualidade" },
@@ -141,9 +134,7 @@ export function InventoryScrapsPanel() {
           </div>
           <div className="grid sm:grid-cols-2 gap-1.5">
             {exp.slice(0, 6).map((l) => {
-              const days = Math.ceil(
-                (new Date(l.expiresAt).getTime() - Date.now()) / 86400_000,
-              );
+              const days = Math.ceil((new Date(l.expiresAt).getTime() - Date.now()) / 86400_000);
               return (
                 <div
                   key={l.id}
@@ -188,10 +179,7 @@ export function InventoryScrapsPanel() {
                       </span>
                     </div>
                     <div className="h-1.5 rounded bg-muted overflow-hidden">
-                      <div
-                        className="h-full bg-destructive/70"
-                        style={{ width: `${pct}%` }}
-                      />
+                      <div className="h-full bg-destructive/70" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );
@@ -239,7 +227,9 @@ export function InventoryScrapsPanel() {
                 value={form.itemId}
                 onValueChange={(v) => setForm((f) => ({ ...f, itemId: v }))}
               >
-                <SelectTrigger><SelectValue placeholder="Selecione…" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione…" />
+                </SelectTrigger>
                 <SelectContent>
                   {(items.data ?? []).map((it) => (
                     <SelectItem key={it.id} value={it.id}>
@@ -273,11 +263,11 @@ export function InventoryScrapsPanel() {
               <Label className="text-xs">Motivo</Label>
               <Select
                 value={form.reason}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, reason: v as typeof f.reason }))
-                }
+                onValueChange={(v) => setForm((f) => ({ ...f, reason: v as typeof f.reason }))}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {REASONS.map((r) => (
                     <SelectItem key={r.value} value={r.value}>
@@ -301,12 +291,10 @@ export function InventoryScrapsPanel() {
             </p>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button
-              variant="destructive"
-              onClick={() => mut.mutate()}
-              disabled={mut.isPending}
-            >
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={() => mut.mutate()} disabled={mut.isPending}>
               {mut.isPending ? "Registrando…" : "Registrar perda"}
             </Button>
           </DialogFooter>

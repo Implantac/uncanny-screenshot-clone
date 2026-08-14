@@ -38,7 +38,12 @@ const MaterialRow = z.object({
   kind: z.string().min(1, "kind obrigatório (tecido/aviamento/acabado/outros)"),
   unit: z.string().optional().nullable(),
   composition: z.string().optional().nullable(),
-  color_hex: z.string().regex(/^#?[0-9a-fA-F]{6}$/).optional().or(z.literal("")).nullable(),
+  color_hex: z
+    .string()
+    .regex(/^#?[0-9a-fA-F]{6}$/)
+    .optional()
+    .or(z.literal(""))
+    .nullable(),
   reference_cost: z.coerce.number().nonnegative().optional().nullable(),
   description: z.string().optional().nullable(),
   image_url: z.string().url().optional().or(z.literal("")).nullable(),
@@ -109,23 +114,33 @@ export const bulkImport = createServerFn({ method: "POST" })
         .from("suppliers")
         .select("id,document,name")
         .eq("owner_id", userId);
-      const byDoc = new Map((existing ?? []).filter((s) => s.document).map((s) => [String(s.document), s.id]));
+      const byDoc = new Map(
+        (existing ?? []).filter((s) => s.document).map((s) => [String(s.document), s.id]),
+      );
       const byName = new Map((existing ?? []).map((s) => [s.name.toLowerCase(), s.id]));
 
       for (let i = 0; i < rows.length; i++) {
         try {
           const parsed = SupplierRow.parse(rows[i]);
           const clean = cleanEmpty(parsed);
-          const key = parsed.document ? byDoc.get(String(parsed.document)) : byName.get(parsed.name.toLowerCase());
+          const key = parsed.document
+            ? byDoc.get(String(parsed.document))
+            : byName.get(parsed.name.toLowerCase());
           if (key) {
             if (!dryRun) {
-              const { error } = await supabase.from("suppliers").update(clean).eq("id", key).eq("owner_id", userId);
+              const { error } = await supabase
+                .from("suppliers")
+                .update(clean)
+                .eq("id", key)
+                .eq("owner_id", userId);
               if (error) throw error;
             }
             result.updated++;
           } else {
             if (!dryRun) {
-              const { error } = await supabase.from("suppliers").insert({ ...clean, owner_id: userId, name: parsed.name });
+              const { error } = await supabase
+                .from("suppliers")
+                .insert({ ...clean, owner_id: userId, name: parsed.name });
               if (error) throw error;
             }
             result.inserted++;
@@ -152,7 +167,11 @@ export const bulkImport = createServerFn({ method: "POST" })
           const key = byCode.get(parsed.code.toLowerCase());
           if (key) {
             if (!dryRun) {
-              const { error } = await supabase.from("material_library").update(clean).eq("id", key).eq("owner_id", userId);
+              const { error } = await supabase
+                .from("material_library")
+                .update(clean)
+                .eq("id", key)
+                .eq("owner_id", userId);
               if (error) throw error;
             }
             result.updated++;
@@ -192,7 +211,11 @@ export const bulkImport = createServerFn({ method: "POST" })
           const key = bySku.get(parsed.sku.toLowerCase());
           if (key) {
             if (!dryRun) {
-              const { error } = await supabase.from("products").update(payload).eq("id", key).eq("owner_id", userId);
+              const { error } = await supabase
+                .from("products")
+                .update(payload)
+                .eq("id", key)
+                .eq("owner_id", userId);
               if (error) throw error;
             }
             result.updated++;

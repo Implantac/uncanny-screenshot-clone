@@ -14,13 +14,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type AlertSeverity = "critica" | "alta" | "media" | "baixa";
 
-export type AlertCategory =
-  | "estoque"
-  | "atraso"
-  | "parado"
-  | "qualidade"
-  | "proto"
-  | "marketing";
+export type AlertCategory = "estoque" | "atraso" | "parado" | "qualidade" | "proto" | "marketing";
 
 export type CenterAlert = {
   key: string;
@@ -34,7 +28,6 @@ export type CenterAlert = {
   entityKey?: string;
   entityLabel?: string;
 };
-
 
 const sevWeight: Record<AlertSeverity, number> = {
   critica: 4,
@@ -117,7 +110,10 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
     );
 
     const dismissed = new Map(
-      (dism ?? []).map((d) => [d.alert_key as string, d as { dismissed_until: string | null; resolved: boolean }]),
+      (dism ?? []).map((d) => [
+        d.alert_key as string,
+        d as { dismissed_until: string | null; resolved: boolean },
+      ]),
     );
     const isHidden = (key: string) => {
       const d = dismissed.get(key);
@@ -137,8 +133,7 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
       const key = `inv:${i.id}`;
       if (isHidden(key)) continue;
       const ratio = min > 0 ? bal / min : 1;
-      const severity: AlertSeverity =
-        bal <= 0 ? "critica" : ratio < 0.5 ? "alta" : "media";
+      const severity: AlertSeverity = bal <= 0 ? "critica" : ratio < 0.5 ? "alta" : "media";
       alerts.push({
         key,
         category: "estoque",
@@ -156,18 +151,12 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
       });
     }
 
-
-
-
     // 2. OPs atrasadas
     for (const o of overdueOps ?? []) {
       const key = `op-overdue:${o.id}`;
       if (isHidden(key)) continue;
-      const daysLate = Math.floor(
-        (nowMs - new Date(o.due_date as string).getTime()) / 86_400_000,
-      );
-      const severity: AlertSeverity =
-        daysLate >= 7 ? "critica" : daysLate >= 2 ? "alta" : "media";
+      const daysLate = Math.floor((nowMs - new Date(o.due_date as string).getTime()) / 86_400_000);
+      const severity: AlertSeverity = daysLate >= 7 ? "critica" : daysLate >= 2 ? "alta" : "media";
       alerts.push({
         key,
         category: "atraso",
@@ -181,7 +170,6 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         entityLabel: `OP ${o.code}`,
       });
     }
-
 
     // 3. OPs paradas (gargalo) — usa SLA por estágio
     for (const o of stuckOps ?? []) {
@@ -205,7 +193,6 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         entityLabel: `OP ${o.code}`,
       });
     }
-
 
     // 4. Qualidade — CAPAs abertas/vencendo
     for (const c of capas ?? []) {
@@ -245,8 +232,7 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
       const key = `proto-stale:${p.id}`;
       if (isHidden(key)) continue;
       const days = Math.floor((nowMs - new Date(p.updated_at as string).getTime()) / 86_400_000);
-      const severity: AlertSeverity =
-        days >= 21 ? "alta" : days >= 14 ? "media" : "baixa";
+      const severity: AlertSeverity = days >= 21 ? "alta" : days >= 14 ? "media" : "baixa";
       alerts.push({
         key,
         category: "proto",
@@ -260,7 +246,6 @@ export const getAlertsCenter = createServerFn({ method: "GET" })
         entityLabel: `Protótipo ${p.code}`,
       });
     }
-
 
     // 6. Marketing
     for (const m of mkt ?? []) {
@@ -335,32 +320,37 @@ export const dispatchAlertPushes = createServerFn({ method: "POST" })
       const today = new Date().toISOString().slice(0, 10);
       const stuckCutoff = new Date(nowMs - 86_400_000).toISOString();
 
-      const [{ data: inv }, { data: overdueOps }, { data: stuckOps }, { data: stages }, { data: capas }] =
-        await Promise.all([
-          supabase
-            .from("inventory_items")
-            .select("id, name, balance, minimum, unit")
-            .eq("owner_id", userId),
-          supabase
-            .from("production_orders")
-            .select("id, code, due_date, status")
-            .eq("owner_id", userId)
-            .neq("status", "concluida")
-            .lte("due_date", today),
-          supabase
-            .from("production_orders")
-            .select("id, code, stage, stage_updated_at")
-            .eq("owner_id", userId)
-            .neq("status", "concluida")
-            .neq("stage", "entregue")
-            .lt("stage_updated_at", stuckCutoff),
-          supabase.from("pcp_stages").select("key, sla_stuck_days").eq("owner_id", userId),
-          supabase
-            .from("quality_capa")
-            .select("id, title, severity, status, due_date")
-            .eq("owner_id", userId)
-            .neq("status", "fechada"),
-        ]);
+      const [
+        { data: inv },
+        { data: overdueOps },
+        { data: stuckOps },
+        { data: stages },
+        { data: capas },
+      ] = await Promise.all([
+        supabase
+          .from("inventory_items")
+          .select("id, name, balance, minimum, unit")
+          .eq("owner_id", userId),
+        supabase
+          .from("production_orders")
+          .select("id, code, due_date, status")
+          .eq("owner_id", userId)
+          .neq("status", "concluida")
+          .lte("due_date", today),
+        supabase
+          .from("production_orders")
+          .select("id, code, stage, stage_updated_at")
+          .eq("owner_id", userId)
+          .neq("status", "concluida")
+          .neq("stage", "entregue")
+          .lt("stage_updated_at", stuckCutoff),
+        supabase.from("pcp_stages").select("key, sla_stuck_days").eq("owner_id", userId),
+        supabase
+          .from("quality_capa")
+          .select("id, title, severity, status, due_date")
+          .eq("owner_id", userId)
+          .neq("status", "fechada"),
+      ]);
 
       const slaByStage = new Map<string, number>(
         (stages ?? []).map((s) => [s.key as string, Number(s.sla_stuck_days ?? 3)]),
@@ -392,7 +382,9 @@ export const dispatchAlertPushes = createServerFn({ method: "POST" })
         });
       }
       for (const o of overdueOps ?? []) {
-        const daysLate = Math.floor((nowMs - new Date(o.due_date as string).getTime()) / 86_400_000);
+        const daysLate = Math.floor(
+          (nowMs - new Date(o.due_date as string).getTime()) / 86_400_000,
+        );
         const sev: AlertSeverity = daysLate >= 7 ? "critica" : daysLate >= 2 ? "alta" : "media";
         if (sev !== "critica" && sev !== "alta") continue;
         out.push({
@@ -444,7 +436,10 @@ export const dispatchAlertPushes = createServerFn({ method: "POST" })
       .select("category, muted, push_enabled")
       .eq("user_id", userId);
     const prefBy = new Map(
-      (prefs ?? []).map((p) => [p.category as string, p as { muted: boolean; push_enabled: boolean }]),
+      (prefs ?? []).map((p) => [
+        p.category as string,
+        p as { muted: boolean; push_enabled: boolean },
+      ]),
     );
 
     // Dedupe: já enviado nas últimas 24h?

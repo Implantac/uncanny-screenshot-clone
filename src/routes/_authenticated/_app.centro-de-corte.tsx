@@ -166,7 +166,11 @@ function CentroCorte() {
       </div>
 
       {isLoading ? (
-        <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => (<Skeleton key={i} className="h-16 w-full rounded-xl" />))}</div>
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full rounded-xl" />
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="glass rounded-xl p-12 text-center">
           <Scissors className="size-10 text-primary mx-auto mb-3" />

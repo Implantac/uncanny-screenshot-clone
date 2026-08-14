@@ -15,22 +15,26 @@ export const Route = createFileRoute("/api/public/hooks/erp-pull-all")({
         const secret = process.env.CRON_SECRET;
         if (!secret) {
           return new Response(JSON.stringify({ error: "Missing CRON_SECRET" }), {
-            status: 500, headers: { "content-type": "application/json" },
+            status: 500,
+            headers: { "content-type": "application/json" },
           });
         }
         const provided = request.headers.get("x-cron-secret") ?? "";
         if (provided !== secret) {
           return new Response(JSON.stringify({ error: "Unauthorized" }), {
-            status: 401, headers: { "content-type": "application/json" },
+            status: 401,
+            headers: { "content-type": "application/json" },
           });
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const {
-          runSyncCollections, runSyncProducts, runSyncProductImages,
-          runSyncCustomers, runSyncSuppliers,
+          runSyncCollections,
+          runSyncProducts,
+          runSyncProductImages,
+          runSyncCustomers,
+          runSyncSuppliers,
         } = await import("@/lib/erp-sync-runners.server");
-
 
         const { data: configs, error: cfgErr } = await supabaseAdmin
           .from("erp_integration_config")
@@ -38,7 +42,8 @@ export const Route = createFileRoute("/api/public/hooks/erp-pull-all")({
           .eq("active", true);
         if (cfgErr) {
           return new Response(JSON.stringify({ error: cfgErr.message }), {
-            status: 500, headers: { "content-type": "application/json" },
+            status: 500,
+            headers: { "content-type": "application/json" },
           });
         }
 
@@ -69,7 +74,8 @@ export const Route = createFileRoute("/api/public/hooks/erp-pull-all")({
         }
 
         return new Response(JSON.stringify({ ok: true, owners: results.length, results }), {
-          status: 200, headers: { "content-type": "application/json" },
+          status: 200,
+          headers: { "content-type": "application/json" },
         });
       },
     },

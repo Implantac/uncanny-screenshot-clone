@@ -130,8 +130,7 @@ export const Route = createFileRoute("/api/public/hooks/supplier-scorecard-recal
               new Date(o.updated_at).getTime() <=
               new Date(o.due_date as string).getTime() + 86_400_000,
           ).length;
-          const otifPct =
-            onTimeBase.length > 0 ? (onTime / onTimeBase.length) * 100 : null;
+          const otifPct = onTimeBase.length > 0 ? (onTime / onTimeBase.length) * 100 : null;
 
           const leads = done
             .map((o) => {
@@ -196,8 +195,7 @@ export const Route = createFileRoute("/api/public/hooks/supplier-scorecard-recal
           // Lead time bonus/penalty ±10 vs supplier baseline (or 15d neutral)
           const otifScore = otifPct != null ? (otifPct / 100) * 35 : 20;
           const fpyScore = fpyPct != null ? (fpyPct / 100) * 30 : 18;
-          const occRate =
-            orderIds.length > 0 ? occNeg / orderIds.length : occNeg > 0 ? 1 : 0;
+          const occRate = orderIds.length > 0 ? occNeg / orderIds.length : occNeg > 0 ? 1 : 0;
           const occPenalty = clamp(occRate * 25, 0, 25);
           const capaPenalty = clamp(capaReopened * 10, 0, 20);
           const baseline = s.lead_time_days ?? 15;
@@ -226,12 +224,11 @@ export const Route = createFileRoute("/api/public/hooks/supplier-scorecard-recal
           const prevScore = prev?.score != null ? Number(prev.score) : null;
           const delta = prevScore != null ? Math.round((scoreRounded - prevScore) * 10) / 10 : null;
 
-          const notes =
-            `OTIF ${otifPct != null ? otifPct.toFixed(0) : "—"}% · FPY ${
-              fpyPct != null ? fpyPct.toFixed(0) : "—"
-            }% · ${occNeg} ocorr · ${capaReopened} CAPA reab · lead ${
-              leadAvg != null ? `${leadAvg}d` : "—"
-            }`;
+          const notes = `OTIF ${otifPct != null ? otifPct.toFixed(0) : "—"}% · FPY ${
+            fpyPct != null ? fpyPct.toFixed(0) : "—"
+          }% · ${occNeg} ocorr · ${capaReopened} CAPA reab · lead ${
+            leadAvg != null ? `${leadAvg}d` : "—"
+          }`;
 
           let notified = false;
           if (!dryRun) {
@@ -259,8 +256,7 @@ export const Route = createFileRoute("/api/public/hooks/supplier-scorecard-recal
 
             // Push when drop >= 15 pts OR score < 40 with prev >= 40
             const bigDrop = delta != null && delta <= -15;
-            const wentCritical =
-              prevScore != null && prevScore >= 40 && scoreRounded < 40;
+            const wentCritical = prevScore != null && prevScore >= 40 && scoreRounded < 40;
             if (bigDrop || wentCritical) {
               await supabase.from("push_notifications").insert({
                 owner_id: s.owner_id,
@@ -315,11 +311,8 @@ export const Route = createFileRoute("/api/public/hooks/supplier-scorecard-recal
                   topOrderId = recentOcc?.order_id ?? null;
                 }
 
-                const severity =
-                  scoreRounded < 30 ? "alta" : scoreRounded < 45 ? "media" : "baixa";
-                const dueDate = new Date(
-                  Date.now() + 14 * 86_400_000,
-                ).toISOString().slice(0, 10);
+                const severity = scoreRounded < 30 ? "alta" : scoreRounded < 45 ? "media" : "baixa";
+                const dueDate = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10);
 
                 const { data: capaRow } = await supabase
                   .from("quality_capa")

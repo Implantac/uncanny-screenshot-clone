@@ -100,9 +100,28 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
       sb.from("production_orders").select("product_id, quantity").not("product_id", "is", null),
     ]);
 
-    type FamRowDB = { id: string; name: string; description: string | null; target_margin_pct: number | null; price_tier: FamilyRow["priceTier"]; display_order: number };
-    type PlanRow = { id: string; channel: Channel; family_id: string | null; target_skus: number | null; target_units: number | null; target_revenue: number | null; target_margin_pct: number | null };
-    type CpRow = { product_id: string; family_id: string | null; channel_exclusive: string[] | null };
+    type FamRowDB = {
+      id: string;
+      name: string;
+      description: string | null;
+      target_margin_pct: number | null;
+      price_tier: FamilyRow["priceTier"];
+      display_order: number;
+    };
+    type PlanRow = {
+      id: string;
+      channel: Channel;
+      family_id: string | null;
+      target_skus: number | null;
+      target_units: number | null;
+      target_revenue: number | null;
+      target_margin_pct: number | null;
+    };
+    type CpRow = {
+      product_id: string;
+      family_id: string | null;
+      channel_exclusive: string[] | null;
+    };
     type ProductRow = { id: string; sku: string };
     type PoRow = { product_id: string | null; quantity: number | null };
 
@@ -115,20 +134,14 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
       displayOrder: f.display_order,
     }));
 
-    const skuByProduct = new Map(
-      ((products ?? []) as ProductRow[]).map((p) => [p.id, p.sku]),
-    );
+    const skuByProduct = new Map(((products ?? []) as ProductRow[]).map((p) => [p.id, p.sku]));
 
     // Actuals: count distinct SKUs assigned per channel × family.
     // A product without channel_exclusive contributes to ALL channels.
-    const actuals = new Map<
-      string,
-      { skus: Set<string>; units: number; revenue: number }
-    >();
-    const key = (channel: Channel, familyId: string | null) =>
-      `${channel}::${familyId ?? "_"}`;
+    const actuals = new Map<string, { skus: Set<string>; units: number; revenue: number }>();
+    const key = (channel: Channel, familyId: string | null) => `${channel}::${familyId ?? "_"}`;
 
-    for (const cp of ((cpRows ?? []) as CpRow[])) {
+    for (const cp of (cpRows ?? []) as CpRow[]) {
       const sku = skuByProduct.get(cp.product_id);
       if (!sku) continue;
       const channels: Channel[] =
@@ -146,7 +159,6 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
     const planByKey = new Map(
       ((planRows ?? []) as PlanRow[]).map((p) => [key(p.channel, p.family_id), p]),
     );
-
 
     const cells: AssortmentCell[] = [];
     const familyIds: (string | null)[] = [...families.map((f) => f.id), null];
@@ -179,9 +191,7 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
           insights.push({
             severity: gap >= c.targetSkus * 0.5 ? "critical" : "warn",
             message: `${CHANNEL_LABEL[c.channel]}${
-              c.familyId
-                ? " · " + (families.find((f) => f.id === c.familyId)?.name ?? "—")
-                : ""
+              c.familyId ? " · " + (families.find((f) => f.id === c.familyId)?.name ?? "—") : ""
             }: faltam ${gap} SKUs para atingir a meta de ${c.targetSkus}.`,
           });
         } else if (c.actualSkus > c.targetSkus * 1.3) {
@@ -205,7 +215,7 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
       ((cpRows ?? []) as CpRow[]).map((cp) => [cp.product_id, cp.family_id]),
     );
     const committedByFamily = new Map<string | null, number>();
-    for (const po of ((poRows ?? []) as PoRow[])) {
+    for (const po of (poRows ?? []) as PoRow[]) {
       const pid = po.product_id;
       if (!pid || !familyByProduct.has(pid)) continue; // outside this collection
       const fid = familyByProduct.get(pid) ?? null;
@@ -220,7 +230,7 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
       const c = committedByFamily.get(fid) ?? 0;
       return {
         familyId: fid,
-        familyName: fid ? families.find((f) => f.id === fid)?.name ?? "—" : "Sem família",
+        familyName: fid ? (families.find((f) => f.id === fid)?.name ?? "—") : "Sem família",
         targetUnits: t,
         committedUnits: c,
         openToBuy: t - c,
@@ -241,26 +251,27 @@ export const getAssortmentContext = createServerFn({ method: "GET" })
 
 export const upsertFamily = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: {
-    id?: string;
-    collectionId: string;
-    name: string;
-    description?: string | null;
-    targetMarginPct?: number | null;
-    priceTier?: "entrada" | "medio" | "premium" | null;
-    displayOrder?: number;
-  }) =>
-    z
-      .object({
-        id: z.string().uuid().optional(),
-        collectionId: z.string().uuid(),
-        name: z.string().min(1).max(80),
-        description: z.string().max(400).nullable().optional(),
-        targetMarginPct: z.number().min(0).max(100).nullable().optional(),
-        priceTier: TierEnum.nullable().optional(),
-        displayOrder: z.number().int().min(0).max(999).optional(),
-      })
-      .parse(d),
+  .inputValidator(
+    (d: {
+      id?: string;
+      collectionId: string;
+      name: string;
+      description?: string | null;
+      targetMarginPct?: number | null;
+      priceTier?: "entrada" | "medio" | "premium" | null;
+      displayOrder?: number;
+    }) =>
+      z
+        .object({
+          id: z.string().uuid().optional(),
+          collectionId: z.string().uuid(),
+          name: z.string().min(1).max(80),
+          description: z.string().max(400).nullable().optional(),
+          targetMarginPct: z.number().min(0).max(100).nullable().optional(),
+          priceTier: TierEnum.nullable().optional(),
+          displayOrder: z.number().int().min(0).max(999).optional(),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
@@ -274,10 +285,7 @@ export const upsertFamily = createServerFn({ method: "POST" })
       display_order: data.displayOrder ?? 0,
     };
     if (data.id) {
-      const { error } = await sb
-        .from("product_families")
-        .update(payload)
-        .eq("id", data.id);
+      const { error } = await sb.from("product_families").update(payload).eq("id", data.id);
       if (error) throw new Error(error.message);
       return { id: data.id };
     }
@@ -294,36 +302,34 @@ export const deleteFamily = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("product_families")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("product_families").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });
 
 export const upsertAssortmentCell = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: {
-    collectionId: string;
-    channel: Channel;
-    familyId: string | null;
-    targetSkus: number;
-    targetUnits: number;
-    targetRevenue: number;
-    targetMarginPct?: number | null;
-  }) =>
-    z
-      .object({
-        collectionId: z.string().uuid(),
-        channel: ChannelEnum,
-        familyId: z.string().uuid().nullable(),
-        targetSkus: z.number().int().min(0).max(99999),
-        targetUnits: z.number().int().min(0).max(9999999),
-        targetRevenue: z.number().min(0).max(999999999),
-        targetMarginPct: z.number().min(0).max(100).nullable().optional(),
-      })
-      .parse(d),
+  .inputValidator(
+    (d: {
+      collectionId: string;
+      channel: Channel;
+      familyId: string | null;
+      targetSkus: number;
+      targetUnits: number;
+      targetRevenue: number;
+      targetMarginPct?: number | null;
+    }) =>
+      z
+        .object({
+          collectionId: z.string().uuid(),
+          channel: ChannelEnum,
+          familyId: z.string().uuid().nullable(),
+          targetSkus: z.number().int().min(0).max(99999),
+          targetUnits: z.number().int().min(0).max(9999999),
+          targetRevenue: z.number().min(0).max(999999999),
+          targetMarginPct: z.number().min(0).max(100).nullable().optional(),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
@@ -367,20 +373,21 @@ export const upsertAssortmentCell = createServerFn({ method: "POST" })
 
 export const assignProductFamily = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: {
-    productId: string;
-    collectionId: string;
-    familyId: string | null;
-    channels?: Channel[] | null;
-  }) =>
-    z
-      .object({
-        productId: z.string().uuid(),
-        collectionId: z.string().uuid(),
-        familyId: z.string().uuid().nullable(),
-        channels: z.array(ChannelEnum).nullable().optional(),
-      })
-      .parse(d),
+  .inputValidator(
+    (d: {
+      productId: string;
+      collectionId: string;
+      familyId: string | null;
+      channels?: Channel[] | null;
+    }) =>
+      z
+        .object({
+          productId: z.string().uuid(),
+          collectionId: z.string().uuid(),
+          familyId: z.string().uuid().nullable(),
+          channels: z.array(ChannelEnum).nullable().optional(),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const update: { family_id: string | null; channel_exclusive?: Channel[] | null } = {

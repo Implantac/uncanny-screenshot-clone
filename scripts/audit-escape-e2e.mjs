@@ -22,10 +22,22 @@ const REQUIRED = [
   { file: "product-readiness-badge-escape.spec.ts", titleMatch: /^\[ready\]/ },
   { file: "product-readiness-badge-escape.spec.ts", titleMatch: /^\[pending\]/ },
   // Enter/Espaço abre, Escape fecha
-  { file: "product-readiness-badge-enter-space.spec.ts", titleMatch: /^\[ready\].*Enter\b.*Escape/ },
-  { file: "product-readiness-badge-enter-space.spec.ts", titleMatch: /^\[ready\].*Space\b.*Escape/ },
-  { file: "product-readiness-badge-enter-space.spec.ts", titleMatch: /^\[pending\].*Enter\b.*Escape/ },
-  { file: "product-readiness-badge-enter-space.spec.ts", titleMatch: /^\[pending\].*Space\b.*Escape/ },
+  {
+    file: "product-readiness-badge-enter-space.spec.ts",
+    titleMatch: /^\[ready\].*Enter\b.*Escape/,
+  },
+  {
+    file: "product-readiness-badge-enter-space.spec.ts",
+    titleMatch: /^\[ready\].*Space\b.*Escape/,
+  },
+  {
+    file: "product-readiness-badge-enter-space.spec.ts",
+    titleMatch: /^\[pending\].*Enter\b.*Escape/,
+  },
+  {
+    file: "product-readiness-badge-enter-space.spec.ts",
+    titleMatch: /^\[pending\].*Space\b.*Escape/,
+  },
   // aria-describedby some após Escape
   { file: "product-readiness-badge-aria-describedby.spec.ts", titleMatch: /^\[ready\]/ },
   { file: "product-readiness-badge-aria-describedby.spec.ts", titleMatch: /^\[pending\]/ },
@@ -58,9 +70,7 @@ for (const s of report.suites ?? []) walk(s);
 const problems = [];
 const rows = []; // { status, file, title, reason }
 for (const req of REQUIRED) {
-  const matches = executed.filter(
-    (e) => e.file === req.file && req.titleMatch.test(e.title),
-  );
+  const matches = executed.filter((e) => e.file === req.file && req.titleMatch.test(e.title));
   if (matches.length === 0) {
     const msg = `FALTANDO: ${req.file} :: ${req.titleMatch} (nenhum teste com esse título rodou)`;
     problems.push(msg);
@@ -68,7 +78,8 @@ for (const req of REQUIRED) {
       status: "🚫 FALTANDO",
       file: req.file,
       title: String(req.titleMatch),
-      reason: "nenhum teste com esse título rodou (spec não existe, foi filtrado, ou o título mudou)",
+      reason:
+        "nenhum teste com esse título rodou (spec não existe, foi filtrado, ou o título mudou)",
     });
     continue;
   }
@@ -92,9 +103,7 @@ for (const req of REQUIRED) {
 
 // Link direto pra aba de artifacts desta run (aparece no summary quando falha).
 const runUrl =
-  process.env.GITHUB_SERVER_URL &&
-  process.env.GITHUB_REPOSITORY &&
-  process.env.GITHUB_RUN_ID
+  process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY && process.env.GITHUB_RUN_ID
     ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}#artifacts`
     : null;
 
@@ -133,7 +142,9 @@ if (summaryPath) {
         `> 📎 Traces, screenshots e vídeos desses casos: [artifact \`escape-failure-*\` desta run](${runUrl})`,
       );
     } else {
-      lines.push("> Traces, screenshots e vídeos desses casos estão no artifact `escape-failure-*` desta run.");
+      lines.push(
+        "> Traces, screenshots e vídeos desses casos estão no artifact `escape-failure-*` desta run.",
+      );
     }
   }
   fs.appendFileSync(summaryPath, lines.join("\n") + "\n");
@@ -143,9 +154,7 @@ if (problems.length) {
   // Anotações por caso falhando — aparecem inline no checks UI do PR.
   for (const r of rows.filter((r) => !r.status.startsWith("✅"))) {
     const title = `Escape audit: ${r.status.replace(/^\S+\s/, "")}`;
-    console.error(
-      `::error file=e2e/${r.file},title=${title}::${r.title} — ${r.reason}`,
-    );
+    console.error(`::error file=e2e/${r.file},title=${title}::${r.title} — ${r.reason}`);
   }
   console.error("::error::Auditoria Escape falhou — cenários obrigatórios não rodaram verde:");
   for (const p of problems) console.error(" - " + p);
@@ -153,4 +162,3 @@ if (problems.length) {
 }
 
 console.log(`OK: ${REQUIRED.length} cenário(s) Escape (pronto + pendente) executados e passaram.`);
-

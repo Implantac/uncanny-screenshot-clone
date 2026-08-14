@@ -64,8 +64,7 @@ export function PrototypeApprovalGate({
     );
   }
 
-  const costPct =
-    data.costGap != null ? Math.round(data.costGap * 1000) / 10 : null;
+  const costPct = data.costGap != null ? Math.round(data.costGap * 1000) / 10 : null;
   const costColor =
     costPct == null
       ? "text-muted-foreground"
@@ -100,17 +99,13 @@ export function PrototypeApprovalGate({
           <div>
             <div className="text-[10px] uppercase text-muted-foreground">Custo</div>
             <div className="tabular-nums font-medium">
-              {data.currentCost != null
-                ? `R$ ${data.currentCost.toFixed(2)}`
-                : "—"}
+              {data.currentCost != null ? `R$ ${data.currentCost.toFixed(2)}` : "—"}
             </div>
           </div>
           <div>
             <div className="text-[10px] uppercase text-muted-foreground">Meta</div>
             <div className="tabular-nums font-medium">
-              {data.targetCost != null
-                ? `R$ ${data.targetCost.toFixed(2)}`
-                : "—"}
+              {data.targetCost != null ? `R$ ${data.targetCost.toFixed(2)}` : "—"}
             </div>
           </div>
           <div>
@@ -134,9 +129,7 @@ export function PrototypeApprovalGate({
             <div
               key={role}
               className={`rounded border px-3 py-2 ${
-                got
-                  ? "border-emerald-500/40 bg-emerald-500/10"
-                  : "border-border bg-background/40"
+                got ? "border-emerald-500/40 bg-emerald-500/10" : "border-border bg-background/40"
               }`}
             >
               <div className="flex items-center gap-2 text-xs font-medium">
@@ -186,8 +179,8 @@ export function PrototypeApprovalGate({
 
       {!data.canPromote && currentStage !== "aprovado" && (
         <p className="text-[11px] text-muted-foreground">
-          O sistema bloqueia a promoção para "Aprovado" até os 3 selos estarem
-          registrados. Cada selo grava custo e meta vigentes para auditoria.
+          O sistema bloqueia a promoção para "Aprovado" até os 3 selos estarem registrados. Cada
+          selo grava custo e meta vigentes para auditoria.
         </p>
       )}
     </div>

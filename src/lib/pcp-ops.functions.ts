@@ -21,7 +21,13 @@ type DayOpRow = {
   outsourced: boolean | null;
   product_id: string | null;
   supplier_id: string | null;
-  products: { name: string | null; sku: string | null; image_url: string | null; cost_price: number | null; sell_price: number | null } | null;
+  products: {
+    name: string | null;
+    sku: string | null;
+    image_url: string | null;
+    cost_price: number | null;
+    sell_price: number | null;
+  } | null;
   suppliers: { name: string | null } | null;
 };
 
@@ -90,14 +96,27 @@ export const listDayProduction = createServerFn({ method: "POST" })
             .in("product_id", productIds)
             .order("stage_updated_at", { ascending: false })
             .limit(200)
-        : Promise.resolve({ data: [] as Array<{ product_id: string | null; supplier_id: string | null; created_at: string | null; stage_updated_at: string | null }> }),
+        : Promise.resolve({
+            data: [] as Array<{
+              product_id: string | null;
+              supplier_id: string | null;
+              created_at: string | null;
+              stage_updated_at: string | null;
+            }>,
+          }),
     ]);
 
     // Lead time real (mediana) por (product_id, supplier_id) com fallback para product_id.
     const leadBy = new Map<string, number[]>();
-    for (const o of (completedOps.data ?? []) as Array<{ product_id: string | null; supplier_id: string | null; created_at: string | null; stage_updated_at: string | null }>) {
+    for (const o of (completedOps.data ?? []) as Array<{
+      product_id: string | null;
+      supplier_id: string | null;
+      created_at: string | null;
+      stage_updated_at: string | null;
+    }>) {
       if (!o.product_id || !o.created_at || !o.stage_updated_at) continue;
-      const days = (new Date(o.stage_updated_at).getTime() - new Date(o.created_at).getTime()) / 86_400_000;
+      const days =
+        (new Date(o.stage_updated_at).getTime() - new Date(o.created_at).getTime()) / 86_400_000;
       if (!Number.isFinite(days) || days <= 0 || days > 365) continue;
       const keys = [`${o.product_id}:${o.supplier_id ?? "_"}`, `${o.product_id}:_`];
       for (const k of keys) {
@@ -122,18 +141,20 @@ export const listDayProduction = createServerFn({ method: "POST" })
     };
 
     const sum = (rs: SkuQtyRow[] | null | undefined, sku: string) =>
-      (rs ?? [])
-        .filter((r) => r.sku === sku)
-        .reduce((a, r) => a + Number(r.quantity ?? 0), 0);
+      (rs ?? []).filter((r) => r.sku === sku).reduce((a, r) => a + Number(r.quantity ?? 0), 0);
     const stockRows = (inv.data ?? []) as unknown as StockRow[];
     const stockOf = (sku: string) =>
-      stockRows
-        .filter((r) => r.sku === sku)
-        .reduce((a, r) => a + Number(r.balance ?? 0), 0);
+      stockRows.filter((r) => r.sku === sku).reduce((a, r) => a + Number(r.balance ?? 0), 0);
 
     const scored = list.map((r) => {
       const sku = r.products?.sku;
-      if (!sku) return { ...r, score: 0, score_reasons: [] as string[], lead_time_days: null as number | null };
+      if (!sku)
+        return {
+          ...r,
+          score: 0,
+          score_reasons: [] as string[],
+          lead_time_days: null as number | null,
+        };
       const lead = leadFor(r.product_id, r.supplier_id);
       const res = computePriority({
         sku,
@@ -204,7 +225,11 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
     if (e2) throw new Error(e2.message);
 
     const suppliersById: Record<string, SupplierWipBucket> = {};
-    for (const w of (wip ?? []) as unknown as Array<{ supplier_id: string | null; pieces_at_supplier: number | null; [k: string]: unknown }>) {
+    for (const w of (wip ?? []) as unknown as Array<{
+      supplier_id: string | null;
+      pieces_at_supplier: number | null;
+      [k: string]: unknown;
+    }>) {
       if (!w.supplier_id) continue;
       suppliersById[w.supplier_id] = {
         ...w,
@@ -222,9 +247,7 @@ export const listOutsourcedWip = createServerFn({ method: "GET" })
         (suppliersById[sid].second_line_count ?? 0) + (o.line_type === "segunda_linha" ? 1 : 0);
       suppliersById[sid].orders.push(o);
     }
-    return Object.values(suppliersById).sort(
-      (a, b) => b.pieces_at_supplier - a.pieces_at_supplier,
-    );
+    return Object.values(suppliersById).sort((a, b) => b.pieces_at_supplier - a.pieces_at_supplier);
   });
 
 /** Cria uma OP a partir da sugestão do motor de necessidade (1 clique). */

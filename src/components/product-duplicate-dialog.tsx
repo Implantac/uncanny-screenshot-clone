@@ -284,7 +284,11 @@ export function ProductDuplicateDialog({
                 onChange={(e) => setColorsText(e.target.value)}
               />
               <p className="text-[11px] text-muted-foreground mt-1">
-                SKU gerado: <code>{product.sku}-{"{COR}"}</code>. Nome: {product.name} · {"{cor}"}.
+                SKU gerado:{" "}
+                <code>
+                  {product.sku}-{"{COR}"}
+                </code>
+                . Nome: {product.name} · {"{cor}"}.
               </p>
             </div>
           </TabsContent>

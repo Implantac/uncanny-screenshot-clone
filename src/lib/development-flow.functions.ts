@@ -57,8 +57,7 @@ export const getDevelopmentFlowStats = createServerFn({ method: "GET" })
       const ordered = [...stepsArr].sort(
         (a, b) => WORKFLOW_STEPS.indexOf(a.step) - WORKFLOW_STEPS.indexOf(b.step),
       );
-      const current =
-        ordered.find((s) => s.status !== "concluido") ?? ordered[ordered.length - 1];
+      const current = ordered.find((s) => s.status !== "concluido") ?? ordered[ordered.length - 1];
       if (!current) continue;
       const bucket = byStep.get(current.step);
       if (!bucket) continue;

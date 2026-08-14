@@ -40,7 +40,14 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
 
     type OrderRow = { id: string; supplier_id: string | null; quantity: number | null };
     type SupRow = { id: string; name: string };
-    type OccRow = { kind: string | null; sector: string | null; affected_qty: number | null; status: string | null; order_id: string | null; created_at: string };
+    type OccRow = {
+      kind: string | null;
+      sector: string | null;
+      affected_qty: number | null;
+      status: string | null;
+      order_id: string | null;
+      created_at: string;
+    };
 
     const orderToSupplier = new Map<string, string | null>();
     const orderQty = new Map<string, number>();
@@ -122,7 +129,9 @@ export const getQualityIntelligence = createServerFn({ method: "GET" })
     );
 
     const kindAgg = new Map<string, number>();
-    ((occs ?? []) as OccRow[]).forEach((o) => o.kind && kindAgg.set(o.kind, (kindAgg.get(o.kind) ?? 0) + 1));
+    ((occs ?? []) as OccRow[]).forEach(
+      (o) => o.kind && kindAgg.set(o.kind, (kindAgg.get(o.kind) ?? 0) + 1),
+    );
     const topKinds = [...kindAgg.entries()]
       .map(([kind, count]) => ({ kind, count }))
       .sort((a, b) => b.count - a.count)

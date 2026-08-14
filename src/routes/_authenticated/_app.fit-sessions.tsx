@@ -14,7 +14,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Ruler, CheckCircle2, Image as ImageIcon, MessageSquare, CheckCheck, AlertTriangle, Columns2, X } from "lucide-react";
+import {
+  Plus,
+  Ruler,
+  CheckCircle2,
+  Image as ImageIcon,
+  MessageSquare,
+  CheckCheck,
+  AlertTriangle,
+  Columns2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { StorageUploader } from "@/components/storage-uploader";
 import { PageHeader } from "@/components/ui/page-header";
@@ -26,7 +36,10 @@ export const Route = createFileRoute("/_authenticated/_app/fit-sessions")({
   head: () => ({
     meta: [
       { title: "Sessões de Prova · USE MODA PLM" },
-      { name: "description", content: "Histórico de provas com fotos, comentários técnicos e status de aprovação." },
+      {
+        name: "description",
+        content: "Histórico de provas com fotos, comentários técnicos e status de aprovação.",
+      },
     ],
   }),
   component: Page,
@@ -52,10 +65,22 @@ type Comment = {
 };
 
 const STATUS_META: Record<string, { label: string; color: string; icon: any }> = {
-  aberta:    { label: "Em avaliação",         color: "bg-muted text-foreground",                icon: MessageSquare },
-  ajustes:   { label: "Em ajuste",            color: "bg-amber-500/15 text-amber-600 border-amber-500/30", icon: AlertTriangle },
-  aprovada:  { label: "Aprovada p/ produção", color: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30", icon: CheckCheck },
-  reprovada: { label: "Reprovada",            color: "bg-red-500/15 text-red-600 border-red-500/30", icon: AlertTriangle },
+  aberta: { label: "Em avaliação", color: "bg-muted text-foreground", icon: MessageSquare },
+  ajustes: {
+    label: "Em ajuste",
+    color: "bg-amber-500/15 text-amber-600 border-amber-500/30",
+    icon: AlertTriangle,
+  },
+  aprovada: {
+    label: "Aprovada p/ produção",
+    color: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
+    icon: CheckCheck,
+  },
+  reprovada: {
+    label: "Reprovada",
+    color: "bg-red-500/15 text-red-600 border-red-500/30",
+    icon: AlertTriangle,
+  },
 };
 
 function Page() {
@@ -65,7 +90,12 @@ function Page() {
   const [compareId, setCompareId] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
   const [sf, setSf] = useState({ fit_model: "", notes: "", iteration: 1 });
-  const [cf, setCf] = useState<{ pom_label: string; severity: string; comment: string; image_url: string | null }>({
+  const [cf, setCf] = useState<{
+    pom_label: string;
+    severity: string;
+    comment: string;
+    image_url: string | null;
+  }>({
     pom_label: "",
     severity: "ajuste",
     comment: "",
@@ -124,9 +154,7 @@ function Page() {
 
   const addSession = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from("fit_sessions")
-        .insert({ owner_id: user!.id, ...sf });
+      const { error } = await supabase.from("fit_sessions").insert({ owner_id: user!.id, ...sf });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -164,10 +192,7 @@ function Page() {
 
   const updateStatus = useMutation({
     mutationFn: async (status: string) => {
-      const { error } = await supabase
-        .from("fit_sessions")
-        .update({ status })
-        .eq("id", selected!);
+      const { error } = await supabase.from("fit_sessions").update({ status }).eq("id", selected!);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -214,370 +239,385 @@ function Page() {
         onSelect={setSelected}
         onCompare={setCompareId}
       />
-      <div className={`grid gap-6 ${compareId ? "lg:grid-cols-[320px_1fr_1fr]" : "lg:grid-cols-[360px_1fr]"}`}>
-      <div className="space-y-4">
-        <div className="glass rounded-xl p-3 space-y-2">
-          <Input
-            placeholder="Modelo (nome)"
-            value={sf.fit_model}
-            onChange={(e) => setSf({ ...sf, fit_model: e.target.value })}
-          />
-          <Input
-            type="number"
-            placeholder="Iteração"
-            value={sf.iteration}
-            onChange={(e) => setSf({ ...sf, iteration: Number(e.target.value) })}
-          />
-          <Textarea
-            placeholder="Observações"
-            value={sf.notes}
-            onChange={(e) => setSf({ ...sf, notes: e.target.value })}
-          />
-          <Button className="w-full" onClick={() => addSession.mutate()}>
-            <Plus className="h-4 w-4 mr-1" />
-            Nova prova
-          </Button>
-        </div>
-        <div className="space-y-2">
-          {sessions.data?.map((s) => {
-            const meta = STATUS_META[s.status] ?? STATUS_META.aberta;
-            const isSelected = selected === s.id;
-            const isCompare = compareId === s.id;
-            return (
-              <div
-                key={s.id}
-                className={`w-full glass rounded-lg p-3 hover:bg-accent/30 transition ${isSelected ? "ring-2 ring-primary" : ""} ${isCompare ? "ring-2 ring-amber-500" : ""}`}
-              >
-                <button className="w-full text-left" onClick={() => setSelected(s.id)}>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium truncate">
-                      It. {s.iteration} · {s.fit_model || "—"}
-                    </span>
-                    <Badge variant="outline" className={`text-[10px] ${meta.color}`}>
-                      {meta.label}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {new Date(s.session_date).toLocaleDateString("pt-BR")}
-                  </p>
-                </button>
-                {selected && selected !== s.id && (
-                  <button
-                    onClick={() => setCompareId(isCompare ? null : s.id)}
-                    className="mt-2 text-[11px] inline-flex items-center gap-1 text-muted-foreground hover:text-amber-600 transition"
-                  >
-                    <Columns2 className="h-3 w-3" />
-                    {isCompare ? "Remover comparação" : "Comparar com esta"}
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-
-      <div className="space-y-4">
-        {!selected || !currentSession ? (
-          <div className="glass rounded-xl p-8 text-center text-muted-foreground">
-            Selecione uma prova ao lado ou crie uma nova.
-          </div>
-        ) : (
-          <>
-            {/* Header com status seletor destacado */}
-            <div className="glass rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Prova · Iteração {currentSession.iteration}
-                </div>
-                <div className="font-semibold text-lg">
-                  {currentSession.fit_model || "Modelo não informado"}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {new Date(currentSession.session_date).toLocaleDateString("pt-BR")}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Definir status:</span>
-                <Select
-                  value={currentSession.status}
-                  onValueChange={handleStatusChange}
-                >
-                  <SelectTrigger className="w-56">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(STATUS_META).map(([k, m]) => (
-                      <SelectItem key={k} value={k} disabled={k === "aprovada" && criticalOpen > 0}>
-                        {m.label}
-                        {k === "aprovada" && criticalOpen > 0 ? " · bloqueado" : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Gate de aprovação */}
-            <div
-              className={`glass rounded-xl p-3 flex items-center justify-between text-xs gap-3 ${
-                criticalOpen > 0
-                  ? "border border-red-500/40 bg-red-500/5"
-                  : "border border-emerald-500/30 bg-emerald-500/5"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                {criticalOpen > 0 ? (
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
-                ) : (
-                  <CheckCheck className="h-4 w-4 text-emerald-600" />
-                )}
-                <span className="font-medium">
-                  {criticalOpen > 0
-                    ? `${criticalOpen} apontamento(s) crítico(s) aberto(s)`
-                    : "Peça pronta para aprovação"}
-                </span>
-              </div>
-              <div className="text-muted-foreground">
-                {ajustesOpen > 0 && (
-                  <span className="mr-2">
-                    <b className="text-foreground">{ajustesOpen}</b> ajuste(s) pendente(s)
-                  </span>
-                )}
-                {(comments.data ?? []).filter((c) => c.resolved).length} resolvido(s)
-              </div>
-            </div>
-
-            <MeasurementCheckPanel
-              fitSessionId={currentSession.id}
-              prototypeId={currentSession.prototype_id}
+      <div
+        className={`grid gap-6 ${compareId ? "lg:grid-cols-[320px_1fr_1fr]" : "lg:grid-cols-[360px_1fr]"}`}
+      >
+        <div className="space-y-4">
+          <div className="glass rounded-xl p-3 space-y-2">
+            <Input
+              placeholder="Modelo (nome)"
+              value={sf.fit_model}
+              onChange={(e) => setSf({ ...sf, fit_model: e.target.value })}
             />
-
-
-            {/* Galeria de fotos coletadas */}
-            {photos.length > 0 && (
-              <div className="glass rounded-xl p-4">
-                <div className="text-sm font-semibold flex items-center gap-2 mb-2">
-                  <ImageIcon className="h-4 w-4 text-primary" /> Fotos da prova ({photos.length})
-                </div>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                  {photos.map((url, i) => (
-                    <button
-                      key={url}
-                      type="button"
-                      onClick={() => setLightbox({ images: photos, index: i })}
-                      className="aspect-square rounded-md overflow-hidden border border-border hover:border-primary/60 transition"
-                    >
-                      <img src={url} alt="Foto da prova" className="w-full h-full object-cover" loading="lazy" />
-                    </button>
-                  ))}
-                </div>
-
-              </div>
-            )}
-
-            {/* Composer estilo chat */}
-            <div className="glass rounded-xl p-4 space-y-3">
-              <h2 className="font-semibold text-sm flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-primary" /> Novo apontamento
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-                <Input
-                  placeholder="POM (ex: cintura)"
-                  value={cf.pom_label}
-                  onChange={(e) => setCf({ ...cf, pom_label: e.target.value })}
-                />
-                <Select value={cf.severity} onValueChange={(v) => setCf({ ...cf, severity: v })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["info", "ajuste", "critico"].map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Textarea
-                  className="md:col-span-4 min-h-[70px]"
-                  placeholder="Escreva o comentário técnico…"
-                  value={cf.comment}
-                  onChange={(e) => setCf({ ...cf, comment: e.target.value })}
-                />
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <StorageUploader
-                  bucket="fit-photos"
-                  kind="image"
-                  value={cf.image_url}
-                  onChange={(url) => setCf({ ...cf, image_url: url })}
-                  label={cf.image_url ? "Trocar foto" : "Anexar foto"}
-                />
-                <Button onClick={() => addComment.mutate()} disabled={!cf.comment || addComment.isPending}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Publicar
-                </Button>
-              </div>
-            </div>
-
-            {/* Timeline / chat */}
-            <div className="space-y-3">
-              {(comments.data ?? []).length === 0 && (
-                <div className="text-sm text-muted-foreground text-center py-4">
-                  Sem apontamentos nesta prova ainda.
-                </div>
-              )}
-              {(comments.data ?? []).map((c) => (
+            <Input
+              type="number"
+              placeholder="Iteração"
+              value={sf.iteration}
+              onChange={(e) => setSf({ ...sf, iteration: Number(e.target.value) })}
+            />
+            <Textarea
+              placeholder="Observações"
+              value={sf.notes}
+              onChange={(e) => setSf({ ...sf, notes: e.target.value })}
+            />
+            <Button className="w-full" onClick={() => addSession.mutate()}>
+              <Plus className="h-4 w-4 mr-1" />
+              Nova prova
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {sessions.data?.map((s) => {
+              const meta = STATUS_META[s.status] ?? STATUS_META.aberta;
+              const isSelected = selected === s.id;
+              const isCompare = compareId === s.id;
+              return (
                 <div
-                  key={c.id}
-                  className={`glass rounded-xl p-3 flex gap-3 ${c.resolved ? "opacity-60" : ""}`}
+                  key={s.id}
+                  className={`w-full glass rounded-lg p-3 hover:bg-accent/30 transition ${isSelected ? "ring-2 ring-primary" : ""} ${isCompare ? "ring-2 ring-amber-500" : ""}`}
                 >
-                  <div className="flex flex-col items-center gap-1 pt-1">
-                    <Badge
-                      variant={
-                        c.severity === "critico"
-                          ? "destructive"
-                          : c.severity === "ajuste"
-                            ? "default"
-                            : "outline"
-                      }
-                      className="text-[10px]"
-                    >
-                      {c.severity}
-                    </Badge>
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                      <span>
-                        {c.pom_label ? <b className="text-foreground">{c.pom_label}</b> : "Comentário geral"}
+                  <button className="w-full text-left" onClick={() => setSelected(s.id)}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium truncate">
+                        It. {s.iteration} · {s.fit_model || "—"}
                       </span>
-                      <span>{new Date(c.created_at).toLocaleString("pt-BR")}</span>
+                      <Badge variant="outline" className={`text-[10px] ${meta.color}`}>
+                        {meta.label}
+                      </Badge>
                     </div>
-                    <p className={`text-sm ${c.resolved ? "line-through" : ""}`}>{c.comment}</p>
-                    {c.image_url && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {new Date(s.session_date).toLocaleDateString("pt-BR")}
+                    </p>
+                  </button>
+                  {selected && selected !== s.id && (
+                    <button
+                      onClick={() => setCompareId(isCompare ? null : s.id)}
+                      className="mt-2 text-[11px] inline-flex items-center gap-1 text-muted-foreground hover:text-amber-600 transition"
+                    >
+                      <Columns2 className="h-3 w-3" />
+                      {isCompare ? "Remover comparação" : "Comparar com esta"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {!selected || !currentSession ? (
+            <div className="glass rounded-xl p-8 text-center text-muted-foreground">
+              Selecione uma prova ao lado ou crie uma nova.
+            </div>
+          ) : (
+            <>
+              {/* Header com status seletor destacado */}
+              <div className="glass rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Prova · Iteração {currentSession.iteration}
+                  </div>
+                  <div className="font-semibold text-lg">
+                    {currentSession.fit_model || "Modelo não informado"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(currentSession.session_date).toLocaleDateString("pt-BR")}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Definir status:</span>
+                  <Select value={currentSession.status} onValueChange={handleStatusChange}>
+                    <SelectTrigger className="w-56">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(STATUS_META).map(([k, m]) => (
+                        <SelectItem
+                          key={k}
+                          value={k}
+                          disabled={k === "aprovada" && criticalOpen > 0}
+                        >
+                          {m.label}
+                          {k === "aprovada" && criticalOpen > 0 ? " · bloqueado" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Gate de aprovação */}
+              <div
+                className={`glass rounded-xl p-3 flex items-center justify-between text-xs gap-3 ${
+                  criticalOpen > 0
+                    ? "border border-red-500/40 bg-red-500/5"
+                    : "border border-emerald-500/30 bg-emerald-500/5"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {criticalOpen > 0 ? (
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                  ) : (
+                    <CheckCheck className="h-4 w-4 text-emerald-600" />
+                  )}
+                  <span className="font-medium">
+                    {criticalOpen > 0
+                      ? `${criticalOpen} apontamento(s) crítico(s) aberto(s)`
+                      : "Peça pronta para aprovação"}
+                  </span>
+                </div>
+                <div className="text-muted-foreground">
+                  {ajustesOpen > 0 && (
+                    <span className="mr-2">
+                      <b className="text-foreground">{ajustesOpen}</b> ajuste(s) pendente(s)
+                    </span>
+                  )}
+                  {(comments.data ?? []).filter((c) => c.resolved).length} resolvido(s)
+                </div>
+              </div>
+
+              <MeasurementCheckPanel
+                fitSessionId={currentSession.id}
+                prototypeId={currentSession.prototype_id}
+              />
+
+              {/* Galeria de fotos coletadas */}
+              {photos.length > 0 && (
+                <div className="glass rounded-xl p-4">
+                  <div className="text-sm font-semibold flex items-center gap-2 mb-2">
+                    <ImageIcon className="h-4 w-4 text-primary" /> Fotos da prova ({photos.length})
+                  </div>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                    {photos.map((url, i) => (
                       <button
+                        key={url}
                         type="button"
-                        onClick={() => setLightbox({ images: [c.image_url!], index: 0 })}
-                        className="inline-block"
+                        onClick={() => setLightbox({ images: photos, index: i })}
+                        className="aspect-square rounded-md overflow-hidden border border-border hover:border-primary/60 transition"
                       >
                         <img
-                          src={c.image_url}
-                          alt="Anexo"
-                          className="mt-1 max-h-48 rounded-md border border-border object-cover hover:border-primary/60 transition"
+                          src={url}
+                          alt="Foto da prova"
+                          className="w-full h-full object-cover"
                           loading="lazy"
                         />
                       </button>
-                    )}
+                    ))}
                   </div>
+                </div>
+              )}
+
+              {/* Composer estilo chat */}
+              <div className="glass rounded-xl p-4 space-y-3">
+                <h2 className="font-semibold text-sm flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-primary" /> Novo apontamento
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                  <Input
+                    placeholder="POM (ex: cintura)"
+                    value={cf.pom_label}
+                    onChange={(e) => setCf({ ...cf, pom_label: e.target.value })}
+                  />
+                  <Select value={cf.severity} onValueChange={(v) => setCf({ ...cf, severity: v })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {["info", "ajuste", "critico"].map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Textarea
+                    className="md:col-span-4 min-h-[70px]"
+                    placeholder="Escreva o comentário técnico…"
+                    value={cf.comment}
+                    onChange={(e) => setCf({ ...cf, comment: e.target.value })}
+                  />
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <StorageUploader
+                    bucket="fit-photos"
+                    kind="image"
+                    value={cf.image_url}
+                    onChange={(url) => setCf({ ...cf, image_url: url })}
+                    label={cf.image_url ? "Trocar foto" : "Anexar foto"}
+                  />
                   <Button
-                    size="icon"
-                    variant="ghost"
-                    aria-label={c.resolved ? "Reabrir comentário" : "Resolver comentário"}
-                    onClick={() => toggle.mutate(c)}
+                    onClick={() => addComment.mutate()}
+                    disabled={!cf.comment || addComment.isPending}
                   >
-                    <CheckCircle2 className="h-4 w-4" />
+                    <Plus className="h-4 w-4 mr-1" />
+                    Publicar
                   </Button>
                 </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Coluna de comparação lado-a-lado */}
-      {compareId && compareSession && (
-        <div className="space-y-4">
-          <div className="glass rounded-xl p-4 border-2 border-amber-500/40">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <div className="text-xs uppercase tracking-wider text-amber-600 font-medium">
-                  Comparando · Iteração {compareSession.iteration}
-                </div>
-                <div className="font-semibold text-lg">
-                  {compareSession.fit_model || "Modelo não informado"}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {new Date(compareSession.session_date).toLocaleDateString("pt-BR")}
-                </div>
               </div>
-              <button
-                onClick={() => setCompareId(null)}
-                className="p-1.5 rounded-md hover:bg-accent"
-                aria-label="Fechar comparação"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <Badge
-              variant="outline"
-              className={`mt-2 text-[10px] ${(STATUS_META[compareSession.status] ?? STATUS_META.aberta).color}`}
-            >
-              {(STATUS_META[compareSession.status] ?? STATUS_META.aberta).label}
-            </Badge>
-          </div>
 
-          {(() => {
-            const cPhotos = (compareComments.data ?? [])
-              .filter((c) => !!c.image_url)
-              .map((c) => c.image_url!);
-            return cPhotos.length > 0 ? (
-              <div className="glass rounded-xl p-4">
-                <div className="text-sm font-semibold flex items-center gap-2 mb-2">
-                  <ImageIcon className="h-4 w-4 text-amber-600" /> Fotos ({cPhotos.length})
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {cPhotos.map((url, i) => (
-                    <button
-                      key={url}
-                      type="button"
-                      onClick={() => setLightbox({ images: cPhotos, index: i })}
-                      className="aspect-square rounded-md overflow-hidden border border-border hover:border-amber-500/60 transition"
-                    >
-                      <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null;
-          })()}
-
-          <div className="space-y-3">
-            {(compareComments.data ?? []).length === 0 ? (
-              <div className="text-sm text-muted-foreground text-center py-4">
-                Sem apontamentos nesta prova.
-              </div>
-            ) : (
-              (compareComments.data ?? []).map((c) => (
-                <div
-                  key={c.id}
-                  className={`glass rounded-xl p-3 ${c.resolved ? "opacity-60" : ""}`}
-                >
-                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-1">
-                    <Badge
-                      variant={
-                        c.severity === "critico"
-                          ? "destructive"
-                          : c.severity === "ajuste"
-                            ? "default"
-                            : "outline"
-                      }
-                      className="text-[10px]"
-                    >
-                      {c.severity}
-                    </Badge>
-                    <span>{new Date(c.created_at).toLocaleDateString("pt-BR")}</span>
+              {/* Timeline / chat */}
+              <div className="space-y-3">
+                {(comments.data ?? []).length === 0 && (
+                  <div className="text-sm text-muted-foreground text-center py-4">
+                    Sem apontamentos nesta prova ainda.
                   </div>
-                  {c.pom_label && (
-                    <div className="text-xs font-medium mb-1">{c.pom_label}</div>
-                  )}
-                  <p className={`text-sm ${c.resolved ? "line-through" : ""}`}>{c.comment}</p>
-                </div>
-              ))
-            )}
-          </div>
+                )}
+                {(comments.data ?? []).map((c) => (
+                  <div
+                    key={c.id}
+                    className={`glass rounded-xl p-3 flex gap-3 ${c.resolved ? "opacity-60" : ""}`}
+                  >
+                    <div className="flex flex-col items-center gap-1 pt-1">
+                      <Badge
+                        variant={
+                          c.severity === "critico"
+                            ? "destructive"
+                            : c.severity === "ajuste"
+                              ? "default"
+                              : "outline"
+                        }
+                        className="text-[10px]"
+                      >
+                        {c.severity}
+                      </Badge>
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                        <span>
+                          {c.pom_label ? (
+                            <b className="text-foreground">{c.pom_label}</b>
+                          ) : (
+                            "Comentário geral"
+                          )}
+                        </span>
+                        <span>{new Date(c.created_at).toLocaleString("pt-BR")}</span>
+                      </div>
+                      <p className={`text-sm ${c.resolved ? "line-through" : ""}`}>{c.comment}</p>
+                      {c.image_url && (
+                        <button
+                          type="button"
+                          onClick={() => setLightbox({ images: [c.image_url!], index: 0 })}
+                          className="inline-block"
+                        >
+                          <img
+                            src={c.image_url}
+                            alt="Anexo"
+                            className="mt-1 max-h-48 rounded-md border border-border object-cover hover:border-primary/60 transition"
+                            loading="lazy"
+                          />
+                        </button>
+                      )}
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label={c.resolved ? "Reabrir comentário" : "Resolver comentário"}
+                      onClick={() => toggle.mutate(c)}
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
-      )}
+
+        {/* Coluna de comparação lado-a-lado */}
+        {compareId && compareSession && (
+          <div className="space-y-4">
+            <div className="glass rounded-xl p-4 border-2 border-amber-500/40">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-amber-600 font-medium">
+                    Comparando · Iteração {compareSession.iteration}
+                  </div>
+                  <div className="font-semibold text-lg">
+                    {compareSession.fit_model || "Modelo não informado"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(compareSession.session_date).toLocaleDateString("pt-BR")}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setCompareId(null)}
+                  className="p-1.5 rounded-md hover:bg-accent"
+                  aria-label="Fechar comparação"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <Badge
+                variant="outline"
+                className={`mt-2 text-[10px] ${(STATUS_META[compareSession.status] ?? STATUS_META.aberta).color}`}
+              >
+                {(STATUS_META[compareSession.status] ?? STATUS_META.aberta).label}
+              </Badge>
+            </div>
+
+            {(() => {
+              const cPhotos = (compareComments.data ?? [])
+                .filter((c) => !!c.image_url)
+                .map((c) => c.image_url!);
+              return cPhotos.length > 0 ? (
+                <div className="glass rounded-xl p-4">
+                  <div className="text-sm font-semibold flex items-center gap-2 mb-2">
+                    <ImageIcon className="h-4 w-4 text-amber-600" /> Fotos ({cPhotos.length})
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {cPhotos.map((url, i) => (
+                      <button
+                        key={url}
+                        type="button"
+                        onClick={() => setLightbox({ images: cPhotos, index: i })}
+                        className="aspect-square rounded-md overflow-hidden border border-border hover:border-amber-500/60 transition"
+                      >
+                        <img
+                          src={url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })()}
+
+            <div className="space-y-3">
+              {(compareComments.data ?? []).length === 0 ? (
+                <div className="text-sm text-muted-foreground text-center py-4">
+                  Sem apontamentos nesta prova.
+                </div>
+              ) : (
+                (compareComments.data ?? []).map((c) => (
+                  <div
+                    key={c.id}
+                    className={`glass rounded-xl p-3 ${c.resolved ? "opacity-60" : ""}`}
+                  >
+                    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground mb-1">
+                      <Badge
+                        variant={
+                          c.severity === "critico"
+                            ? "destructive"
+                            : c.severity === "ajuste"
+                              ? "default"
+                              : "outline"
+                        }
+                        className="text-[10px]"
+                      >
+                        {c.severity}
+                      </Badge>
+                      <span>{new Date(c.created_at).toLocaleDateString("pt-BR")}</span>
+                    </div>
+                    {c.pom_label && <div className="text-xs font-medium mb-1">{c.pom_label}</div>}
+                    <p className={`text-sm ${c.resolved ? "line-through" : ""}`}>{c.comment}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <ImageLightbox
@@ -588,4 +628,3 @@ function Page() {
     </div>
   );
 }
-

@@ -12,7 +12,13 @@ export type { AdjustmentSector } from "./prototype-adjustments";
 
 export function PrototypeAdjustmentsButton(props: Props) {
   return (
-    <Suspense fallback={<Button variant="outline" size="sm" disabled>Ajustes</Button>}>
+    <Suspense
+      fallback={
+        <Button variant="outline" size="sm" disabled>
+          Ajustes
+        </Button>
+      }
+    >
       <Inner {...props} />
     </Suspense>
   );

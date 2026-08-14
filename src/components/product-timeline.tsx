@@ -44,10 +44,7 @@ type EventRow = {
   actor_email: string | null;
 };
 
-const SOURCE_META: Record<
-  string,
-  { label: string; icon: React.ReactNode }
-> = {
+const SOURCE_META: Record<string, { label: string; icon: React.ReactNode }> = {
   product: { label: "Produto", icon: <Package className="size-3.5" /> },
   prototype: { label: "Protótipo", icon: <Sparkles className="size-3.5" /> },
   prototype_gate: {
@@ -113,41 +110,31 @@ export function ProductTimeline({ productId }: { productId: string; createdAt?: 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["v-product-events", productId],
+      initialPageParam: null as string | null,
+      queryFn: async ({ pageParam }) => {
+        let q = supabase
+          .from("v_product_events")
+          .select(
+            "event_id, product_id, occurred_at, source, event_type, title, detail, severity, ref_table, ref_id, actor_email",
+          )
+          .eq("product_id", productId)
+          .order("occurred_at", { ascending: false })
+          .order("event_id", { ascending: false })
+          .limit(PAGE_SIZE);
+        if (pageParam) q = q.lt("occurred_at", pageParam);
+        const { data, error } = await q;
+        if (error) throw error;
+        return (data ?? []) as EventRow[];
+      },
+      getNextPageParam: (last) =>
+        last.length < PAGE_SIZE ? undefined : (last[last.length - 1]?.occurred_at ?? undefined),
+      staleTime: 30_000,
+    });
 
-  const {
-    data,
-    isLoading,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ["v-product-events", productId],
-    initialPageParam: null as string | null,
-    queryFn: async ({ pageParam }) => {
-      let q = supabase
-        .from("v_product_events")
-        .select(
-          "event_id, product_id, occurred_at, source, event_type, title, detail, severity, ref_table, ref_id, actor_email",
-        )
-        .eq("product_id", productId)
-        .order("occurred_at", { ascending: false })
-        .order("event_id", { ascending: false })
-        .limit(PAGE_SIZE);
-      if (pageParam) q = q.lt("occurred_at", pageParam);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as EventRow[];
-    },
-    getNextPageParam: (last) =>
-      last.length < PAGE_SIZE ? undefined : last[last.length - 1]?.occurred_at ?? undefined,
-    staleTime: 30_000,
-  });
-
-  const all = useMemo<EventRow[]>(
-    () => (data?.pages ?? []).flat(),
-    [data],
-  );
+  const all = useMemo<EventRow[]>(() => (data?.pages ?? []).flat(), [data]);
 
   const sources = useMemo(() => {
     const set = new Set<string>();
@@ -181,7 +168,6 @@ export function ProductTimeline({ productId }: { productId: string; createdAt?: 
     io.observe(el);
     return () => io.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage, filter, filtered.length]);
-
 
   return (
     <div className="space-y-4">
@@ -223,18 +209,11 @@ export function ProductTimeline({ productId }: { productId: string; createdAt?: 
           <Loader2 className="size-3 animate-spin" /> Carregando histórico…
         </div>
       ) : error ? (
-        <div className="text-xs text-destructive">
-          Não foi possível carregar a timeline.
-        </div>
+        <div className="text-xs text-destructive">Não foi possível carregar a timeline.</div>
       ) : filtered.length === 0 ? (
-        <div className="text-xs text-muted-foreground">
-          Sem eventos registrados ainda.
-        </div>
+        <div className="text-xs text-muted-foreground">Sem eventos registrados ainda.</div>
       ) : (
-        <div
-          ref={scrollRef}
-          className="max-h-[560px] overflow-y-auto pr-1"
-        >
+        <div ref={scrollRef} className="max-h-[560px] overflow-y-auto pr-1">
           <div
             className="relative border-l border-border ml-2"
             style={{ height: `${rowVirtualizer.getTotalSize() + 56}px` }}
@@ -311,7 +290,6 @@ export function ProductTimeline({ productId }: { productId: string; createdAt?: 
           </div>
         </div>
       )}
-
     </div>
   );
 }

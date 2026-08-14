@@ -1,12 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,13 +42,7 @@ const num = (n: number, d = 0) =>
 const brl = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 2 });
 
-export function MrpMaterialDrawer({
-  row,
-  onClose,
-}: {
-  row: MrpRow | null;
-  onClose: () => void;
-}) {
+export function MrpMaterialDrawer({ row, onClose }: { row: MrpRow | null; onClose: () => void }) {
   const qc = useQueryClient();
   const detailFn = useServerFn(getMaterialDetail);
   const buyFn = useServerFn(generatePurchaseSuggestion);
@@ -154,13 +143,17 @@ export function MrpMaterialDrawer({
                 disabled={buy.isPending || qty <= 0}
                 className="gap-2"
               >
-                {buy.isPending ? <Loader2 className="size-4 animate-spin" /> : <ShoppingCart className="size-4" />}
+                {buy.isPending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <ShoppingCart className="size-4" />
+                )}
                 Gerar solicitação
               </Button>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
-              Cria PO em rascunho com fornecedor preferencial e entrega prevista (hoje + {row.leadTimeDays}d).
-              Valor estimado: {brl(row.suggestedValue)}.
+              Cria PO em rascunho com fornecedor preferencial e entrega prevista (hoje +{" "}
+              {row.leadTimeDays}d). Valor estimado: {brl(row.suggestedValue)}.
             </p>
           </div>
         )}
@@ -176,18 +169,28 @@ export function MrpMaterialDrawer({
 
           <TabsContent value="planejamento" className="mt-4 space-y-2">
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <Stat label="Consumo diário" value={`${num(row.dailyConsumption, 1)} ${row.unit}/d`} />
+              <Stat
+                label="Consumo diário"
+                value={`${num(row.dailyConsumption, 1)} ${row.unit}/d`}
+              />
               <Stat label="Demanda mensal" value={`${num(row.monthlyDemand)} ${row.unit}`} />
               <Stat label="Demanda anual" value={`${num(row.annualDemand)} ${row.unit}`} />
               <Stat label="Desvio padrão (σ)" value={num(row.stdDev, 1)} />
               <Stat label="Nível de serviço" value={`${row.serviceLevel}% (Z=${row.z})`} />
               <Stat label="Lead time" value={`${row.leadTimeDays}d`} />
               <Stat label="Estoque segurança" value={`${num(row.safetyStock)} ${row.unit}`} />
-              <Stat label="Ponto de pedido" value={`${num(row.reorderPoint)} ${row.unit}`} highlight />
+              <Stat
+                label="Ponto de pedido"
+                value={`${num(row.reorderPoint)} ${row.unit}`}
+                highlight
+              />
               <Stat label="Estoque mínimo" value={`${num(row.minimum)} ${row.unit}`} />
               <Stat label="LEC" value={`${num(row.eoq)} ${row.unit}`} />
               <Stat label="Estoque máximo" value={`${num(row.maximum)} ${row.unit}`} />
-              <Stat label="Cobertura" value={row.coverageDays !== null ? `${row.coverageDays}d` : "—"} />
+              <Stat
+                label="Cobertura"
+                value={row.coverageDays !== null ? `${row.coverageDays}d` : "—"}
+              />
               <Stat label="Capital empatado" value={brl(row.capitalEmpatado)} />
               <Stat label="Giro estoque" value={`${row.turnover.toFixed(1)}×`} />
             </div>
@@ -229,11 +232,16 @@ export function MrpMaterialDrawer({
                   onClick={() => saveOverrides.mutate()}
                   disabled={saveOverrides.isPending}
                 >
-                  {saveOverrides.isPending ? <Loader2 className="size-3.5 animate-spin" /> : "Salvar"}
+                  {saveOverrides.isPending ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    "Salvar"
+                  )}
                 </Button>
               </div>
               <p className="text-[10px] text-muted-foreground mt-2">
-                Sobrescreve a config global do MRP só para este material. ES = Z × σ × √LT é recalculado.
+                Sobrescreve a config global do MRP só para este material. ES = Z × σ × √LT é
+                recalculado.
               </p>
             </div>
           </TabsContent>
@@ -295,7 +303,9 @@ export function MrpMaterialDrawer({
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="tabular-nums">{num(p.quantity)} {row.unit}</div>
+                      <div className="tabular-nums">
+                        {num(p.quantity)} {row.unit}
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         {p.expectedDate ?? "sem data"}
                       </div>

@@ -11,7 +11,6 @@ import {
   Factory,
   TrendingUp,
   AlertTriangle,
-  
   Timer,
   ShieldAlert,
 } from "lucide-react";

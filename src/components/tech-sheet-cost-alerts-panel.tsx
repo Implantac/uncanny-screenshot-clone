@@ -5,8 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, TrendingUp, TrendingDown, ShieldCheck } from "lucide-react";
 import { getTechSheetCostAlerts } from "@/lib/tech-sheet-cost-alerts.functions";
 
-const brl = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 const DRIVER_LABEL: Record<string, string> = {
   material: "Material",
@@ -61,9 +60,7 @@ export function TechSheetCostAlertsPanel() {
               key={a.techSheetId}
               className="flex items-center gap-3 rounded-md border bg-muted/30 p-2.5"
             >
-              <Trend
-                className={`size-4 shrink-0 ${up ? "text-red-400" : "text-emerald-400"}`}
-              />
+              <Trend className={`size-4 shrink-0 ${up ? "text-red-400" : "text-emerald-400"}`} />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">
                   {a.productName ?? a.sku ?? a.techSheetId.slice(0, 8)}

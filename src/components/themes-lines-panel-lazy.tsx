@@ -19,7 +19,13 @@ export function ThemesPanel(props: { collectionId: string; collectionName: strin
 
 export function LinesDialogButton() {
   return (
-    <Suspense fallback={<Button variant="outline" size="sm" disabled>Linhas</Button>}>
+    <Suspense
+      fallback={
+        <Button variant="outline" size="sm" disabled>
+          Linhas
+        </Button>
+      }
+    >
       <LinesInner />
     </Suspense>
   );

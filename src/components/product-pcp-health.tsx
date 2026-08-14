@@ -41,8 +41,12 @@ export function ProductPcpHealthPanel({ productId }: { productId: string }) {
     <div className="space-y-4">
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi icon={Factory} label="OPs abertas" value={String(data.open_orders)}
-             hint={`${data.open_qty} pç em andamento`} />
+        <Kpi
+          icon={Factory}
+          label="OPs abertas"
+          value={String(data.open_orders)}
+          hint={`${data.open_qty} pç em andamento`}
+        />
         <Kpi
           icon={AlertTriangle}
           label="OPs atrasadas"
@@ -68,9 +72,7 @@ export function ProductPcpHealthPanel({ productId }: { productId: string }) {
           icon={Package}
           label="Cobertura de material"
           value={
-            data.reservations.coverage_pct != null
-              ? `${data.reservations.coverage_pct}%`
-              : "—"
+            data.reservations.coverage_pct != null ? `${data.reservations.coverage_pct}%` : "—"
           }
           tone={
             data.reservations.shortage_items > 0

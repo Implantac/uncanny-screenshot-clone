@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMemo, useState } from "react";
 import { ShieldCheck, Activity, AlertTriangle, Download } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/_app/audit")({ head: () => ({
+export const Route = createFileRoute("/_authenticated/_app/audit")({
+  head: () => ({
     meta: [
       { title: "Auditoria · USE MODA OS" },
       { name: "description", content: "Trilha de auditoria completa do sistema." },
@@ -15,7 +16,9 @@ export const Route = createFileRoute("/_authenticated/_app/audit")({ head: () =>
       { name: "twitter:title", content: "Auditoria · USE MODA OS" },
       { name: "twitter:description", content: "Trilha de auditoria completa do sistema." },
     ],
-  }), component: Audit });
+  }),
+  component: Audit,
+});
 
 type Log = {
   id: string;

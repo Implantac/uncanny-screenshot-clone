@@ -73,7 +73,7 @@ export function ProductQuickCreateDialog({
     setName("");
     setSku("");
     setSkuTouched(false);
-    setCollectionId(defaultCollectionId ?? (collections[0]?.id ?? "none"));
+    setCollectionId(defaultCollectionId ?? collections[0]?.id ?? "none");
     setShowNewColl(collections.length === 0);
     setNewCollName("");
     setNewCollSeason("Verão");
@@ -140,11 +140,7 @@ export function ProductQuickCreateDialog({
         colors: [],
         owner_id: userId,
       };
-      const { data, error } = await supabase
-        .from("products")
-        .insert(payload)
-        .select("id")
-        .single();
+      const { data, error } = await supabase.from("products").insert(payload).select("id").single();
       if (error) throw error;
       // Auto-follow: criador vira watcher e o produto aparece em "Meus Produtos"
       await supabase
@@ -288,7 +284,6 @@ export function ProductQuickCreateDialog({
               </div>
             )}
           </div>
-
 
           <div className="space-y-2">
             <Label htmlFor="qc-sku">

@@ -68,14 +68,7 @@ export const Route = createFileRoute("/_authenticated/_app/acompanhamento-produc
   component: AcompanhamentoProducao,
 });
 
-type Stage =
-  | "cad"
-  | "corte"
-  | "costura"
-  | "acabamento"
-  | "qualidade"
-  | "expedicao"
-  | "entregue";
+type Stage = "cad" | "corte" | "costura" | "acabamento" | "qualidade" | "expedicao" | "entregue";
 
 type Order = {
   id: string;
@@ -274,7 +267,19 @@ function AcompanhamentoProducao() {
   const navigate = useNavigate({ from: Route.fullPath });
   const updateSearch = (patch: Partial<typeof search>) =>
     navigate({ search: (prev: typeof search) => ({ ...prev, ...patch }), replace: true });
-  const { q, colKey, supplierId, collection, category, productGroup, productLine, supplierCat, dueFrom, dueTo, groupBy } = search;
+  const {
+    q,
+    colKey,
+    supplierId,
+    collection,
+    category,
+    productGroup,
+    productLine,
+    supplierCat,
+    dueFrom,
+    dueTo,
+    groupBy,
+  } = search;
   const statusF = search.statusF as StatusKey | "";
   const origin = search.origin;
   const listFilter = search.listFilter;
@@ -290,8 +295,10 @@ function AcompanhamentoProducao() {
   const setSupplierCat = (v: string) => updateSearch({ supplierCat: v });
   const setDueFrom = (v: string) => updateSearch({ dueFrom: v });
   const setDueTo = (v: string) => updateSearch({ dueTo: v });
-  const setListFilter = (v: "" | "no_prazo" | "atrasado" | "finalizado") => updateSearch({ listFilter: v });
-  const setGroupBy = (v: "none" | "collection" | "supplier" | "line") => updateSearch({ groupBy: v });
+  const setListFilter = (v: "" | "no_prazo" | "atrasado" | "finalizado") =>
+    updateSearch({ listFilter: v });
+  const setGroupBy = (v: "none" | "collection" | "supplier" | "line") =>
+    updateSearch({ groupBy: v });
 
   // UI state local (não vai pra URL)
   const [drawer, setDrawer] = useState<Order | null>(null);
@@ -310,8 +317,7 @@ function AcompanhamentoProducao() {
   }, [tvMode, qc]);
 
   const move = useMutation({
-    mutationFn: (vars: { orderId: string; toColumn: string }) =>
-      moveOrderToColumn({ data: vars }),
+    mutationFn: (vars: { orderId: string; toColumn: string }) => moveOrderToColumn({ data: vars }),
     onSuccess: () => {
       toast.success("Lote movido");
       qc.invalidateQueries({ queryKey: ["acompanhamento-producao"] });
@@ -374,7 +380,21 @@ function AcompanhamentoProducao() {
       if (dueTo && (!o.due_date || o.due_date > dueTo)) return false;
       return true;
     });
-  }, [orders, q, colKey, supplierId, origin, statusF, collection, category, productGroup, productLine, supplierCat, dueFrom, dueTo]);
+  }, [
+    orders,
+    q,
+    colKey,
+    supplierId,
+    origin,
+    statusF,
+    collection,
+    category,
+    productGroup,
+    productLine,
+    supplierCat,
+    dueFrom,
+    dueTo,
+  ]);
 
   // KPIs
   const kpis = useMemo(() => {
@@ -422,7 +442,15 @@ function AcompanhamentoProducao() {
         else if (s === "atencao") atencao++;
         else if (s === "atrasado") atrasado++;
       });
-      return { setor: c.label, key: c.key, lotes: items.length, pecas: qty, noPrazo, atencao, atrasado };
+      return {
+        setor: c.label,
+        key: c.key,
+        lotes: items.length,
+        pecas: qty,
+        noPrazo,
+        atencao,
+        atrasado,
+      };
     });
   }, [grouped]);
 
@@ -430,7 +458,14 @@ function AcompanhamentoProducao() {
   const supplierSummary = useMemo(() => {
     const m = new Map<
       string,
-      { terceiro: string; processo: string; lotes: number; pecas: number; noPrazo: number; atrasado: number }
+      {
+        terceiro: string;
+        processo: string;
+        lotes: number;
+        pecas: number;
+        noPrazo: number;
+        atrasado: number;
+      }
     >();
     filtered
       .filter((o) => o.outsourced && o.supplier_id)
@@ -549,7 +584,10 @@ function AcompanhamentoProducao() {
     expedicao: 24,
   };
   const slaBySetor = useMemo(() => {
-    const map = new Map<string, { setor: string; key: string; target: number; lotes: number; within: number; avgH: number }>();
+    const map = new Map<
+      string,
+      { setor: string; key: string; target: number; lotes: number; within: number; avgH: number }
+    >();
     filtered
       .filter((o) => o.stage !== "entregue")
       .forEach((o) => {
@@ -557,14 +595,25 @@ function AcompanhamentoProducao() {
         if (!col || col.key === "finalizado") return;
         const target = SLA_HOURS[col.key] ?? 48;
         const h = (Date.now() - new Date(o.stage_updated_at).getTime()) / 3600000;
-        const v = map.get(col.key) ?? { setor: col.label, key: col.key, target, lotes: 0, within: 0, avgH: 0 };
+        const v = map.get(col.key) ?? {
+          setor: col.label,
+          key: col.key,
+          target,
+          lotes: 0,
+          within: 0,
+          avgH: 0,
+        };
         v.lotes += 1;
         if (h <= target) v.within += 1;
         v.avgH += h;
         map.set(col.key, v);
       });
     return Array.from(map.values())
-      .map((v) => ({ ...v, avgH: Math.round(v.avgH / Math.max(1, v.lotes)), pct: Math.round((v.within / Math.max(1, v.lotes)) * 100) }))
+      .map((v) => ({
+        ...v,
+        avgH: Math.round(v.avgH / Math.max(1, v.lotes)),
+        pct: Math.round((v.within / Math.max(1, v.lotes)) * 100),
+      }))
       .sort((a, b) => a.pct - b.pct);
   }, [filtered]);
 
@@ -622,7 +671,8 @@ function AcompanhamentoProducao() {
         const atrasoEntrega = diasAteEntrega !== null && diasAteEntrega < 0 ? -diasAteEntrega : 0;
         // Score: dias parado pesa 1x, atraso de entrega pesa 2x (impacto no cliente),
         // bônus por urgência (entrega <=1d) e por volume (acima de 100 peças).
-        const urgenciaBonus = diasAteEntrega !== null && diasAteEntrega <= 1 && diasAteEntrega >= 0 ? 4 : 0;
+        const urgenciaBonus =
+          diasAteEntrega !== null && diasAteEntrega <= 1 && diasAteEntrega >= 0 ? 4 : 0;
         const volumeBonus = (o.quantity ?? 0) >= 100 ? 2 : 0;
         const score = dias + atrasoEntrega * 2 + urgenciaBonus + volumeBonus;
         const severity: "critico" | "alto" | "medio" =
@@ -637,10 +687,25 @@ function AcompanhamentoProducao() {
     return { rows: enriched, totalPecas, totalDias };
   }, [filtered]);
 
-  const SEVERITY_META: Record<"critico" | "alto" | "medio", { label: string; cls: string; dot: string }> = {
-    critico: { label: "Crítico", cls: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/40", dot: "bg-red-500" },
-    alto: { label: "Alto", cls: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40", dot: "bg-amber-500" },
-    medio: { label: "Médio", cls: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/40", dot: "bg-yellow-400" },
+  const SEVERITY_META: Record<
+    "critico" | "alto" | "medio",
+    { label: string; cls: string; dot: string }
+  > = {
+    critico: {
+      label: "Crítico",
+      cls: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/40",
+      dot: "bg-red-500",
+    },
+    alto: {
+      label: "Alto",
+      cls: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40",
+      dot: "bg-amber-500",
+    },
+    medio: {
+      label: "Médio",
+      cls: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/40",
+      dot: "bg-yellow-400",
+    },
   };
 
   // Chips de filtros ativos
@@ -666,14 +731,30 @@ function AcompanhamentoProducao() {
       chips.push({ label: `Status: ${STATUS_META[statusF].label}`, clear: () => setStatusF("") });
     if (collection) chips.push({ label: `Coleção: ${collection}`, clear: () => setCollection("") });
     if (category) chips.push({ label: `Tipo: ${category}`, clear: () => setCategory("") });
-    if (productLine) chips.push({ label: `Linha: ${productLine}`, clear: () => setProductLine("") });
-    if (productGroup) chips.push({ label: `Grupo: ${productGroup}`, clear: () => setProductGroup("") });
-    if (supplierCat) chips.push({ label: `Cat. terceiro: ${supplierCat}`, clear: () => setSupplierCat("") });
+    if (productLine)
+      chips.push({ label: `Linha: ${productLine}`, clear: () => setProductLine("") });
+    if (productGroup)
+      chips.push({ label: `Grupo: ${productGroup}`, clear: () => setProductGroup("") });
+    if (supplierCat)
+      chips.push({ label: `Cat. terceiro: ${supplierCat}`, clear: () => setSupplierCat("") });
     if (dueFrom) chips.push({ label: `De ${dueFrom}`, clear: () => setDueFrom("") });
     if (dueTo) chips.push({ label: `Até ${dueTo}`, clear: () => setDueTo("") });
     return chips;
-  }, [q, colKey, supplierId, origin, statusF, collection, category, productGroup, productLine, supplierCat, dueFrom, dueTo, suppliers]);
-
+  }, [
+    q,
+    colKey,
+    supplierId,
+    origin,
+    statusF,
+    collection,
+    category,
+    productGroup,
+    productLine,
+    supplierCat,
+    dueFrom,
+    dueTo,
+    suppliers,
+  ]);
 
   const exportRows = () => {
     exportToCsv(
@@ -754,15 +835,36 @@ function AcompanhamentoProducao() {
           <ViewPresetsDropdown
             module="acompanhamento_producao"
             current={{
-              q, colKey, supplierId, statusF, origin, collection, category,
-              productGroup, productLine, supplierCat, dueFrom, dueTo,
-              listFilter, groupBy,
+              q,
+              colKey,
+              supplierId,
+              statusF,
+              origin,
+              collection,
+              category,
+              productGroup,
+              productLine,
+              supplierCat,
+              dueFrom,
+              dueTo,
+              listFilter,
+              groupBy,
             }}
             onClear={() => {
-              setQ(""); setColKey(""); setSupplierId(""); setStatusF("");
-              setOrigin(""); setCollection(""); setCategory(""); setProductGroup("");
-              setProductLine(""); setSupplierCat(""); setDueFrom(""); setDueTo("");
-              setListFilter(""); setGroupBy("none");
+              setQ("");
+              setColKey("");
+              setSupplierId("");
+              setStatusF("");
+              setOrigin("");
+              setCollection("");
+              setCategory("");
+              setProductGroup("");
+              setProductLine("");
+              setSupplierCat("");
+              setDueFrom("");
+              setDueTo("");
+              setListFilter("");
+              setGroupBy("none");
             }}
             onApply={(f: ViewPresetFilters) => {
               const s = (k: string) => (typeof f[k] === "string" ? (f[k] as string) : undefined);
@@ -795,331 +897,355 @@ function AcompanhamentoProducao() {
 
       {/* FILTROS */}
       {!tvMode && (
-      <div className="rounded-xl border border-border bg-card p-3 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <Filter className="size-3.5" /> Filtros
-          </div>
-          <button
-            onClick={clearFilters}
-            className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-          >
-            <X className="size-3" /> Limpar
-          </button>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="OP, lote, produto, ref…"
-            className="col-span-2 text-xs px-2 py-1.5 rounded border border-border bg-background"
-          />
-          <select
-            value={colKey}
-            onChange={(e) => setColKey(e.target.value)}
-            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
-          >
-            <option value="">Setor atual</option>
-            {COLUMNS.map((c) => (
-              <option key={c.key} value={c.key}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={supplierId}
-            onChange={(e) => setSupplierId(e.target.value)}
-            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
-          >
-            <option value="">Terceiro</option>
-            {suppliers.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={origin}
-            onChange={(e) => setOrigin(e.target.value as any)}
-            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
-          >
-            <option value="">Interna + Externa</option>
-            <option value="interna">Somente Interna</option>
-            <option value="externa">Somente Externa</option>
-          </select>
-          <select
-            value={statusF}
-            onChange={(e) => setStatusF(e.target.value as any)}
-            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
-          >
-            <option value="">Status do prazo</option>
-            <option value="no_prazo">No prazo</option>
-            <option value="atencao">Atenção</option>
-            <option value="atrasado">Atrasado</option>
-            <option value="sem_previsao">Sem previsão</option>
-            <option value="finalizado">Finalizado</option>
-          </select>
-          <select
-            value={collection}
-            onChange={(e) => setCollection(e.target.value)}
-            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
-          >
-            <option value="">Coleção</option>
-            {collections.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
-          >
-            <option value="">Tipo de produto</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <select
-            value={productLine}
-            onChange={(e) => setProductLine(e.target.value)}
-            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
-          >
-            <option value="">Linha de produto</option>
-            {productLines.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <select
-            value={productGroup}
-            onChange={(e) => setProductGroup(e.target.value)}
-            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
-          >
-            <option value="">Grupo / Gênero</option>
-            {productGroups.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <select
-            value={supplierCat}
-            onChange={(e) => setSupplierCat(e.target.value)}
-            className="text-xs px-2 py-1.5 rounded border border-border bg-background"
-          >
-            <option value="">Categoria do terceiro</option>
-            {supplierCats.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <div className="flex items-center gap-1">
-            <input
-              type="date"
-              value={dueFrom}
-              onChange={(e) => setDueFrom(e.target.value)}
-              className="w-full text-xs px-2 py-1.5 rounded border border-border bg-background"
-            />
-            <span className="text-[10px] text-muted-foreground">→</span>
-            <input
-              type="date"
-              value={dueTo}
-              onChange={(e) => setDueTo(e.target.value)}
-              className="w-full text-xs px-2 py-1.5 rounded border border-border bg-background"
-            />
-          </div>
-        </div>
-
-        {/* Chips de filtros ativos */}
-        {activeChips.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            {activeChips.map((c, i) => (
-              <button
-                key={i}
-                onClick={c.clear}
-                className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
-                title="Remover filtro"
-              >
-                {c.label}
-                <X className="size-2.5" />
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      )}
-
-      {!tvMode && (<>
-      {/* CHIPS DE STATUS — filtragem em 1 clique */}
-      <div className="flex flex-wrap items-center gap-1.5">
-        {(["no_prazo", "atencao", "atrasado", "sem_previsao", "finalizado"] as StatusKey[]).map(
-          (s) => {
-            const active = statusF === s;
-            return (
-              <button
-                key={s}
-                onClick={() => setStatusF(active ? "" : s)}
-                className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition ${
-                  active
-                    ? `${STATUS_META[s].cls} ring-2 ring-offset-1 ring-offset-background ring-current/30`
-                    : `${STATUS_META[s].cls} opacity-70 hover:opacity-100`
-                }`}
-              >
-                <span className={`size-1.5 rounded-full ${STATUS_META[s].dot}`} />
-                {STATUS_META[s].label}
-                <span className="tabular-nums font-semibold">{statusCounts[s]}</span>
-              </button>
-            );
-          },
-        )}
-      </div>
-
-
-
-      {/* KPIs */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))] gap-3">
-        <KPI label="Lotes em produção" value={kpis.lotesProd} icon={<Package className="size-4" />} />
-        <KPI
-          label="Peças em produção"
-          value={kpis.pcsProd.toLocaleString("pt-BR")}
-          icon={<Factory className="size-4" />}
-          tone="primary"
-        />
-        <KPI label="Lotes internos" value={kpis.lotesInt} icon={<CheckCircle2 className="size-4" />} />
-        <KPI label="Lotes externos" value={kpis.lotesExt} icon={<Truck className="size-4" />} />
-        <KPI
-          label="Lotes atrasados"
-          value={kpis.lotesAtr}
-          icon={<AlertTriangle className="size-4" />}
-          tone="destructive"
-        />
-        <KPI
-          label="Peças atrasadas"
-          value={kpis.pcsAtr.toLocaleString("pt-BR")}
-          icon={<Clock className="size-4" />}
-          tone="destructive"
-        />
-        <KPI
-          label="Dias médios no setor"
-          value={`${kpis.avgDays}d`}
-          icon={<Clock className="size-4" />}
-        />
-        <KPI
-          label="Setor com mais acúmulo"
-          value={topBottleneck && topBottleneck.lotes > 0 ? `${topBottleneck.setor} · ${topBottleneck.lotes}` : "—"}
-          icon={<Factory className="size-4" />}
-          tone="warning"
-        />
-        <KPI
-          label="Terceiro com mais atraso"
-          value={topRiskySupplier && topRiskySupplier.atrasado > 0 ? `${topRiskySupplier.terceiro} · ${topRiskySupplier.atrasado}` : "—"}
-          icon={<Truck className="size-4" />}
-          tone="destructive"
-        />
-      </div>
-
-      {/* INSIGHTS — Coordenador PCP */}
-      {insights.length > 0 && (
-        <section className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
-            <Sparkles className="size-3.5" /> Coordenador PCP — insights do recorte atual
-          </div>
-          <div className="grid gap-2 md:grid-cols-2">
-            {insights.map((c, i) => {
-              const tones: Record<string, string> = {
-                danger: "border-red-500/40 bg-red-500/5",
-                warn: "border-amber-500/40 bg-amber-500/5",
-                ok: "border-emerald-500/40 bg-emerald-500/5",
-                info: "border-sky-500/40 bg-sky-500/5",
-              };
-              const iconTones: Record<string, string> = {
-                danger: "text-red-600",
-                warn: "text-amber-600",
-                ok: "text-emerald-600",
-                info: "text-sky-600",
-              };
-              return (
-                <div key={i} className={`rounded-lg border p-3 ${tones[c.tone]}`}>
-                  <div
-                    className={`flex items-start gap-2 text-sm font-semibold ${iconTones[c.tone]}`}
-                  >
-                    <TrendingDown className="size-4 mt-0.5 shrink-0" />
-                    <span>{c.title}</span>
-                  </div>
-                  <div className="text-xs text-foreground/80 mt-1">{c.reason}</div>
-                  {c.action && (
-                    <button
-                      onClick={c.action.onClick}
-                      className="mt-2 text-[11px] inline-flex items-center gap-1 text-primary hover:underline"
-                    >
-                      {c.action.label} <ArrowRight className="size-3" />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="text-[10px] text-muted-foreground">
-            Dica: arraste um lote entre colunas do kanban para registrar a passagem de etapa.
-          </div>
-        </section>
-      )}
-
-      {/* SLA por setor */}
-      {slaBySetor.length > 0 && (
-        <section className="rounded-xl border border-border bg-card p-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-2">
-              <Clock className="size-3.5" /> SLA por setor — % de lotes dentro do tempo-alvo
+        <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Filter className="size-3.5" /> Filtros
             </div>
-            <div className="text-[10px] text-muted-foreground">
-              meta = horas-alvo por etapa · vermelho &lt;60% · âmbar 60–84% · verde ≥85%
+            <button
+              onClick={clearFilters}
+              className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+            >
+              <X className="size-3" /> Limpar
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="OP, lote, produto, ref…"
+              className="col-span-2 text-xs px-2 py-1.5 rounded border border-border bg-background"
+            />
+            <select
+              value={colKey}
+              onChange={(e) => setColKey(e.target.value)}
+              className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+            >
+              <option value="">Setor atual</option>
+              {COLUMNS.map((c) => (
+                <option key={c.key} value={c.key}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={supplierId}
+              onChange={(e) => setSupplierId(e.target.value)}
+              className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+            >
+              <option value="">Terceiro</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={origin}
+              onChange={(e) => setOrigin(e.target.value as any)}
+              className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+            >
+              <option value="">Interna + Externa</option>
+              <option value="interna">Somente Interna</option>
+              <option value="externa">Somente Externa</option>
+            </select>
+            <select
+              value={statusF}
+              onChange={(e) => setStatusF(e.target.value as any)}
+              className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+            >
+              <option value="">Status do prazo</option>
+              <option value="no_prazo">No prazo</option>
+              <option value="atencao">Atenção</option>
+              <option value="atrasado">Atrasado</option>
+              <option value="sem_previsao">Sem previsão</option>
+              <option value="finalizado">Finalizado</option>
+            </select>
+            <select
+              value={collection}
+              onChange={(e) => setCollection(e.target.value)}
+              className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+            >
+              <option value="">Coleção</option>
+              {collections.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+            >
+              <option value="">Tipo de produto</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <select
+              value={productLine}
+              onChange={(e) => setProductLine(e.target.value)}
+              className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+            >
+              <option value="">Linha de produto</option>
+              {productLines.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <select
+              value={productGroup}
+              onChange={(e) => setProductGroup(e.target.value)}
+              className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+            >
+              <option value="">Grupo / Gênero</option>
+              {productGroups.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <select
+              value={supplierCat}
+              onChange={(e) => setSupplierCat(e.target.value)}
+              className="text-xs px-2 py-1.5 rounded border border-border bg-background"
+            >
+              <option value="">Categoria do terceiro</option>
+              {supplierCats.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <div className="flex items-center gap-1">
+              <input
+                type="date"
+                value={dueFrom}
+                onChange={(e) => setDueFrom(e.target.value)}
+                className="w-full text-xs px-2 py-1.5 rounded border border-border bg-background"
+              />
+              <span className="text-[10px] text-muted-foreground">→</span>
+              <input
+                type="date"
+                value={dueTo}
+                onChange={(e) => setDueTo(e.target.value)}
+                className="w-full text-xs px-2 py-1.5 rounded border border-border bg-background"
+              />
             </div>
           </div>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-2">
-            {slaBySetor.map((s) => {
-              const tone = s.pct >= 85 ? "emerald" : s.pct >= 60 ? "amber" : "red";
-              const colorMap: Record<string, string> = {
-                emerald: "bg-emerald-500",
-                amber: "bg-amber-500",
-                red: "bg-red-500",
-              };
-              const textMap: Record<string, string> = {
-                emerald: "text-emerald-600",
-                amber: "text-amber-600",
-                red: "text-red-600",
-              };
-              return (
+
+          {/* Chips de filtros ativos */}
+          {activeChips.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              {activeChips.map((c, i) => (
                 <button
-                  key={s.key}
-                  onClick={() => setColKey(s.key)}
-                  className="min-w-0 text-left rounded-lg border border-border bg-background p-2.5 hover:border-primary transition"
+                  key={i}
+                  onClick={c.clear}
+                  className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
+                  title="Remover filtro"
                 >
-                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs">
-                    <span className="min-w-0 truncate font-medium" title={s.setor}>{s.setor}</span>
-                    <span className={`shrink-0 font-semibold tabular-nums ${textMap[tone]}`}>{s.pct}%</span>
-                  </div>
-                  <div className="h-1.5 bg-muted rounded mt-1.5 overflow-hidden">
-                    <div className={`h-full ${colorMap[tone]}`} style={{ width: `${s.pct}%` }} />
-                  </div>
-                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground mt-1 tabular-nums">
-                    <span className="min-w-0 truncate">{s.lotes} lote(s) · média {s.avgH}h</span>
-                    <span className="shrink-0">meta {s.target}h</span>
-                  </div>
+                  {c.label}
+                  <X className="size-2.5" />
                 </button>
-              );
-            })}
-          </div>
-        </section>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
-      </>)}
+      {!tvMode && (
+        <>
+          {/* CHIPS DE STATUS — filtragem em 1 clique */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {(["no_prazo", "atencao", "atrasado", "sem_previsao", "finalizado"] as StatusKey[]).map(
+              (s) => {
+                const active = statusF === s;
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setStatusF(active ? "" : s)}
+                    className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition ${
+                      active
+                        ? `${STATUS_META[s].cls} ring-2 ring-offset-1 ring-offset-background ring-current/30`
+                        : `${STATUS_META[s].cls} opacity-70 hover:opacity-100`
+                    }`}
+                  >
+                    <span className={`size-1.5 rounded-full ${STATUS_META[s].dot}`} />
+                    {STATUS_META[s].label}
+                    <span className="tabular-nums font-semibold">{statusCounts[s]}</span>
+                  </button>
+                );
+              },
+            )}
+          </div>
+
+          {/* KPIs */}
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))] gap-3">
+            <KPI
+              label="Lotes em produção"
+              value={kpis.lotesProd}
+              icon={<Package className="size-4" />}
+            />
+            <KPI
+              label="Peças em produção"
+              value={kpis.pcsProd.toLocaleString("pt-BR")}
+              icon={<Factory className="size-4" />}
+              tone="primary"
+            />
+            <KPI
+              label="Lotes internos"
+              value={kpis.lotesInt}
+              icon={<CheckCircle2 className="size-4" />}
+            />
+            <KPI label="Lotes externos" value={kpis.lotesExt} icon={<Truck className="size-4" />} />
+            <KPI
+              label="Lotes atrasados"
+              value={kpis.lotesAtr}
+              icon={<AlertTriangle className="size-4" />}
+              tone="destructive"
+            />
+            <KPI
+              label="Peças atrasadas"
+              value={kpis.pcsAtr.toLocaleString("pt-BR")}
+              icon={<Clock className="size-4" />}
+              tone="destructive"
+            />
+            <KPI
+              label="Dias médios no setor"
+              value={`${kpis.avgDays}d`}
+              icon={<Clock className="size-4" />}
+            />
+            <KPI
+              label="Setor com mais acúmulo"
+              value={
+                topBottleneck && topBottleneck.lotes > 0
+                  ? `${topBottleneck.setor} · ${topBottleneck.lotes}`
+                  : "—"
+              }
+              icon={<Factory className="size-4" />}
+              tone="warning"
+            />
+            <KPI
+              label="Terceiro com mais atraso"
+              value={
+                topRiskySupplier && topRiskySupplier.atrasado > 0
+                  ? `${topRiskySupplier.terceiro} · ${topRiskySupplier.atrasado}`
+                  : "—"
+              }
+              icon={<Truck className="size-4" />}
+              tone="destructive"
+            />
+          </div>
+
+          {/* INSIGHTS — Coordenador PCP */}
+          {insights.length > 0 && (
+            <section className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
+                <Sparkles className="size-3.5" /> Coordenador PCP — insights do recorte atual
+              </div>
+              <div className="grid gap-2 md:grid-cols-2">
+                {insights.map((c, i) => {
+                  const tones: Record<string, string> = {
+                    danger: "border-red-500/40 bg-red-500/5",
+                    warn: "border-amber-500/40 bg-amber-500/5",
+                    ok: "border-emerald-500/40 bg-emerald-500/5",
+                    info: "border-sky-500/40 bg-sky-500/5",
+                  };
+                  const iconTones: Record<string, string> = {
+                    danger: "text-red-600",
+                    warn: "text-amber-600",
+                    ok: "text-emerald-600",
+                    info: "text-sky-600",
+                  };
+                  return (
+                    <div key={i} className={`rounded-lg border p-3 ${tones[c.tone]}`}>
+                      <div
+                        className={`flex items-start gap-2 text-sm font-semibold ${iconTones[c.tone]}`}
+                      >
+                        <TrendingDown className="size-4 mt-0.5 shrink-0" />
+                        <span>{c.title}</span>
+                      </div>
+                      <div className="text-xs text-foreground/80 mt-1">{c.reason}</div>
+                      {c.action && (
+                        <button
+                          onClick={c.action.onClick}
+                          className="mt-2 text-[11px] inline-flex items-center gap-1 text-primary hover:underline"
+                        >
+                          {c.action.label} <ArrowRight className="size-3" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="text-[10px] text-muted-foreground">
+                Dica: arraste um lote entre colunas do kanban para registrar a passagem de etapa.
+              </div>
+            </section>
+          )}
+
+          {/* SLA por setor */}
+          {slaBySetor.length > 0 && (
+            <section className="rounded-xl border border-border bg-card p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-2">
+                  <Clock className="size-3.5" /> SLA por setor — % de lotes dentro do tempo-alvo
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  meta = horas-alvo por etapa · vermelho &lt;60% · âmbar 60–84% · verde ≥85%
+                </div>
+              </div>
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-2">
+                {slaBySetor.map((s) => {
+                  const tone = s.pct >= 85 ? "emerald" : s.pct >= 60 ? "amber" : "red";
+                  const colorMap: Record<string, string> = {
+                    emerald: "bg-emerald-500",
+                    amber: "bg-amber-500",
+                    red: "bg-red-500",
+                  };
+                  const textMap: Record<string, string> = {
+                    emerald: "text-emerald-600",
+                    amber: "text-amber-600",
+                    red: "text-red-600",
+                  };
+                  return (
+                    <button
+                      key={s.key}
+                      onClick={() => setColKey(s.key)}
+                      className="min-w-0 text-left rounded-lg border border-border bg-background p-2.5 hover:border-primary transition"
+                    >
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs">
+                        <span className="min-w-0 truncate font-medium" title={s.setor}>
+                          {s.setor}
+                        </span>
+                        <span className={`shrink-0 font-semibold tabular-nums ${textMap[tone]}`}>
+                          {s.pct}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded mt-1.5 overflow-hidden">
+                        <div
+                          className={`h-full ${colorMap[tone]}`}
+                          style={{ width: `${s.pct}%` }}
+                        />
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground mt-1 tabular-nums">
+                        <span className="min-w-0 truncate">
+                          {s.lotes} lote(s) · média {s.avgH}h
+                        </span>
+                        <span className="shrink-0">meta {s.target}h</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+        </>
+      )}
 
       {/* KANBAN */}
       <div className="overflow-x-auto">
@@ -1140,12 +1266,12 @@ function AcompanhamentoProducao() {
               items.forEach((o) => {
                 const k =
                   groupBy === "collection"
-                    ? o.collection_name ?? "Sem coleção"
+                    ? (o.collection_name ?? "Sem coleção")
                     : groupBy === "supplier"
                       ? o.outsourced
-                        ? o.supplier_name ?? "Terceiro s/ nome"
+                        ? (o.supplier_name ?? "Terceiro s/ nome")
                         : "Interna"
-                      : o.product_line ?? "Sem linha";
+                      : (o.product_line ?? "Sem linha");
                 m.set(k, [...(m.get(k) ?? []), o]);
               });
               return Array.from(m, ([key, lItems]) => ({ key, label: key, items: lItems })).sort(
@@ -1181,11 +1307,16 @@ function AcompanhamentoProducao() {
                   onClick={() => setZoomCol(opened ? null : col.key)}
                   className="px-2 py-2 border-b border-border text-left hover:bg-muted/50 rounded-t-xl min-w-0"
                 >
-                  <div className={`font-semibold truncate ${tvMode ? "text-sm" : "text-[11px]"}`} title={col.label}>
+                  <div
+                    className={`font-semibold truncate ${tvMode ? "text-sm" : "text-[11px]"}`}
+                    title={col.label}
+                  >
                     {col.label}
                   </div>
                   <div className="mt-0.5 flex items-center justify-between gap-2 text-[10px] tabular-nums text-muted-foreground min-w-0">
-                    <span className="truncate">{items.length} lote · {qty} pç</span>
+                    <span className="truncate">
+                      {items.length} lote · {qty} pç
+                    </span>
                     {lateInCol > 0 && (
                       <span className="shrink-0 font-semibold text-red-600 inline-flex items-center gap-0.5">
                         <AlertTriangle className="size-2.5" /> {lateInCol}
@@ -1193,7 +1324,9 @@ function AcompanhamentoProducao() {
                     )}
                   </div>
                 </button>
-                <div className={`p-2 space-y-2 overflow-y-auto ${tvMode ? "max-h-[78vh]" : "max-h-[520px]"}`}>
+                <div
+                  className={`p-2 space-y-2 overflow-y-auto ${tvMode ? "max-h-[78vh]" : "max-h-[520px]"}`}
+                >
                   {isLoading ? (
                     <div className="text-xs text-muted-foreground p-2">Carregando…</div>
                   ) : items.length === 0 ? (
@@ -1241,308 +1374,344 @@ function AcompanhamentoProducao() {
         </div>
       </div>
 
-      {!tvMode && (<>
-      {/* RESUMO POR SETOR */}
-      <section className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="px-4 py-2 border-b border-border flex items-center justify-between">
-          <div className="text-sm font-semibold">Resumo por setor</div>
-          <div className="text-[10px] text-muted-foreground">
-            Clique no setor p/ filtrar o kanban (visão micro)
-          </div>
-        </div>
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 text-xs">
-            <tr>
-              <th className="text-left px-3 py-2">Setor</th>
-              <th className="text-right px-3 py-2">Lotes</th>
-              <th className="text-right px-3 py-2">Peças</th>
-              <th className="text-right px-3 py-2">No prazo</th>
-              <th className="text-right px-3 py-2">Atenção</th>
-              <th className="text-right px-3 py-2">Atrasado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sectorSummary.map((r) => (
-              <tr key={r.key} className="border-t border-border hover:bg-muted/30">
-                <td className="px-3 py-2">
-                  <button
-                    onClick={() => setColKey(r.key)}
-                    className="text-left hover:underline font-medium"
-                  >
-                    {r.setor}
-                  </button>
-                </td>
-                <td className="px-3 py-2 text-right tabular-nums">{r.lotes}</td>
-                <td className="px-3 py-2 text-right tabular-nums">{r.pecas.toLocaleString("pt-BR")}</td>
-                <td className="px-3 py-2 text-right tabular-nums text-emerald-600">{r.noPrazo}</td>
-                <td className="px-3 py-2 text-right tabular-nums text-yellow-400 font-semibold">{r.atencao}</td>
-                <td className="px-3 py-2 text-right tabular-nums text-red-600">{r.atrasado}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      {/* RESUMO POR TERCEIRO */}
-      <section className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="px-4 py-2 border-b border-border text-sm font-semibold">
-          Resumo por terceiro
-        </div>
-        {supplierSummary.length === 0 ? (
-          <div className="px-4 py-6 text-sm text-muted-foreground text-center">
-            Nenhum lote em terceiro no filtro atual.
-          </div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 text-xs">
-              <tr>
-                <th className="text-left px-3 py-2">Terceiro</th>
-                <th className="text-left px-3 py-2">Processo</th>
-                <th className="text-right px-3 py-2">Lotes</th>
-                <th className="text-right px-3 py-2">Peças</th>
-                <th className="text-right px-3 py-2">No prazo</th>
-                <th className="text-right px-3 py-2">Atrasado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {supplierSummary.map((r, i) => (
-                <tr key={i} className="border-t border-border hover:bg-muted/30">
-                  <td className="px-3 py-2 font-medium">{r.terceiro}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{r.processo}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{r.lotes}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">
-                    {r.pecas.toLocaleString("pt-BR")}
-                  </td>
-                  <td className="px-3 py-2 text-right tabular-nums text-emerald-600">{r.noPrazo}</td>
-                  <td className="px-3 py-2 text-right tabular-nums text-red-600">{r.atrasado}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-
-      {/* TOP LOTES PARADOS — "Qual produto está parado há mais tempo?" */}
-      {stalledTop.rows.length > 0 && (
-        <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 overflow-hidden">
-          <div className="px-4 py-2 border-b border-amber-500/20 flex flex-wrap items-center justify-between gap-2">
-            <div className="text-sm font-semibold inline-flex items-center gap-2 text-amber-700 dark:text-amber-400">
-              <Timer className="size-4" /> Lotes parados há mais tempo
-              <span className="text-[10px] font-normal text-muted-foreground ml-1">
-                ≥ {STALLED_MIN_DAYS} dias no mesmo setor • ordenado por criticidade
-              </span>
-            </div>
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1">
-                <Package className="size-3" />
-                <span className="font-semibold text-foreground">
-                  {stalledTop.totalPecas.toLocaleString("pt-BR")}
-                </span>{" "}
-                peças paradas
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Clock className="size-3" />
-                <span className="font-semibold text-foreground">{stalledTop.totalDias}</span> dias
-                acumulados
-              </span>
-            </div>
-          </div>
-          <table className="w-full text-xs">
-            <thead className="bg-muted/30">
-              <tr>
-                <th className="text-left px-3 py-2">Severidade</th>
-                <th className="text-left px-3 py-2">Lote / OP</th>
-                <th className="text-left px-3 py-2">Produto</th>
-                <th className="text-left px-3 py-2">Setor</th>
-                <th className="text-left px-3 py-2">Local</th>
-                <th className="text-right px-3 py-2">Qtde</th>
-                <th className="text-right px-3 py-2">Dias parado</th>
-                <th className="text-right px-3 py-2">Entrega</th>
-                <th className="text-left px-3 py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stalledTop.rows.map(({ o, dias, diasAteEntrega, atrasoEntrega, severity }) => {
-                const st = statusOf(o);
-                const col = COLUMNS.find((c) => c.match(o));
-                const sev = SEVERITY_META[severity];
-                return (
-                  <tr
-                    key={o.id}
-                    onClick={() => setDrawer(o)}
-                    className="border-t border-border hover:bg-amber-500/5 cursor-pointer"
-                  >
-                    <td className="px-3 py-1.5">
-                      <span
-                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium ${sev.cls}`}
-                      >
-                        <span className={`size-1.5 rounded-full ${sev.dot}`} />
-                        {sev.label}
-                      </span>
-                    </td>
-                    <td className="px-3 py-1.5 font-semibold">{o.batch_code ?? o.code}</td>
-                    <td className="px-3 py-1.5">
-                      <div className="truncate max-w-[260px]">{o.product_name ?? "—"}</div>
-                      <div className="text-[10px] text-muted-foreground">{o.product_sku ?? ""}</div>
-                    </td>
-                    <td className="px-3 py-1.5">{col?.label ?? stageLabel(o.stage)}</td>
-                    <td className="px-3 py-1.5">
-                      {o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}
-                    </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">
-                      {(o.quantity ?? 0).toLocaleString("pt-BR")}
-                    </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-amber-700 dark:text-amber-400">
-                      {dias}d
-                    </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">
-                      {diasAteEntrega === null ? (
-                        <span className="text-muted-foreground">—</span>
-                      ) : atrasoEntrega > 0 ? (
-                        <span className="text-red-600 font-semibold">+{atrasoEntrega}d atraso</span>
-                      ) : diasAteEntrega === 0 ? (
-                        <span className="text-amber-600 font-semibold">hoje</span>
-                      ) : (
-                        <span className="text-muted-foreground">em {diasAteEntrega}d</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <span
-                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] ${STATUS_META[st].cls}`}
-                      >
-                        <span className={`size-1.5 rounded-full ${STATUS_META[st].dot}`} />
-                        {STATUS_META[st].label}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </section>
-      )}
-
-      {/* LISTA DETALHADA */}
-
-      <section className="rounded-xl border border-border bg-card overflow-hidden">
-        {(() => {
-          const listRows = listFilter
-            ? filtered.filter((o) => statusOf(o) === listFilter)
-            : filtered;
-          const counts = {
-            no_prazo: filtered.filter((o) => statusOf(o) === "no_prazo").length,
-            atrasado: filtered.filter((o) => statusOf(o) === "atrasado").length,
-            finalizado: filtered.filter((o) => statusOf(o) === "finalizado").length,
-          };
-          const chip = (
-            key: "" | "no_prazo" | "atrasado" | "finalizado",
-            label: string,
-            count: number,
-            activeCls: string,
-          ) => {
-            const active = listFilter === key;
-            return (
-              <button
-                key={key || "all"}
-                onClick={() => setListFilter(key)}
-                className={`px-2 py-0.5 rounded-full border text-[11px] font-medium transition-colors ${
-                  active
-                    ? activeCls
-                    : "border-border bg-muted/40 text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                {label}
-                <span className="ml-1 tabular-nums opacity-80">{count}</span>
-              </button>
-            );
-          };
-          return (
-            <>
-              <div className="px-4 py-2 border-b border-border text-sm font-semibold flex flex-wrap items-center justify-between gap-2">
-                <span>Lista detalhada ({listRows.length})</span>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {chip("", "Todos", filtered.length, "border-primary/40 bg-primary/10 text-primary")}
-                  {chip("no_prazo", "No prazo", counts.no_prazo, STATUS_META.no_prazo.cls)}
-                  {chip("atrasado", "Atrasado", counts.atrasado, STATUS_META.atrasado.cls)}
-                  {chip("finalizado", "Finalizado", counts.finalizado, STATUS_META.finalizado.cls)}
-                </div>
+      {!tvMode && (
+        <>
+          {/* RESUMO POR SETOR */}
+          <section className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="px-4 py-2 border-b border-border flex items-center justify-between">
+              <div className="text-sm font-semibold">Resumo por setor</div>
+              <div className="text-[10px] text-muted-foreground">
+                Clique no setor p/ filtrar o kanban (visão micro)
               </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead className="bg-muted/40">
-              <tr>
-                <th className="text-left px-3 py-2">Lote / OP</th>
-                <th className="text-left px-3 py-2">Produto</th>
-                <th className="text-left px-3 py-2">Setor</th>
-                <th className="text-left px-3 py-2">Tipo</th>
-                <th className="text-left px-3 py-2">Terceiro</th>
-                <th className="text-right px-3 py-2">Qtde</th>
-                <th className="text-left px-3 py-2">Entrada</th>
-                <th className="text-left px-3 py-2">Previsão</th>
-                <th className="text-right px-3 py-2">Dias</th>
-                <th className="text-left px-3 py-2">Status</th>
-                <th className="text-left px-3 py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {listRows.slice(0, 200).map((o) => {
-                const st = statusOf(o);
-                const col = COLUMNS.find((c) => c.match(o));
-                return (
-                  <tr key={o.id} className="border-t border-border hover:bg-muted/30">
-                    <td className="px-3 py-1.5">
-                      <div className="font-semibold">{o.batch_code ?? "—"}</div>
-                      <div className="text-[10px] text-muted-foreground">{o.code}</div>
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <div>{o.product_name ?? "—"}</div>
-                      <div className="text-[10px] text-muted-foreground">{o.product_sku ?? ""}</div>
-                    </td>
-                    <td className="px-3 py-1.5">{col?.label ?? stageLabel(o.stage)}</td>
-                    <td className="px-3 py-1.5">{o.outsourced ? "Externa" : "Interna"}</td>
-                    <td className="px-3 py-1.5">{o.supplier_name ?? "—"}</td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">{o.quantity}</td>
-                    <td className="px-3 py-1.5 tabular-nums">
-                      {new Date(o.stage_updated_at).toLocaleDateString("pt-BR")}
-                    </td>
-                    <td className="px-3 py-1.5 tabular-nums">
-                      {o.due_date ? new Date(o.due_date).toLocaleDateString("pt-BR") : "—"}
-                    </td>
-                    <td className="px-3 py-1.5 text-right tabular-nums">
-                      {daysSince(o.stage_updated_at)}d
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <span
-                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] ${STATUS_META[st].cls}`}
-                      >
-                        <span className={`size-1.5 rounded-full ${STATUS_META[st].dot}`} />
-                        {STATUS_META[st].label}
-                      </span>
-                    </td>
-                    <td className="px-3 py-1.5">
+            </div>
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-xs">
+                <tr>
+                  <th className="text-left px-3 py-2">Setor</th>
+                  <th className="text-right px-3 py-2">Lotes</th>
+                  <th className="text-right px-3 py-2">Peças</th>
+                  <th className="text-right px-3 py-2">No prazo</th>
+                  <th className="text-right px-3 py-2">Atenção</th>
+                  <th className="text-right px-3 py-2">Atrasado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sectorSummary.map((r) => (
+                  <tr key={r.key} className="border-t border-border hover:bg-muted/30">
+                    <td className="px-3 py-2">
                       <button
-                        onClick={() => setDrawer(o)}
-                        className="text-[10px] text-primary hover:underline inline-flex items-center gap-1"
+                        onClick={() => setColKey(r.key)}
+                        className="text-left hover:underline font-medium"
                       >
-                        <History className="size-3" /> Histórico
+                        {r.setor}
                       </button>
                     </td>
+                    <td className="px-3 py-2 text-right tabular-nums">{r.lotes}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">
+                      {r.pecas.toLocaleString("pt-BR")}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-emerald-600">
+                      {r.noPrazo}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-yellow-400 font-semibold">
+                      {r.atencao}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-red-600">{r.atrasado}</td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {listRows.length > 200 && (
-            <div className="px-3 py-2 text-[11px] text-muted-foreground">
-              Mostrando 200 de {listRows.length} — refine os filtros ou exporte.
+                ))}
+              </tbody>
+            </table>
+          </section>
+
+          {/* RESUMO POR TERCEIRO */}
+          <section className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="px-4 py-2 border-b border-border text-sm font-semibold">
+              Resumo por terceiro
             </div>
+            {supplierSummary.length === 0 ? (
+              <div className="px-4 py-6 text-sm text-muted-foreground text-center">
+                Nenhum lote em terceiro no filtro atual.
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="bg-muted/40 text-xs">
+                  <tr>
+                    <th className="text-left px-3 py-2">Terceiro</th>
+                    <th className="text-left px-3 py-2">Processo</th>
+                    <th className="text-right px-3 py-2">Lotes</th>
+                    <th className="text-right px-3 py-2">Peças</th>
+                    <th className="text-right px-3 py-2">No prazo</th>
+                    <th className="text-right px-3 py-2">Atrasado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {supplierSummary.map((r, i) => (
+                    <tr key={i} className="border-t border-border hover:bg-muted/30">
+                      <td className="px-3 py-2 font-medium">{r.terceiro}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{r.processo}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{r.lotes}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">
+                        {r.pecas.toLocaleString("pt-BR")}
+                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums text-emerald-600">
+                        {r.noPrazo}
+                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums text-red-600">
+                        {r.atrasado}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </section>
+
+          {/* TOP LOTES PARADOS — "Qual produto está parado há mais tempo?" */}
+          {stalledTop.rows.length > 0 && (
+            <section className="rounded-xl border border-amber-500/30 bg-amber-500/5 overflow-hidden">
+              <div className="px-4 py-2 border-b border-amber-500/20 flex flex-wrap items-center justify-between gap-2">
+                <div className="text-sm font-semibold inline-flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                  <Timer className="size-4" /> Lotes parados há mais tempo
+                  <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                    ≥ {STALLED_MIN_DAYS} dias no mesmo setor • ordenado por criticidade
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <Package className="size-3" />
+                    <span className="font-semibold text-foreground">
+                      {stalledTop.totalPecas.toLocaleString("pt-BR")}
+                    </span>{" "}
+                    peças paradas
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="size-3" />
+                    <span className="font-semibold text-foreground">
+                      {stalledTop.totalDias}
+                    </span>{" "}
+                    dias acumulados
+                  </span>
+                </div>
+              </div>
+              <table className="w-full text-xs">
+                <thead className="bg-muted/30">
+                  <tr>
+                    <th className="text-left px-3 py-2">Severidade</th>
+                    <th className="text-left px-3 py-2">Lote / OP</th>
+                    <th className="text-left px-3 py-2">Produto</th>
+                    <th className="text-left px-3 py-2">Setor</th>
+                    <th className="text-left px-3 py-2">Local</th>
+                    <th className="text-right px-3 py-2">Qtde</th>
+                    <th className="text-right px-3 py-2">Dias parado</th>
+                    <th className="text-right px-3 py-2">Entrega</th>
+                    <th className="text-left px-3 py-2">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stalledTop.rows.map(({ o, dias, diasAteEntrega, atrasoEntrega, severity }) => {
+                    const st = statusOf(o);
+                    const col = COLUMNS.find((c) => c.match(o));
+                    const sev = SEVERITY_META[severity];
+                    return (
+                      <tr
+                        key={o.id}
+                        onClick={() => setDrawer(o)}
+                        className="border-t border-border hover:bg-amber-500/5 cursor-pointer"
+                      >
+                        <td className="px-3 py-1.5">
+                          <span
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium ${sev.cls}`}
+                          >
+                            <span className={`size-1.5 rounded-full ${sev.dot}`} />
+                            {sev.label}
+                          </span>
+                        </td>
+                        <td className="px-3 py-1.5 font-semibold">{o.batch_code ?? o.code}</td>
+                        <td className="px-3 py-1.5">
+                          <div className="truncate max-w-[260px]">{o.product_name ?? "—"}</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {o.product_sku ?? ""}
+                          </div>
+                        </td>
+                        <td className="px-3 py-1.5">{col?.label ?? stageLabel(o.stage)}</td>
+                        <td className="px-3 py-1.5">
+                          {o.outsourced ? (o.supplier_name ?? "Externo") : "Interna"}
+                        </td>
+                        <td className="px-3 py-1.5 text-right tabular-nums">
+                          {(o.quantity ?? 0).toLocaleString("pt-BR")}
+                        </td>
+                        <td className="px-3 py-1.5 text-right tabular-nums font-semibold text-amber-700 dark:text-amber-400">
+                          {dias}d
+                        </td>
+                        <td className="px-3 py-1.5 text-right tabular-nums">
+                          {diasAteEntrega === null ? (
+                            <span className="text-muted-foreground">—</span>
+                          ) : atrasoEntrega > 0 ? (
+                            <span className="text-red-600 font-semibold">
+                              +{atrasoEntrega}d atraso
+                            </span>
+                          ) : diasAteEntrega === 0 ? (
+                            <span className="text-amber-600 font-semibold">hoje</span>
+                          ) : (
+                            <span className="text-muted-foreground">em {diasAteEntrega}d</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <span
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] ${STATUS_META[st].cls}`}
+                          >
+                            <span className={`size-1.5 rounded-full ${STATUS_META[st].dot}`} />
+                            {STATUS_META[st].label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </section>
           )}
-        </div>
-            </>
-          );
-        })()}
-      </section>
-      </>)}
+
+          {/* LISTA DETALHADA */}
+
+          <section className="rounded-xl border border-border bg-card overflow-hidden">
+            {(() => {
+              const listRows = listFilter
+                ? filtered.filter((o) => statusOf(o) === listFilter)
+                : filtered;
+              const counts = {
+                no_prazo: filtered.filter((o) => statusOf(o) === "no_prazo").length,
+                atrasado: filtered.filter((o) => statusOf(o) === "atrasado").length,
+                finalizado: filtered.filter((o) => statusOf(o) === "finalizado").length,
+              };
+              const chip = (
+                key: "" | "no_prazo" | "atrasado" | "finalizado",
+                label: string,
+                count: number,
+                activeCls: string,
+              ) => {
+                const active = listFilter === key;
+                return (
+                  <button
+                    key={key || "all"}
+                    onClick={() => setListFilter(key)}
+                    className={`px-2 py-0.5 rounded-full border text-[11px] font-medium transition-colors ${
+                      active
+                        ? activeCls
+                        : "border-border bg-muted/40 text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {label}
+                    <span className="ml-1 tabular-nums opacity-80">{count}</span>
+                  </button>
+                );
+              };
+              return (
+                <>
+                  <div className="px-4 py-2 border-b border-border text-sm font-semibold flex flex-wrap items-center justify-between gap-2">
+                    <span>Lista detalhada ({listRows.length})</span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {chip(
+                        "",
+                        "Todos",
+                        filtered.length,
+                        "border-primary/40 bg-primary/10 text-primary",
+                      )}
+                      {chip("no_prazo", "No prazo", counts.no_prazo, STATUS_META.no_prazo.cls)}
+                      {chip("atrasado", "Atrasado", counts.atrasado, STATUS_META.atrasado.cls)}
+                      {chip(
+                        "finalizado",
+                        "Finalizado",
+                        counts.finalizado,
+                        STATUS_META.finalizado.cls,
+                      )}
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead className="bg-muted/40">
+                        <tr>
+                          <th className="text-left px-3 py-2">Lote / OP</th>
+                          <th className="text-left px-3 py-2">Produto</th>
+                          <th className="text-left px-3 py-2">Setor</th>
+                          <th className="text-left px-3 py-2">Tipo</th>
+                          <th className="text-left px-3 py-2">Terceiro</th>
+                          <th className="text-right px-3 py-2">Qtde</th>
+                          <th className="text-left px-3 py-2">Entrada</th>
+                          <th className="text-left px-3 py-2">Previsão</th>
+                          <th className="text-right px-3 py-2">Dias</th>
+                          <th className="text-left px-3 py-2">Status</th>
+                          <th className="text-left px-3 py-2"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {listRows.slice(0, 200).map((o) => {
+                          const st = statusOf(o);
+                          const col = COLUMNS.find((c) => c.match(o));
+                          return (
+                            <tr key={o.id} className="border-t border-border hover:bg-muted/30">
+                              <td className="px-3 py-1.5">
+                                <div className="font-semibold">{o.batch_code ?? "—"}</div>
+                                <div className="text-[10px] text-muted-foreground">{o.code}</div>
+                              </td>
+                              <td className="px-3 py-1.5">
+                                <div>{o.product_name ?? "—"}</div>
+                                <div className="text-[10px] text-muted-foreground">
+                                  {o.product_sku ?? ""}
+                                </div>
+                              </td>
+                              <td className="px-3 py-1.5">{col?.label ?? stageLabel(o.stage)}</td>
+                              <td className="px-3 py-1.5">
+                                {o.outsourced ? "Externa" : "Interna"}
+                              </td>
+                              <td className="px-3 py-1.5">{o.supplier_name ?? "—"}</td>
+                              <td className="px-3 py-1.5 text-right tabular-nums">{o.quantity}</td>
+                              <td className="px-3 py-1.5 tabular-nums">
+                                {new Date(o.stage_updated_at).toLocaleDateString("pt-BR")}
+                              </td>
+                              <td className="px-3 py-1.5 tabular-nums">
+                                {o.due_date
+                                  ? new Date(o.due_date).toLocaleDateString("pt-BR")
+                                  : "—"}
+                              </td>
+                              <td className="px-3 py-1.5 text-right tabular-nums">
+                                {daysSince(o.stage_updated_at)}d
+                              </td>
+                              <td className="px-3 py-1.5">
+                                <span
+                                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] ${STATUS_META[st].cls}`}
+                                >
+                                  <span
+                                    className={`size-1.5 rounded-full ${STATUS_META[st].dot}`}
+                                  />
+                                  {STATUS_META[st].label}
+                                </span>
+                              </td>
+                              <td className="px-3 py-1.5">
+                                <button
+                                  onClick={() => setDrawer(o)}
+                                  className="text-[10px] text-primary hover:underline inline-flex items-center gap-1"
+                                >
+                                  <History className="size-3" /> Histórico
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                    {listRows.length > 200 && (
+                      <div className="px-3 py-2 text-[11px] text-muted-foreground">
+                        Mostrando 200 de {listRows.length} — refine os filtros ou exporte.
+                      </div>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
+          </section>
+        </>
+      )}
 
       {drawer && <HistoryDrawer order={drawer} onClose={() => setDrawer(null)} />}
     </div>
@@ -1610,23 +1779,31 @@ function CardLote({
         className={`w-full text-left p-2 space-y-1 cursor-grab active:cursor-grabbing ${tvMode ? "text-sm" : ""}`}
       >
         <div className="flex items-center justify-between gap-1 min-w-0">
-          <span className={`font-semibold inline-flex items-center gap-1 min-w-0 truncate ${tvMode ? "text-sm" : "text-[11px]"}`}>
+          <span
+            className={`font-semibold inline-flex items-center gap-1 min-w-0 truncate ${tvMode ? "text-sm" : "text-[11px]"}`}
+          >
             <Package className="size-3 shrink-0" />
             <span className="truncate">{o.batch_code ?? o.code}</span>
           </span>
-          <span className={`shrink-0 whitespace-nowrap text-[9px] px-1 py-0.5 rounded border ${STATUS_META[st].cls}`}>
+          <span
+            className={`shrink-0 whitespace-nowrap text-[9px] px-1 py-0.5 rounded border ${STATUS_META[st].cls}`}
+          >
             {STATUS_META[st].label}
           </span>
         </div>
         <div className={`text-foreground/90 truncate ${tvMode ? "text-sm" : "text-[11px]"}`}>
           {o.product_name ?? "—"}
         </div>
-        <div className="text-[10px] text-muted-foreground truncate">Ref. {o.product_sku ?? "—"}</div>
+        <div className="text-[10px] text-muted-foreground truncate">
+          Ref. {o.product_sku ?? "—"}
+        </div>
         <div className="flex items-center justify-between gap-1 text-[10px] text-muted-foreground tabular-nums min-w-0">
           <span className="shrink-0">
             {produced}/{o.quantity} pç
           </span>
-          <span className={`truncate text-right ${slaBreached ? "text-red-600 font-semibold" : ""}`}>
+          <span
+            className={`truncate text-right ${slaBreached ? "text-red-600 font-semibold" : ""}`}
+          >
             {dias}d{slaTargetH ? `/${Math.round(slaTargetH / 24)}d` : ""}
           </span>
         </div>
@@ -1637,8 +1814,14 @@ function CardLote({
           <span
             className={`inline-flex items-center gap-1 min-w-0 truncate ${o.outsourced ? "text-amber-600" : "text-emerald-600"}`}
           >
-            {o.outsourced ? <Truck className="size-3 shrink-0" /> : <Factory className="size-3 shrink-0" />}
-            <span className="truncate">{o.outsourced ? o.supplier_name ?? "Externo" : "Interna"}</span>
+            {o.outsourced ? (
+              <Truck className="size-3 shrink-0" />
+            ) : (
+              <Factory className="size-3 shrink-0" />
+            )}
+            <span className="truncate">
+              {o.outsourced ? (o.supplier_name ?? "Externo") : "Interna"}
+            </span>
           </span>
           {o.due_date && (
             <span className="shrink-0 text-muted-foreground tabular-nums whitespace-nowrap">
@@ -1716,9 +1899,15 @@ function HistoryDrawer({ order, onClose }: { order: Order; onClose: () => void }
           </button>
         </div>
         <div className="p-4 space-y-3 text-sm">
-          <Row label="Produto" value={`${order.product_name ?? "—"} · Ref. ${order.product_sku ?? "—"}`} />
+          <Row
+            label="Produto"
+            value={`${order.product_name ?? "—"} · Ref. ${order.product_sku ?? "—"}`}
+          />
           <Row label="Coleção" value={order.collection_name ?? "—"} />
-          <Row label="Quantidade" value={`${order.quantity} pç (${Math.round((order.progress / 100) * order.quantity)} concluídas)`} />
+          <Row
+            label="Quantidade"
+            value={`${order.quantity} pç (${Math.round((order.progress / 100) * order.quantity)} concluídas)`}
+          />
           <Row
             label="Setor atual"
             value={COLUMNS.find((c) => c.match(order))?.label ?? stageLabel(order.stage)}
@@ -1736,7 +1925,9 @@ function HistoryDrawer({ order, onClose }: { order: Order; onClose: () => void }
           <Row label="Dias no setor" value={`${daysSince(order.stage_updated_at)} dias`} />
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground w-32">Status</span>
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs ${STATUS_META[st].cls}`}>
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs ${STATUS_META[st].cls}`}
+            >
               <span className={`size-1.5 rounded-full ${STATUS_META[st].dot}`} />
               {STATUS_META[st].label}
             </span>
@@ -1781,7 +1972,9 @@ function HistoryDrawer({ order, onClose }: { order: Order; onClose: () => void }
                         {new Date(h.created_at).toLocaleString("pt-BR")} · {days}d{" "}
                         {h.quantity ? `· ${h.quantity} pç` : ""}
                       </div>
-                      {h.note && <div className="text-muted-foreground italic mt-0.5">{h.note}</div>}
+                      {h.note && (
+                        <div className="text-muted-foreground italic mt-0.5">{h.note}</div>
+                      )}
                     </div>
                   </li>
                 );
@@ -1826,7 +2019,11 @@ function KPI({
         {icon}
         <span className="min-w-0 leading-tight break-words">{label}</span>
       </div>
-      <div className={`mt-2 text-xl font-semibold leading-tight tabular-nums break-words ${tones[tone]}`}>{value}</div>
+      <div
+        className={`mt-2 text-xl font-semibold leading-tight tabular-nums break-words ${tones[tone]}`}
+      >
+        {value}
+      </div>
     </div>
   );
 }

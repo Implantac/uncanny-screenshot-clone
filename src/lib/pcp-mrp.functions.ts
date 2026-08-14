@@ -26,9 +26,7 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
       .not("product_id", "is", null)
       .gt("quantity", 0);
     if (data.horizonDays) {
-      const cutoff = new Date(Date.now() + data.horizonDays * 86400000)
-        .toISOString()
-        .slice(0, 10);
+      const cutoff = new Date(Date.now() + data.horizonDays * 86400000).toISOString().slice(0, 10);
       opsQuery = opsQuery.lte("due_date", cutoff);
     }
     const { data: ops, error: opsErr } = await opsQuery;
@@ -58,7 +56,9 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
     // 3) Materiais das fichas (apenas com inventory_item_id — só planejamos o que está cadastrado)
     const { data: mats, error: mErr } = await supabase
       .from("tech_sheet_materials")
-      .select("tech_sheet_id, inventory_item_id, consumption, consumption_by_size, loss_pct, unit, name")
+      .select(
+        "tech_sheet_id, inventory_item_id, consumption, consumption_by_size, loss_pct, unit, name",
+      )
       .eq("owner_id", userId)
       .in("tech_sheet_id", sheetIds)
       .not("inventory_item_id", "is", null);
@@ -83,7 +83,9 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
         .in("production_order_id", opIds);
       for (const r of gridRows ?? []) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const label = (r as any).product_variants?.product_size_options?.label as string | undefined;
+        const label = (r as any).product_variants?.product_size_options?.label as
+          | string
+          | undefined;
         if (!label || !r.production_order_id) continue;
         const m = qtyBySizeByOp.get(r.production_order_id) ?? new Map<string, number>();
         m.set(label, (m.get(label) ?? 0) + Number(r.quantity ?? 0));
@@ -137,7 +139,9 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
     const itemIds = Array.from(needs.keys());
     const { data: inv, error: iErr } = await supabase
       .from("inventory_items")
-      .select("id, sku, name, balance, unit, minimum, lead_time_days, safety_days, preferred_supplier_id")
+      .select(
+        "id, sku, name, balance, unit, minimum, lead_time_days, safety_days, preferred_supplier_id",
+      )
       .eq("owner_id", userId)
       .in("id", itemIds);
     if (iErr) throw new Error(iErr.message);
@@ -191,7 +195,7 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
         // Lead time efetivo: item → fornecedor preferido → fallback 15
         const leadTime =
           Number(inv?.lead_time_days ?? 0) ||
-          (inv?.preferred_supplier_id ? supplierLead.get(inv.preferred_supplier_id) ?? 0 : 0) ||
+          (inv?.preferred_supplier_id ? (supplierLead.get(inv.preferred_supplier_id) ?? 0) : 0) ||
           15;
         const safety = Number(inv?.safety_days ?? 7);
 
@@ -229,9 +233,10 @@ export const computeMaterialNeeds = createServerFn({ method: "POST" })
           safetyDays: safety,
           latestOrderDate,
           urgencia,
-          coveragePct: n.required > 0
-            ? Math.min(100, Math.round(((balance + ordered) / n.required) * 100))
-            : 100,
+          coveragePct:
+            n.required > 0
+              ? Math.min(100, Math.round(((balance + ordered) / n.required) * 100))
+              : 100,
           contributingOps: n.contributingOps
             .sort((a, b) => b.qty - a.qty)
             .slice(0, 5)

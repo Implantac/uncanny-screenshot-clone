@@ -175,10 +175,7 @@ export const createReinspectionFromCapa = createServerFn({ method: "POST" })
     if (error) throw error;
 
     if (capa.status === "aberta") {
-      await supabase
-        .from("quality_capa")
-        .update({ status: "em_andamento" })
-        .eq("id", capa.id);
+      await supabase.from("quality_capa").update({ status: "em_andamento" }).eq("id", capa.id);
     }
     return { id: insp.id };
   });

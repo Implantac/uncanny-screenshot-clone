@@ -36,8 +36,7 @@ function pdfFromMime(mime: string | null, url: string): boolean {
 export const listDocumentsHub = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (input: { sources?: DocSource[]; search?: string; limit?: number } | undefined) =>
-      input ?? {},
+    (input: { sources?: DocSource[]; search?: string; limit?: number } | undefined) => input ?? {},
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -57,7 +56,9 @@ export const listDocumentsHub = createServerFn({ method: "GET" })
     if (wanted.has("tech_sheet")) {
       const { data: rows } = await supabase
         .from("tech_sheet_attachments")
-        .select("id, tech_sheet_id, file_name, file_url, mime_type, size_bytes, kind, created_at, tech_sheets:tech_sheet_id(code, products:product_id(name, sku))")
+        .select(
+          "id, tech_sheet_id, file_name, file_url, mime_type, size_bytes, kind, created_at, tech_sheets:tech_sheet_id(code, products:product_id(name, sku))",
+        )
         .eq("owner_id", userId)
         .order("created_at", { ascending: false })
         .limit(limit);
@@ -86,7 +87,9 @@ export const listDocumentsHub = createServerFn({ method: "GET" })
     if (wanted.has("supplier_portal")) {
       const { data: rows } = await supabase
         .from("supplier_portal_attachments")
-        .select("id, file_name, file_path, mime, size, attachment_kind, created_at, supplier_id, production_order_id, suppliers:supplier_id(name), production_orders:production_order_id(code)")
+        .select(
+          "id, file_name, file_path, mime, size, attachment_kind, created_at, supplier_id, production_order_id, suppliers:supplier_id(name), production_orders:production_order_id(code)",
+        )
         .eq("owner_id", userId)
         .order("created_at", { ascending: false })
         .limit(limit);
@@ -153,7 +156,9 @@ export const listDocumentsHub = createServerFn({ method: "GET" })
     if (wanted.has("collection_moodboard")) {
       const { data: rows } = await supabase
         .from("collection_moodboard")
-        .select("id, collection_id, image_url, caption, kind, created_at, collections:collection_id(name)")
+        .select(
+          "id, collection_id, image_url, caption, kind, created_at, collections:collection_id(name)",
+        )
         .eq("owner_id", userId)
         .order("created_at", { ascending: false })
         .limit(limit);

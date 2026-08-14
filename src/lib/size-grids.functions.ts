@@ -6,15 +6,13 @@ export type SizeGridScope = "category" | "product_group" | "product";
 
 const ScopeSchema = z.enum(["category", "product_group", "product"]);
 
-const DistributionSchema = z
-  .record(z.string(), z.number().min(0).max(1))
-  .refine(
-    (d) => {
-      const s = Object.values(d).reduce((a, b) => a + b, 0);
-      return Object.keys(d).length === 0 || (s >= 0.95 && s <= 1.05);
-    },
-    { message: "Distribuição deve somar ~100% (0.95 a 1.05)" },
-  );
+const DistributionSchema = z.record(z.string(), z.number().min(0).max(1)).refine(
+  (d) => {
+    const s = Object.values(d).reduce((a, b) => a + b, 0);
+    return Object.keys(d).length === 0 || (s >= 0.95 && s <= 1.05);
+  },
+  { message: "Distribuição deve somar ~100% (0.95 a 1.05)" },
+);
 
 export const listSizeGrids = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

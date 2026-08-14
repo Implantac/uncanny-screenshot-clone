@@ -99,21 +99,23 @@ export const evaluateStageGates = createServerFn({ method: "POST" })
           key: "tech_sheet_approved",
           label: "Ficha técnica aprovada",
           status: ts ? "pass" : "fail",
-          message: ts
-            ? "Ficha aprovada encontrada."
-            : "Nenhuma ficha aprovada para o produto.",
+          message: ts ? "Ficha aprovada encontrada." : "Nenhuma ficha aprovada para o produto.",
           blocking: true,
-          reason:
-            "Corte sem ficha aprovada gera retrabalho e desperdício de tecido.",
+          reason: "Corte sem ficha aprovada gera retrabalho e desperdício de tecido.",
         });
       }
     }
 
     // -------- costura: estágio anterior concluído + sem ocorrência crítica aberta
     if (to === "costura") {
-      const cutOk = ["corte", "costura", "acabamento", "qualidade", "expedicao", "entregue"].includes(
-        order.stage,
-      );
+      const cutOk = [
+        "corte",
+        "costura",
+        "acabamento",
+        "qualidade",
+        "expedicao",
+        "entregue",
+      ].includes(order.stage);
       checks.push({
         key: "cut_done",
         label: "Corte concluído",
@@ -184,8 +186,7 @@ export const evaluateStageGates = createServerFn({ method: "POST" })
               ? `Última inspeção: ${insp.result}. Necessário 'aprovada'.`
               : "Nenhuma inspeção de qualidade registrada para esta OP.",
           blocking: true,
-          reason:
-            "Expedir sem aprovação de qualidade libera peças não conformes ao cliente.",
+          reason: "Expedir sem aprovação de qualidade libera peças não conformes ao cliente.",
         });
       }
     }

@@ -75,9 +75,7 @@ export function ErpSectorSyncPanel() {
         ) : hasIssue ? (
           <>
             <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <span className="font-medium">
-              {divergentCount} OP(s) com setor divergente do ERP
-            </span>
+            <span className="font-medium">{divergentCount} OP(s) com setor divergente do ERP</span>
             <span className="text-muted-foreground">
               · {okCount}/{total} em sincronia
             </span>
@@ -106,11 +104,7 @@ export function ErpSectorSyncPanel() {
             Reverificar
           </Button>
           {hasIssue && (
-            <Button
-              size="sm"
-              onClick={() => syncAll.mutate()}
-              disabled={syncAll.isPending}
-            >
+            <Button size="sm" onClick={() => syncAll.mutate()} disabled={syncAll.isPending}>
               Sincronizar tudo
             </Button>
           )}
@@ -126,8 +120,8 @@ export function ErpSectorSyncPanel() {
         <SheetHeader>
           <SheetTitle>Sincronização de setores ERP ↔ PLM</SheetTitle>
           <SheetDescription>
-            Cada OP é comparada com o setor atual no ERP Usesoft (tabela indpcpst).
-            A leitura no ERP é read-only; ajustes acontecem apenas no PLM.
+            Cada OP é comparada com o setor atual no ERP Usesoft (tabela indpcpst). A leitura no ERP
+            é read-only; ajustes acontecem apenas no PLM.
           </SheetDescription>
         </SheetHeader>
 

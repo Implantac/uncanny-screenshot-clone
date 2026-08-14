@@ -240,4 +240,3 @@ export const getMarketingBridgeAnalysis = createServerFn({ method: "POST" })
       insight,
     };
   });
-

@@ -4,15 +4,7 @@ import { Button } from "@/components/ui/button";
 import { isPinned, togglePinnedProduct } from "@/lib/recent-products";
 import { toast } from "sonner";
 
-export function ProductPinButton({
-  id,
-  sku,
-  name,
-}: {
-  id: string;
-  sku: string;
-  name: string;
-}) {
+export function ProductPinButton({ id, sku, name }: { id: string; sku: string; name: string }) {
   const [pinned, setPinned] = useState(false);
 
   useEffect(() => {

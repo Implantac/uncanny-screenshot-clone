@@ -46,7 +46,13 @@ export function PcpCapacityTocPanel() {
         <Kpi
           label="Saúde do pipeline"
           value={`${summary.pipelineHealthPct.toFixed(0)}%`}
-          tone={summary.pipelineHealthPct >= 80 ? "ok" : summary.pipelineHealthPct >= 50 ? "neutral" : "danger"}
+          tone={
+            summary.pipelineHealthPct >= 80
+              ? "ok"
+              : summary.pipelineHealthPct >= 50
+                ? "neutral"
+                : "danger"
+          }
         />
       </div>
 
@@ -128,8 +134,7 @@ function Kpi({
 
 function UtilBar({ pct }: { pct: number }) {
   const capped = Math.min(pct, 120);
-  const color =
-    pct >= 100 ? "bg-destructive" : pct >= 75 ? "bg-amber-500" : "bg-emerald-500";
+  const color = pct >= 100 ? "bg-destructive" : pct >= 75 ? "bg-amber-500" : "bg-emerald-500";
   return (
     <div className="flex items-center gap-2 justify-end">
       <div className="w-20 h-1.5 bg-muted/40 rounded-full overflow-hidden">
@@ -140,13 +145,7 @@ function UtilBar({ pct }: { pct: number }) {
   );
 }
 
-function StatusPill({
-  status,
-  reason,
-}: {
-  status: "ok" | "alerta" | "gargalo";
-  reason: string;
-}) {
+function StatusPill({ status, reason }: { status: "ok" | "alerta" | "gargalo"; reason: string }) {
   const cls =
     status === "gargalo"
       ? "bg-destructive/15 text-destructive border-destructive/30"

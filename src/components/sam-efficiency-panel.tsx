@@ -3,7 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Activity, AlertTriangle, Clock, TrendingDown } from "lucide-react";
 import { getSamEfficiency, type OpSamEfficiency } from "@/lib/pcp-advanced.functions";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
 const STATUS_TONE: Record<OpSamEfficiency["status"], string> = {
@@ -63,7 +69,11 @@ export function SamEfficiencyPanel() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="OPs analisadas" value={stats.total} icon={<Activity className="size-4" />} />
+        <StatCard
+          label="OPs analisadas"
+          value={stats.total}
+          icon={<Activity className="size-4" />}
+        />
         <StatCard
           label="Críticos"
           value={stats.critico}

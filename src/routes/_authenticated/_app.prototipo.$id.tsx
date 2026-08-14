@@ -68,8 +68,6 @@ const STATUS_TONE: Record<Adjustment["status"], string> = {
   cancelado: "bg-muted text-muted-foreground border-border",
 };
 
-
-
 function relTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const h = Math.floor(diff / 36e5);
@@ -167,10 +165,17 @@ function PrototipoPage() {
   if (!proto) {
     return (
       <div className="p-4 sm:p-6 space-y-4 max-w-3xl mx-auto">
-        <PlmBreadcrumb items={[{ label: "Protótipos", link: { to: "/prototipos" as const } }, { label: "Não encontrado" }]} />
+        <PlmBreadcrumb
+          items={[
+            { label: "Protótipos", link: { to: "/prototipos" as const } },
+            { label: "Não encontrado" },
+          ]}
+        />
         <div className="rounded-xl border border-border bg-card/50 p-10 text-center space-y-3">
           <AlertTriangle className="size-8 text-muted-foreground mx-auto" />
-          <p className="text-muted-foreground">Protótipo não encontrado. Pode ter sido removido ou o link está desatualizado.</p>
+          <p className="text-muted-foreground">
+            Protótipo não encontrado. Pode ter sido removido ou o link está desatualizado.
+          </p>
           <Link to="/prototipos">
             <Button variant="outline" size="sm">
               <ArrowLeft className="size-4 mr-1" />
@@ -182,7 +187,6 @@ function PrototipoPage() {
     );
   }
 
-
   const sectorLabel = proto.current_sector
     ? (SECTORS.find((s) => s.key === proto.current_sector)?.label ?? proto.current_sector)
     : null;
@@ -190,10 +194,20 @@ function PrototipoPage() {
   const crumbs = [
     { label: "Protótipos", link: { to: "/prototipos" as const } },
     ...(proto.products?.collection_id
-      ? [{ label: "Coleção", link: { to: "/colecao-360/$id" as const, params: { id: proto.products.collection_id } } }]
+      ? [
+          {
+            label: "Coleção",
+            link: { to: "/colecao-360/$id" as const, params: { id: proto.products.collection_id } },
+          },
+        ]
       : []),
     ...(proto.product_id
-      ? [{ label: proto.products?.sku ?? "Produto", link: { to: "/produto/$id" as const, params: { id: proto.product_id } } }]
+      ? [
+          {
+            label: proto.products?.sku ?? "Produto",
+            link: { to: "/produto/$id" as const, params: { id: proto.product_id } },
+          },
+        ]
       : []),
     { label: proto.code },
   ];
@@ -219,7 +233,11 @@ function PrototipoPage() {
             params={{ id: proto.products.collection_id }}
             className="ml-auto"
           >
-            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-primary/30 text-primary hover:bg-primary/10"
+            >
               <Compass className="size-4 mr-1" />
               Coleção 360º
             </Button>
@@ -228,7 +246,6 @@ function PrototipoPage() {
       </div>
 
       {proto.product_id && <ProductWorkflowStepper productId={proto.product_id} />}
-
 
       <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-5">
         {/* Foto + dados */}
@@ -299,7 +316,10 @@ function PrototipoPage() {
 
         {proto.stage === "aprovado" && (
           <div className="relative overflow-hidden rounded-xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-5">
-            <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-emerald-500/20 blur-3xl" aria-hidden />
+            <div
+              className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-emerald-500/20 blur-3xl"
+              aria-hidden
+            />
             <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex items-center gap-3">
                 <div className="rounded-full bg-emerald-500/20 p-2">
@@ -310,7 +330,8 @@ function PrototipoPage() {
                     🎉 Piloto aprovado! Pronto para produção.
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">
-                    Todos os selos foram registrados. Você já pode abrir uma Ordem de Produção no PCP.
+                    Todos os selos foram registrados. Você já pode abrir uma Ordem de Produção no
+                    PCP.
                   </div>
                 </div>
               </div>
@@ -322,7 +343,11 @@ function PrototipoPage() {
                     </Link>
                   </Button>
                 )}
-                <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Button
+                  asChild
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
                   <Link to="/pcp-kanban">
                     <Factory className="size-4 mr-1.5" />
                     Criar OP no PCP

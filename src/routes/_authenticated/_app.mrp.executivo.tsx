@@ -33,7 +33,8 @@ export const Route = createFileRoute("/_authenticated/_app/mrp/executivo")({
       { title: "MRP Executivo · USE MODA PLM" },
       {
         name: "description",
-        content: "Dashboard executivo MRP com insights de IA por persona (Diretor, Comprador, PCP, Financeiro).",
+        content:
+          "Dashboard executivo MRP com insights de IA por persona (Diretor, Comprador, PCP, Financeiro).",
       },
     ],
   }),
@@ -108,7 +109,6 @@ function MrpExecPage() {
         }
       />
 
-
       {/* KPI grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Kpi
@@ -151,7 +151,12 @@ function MrpExecPage() {
           to="/mrp"
           search={{ status: "atencao" }}
         />
-        <Kpi label="Giro médio" value={num(kpis.giroMedio, 2)} sub="anual / estoque médio" to="/mrp/bi" />
+        <Kpi
+          label="Giro médio"
+          value={num(kpis.giroMedio, 2)}
+          sub="anual / estoque médio"
+          to="/mrp/bi"
+        />
         <Kpi
           label="Compras sugeridas"
           value={brl(kpis.suggestedValue)}
@@ -166,7 +171,6 @@ function MrpExecPage() {
           to="/mrp/bi"
         />
       </div>
-
 
       {/* Persona selector */}
       <div className="rounded-lg border bg-card p-4">
@@ -315,7 +319,6 @@ function Kpi({
   return <div className={cls}>{body}</div>;
 }
 
-
 function TopList({
   title,
   icon,
@@ -336,7 +339,10 @@ function TopList({
       ) : (
         <ul className="space-y-2">
           {items.map((it, i) => (
-            <li key={i} className="flex items-start justify-between gap-2 text-sm border-b last:border-0 pb-2 last:pb-0">
+            <li
+              key={i}
+              className="flex items-start justify-between gap-2 text-sm border-b last:border-0 pb-2 last:pb-0"
+            >
               <div className="min-w-0 flex-1">
                 <div className="font-medium truncate">{it.primary}</div>
                 <div className="text-xs text-muted-foreground truncate">{it.secondary}</div>

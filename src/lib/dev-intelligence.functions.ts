@@ -1,12 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export type StageKey =
-  | "solicitado"
-  | "em_confeccao"
-  | "em_prova"
-  | "aprovado"
-  | "reprovado";
+export type StageKey = "solicitado" | "em_confeccao" | "em_prova" | "aprovado" | "reprovado";
 
 export type StageStats = {
   stage: StageKey;
@@ -53,19 +48,16 @@ export const getDevIntelligence = createServerFn({ method: "GET" })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = context.supabase as any;
 
-    const [{ data: logs }, { data: protos }, { data: collections }] =
-      await Promise.all([
-        sb
-          .from("prototype_stage_log")
-          .select("prototype_id, from_stage, to_stage, duration_seconds, created_at")
-          .order("created_at", { ascending: true }),
-        sb
-          .from("prototypes")
-          .select(
-            "id, code, name, stage, created_at, stage_updated_at, product_id, products(name)",
-          ),
-        sb.from("collections").select("id, name"),
-      ]);
+    const [{ data: logs }, { data: protos }, { data: collections }] = await Promise.all([
+      sb
+        .from("prototype_stage_log")
+        .select("prototype_id, from_stage, to_stage, duration_seconds, created_at")
+        .order("created_at", { ascending: true }),
+      sb
+        .from("prototypes")
+        .select("id, code, name, stage, created_at, stage_updated_at, product_id, products(name)"),
+      sb.from("collections").select("id, name"),
+    ]);
 
     const logRows = (logs ?? []) as Array<{
       prototype_id: string;
@@ -101,14 +93,11 @@ export const getDevIntelligence = createServerFn({ method: "GET" })
       if (p.stage === "aprovado") approved += 1;
       if (p.stage === "reprovado") rejected += 1;
     }
-    const approvalRate =
-      approved + rejected > 0 ? approved / (approved + rejected) : 0;
+    const approvalRate = approved + rejected > 0 ? approved / (approved + rejected) : 0;
 
     // Bottleneck = stage with highest avg days (and at least 1 sample)
     const bottleneck =
-      stageStats
-        .filter((s) => s.count > 0)
-        .sort((a, b) => b.avgDays - a.avgDays)[0]?.stage ?? null;
+      stageStats.filter((s) => s.count > 0).sort((a, b) => b.avgDays - a.avgDays)[0]?.stage ?? null;
 
     // Stuck = active prototypes whose time in current stage > 1.5x avg
     const stuck: StuckPrototype[] = [];

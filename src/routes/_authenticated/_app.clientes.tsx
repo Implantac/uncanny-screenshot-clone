@@ -21,7 +21,6 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/ui/page-header";
 import { syncErpCustomers } from "@/lib/erp-import.functions";
 
-
 export const Route = createFileRoute("/_authenticated/_app/clientes")({
   head: () => ({ meta: [{ title: "Clientes · USE MODA OS" }] }),
   component: ClientesPage,
@@ -104,7 +103,11 @@ function ClientesPage() {
               className="gap-2"
               title="Puxa clientes ativos do ERP agora, sem esperar o cron"
             >
-              {syncing ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+              {syncing ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <RefreshCw className="size-4" />
+              )}
               Sincronizar ERP
             </Button>
             <Button
@@ -119,7 +122,6 @@ function ClientesPage() {
           </div>
         }
       />
-
 
       {isLoading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

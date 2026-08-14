@@ -71,17 +71,25 @@ export const getMorningBriefing = createServerFn({ method: "POST" })
         .from("product_target_costs")
         .select("product_id, target_cost")
         .eq("owner_id", userId),
-      supabase
-        .from("inventory_items")
-        .select("name, balance, minimum")
-        .eq("owner_id", userId),
+      supabase.from("inventory_items").select("name, balance, minimum").eq("owner_id", userId),
     ]);
 
     type TargetRow = { product_id: string | null; target_cost: number | null };
     type TsRow = { id: string; product_id: string | null; cost_price: number | null };
-    type PoRow = { id: string; code: string; status: string; due_date: string | null; stage_updated_at: string | null };
+    type PoRow = {
+      id: string;
+      code: string;
+      status: string;
+      due_date: string | null;
+      stage_updated_at: string | null;
+    };
     type InvRow = { name: string; balance: number | null; minimum: number | null };
-    type CapaRow = { id: string; title: string | null; severity: string | null; due_date: string | null };
+    type CapaRow = {
+      id: string;
+      title: string | null;
+      severity: string | null;
+      due_date: string | null;
+    };
 
     const targetMap = new Map(
       ((targets.data ?? []) as TargetRow[])

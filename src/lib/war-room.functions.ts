@@ -53,7 +53,10 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
         .select("product_id, cost_price, products(name)")
         .eq("owner_id", userId)
         .eq("status", "aprovada"),
-      supabase.from("product_target_costs").select("product_id, target_cost").eq("owner_id", userId),
+      supabase
+        .from("product_target_costs")
+        .select("product_id, target_cost")
+        .eq("owner_id", userId),
     ]);
 
     type OrderRow = {
@@ -66,9 +69,25 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
       products: { name: string | null } | { name: string | null }[] | null;
     };
     type ProtoRow = { id: string; code: string; stage: string; updated_at: string };
-    type CapaRow = { id: string; title: string | null; severity: string | null; status: string; due_date: string | null };
-    type CampRow = { id: string; name: string; status: string; roas: number | null; investment: number | null };
-    type CostRow = { product_id: string | null; cost_price: number | null; products: { name: string | null } | { name: string | null }[] | null };
+    type CapaRow = {
+      id: string;
+      title: string | null;
+      severity: string | null;
+      status: string;
+      due_date: string | null;
+    };
+    type CampRow = {
+      id: string;
+      name: string;
+      status: string;
+      roas: number | null;
+      investment: number | null;
+    };
+    type CostRow = {
+      product_id: string | null;
+      cost_price: number | null;
+      products: { name: string | null } | { name: string | null }[] | null;
+    };
     type TgtRow = { product_id: string | null; target_cost: number | null };
 
     const pickName = (rel: OrderRow["products"]): string | null => {
@@ -82,9 +101,7 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
     // PCP — OPs atrasadas
     ((orders.data ?? []) as OrderRow[]).forEach((o) => {
       if (o.due_date && o.due_date < today) {
-        const daysLate = Math.floor(
-          (Date.parse(today) - Date.parse(o.due_date)) / 86400_000,
-        );
+        const daysLate = Math.floor((Date.parse(today) - Date.parse(o.due_date)) / 86400_000);
         out.push({
           id: `op-${o.id}`,
           module: "pcp",
@@ -176,4 +193,3 @@ export const getWarRoomBottlenecks = createServerFn({ method: "GET" })
     out.sort((a, b) => SEV_RANK[a.severity] - SEV_RANK[b.severity]);
     return out.slice(0, 30);
   });
-

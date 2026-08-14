@@ -815,7 +815,6 @@ function ColecoesPage() {
       <CollectionIntelligencePanel />
       <CollectionCapaRiskPanel />
 
-
       {selected && (
         <>
           <LifecyclePanel
@@ -949,7 +948,9 @@ function ColecoesPage() {
               <ViewPresetsDropdown
                 module="colecoes"
                 current={{ q, status: statusFilter, season: seasonFilter, sort: sortBy }}
-                onClear={() => updateSearch({ q: "", status: "all", season: "all", sort: "recent", page: 1 })}
+                onClear={() =>
+                  updateSearch({ q: "", status: "all", season: "all", sort: "recent", page: 1 })
+                }
                 onApply={(f: ViewPresetFilters) => {
                   const patch: Partial<typeof search> = { page: 1 };
                   if (typeof f.q === "string") patch.q = f.q;
@@ -960,7 +961,6 @@ function ColecoesPage() {
                 }}
               />
             </div>
-
 
             <div className="space-y-2">
               {filteredCollections.length === 0 ? (
@@ -1003,7 +1003,6 @@ function ColecoesPage() {
                           </div>
                         </div>
                         <StatusBadge kind="collection" value={collection.status} />
-
                       </div>
                       <div className="mt-3 space-y-1.5">
                         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
@@ -1170,7 +1169,6 @@ function ColecoesPage() {
                                 <div className="flex items-center justify-between gap-2">
                                   <span className="font-medium truncate">{capsule.name}</span>
                                   <StatusBadge kind="collection" value={capsule.status} />
-
                                 </div>
                                 <div className="mt-1 text-xs text-muted-foreground">
                                   {capsule.season} {capsule.year} · {capsule.progress}%
@@ -1777,7 +1775,18 @@ function ColecoesPage() {
                   {selectedProducts.length ? (
                     <div className="space-y-2">
                       {selectedProducts.map((p) => {
-                        const m = (productionByProduct as Record<string, { qty: number; done: number; stages: Record<string, number>; late: number; status: Record<string, number> }>)[p.id];
+                        const m = (
+                          productionByProduct as Record<
+                            string,
+                            {
+                              qty: number;
+                              done: number;
+                              stages: Record<string, number>;
+                              late: number;
+                              status: Record<string, number>;
+                            }
+                          >
+                        )[p.id];
                         const pct =
                           m && m.qty > 0 ? Math.min(100, Math.round((m.done / m.qty) * 100)) : 0;
                         const topStage = m
@@ -2211,7 +2220,8 @@ function CollectionDialog({
           </div>
           <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-3">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Metas da coleção <span className="normal-case opacity-70">(opcional — usadas em /colecao-360)</span>
+              Metas da coleção{" "}
+              <span className="normal-case opacity-70">(opcional — usadas em /colecao-360)</span>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">

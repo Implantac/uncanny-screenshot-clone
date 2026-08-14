@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Printer, ArrowLeft, Grid3x3 } from "lucide-react";
 
-
 export const Route = createFileRoute("/_authenticated/_app/line-sheet/$id")({
   head: () => ({
     meta: [
@@ -79,9 +78,7 @@ function LineSheetPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select(
-          "id, sku, name, category, image_url, cost_price, sell_price, status, colors, sizes",
-        )
+        .select("id, sku, name, category, image_url, cost_price, sell_price, status, colors, sizes")
         .eq("collection_id", id)
         .order("category")
         .order("sell_price", { ascending: false });
@@ -103,10 +100,7 @@ function LineSheetPage() {
 
   const totals = useMemo(() => {
     const skus = products.length;
-    const avgSell =
-      skus > 0
-        ? products.reduce((s, p) => s + (p.sell_price ?? 0), 0) / skus
-        : 0;
+    const avgSell = skus > 0 ? products.reduce((s, p) => s + (p.sell_price ?? 0), 0) / skus : 0;
     const tiers = { entrada: 0, medio: 0, premium: 0 };
     for (const p of products) {
       const t = priceTier(p.sell_price);
@@ -122,7 +116,12 @@ function LineSheetPage() {
           items={[
             { label: "Coleções", link: { to: "/colecoes" as const } },
             ...(collection
-              ? [{ label: collection.name, link: { to: "/colecao-360/$id" as const, params: { id } } }]
+              ? [
+                  {
+                    label: collection.name,
+                    link: { to: "/colecao-360/$id" as const, params: { id } },
+                  },
+                ]
               : []),
             { label: "Line Sheet" },
           ]}
@@ -146,14 +145,12 @@ function LineSheetPage() {
         />
       </div>
 
-
       <div className="hidden print:block mb-4">
         <h1 className="text-xl font-bold">
           {collection?.name} — {collection?.season} {collection?.year}
         </h1>
         <div className="text-sm text-muted-foreground">
-          Line Sheet · {products.length} SKUs · Gerado{" "}
-          {new Date().toLocaleDateString("pt-BR")}
+          Line Sheet · {products.length} SKUs · Gerado {new Date().toLocaleDateString("pt-BR")}
         </div>
       </div>
 
@@ -178,10 +175,7 @@ function LineSheetPage() {
               <div className="h-4 w-40 bg-muted rounded animate-pulse" />
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="glass rounded-lg overflow-hidden animate-pulse"
-                  >
+                  <div key={i} className="glass rounded-lg overflow-hidden animate-pulse">
                     <div className="aspect-[3/4] bg-muted" />
                     <div className="p-2 space-y-2">
                       <div className="h-3 bg-muted rounded w-3/4" />
@@ -202,7 +196,6 @@ function LineSheetPage() {
             </Link>
           </div>
         </div>
-
       ) : (
         groups.map(([cat, items]) => (
           <section key={cat} className="space-y-2 break-inside-avoid">
@@ -239,9 +232,7 @@ function LineSheetPage() {
                       <div className="text-[10px] font-mono text-muted-foreground truncate">
                         {p.sku}
                       </div>
-                      <div className="text-xs font-medium line-clamp-2 min-h-[2rem]">
-                        {p.name}
-                      </div>
+                      <div className="text-xs font-medium line-clamp-2 min-h-[2rem]">{p.name}</div>
                       <div className="flex items-center justify-between gap-1">
                         <span className="text-sm font-semibold">{fmtBRL(p.sell_price)}</span>
                         <Badge

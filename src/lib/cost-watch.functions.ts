@@ -138,14 +138,14 @@ export const getCostWatch = createServerFn({ method: "GET" })
       return b.gapPct - a.gapPct;
     });
 
-    const tracked = items.filter((i) => i.status === "ok" || i.status === "atencao" || i.status === "estouro");
+    const tracked = items.filter(
+      (i) => i.status === "ok" || i.status === "atencao" || i.status === "estouro",
+    );
     const estouro = items.filter((i) => i.status === "estouro").length;
     const atencao = items.filter((i) => i.status === "atencao").length;
     const sem_meta = items.filter((i) => i.status === "sem_meta").length;
     const avgGapPct =
-      tracked.length > 0
-        ? tracked.reduce((s, i) => s + i.gapPct, 0) / tracked.length
-        : 0;
+      tracked.length > 0 ? tracked.reduce((s, i) => s + i.gapPct, 0) / tracked.length : 0;
 
     const insights: string[] = [];
     if (estouro > 0)
@@ -153,9 +153,13 @@ export const getCostWatch = createServerFn({ method: "GET" })
         `${estouro} produto(s) estourando a meta (+10% ou mais). Acionar comprador e PCP antes de abrir OP.`,
       );
     if (atencao > 0)
-      insights.push(`${atencao} produto(s) em zona de atenção — pequena negociação ainda recupera margem.`);
+      insights.push(
+        `${atencao} produto(s) em zona de atenção — pequena negociação ainda recupera margem.`,
+      );
     if (sem_meta > 0)
-      insights.push(`${sem_meta} produto(s) sem custo-meta — cadastrar em Target Costing para diagnóstico.`);
+      insights.push(
+        `${sem_meta} produto(s) sem custo-meta — cadastrar em Target Costing para diagnóstico.`,
+      );
 
     // driver dominante nos estouros
     const drivers = items

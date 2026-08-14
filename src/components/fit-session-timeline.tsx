@@ -72,10 +72,14 @@ export function FitSessionTimeline({
     <div className="glass rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">Timeline visual</div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
+            Timeline visual
+          </div>
           <div className="text-sm font-medium">Evolução da peça — {sorted.length} prova(s)</div>
         </div>
-        <div className="text-[11px] text-muted-foreground">Clique = abrir · Shift+clique = comparar</div>
+        <div className="text-[11px] text-muted-foreground">
+          Clique = abrir · Shift+clique = comparar
+        </div>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {sorted.map((s, idx) => {
@@ -99,7 +103,13 @@ export function FitSessionTimeline({
               >
                 <div className="aspect-square bg-muted flex items-center justify-center">
                   {photo ? (
-                    <img src={photo} alt={`Prova ${s.iteration}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                    <img
+                      src={photo}
+                      alt={`Prova ${s.iteration}`}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <ImageIcon className="size-8 text-muted-foreground/40" />
                   )}
@@ -114,9 +124,7 @@ export function FitSessionTimeline({
                   </div>
                 </div>
               </button>
-              {idx < sorted.length - 1 && (
-                <div className="w-6 h-px bg-border mx-1" aria-hidden />
-              )}
+              {idx < sorted.length - 1 && <div className="w-6 h-px bg-border mx-1" aria-hidden />}
             </div>
           );
         })}

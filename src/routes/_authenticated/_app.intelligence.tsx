@@ -226,8 +226,7 @@ function IntelligencePage() {
   const salesQ = useQuery({
     queryKey: ["intel", "sales"],
     queryFn: async () =>
-      (await supabase.from("sales").select("*").order("sold_at", { ascending: false }))
-        .data ?? [],
+      (await supabase.from("sales").select("*").order("sold_at", { ascending: false })).data ?? [],
   });
   const influQ = useQuery({
     queryKey: ["intel", "influencers"],
@@ -965,7 +964,8 @@ function DevelopmentBoard({ prototypes }: { prototypes: PrototypeRow[] }) {
         <CardHeader>
           <CardTitle>Development Kanban</CardTitle>
           <CardDescription>
-            Pipeline criativo separado da produção · {(prototypes as PrototypeRow[]).length} protótipos
+            Pipeline criativo separado da produção · {(prototypes as PrototypeRow[]).length}{" "}
+            protótipos
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -1697,10 +1697,20 @@ function InfluencerSuite() {
                         {Math.round(roi)}%
                       </TableCell>
                       <TableCell className="text-right whitespace-nowrap">
-                        <Button size="icon" variant="ghost" aria-label="Editar influenciador" onClick={() => edit(i)}>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label="Editar influenciador"
+                          onClick={() => edit(i)}
+                        >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button size="icon" variant="ghost" aria-label="Excluir influenciador" onClick={() => del.mutate(i.id)}>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label="Excluir influenciador"
+                          onClick={() => del.mutate(i.id)}
+                        >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </TableCell>
@@ -2060,10 +2070,20 @@ function SalesSuite({ products }: { products: ProductRow[] }) {
                       {BRL(Number(s.total))}
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap">
-                      <Button size="icon" variant="ghost" aria-label="Editar envio" onClick={() => edit(s)}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Editar envio"
+                        onClick={() => edit(s)}
+                      >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="icon" variant="ghost" aria-label="Excluir envio" onClick={() => del.mutate(s.id)}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Excluir envio"
+                        onClick={() => del.mutate(s.id)}
+                      >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </TableCell>

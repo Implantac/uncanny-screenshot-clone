@@ -94,9 +94,7 @@ export function PrototypeGatesPanel({ prototypeId }: { prototypeId: string }) {
                   {new Date(g.decided_at).toLocaleDateString("pt-BR")}
                 </div>
               )}
-              {g.notes && (
-                <div className="text-[11px] line-clamp-2 opacity-80">{g.notes}</div>
-              )}
+              {g.notes && <div className="text-[11px] line-clamp-2 opacity-80">{g.notes}</div>}
               <div className="flex gap-1 mt-auto">
                 <Button
                   size="sm"
@@ -143,8 +141,7 @@ export function PrototypeGatesPanel({ prototypeId }: { prototypeId: string }) {
             <Button
               disabled={decide.isPending}
               onClick={() =>
-                dialog &&
-                decide.mutate({ gate: dialog.gate, status: dialog.status, notes })
+                dialog && decide.mutate({ gate: dialog.gate, status: dialog.status, notes })
               }
             >
               {decide.isPending && <Loader2 className="size-3 mr-1 animate-spin" />}

@@ -15,13 +15,7 @@ import {
   ShoppingCart,
   Truck,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,21 +40,21 @@ import {
   usesoftListInventory,
 } from "@/lib/usesoft.functions";
 import {
- syncErpCollections,
- getErpCollectionSyncStatus,
- syncErpProducts,
- syncErpProductImages,
- getErpProductSyncStatus,
- syncErpCustomers,
- getErpCustomerSyncStatus,
- syncErpSuppliers,
- getErpSupplierSyncStatus,
- syncErpInventory,
- getErpInventorySyncStatus,
- syncErpSales,
- getErpSalesSyncStatus,
- syncErpPurchases,
- getErpPurchaseSyncStatus,
+  syncErpCollections,
+  getErpCollectionSyncStatus,
+  syncErpProducts,
+  syncErpProductImages,
+  getErpProductSyncStatus,
+  syncErpCustomers,
+  getErpCustomerSyncStatus,
+  syncErpSuppliers,
+  getErpSupplierSyncStatus,
+  syncErpInventory,
+  getErpInventorySyncStatus,
+  syncErpSales,
+  getErpSalesSyncStatus,
+  syncErpPurchases,
+  getErpPurchaseSyncStatus,
 } from "@/lib/erp-import.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -111,7 +105,9 @@ function ErpUsesoftPage() {
 
   async function handleSyncAll() {
     setSyncingAll(true);
-    const steps: Array<[string, () => Promise<{ inserted?: number; updated?: number; total_erp?: number }>]> = [
+    const steps: Array<
+      [string, () => Promise<{ inserted?: number; updated?: number; total_erp?: number }>]
+    > = [
       ["Coleções", () => syncCol()],
       ["Produtos", () => syncProd()],
       ["Clientes", () => syncCust()],
@@ -120,7 +116,8 @@ function ErpUsesoftPage() {
       ["Vendas (90d)", () => syncSales({ data: { daysBack: 90 } })],
       ["Compras (180d)", () => syncPur({ data: { daysBack: 180 } })],
     ];
-    let ok = 0, fail = 0;
+    let ok = 0,
+      fail = 0;
     for (const [label, fn] of steps) {
       try {
         const r = await fn();
@@ -145,9 +142,8 @@ function ErpUsesoftPage() {
             ERP Usesoft · Live
           </h1>
           <p className="text-sm text-muted-foreground">
-            Leitura ao vivo do banco do ERP — sessão Postgres em modo{" "}
-            <code>read-only</code>. Nenhuma operação de escrita é possível por
-            construção.
+            Leitura ao vivo do banco do ERP — sessão Postgres em modo <code>read-only</code>.
+            Nenhuma operação de escrita é possível por construção.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -190,12 +186,36 @@ function ErpUsesoftPage() {
       />
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <Kpi icon={<Tag className="h-4 w-4" />} label="Coleções (Grifes)" value={kpisQ.data?.colecoes} />
-        <Kpi icon={<Package className="h-4 w-4" />} label="Produtos ativos" value={kpisQ.data?.produtos} />
-        <Kpi icon={<Users className="h-4 w-4" />} label="Clientes ativos" value={kpisQ.data?.clientes} />
-        <Kpi icon={<Building2 className="h-4 w-4" />} label="Fornecedores" value={kpisQ.data?.fornecedores} />
-        <Kpi icon={<ShoppingCart className="h-4 w-4" />} label="Pedidos · 30d" value={kpisQ.data?.pedidos30d} />
-        <Kpi icon={<Truck className="h-4 w-4" />} label="Compras · 30d" value={kpisQ.data?.compras30d} />
+        <Kpi
+          icon={<Tag className="h-4 w-4" />}
+          label="Coleções (Grifes)"
+          value={kpisQ.data?.colecoes}
+        />
+        <Kpi
+          icon={<Package className="h-4 w-4" />}
+          label="Produtos ativos"
+          value={kpisQ.data?.produtos}
+        />
+        <Kpi
+          icon={<Users className="h-4 w-4" />}
+          label="Clientes ativos"
+          value={kpisQ.data?.clientes}
+        />
+        <Kpi
+          icon={<Building2 className="h-4 w-4" />}
+          label="Fornecedores"
+          value={kpisQ.data?.fornecedores}
+        />
+        <Kpi
+          icon={<ShoppingCart className="h-4 w-4" />}
+          label="Pedidos · 30d"
+          value={kpisQ.data?.pedidos30d}
+        />
+        <Kpi
+          icon={<Truck className="h-4 w-4" />}
+          label="Compras · 30d"
+          value={kpisQ.data?.compras30d}
+        />
       </div>
 
       <Tabs defaultValue="colecoes">
@@ -209,13 +229,27 @@ function ErpUsesoftPage() {
           <TabsTrigger value="fornecedores">Fornecedores</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="colecoes" className="mt-4"><CollectionsPanel /></TabsContent>
-        <TabsContent value="produtos" className="mt-4"><ProductsPanel /></TabsContent>
-        <TabsContent value="estoque" className="mt-4"><InventoryPanel /></TabsContent>
-        <TabsContent value="vendas" className="mt-4"><SalesPanel /></TabsContent>
-        <TabsContent value="compras" className="mt-4"><PurchasesPanel /></TabsContent>
-        <TabsContent value="clientes" className="mt-4"><CustomersPanel /></TabsContent>
-        <TabsContent value="fornecedores" className="mt-4"><SuppliersPanel /></TabsContent>
+        <TabsContent value="colecoes" className="mt-4">
+          <CollectionsPanel />
+        </TabsContent>
+        <TabsContent value="produtos" className="mt-4">
+          <ProductsPanel />
+        </TabsContent>
+        <TabsContent value="estoque" className="mt-4">
+          <InventoryPanel />
+        </TabsContent>
+        <TabsContent value="vendas" className="mt-4">
+          <SalesPanel />
+        </TabsContent>
+        <TabsContent value="compras" className="mt-4">
+          <PurchasesPanel />
+        </TabsContent>
+        <TabsContent value="clientes" className="mt-4">
+          <CustomersPanel />
+        </TabsContent>
+        <TabsContent value="fornecedores" className="mt-4">
+          <SuppliersPanel />
+        </TabsContent>
       </Tabs>
     </div>
   );
@@ -253,8 +287,7 @@ function ConnectionStatusCard({
   }
 
   const failMsg =
-    error?.message ??
-    (data && !data.ok ? data.error ?? "Falha desconhecida" : null);
+    error?.message ?? (data && !data.ok ? (data.error ?? "Falha desconhecida") : null);
 
   if (failMsg) {
     const hint = diagnoseError(failMsg);
@@ -265,9 +298,7 @@ function ConnectionStatusCard({
             <XCircle className="h-5 w-5" />
             Sem conexão com o PostgreSQL do ERP Usesoft
           </CardTitle>
-          <CardDescription className="text-destructive/90">
-            {failMsg}
-          </CardDescription>
+          <CardDescription className="text-destructive/90">{failMsg}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {hint && (
@@ -277,10 +308,9 @@ function ConnectionStatusCard({
             </p>
           )}
           <div className="text-xs text-muted-foreground">
-            Variáveis necessárias no backend:{" "}
-            <code>USESOFT_PG_HOST</code>, <code>USESOFT_PG_PORT</code>,{" "}
-            <code>USESOFT_PG_DATABASE</code>, <code>USESOFT_PG_USER</code>,{" "}
-            <code>USESOFT_PG_PASSWORD</code>.
+            Variáveis necessárias no backend: <code>USESOFT_PG_HOST</code>,{" "}
+            <code>USESOFT_PG_PORT</code>, <code>USESOFT_PG_DATABASE</code>,{" "}
+            <code>USESOFT_PG_USER</code>, <code>USESOFT_PG_PASSWORD</code>.
           </div>
           <Button size="sm" variant="outline" onClick={onRetry} disabled={isFetching}>
             <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
@@ -344,17 +374,7 @@ function diagnoseError(msg: string): string | null {
   return null;
 }
 
-
-
-function Kpi({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value?: number;
-}) {
+function Kpi({ icon, label, value }: { icon: React.ReactNode; label: string; value?: number }) {
   return (
     <Card>
       <CardContent className="p-3">
@@ -389,11 +409,13 @@ function SyncBar({
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
       <div className="text-sm">
-        <div className="font-medium">{linked.toLocaleString("pt-BR")} {linkedLabel}</div>
+        <div className="font-medium">
+          {linked.toLocaleString("pt-BR")} {linkedLabel}
+        </div>
         <div className="text-xs text-muted-foreground">
           {ls && ls.created_at
             ? `Último sync: ${new Date(ls.created_at).toLocaleString("pt-BR")} — ${ls.records_affected ?? 0} registros`
-            : hint ?? "Nunca sincronizado."}
+            : (hint ?? "Nunca sincronizado.")}
         </div>
       </div>
       <Button onClick={() => onSync()} disabled={syncing} size="sm">
@@ -403,7 +425,6 @@ function SyncBar({
     </div>
   );
 }
-
 
 function SearchBar({
   value,
@@ -474,9 +495,7 @@ function TableShell({
           </p>
         ) : (
           <>
-            {isFetching && (
-              <p className="text-xs text-muted-foreground mb-2">Atualizando…</p>
-            )}
+            {isFetching && <p className="text-xs text-muted-foreground mb-2">Atualizando…</p>}
             {children}
           </>
         )}
@@ -537,9 +556,7 @@ function CollectionsPanel() {
     >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
         <div className="text-sm">
-          <div className="font-medium">
-            {linked} coleção(ões) vinculada(s) ao ERP
-          </div>
+          <div className="font-medium">{linked} coleção(ões) vinculada(s) ao ERP</div>
           <div className="text-xs text-muted-foreground">
             {lastSync
               ? `Último sync: ${new Date(lastSync.created_at).toLocaleString("pt-BR")} — ${lastSync.records_affected ?? 0} registros`
@@ -566,9 +583,7 @@ function CollectionsPanel() {
               <TableCell className="font-mono text-xs">{c.id}</TableCell>
               <TableCell className="font-medium">{c.nome}</TableCell>
               <TableCell>
-                <Badge variant={c.status === "ativa" ? "default" : "secondary"}>
-                  {c.status}
-                </Badge>
+                <Badge variant={c.status === "ativa" ? "default" : "secondary"}>{c.status}</Badge>
               </TableCell>
               <TableCell>
                 {c.visivelEcommerce ? (
@@ -599,8 +614,7 @@ function ProductsPanel() {
 
   const q = useQuery({
     queryKey: ["usesoft-products", search],
-    queryFn: () =>
-      fn({ data: { search, limit: 200, offset: 0, onlyActive: true } }),
+    queryFn: () => fn({ data: { search, limit: 200, offset: 0, onlyActive: true } }),
   });
   const statusQ = useQuery({
     queryKey: ["erp-products-sync-status"],
@@ -640,9 +654,7 @@ function ProductsPanel() {
     >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
         <div className="text-sm">
-          <div className="font-medium">
-            {linked} produto(s) vinculado(s) ao ERP
-          </div>
+          <div className="font-medium">{linked} produto(s) vinculado(s) ao ERP</div>
           <div className="text-xs text-muted-foreground">
             {lastSync
               ? `Último sync: ${new Date(lastSync.created_at).toLocaleString("pt-BR")} — ${lastSync.records_affected ?? 0} registros`
@@ -655,11 +667,15 @@ function ProductsPanel() {
               setSyncingImg(true);
               try {
                 const res = await syncImgFn({ data: { limit: 200 } });
-                toast.success(`Imagens: ${res.uploaded} enviadas, ${res.skipped} ignoradas (${res.pending} pendentes neste lote).`);
+                toast.success(
+                  `Imagens: ${res.uploaded} enviadas, ${res.skipped} ignoradas (${res.pending} pendentes neste lote).`,
+                );
                 qc.invalidateQueries({ queryKey: ["products"] });
               } catch (e) {
                 toast.error(e instanceof Error ? e.message : "Falha ao sincronizar imagens");
-              } finally { setSyncingImg(false); }
+              } finally {
+                setSyncingImg(false);
+              }
             }}
             disabled={syncingImg}
             size="sm"
@@ -674,7 +690,6 @@ function ProductsPanel() {
           </Button>
         </div>
       </div>
-
 
       <div className="overflow-x-auto">
         <Table>
@@ -697,7 +712,9 @@ function ProductsPanel() {
                   {p.grifeNome ?? "—"}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">{BRL.format(p.custo)}</TableCell>
-                <TableCell className="text-right tabular-nums">{BRL.format(p.precoVenda)}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {BRL.format(p.precoVenda)}
+                </TableCell>
                 <TableCell className="font-mono text-xs">{p.ean ?? "—"}</TableCell>
               </TableRow>
             ))}
@@ -717,8 +734,7 @@ function InventoryPanel() {
   const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-inventory", search],
-    queryFn: () =>
-      fn({ data: { search, limit: 200, offset: 0, onlyWithBalance: true } }),
+    queryFn: () => fn({ data: { search, limit: 200, offset: 0, onlyWithBalance: true } }),
   });
   const statusQ = useQuery({ queryKey: ["erp-inventory-sync-status"], queryFn: () => statusFn() });
   async function handleSync() {
@@ -727,8 +743,11 @@ function InventoryPanel() {
       const r = await syncFn();
       toast.success(`Estoque: ${r.inserted ?? 0} linhas espelhadas (${r.total_erp} no ERP).`);
       qc.invalidateQueries({ queryKey: ["erp-inventory-sync-status"] });
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
-    finally { setSyncing(false); }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    } finally {
+      setSyncing(false);
+    }
   }
   return (
     <TableShell
@@ -795,8 +814,7 @@ function SalesPanel() {
   const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-sales", search],
-    queryFn: () =>
-      fn({ data: { search, limit: 200, offset: 0, daysBack: 90 } }),
+    queryFn: () => fn({ data: { search, limit: 200, offset: 0, daysBack: 90 } }),
   });
   const statusQ = useQuery({ queryKey: ["erp-sales-sync-status"], queryFn: () => statusFn() });
   async function handleSync() {
@@ -805,8 +823,11 @@ function SalesPanel() {
       const r = await syncFn({ data: { daysBack: 90 } });
       toast.success(`Vendas: ${r.inserted ?? 0} itens espelhados (${r.total_erp} no ERP).`);
       qc.invalidateQueries({ queryKey: ["erp-sales-sync-status"] });
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
-    finally { setSyncing(false); }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    } finally {
+      setSyncing(false);
+    }
   }
   return (
     <TableShell
@@ -847,7 +868,9 @@ function SalesPanel() {
                 <TableCell>{fmtDate(s.data)}</TableCell>
                 <TableCell className="font-medium">{s.clienteNome ?? "—"}</TableCell>
                 <TableCell className="text-right tabular-nums">{s.quantidadeItens}</TableCell>
-                <TableCell className="text-right tabular-nums">{BRL.format(s.valorTotal)}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {BRL.format(s.valorTotal)}
+                </TableCell>
                 <TableCell>
                   <Badge variant="outline">{s.status ?? "—"}</Badge>
                 </TableCell>
@@ -869,8 +892,7 @@ function PurchasesPanel() {
   const [syncing, setSyncing] = useState(false);
   const q = useQuery({
     queryKey: ["usesoft-purchases", search],
-    queryFn: () =>
-      fn({ data: { search, limit: 200, offset: 0, daysBack: 180 } }),
+    queryFn: () => fn({ data: { search, limit: 200, offset: 0, daysBack: 180 } }),
   });
   const statusQ = useQuery({ queryKey: ["erp-purchases-sync-status"], queryFn: () => statusFn() });
   async function handleSync() {
@@ -879,8 +901,11 @@ function PurchasesPanel() {
       const r = await syncFn({ data: { daysBack: 180 } });
       toast.success(`Compras: ${r.inserted ?? 0} POs espelhados (${r.total_erp} no ERP).`);
       qc.invalidateQueries({ queryKey: ["erp-purchases-sync-status"] });
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
-    finally { setSyncing(false); }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    } finally {
+      setSyncing(false);
+    }
   }
   return (
     <TableShell
@@ -919,7 +944,9 @@ function PurchasesPanel() {
                 <TableCell className="font-mono text-xs">{p.numero}</TableCell>
                 <TableCell>{fmtDate(p.data)}</TableCell>
                 <TableCell className="font-medium">{p.fornecedorNome ?? "—"}</TableCell>
-                <TableCell className="text-right tabular-nums">{BRL.format(p.valorTotal)}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {BRL.format(p.valorTotal)}
+                </TableCell>
                 <TableCell>
                   <Badge variant="outline">{p.status ?? "—"}</Badge>
                 </TableCell>
@@ -951,8 +978,11 @@ function CustomersPanel() {
       toast.success(`Clientes: ${r.inserted ?? 0} criados, ${r.updated ?? 0} atualizados.`);
       qc.invalidateQueries({ queryKey: ["erp-customers-sync-status"] });
       qc.invalidateQueries({ queryKey: ["customers"] });
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
-    finally { setSyncing(false); }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    } finally {
+      setSyncing(false);
+    }
   }
   return (
     <TableShell
@@ -1025,8 +1055,11 @@ function SuppliersPanel() {
       toast.success(`Fornecedores: ${r.inserted ?? 0} criados, ${r.updated ?? 0} atualizados.`);
       qc.invalidateQueries({ queryKey: ["erp-suppliers-sync-status"] });
       qc.invalidateQueries({ queryKey: ["suppliers"] });
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha"); }
-    finally { setSyncing(false); }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    } finally {
+      setSyncing(false);
+    }
   }
   return (
     <TableShell
@@ -1079,4 +1112,3 @@ function SuppliersPanel() {
     </TableShell>
   );
 }
-

@@ -76,7 +76,18 @@ export function Supplier360Drawer({ supplierId, open, onOpenChange }: Props) {
 }
 
 function DrawerBody({ data }: { data: Supplier360 }) {
-  const { supplier, kpis, reason, top_defects, top_products, capabilities, compliance, orders_active, orders_recent, occurrences_recent } = data;
+  const {
+    supplier,
+    kpis,
+    reason,
+    top_defects,
+    top_products,
+    capabilities,
+    compliance,
+    orders_active,
+    orders_recent,
+    occurrences_recent,
+  } = data;
   const tint = HEALTH_TINT[kpis.health];
 
   return (
@@ -149,20 +160,40 @@ function DrawerBody({ data }: { data: Supplier360 }) {
           label="Pontualidade"
           value={kpis.on_time_pct !== null ? `${kpis.on_time_pct}%` : "—"}
           sub={`${kpis.orders_done_count} entregues`}
-          tone={kpis.on_time_pct === null ? "" : kpis.on_time_pct >= 90 ? "good" : kpis.on_time_pct >= 75 ? "warn" : "bad"}
+          tone={
+            kpis.on_time_pct === null
+              ? ""
+              : kpis.on_time_pct >= 90
+                ? "good"
+                : kpis.on_time_pct >= 75
+                  ? "warn"
+                  : "bad"
+          }
         />
         <Kpi
           icon={TrendingUp}
           label="Lead time"
           value={kpis.lead_time_avg_days !== null ? `${kpis.lead_time_avg_days}d` : "—"}
-          sub={kpis.lead_time_p90_days !== null ? `p90 ${kpis.lead_time_p90_days}d` : `contratado ${kpis.contracted_lead_time_days ?? "—"}d`}
+          sub={
+            kpis.lead_time_p90_days !== null
+              ? `p90 ${kpis.lead_time_p90_days}d`
+              : `contratado ${kpis.contracted_lead_time_days ?? "—"}d`
+          }
         />
         <Kpi
           icon={Gauge}
           label="Utilização"
           value={kpis.utilization_pct !== null ? `${kpis.utilization_pct}%` : "—"}
           sub={kpis.monthly_capacity ? `cap. ${kpis.monthly_capacity}/mês` : "sem capacidade"}
-          tone={kpis.utilization_pct === null ? "" : kpis.utilization_pct > 95 ? "warn" : kpis.utilization_pct > 110 ? "bad" : "good"}
+          tone={
+            kpis.utilization_pct === null
+              ? ""
+              : kpis.utilization_pct > 95
+                ? "warn"
+                : kpis.utilization_pct > 110
+                  ? "bad"
+                  : "good"
+          }
         />
         <Kpi
           icon={Box}
@@ -188,7 +219,9 @@ function DrawerBody({ data }: { data: Supplier360 }) {
           icon={Award}
           label="Compliance"
           value={String(compliance.length)}
-          sub={kpis.certifications_expired > 0 ? `${kpis.certifications_expired} vencidas` : "em dia"}
+          sub={
+            kpis.certifications_expired > 0 ? `${kpis.certifications_expired} vencidas` : "em dia"
+          }
           tone={kpis.certifications_expired > 0 ? "bad" : ""}
         />
       </div>
@@ -238,7 +271,9 @@ function DrawerBody({ data }: { data: Supplier360 }) {
                           : ""
                     }`}
                   >
-                    {o.days_to_due < 0 ? `vencida ${Math.abs(o.days_to_due)}d` : `${o.days_to_due}d`}
+                    {o.days_to_due < 0
+                      ? `vencida ${Math.abs(o.days_to_due)}d`
+                      : `${o.days_to_due}d`}
                   </Badge>
                 )}
                 <ExternalLink className="size-3 text-muted-foreground opacity-0 group-hover:opacity-100" />
@@ -255,7 +290,10 @@ function DrawerBody({ data }: { data: Supplier360 }) {
             ) : (
               <ul className="space-y-1">
                 {top_defects.map((d) => (
-                  <li key={d.category} className="flex items-center justify-between text-xs rounded border border-border bg-card p-2">
+                  <li
+                    key={d.category}
+                    className="flex items-center justify-between text-xs rounded border border-border bg-card p-2"
+                  >
                     <span className="capitalize">{d.category}</span>
                     <Badge variant="outline">{d.count}</Badge>
                   </li>
@@ -270,7 +308,10 @@ function DrawerBody({ data }: { data: Supplier360 }) {
             ) : (
               <ul className="space-y-1">
                 {top_products.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between text-xs rounded border border-border bg-card p-2">
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between text-xs rounded border border-border bg-card p-2"
+                  >
                     <span className="truncate">{p.name ?? p.sku ?? p.id.slice(0, 8)}</span>
                     <Badge variant="outline">{p.quantity} pç</Badge>
                   </li>
@@ -321,8 +362,13 @@ function DrawerBody({ data }: { data: Supplier360 }) {
                     </div>
                     <div className="text-right shrink-0">
                       {c.expires_at && (
-                        <div className={c.expired ? "text-destructive" : c.expiring_soon ? "text-amber-700" : ""}>
-                          {c.expired ? "vencida" : "vence"} {new Date(c.expires_at).toLocaleDateString("pt-BR")}
+                        <div
+                          className={
+                            c.expired ? "text-destructive" : c.expiring_soon ? "text-amber-700" : ""
+                          }
+                        >
+                          {c.expired ? "vencida" : "vence"}{" "}
+                          {new Date(c.expires_at).toLocaleDateString("pt-BR")}
                         </div>
                       )}
                     </div>
@@ -341,7 +387,10 @@ function DrawerBody({ data }: { data: Supplier360 }) {
             ) : (
               <ul className="space-y-1">
                 {orders_recent.map((o) => (
-                  <li key={o.id} className="flex items-center justify-between text-xs rounded border border-border bg-card p-2">
+                  <li
+                    key={o.id}
+                    className="flex items-center justify-between text-xs rounded border border-border bg-card p-2"
+                  >
                     <div className="flex items-center gap-2 min-w-0">
                       {o.on_time === true ? (
                         <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
@@ -372,7 +421,9 @@ function DrawerBody({ data }: { data: Supplier360 }) {
                         className={`size-3.5 shrink-0 ${o.status === "aberta" ? "text-amber-600" : "text-muted-foreground"}`}
                       />
                       <span className="capitalize font-medium">{o.kind}</span>
-                      <Badge variant="outline" className="text-[10px] capitalize">{o.status}</Badge>
+                      <Badge variant="outline" className="text-[10px] capitalize">
+                        {o.status}
+                      </Badge>
                       <span className="flex-1" />
                       <span className="text-muted-foreground">
                         {new Date(o.created_at).toLocaleDateString("pt-BR")}
@@ -406,9 +457,13 @@ function Kpi({
   tone?: "good" | "warn" | "bad" | "";
 }) {
   const valueColor =
-    tone === "good" ? "text-emerald-700" :
-    tone === "warn" ? "text-amber-700" :
-    tone === "bad" ? "text-destructive" : "";
+    tone === "good"
+      ? "text-emerald-700"
+      : tone === "warn"
+        ? "text-amber-700"
+        : tone === "bad"
+          ? "text-destructive"
+          : "";
   return (
     <div className="rounded-lg border border-border bg-card p-2.5">
       <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase tracking-wide">

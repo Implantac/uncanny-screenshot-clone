@@ -45,8 +45,6 @@ async function countRows(
   return count ?? 0;
 }
 
-
-
 function pct(part: number, total: number) {
   if (total <= 0) return 0;
   return Math.round((part / total) * 100);

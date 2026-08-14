@@ -59,11 +59,7 @@ export const Route = createFileRoute("/api/public/hooks/mrp-recalc")({
                 kind = "mrp_critico";
                 title = `MRP · ${r.sku} crítico`;
                 body = `Saldo ${r.balance} ≤ PP ${r.reorderPoint}. Sugestão ${r.suggestedPurchase} ${r.unit}.`;
-              } else if (
-                r.coverageDays !== null &&
-                r.coverageDays < 10 &&
-                r.dailyConsumption > 0
-              ) {
+              } else if (r.coverageDays !== null && r.coverageDays < 10 && r.dailyConsumption > 0) {
                 kind = "mrp_cobertura";
                 title = `MRP · ${r.sku} cobertura ${r.coverageDays}d`;
                 body = `Restam ~${r.coverageDays} dias de cobertura. Sugestão ${r.suggestedPurchase} ${r.unit}.`;
@@ -85,16 +81,14 @@ export const Route = createFileRoute("/api/public/hooks/mrp-recalc")({
               if (existing) continue;
 
               const refKey = `${kind}:${r.id}:${today}`;
-              const { error: nErr } = await supabaseAdmin
-                .from("marketing_notifications")
-                .insert({
-                  owner_id: ownerId,
-                  kind,
-                  title,
-                  body: body + ` [${refKey}]`,
-                  link: "/mrp",
-                  ref_id: r.id,
-                });
+              const { error: nErr } = await supabaseAdmin.from("marketing_notifications").insert({
+                owner_id: ownerId,
+                kind,
+                title,
+                body: body + ` [${refKey}]`,
+                link: "/mrp",
+                ref_id: r.id,
+              });
               if (!nErr) alertsCreated++;
             }
 

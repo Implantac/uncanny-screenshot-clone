@@ -57,8 +57,7 @@ const BRL = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 0,
 });
 
-const PCT = (v: number) =>
-  `${(v * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+const PCT = (v: number) => `${(v * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
 
 function AbcCollectionPage() {
   const listFn = useServerFn(listCollectionsForAbc);
@@ -77,10 +76,7 @@ function AbcCollectionPage() {
     try {
       const res = await syncSalesFn({ data: { daysBack: Math.max(windowDays, 90) } });
       await queryClient.invalidateQueries({ queryKey: ["abc"] });
-      toast.success(
-        `Curva ABC atualizada · ${res?.inserted ?? 0} vendas sincronizadas`,
-        { id: t },
-      );
+      toast.success(`Curva ABC atualizada · ${res?.inserted ?? 0} vendas sincronizadas`, { id: t });
     } catch (e: any) {
       toast.error(`Falha ao atualizar: ${e?.message ?? "erro desconhecido"}`, { id: t });
     } finally {
@@ -102,18 +98,14 @@ function AbcCollectionPage() {
 
   const abcQ = useQuery({
     queryKey: ["abc", "data", collectionId, windowDays],
-    queryFn: () =>
-      abcFn({ data: { collectionId: collectionId!, windowDays } }),
+    queryFn: () => abcFn({ data: { collectionId: collectionId!, windowDays } }),
     enabled: !!collectionId,
   });
 
   const items = abcQ.data?.items ?? [];
   const summary = abcQ.data?.summary;
   const filteredItems = useMemo(
-    () =>
-      filterClass === "ALL"
-        ? items
-        : items.filter((i) => i.abcClass === filterClass),
+    () => (filterClass === "ALL" ? items : items.filter((i) => i.abcClass === filterClass)),
     [items, filterClass],
   );
 
@@ -127,20 +119,16 @@ function AbcCollectionPage() {
             <BarChart3 className="h-6 w-6" /> Curva ABC por Coleção
           </h1>
           <p className="text-muted-foreground text-sm">
-            Pareto de receita por produto. Identifica os{" "}
-            <strong>heróis (A)</strong>, os complementares (B) e os candidatos
-            a markdown / descontinuação (C).
+            Pareto de receita por produto. Identifica os <strong>heróis (A)</strong>, os
+            complementares (B) e os candidatos a markdown / descontinuação (C).
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">
-            Base: vendas reais do ERP (tipos que geram financeiro). Excluídas
-            ordens de produção (tipo 99) e pedidos cancelados.
+            Base: vendas reais do ERP (tipos que geram financeiro). Excluídas ordens de produção
+            (tipo 99) e pedidos cancelados.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Select
-            value={collectionId ?? undefined}
-            onValueChange={(v) => setCollectionId(v)}
-          >
+          <Select value={collectionId ?? undefined} onValueChange={(v) => setCollectionId(v)}>
             <SelectTrigger className="w-[280px]">
               <SelectValue placeholder="Selecionar coleção" />
             </SelectTrigger>
@@ -154,10 +142,7 @@ function AbcCollectionPage() {
               ))}
             </SelectContent>
           </Select>
-          <Select
-            value={String(windowDays)}
-            onValueChange={(v) => setWindowDays(Number(v))}
-          >
+          <Select value={String(windowDays)} onValueChange={(v) => setWindowDays(Number(v))}>
             <SelectTrigger className="w-[160px]">
               <SelectValue />
             </SelectTrigger>
@@ -202,9 +187,7 @@ function AbcCollectionPage() {
               label="Classe A (heróis)"
               value={`${summary.classCounts.A}`}
               hint={`${PCT(
-                summary.totalRevenue
-                  ? summary.classRevenue.A / summary.totalRevenue
-                  : 0,
+                summary.totalRevenue ? summary.classRevenue.A / summary.totalRevenue : 0,
               )} da receita`}
               tone="emerald"
             />
@@ -212,9 +195,7 @@ function AbcCollectionPage() {
               label="Classe B"
               value={`${summary.classCounts.B}`}
               hint={`${PCT(
-                summary.totalRevenue
-                  ? summary.classRevenue.B / summary.totalRevenue
-                  : 0,
+                summary.totalRevenue ? summary.classRevenue.B / summary.totalRevenue : 0,
               )} da receita`}
               tone="amber"
             />
@@ -222,9 +203,7 @@ function AbcCollectionPage() {
               label="Classe C (cauda)"
               value={`${summary.classCounts.C}`}
               hint={`${PCT(
-                summary.totalRevenue
-                  ? summary.classRevenue.C / summary.totalRevenue
-                  : 0,
+                summary.totalRevenue ? summary.classRevenue.C / summary.totalRevenue : 0,
               )} da receita`}
               tone="rose"
             />
@@ -241,9 +220,7 @@ function AbcCollectionPage() {
               <Sparkles className="h-5 w-5 text-violet-500 shrink-0 mt-0.5" />
               <div className="text-sm leading-relaxed">
                 <div className="font-medium mb-1">Leitura do PCP</div>
-                <p className="text-muted-foreground whitespace-pre-line">
-                  {insight}
-                </p>
+                <p className="text-muted-foreground whitespace-pre-line">{insight}</p>
               </div>
             </div>
           )}
@@ -284,9 +261,7 @@ function AbcCollectionPage() {
               <TableBody>
                 {filteredItems.map((it, idx) => (
                   <TableRow key={it.productId}>
-                    <TableCell className="text-muted-foreground">
-                      {idx + 1}
-                    </TableCell>
+                    <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {it.imageUrl ? (
@@ -299,14 +274,10 @@ function AbcCollectionPage() {
                           <div className="h-8 w-8 rounded bg-muted" />
                         )}
                         <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">
-                            {it.name}
-                          </div>
+                          <div className="text-sm font-medium truncate">{it.name}</div>
                           <div className="text-[11px] text-muted-foreground">
                             {it.sku}
-                            {it.role !== "linha" && (
-                              <span className="ml-1">· {it.role}</span>
-                            )}
+                            {it.role !== "linha" && <span className="ml-1">· {it.role}</span>}
                           </div>
                         </div>
                       </div>
@@ -324,15 +295,10 @@ function AbcCollectionPage() {
                       {PCT(it.cumulativeShare)}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {it.grossMargin != null
-                        ? BRL.format(it.grossMargin)
-                        : "—"}
+                      {it.grossMargin != null ? BRL.format(it.grossMargin) : "—"}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge
-                        variant="outline"
-                        className={CLASS_TINT[it.abcClass]}
-                      >
+                      <Badge variant="outline" className={CLASS_TINT[it.abcClass]}>
                         {it.abcClass}
                       </Badge>
                     </TableCell>
@@ -340,10 +306,7 @@ function AbcCollectionPage() {
                 ))}
                 {filteredItems.length === 0 && (
                   <TableRow>
-                    <TableCell
-                      colSpan={8}
-                      className="text-center text-muted-foreground py-10"
-                    >
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-10">
                       Sem produtos nesta classe.
                     </TableCell>
                   </TableRow>
@@ -359,8 +322,8 @@ function AbcCollectionPage() {
                 {summary.productsNoSales} produtos sem venda na janela
               </div>
               <p className="text-xs text-muted-foreground">
-                Candidatos a revisão de preço, push de marketing ou retirada
-                do mix da próxima coleção.
+                Candidatos a revisão de preço, push de marketing ou retirada do mix da próxima
+                coleção.
               </p>
             </div>
           )}
@@ -394,20 +357,13 @@ function Kpi({
   return (
     <div className="rounded-lg border bg-card p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={`text-xl font-semibold tabular-nums ${toneCls}`}>
-        {value}
-      </div>
-      {hint && (
-        <div className="text-[11px] text-muted-foreground mt-0.5">{hint}</div>
-      )}
+      <div className={`text-xl font-semibold tabular-nums ${toneCls}`}>{value}</div>
+      {hint && <div className="text-[11px] text-muted-foreground mt-0.5">{hint}</div>}
     </div>
   );
 }
 
-function buildInsight(
-  items: AbcItem[],
-  summary: ReturnType<typeof Object> | any,
-): string | null {
+function buildInsight(items: AbcItem[], summary: ReturnType<typeof Object> | any): string | null {
   if (!summary || items.length === 0) return null;
   const parts: string[] = [];
   const hero = items[0];
@@ -422,9 +378,7 @@ function buildInsight(
   if (classA.length > 0) {
     parts.push(
       `📈 ${classA.length} produtos formam a Classe A e respondem por ${PCT(
-        summary.totalRevenue
-          ? summary.classRevenue.A / summary.totalRevenue
-          : 0,
+        summary.totalRevenue ? summary.classRevenue.A / summary.totalRevenue : 0,
       )} da receita — proteja estoque e priorize reposição.`,
     );
   }
@@ -434,9 +388,7 @@ function buildInsight(
       `⚠️ ${noSales} produtos não venderam nos últimos ${summary.windowDays} dias. Avalie markdown, push de marketing ou descontinuação.`,
     );
   }
-  const classC = items.filter(
-    (i) => i.abcClass === "C" && i.revenue > 0,
-  ).length;
+  const classC = items.filter((i) => i.abcClass === "C" && i.revenue > 0).length;
   if (classC > 0 && summary.productsTotal > 0) {
     parts.push(
       `🪓 ${classC} produtos estão na cauda (Classe C) e contribuem com pouco — bons candidatos para enxugar o próximo mix.`,

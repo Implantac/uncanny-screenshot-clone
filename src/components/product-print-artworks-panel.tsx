@@ -22,7 +22,10 @@ const STATUS_META: Record<string, { label: string; tone: string }> = {
     label: "Liberada p/ produção",
     tone: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
   },
-  rejeitada: { label: "Rejeitada", tone: "bg-destructive/15 text-destructive border-destructive/30" },
+  rejeitada: {
+    label: "Rejeitada",
+    tone: "bg-destructive/15 text-destructive border-destructive/30",
+  },
 };
 
 const PENDING_STATES = new Set(["rascunho", "aguardando_prova", "em_prova"]);
@@ -66,7 +69,8 @@ export function ProductPrintArtworksPanel({ productId }: { productId: string }) 
         <div className="flex items-start gap-2 rounded-md border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-xs text-orange-700 dark:text-orange-300">
           <AlertTriangle className="size-3.5 shrink-0 mt-0.5" />
           <span>
-            Há artes pendentes — o PCP não conseguirá avançar OPs deste produto de Corte para Silk/Bordado/Costura até a aprovação.
+            Há artes pendentes — o PCP não conseguirá avançar OPs deste produto de Corte para
+            Silk/Bordado/Costura até a aprovação.
           </span>
         </div>
       )}

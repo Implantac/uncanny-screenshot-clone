@@ -877,10 +877,20 @@ function PCP() {
                           </Button>
                           {user?.id === o.owner_id && (
                             <>
-                              <Button size="icon" variant="ghost" aria-label="Editar ordem" onClick={() => openEdit(o)}>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                aria-label="Editar ordem"
+                                onClick={() => openEdit(o)}
+                              >
                                 <Pencil className="size-4" />
                               </Button>
-                              <Button size="icon" variant="ghost" aria-label="Excluir ordem" onClick={() => del.mutate(o.id)}>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                aria-label="Excluir ordem"
+                                onClick={() => del.mutate(o.id)}
+                              >
                                 <Trash2 className="size-4" />
                               </Button>
                             </>

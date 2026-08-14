@@ -2,7 +2,15 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo } from "react";
-import { AlertTriangle, ChevronRight, Clock, Download, Search, Share2, Sparkles } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronRight,
+  Clock,
+  Download,
+  Search,
+  Share2,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ui/page-header";
@@ -21,7 +29,6 @@ import {
   type WorkflowStep,
 } from "@/lib/product-workflow.functions";
 import { cn } from "@/lib/utils";
-
 
 type QuickFilter = "all" | "blocked" | "overdue" | "pinned";
 type Scope = "mine" | "all";
@@ -63,7 +70,8 @@ const SLA_DAYS: Record<WorkflowStep, number> = {
 
 const EMPTY_HINTS: Record<WorkflowStep, string> = {
   concepcao: "Nenhum produto em concepção. Use ‘N’ para criar um esboço a partir do briefing.",
-  modelagem: "Sem produtos em modelagem. Avance um item aprovado na concepção para começar a ficha.",
+  modelagem:
+    "Sem produtos em modelagem. Avance um item aprovado na concepção para começar a ficha.",
   engenharia: "Ninguém em engenharia. Finalize a ficha técnica de um produto para trazê-lo aqui.",
   custos: "Sem custos em análise. Fichas prontas caem aqui para bater a margem-alvo.",
   piloto: "Nenhum piloto em andamento. Solicite uma peça piloto a partir da ficha aprovada.",
@@ -73,9 +81,7 @@ const EMPTY_HINTS: Record<WorkflowStep, string> = {
   producao: "Sem produtos em produção. Ao liberar ao PCP, a OP aparece aqui.",
 };
 
-function exportKanbanCsv(
-  cols: { step: WorkflowStep; cards: LifecycleKanbanCard[] }[],
-) {
+function exportKanbanCsv(cols: { step: WorkflowStep; cards: LifecycleKanbanCard[] }[]) {
   const rows = [
     ["Fase", "SKU", "Produto", "Coleção", "Dias na fase", "SLA", "Status"],
     ...cols.flatMap((col) =>
@@ -89,16 +95,14 @@ function exportKanbanCsv(
         c.blocked
           ? `Bloqueado${c.blocker_reason ? ": " + c.blocker_reason : ""}`
           : c.days_in_step > SLA_DAYS[col.step]
-          ? "Atrasado"
-          : "Ok",
+            ? "Atrasado"
+            : "Ok",
       ]),
     ),
   ];
   const csv = rows
     .map((r) =>
-      r
-        .map((v) => `"${String(v).replaceAll('"', '""').replaceAll("\n", " ")}"`)
-        .join(","),
+      r.map((v) => `"${String(v).replaceAll('"', '""').replaceAll("\n", " ")}"`).join(","),
     )
     .join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
@@ -110,8 +114,6 @@ function exportKanbanCsv(
   URL.revokeObjectURL(url);
   toast.success("CSV exportado");
 }
-
-
 
 function ProductLifecycleKanban() {
   const fetchKanban = useServerFn(listLifecycleKanban);
@@ -170,10 +172,7 @@ function ProductLifecycleKanban() {
 
   const totals = useMemo(() => {
     const total = columns.reduce((sum, c) => sum + c.cards.length, 0);
-    const blocked = columns.reduce(
-      (sum, c) => sum + c.cards.filter((x) => x.blocked).length,
-      0,
-    );
+    const blocked = columns.reduce((sum, c) => sum + c.cards.filter((x) => x.blocked).length, 0);
     const overdue = columns.reduce(
       (sum, c) => sum + c.cards.filter((x) => x.days_in_step > SLA_DAYS[c.step]).length,
       0,
@@ -299,17 +298,11 @@ function ProductLifecycleKanban() {
         </div>
       )}
 
-
-
-
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
         <div className="flex h-full min-w-max gap-3 p-4">
           {isLoading &&
             Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-full w-72 animate-pulse rounded-lg border bg-muted/30"
-              />
+              <div key={i} className="h-full w-72 animate-pulse rounded-lg border bg-muted/30" />
             ))}
 
           {error && (
@@ -329,13 +322,7 @@ function ProductLifecycleKanban() {
   );
 }
 
-function LifecycleColumn({
-  step,
-  cards,
-}: {
-  step: WorkflowStep;
-  cards: LifecycleKanbanCard[];
-}) {
+function LifecycleColumn({ step, cards }: { step: WorkflowStep; cards: LifecycleKanbanCard[] }) {
   const meta = STEP_META[step];
   const sla = SLA_DAYS[step];
   const stale = cards.filter((c) => c.days_in_step > sla).length;
@@ -374,10 +361,7 @@ function LifecycleColumn({
             <span>
               mais antigo{" "}
               <span
-                className={cn(
-                  "font-medium",
-                  oldest > sla ? "text-destructive" : "text-foreground",
-                )}
+                className={cn("font-medium", oldest > sla ? "text-destructive" : "text-foreground")}
               >
                 {oldest}d
               </span>{" "}
@@ -401,13 +385,7 @@ function LifecycleColumn({
   );
 }
 
-function LifecycleCard({
-  card,
-  sla,
-}: {
-  card: LifecycleKanbanCard;
-  sla: number;
-}) {
+function LifecycleCard({ card, sla }: { card: LifecycleKanbanCard; sla: number }) {
   const overdue = card.days_in_step > sla;
   const advanceFn = useServerFn(advanceProductWorkflow);
   const qc = useQueryClient();
@@ -437,11 +415,7 @@ function LifecycleCard({
         card.blocked && "border-destructive/50 bg-destructive/5",
       )}
     >
-      <Link
-        to="/produto/$id"
-        params={{ id: card.product_id }}
-        className="block"
-      >
+      <Link to="/produto/$id" params={{ id: card.product_id }} className="block">
         <div className="flex items-start gap-2">
           {card.image_url ? (
             <img
@@ -492,8 +466,8 @@ function LifecycleCard({
               overdue
                 ? "bg-destructive"
                 : card.days_in_step / sla > 0.7
-                ? "bg-amber-500"
-                : "bg-emerald-500",
+                  ? "bg-amber-500"
+                  : "bg-emerald-500",
             )}
             style={{
               width: `${Math.min(100, Math.round((card.days_in_step / sla) * 100))}%`,
@@ -526,4 +500,3 @@ function LifecycleCard({
     </div>
   );
 }
-

@@ -12,11 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  evaluateStageGates,
-  columnToStage,
-  type GateCheck,
-} from "@/lib/pcp-gates.functions";
+import { evaluateStageGates, columnToStage, type GateCheck } from "@/lib/pcp-gates.functions";
 
 const ICON: Record<GateCheck["status"], React.ReactNode> = {
   pass: <CheckCircle2 className="size-4 text-emerald-500" />,
@@ -90,10 +86,7 @@ export function StageGateDialog({
               </li>
             )}
             {q.data?.checks.map((c) => (
-              <li
-                key={c.key}
-                className="rounded-md border border-border bg-card p-2.5 space-y-1.5"
-              >
+              <li key={c.key} className="rounded-md border border-border bg-card p-2.5 space-y-1.5">
                 <div className="flex items-start gap-2">
                   <span className="mt-0.5">{ICON[c.status]}</span>
                   <div className="flex-1 min-w-0">
@@ -144,9 +137,7 @@ export function StageGateDialog({
                 overrideReason: needsOverride ? override.trim() : undefined,
               })
             }
-            disabled={
-              pending || q.isLoading || (needsOverride && override.trim().length < 8)
-            }
+            disabled={pending || q.isLoading || (needsOverride && override.trim().length < 8)}
           >
             {pending ? <Loader2 className="size-4 animate-spin mr-1" /> : null}
             {needsOverride ? "Forçar avanço (override)" : "Confirmar avanço"}

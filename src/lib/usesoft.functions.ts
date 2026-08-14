@@ -159,9 +159,7 @@ export const usesoftListCollections = createServerFn({ method: "GET" })
   .inputValidator((i: unknown) => Pagination.parse(i ?? {}))
   .handler(async ({ data }): Promise<UsesoftCollection[]> => {
     const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
-    const where = data.search
-      ? "WHERE LOWER(g.cdescrigrife) LIKE LOWER($3)"
-      : "";
+    const where = data.search ? "WHERE LOWER(g.cdescrigrife) LIKE LOWER($3)" : "";
     const params: unknown[] = [data.limit, data.offset];
     if (data.search) params.push(`%${data.search}%`);
 
@@ -187,9 +185,7 @@ export const usesoftCountCollections = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
     const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
-    const r = await usesoftQuery<{ total: string }>(
-      "SELECT COUNT(*)::text AS total FROM solgrife",
-    );
+    const r = await usesoftQuery<{ total: string }>("SELECT COUNT(*)::text AS total FROM solgrife");
     return { total: Number(r.rows[0]?.total ?? 0) };
   });
 
@@ -272,7 +268,11 @@ export const usesoftListProducts = createServerFn({ method: "GET" })
 export const usesoftCountProducts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) =>
-    z.object({ grifeId: z.number().int().optional(), onlyActive: z.boolean().optional().default(true) })
+    z
+      .object({
+        grifeId: z.number().int().optional(),
+        onlyActive: z.boolean().optional().default(true),
+      })
       .parse(i ?? {}),
   )
   .handler(async ({ data }) => {
@@ -325,8 +325,7 @@ export const usesoftListCustomers = createServerFn({ method: "GET" })
       codigo: s(row.ccodigoclien),
       nome: String(row.cnomeclien),
       nomeFantasia: s(row.cnfantaclien),
-      documento:
-        row.ctipopeclien === "J" ? s(row.ccnpjclien) : s(row.ccpfclien),
+      documento: row.ctipopeclien === "J" ? s(row.ccnpjclien) : s(row.ccpfclien),
       email: s(row.cemailnfecli) ?? s(row.cendwebclien),
       telefone: s(row.cfoneclien),
       cidade: null,
@@ -367,8 +366,7 @@ export const usesoftListSuppliers = createServerFn({ method: "GET" })
       codigo: s(row.ccodigoforne),
       nome: String(row.cnomeforne),
       nomeFantasia: s(row.cnfantaforne),
-      documento:
-        row.ctipopeforne === "J" ? s(row.ccnpjforne) : s(row.ccpfforne),
+      documento: row.ctipopeforne === "J" ? s(row.ccnpjforne) : s(row.ccpfforne),
       email: s(row.cemailforne),
       telefone: s(row.cfoneforne),
       cidade: null,
@@ -399,9 +397,7 @@ export const usesoftListSales = createServerFn({ method: "GET" })
   .inputValidator((i: unknown) => SalesInput.parse(i ?? {}))
   .handler(async ({ data }): Promise<UsesoftSale[]> => {
     const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
-    const where: string[] = [
-      `p.ddatapedid >= (CURRENT_DATE - ($3::int || ' days')::interval)`,
-    ];
+    const where: string[] = [`p.ddatapedid >= (CURRENT_DATE - ($3::int || ' days')::interval)`];
     const params: unknown[] = [data.limit, data.offset, data.daysBack];
     let pi = 4;
     if (data.search) {
@@ -460,9 +456,7 @@ export const usesoftListPurchases = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }): Promise<UsesoftPurchase[]> => {
     const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
-    const where: string[] = [
-      `p.ddatapedcom >= (CURRENT_DATE - ($3::int || ' days')::interval)`,
-    ];
+    const where: string[] = [`p.ddatapedcom >= (CURRENT_DATE - ($3::int || ' days')::interval)`];
     const params: unknown[] = [data.limit, data.offset, data.daysBack];
     let pi = 4;
     if (data.search) {
@@ -486,8 +480,7 @@ export const usesoftListPurchases = createServerFn({ method: "GET" })
         pedidoId: Number(row.nnumeropedcom),
         numero: String(row.nnumeropedcom),
         data: row.ddatapedcom ? new Date(row.ddatapedcom).toISOString() : null,
-        fornecedorId:
-          row.nnumeroforne == null ? null : Number(row.nnumeroforne),
+        fornecedorId: row.nnumeroforne == null ? null : Number(row.nnumeroforne),
         fornecedorNome: s(row.cnomeforne),
         valorTotal: n(row.nvltotpedcom),
         status: statusCompraLabel[st] ?? st ?? null,

@@ -87,10 +87,8 @@ Devolva o JSON conforme o schema.`;
     } catch (err: unknown) {
       const e = err as { statusCode?: number; lastError?: { statusCode?: number } };
       const status = e?.statusCode ?? e?.lastError?.statusCode;
-      if (status === 429)
-        throw new Error("Agente USE ocupado — tente novamente em instantes.");
-      if (status === 402)
-        throw new Error("Agente USE em pausa — retomando automaticamente.");
+      if (status === 429) throw new Error("Agente USE ocupado — tente novamente em instantes.");
+      if (status === 402) throw new Error("Agente USE em pausa — retomando automaticamente.");
       throw err;
     }
   });

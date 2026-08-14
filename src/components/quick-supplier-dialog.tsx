@@ -28,11 +28,7 @@ type QuickSupplierDialogProps = {
  * QuickSupplierDialog — Dialog minimalista para cadastrar fornecedor inline,
  * sem precisar navegar para a página de fornecedores.
  */
-export function QuickSupplierDialog({
-  open,
-  onOpenChange,
-  onCreated,
-}: QuickSupplierDialogProps) {
+export function QuickSupplierDialog({ open, onOpenChange, onCreated }: QuickSupplierDialogProps) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [name, setName] = useState("");
@@ -58,9 +54,10 @@ export function QuickSupplierDialog({
           email: email.trim() || null,
           phone: phone.trim() || null,
           city: address.trim() || null,
-          notes: [tradeName && `Nome fantasia: ${tradeName}`, website && `Site: ${website}`, notes]
-            .filter(Boolean)
-            .join("\n") || null,
+          notes:
+            [tradeName && `Nome fantasia: ${tradeName}`, website && `Site: ${website}`, notes]
+              .filter(Boolean)
+              .join("\n") || null,
           active: true,
         })
         .select("id, name")
@@ -90,7 +87,13 @@ export function QuickSupplierDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) reset();
+        onOpenChange(v);
+      }}
+    >
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-3">
@@ -99,9 +102,7 @@ export function QuickSupplierDialog({
             </div>
             <div>
               <DialogTitle>Novo Fornecedor</DialogTitle>
-              <DialogDescription>
-                Cadastro rápido de parceiro comercial.
-              </DialogDescription>
+              <DialogDescription>Cadastro rápido de parceiro comercial.</DialogDescription>
             </div>
           </div>
         </DialogHeader>
@@ -214,14 +215,15 @@ export function QuickSupplierDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button
-            onClick={() => createMut.mutate()}
-            disabled={!name.trim() || createMut.isPending}
-          >
+          <Button onClick={() => createMut.mutate()} disabled={!name.trim() || createMut.isPending}>
             {createMut.isPending ? (
-              <><Loader2 className="size-4 animate-spin mr-2" /> Salvando…</>
+              <>
+                <Loader2 className="size-4 animate-spin mr-2" /> Salvando…
+              </>
             ) : (
-              <><Building2 className="size-4 mr-1.5" /> Criar Fornecedor</>
+              <>
+                <Building2 className="size-4 mr-1.5" /> Criar Fornecedor
+              </>
             )}
           </Button>
         </DialogFooter>
@@ -229,4 +231,3 @@ export function QuickSupplierDialog({
     </Dialog>
   );
 }
-

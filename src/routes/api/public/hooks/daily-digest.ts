@@ -104,10 +104,8 @@ export const Route = createFileRoute("/api/public/hooks/daily-digest")({
           if (exists && exists.length > 0) continue;
 
           const parts: string[] = [];
-          if (counts.approvals > 0)
-            parts.push(`${counts.approvals} aprovação(ões) pendente(s)`);
-          if (counts.mentions > 0)
-            parts.push(`${counts.mentions} menção(ões) novas`);
+          if (counts.approvals > 0) parts.push(`${counts.approvals} aprovação(ões) pendente(s)`);
+          if (counts.mentions > 0) parts.push(`${counts.mentions} menção(ões) novas`);
 
           await supabaseAdmin.from("push_notifications").insert({
             owner_id: uid,
