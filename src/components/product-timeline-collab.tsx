@@ -54,9 +54,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
   const [body, setBody] = useState("");
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
-  const [mentioned, setMentioned] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
+  const [mentioned, setMentioned] = useState<Array<{ id: string; name: string }>>([]);
   const [replyTo, setReplyTo] = useState<Comment | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -109,7 +107,9 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("product_timeline_comments")
-        .select("id, body, created_at, author_id, event_id, event_source, parent_id, edited_at, resolved_at, resolved_by")
+        .select(
+          "id, body, created_at, author_id, event_id, event_source, parent_id, edited_at, resolved_at, resolved_by",
+        )
         .eq("product_id", productId)
         .order("created_at", { ascending: false })
         .limit(200);
@@ -222,18 +222,16 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
             toast.error(`Upload falhou: ${file.name}`);
             continue;
           }
-          const { error: aErr } = await supabase
-            .from("product_timeline_attachments")
-            .insert({
-              product_id: productId,
-              comment_id: c.id,
-              owner_id: userId,
-              uploaded_by: userId,
-              storage_path: path,
-              file_name: file.name,
-              mime_type: file.type || null,
-              size_bytes: file.size,
-            });
+          const { error: aErr } = await supabase.from("product_timeline_attachments").insert({
+            product_id: productId,
+            comment_id: c.id,
+            owner_id: userId,
+            uploaded_by: userId,
+            storage_path: path,
+            file_name: file.name,
+            mime_type: file.type || null,
+            size_bytes: file.size,
+          });
           if (aErr) toast.error(`Metadado falhou: ${file.name}`);
         }
       }
@@ -254,10 +252,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
 
   const removeComment = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("product_timeline_comments")
-        .delete()
-        .eq("id", id);
+      const { error } = await supabase.from("product_timeline_comments").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -397,9 +392,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
                       (_m, pre) => `${pre}@${p.name} `,
                     );
                     setBody(replaced + after);
-                    setMentioned((prev) =>
-                      prev.some((x) => x.id === p.id) ? prev : [...prev, p],
-                    );
+                    setMentioned((prev) => (prev.some((x) => x.id === p.id) ? prev : [...prev, p]));
                     setMentionQuery(null);
                     setTimeout(() => el?.focus(), 0);
                   }}
@@ -422,9 +415,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
                 <button
                   type="button"
                   className="ml-1 opacity-60 hover:opacity-100"
-                  onClick={() =>
-                    setMentioned((prev) => prev.filter((x) => x.id !== m.id))
-                  }
+                  onClick={() => setMentioned((prev) => prev.filter((x) => x.id !== m.id))}
                 >
                   ×
                 </button>
@@ -440,9 +431,7 @@ export function ProductTimelineCollab({ productId }: { productId: string }) {
                 <button
                   type="button"
                   className="ml-1 opacity-60 hover:opacity-100"
-                  onClick={() =>
-                    setPendingFiles((prev) => prev.filter((_, j) => j !== i))
-                  }
+                  onClick={() => setPendingFiles((prev) => prev.filter((_, j) => j !== i))}
                 >
                   ×
                 </button>
@@ -622,9 +611,7 @@ function CommentCard({
             </div>
           </div>
         ) : (
-          <div className="text-sm whitespace-pre-wrap break-words flex-1">
-            {c.body}
-          </div>
+          <div className="text-sm whitespace-pre-wrap break-words flex-1">{c.body}</div>
         )}
         {!editing && (
           <div className="flex items-center gap-1 shrink-0">

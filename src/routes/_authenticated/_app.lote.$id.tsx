@@ -33,7 +33,6 @@ import { LoteSplitDialog } from "@/components/lote-split-dialog";
 import { LotePassagensPanel } from "@/components/lote-passagens-panel";
 import { PlmBreadcrumb } from "@/components/ui/plm-breadcrumb";
 
-
 const OCC_KIND_LABEL: Record<string, string> = {
   positiva: "Positiva (+)",
   negativa: "Negativa (−)",
@@ -174,7 +173,6 @@ function LotePage() {
     enabled: productIds.length > 0,
     queryKey: ["lote-materials", productIds.join(","), orderIds.join(",")],
     queryFn: async () => {
-
       const { data: sheets, error: e1 } = await supabase
         .from("tech_sheets")
         .select("id, product_id, status")
@@ -219,10 +217,7 @@ function LotePage() {
       const reservByItem = new Map<string, number>();
       for (const r of reservs ?? []) {
         const open = Math.max(0, Number(r.qty_reserved || 0) - Number(r.qty_consumed || 0));
-        reservByItem.set(
-          r.inventory_item_id,
-          (reservByItem.get(r.inventory_item_id) ?? 0) + open,
-        );
+        reservByItem.set(r.inventory_item_id, (reservByItem.get(r.inventory_item_id) ?? 0) + open);
       }
       // aggregate per inventory_item_id (or name when no link)
       const agg = new Map<string, any>();
@@ -245,9 +240,7 @@ function LotePage() {
           photo_url: inv?.photo_url ?? null,
           balance: inv ? Number(inv.balance || 0) : null,
           available: av ? Number(av.available || 0) : inv ? Number(inv.balance || 0) : null,
-          reservedForLote: m.inventory_item_id
-            ? (reservByItem.get(m.inventory_item_id) ?? 0)
-            : 0,
+          reservedForLote: m.inventory_item_id ? (reservByItem.get(m.inventory_item_id) ?? 0) : 0,
           minimum: inv ? Number(inv.minimum || 0) : null,
           needed: 0,
           cost: 0,
@@ -259,7 +252,6 @@ function LotePage() {
       return Array.from(agg.values()).sort((a, b) => b.needed - a.needed);
     },
   });
-
 
   const summary = useMemo(() => {
     const total = orders.reduce((s, o) => s + (o.quantity ?? 0), 0);
@@ -315,10 +307,7 @@ function LotePage() {
   return (
     <div className="p-4 sm:p-6 space-y-5">
       <PlmBreadcrumb
-        items={[
-          { label: "Lotes", link: { to: "/lotes" } },
-          { label: `Lote ${batch.code}` },
-        ]}
+        items={[{ label: "Lotes", link: { to: "/lotes" } }, { label: `Lote ${batch.code}` }]}
       />
       <div className="flex items-center gap-3">
         <Badge variant="outline" className={STATUS_TONE[batch.status] ?? ""}>
@@ -328,7 +317,6 @@ function LotePage() {
           <LoteQrButton batchCode={batch.code} batchId={batch.id} />
         </div>
       </div>
-
 
       <div className="flex items-start gap-3">
         <div className="size-12 rounded-xl bg-primary/10 grid place-items-center">
@@ -613,7 +601,6 @@ function LotePage() {
                   </div>
                 );
               })}
-
             </div>
           )}
         </div>

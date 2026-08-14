@@ -1,13 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ChartBar,
-  Factory,
-  Truck,
-  AlertTriangle,
-  ArrowUpRight,
-  
-} from "lucide-react";
+import { ChartBar, Factory, Truck, AlertTriangle, ArrowUpRight } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -115,10 +108,7 @@ export function OccurrencesParetoPanel({ windowDays = 60 }: { windowDays?: numbe
           new Set(orders.map((o) => o.product_id).filter(Boolean) as string[]),
         );
         if (supIds.length > 0) {
-          const { data: s } = await supabase
-            .from("suppliers")
-            .select("id, name")
-            .in("id", supIds);
+          const { data: s } = await supabase.from("suppliers").select("id, name").in("id", supIds);
           suppliers = (s ?? []) as Supplier[];
         }
         if (prodIds.length > 0) {
@@ -249,8 +239,8 @@ export function OccurrencesParetoPanel({ windowDays = 60 }: { windowDays?: numbe
       return {
         ...o,
         orderCode: ord?.code ?? null,
-        supplierName: ord?.supplier_id ? supMap.get(ord.supplier_id)?.name ?? null : null,
-        productName: ord?.product_id ? prodMap.get(ord.product_id)?.name ?? null : null,
+        supplierName: ord?.supplier_id ? (supMap.get(ord.supplier_id)?.name ?? null) : null,
+        productName: ord?.product_id ? (prodMap.get(ord.product_id)?.name ?? null) : null,
       };
     });
     const openCount = items.filter((i) => i.status !== "resolvida").length;
@@ -301,9 +291,7 @@ export function OccurrencesParetoPanel({ windowDays = 60 }: { windowDays?: numbe
                     qty: r.qty,
                   }))}
                   total={view.totalCount}
-                  onPick={(row) =>
-                    setDrill({ type: "sector", key: row.key, label: row.label })
-                  }
+                  onPick={(row) => setDrill({ type: "sector", key: row.key, label: row.label })}
                 />
                 <ParetoList
                   title="Top fornecedores"
@@ -315,9 +303,7 @@ export function OccurrencesParetoPanel({ windowDays = 60 }: { windowDays?: numbe
                     qty: r.qty,
                   }))}
                   total={view.totalCount}
-                  onPick={(row) =>
-                    setDrill({ type: "supplier", key: row.key, label: row.label })
-                  }
+                  onPick={(row) => setDrill({ type: "supplier", key: row.key, label: row.label })}
                 />
               </div>
 
@@ -332,9 +318,7 @@ export function OccurrencesParetoPanel({ windowDays = 60 }: { windowDays?: numbe
                       <button
                         key={p.id}
                         type="button"
-                        onClick={() =>
-                          setDrill({ type: "product", key: p.id, label: p.name })
-                        }
+                        onClick={() => setDrill({ type: "product", key: p.id, label: p.name })}
                         className="w-full flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-2 text-xs text-left hover:bg-amber-500/10 transition-colors"
                       >
                         <div className="flex-1 min-w-0">
@@ -345,10 +329,7 @@ export function OccurrencesParetoPanel({ windowDays = 60 }: { windowDays?: numbe
                             {p.open > 0 ? ` · ${p.open} aberta(s)` : ""}
                           </div>
                         </div>
-                        <Badge
-                          variant="outline"
-                          className="border-amber-500/40 text-amber-500"
-                        >
+                        <Badge variant="outline" className="border-amber-500/40 text-amber-500">
                           reincidente
                         </Badge>
                         <ArrowUpRight className="size-3.5 text-muted-foreground" />
@@ -373,8 +354,7 @@ export function OccurrencesParetoPanel({ windowDays = 60 }: { windowDays?: numbe
             </SheetTitle>
             <SheetDescription>
               {drill?.type === "sector" && "Ocorrências negativas registradas neste setor."}
-              {drill?.type === "supplier" &&
-                "Ocorrências relacionadas a OPs deste fornecedor."}
+              {drill?.type === "supplier" && "Ocorrências relacionadas a OPs deste fornecedor."}
               {drill?.type === "product" &&
                 "Histórico de ocorrências deste produto — base para CAPA."}
             </SheetDescription>
@@ -384,7 +364,11 @@ export function OccurrencesParetoPanel({ windowDays = 60 }: { windowDays?: numbe
             <div className="mt-4 space-y-4">
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <Stat label="Ocorrências" value={drillData.items.length} tone="warn" />
-                <Stat label="Abertas" value={drillData.openCount} tone={drillData.openCount > 0 ? "danger" : "ok"} />
+                <Stat
+                  label="Abertas"
+                  value={drillData.openCount}
+                  tone={drillData.openCount > 0 ? "danger" : "ok"}
+                />
                 <Stat label="Peças afetadas" value={drillData.qtyTotal} tone="danger" />
               </div>
 
@@ -398,9 +382,7 @@ export function OccurrencesParetoPanel({ windowDays = 60 }: { windowDays?: numbe
                       <button
                         key={s.id}
                         type="button"
-                        onClick={() =>
-                          setDrill({ type: "supplier", key: s.id, label: s.name })
-                        }
+                        onClick={() => setDrill({ type: "supplier", key: s.id, label: s.name })}
                         className="w-full flex items-center justify-between text-xs rounded p-1.5 hover:bg-muted/50 transition-colors"
                       >
                         <span className="truncate">{s.name}</span>

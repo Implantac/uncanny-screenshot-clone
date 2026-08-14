@@ -128,14 +128,12 @@ function InspectionsPage() {
         }
       />
 
-
       <InspectionsTable
         data={insps.data ?? []}
         loading={insps.isLoading}
         pos={pos.data ?? []}
         onDelete={(id) => del.mutate(id)}
       />
-
 
       <NewInspectionDialog
         open={open}

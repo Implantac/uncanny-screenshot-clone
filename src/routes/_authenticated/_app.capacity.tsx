@@ -19,9 +19,15 @@ export const Route = createFileRoute("/_authenticated/_app/capacity")({
   head: () => ({
     meta: [
       { title: "Capacidade Produtiva · USE MODA PLM" },
-      { name: "description", content: "Planejamento de capacidade por célula, gargalos e balanceamento de carga." },
+      {
+        name: "description",
+        content: "Planejamento de capacidade por célula, gargalos e balanceamento de carga.",
+      },
       { property: "og:title", content: "Capacidade Produtiva · USE MODA PLM" },
-      { property: "og:description", content: "Planejamento de capacidade por célula, gargalos e balanceamento de carga." },
+      {
+        property: "og:description",
+        content: "Planejamento de capacidade por célula, gargalos e balanceamento de carga.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -63,7 +69,10 @@ function Capacity() {
   const navigate = useNavigate({ from: Route.fullPath });
   const { scope } = Route.useSearch();
   const setScope = (v: "all" | "interna" | "faccao") =>
-    navigate({ search: (prev: { scope: "all" | "interna" | "faccao" }) => ({ ...prev, scope: v }), replace: true });
+    navigate({
+      search: (prev: { scope: "all" | "interna" | "faccao" }) => ({ ...prev, scope: v }),
+      replace: true,
+    });
   const allOrders = useMemo(() => data?.orders ?? [], [data?.orders]);
   const orders = useMemo(() => {
     if (scope === "interna") return allOrders.filter((o) => !o.supplier_id);
@@ -121,7 +130,12 @@ function Capacity() {
         actions={
           <div className="inline-flex rounded-md border border-border bg-card p-1 text-xs">
             {scopeOptions.map((opt) => {
-              const count = opt.key === "interna" ? internalCount : opt.key === "faccao" ? factionCount : allOrders.length;
+              const count =
+                opt.key === "interna"
+                  ? internalCount
+                  : opt.key === "faccao"
+                    ? factionCount
+                    : allOrders.length;
               const active = scope === opt.key;
               return (
                 <button
@@ -137,7 +151,6 @@ function Capacity() {
           </div>
         }
       />
-
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <KPI label="Ordens ativas" value={summary.active} icon={<Factory className="size-4" />} />
@@ -192,7 +205,11 @@ function Capacity() {
           Carga por fornecedor / facção
         </div>
         {isLoading ? (
-          <div className="p-4 space-y-2">{Array.from({ length: 5 }).map((_, i) => (<Skeleton key={i} className="h-14 w-full" />))}</div>
+          <div className="p-4 space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 w-full" />
+            ))}
+          </div>
         ) : bySupplier.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">Sem ordens de produção.</div>
         ) : (

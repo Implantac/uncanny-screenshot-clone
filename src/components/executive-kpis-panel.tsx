@@ -25,9 +25,7 @@ export function ExecutiveKpisPanel() {
   });
 
   if (isLoading || !data) {
-    return (
-      <Card className="p-4 animate-pulse h-32 bg-muted/30" />
-    );
+    return <Card className="p-4 animate-pulse h-32 bg-muted/30" />;
   }
 
   const blocks = [
@@ -103,11 +101,11 @@ export function ExecutiveKpisPanel() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-primary" />
-          <h3 className="text-sm font-semibold uppercase tracking-widest">
-            Dashboard Executivo
-          </h3>
+          <h3 className="text-sm font-semibold uppercase tracking-widest">Dashboard Executivo</h3>
         </div>
-        <Badge variant="outline" className="text-[10px]">cross-módulo · 30d</Badge>
+        <Badge variant="outline" className="text-[10px]">
+          cross-módulo · 30d
+        </Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">

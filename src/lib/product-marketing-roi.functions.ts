@@ -173,7 +173,7 @@ export const listProductMarketingRoi = createServerFn({ method: "POST" })
       const targets: string[] = c.product_id
         ? [c.product_id]
         : c.collection_id
-          ? productsByCollection.get(c.collection_id) ?? []
+          ? (productsByCollection.get(c.collection_id) ?? [])
           : [];
       if (targets.length === 0) return;
       const share = 1 / targets.length;

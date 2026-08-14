@@ -37,7 +37,6 @@ export type TimelineFilters = {
   entity_ids?: string[];
 };
 
-
 const STAGE_LABEL: Record<string, string> = {
   cad: "CAD",
   modelagem: "Modelagem",
@@ -74,7 +73,8 @@ export const getGlobalTimeline = createServerFn({ method: "POST" })
         .order("created_at", { ascending: false })
         .limit(limit);
       for (const r of rows ?? []) {
-        const isOverride = r.action === "stage_override" || (r.payload as { override?: boolean } | null)?.override;
+        const isOverride =
+          r.action === "stage_override" || (r.payload as { override?: boolean } | null)?.override;
         results.push({
           id: `audit:${r.id}`,
           source: "audit",
@@ -85,7 +85,11 @@ export const getGlobalTimeline = createServerFn({ method: "POST" })
           entity: r.entity,
           entity_id: r.entity_id,
           link: entityLink(r.entity, r.entity_id),
-          severity: isOverride ? "warning" : r.action === "deleted" || r.action === "revoked" ? "critical" : "info",
+          severity: isOverride
+            ? "warning"
+            : r.action === "deleted" || r.action === "revoked"
+              ? "critical"
+              : "info",
         });
       }
     }
@@ -138,8 +142,11 @@ export const getGlobalTimeline = createServerFn({ method: "POST" })
         .limit(limit);
       for (const r of rows ?? []) {
         const sev: TimelineEvent["severity"] =
-          r.status === "aberta" && r.kind === "critica" ? "critical" :
-          r.status === "aberta" ? "warning" : "info";
+          r.status === "aberta" && r.kind === "critica"
+            ? "critical"
+            : r.status === "aberta"
+              ? "warning"
+              : "info";
         results.push({
           id: `occ:${r.id}`,
           source: "occurrence",
@@ -159,7 +166,9 @@ export const getGlobalTimeline = createServerFn({ method: "POST" })
     if (enabled.has("inspection")) {
       const { data: rows } = await supabase
         .from("quality_inspections")
-        .select("id, created_at, inspection_type, result, critical_defects, major_defects, production_order_id")
+        .select(
+          "id, created_at, inspection_type, result, critical_defects, major_defects, production_order_id",
+        )
         .eq("owner_id", userId)
         .gte("created_at", sinceIso)
         .order("created_at", { ascending: false })
@@ -254,7 +263,6 @@ export const getGlobalTimeline = createServerFn({ method: "POST" })
       );
     }
 
-
     out.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
     return out.slice(0, limit);
   });
@@ -277,12 +285,19 @@ function payloadSummary(p: unknown): string | null {
 function entityLink(entity: string, id: string | null): string | null {
   if (!id) return null;
   switch (entity) {
-    case "production_order": return `/lote/${id}`;
-    case "prototype": return `/prototipo/${id}`;
-    case "tech_sheet": return `/ficha-tecnica`;
-    case "collection": return `/colecoes`;
-    case "supplier": return `/fornecedores`;
-    case "product": return `/produtos`;
-    default: return null;
+    case "production_order":
+      return `/lote/${id}`;
+    case "prototype":
+      return `/prototipo/${id}`;
+    case "tech_sheet":
+      return `/ficha-tecnica`;
+    case "collection":
+      return `/colecoes`;
+    case "supplier":
+      return `/fornecedores`;
+    case "product":
+      return `/produtos`;
+    default:
+      return null;
   }
 }

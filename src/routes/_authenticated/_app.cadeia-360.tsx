@@ -175,7 +175,6 @@ function Cadeia360() {
         description="Portal de fornecedores, sourcing inteligente e calendário de capacidade — em uma tela."
       />
 
-
       {isLoading && <div className="text-sm text-muted-foreground">Carregando…</div>}
 
       {/* Sourcing */}

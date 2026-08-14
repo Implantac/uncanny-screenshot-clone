@@ -44,9 +44,7 @@ export function QualityDevBridgePanel() {
           </div>
         </div>
         <div className="text-right">
-          <div className={`text-2xl font-bold ${ftrColor}`}>
-            {data.firstTimeRight.toFixed(0)}%
-          </div>
+          <div className={`text-2xl font-bold ${ftrColor}`}>{data.firstTimeRight.toFixed(0)}%</div>
           <div className="text-[11px] text-muted-foreground">First Time Right</div>
         </div>
       </div>

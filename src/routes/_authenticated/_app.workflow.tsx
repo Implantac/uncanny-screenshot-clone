@@ -53,7 +53,11 @@ function WorkflowInbox() {
       />
 
       {q.isLoading ? (
-        <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => (<Skeleton key={i} className="h-16 w-full rounded-xl" />))}</div>
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full rounded-xl" />
+          ))}
+        </div>
       ) : rows.length === 0 ? (
         <EmptyState
           icon={Workflow}
@@ -87,18 +91,22 @@ function WorkflowInbox() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold truncate">
-                        {t.product_name}
-                      </span>
+                      <span className="text-sm font-semibold truncate">{t.product_name}</span>
                       <span className="text-xs font-mono text-muted-foreground">
                         {t.product_sku}
                       </span>
                       {isBlocked ? (
-                        <Badge className="bg-rose-500/15 text-rose-600 border-rose-500/30" variant="outline">
+                        <Badge
+                          className="bg-rose-500/15 text-rose-600 border-rose-500/30"
+                          variant="outline"
+                        >
                           <AlertTriangle className="size-3 mr-1" /> Bloqueado
                         </Badge>
                       ) : (
-                        <Badge className="bg-blue-500/15 text-blue-600 border-blue-500/30" variant="outline">
+                        <Badge
+                          className="bg-blue-500/15 text-blue-600 border-blue-500/30"
+                          variant="outline"
+                        >
                           Em andamento
                         </Badge>
                       )}

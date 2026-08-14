@@ -21,7 +21,10 @@ export const Route = createFileRoute("/_authenticated/_app/quality/capa-rules")(
   head: () => ({
     meta: [
       { title: "Regras de CAPA automática · USE MODA PLM" },
-      { name: "description", content: "Ajuste e simule os critérios que disparam CAPA em envios a influenciadores." },
+      {
+        name: "description",
+        content: "Ajuste e simule os critérios que disparam CAPA em envios a influenciadores.",
+      },
     ],
   }),
   component: CapaRulesPage,
@@ -149,11 +152,7 @@ function CapaRulesPage() {
       </Card>
 
       <div className="flex gap-2">
-        <Button
-          variant="outline"
-          onClick={() => sim.mutate()}
-          disabled={sim.isPending}
-        >
+        <Button variant="outline" onClick={() => sim.mutate()} disabled={sim.isPending}>
           <Play className="size-4 mr-1" />
           {sim.isPending ? "Simulando…" : "Testar regras"}
         </Button>
@@ -210,12 +209,15 @@ function CapaRulesPage() {
                         <td className="py-2">
                           <div className="font-medium leading-tight">{r.productName}</div>
                           {r.sku && (
-                            <div className="text-[11px] text-muted-foreground font-mono">{r.sku}</div>
+                            <div className="text-[11px] text-muted-foreground font-mono">
+                              {r.sku}
+                            </div>
                           )}
                         </td>
                         <td
                           className={`text-right tabular-nums ${
-                            r.fpy < current.fpy_threshold && r.inspections >= current.min_inspections
+                            r.fpy < current.fpy_threshold &&
+                            r.inspections >= current.min_inspections
                               ? "text-destructive font-semibold"
                               : ""
                           }`}
@@ -225,14 +227,18 @@ function CapaRulesPage() {
                         <td className="text-right tabular-nums">{r.inspections}</td>
                         <td
                           className={`text-right tabular-nums ${
-                            r.criticalDefects > current.max_critical_defects ? "text-destructive font-semibold" : ""
+                            r.criticalDefects > current.max_critical_defects
+                              ? "text-destructive font-semibold"
+                              : ""
                           }`}
                         >
                           {r.criticalDefects}
                         </td>
                         <td
                           className={`text-right tabular-nums ${
-                            r.occurrences >= current.min_occurrences ? "text-destructive font-semibold" : ""
+                            r.occurrences >= current.min_occurrences
+                              ? "text-destructive font-semibold"
+                              : ""
                           }`}
                         >
                           {r.occurrences}

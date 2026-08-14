@@ -10,9 +10,15 @@ export const Route = createFileRoute("/_authenticated/_app/margem")({
   head: () => ({
     meta: [
       { title: "Margem por Produto · USE MODA PLM" },
-      { name: "description", content: "Análise de custo real vs. preço e margem por produto, coleção e canal." },
+      {
+        name: "description",
+        content: "Análise de custo real vs. preço e margem por produto, coleção e canal.",
+      },
       { property: "og:title", content: "Margem por Produto · USE MODA PLM" },
-      { property: "og:description", content: "Análise de custo real vs. preço e margem por produto, coleção e canal." },
+      {
+        property: "og:description",
+        content: "Análise de custo real vs. preço e margem por produto, coleção e canal.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

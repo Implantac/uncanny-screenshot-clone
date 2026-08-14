@@ -75,8 +75,7 @@ export const getFaccoes360 = createServerFn({ method: "GET" })
       const leadDays: number[] = [];
       for (const o of arr) {
         if (o.sent_at && o.received_at) {
-          const d =
-            (new Date(o.received_at).getTime() - new Date(o.sent_at).getTime()) / 86400000;
+          const d = (new Date(o.received_at).getTime() - new Date(o.sent_at).getTime()) / 86400000;
           if (d >= 0) leadDays.push(d);
         }
       }
@@ -85,15 +84,13 @@ export const getFaccoes360 = createServerFn({ method: "GET" })
           ? Number((leadDays.reduce((a, b) => a + b, 0) / leadDays.length).toFixed(1))
           : null;
       const lossPct = qtySent > 0 ? Number(((qtyLost / qtySent) * 100).toFixed(1)) : 0;
-      const defectPct =
-        qtyReceived > 0 ? Number(((qtyDefect / qtyReceived) * 100).toFixed(1)) : 0;
+      const defectPct = qtyReceived > 0 ? Number(((qtyDefect / qtyReceived) * 100).toFixed(1)) : 0;
 
       let reason = "Sem alertas relevantes nos últimos 90 dias.";
       if (overdue > 0) reason = `${overdue} OS atrasada(s) — cobrar retorno imediato.`;
       else if (lossPct > 3)
         reason = `Perda ${lossPct}% acima da média setorial (2–3%). Auditar corte.`;
-      else if (defectPct > 5)
-        reason = `Defeito ${defectPct}% — abrir CAPA e revisar treinamento.`;
+      else if (defectPct > 5) reason = `Defeito ${defectPct}% — abrir CAPA e revisar treinamento.`;
       else if (avgLeadTimeDays && avgLeadTimeDays > 21)
         reason = `Lead time médio ${avgLeadTimeDays}d acima do esperado (≤21d).`;
 

@@ -48,7 +48,6 @@ export function useMyProductsUnread() {
     };
   }, [uid, qc]);
 
-
   const query = useQuery({
     enabled: !!uid,
     queryKey: ["my-products-unread", uid, lastSeen],

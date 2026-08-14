@@ -15,7 +15,8 @@ import { Pool, type QueryResult, type QueryResultRow } from "pg";
 let _pool: Pool | undefined;
 
 // Hostname válido: IPv4, ou DNS (letras/dígitos/.-), 1–253 chars, sem @ / espaço / aspas.
-const HOST_RE = /^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+const HOST_RE =
+  /^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 const IPV4_RE = /^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/;
 // Nome de banco Postgres: letras, dígitos e _ (sem @ / espaço / aspas / barra).
 const DB_RE = /^[a-zA-Z_][a-zA-Z0-9_$]{0,62}$/;
@@ -48,7 +49,6 @@ export function validateUsesoftEnv(): {
   user: string;
   password: string;
 } {
-
   const host = (process.env.USESOFT_PG_HOST ?? "").trim();
   const portRaw = (process.env.USESOFT_PG_PORT ?? "").trim();
   const database = (process.env.USESOFT_PG_DATABASE ?? "").trim();
@@ -113,7 +113,6 @@ function getPool(): Pool {
   return _pool;
 }
 
-
 const READ_ONLY_RE = /^\s*(--[^\n]*\n|\/\*[\s\S]*?\*\/|\s)*\s*(select|with)\b/i;
 
 /**
@@ -132,7 +131,6 @@ export async function usesoftQuery<T extends QueryResultRow = QueryResultRow>(
   const pool = getPool();
   return pool.query<T>(sql, params as unknown[]);
 }
-
 
 /**
  * Healthcheck simples.
@@ -155,7 +153,6 @@ export async function usesoftPing(): Promise<{
       friendly = msg;
     } else if (err.name === "UsesoftConfigError") {
       friendly = msg;
-
     } else if (msg.includes("ENOTFOUND") || msg.includes("EAI_AGAIN")) {
       friendly = "Host do ERP não resolvido (DNS). Verifique USESOFT_PG_HOST no backend.";
     } else if (msg.includes("ECONNREFUSED")) {
@@ -169,5 +166,4 @@ export async function usesoftPing(): Promise<{
     }
     return { ok: false, error: friendly, latency_ms: Date.now() - t0 };
   }
-
 }

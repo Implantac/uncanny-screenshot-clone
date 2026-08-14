@@ -26,7 +26,9 @@ export const getCapaRules = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data } = await supabase
       .from("quality_capa_rules")
-      .select("enabled, fpy_threshold, max_critical_defects, min_occurrences, window_days, min_inspections")
+      .select(
+        "enabled, fpy_threshold, max_critical_defects, min_occurrences, window_days, min_inspections",
+      )
       .eq("owner_id", userId)
       .maybeSingle();
     if (!data) return DEFAULTS;
@@ -90,29 +92,31 @@ export const simulateCapaRules = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const since = new Date(Date.now() - data.window_days * 86400_000).toISOString();
 
-    const [{ data: products }, { data: orders }, { data: insps }, { data: occs }, { data: shipments }] =
-      await Promise.all([
-        supabase.from("products").select("id, name, sku").eq("owner_id", userId),
-        supabase
-          .from("production_orders")
-          .select("id, product_id")
-          .eq("owner_id", userId),
-        supabase
-          .from("quality_inspections")
-          .select("production_order_id, result, critical_defects, created_at")
-          .eq("owner_id", userId)
-          .gte("created_at", since),
-        supabase
-          .from("production_occurrences")
-          .select("production_order_id, created_at")
-          .eq("owner_id", userId)
-          .gte("created_at", since),
-        supabase
-          .from("influencer_shipments")
-          .select("product_id, shipped_at, created_at")
-          .eq("owner_id", userId)
-          .gte("created_at", since),
-      ]);
+    const [
+      { data: products },
+      { data: orders },
+      { data: insps },
+      { data: occs },
+      { data: shipments },
+    ] = await Promise.all([
+      supabase.from("products").select("id, name, sku").eq("owner_id", userId),
+      supabase.from("production_orders").select("id, product_id").eq("owner_id", userId),
+      supabase
+        .from("quality_inspections")
+        .select("production_order_id, result, critical_defects, created_at")
+        .eq("owner_id", userId)
+        .gte("created_at", since),
+      supabase
+        .from("production_occurrences")
+        .select("production_order_id, created_at")
+        .eq("owner_id", userId)
+        .gte("created_at", since),
+      supabase
+        .from("influencer_shipments")
+        .select("product_id, shipped_at, created_at")
+        .eq("owner_id", userId)
+        .gte("created_at", since),
+    ]);
 
     const orderToProduct = new Map<string, string>();
     (orders ?? []).forEach((o: any) => {

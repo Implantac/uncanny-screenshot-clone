@@ -115,8 +115,7 @@ export function AskFashionAI() {
   const execFn = useServerFn(executeAICommand);
   const m = useMutation({
     mutationFn: (q: string) => fn({ data: { persona, question: q } }),
-    onError: (e: unknown) =>
-      toast.error(e instanceof Error ? e.message : "Falha ao consultar IA"),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Falha ao consultar IA"),
   });
   const exec = useMutation({
     mutationFn: (a: AIAction) => execFn({ data: a }),
@@ -124,8 +123,7 @@ export function AskFashionAI() {
       const label = "code" in r ? r.code : "name" in r ? r.name : "ação";
       toast.success(`Pronto — ${label} criada`);
     },
-    onError: (e: unknown) =>
-      toast.error(e instanceof Error ? e.message : "Falha ao executar"),
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Falha ao executar"),
   });
   const active = PERSONAS.find((p) => p.id === persona)!;
 

@@ -10,7 +10,13 @@ type AnyProps = { collections: any[] };
 
 export function CollectionCompareDialog(props: AnyProps) {
   return (
-    <Suspense fallback={<Button variant="outline" size="sm" disabled>Comparar</Button>}>
+    <Suspense
+      fallback={
+        <Button variant="outline" size="sm" disabled>
+          Comparar
+        </Button>
+      }
+    >
       <Inner {...props} />
     </Suspense>
   );

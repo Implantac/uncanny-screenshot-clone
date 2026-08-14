@@ -75,9 +75,7 @@ export function TechSheetBomReviewPanel() {
                 )}
               </div>
               {f.reason && (
-                <div className="text-xs text-muted-foreground line-clamp-2">
-                  {f.reason}
-                </div>
+                <div className="text-xs text-muted-foreground line-clamp-2">{f.reason}</div>
               )}
               {f.flaggedAt && (
                 <div className="text-[10px] text-muted-foreground mt-0.5">

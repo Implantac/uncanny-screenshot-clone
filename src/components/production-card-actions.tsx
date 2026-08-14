@@ -200,17 +200,30 @@ export function ProductionCardActions({
           >
             <Gauge className="size-3.5" /> Apontar parcial
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onOpenHistory(); }}>
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              onOpenHistory();
+            }}
+          >
             <History className="size-3.5" /> Histórico de passagens
           </DropdownMenuItem>
           <DropdownMenuItem
-            onSelect={(e) => { e.preventDefault(); setCloseOpen(true); }}
+            onSelect={(e) => {
+              e.preventDefault();
+              setCloseOpen(true);
+            }}
             className="text-success focus:text-success"
           >
             <CheckCircle2 className="size-3.5" /> Fechar OP
           </DropdownMenuItem>
           {onOpenSheet && (
-            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onOpenSheet(); }}>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                onOpenSheet();
+              }}
+            >
               <FileText className="size-3.5" /> Ficha técnica
             </DropdownMenuItem>
           )}
@@ -259,4 +272,3 @@ export function ProductionCardActions({
     </span>
   );
 }
-

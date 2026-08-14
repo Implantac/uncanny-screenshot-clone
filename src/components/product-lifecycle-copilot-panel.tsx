@@ -26,7 +26,9 @@ export function ProductLifecycleCopilotPanel({ productId }: { productId: string 
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-semibold">Copiloto do ciclo</h3>
-          <Badge variant="outline" className="text-[10px]">Onda 20</Badge>
+          <Badge variant="outline" className="text-[10px]">
+            Onda 20
+          </Badge>
         </div>
         <Button
           size="sm"
@@ -55,7 +57,9 @@ export function ProductLifecycleCopilotPanel({ productId }: { productId: string 
               </div>
               <ul className="space-y-0.5">
                 {data.blockers.slice(0, 5).map((b, i) => (
-                  <li key={i} className="text-xs text-muted-foreground">• {b}</li>
+                  <li key={i} className="text-xs text-muted-foreground">
+                    • {b}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -87,9 +91,7 @@ export function ProductLifecycleCopilotPanel({ productId }: { productId: string 
           )}
 
           {data.suggestions.length === 0 && data.blockers.length === 0 && (
-            <div className="text-xs text-muted-foreground">
-              Sem sugestões pendentes no momento.
-            </div>
+            <div className="text-xs text-muted-foreground">Sem sugestões pendentes no momento.</div>
           )}
         </>
       ) : null}

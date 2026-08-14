@@ -6,7 +6,13 @@ import { listProductRoutings, saveProductRouting } from "@/lib/product-routing.f
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Trash2, Save, Route as RouteIcon, GripVertical } from "lucide-react";
@@ -112,7 +118,8 @@ function ProductRoutingPage() {
         </h1>
         <p className="text-xs text-muted-foreground">
           Defina a sequência real de estágios para cada produto ou família. Jeans usa lavanderia,
-          malha pula — o Kanban PCP respeita esse roteiro. Sem roteiro definido, usa o fluxo global de estágios.
+          malha pula — o Kanban PCP respeita esse roteiro. Sem roteiro definido, usa o fluxo global
+          de estágios.
         </p>
       </div>
 
@@ -121,8 +128,12 @@ function ProductRoutingPage() {
           <CardTitle className="text-sm">Cobertura</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-4 text-xs">
-          <div><Badge variant="outline">{summary.products}</Badge> produtos com roteiro</div>
-          <div><Badge variant="outline">{summary.families}</Badge> famílias com roteiro</div>
+          <div>
+            <Badge variant="outline">{summary.products}</Badge> produtos com roteiro
+          </div>
+          <div>
+            <Badge variant="outline">{summary.families}</Badge> famílias com roteiro
+          </div>
           <div className="text-muted-foreground">· {summary.total} passos totais</div>
         </CardContent>
       </Card>
@@ -145,19 +156,36 @@ function ProductRoutingPage() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <Select value={scope} onValueChange={(v) => { setScope(v as "product" | "family"); setScopeId(""); setSteps([]); }}>
-                  <SelectTrigger><SelectValue placeholder="Escopo" /></SelectTrigger>
+                <Select
+                  value={scope}
+                  onValueChange={(v) => {
+                    setScope(v as "product" | "family");
+                    setScopeId("");
+                    setSteps([]);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Escopo" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="family">Família de produtos</SelectItem>
                     <SelectItem value="product">Produto específico</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={scopeId} onValueChange={setScopeId}>
-                  <SelectTrigger><SelectValue placeholder={scope === "family" ? "Selecione a família" : "Selecione o produto"} /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={
+                        scope === "family" ? "Selecione a família" : "Selecione o produto"
+                      }
+                    />
+                  </SelectTrigger>
                   <SelectContent>
                     {(scope === "family" ? families : products).map((it) => (
                       <SelectItem key={it.id} value={it.id}>
-                        {scope === "family" ? it.name : `${(it as { sku?: string }).sku ?? ""} · ${it.name}`}
+                        {scope === "family"
+                          ? it.name
+                          : `${(it as { sku?: string }).sku ?? ""} · ${it.name}`}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -189,19 +217,41 @@ function ProductRoutingPage() {
                             <tr key={idx} className="border-t">
                               <td className="p-1">
                                 <div className="flex flex-col">
-                                  <button onClick={() => move(idx, -1)} className="text-muted-foreground hover:text-foreground" title="subir">▲</button>
-                                  <button onClick={() => move(idx, 1)} className="text-muted-foreground hover:text-foreground" title="descer">▼</button>
+                                  <button
+                                    onClick={() => move(idx, -1)}
+                                    className="text-muted-foreground hover:text-foreground"
+                                    title="subir"
+                                  >
+                                    ▲
+                                  </button>
+                                  <button
+                                    onClick={() => move(idx, 1)}
+                                    className="text-muted-foreground hover:text-foreground"
+                                    title="descer"
+                                  >
+                                    ▼
+                                  </button>
                                 </div>
                               </td>
                               <td className="p-2 tabular-nums">{s.sequence}</td>
                               <td className="p-2">
                                 <Select
                                   value={s.stage_key}
-                                  onValueChange={(v) => setSteps((p) => p.map((x, i) => i === idx ? { ...x, stage_key: v } : x))}
+                                  onValueChange={(v) =>
+                                    setSteps((p) =>
+                                      p.map((x, i) => (i === idx ? { ...x, stage_key: v } : x)),
+                                    )
+                                  }
                                 >
-                                  <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                                  <SelectTrigger className="h-7 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
                                   <SelectContent>
-                                    {stages.map((st) => <SelectItem key={st.key} value={st.key}>{st.label}</SelectItem>)}
+                                    {stages.map((st) => (
+                                      <SelectItem key={st.key} value={st.key}>
+                                        {st.label}
+                                      </SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                               </td>
@@ -210,26 +260,51 @@ function ProductRoutingPage() {
                                   type="number"
                                   className="h-7 w-20 text-xs"
                                   value={s.sla_days}
-                                  onChange={(e) => setSteps((p) => p.map((x, i) => i === idx ? { ...x, sla_days: Number(e.target.value || 0) } : x))}
+                                  onChange={(e) =>
+                                    setSteps((p) =>
+                                      p.map((x, i) =>
+                                        i === idx
+                                          ? { ...x, sla_days: Number(e.target.value || 0) }
+                                          : x,
+                                      ),
+                                    )
+                                  }
                                 />
                               </td>
                               <td className="p-2">
                                 <input
                                   type="checkbox"
                                   checked={s.required}
-                                  onChange={(e) => setSteps((p) => p.map((x, i) => i === idx ? { ...x, required: e.target.checked } : x))}
+                                  onChange={(e) =>
+                                    setSteps((p) =>
+                                      p.map((x, i) =>
+                                        i === idx ? { ...x, required: e.target.checked } : x,
+                                      ),
+                                    )
+                                  }
                                 />
                               </td>
                               <td className="p-2">
                                 <Input
                                   className="h-7 text-xs"
                                   value={s.notes ?? ""}
-                                  onChange={(e) => setSteps((p) => p.map((x, i) => i === idx ? { ...x, notes: e.target.value || null } : x))}
+                                  onChange={(e) =>
+                                    setSteps((p) =>
+                                      p.map((x, i) =>
+                                        i === idx ? { ...x, notes: e.target.value || null } : x,
+                                      ),
+                                    )
+                                  }
                                   placeholder="opcional"
                                 />
                               </td>
                               <td className="p-1">
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStep(idx)}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => removeStep(idx)}
+                                >
                                   <Trash2 className="size-3.5" />
                                 </Button>
                               </td>

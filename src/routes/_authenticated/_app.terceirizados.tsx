@@ -54,7 +54,9 @@ function OutsourcedPage() {
   const criticalSuppliers = useMemo(
     () =>
       (data ?? [])
-        .filter((s: Supplier) => (s.max_days_at_supplier ?? 0) > 15 || (s.second_line_count ?? 0) > 0)
+        .filter(
+          (s: Supplier) => (s.max_days_at_supplier ?? 0) > 15 || (s.second_line_count ?? 0) > 0,
+        )
         .slice(0, 3),
     [data],
   );
@@ -117,9 +119,7 @@ function OutsourcedPage() {
               >
                 {isOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">
-                    {s.supplier_name ?? sid.slice(0, 8)}
-                  </div>
+                  <div className="font-medium truncate">{s.supplier_name ?? sid.slice(0, 8)}</div>
                   <div className="text-xs text-muted-foreground">
                     {s.open_os_count} OS · {s.open_lot_count} lote(s) · {s.distinct_refs} ref(s)
                   </div>
@@ -251,7 +251,9 @@ function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: stri
         const parts = [
           loss > 0 ? `${loss} perda(s)` : null,
           defect > 0 ? `${defect} defeito(s)` : null,
-        ].filter(Boolean).join(" + ");
+        ]
+          .filter(Boolean)
+          .join(" + ");
         await supabase.from("production_occurrences").insert({
           owner_id: os.owner_id,
           order_id: os.production_order_id,
@@ -398,7 +400,15 @@ function ReturnButton({ os }: { os: OrderRow & { owner_id?: string; notes?: stri
   );
 }
 
-function Kpi({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string | number }) {
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string | number;
+}) {
   return (
     <div className="glass rounded-xl p-4">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">

@@ -105,10 +105,7 @@ export function WarRoomPanel() {
             const meta = MODULE_META[m as Bottleneck["module"]];
             const Icon = meta.Icon;
             return (
-              <div
-                key={m}
-                className="flex items-center gap-1 px-2 py-1 rounded-md bg-muted/40"
-              >
+              <div key={m} className="flex items-center gap-1 px-2 py-1 rounded-md bg-muted/40">
                 <Icon className={`size-3 ${meta.color}`} />
                 <span className="text-muted-foreground">{meta.label}</span>
                 <span className="font-mono">{n}</span>
@@ -123,10 +120,7 @@ export function WarRoomPanel() {
           const meta = MODULE_META[b.module];
           const Icon = meta.Icon;
           return (
-            <div
-              key={b.id}
-              className="flex items-center gap-3 rounded-md border bg-muted/30 p-2.5"
-            >
+            <div key={b.id} className="flex items-center gap-3 rounded-md border bg-muted/30 p-2.5">
               <Icon className={`size-4 shrink-0 ${meta.color}`} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">

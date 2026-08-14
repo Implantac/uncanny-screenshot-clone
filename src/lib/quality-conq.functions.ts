@@ -54,9 +54,7 @@ export const getConqAnalysis = createServerFn({ method: "GET" })
       ]);
 
     type Prod = { id: string; sku: string; name: string; cost_price: number | null };
-    const prodMap = new Map<string, Prod>(
-      ((products ?? []) as Prod[]).map((p) => [p.id, p]),
-    );
+    const prodMap = new Map<string, Prod>(((products ?? []) as Prod[]).map((p) => [p.id, p]));
     const orderToProduct = new Map<string, string>();
     const orderQtyInWindow = new Map<string, number>();
     for (const o of (orders ?? []) as {
@@ -69,14 +67,11 @@ export const getConqAnalysis = createServerFn({ method: "GET" })
       if (o.product_id) orderToProduct.set(o.id, o.product_id);
       const ref = o.started_at ?? o.created_at;
       if (ref && ref >= since && o.product_id) {
-        orderQtyInWindow.set(o.id, (o.quantity ?? 0));
+        orderQtyInWindow.set(o.id, o.quantity ?? 0);
       }
     }
 
-    const agg = new Map<
-      string,
-      { rework: number; scrap: number; reject: number }
-    >();
+    const agg = new Map<string, { rework: number; scrap: number; reject: number }>();
     const bump = (pid: string, key: "rework" | "scrap" | "reject", qty: number) => {
       const a = agg.get(pid) ?? { rework: 0, scrap: 0, reject: 0 };
       a[key] += qty;

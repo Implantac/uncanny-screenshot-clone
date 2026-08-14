@@ -16,9 +16,15 @@ export const Route = createFileRoute("/_authenticated/_app/security-center")({
   head: () => ({
     meta: [
       { title: "Centro de Segurança · USE MODA PLM" },
-      { name: "description", content: "MFA, política de senhas, criptografia e postura de segurança da plataforma." },
+      {
+        name: "description",
+        content: "MFA, política de senhas, criptografia e postura de segurança da plataforma.",
+      },
       { property: "og:title", content: "Centro de Segurança · USE MODA PLM" },
-      { property: "og:description", content: "MFA, política de senhas, criptografia e postura de segurança da plataforma." },
+      {
+        property: "og:description",
+        content: "MFA, política de senhas, criptografia e postura de segurança da plataforma.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -98,7 +104,6 @@ function SecurityCenter() {
         title="Centro de Segurança"
         description="MFA, política de senhas, criptografia e backups — postura de segurança da plataforma."
       />
-
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatusCard

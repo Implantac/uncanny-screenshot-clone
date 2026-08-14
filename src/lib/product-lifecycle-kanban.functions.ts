@@ -31,9 +31,7 @@ export type LifecycleKanbanResult = {
   all_count: number;
 };
 
-const inputSchema = z
-  .object({ scope: z.enum(["mine", "all"]).optional() })
-  .optional();
+const inputSchema = z.object({ scope: z.enum(["mine", "all"]).optional() }).optional();
 
 export const listLifecycleKanban = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -50,9 +48,7 @@ export const listLifecycleKanban = createServerFn({ method: "GET" })
     let productsClient = context.supabase;
 
     if (scope === "all") {
-      const { supabaseAdmin } = await import(
-        "@/integrations/supabase/client.server"
-      );
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       productsClient = supabaseAdmin as typeof context.supabase;
       const { count: total } = await productsClient
         .from("products")
@@ -60,16 +56,17 @@ export const listLifecycleKanban = createServerFn({ method: "GET" })
       allCount = total ?? 0;
     } else {
       // still get the total to power the banner
-      const { supabaseAdmin } = await import(
-        "@/integrations/supabase/client.server"
-      );
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { count: total } = await (supabaseAdmin as typeof context.supabase)
         .from("products")
         .select("id", { count: "exact", head: true });
       allCount = total ?? mineCount ?? 0;
     }
 
-    const emptyColumns = WORKFLOW_STEPS.map((step) => ({ step, cards: [] as LifecycleKanbanCard[] }));
+    const emptyColumns = WORKFLOW_STEPS.map((step) => ({
+      step,
+      cards: [] as LifecycleKanbanCard[],
+    }));
 
     // 1) products (respecting chosen scope)
     const { data: products, error: pErr } = await productsClient
@@ -110,9 +107,7 @@ export const listLifecycleKanban = createServerFn({ method: "GET" })
     WORKFLOW_STEPS.forEach((st) => cardsByStep.set(st, []));
 
     for (const p of products ?? []) {
-      const list = (byProduct.get(p.id) ?? []).slice().sort(
-        (a, b) => a.step_order - b.step_order,
-      );
+      const list = (byProduct.get(p.id) ?? []).slice().sort((a, b) => a.step_order - b.step_order);
       if (list.length === 0) continue;
 
       const blocked = list.find((s) => s.status === "bloqueado");

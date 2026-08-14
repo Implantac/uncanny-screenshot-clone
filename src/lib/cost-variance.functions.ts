@@ -63,9 +63,19 @@ export const listCostVariance = createServerFn({ method: "POST" })
       progress: number | null;
       products: { name: string | null; sku: string | null; collection_id: string | null } | null;
     };
-    type SheetRow = { product_id: string | null; cost_price: number | string | null; materials_cost: number | string | null; labor_cost: number | string | null; status: string };
+    type SheetRow = {
+      product_id: string | null;
+      cost_price: number | string | null;
+      materials_cost: number | string | null;
+      labor_cost: number | string | null;
+      status: string;
+    };
     type MoveRow = { reference_id: string | null; type: string; quantity: number | string | null };
-    type OccRow = { order_id: string | null; kind: string | null; affected_qty: number | string | null };
+    type OccRow = {
+      order_id: string | null;
+      kind: string | null;
+      affected_qty: number | string | null;
+    };
 
     const { data: orders, error } = await supabase
       .from("production_orders")
@@ -82,7 +92,9 @@ export const listCostVariance = createServerFn({ method: "POST" })
     );
     if (ops.length === 0) return [] as CostVarianceRow[];
 
-    const productIds = Array.from(new Set(ops.map((o) => o.product_id).filter((id): id is string => Boolean(id))));
+    const productIds = Array.from(
+      new Set(ops.map((o) => o.product_id).filter((id): id is string => Boolean(id))),
+    );
     const orderIds = ops.map((o) => o.id);
 
     const [{ data: sheets }, { data: moves }, { data: occs }] = await Promise.all([
@@ -140,7 +152,7 @@ export const listCostVariance = createServerFn({ method: "POST" })
     });
 
     const rows: CostVarianceRow[] = ops.map((o) => {
-      const sheet = o.product_id ? sheetByProduct.get(o.product_id) ?? null : null;
+      const sheet = o.product_id ? (sheetByProduct.get(o.product_id) ?? null) : null;
       const qty = Number(o.quantity ?? 0);
       const produced = Math.round((Number(o.progress ?? 0) / 100) * qty);
       const matU = Number(sheet?.materials_cost ?? 0);

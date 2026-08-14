@@ -56,7 +56,7 @@ export function DevIntelligencePanel() {
         <Metric
           icon={<AlertTriangle className="h-3.5 w-3.5" />}
           label="Gargalo"
-          value={data.bottleneck ? STAGE_LABEL[data.bottleneck] ?? data.bottleneck : "—"}
+          value={data.bottleneck ? (STAGE_LABEL[data.bottleneck] ?? data.bottleneck) : "—"}
           hint="estágio mais lento"
         />
         <Metric
@@ -81,14 +81,9 @@ export function DevIntelligencePanel() {
                   {STAGE_LABEL[s.stage] ?? s.stage}
                 </span>
                 <div className="flex-1 h-2 rounded bg-muted/30 overflow-hidden">
-                  <div
-                    className="h-full bg-primary/60"
-                    style={{ width: `${pct}%` }}
-                  />
+                  <div className="h-full bg-primary/60" style={{ width: `${pct}%` }} />
                 </div>
-                <span className="w-16 text-right tabular-nums">
-                  {s.avgDays.toFixed(1)}d
-                </span>
+                <span className="w-16 text-right tabular-nums">{s.avgDays.toFixed(1)}d</span>
                 <span className="w-12 text-right text-muted-foreground tabular-nums">
                   n={s.count}
                 </span>
@@ -121,9 +116,7 @@ export function DevIntelligencePanel() {
             {data.stuck.slice(0, 5).map((p) => (
               <button
                 key={p.id}
-                onClick={() =>
-                  navigate({ to: "/prototipo/$id", params: { id: p.id } })
-                }
+                onClick={() => navigate({ to: "/prototipo/$id", params: { id: p.id } })}
                 className="w-full flex items-center justify-between gap-2 text-left text-xs rounded border border-border/60 px-2 py-1.5 hover:bg-accent/40 transition"
               >
                 <span className="font-medium truncate">

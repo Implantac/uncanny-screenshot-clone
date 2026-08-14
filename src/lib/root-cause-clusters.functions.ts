@@ -67,9 +67,7 @@ export const getRootCauseClusters = createServerFn({ method: "POST" })
     const negs = (occs ?? []).filter((o) => KIND_NEGATIVE.has(o.kind as string));
     if (negs.length === 0) return [];
 
-    const orderIds = Array.from(
-      new Set(negs.map((o) => o.order_id).filter(Boolean) as string[]),
-    );
+    const orderIds = Array.from(new Set(negs.map((o) => o.order_id).filter(Boolean) as string[]));
 
     const [ordersRes, capasRes] = await Promise.all([
       orderIds.length
@@ -124,13 +122,16 @@ export const getRootCauseClusters = createServerFn({ method: "POST" })
       status: string;
     }[];
 
-    type Bucket = Omit<RootCauseCluster, "severity" | "score" | "has_open_capa" | "open_capa_id"> & {
+    type Bucket = Omit<
+      RootCauseCluster,
+      "severity" | "score" | "has_open_capa" | "open_capa_id"
+    > & {
       _orders: Set<string>;
     };
     const buckets = new Map<string, Bucket>();
 
     for (const o of negs) {
-      const ord = o.order_id ? orderMap.get(o.order_id) ?? null : null;
+      const ord = o.order_id ? (orderMap.get(o.order_id) ?? null) : null;
       const supplier_id = ord?.supplier_id ?? null;
       const product_id = ord?.product_id ?? null;
       const sector = (o.sector as string) ?? null;
@@ -145,7 +146,7 @@ export const getRootCauseClusters = createServerFn({ method: "POST" })
           sector,
           kind,
           supplier_id,
-          supplier_name: supplier_id ? supMap.get(supplier_id) ?? null : null,
+          supplier_name: supplier_id ? (supMap.get(supplier_id) ?? null) : null,
           product_id,
           product_name: p?.name ?? null,
           product_sku: p?.sku ?? null,
@@ -180,9 +181,8 @@ export const getRootCauseClusters = createServerFn({ method: "POST" })
       );
       const distinct = b._orders.size;
       // score = ocorrências × (1 + qty/100) × (1 + distinct_orders/5)
-      const score = Math.round(
-        b.occurrences * (1 + b.affected_qty / 100) * (1 + distinct / 5) * 10,
-      ) / 10;
+      const score =
+        Math.round(b.occurrences * (1 + b.affected_qty / 100) * (1 + distinct / 5) * 10) / 10;
       const severity: RootCauseCluster["severity"] =
         score >= 60 ? "critica" : score >= 30 ? "alta" : score >= 12 ? "media" : "baixa";
       clusters.push({

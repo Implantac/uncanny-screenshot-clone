@@ -107,7 +107,12 @@ export async function buildFashionContext(): Promise<FashionContext> {
     minimum: Number(i.minimum),
   }));
 
-  type PoRow = { code: string; status: string | null; quantity: number | null; due_date: string | null };
+  type PoRow = {
+    code: string;
+    status: string | null;
+    quantity: number | null;
+    due_date: string | null;
+  };
   const po = (prodOrdRes.data ?? []) as PoRow[];
   const byStatusPO: Record<string, number> = {};
   for (const p of po)
@@ -124,7 +129,14 @@ export async function buildFashionContext(): Promise<FashionContext> {
       due: p.due_date ?? undefined,
     }));
 
-  type SaleRow = { sku: string; channel: string | null; uf: string | null; quantity: number | null; total: number | null; sold_at: string };
+  type SaleRow = {
+    sku: string;
+    channel: string | null;
+    uf: string | null;
+    quantity: number | null;
+    total: number | null;
+    sold_at: string;
+  };
   const sales = (salesRes.data ?? []) as SaleRow[];
   const now = Date.now();
   const within = (days: number) =>
@@ -145,7 +157,13 @@ export async function buildFashionContext(): Promise<FashionContext> {
     .slice(0, 5)
     .map(([sku, qty]) => ({ sku, qty }));
 
-  type InfRow = { nome: string; seguidores: number | null; engajamento: number | null; vendas_antes: number | null; vendas_depois: number | null };
+  type InfRow = {
+    nome: string;
+    seguidores: number | null;
+    engajamento: number | null;
+    vendas_antes: number | null;
+    vendas_depois: number | null;
+  };
   type MktRow = { status: string; channel: string | null; investment: number | null };
   const inf = (infRes.data ?? []) as InfRow[];
   const mkt = (mktRes.data ?? []) as MktRow[];

@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Keyboard } from "lucide-react";
 
 type Shortcut = { keys: string[]; label: string; scope?: string };
@@ -57,24 +63,22 @@ export function KeyboardShortcutsHelp() {
             <Keyboard className="size-5" aria-hidden />
             Atalhos de teclado
           </DialogTitle>
-          <DialogDescription>
-            Trabalhe mais rápido sem tirar a mão do teclado.
-          </DialogDescription>
+          <DialogDescription>Trabalhe mais rápido sem tirar a mão do teclado.</DialogDescription>
         </DialogHeader>
         <ul className="divide-y divide-border">
           {SHORTCUTS.map((s, i) => (
             <li key={i} className="flex items-center justify-between gap-4 py-3">
               <div className="flex flex-col">
                 <span className="text-sm text-foreground">{s.label}</span>
-                {s.scope ? (
-                  <span className="text-xs text-muted-foreground">{s.scope}</span>
-                ) : null}
+                {s.scope ? <span className="text-xs text-muted-foreground">{s.scope}</span> : null}
               </div>
               <div className="flex items-center gap-1">
                 {s.keys.map((k, j) => (
                   <span key={j} className="flex items-center gap-1">
                     <Key>{k}</Key>
-                    {j < s.keys.length - 1 ? <span className="text-muted-foreground text-xs">+</span> : null}
+                    {j < s.keys.length - 1 ? (
+                      <span className="text-muted-foreground text-xs">+</span>
+                    ) : null}
                   </span>
                 ))}
               </div>

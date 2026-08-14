@@ -21,8 +21,7 @@ function getOrCreateToken(): string {
   if (!t) {
     t =
       "web_" +
-      (crypto?.randomUUID?.() ??
-        Math.random().toString(36).slice(2) + Date.now().toString(36));
+      (crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2) + Date.now().toString(36));
     localStorage.setItem(DEVICE_KEY, t);
   }
   return t;
@@ -65,7 +64,9 @@ export function DeviceRegistrationPanel() {
       if (!u.user) return [];
       const { data } = await supabase
         .from("mobile_devices")
-        .select("id, user_name, platform, app_version, active, push_token, push_enabled, last_seen_at")
+        .select(
+          "id, user_name, platform, app_version, active, push_token, push_enabled, last_seen_at",
+        )
         .eq("owner_id", u.user.id)
         .order("last_seen_at", { ascending: false });
       return (data ?? []) as DeviceRow[];
@@ -92,7 +93,9 @@ export function DeviceRegistrationPanel() {
       });
     },
     onSuccess: (res) => {
-      toast.success(res.created ? "Navegador registrado para receber push" : "Dispositivo atualizado");
+      toast.success(
+        res.created ? "Navegador registrado para receber push" : "Dispositivo atualizado",
+      );
       qc.invalidateQueries({ queryKey: ["my-mobile-devices"] });
       qc.invalidateQueries({ queryKey: ["mobile-devices"] });
     },
@@ -133,9 +136,7 @@ export function DeviceRegistrationPanel() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Smartphone className="size-4 text-primary" />
-          <h3 className="text-sm font-semibold uppercase tracking-widest">
-            Meus dispositivos
-          </h3>
+          <h3 className="text-sm font-semibold uppercase tracking-widest">Meus dispositivos</h3>
           <Badge variant="outline" className="text-[10px]">
             {devices.length}
           </Badge>
@@ -180,7 +181,10 @@ export function DeviceRegistrationPanel() {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium truncate">{d.user_name}</span>
                     {isThis && (
-                      <Badge variant="outline" className="text-[10px] bg-emerald-500/15 text-emerald-400 border-emerald-500/30">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                      >
                         este
                       </Badge>
                     )}
@@ -200,9 +204,7 @@ export function DeviceRegistrationPanel() {
                     size="sm"
                     variant="ghost"
                     title={d.push_enabled ? "Desativar push" : "Ativar push"}
-                    onClick={() =>
-                      toggleMutation.mutate({ id: d.id, enabled: !d.push_enabled })
-                    }
+                    onClick={() => toggleMutation.mutate({ id: d.id, enabled: !d.push_enabled })}
                   >
                     {d.push_enabled ? (
                       <Bell className="size-3.5 text-emerald-400" />

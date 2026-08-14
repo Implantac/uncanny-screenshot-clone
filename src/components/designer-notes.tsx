@@ -81,9 +81,7 @@ export function DesignerNotes({ productId }: { productId: string }) {
   return (
     <div
       className={`rounded-xl border transition-all ${
-        pinned
-          ? "border-amber-400/40 bg-amber-50/50 dark:bg-amber-950/20"
-          : "border-border bg-card"
+        pinned ? "border-amber-400/40 bg-amber-50/50 dark:bg-amber-950/20" : "border-border bg-card"
       }`}
     >
       <button
@@ -93,16 +91,13 @@ export function DesignerNotes({ productId }: { productId: string }) {
       >
         <div className="flex items-center gap-2 min-w-0">
           <StickyNote
-            className={`size-4 shrink-0 ${
-              pinned ? "text-amber-500" : "text-muted-foreground"
-            }`}
+            className={`size-4 shrink-0 ${pinned ? "text-amber-500" : "text-muted-foreground"}`}
           />
-          <span className="text-xs font-medium truncate">
-            Notas do Designer
-          </span>
+          <span className="text-xs font-medium truncate">Notas do Designer</span>
           {note && (
             <span className="text-[10px] text-muted-foreground truncate hidden sm:inline">
-              · {note.slice(0, 40)}{note.length > 40 ? "…" : ""}
+              · {note.slice(0, 40)}
+              {note.length > 40 ? "…" : ""}
             </span>
           )}
         </div>
@@ -122,9 +117,7 @@ export function DesignerNotes({ productId }: { productId: string }) {
               <Pin className="size-3 text-muted-foreground" />
             )}
           </button>
-          <span className="text-[10px] text-muted-foreground">
-            {expanded ? "▲" : "▼"}
-          </span>
+          <span className="text-[10px] text-muted-foreground">{expanded ? "▲" : "▼"}</span>
         </div>
       </button>
       {expanded && (
@@ -137,9 +130,7 @@ export function DesignerNotes({ productId }: { productId: string }) {
             className="text-xs resize-none border-0 bg-transparent p-0 focus-visible:ring-0 placeholder:text-muted-foreground/50"
           />
           <div className="flex items-center justify-between mt-1">
-            <span className="text-[10px] text-muted-foreground">
-              {note.length} caracteres
-            </span>
+            <span className="text-[10px] text-muted-foreground">{note.length} caracteres</span>
             {saveMut.isPending && (
               <span className="text-[10px] text-muted-foreground inline-flex items-center gap-1">
                 <Loader2 className="size-2.5 animate-spin" /> salvando…
@@ -151,4 +142,3 @@ export function DesignerNotes({ productId }: { productId: string }) {
     </div>
   );
 }
-

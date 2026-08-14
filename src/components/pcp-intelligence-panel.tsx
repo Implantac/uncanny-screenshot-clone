@@ -1,7 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getPcpIntelligence, applyRebalanceSuggestion } from "@/lib/pcp-intelligence.functions";
-import { Activity, AlertTriangle, ArrowRight, Gauge, Sparkles, TrendingUp, Check } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  Gauge,
+  Sparkles,
+  TrendingUp,
+  Check,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -56,7 +64,11 @@ export function PcpIntelligencePanel() {
           label="Ocupação média"
           value={`${kpis.avg_occupancy_pct}%`}
           tone={
-            kpis.avg_occupancy_pct >= 100 ? "destructive" : kpis.avg_occupancy_pct >= 80 ? "warning" : "success"
+            kpis.avg_occupancy_pct >= 100
+              ? "destructive"
+              : kpis.avg_occupancy_pct >= 80
+                ? "warning"
+                : "success"
           }
         />
         <Kpi
@@ -89,7 +101,10 @@ export function PcpIntelligencePanel() {
                 <ArrowRight className="size-4 mt-0.5 shrink-0 text-warning" />
                 <div className="flex-1">
                   <div>
-                    Mover <span className="font-mono text-xs">{s.order_code ?? s.order_id.slice(0, 6)}</span>{" "}
+                    Mover{" "}
+                    <span className="font-mono text-xs">
+                      {s.order_code ?? s.order_id.slice(0, 6)}
+                    </span>{" "}
                     ({s.pieces} pç) de <strong>{s.from_supplier}</strong> para{" "}
                     <strong>{s.to_supplier}</strong>
                   </div>

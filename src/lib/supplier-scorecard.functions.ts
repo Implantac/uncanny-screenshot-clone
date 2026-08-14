@@ -59,9 +59,7 @@ export const getSupplierScorecardMovers = createServerFn({ method: "POST" })
 
     const { data: rows, error } = await supabase
       .from("supplier_scorecards")
-      .select(
-        "supplier_id, computed_at, score, prev_score, delta, notes, suppliers!inner(id,name)",
-      )
+      .select("supplier_id, computed_at, score, prev_score, delta, notes, suppliers!inner(id,name)")
       .eq("owner_id", userId)
       .not("delta", "is", null)
       .order("computed_at", { ascending: false })

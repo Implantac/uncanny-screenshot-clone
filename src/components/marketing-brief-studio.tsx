@@ -24,15 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import {
-  Sparkles,
-  Plus,
-  Wand2,
-  Rocket,
-  FileText,
-  Trash2,
-  Lightbulb,
-} from "lucide-react";
+import { Sparkles, Plus, Wand2, Rocket, FileText, Trash2, Lightbulb } from "lucide-react";
 import {
   generateBriefPlan,
   promoteBriefToCampaign,
@@ -183,7 +175,12 @@ export function MarketingBriefStudio() {
             Brief → plano de IA → campanha, sincronizado com o lifecycle da coleção.
           </p>
         </div>
-        <Button onClick={() => { setDraft({}); setOpen(true); }}>
+        <Button
+          onClick={() => {
+            setDraft({});
+            setOpen(true);
+          }}
+        >
           <Plus className="size-4 mr-1" /> Novo brief
         </Button>
       </div>
@@ -195,26 +192,29 @@ export function MarketingBriefStudio() {
             Sugestões automáticas pelo lifecycle
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {suggestions.slice(0, 6).filter((s): s is NonNullable<typeof s> => !!s).map((s) => (
-              <button
-                key={`${s.collectionId}:${s.trigger}`}
-                onClick={() => {
-                  setDraft({
-                    title: s.title,
-                    objective: s.objective,
-                    collection_id: s.collectionId,
-                    lifecycle_trigger: s.trigger,
-                    channels: ["instagram", "tiktok"],
-                  });
-                  setOpen(true);
-                }}
-                className="text-left p-3 rounded-md border bg-muted/40 hover:bg-muted/70 transition"
-              >
-                <div className="text-xs uppercase text-muted-foreground">{s.trigger}</div>
-                <div className="text-sm font-medium">{s.title}</div>
-                <div className="text-xs text-muted-foreground line-clamp-2">{s.objective}</div>
-              </button>
-            ))}
+            {suggestions
+              .slice(0, 6)
+              .filter((s): s is NonNullable<typeof s> => !!s)
+              .map((s) => (
+                <button
+                  key={`${s.collectionId}:${s.trigger}`}
+                  onClick={() => {
+                    setDraft({
+                      title: s.title,
+                      objective: s.objective,
+                      collection_id: s.collectionId,
+                      lifecycle_trigger: s.trigger,
+                      channels: ["instagram", "tiktok"],
+                    });
+                    setOpen(true);
+                  }}
+                  className="text-left p-3 rounded-md border bg-muted/40 hover:bg-muted/70 transition"
+                >
+                  <div className="text-xs uppercase text-muted-foreground">{s.trigger}</div>
+                  <div className="text-sm font-medium">{s.title}</div>
+                  <div className="text-xs text-muted-foreground line-clamp-2">{s.objective}</div>
+                </button>
+              ))}
           </div>
         </Card>
       )}
@@ -232,7 +232,9 @@ export function MarketingBriefStudio() {
                 <span className="font-medium truncate">{b.title}</span>
                 <Badge className={STATUS_STYLE[b.status] ?? ""}>{b.status}</Badge>
                 {b.lifecycle_trigger && (
-                  <Badge variant="outline" className="text-xs">{b.lifecycle_trigger}</Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {b.lifecycle_trigger}
+                  </Badge>
                 )}
               </div>
               <div className="text-xs text-muted-foreground line-clamp-1">{b.objective}</div>
@@ -351,7 +353,9 @@ export function MarketingBriefStudio() {
                     setDraft((d) => ({ ...d, collection_id: v === "none" ? null : v }))
                   }
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">— nenhuma —</SelectItem>
                     {collections.map((c) => (
@@ -370,7 +374,9 @@ export function MarketingBriefStudio() {
                     setDraft((d) => ({ ...d, lifecycle_trigger: v === "none" ? null : v }))
                   }
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">— nenhum —</SelectItem>
                     <SelectItem value="lancamento">Lançamento</SelectItem>
@@ -382,7 +388,9 @@ export function MarketingBriefStudio() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
             <Button
               onClick={() => saveMut.mutate(draft)}
               disabled={!draft.title || !draft.objective || saveMut.isPending}

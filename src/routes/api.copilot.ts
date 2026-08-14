@@ -45,7 +45,9 @@ function buildTools(supabase: SupabaseClient, userId: string) {
         const today = new Date().toISOString().slice(0, 10);
         const { data, error } = await supabase
           .from("production_orders")
-          .select("code, stage, status, due_date, quantity, supplier_id, suppliers:supplier_id(name), products:product_id(name,sku)")
+          .select(
+            "code, stage, status, due_date, quantity, supplier_id, suppliers:supplier_id(name), products:product_id(name,sku)",
+          )
           .eq("owner_id", userId)
           .in("status", ["aberta", "em_producao", "em_andamento", "iniciada"])
           .lt("due_date", today)
@@ -69,12 +71,15 @@ function buildTools(supabase: SupabaseClient, userId: string) {
       },
     }),
     listAtRiskOps: tool({
-      description: "Lista OPs em risco: paradas no estágio há >7 dias ou com due_date nos próximos 7 dias e ainda não finalizadas.",
+      description:
+        "Lista OPs em risco: paradas no estágio há >7 dias ou com due_date nos próximos 7 dias e ainda não finalizadas.",
       inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(10) }),
       execute: async ({ limit }) => {
         const { data, error } = await supabase
           .from("production_orders")
-          .select("code, stage, status, due_date, stage_updated_at, suppliers:supplier_id(name), products:product_id(name,sku)")
+          .select(
+            "code, stage, status, due_date, stage_updated_at, suppliers:supplier_id(name), products:product_id(name,sku)",
+          )
           .eq("owner_id", userId)
           .in("status", ["aberta", "em_producao", "em_andamento", "iniciada"])
           .order("stage_updated_at", { ascending: true, nullsFirst: true })
@@ -141,14 +146,18 @@ function buildTools(supabase: SupabaseClient, userId: string) {
         const since = new Date(Date.now() - 30 * 86400_000).toISOString();
         const { data, error } = await supabase
           .from("production_occurrences")
-          .select("id, occurrence_type, severity, description, status, created_at, production_order_id, production_orders:production_order_id(code)")
+          .select(
+            "id, occurrence_type, severity, description, status, created_at, production_order_id, production_orders:production_order_id(code)",
+          )
           .eq("owner_id", userId)
           .gte("created_at", since)
           .order("created_at", { ascending: false })
           .limit(100);
         if (error) return { error: error.message, items: [] };
         const items = (data ?? [])
-          .filter((o: any) => o.severity === "critical" || o.status === "open" || o.status === "aberta")
+          .filter(
+            (o: any) => o.severity === "critical" || o.status === "open" || o.status === "aberta",
+          )
           .slice(0, limit)
           .map((o: any) => ({
             op: o.production_orders?.code ?? null,
@@ -168,7 +177,9 @@ function buildTools(supabase: SupabaseClient, userId: string) {
         const since = new Date(Date.now() - 60 * 86400_000).toISOString();
         const { data: occs, error } = await supabase
           .from("production_occurrences")
-          .select("severity, production_orders:production_order_id(supplier_id, suppliers:supplier_id(name))")
+          .select(
+            "severity, production_orders:production_order_id(supplier_id, suppliers:supplier_id(name))",
+          )
           .eq("owner_id", userId)
           .gte("created_at", since)
           .limit(500);
@@ -191,7 +202,8 @@ function buildTools(supabase: SupabaseClient, userId: string) {
       },
     }),
     mrpCriticalItems: tool({
-      description: "Itens MRP em status crítico (saldo + em pedido ≤ ponto de pedido). Inclui SKU, saldo, ponto de pedido, sugestão de compra e valor estimado.",
+      description:
+        "Itens MRP em status crítico (saldo + em pedido ≤ ponto de pedido). Inclui SKU, saldo, ponto de pedido, sugestão de compra e valor estimado.",
       inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(10) }),
       execute: async ({ limit }) => {
         const { rows } = await runMrpPlanning(supabase as SupabaseClient<Database>, userId);
@@ -215,10 +227,14 @@ function buildTools(supabase: SupabaseClient, userId: string) {
       },
     }),
     mrpBuySuggestions: tool({
-      description: "Sugestões de compra calculadas pelo MRP (LEC + déficit até estoque máximo), priorizadas por valor.",
+      description:
+        "Sugestões de compra calculadas pelo MRP (LEC + déficit até estoque máximo), priorizadas por valor.",
       inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(10) }),
       execute: async ({ limit }) => {
-        const { rows, summary } = await runMrpPlanning(supabase as SupabaseClient<Database>, userId);
+        const { rows, summary } = await runMrpPlanning(
+          supabase as SupabaseClient<Database>,
+          userId,
+        );
         const items = rows
           .filter((r) => r.suggestedPurchase > 0)
           .sort((a, b) => b.suggestedValue - a.suggestedValue)
@@ -244,9 +260,14 @@ function buildTools(supabase: SupabaseClient, userId: string) {
       description: "Itens com excesso de estoque ou cobertura > 120 dias (capital parado).",
       inputSchema: z.object({ limit: z.number().int().min(1).max(20).default(10) }),
       execute: async ({ limit }) => {
-        const { rows, summary } = await runMrpPlanning(supabase as SupabaseClient<Database>, userId);
+        const { rows, summary } = await runMrpPlanning(
+          supabase as SupabaseClient<Database>,
+          userId,
+        );
         const items = rows
-          .filter((r) => r.status === "excesso" || (r.coverageDays !== null && r.coverageDays > 120))
+          .filter(
+            (r) => r.status === "excesso" || (r.coverageDays !== null && r.coverageDays > 120),
+          )
           .sort((a, b) => b.capitalEmpatado - a.capitalEmpatado)
           .slice(0, limit)
           .map((r) => ({
@@ -276,7 +297,12 @@ function buildTools(supabase: SupabaseClient, userId: string) {
           m.set(key, c);
         }
         const items = Array.from(m.values())
-          .map((s) => ({ fornecedor: s.name, itens: s.n, lead_time_medio: Number((s.sum / s.n).toFixed(1)), capital: Number(s.capital.toFixed(2)) }))
+          .map((s) => ({
+            fornecedor: s.name,
+            itens: s.n,
+            lead_time_medio: Number((s.sum / s.n).toFixed(1)),
+            capital: Number(s.capital.toFixed(2)),
+          }))
           .sort((a, b) => b.itens - a.itens)
           .slice(0, limit);
         return { count: items.length, items };
@@ -284,7 +310,6 @@ function buildTools(supabase: SupabaseClient, userId: string) {
     }),
   };
 }
-
 
 export const Route = createFileRoute("/api/copilot")({
   server: {
@@ -297,7 +322,8 @@ export const Route = createFileRoute("/api/copilot")({
 
         const supabaseUrl = process.env.SUPABASE_URL;
         const supabasePub = process.env.SUPABASE_PUBLISHABLE_KEY;
-        if (!supabaseUrl || !supabasePub) return new Response("Server misconfigured", { status: 500 });
+        if (!supabaseUrl || !supabasePub)
+          return new Response("Server misconfigured", { status: 500 });
 
         const authClient = createClient(supabaseUrl, supabasePub, {
           auth: { storage: undefined, persistSession: false, autoRefreshToken: false },

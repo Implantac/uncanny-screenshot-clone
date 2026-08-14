@@ -93,11 +93,12 @@ export function TechPackImportButton() {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileJson className="size-5 text-primary" /> Importar tech pack (CLO / Illustrator / Browzwear)
+            <FileJson className="size-5 text-primary" /> Importar tech pack (CLO / Illustrator /
+            Browzwear)
           </DialogTitle>
           <DialogDescription>
-            Envie um JSON estruturado exportado do seu CAD. Cria a ficha se não existir,
-            atualiza rascunhos/em revisão, ou gera nova revisão de fichas já aprovadas.
+            Envie um JSON estruturado exportado do seu CAD. Cria a ficha se não existir, atualiza
+            rascunhos/em revisão, ou gera nova revisão de fichas já aprovadas.
           </DialogDescription>
         </DialogHeader>
 
@@ -154,7 +155,7 @@ export function TechPackImportButton() {
           <details className="text-xs text-muted-foreground">
             <summary className="cursor-pointer select-none">Ver schema esperado</summary>
             <pre className="mt-2 p-2 bg-muted/40 rounded overflow-auto text-[10px] leading-tight">
-{`{
+              {`{
   "source": "clo3d" | "illustrator" | "browzwear" | "manual",
   "code": "TP-001",
   "product_sku": "SKU-123",

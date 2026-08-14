@@ -81,14 +81,18 @@ const KINDS = {
   collection: COLLECTION,
 } as const;
 
-
 export type StatusKind = keyof typeof KINDS;
 
-export function resolveStatus(kind: StatusKind, value: string): { tone: StatusTone; label: string } {
-  return (KINDS[kind] as Record<string, { tone: StatusTone; label: string }>)[value] ?? {
-    tone: "neutral",
-    label: value,
-  };
+export function resolveStatus(
+  kind: StatusKind,
+  value: string,
+): { tone: StatusTone; label: string } {
+  return (
+    (KINDS[kind] as Record<string, { tone: StatusTone; label: string }>)[value] ?? {
+      tone: "neutral",
+      label: value,
+    }
+  );
 }
 
 export function StatusBadge({

@@ -49,7 +49,6 @@ import {
 import { exportToCsv } from "@/lib/csv";
 import { Skeleton } from "@/components/ui/skeleton";
 
-
 type MrpSearch = { status?: MrpStatus | "all"; q?: string; category?: string };
 
 export const Route = createFileRoute("/_authenticated/_app/mrp/")({
@@ -149,10 +148,7 @@ function MrpPage() {
     () => rows.reduce((acc, r) => acc + r.capitalEmpatado * holdingPct, 0),
     [rows, holdingPct],
   );
-  const annualDemandTotal = useMemo(
-    () => rows.reduce((acc, r) => acc + r.annualDemand, 0),
-    [rows],
-  );
+  const annualDemandTotal = useMemo(() => rows.reduce((acc, r) => acc + r.annualDemand, 0), [rows]);
 
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -224,7 +220,11 @@ function MrpPage() {
             onClick={() => runAlerts.mutate()}
             disabled={runAlerts.isPending}
           >
-            {runAlerts.isPending ? <Loader2 className="size-4 animate-spin" /> : <Bell className="size-4" />}{" "}
+            {runAlerts.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Bell className="size-4" />
+            )}{" "}
             Gerar alertas
           </Button>
           <Button
@@ -247,29 +247,25 @@ function MrpPage() {
             variant="outline"
             size="sm"
             onClick={() =>
-              exportToCsv(
-                "mrp-planejamento",
-                filtered,
-                [
-                  { key: "sku", label: "Código" },
-                  { key: "name", label: "Descrição" },
-                  { key: "supplierName", label: "Fornecedor" },
-                  { key: "balance", label: "Estoque atual" },
-                  { key: "dailyConsumption", label: "Consumo diário" },
-                  { key: "leadTimeDays", label: "Lead time" },
-                  { key: "stdDev", label: "Desvio padrão" },
-                  { key: "safetyStock", label: "Estoque segurança" },
-                  { key: "reorderPoint", label: "Ponto de pedido" },
-                  { key: "minimum", label: "Mínimo" },
-                  { key: "eoq", label: "LEC" },
-                  { key: "maximum", label: "Máximo" },
-                  { key: "coverageDays", label: "Cobertura (dias)" },
-                  { key: "capitalEmpatado", label: "Capital empatado" },
-                  { key: "turnover", label: "Giro" },
-                  { key: "suggestedPurchase", label: "Sugestão compra" },
-                  { key: "status", label: "Status" },
-                ],
-              )
+              exportToCsv("mrp-planejamento", filtered, [
+                { key: "sku", label: "Código" },
+                { key: "name", label: "Descrição" },
+                { key: "supplierName", label: "Fornecedor" },
+                { key: "balance", label: "Estoque atual" },
+                { key: "dailyConsumption", label: "Consumo diário" },
+                { key: "leadTimeDays", label: "Lead time" },
+                { key: "stdDev", label: "Desvio padrão" },
+                { key: "safetyStock", label: "Estoque segurança" },
+                { key: "reorderPoint", label: "Ponto de pedido" },
+                { key: "minimum", label: "Mínimo" },
+                { key: "eoq", label: "LEC" },
+                { key: "maximum", label: "Máximo" },
+                { key: "coverageDays", label: "Cobertura (dias)" },
+                { key: "capitalEmpatado", label: "Capital empatado" },
+                { key: "turnover", label: "Giro" },
+                { key: "suggestedPurchase", label: "Sugestão compra" },
+                { key: "status", label: "Status" },
+              ])
             }
             disabled={!filtered.length}
           >
@@ -293,7 +289,21 @@ function MrpPage() {
               );
               autoTable(doc, {
                 startY: 72,
-                head: [["Código", "Descrição", "Fornec.", "Saldo", "PP", "Mín", "LEC", "Máx", "Cob (d)", "Sug.", "Status"]],
+                head: [
+                  [
+                    "Código",
+                    "Descrição",
+                    "Fornec.",
+                    "Saldo",
+                    "PP",
+                    "Mín",
+                    "LEC",
+                    "Máx",
+                    "Cob (d)",
+                    "Sug.",
+                    "Status",
+                  ],
+                ],
                 body: filtered.map((r) => [
                   r.sku,
                   r.name.slice(0, 38),
@@ -324,27 +334,15 @@ function MrpPage() {
 
       {/* Dashboard cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
-        <Card
-          label="Valor em estoque"
-          value={brl(summary?.totalStockValue ?? 0)}
-          tone="default"
-        />
+        <Card label="Valor em estoque" value={brl(summary?.totalStockValue ?? 0)} tone="default" />
         <Card
           label="Capital parado"
           value={brl(summary?.capitalParado ?? 0)}
           icon={<TrendingDown className="size-4 text-amber-500" />}
           tone="warning"
         />
-        <Card
-          label="Custo armazenagem/ano"
-          value={brl(annualHoldingCost)}
-          tone="warning"
-        />
-        <Card
-          label="Demanda anual (un)"
-          value={num(annualDemandTotal)}
-          tone="default"
-        />
+        <Card label="Custo armazenagem/ano" value={brl(annualHoldingCost)} tone="warning" />
+        <Card label="Demanda anual (un)" value={num(annualDemandTotal)} tone="default" />
         <Card
           label="Críticos"
           value={String(summary?.itemsCritical ?? 0)}
@@ -359,7 +357,11 @@ function MrpPage() {
         />
         <Card
           label="Cobertura média"
-          value={summary?.avgCoverage !== null && summary?.avgCoverage !== undefined ? `${summary.avgCoverage}d` : "—"}
+          value={
+            summary?.avgCoverage !== null && summary?.avgCoverage !== undefined
+              ? `${summary.avgCoverage}d`
+              : "—"
+          }
           tone="default"
         />
         <Card
@@ -413,15 +415,42 @@ function MrpPage() {
           <table className="w-full text-sm border-separate border-spacing-0">
             <thead className="bg-muted/50 text-[10px] uppercase tracking-wider text-muted-foreground">
               <tr className="border-b border-border">
-                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-border/60 bg-muted/70">Identificação</th>
-                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Demanda</th>
-                <th colSpan={5} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Política de estoque</th>
-                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Saldo & cobertura</th>
-                <th colSpan={3} className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40">Ação</th>
+                <th
+                  colSpan={3}
+                  className="px-3 py-1.5 text-left font-semibold border-b border-border/60 bg-muted/70"
+                >
+                  Identificação
+                </th>
+                <th
+                  colSpan={3}
+                  className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40"
+                >
+                  Demanda
+                </th>
+                <th
+                  colSpan={5}
+                  className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40"
+                >
+                  Política de estoque
+                </th>
+                <th
+                  colSpan={3}
+                  className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40"
+                >
+                  Saldo & cobertura
+                </th>
+                <th
+                  colSpan={3}
+                  className="px-3 py-1.5 text-left font-semibold border-b border-l border-border/60 bg-muted/40"
+                >
+                  Ação
+                </th>
               </tr>
               <tr>
                 <th className="sticky left-0 z-10 bg-muted/70 px-3 py-2 text-left">Código</th>
-                <th className="sticky left-[96px] z-10 bg-muted/70 px-3 py-2 text-left">Descrição</th>
+                <th className="sticky left-[96px] z-10 bg-muted/70 px-3 py-2 text-left">
+                  Descrição
+                </th>
                 <th className="px-3 py-2 text-left">Fornecedor</th>
                 <th className="px-3 py-2 text-right border-l border-border/60">Cons/d</th>
                 <th className="px-3 py-2 text-right">Dem/mês</th>
@@ -539,7 +568,9 @@ function Row({ r, onOpen }: { r: MrpRow; onOpen: () => void }) {
       className={`border-t border-border hover:bg-muted/30 cursor-pointer border-l-2 ${accent}`}
       onClick={onOpen}
     >
-      <td className="sticky left-0 z-10 bg-background hover:bg-muted/30 px-3 py-2 font-mono text-xs">{r.sku}</td>
+      <td className="sticky left-0 z-10 bg-background hover:bg-muted/30 px-3 py-2 font-mono text-xs">
+        {r.sku}
+      </td>
       <td className="sticky left-[96px] z-10 bg-background hover:bg-muted/30 px-3 py-2">
         <div className="font-medium truncate max-w-[200px]">{r.name}</div>
         {!r.hasHistory && (
@@ -547,15 +578,23 @@ function Row({ r, onOpen }: { r: MrpRow; onOpen: () => void }) {
         )}
       </td>
       <td className="px-3 py-2 text-muted-foreground text-xs">{r.supplierName ?? "—"}</td>
-      <td className="px-3 py-2 text-right tabular-nums border-l border-border/40">{num(r.dailyConsumption, 1)}</td>
+      <td className="px-3 py-2 text-right tabular-nums border-l border-border/40">
+        {num(r.dailyConsumption, 1)}
+      </td>
       <td className="px-3 py-2 text-right tabular-nums">{num(r.monthlyDemand)}</td>
-      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{num(r.annualDemand)}</td>
-      <td className="px-3 py-2 text-right tabular-nums border-l border-border/40">{r.leadTimeDays}d</td>
+      <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
+        {num(r.annualDemand)}
+      </td>
+      <td className="px-3 py-2 text-right tabular-nums border-l border-border/40">
+        {r.leadTimeDays}d
+      </td>
       <td className="px-3 py-2 text-right tabular-nums">{num(r.safetyStock)}</td>
       <td className="px-3 py-2 text-right tabular-nums font-medium">{num(r.reorderPoint)}</td>
       <td className="px-3 py-2 text-right tabular-nums">{num(r.eoq)}</td>
       <td className="px-3 py-2 text-right tabular-nums">{num(r.maximum)}</td>
-      <td className="px-3 py-2 text-right tabular-nums font-semibold border-l border-border/40">{num(r.balance)}</td>
+      <td className="px-3 py-2 text-right tabular-nums font-semibold border-l border-border/40">
+        {num(r.balance)}
+      </td>
       <td className="px-3 py-2 w-[160px]">
         <div className="relative h-2 rounded-full bg-muted overflow-visible">
           {/* zona até PP = vermelho claro, PP→Máx = verde claro, >Máx = azul claro */}
@@ -565,7 +604,10 @@ function Row({ r, onOpen }: { r: MrpRow; onOpen: () => void }) {
           />
           <div
             className="absolute inset-y-0 bg-emerald-500/15"
-            style={{ left: pct(r.reorderPoint), width: `calc(${pct(r.maximum)} - ${pct(r.reorderPoint)})` }}
+            style={{
+              left: pct(r.reorderPoint),
+              width: `calc(${pct(r.maximum)} - ${pct(r.reorderPoint)})`,
+            }}
           />
           {/* marcador Saldo */}
           <div
@@ -686,11 +728,21 @@ function CfgDialog({
           </div>
           <div>
             <Label>Custo do pedido S (R$)</Label>
-            <Input type="number" step="0.01" value={oc} onChange={(e) => setOc(Number(e.target.value))} />
+            <Input
+              type="number"
+              step="0.01"
+              value={oc}
+              onChange={(e) => setOc(Number(e.target.value))}
+            />
           </div>
           <div>
             <Label>Custo armazenagem H (% a.a.)</Label>
-            <Input type="number" step="0.1" value={hc} onChange={(e) => setHc(Number(e.target.value))} />
+            <Input
+              type="number"
+              step="0.1"
+              value={hc}
+              onChange={(e) => setHc(Number(e.target.value))}
+            />
           </div>
           <div>
             <Label>Dias úteis/mês</Label>

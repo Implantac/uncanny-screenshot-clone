@@ -111,9 +111,9 @@ ${data.notes ? `Observações: ${data.notes}` : ""}`;
             summary: String(s.summary ?? ""),
             keywords: Array.isArray(s.keywords) ? s.keywords.slice(0, 6).map(String) : [],
             colors: Array.isArray(s.colors)
-              ? (s.colors as unknown[]).filter(
-                  (c): c is string => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c),
-                ).slice(0, 5)
+              ? (s.colors as unknown[])
+                  .filter((c): c is string => typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c))
+                  .slice(0, 5)
               : [],
             category: String(s.category ?? ""),
             relevance: Math.max(0, Math.min(100, Math.round(Number(s.relevance ?? 0)))),
@@ -126,10 +126,8 @@ ${data.notes ? `Observações: ${data.notes}` : ""}`;
     } catch (err: unknown) {
       const e = err as { statusCode?: number; lastError?: { statusCode?: number } };
       const status = e?.statusCode ?? e?.lastError?.statusCode;
-      if (status === 429)
-        throw new Error("Agente USE ocupado — tente novamente em instantes.");
-      if (status === 402)
-        throw new Error("Agente USE em pausa — retomando automaticamente.");
+      if (status === 429) throw new Error("Agente USE ocupado — tente novamente em instantes.");
+      if (status === 402) throw new Error("Agente USE em pausa — retomando automaticamente.");
       throw err;
     }
   });

@@ -68,18 +68,21 @@ export function GlobalQuickCreate() {
         .select("id", { count: "exact", head: true })
         .eq("owner_id", user?.id ?? "")
         .limit(1)
-        .then(({ count }) => {
-          if (count === 0) {
-            setUseWizard(true);
-            setOpenWizard(true);
-          } else {
-            setUseWizard(false);
+        .then(
+          ({ count }) => {
+            if (count === 0) {
+              setUseWizard(true);
+              setOpenWizard(true);
+            } else {
+              setUseWizard(false);
+              setOpenQuick(true);
+            }
+          },
+          () => {
+            // Fallback: quick dialog on error
             setOpenQuick(true);
-          }
-        }, () => {
-          // Fallback: quick dialog on error
-          setOpenQuick(true);
-        });
+          },
+        );
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

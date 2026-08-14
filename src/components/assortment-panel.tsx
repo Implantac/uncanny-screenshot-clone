@@ -32,15 +32,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const fmt = (n: number) =>
-  n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n);
+const fmt = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n));
 const fmtMoney = (n: number) =>
   n >= 1000 ? `R$ ${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : `R$ ${Math.round(n)}`;
 
 function cellTone(actual: number, target: number) {
   if (target === 0) return "bg-muted/30 text-muted-foreground";
   const ratio = actual / target;
-  if (ratio >= 0.95 && ratio <= 1.15) return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400";
+  if (ratio >= 0.95 && ratio <= 1.15)
+    return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400";
   if (ratio >= 0.7) return "bg-amber-500/10 text-amber-700 dark:text-amber-400";
   return "bg-rose-500/10 text-rose-700 dark:text-rose-400";
 }
@@ -64,8 +64,7 @@ export function AssortmentPanel({
     staleTime: 30_000,
   });
 
-  const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ["assortment", collectionId] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["assortment", collectionId] });
 
   const cellMut = useMutation({
     mutationFn: (v: {
@@ -161,7 +160,12 @@ export function AssortmentPanel({
           <Badge variant="outline">{fmtMoney(totals.revenue)} receita meta</Badge>
           <Dialog open={famDialog !== null} onOpenChange={(o) => !o && setFamDialog(null)}>
             <DialogTrigger asChild>
-              <Button size="sm" variant="outline" className="h-7 gap-1" onClick={() => setFamDialog("new")}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 gap-1"
+                onClick={() => setFamDialog("new")}
+              >
                 <Plus className="size-3" /> Família
               </Button>
             </DialogTrigger>
@@ -234,8 +238,7 @@ export function AssortmentPanel({
                   </td>
                   {CHANNELS.map((ch) => {
                     const c = cellMap.get(`${ch}::${fid ?? "_"}`);
-                    const isEditing =
-                      editing?.channel === ch && editing.familyId === fid;
+                    const isEditing = editing?.channel === ch && editing.familyId === fid;
                     return (
                       <td key={ch} className="py-1 px-1">
                         {isEditing ? (
@@ -263,7 +266,10 @@ export function AssortmentPanel({
                           >
                             <div className="font-medium">
                               {c?.actualSkus ?? 0}
-                              <span className="text-[10px] opacity-70"> / {c?.targetSkus ?? 0} SKUs</span>
+                              <span className="text-[10px] opacity-70">
+                                {" "}
+                                / {c?.targetSkus ?? 0} SKUs
+                              </span>
                             </div>
                             <div className="text-[10px] opacity-70">
                               {fmtMoney(c?.targetRevenue ?? 0)}
@@ -299,17 +305,16 @@ export function AssortmentPanel({
                 const over = o.openToBuy < 0;
                 const tight = !over && o.targetUnits > 0 && o.openToBuy < o.targetUnits * 0.1;
                 return (
-                  <tr key={o.familyId ?? "_none"} className="border-b border-border/30 last:border-0">
+                  <tr
+                    key={o.familyId ?? "_none"}
+                    className="border-b border-border/30 last:border-0"
+                  >
                     <td className="px-2 py-1">{o.familyName}</td>
                     <td className="px-2 py-1 text-right">{fmt(o.targetUnits)}</td>
                     <td className="px-2 py-1 text-right">{fmt(o.committedUnits)}</td>
                     <td
                       className={`px-2 py-1 text-right font-medium ${
-                        over
-                          ? "text-rose-600"
-                          : tight
-                            ? "text-amber-600"
-                            : "text-emerald-600"
+                        over ? "text-rose-600" : tight ? "text-amber-600" : "text-emerald-600"
                       }`}
                     >
                       {over ? "−" : ""}
@@ -324,7 +329,8 @@ export function AssortmentPanel({
       )}
 
       <div className="text-[10px] text-muted-foreground">
-        Clique em uma célula para definir meta de SKUs, unidades e receita. Verde = na meta · Âmbar = atenção · Vermelho = abaixo.
+        Clique em uma célula para definir meta de SKUs, unidades e receita. Verde = na meta · Âmbar
+        = atenção · Vermelho = abaixo.
       </div>
     </section>
   );
@@ -384,12 +390,7 @@ function CellEditor({
         >
           OK
         </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-6 px-2 text-[10px]"
-          onClick={onCancel}
-        >
+        <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px]" onClick={onCancel}>
           ✕
         </Button>
       </div>
@@ -448,7 +449,9 @@ function FamilyDialog({
           <div>
             <label className="text-xs text-muted-foreground">Tier de preço</label>
             <Select value={tier} onValueChange={(v) => setTier(v as typeof tier)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">—</SelectItem>
                 <SelectItem value="entrada">Entrada</SelectItem>

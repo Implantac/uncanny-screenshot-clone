@@ -6,7 +6,13 @@ import { toast } from "sonner";
 import { splitProductionOrder } from "@/lib/pcp-advanced.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -45,10 +51,7 @@ export function LoteSplitDialog({
     queryKey: ["suppliers-for-split"],
     enabled: open && !suppliersProp,
     queryFn: async (): Promise<Supplier[]> => {
-      const { data, error } = await supabase
-        .from("suppliers")
-        .select("id, name")
-        .order("name");
+      const { data, error } = await supabase.from("suppliers").select("id, name").order("name");
       if (error) throw error;
       return data ?? [];
     },
@@ -207,7 +210,9 @@ export function LoteSplitDialog({
             </Button>
             <Button
               onClick={() => mut.mutate()}
-              disabled={mut.isPending || total <= 0 || remaining < 0 || splits.some((s) => s.quantity <= 0)}
+              disabled={
+                mut.isPending || total <= 0 || remaining < 0 || splits.some((s) => s.quantity <= 0)
+              }
             >
               {mut.isPending ? "Dividindo…" : `Dividir em ${splits.length} sub-lotes`}
             </Button>

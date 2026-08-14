@@ -1,7 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { REORDER_DEFAULTS, REORDER_LIMITS, resolveReorderParams } from "./inventory-smart.functions";
+import {
+  REORDER_DEFAULTS,
+  REORDER_LIMITS,
+  resolveReorderParams,
+} from "./inventory-smart.functions";
 
 export const ABC_Z_FACTORS: Record<"A" | "B" | "C", number> = {
   A: 1.65, // 95%
@@ -193,7 +197,8 @@ export const getDemandPlanning = createServerFn({ method: "POST" })
       const klass = (p.abc_class as "A" | "B" | "C" | null) ?? null;
       const overrideZ = resolveReorderParams(item?.mrp_overrides).Z;
       const Z =
-        item?.mrp_overrides && typeof item.mrp_overrides === "object" &&
+        item?.mrp_overrides &&
+        typeof item.mrp_overrides === "object" &&
         (item.mrp_overrides as any).service_factor_z != null
           ? overrideZ
           : klass
@@ -205,19 +210,19 @@ export const getDemandPlanning = createServerFn({ method: "POST" })
       const dailyAvg = annualUnits / 365;
 
       // Sazonalidade -> multiplicador do mês corrente
-      const seasonRow = pickByScope(
-        (seasons ?? []) as ScopeRow[],
-        { id: p.id, category: p.category, product_group: p.product_group },
-      );
-      const monthFactor = Number(
-        seasonRow?.multipliers?.[currentMonth] ?? 1,
-      );
+      const seasonRow = pickByScope((seasons ?? []) as ScopeRow[], {
+        id: p.id,
+        category: p.category,
+        product_group: p.product_group,
+      });
+      const monthFactor = Number(seasonRow?.multipliers?.[currentMonth] ?? 1);
 
       // Grade padrão
-      const gridRow = pickByScope(
-        (grids ?? []) as ScopeRow[],
-        { id: p.id, category: p.category, product_group: p.product_group },
-      );
+      const gridRow = pickByScope((grids ?? []) as ScopeRow[], {
+        id: p.id,
+        category: p.category,
+        product_group: p.product_group,
+      });
       const distribution = gridRow?.distribution ?? null;
 
       const warnings: string[] = [];

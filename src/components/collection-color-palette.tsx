@@ -92,7 +92,9 @@ export function CollectionColorPalette({ collectionId }: { collectionId: string 
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Palette className="size-4" /> Cartela oficial da coleção
-          <Badge variant="secondary" className="ml-auto">{colors.length} cores</Badge>
+          <Badge variant="secondary" className="ml-auto">
+            {colors.length} cores
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -100,7 +102,11 @@ export function CollectionColorPalette({ collectionId }: { collectionId: string 
         <div className="grid grid-cols-1 md:grid-cols-[1fr_120px_140px_1fr_auto] gap-2 items-end p-3 rounded-lg border bg-muted/30">
           <div>
             <label className="text-xs text-muted-foreground">Nome</label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex: Terracota SS26" />
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Ex: Terracota SS26"
+            />
           </div>
           <div>
             <label className="text-xs text-muted-foreground">Hex</label>
@@ -111,16 +117,28 @@ export function CollectionColorPalette({ collectionId }: { collectionId: string 
                 onChange={(e) => setForm({ ...form, hex: e.target.value })}
                 className="h-9 w-9 rounded border cursor-pointer"
               />
-              <Input value={form.hex} onChange={(e) => setForm({ ...form, hex: e.target.value })} className="font-mono uppercase" />
+              <Input
+                value={form.hex}
+                onChange={(e) => setForm({ ...form, hex: e.target.value })}
+                className="font-mono uppercase"
+              />
             </div>
           </div>
           <div>
             <label className="text-xs text-muted-foreground">Pantone</label>
-            <Input value={form.pantone} onChange={(e) => setForm({ ...form, pantone: e.target.value })} placeholder="18-1438 TCX" />
+            <Input
+              value={form.pantone}
+              onChange={(e) => setForm({ ...form, pantone: e.target.value })}
+              placeholder="18-1438 TCX"
+            />
           </div>
           <div>
             <label className="text-xs text-muted-foreground">Uso</label>
-            <Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Base, detalhe, silk…" />
+            <Input
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              placeholder="Base, detalhe, silk…"
+            />
           </div>
           <Button onClick={() => addColor.mutate()} disabled={addColor.isPending}>
             <Plus className="size-4 mr-1" /> Adicionar
@@ -149,17 +167,37 @@ export function CollectionColorPalette({ collectionId }: { collectionId: string 
                   <div className="flex items-center justify-between gap-1">
                     <p className="text-sm font-medium truncate">{c.name}</p>
                     <div className="flex opacity-0 group-hover:opacity-100 transition">
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => togglePrimary.mutate(c)} title="Alternar primária">
-                        {c.is_primary ? <StarOff className="size-3" /> : <Star className="size-3" />}
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6"
+                        onClick={() => togglePrimary.mutate(c)}
+                        title="Alternar primária"
+                      >
+                        {c.is_primary ? (
+                          <StarOff className="size-3" />
+                        ) : (
+                          <Star className="size-3" />
+                        )}
                       </Button>
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => removeColor.mutate(c.id)} title="Remover">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6"
+                        onClick={() => removeColor.mutate(c.id)}
+                        title="Remover"
+                      >
                         <Trash2 className="size-3" />
                       </Button>
                     </div>
                   </div>
                   <p className="text-[10px] font-mono uppercase text-muted-foreground">{c.hex}</p>
-                  {c.pantone && <p className="text-[10px] text-muted-foreground">PMS {c.pantone}</p>}
-                  {c.usage_notes && <p className="text-[10px] text-muted-foreground truncate">{c.usage_notes}</p>}
+                  {c.pantone && (
+                    <p className="text-[10px] text-muted-foreground">PMS {c.pantone}</p>
+                  )}
+                  {c.usage_notes && (
+                    <p className="text-[10px] text-muted-foreground truncate">{c.usage_notes}</p>
+                  )}
                 </div>
               </div>
             ))}

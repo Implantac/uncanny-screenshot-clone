@@ -25,7 +25,14 @@ type Gate = {
   key: string;
   title: string;
   description: string;
-  items: { id: string; label: string; sub?: string; status: string; href: string; productId?: string | null }[];
+  items: {
+    id: string;
+    label: string;
+    sub?: string;
+    status: string;
+    href: string;
+    productId?: string | null;
+  }[];
 };
 
 function Approvals() {
@@ -134,7 +141,6 @@ function Approvals() {
         description="PLM como sistema de gates — nada avança sem aprovação."
       />
 
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {(data ?? []).map((g) => (
           <Card key={g.key}>
@@ -160,7 +166,11 @@ function Approvals() {
         </CardHeader>
         <CardContent className="space-y-6">
           {isLoading ? (
-            <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => (<Skeleton key={i} className="h-14 w-full rounded-xl" />))}</div>
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 w-full rounded-xl" />
+              ))}
+            </div>
           ) : (
             (data ?? []).map((g) => (
               <div key={g.key}>

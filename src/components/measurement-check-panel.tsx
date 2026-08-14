@@ -37,7 +37,8 @@ export function MeasurementCheckPanel({ fitSessionId, prototypeId }: Props) {
         .eq("id", prototypeId!)
         .maybeSingle();
       const productId = proto.data?.product_id;
-      if (!productId) return { measurements: [] as Measurement[], techSheetCode: null as string | null };
+      if (!productId)
+        return { measurements: [] as Measurement[], techSheetCode: null as string | null };
       const sheet = await supabase
         .from("tech_sheets")
         .select("id, code, version")
@@ -52,7 +53,7 @@ export function MeasurementCheckPanel({ fitSessionId, prototypeId }: Props) {
         .eq("tech_sheet_id", sheet.data.id)
         .order("position");
       return {
-        measurements: ((meas.data ?? []) as unknown as Measurement[]),
+        measurements: (meas.data ?? []) as unknown as Measurement[],
         techSheetCode: `${sheet.data.code} v${sheet.data.version}`,
       };
     },
@@ -121,7 +122,9 @@ export function MeasurementCheckPanel({ fitSessionId, prototypeId }: Props) {
     );
   }
   if (ctx.isLoading) {
-    return <div className="glass rounded-xl p-4 text-xs text-muted-foreground">Carregando medidas…</div>;
+    return (
+      <div className="glass rounded-xl p-4 text-xs text-muted-foreground">Carregando medidas…</div>
+    );
   }
   if (measurements.length === 0) {
     return (

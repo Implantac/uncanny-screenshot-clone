@@ -1,10 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  listProductWorkflow,
-  STEP_META,
-  type WorkflowRow,
-} from "@/lib/product-workflow.functions";
+import { listProductWorkflow, STEP_META, type WorkflowRow } from "@/lib/product-workflow.functions";
 import {
   Sparkles,
   PenTool,
@@ -23,12 +19,20 @@ import {
 import { cn } from "@/lib/utils";
 
 const ICONS = {
-  Sparkles, PenTool, FileText, DollarSign, Scissors,
-  ShoppingBag, Crown, ShieldCheck, Factory,
+  Sparkles,
+  PenTool,
+  FileText,
+  DollarSign,
+  Scissors,
+  ShoppingBag,
+  Crown,
+  ShieldCheck,
+  Factory,
 } as const;
 
 function Icon({ name, className }: { name: string; className?: string }) {
-  const Comp = (ICONS as Record<string, React.ComponentType<{ className?: string }>>)[name] ?? Circle;
+  const Comp =
+    (ICONS as Record<string, React.ComponentType<{ className?: string }>>)[name] ?? Circle;
   return <Comp className={className} />;
 }
 
@@ -95,10 +99,14 @@ export function ProductWorkflowStepper({ productId }: { productId: string }) {
                 title={`${meta.label} · ${r.status}`}
                 className={cn(
                   "flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] transition",
-                  isDone && "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+                  isDone &&
+                    "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
                   isCurrent && !isBlocked && "border-primary/60 bg-primary/10 text-primary",
                   isBlocked && "border-rose-500/50 bg-rose-500/10 text-rose-600",
-                  !isDone && !isCurrent && !isBlocked && "border-border bg-muted/30 text-muted-foreground",
+                  !isDone &&
+                    !isCurrent &&
+                    !isBlocked &&
+                    "border-border bg-muted/30 text-muted-foreground",
                 )}
               >
                 {isDone ? (
@@ -113,10 +121,7 @@ export function ProductWorkflowStepper({ productId }: { productId: string }) {
               </div>
               {idx < rows.length - 1 && (
                 <div
-                  className={cn(
-                    "h-px w-3 shrink-0",
-                    isDone ? "bg-emerald-500/40" : "bg-border",
-                  )}
+                  className={cn("h-px w-3 shrink-0", isDone ? "bg-emerald-500/40" : "bg-border")}
                 />
               )}
             </li>

@@ -2,7 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Loader2, TrendingUp, Activity, Layers, Truck, Boxes, AlertTriangle } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  TrendingUp,
+  Activity,
+  Layers,
+  Truck,
+  Boxes,
+  AlertTriangle,
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -38,7 +47,9 @@ const num = (n: number, d = 0) =>
 type AbcClass = "A" | "B" | "C";
 type XyzClass = "X" | "Y" | "Z";
 
-function classifyAbc(rows: MrpRow[]): Map<string, { cls: AbcClass; value: number; pct: number; cum: number }> {
+function classifyAbc(
+  rows: MrpRow[],
+): Map<string, { cls: AbcClass; value: number; pct: number; cum: number }> {
   const sorted = [...rows]
     .map((r) => ({ id: r.id, value: r.annualDemand * r.avgUnitCost }))
     .sort((a, b) => b.value - a.value);
@@ -76,7 +87,11 @@ function MrpBiPage() {
   const abc = useMemo(() => classifyAbc(rows), [rows]);
 
   const abcSummary = useMemo(() => {
-    const buckets = { A: { count: 0, value: 0 }, B: { count: 0, value: 0 }, C: { count: 0, value: 0 } };
+    const buckets = {
+      A: { count: 0, value: 0 },
+      B: { count: 0, value: 0 },
+      C: { count: 0, value: 0 },
+    };
     for (const r of rows) {
       const a = abc.get(r.id);
       if (!a) continue;
@@ -214,7 +229,8 @@ function MrpBiPage() {
             </thead>
             <tbody>
               {(["A", "B", "C"] as const).map((a) => {
-                const tot = (matrix[`${a}X`] ?? 0) + (matrix[`${a}Y`] ?? 0) + (matrix[`${a}Z`] ?? 0);
+                const tot =
+                  (matrix[`${a}X`] ?? 0) + (matrix[`${a}Y`] ?? 0) + (matrix[`${a}Z`] ?? 0);
                 return (
                   <tr key={a} className="border-b">
                     <td className="py-2 px-3 font-medium">{a}</td>
@@ -231,8 +247,8 @@ function MrpBiPage() {
           </table>
         </div>
         <div className="mt-3 text-xs text-muted-foreground">
-          AX = alto valor e estável (ideal para automação MRP) · CZ = baixo valor e errático (revisar
-          se vale manter)
+          AX = alto valor e estável (ideal para automação MRP) · CZ = baixo valor e errático
+          (revisar se vale manter)
         </div>
       </div>
 
@@ -332,7 +348,12 @@ function MrpBiPage() {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="cat" fontSize={11} angle={-20} textAnchor="end" height={70} />
             <YAxis yAxisId="left" fontSize={11} />
-            <YAxis yAxisId="right" orientation="right" fontSize={11} tickFormatter={(v) => brl(Number(v))} />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              fontSize={11}
+              tickFormatter={(v) => brl(Number(v))}
+            />
             <Tooltip
               formatter={(v: number, name: string) =>
                 name === "Capital" ? brl(v) : `${num(v, 1)} dias`

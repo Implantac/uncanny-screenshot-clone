@@ -62,18 +62,17 @@ export function RootCausePanel({
     setBusy(c.key);
     try {
       const kindLabel = KIND_LABEL[c.kind] ?? c.kind;
-      const sectorLabel = c.sector ? SECTOR_LABEL[c.sector] ?? c.sector : "—";
-      const target =
-        c.product_name ??
-        c.supplier_name ??
-        `${sectorLabel}`;
+      const sectorLabel = c.sector ? (SECTOR_LABEL[c.sector] ?? c.sector) : "—";
+      const target = c.product_name ?? c.supplier_name ?? `${sectorLabel}`;
       const title = `${kindLabel} recorrente · ${target}`;
       const problem = [
         `${c.occurrences} ocorrências em ${c.distinct_orders} OP(s) nos últimos ${windowDays} dias.`,
         c.affected_qty > 0 ? `Quantidade afetada: ${c.affected_qty}.` : null,
         `Setor: ${sectorLabel} · Tipo: ${kindLabel}.`,
         c.supplier_name ? `Fornecedor: ${c.supplier_name}.` : null,
-        c.product_name ? `Produto: ${c.product_name}${c.product_sku ? ` (${c.product_sku})` : ""}.` : null,
+        c.product_name
+          ? `Produto: ${c.product_name}${c.product_sku ? ` (${c.product_sku})` : ""}.`
+          : null,
       ]
         .filter(Boolean)
         .join(" ");
@@ -162,12 +161,10 @@ export function RootCausePanel({
                       </div>
                     </td>
                     <td className="text-xs">
-                      {c.sector ? SECTOR_LABEL[c.sector] ?? c.sector : "—"}
+                      {c.sector ? (SECTOR_LABEL[c.sector] ?? c.sector) : "—"}
                     </td>
                     <td className="text-xs">
-                      {c.supplier_name && (
-                        <div className="font-medium">{c.supplier_name}</div>
-                      )}
+                      {c.supplier_name && <div className="font-medium">{c.supplier_name}</div>}
                       {c.product_name && (
                         <div className="text-muted-foreground">
                           {c.product_name}

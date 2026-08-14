@@ -187,7 +187,11 @@ function ClosedLoop() {
 
         <TabsContent value="replan" className="space-y-4">
           {isLoading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">{Array.from({ length: 3 }).map((_, i) => (<Skeleton key={i} className="h-64 w-full rounded-xl" />))}</div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-64 w-full rounded-xl" />
+              ))}
+            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <ReplanColumn

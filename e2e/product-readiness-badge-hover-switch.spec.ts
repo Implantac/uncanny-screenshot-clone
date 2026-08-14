@@ -20,9 +20,7 @@ async function findVariants(page: Page) {
   await page.waitForLoadState("networkidle");
 
   const all = page.locator(TRIGGER);
-  await expect
-    .poll(async () => await all.count(), { timeout: 15_000 })
-    .toBeGreaterThan(0);
+  await expect.poll(async () => await all.count(), { timeout: 15_000 }).toBeGreaterThan(0);
 
   const count = await all.count();
   let ready: Locator | null = null;
@@ -49,10 +47,7 @@ test.describe("ProductReadinessBadge — hover rápido entre triggers (E2E)", ()
   }) => {
     await login(page);
     const { ready, pending } = await findVariants(page);
-    test.skip(
-      !ready || !pending,
-      "Precisa de pelo menos 1 badge pronto e 1 pendente no dataset",
-    );
+    test.skip(!ready || !pending, "Precisa de pelo menos 1 badge pronto e 1 pendente no dataset");
 
     await ready!.scrollIntoViewIfNeeded();
     await pending!.scrollIntoViewIfNeeded();

@@ -29,7 +29,15 @@ export type CapacityTocReport = {
   insight: string;
 };
 
-const STAGE_ORDER = ["cad", "modelagem", "corte", "costura", "acabamento", "qualidade", "expedicao"];
+const STAGE_ORDER = [
+  "cad",
+  "modelagem",
+  "corte",
+  "costura",
+  "acabamento",
+  "qualidade",
+  "expedicao",
+];
 
 export const getCapacityTocReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -88,10 +96,7 @@ export const getCapacityTocReport = createServerFn({ method: "POST" })
 
     for (const o of orders ?? []) {
       const stage = o.stage ?? "cad";
-      const remaining = Math.max(
-        0,
-        Number(o.quantity ?? 0) - Number(o.progress ?? 0),
-      );
+      const remaining = Math.max(0, Number(o.quantity ?? 0) - Number(o.progress ?? 0));
       wipOrders.set(stage, (wipOrders.get(stage) ?? 0) + 1);
       wipPieces.set(stage, (wipPieces.get(stage) ?? 0) + remaining);
 
@@ -112,8 +117,10 @@ export const getCapacityTocReport = createServerFn({ method: "POST" })
       const wipP = wipPieces.get(s.key) ?? 0;
       const dem = demand.get(s.key) ?? 0;
       const dailyCapacity = through > 0 ? through : 0;
-      const coverageDays = dailyCapacity > 0 ? (wipP + dem) / dailyCapacity : dem + wipP > 0 ? 999 : 0;
-      const utilization = dailyCapacity > 0 ? (dem / (dailyCapacity * 28)) * 100 : dem > 0 ? 200 : 0;
+      const coverageDays =
+        dailyCapacity > 0 ? (wipP + dem) / dailyCapacity : dem + wipP > 0 ? 999 : 0;
+      const utilization =
+        dailyCapacity > 0 ? (dem / (dailyCapacity * 28)) * 100 : dem > 0 ? 200 : 0;
 
       let status: StageCapacity["status"] = "ok";
       let reason = buildAiReason({
@@ -129,7 +136,10 @@ export const getCapacityTocReport = createServerFn({ method: "POST" })
       } else if (utilization >= 100 || coverageDays > 28) {
         status = "gargalo";
         reason = buildAiReason({
-          signals: [`${utilization.toFixed(0)}% utilização`, `${coverageDays.toFixed(0)}d p/ drenar`],
+          signals: [
+            `${utilization.toFixed(0)}% utilização`,
+            `${coverageDays.toFixed(0)}d p/ drenar`,
+          ],
           recommendation: "ampliar capacidade ou postergar OPs não-críticas",
         });
       } else if (utilization >= 75 || coverageDays > 18) {

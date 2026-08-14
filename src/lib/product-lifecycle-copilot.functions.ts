@@ -30,42 +30,51 @@ export const getProductLifecycleCopilot = createServerFn({ method: "POST" })
     const sb = context.supabase;
     const { productId } = data;
 
-    const [{ data: product }, { data: steps }, { data: gates }, { data: sheet }, { data: target }, { data: costHist }] =
-      await Promise.all([
-        sb.from("products").select("id, name, sku, status").eq("id", productId).maybeSingle(),
-        sb
-          .from("product_workflow_steps")
-          .select("step, step_order, status, blocker_reason, started_at, completed_at")
-          .eq("product_id", productId)
-          .order("step_order", { ascending: true }),
-        sb.rpc("product_gate_status", { _product_id: productId }),
-        sb
-          .from("tech_sheets")
-          .select("status, cost_price, materials_cost, labor_cost")
-          .eq("product_id", productId)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        sb
-          .from("product_target_costs")
-          .select("target_cost, target_margin_pct, target_retail_price")
-          .eq("product_id", productId)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        sb
-          .from("product_cost_history")
-          .select("total_cost, created_at")
-          .eq("product_id", productId)
-          .order("created_at", { ascending: false })
-          .limit(5),
-      ]);
+    const [
+      { data: product },
+      { data: steps },
+      { data: gates },
+      { data: sheet },
+      { data: target },
+      { data: costHist },
+    ] = await Promise.all([
+      sb.from("products").select("id, name, sku, status").eq("id", productId).maybeSingle(),
+      sb
+        .from("product_workflow_steps")
+        .select("step, step_order, status, blocker_reason, started_at, completed_at")
+        .eq("product_id", productId)
+        .order("step_order", { ascending: true }),
+      sb.rpc("product_gate_status", { _product_id: productId }),
+      sb
+        .from("tech_sheets")
+        .select("status, cost_price, materials_cost, labor_cost")
+        .eq("product_id", productId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      sb
+        .from("product_target_costs")
+        .select("target_cost, target_margin_pct, target_retail_price")
+        .eq("product_id", productId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      sb
+        .from("product_cost_history")
+        .select("total_cost, created_at")
+        .eq("product_id", productId)
+        .order("created_at", { ascending: false })
+        .limit(5),
+    ]);
 
     if (!product) throw new Error("Produto não encontrado");
 
-    const current = (steps ?? []).find((s) => s.status === "em_andamento") ??
+    const current =
+      (steps ?? []).find((s) => s.status === "em_andamento") ??
       (steps ?? []).find((s) => s.status === "bloqueado");
-    const blockers = ((gates ?? []) as Array<{ requirement: string; ok: boolean; detail: string | null }>)
+    const blockers = (
+      (gates ?? []) as Array<{ requirement: string; ok: boolean; detail: string | null }>
+    )
       .filter((g) => !g.ok)
       .map((g) => `${g.requirement}${g.detail ? " — " + g.detail : ""}`);
 

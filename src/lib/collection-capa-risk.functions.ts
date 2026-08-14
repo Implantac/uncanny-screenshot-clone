@@ -42,27 +42,49 @@ export const getCollectionCapaRisks = createServerFn({ method: "GET" })
     const sb = context.supabase;
     const iso180 = new Date(Date.now() - 180 * 86400000).toISOString();
 
-    const [{ data: capas }, { data: collections }, { data: cps }, { data: products }, { data: orders }, { data: suppliers }, { data: scorecards }] =
-      await Promise.all([
-        sb
-          .from("quality_capa")
-          .select("id, order_id, supplier_id, status, severity, created_at, closed_at, problem")
-          .gte("created_at", iso180)
-          .limit(2000),
-        sb.from("collections").select("id, name, season, launch_date, status"),
-        sb.from("collection_products").select("collection_id, product_id"),
-        sb.from("products").select("id, name, sku"),
-        sb.from("production_orders").select("id, product_id"),
-        sb.from("suppliers").select("id, name, category"),
-        sb
-          .from("supplier_scorecards")
-          .select("supplier_id, score, computed_at")
-          .order("computed_at", { ascending: false })
-          .limit(2000),
-      ]);
+    const [
+      { data: capas },
+      { data: collections },
+      { data: cps },
+      { data: products },
+      { data: orders },
+      { data: suppliers },
+      { data: scorecards },
+    ] = await Promise.all([
+      sb
+        .from("quality_capa")
+        .select("id, order_id, supplier_id, status, severity, created_at, closed_at, problem")
+        .gte("created_at", iso180)
+        .limit(2000),
+      sb.from("collections").select("id, name, season, launch_date, status"),
+      sb.from("collection_products").select("collection_id, product_id"),
+      sb.from("products").select("id, name, sku"),
+      sb.from("production_orders").select("id, product_id"),
+      sb.from("suppliers").select("id, name, category"),
+      sb
+        .from("supplier_scorecards")
+        .select("supplier_id, score, computed_at")
+        .order("computed_at", { ascending: false })
+        .limit(2000),
+    ]);
 
-    type CapaRow = { id: string; order_id: string | null; supplier_id: string | null; status: string | null; severity: string | null; created_at: string; closed_at: string | null; problem: string | null };
-    type CollectionRow = { id: string; name: string; season: string | null; launch_date: string | null; status: string | null };
+    type CapaRow = {
+      id: string;
+      order_id: string | null;
+      supplier_id: string | null;
+      status: string | null;
+      severity: string | null;
+      created_at: string;
+      closed_at: string | null;
+      problem: string | null;
+    };
+    type CollectionRow = {
+      id: string;
+      name: string;
+      season: string | null;
+      launch_date: string | null;
+      status: string | null;
+    };
     type CpRow = { collection_id: string | null; product_id: string | null };
     type ProductRow = { id: string; name: string | null; sku: string | null };
     type OrderRow = { id: string; product_id: string | null };
@@ -70,7 +92,9 @@ export const getCollectionCapaRisks = createServerFn({ method: "GET" })
     type ScRow = { supplier_id: string | null; score: number | null; computed_at: string };
 
     const orderToProduct = new Map<string, string>();
-    ((orders ?? []) as OrderRow[]).forEach((o) => o.product_id && orderToProduct.set(o.id, o.product_id));
+    ((orders ?? []) as OrderRow[]).forEach(
+      (o) => o.product_id && orderToProduct.set(o.id, o.product_id),
+    );
 
     const productMap = new Map<string, ProductRow>();
     ((products ?? []) as ProductRow[]).forEach((p) => productMap.set(p.id, p));
@@ -108,7 +132,7 @@ export const getCollectionCapaRisks = createServerFn({ method: "GET" })
     const now = Date.now();
     const rows: CapaRiskCollection[] = [];
 
-    for (const col of ((collections ?? []) as CollectionRow[])) {
+    for (const col of (collections ?? []) as CollectionRow[]) {
       if (col.status && !ACTIVE_STATUS.has(col.status)) continue;
       const pset = collectionProducts.get(col.id);
       if (!pset || pset.size === 0) continue;
@@ -121,20 +145,29 @@ export const getCollectionCapaRisks = createServerFn({ method: "GET" })
       for (const pid of pset) {
         const enriched = capasByProduct.get(pid) ?? [];
         if (enriched.length === 0) continue;
-        const supplierAgg = new Map<string, { name: string | null; capaCount: number; scores: number[] }>();
+        const supplierAgg = new Map<
+          string,
+          { name: string | null; capaCount: number; scores: number[] }
+        >();
         let openCount = 0;
         const categoryCount = new Map<string, number>();
         for (const e of enriched) {
           const s = e.capa.status;
-          if (s !== "concluida" && s !== "fechada" && s !== "closed" && e.capa.closed_at == null) openCount++;
+          if (s !== "concluida" && s !== "fechada" && s !== "closed" && e.capa.closed_at == null)
+            openCount++;
           if (e.capa.supplier_id) {
             const sup = supplierMap.get(e.capa.supplier_id);
-            const cur = supplierAgg.get(e.capa.supplier_id) ?? { name: sup?.name ?? null, capaCount: 0, scores: [] };
+            const cur = supplierAgg.get(e.capa.supplier_id) ?? {
+              name: sup?.name ?? null,
+              capaCount: 0,
+              scores: [],
+            };
             cur.capaCount++;
             const sc = latestScore.get(e.capa.supplier_id);
             if (sc != null) cur.scores.push(sc);
             supplierAgg.set(e.capa.supplier_id, cur);
-            if (sup?.category) categoryCount.set(sup.category, (categoryCount.get(sup.category) ?? 0) + 1);
+            if (sup?.category)
+              categoryCount.set(sup.category, (categoryCount.get(sup.category) ?? 0) + 1);
           }
         }
         const recurrent = enriched.length >= 2;
@@ -150,12 +183,16 @@ export const getCollectionCapaRisks = createServerFn({ method: "GET" })
           productSku: prod?.sku ?? null,
           capaCount: enriched.length,
           openCapaCount: openCount,
-          suppliers: [...supplierAgg.entries()].map(([id, v]) => ({
-            id,
-            name: v.name,
-            capaCount: v.capaCount,
-            avgScore: v.scores.length ? v.scores.reduce((a, b) => a + b, 0) / v.scores.length : null,
-          })).sort((a, b) => b.capaCount - a.capaCount),
+          suppliers: [...supplierAgg.entries()]
+            .map(([id, v]) => ({
+              id,
+              name: v.name,
+              capaCount: v.capaCount,
+              avgScore: v.scores.length
+                ? v.scores.reduce((a, b) => a + b, 0) / v.scores.length
+                : null,
+            }))
+            .sort((a, b) => b.capaCount - a.capaCount),
           topCategory,
           recurrent,
         });

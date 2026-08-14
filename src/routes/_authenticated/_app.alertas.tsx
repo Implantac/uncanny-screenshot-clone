@@ -40,9 +40,16 @@ export const Route = createFileRoute("/_authenticated/_app/alertas")({
   head: () => ({
     meta: [
       { title: "Central de Alertas · USE MODA PLM" },
-      { name: "description", content: "Alertas inteligentes de estoque, atrasos, lotes parados, qualidade e prazos críticos do ciclo de vida do produto." },
+      {
+        name: "description",
+        content:
+          "Alertas inteligentes de estoque, atrasos, lotes parados, qualidade e prazos críticos do ciclo de vida do produto.",
+      },
       { property: "og:title", content: "Central de Alertas · USE MODA PLM" },
-      { property: "og:description", content: "Notificações inteligentes com causa raiz e ação sugerida para operações de moda." },
+      {
+        property: "og:description",
+        content: "Notificações inteligentes com causa raiz e ação sugerida para operações de moda.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -114,7 +121,6 @@ function AlertsCenterPage() {
     refetchInterval: 60_000,
   });
 
-
   const [cat, setCat] = useState<AlertCategory | "all">("all");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
@@ -135,29 +141,31 @@ function AlertsCenterPage() {
   }, [data]);
 
   // Group by severity → then by entity (fallback: individual key)
-  const grouped: Record<AlertSeverity, { entityKey: string; label?: string; items: CenterAlert[] }[]> =
-    useMemo(() => {
-      const bySev: Record<AlertSeverity, Map<string, { label?: string; items: CenterAlert[] }>> = {
-        critica: new Map(),
-        alta: new Map(),
-        media: new Map(),
-        baixa: new Map(),
-      };
-      for (const a of filtered) {
-        const gk = a.entityKey ?? a.key;
-        const bucket = bySev[a.severity];
-        if (!bucket.has(gk)) bucket.set(gk, { label: a.entityLabel, items: [] });
-        bucket.get(gk)!.items.push(a);
-      }
-      const out = {} as Record<
-        AlertSeverity,
-        { entityKey: string; label?: string; items: CenterAlert[] }[]
-      >;
-      (Object.keys(bySev) as AlertSeverity[]).forEach((s) => {
-        out[s] = Array.from(bySev[s], ([entityKey, v]) => ({ entityKey, ...v }));
-      });
-      return out;
-    }, [filtered]);
+  const grouped: Record<
+    AlertSeverity,
+    { entityKey: string; label?: string; items: CenterAlert[] }[]
+  > = useMemo(() => {
+    const bySev: Record<AlertSeverity, Map<string, { label?: string; items: CenterAlert[] }>> = {
+      critica: new Map(),
+      alta: new Map(),
+      media: new Map(),
+      baixa: new Map(),
+    };
+    for (const a of filtered) {
+      const gk = a.entityKey ?? a.key;
+      const bucket = bySev[a.severity];
+      if (!bucket.has(gk)) bucket.set(gk, { label: a.entityLabel, items: [] });
+      bucket.get(gk)!.items.push(a);
+    }
+    const out = {} as Record<
+      AlertSeverity,
+      { entityKey: string; label?: string; items: CenterAlert[] }[]
+    >;
+    (Object.keys(bySev) as AlertSeverity[]).forEach((s) => {
+      out[s] = Array.from(bySev[s], ([entityKey, v]) => ({ entityKey, ...v }));
+    });
+    return out;
+  }, [filtered]);
 
   const total = filtered.length;
 
@@ -264,16 +272,12 @@ function AlertsCenterPage() {
             }`}
           >
             {CAT_LABEL[k]}
-            {(counts[k] ?? 0) > 0 && (
-              <span className="tabular-nums opacity-80">{counts[k]}</span>
-            )}
+            {(counts[k] ?? 0) > 0 && <span className="tabular-nums opacity-80">{counts[k]}</span>}
           </button>
         ))}
       </div>
 
-      {isLoading && (
-        <div className="text-sm text-muted-foreground">Carregando alertas…</div>
-      )}
+      {isLoading && <div className="text-sm text-muted-foreground">Carregando alertas…</div>}
 
       {!isLoading && total === 0 && (
         <div className="border border-border rounded-lg p-12 text-center">
@@ -307,9 +311,7 @@ function AlertsCenterPage() {
                     <div
                       role="button"
                       tabIndex={0}
-                      onClick={() =>
-                        setExpanded((e) => ({ ...e, [g.entityKey]: !isOpen }))
-                      }
+                      onClick={() => setExpanded((e) => ({ ...e, [g.entityKey]: !isOpen }))}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
@@ -335,10 +337,7 @@ function AlertsCenterPage() {
                           {g.items.map((i) => i.title).join(" · ")}
                         </div>
                       </div>
-                      <div
-                        className="flex items-center gap-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <span className="text-xs px-2 py-1 rounded bg-background border border-border hover:bg-muted inline-flex items-center gap-1 cursor-pointer">
@@ -349,9 +348,7 @@ function AlertsCenterPage() {
                             {SNOOZE_OPTIONS.map((o) => (
                               <DropdownMenuItem
                                 key={o.mode}
-                                onClick={() =>
-                                  dismiss.mutate({ keys: allKeys, mode: o.mode })
-                                }
+                                onClick={() => dismiss.mutate({ keys: allKeys, mode: o.mode })}
                               >
                                 {o.label} ({g.items.length})
                               </DropdownMenuItem>
@@ -362,9 +359,7 @@ function AlertsCenterPage() {
                           type="button"
                           title="Resolver grupo"
                           aria-label="Resolver grupo"
-                          onClick={() =>
-                            dismiss.mutate({ keys: allKeys, mode: "resolve" })
-                          }
+                          onClick={() => dismiss.mutate({ keys: allKeys, mode: "resolve" })}
                           className="size-7 grid place-items-center rounded hover:bg-background"
                         >
                           <Check className="size-3.5 text-success" />

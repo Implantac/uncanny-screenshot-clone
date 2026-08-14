@@ -20,9 +20,7 @@ async function findVariants(page: Page) {
   await page.waitForLoadState("networkidle");
 
   const all = page.locator(TRIGGER);
-  await expect
-    .poll(async () => await all.count(), { timeout: 15_000 })
-    .toBeGreaterThan(0);
+  await expect.poll(async () => await all.count(), { timeout: 15_000 }).toBeGreaterThan(0);
 
   const count = await all.count();
   let ready: Locator | null = null;
@@ -77,10 +75,9 @@ test.describe("ProductReadinessBadge — clique no trigger (E2E)", () => {
       await trigger!.click();
       await expect(tip).toBeHidden({ timeout: 5_000 });
       await expect
-        .poll(
-          async () => await trigger!.evaluate((el) => el === document.activeElement),
-          { timeout: 2_000 },
-        )
+        .poll(async () => await trigger!.evaluate((el) => el === document.activeElement), {
+          timeout: 2_000,
+        })
         .toBe(true);
     });
   }

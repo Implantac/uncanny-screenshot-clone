@@ -72,9 +72,7 @@ export const getCollectionAbc = createServerFn({ method: "POST" })
 
     const { data: cps, error: cpsErr } = await supabase
       .from("collection_products")
-      .select(
-        "product_id, role, products(id, sku, name, image_url, cost_price, sell_price)",
-      )
+      .select("product_id, role, products(id, sku, name, image_url, cost_price, sell_price)")
       .eq("collection_id", data.collectionId);
     if (cpsErr) throw cpsErr;
 
@@ -139,9 +137,7 @@ export const getCollectionAbc = createServerFn({ method: "POST" })
     for (const meta of products.values()) {
       const a = agg.get(meta.productId) ?? { qty: 0, revenue: 0, orders: 0 };
       const margin =
-        meta.sellPrice != null && meta.costPrice != null
-          ? meta.sellPrice - meta.costPrice
-          : null;
+        meta.sellPrice != null && meta.costPrice != null ? meta.sellPrice - meta.costPrice : null;
       items.push({
         productId: meta.productId,
         sku: meta.sku,
@@ -170,8 +166,7 @@ export const getCollectionAbc = createServerFn({ method: "POST" })
       it.revenueShare = share;
       cum += share;
       it.cumulativeShare = cum;
-      it.abcClass =
-        it.revenue <= 0 ? "C" : cum <= 0.8 ? "A" : cum <= 0.95 ? "B" : "C";
+      it.abcClass = it.revenue <= 0 ? "C" : cum <= 0.8 ? "A" : cum <= 0.95 ? "B" : "C";
     }
 
     const classCounts: Record<AbcClass, number> = { A: 0, B: 0, C: 0 };

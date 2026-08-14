@@ -24,21 +24,42 @@ type SupplierUpdate = Database["public"]["Tables"]["suppliers"]["Update"];
 
 async function logErr(sb: SB, userId: string, entity: string, ref: string, msg: string) {
   await sb.from("erp_sync_log").insert({
-    owner_id: userId, direction: "in", event_type: "sync",
-    entity_type: entity, entity_ref: ref,
-    status: "error", records_affected: 0, error_message: msg,
+    owner_id: userId,
+    direction: "in",
+    event_type: "sync",
+    entity_type: entity,
+    entity_ref: ref,
+    status: "error",
+    records_affected: 0,
+    error_message: msg,
   });
 }
-async function logOk(sb: SB, userId: string, entity: string, ref: string, n: number, payload: Record<string, unknown>) {
+async function logOk(
+  sb: SB,
+  userId: string,
+  entity: string,
+  ref: string,
+  n: number,
+  payload: Record<string, unknown>,
+) {
   await sb.from("erp_sync_log").insert({
-    owner_id: userId, direction: "in", event_type: "sync",
-    entity_type: entity, entity_ref: ref,
-    status: "success", records_affected: n, payload: payload as never,
+    owner_id: userId,
+    direction: "in",
+    event_type: "sync",
+    entity_type: entity,
+    entity_ref: ref,
+    status: "success",
+    records_affected: n,
+    payload: payload as never,
   });
 }
 
 /** Roda `task` para cada item de `items` com até `concurrency` em paralelo. */
-async function mapPool<T, R>(items: T[], concurrency: number, task: (item: T, idx: number) => Promise<R>): Promise<R[]> {
+async function mapPool<T, R>(
+  items: T[],
+  concurrency: number,
+  task: (item: T, idx: number) => Promise<R>,
+): Promise<R[]> {
   const ret: R[] = new Array(items.length);
   let i = 0;
   const workers = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
@@ -55,9 +76,13 @@ async function mapPool<T, R>(items: T[], concurrency: number, task: (item: T, id
 // ---------------------------------------------------------------- COLLECTIONS
 export async function runSyncCollections(supabase: SB, userId: string) {
   const startedAt = new Date().toISOString();
-  let erpRows: Array<{ nnumerogrife: number | string; cdescrigrife: string; cstatusgrife: string | null }> = [];
+  let erpRows: Array<{
+    nnumerogrife: number | string;
+    cdescrigrife: string;
+    cstatusgrife: string | null;
+  }> = [];
   try {
-    const r = await usesoftQuery<typeof erpRows[number]>(
+    const r = await usesoftQuery<(typeof erpRows)[number]>(
       `SELECT nnumerogrife, cdescrigrife, cstatusgrife FROM solgrife
         WHERE COALESCE(cstatusgrife,'A') = 'A' ORDER BY cdescrigrife`,
     );
@@ -68,15 +93,22 @@ export async function runSyncCollections(supabase: SB, userId: string) {
     throw new Error(msg);
   }
   const { data: existing } = await supabase
-    .from("collections").select("id, erp_id, name, status")
-    .eq("owner_id", userId).eq("erp_source", ERP_SOURCE);
+    .from("collections")
+    .select("id, erp_id, name, status")
+    .eq("owner_id", userId)
+    .eq("erp_source", ERP_SOURCE);
   const byErp = new Map((existing ?? []).map((c) => [String(c.erp_id), c]));
-  let inserted = 0, updated = 0, skipped = 0;
+  let inserted = 0,
+    updated = 0,
+    skipped = 0;
   const now = new Date().toISOString();
   for (const row of erpRows) {
     const erpId = String(row.nnumerogrife);
     const nome = String(row.cdescrigrife ?? "").trim();
-    if (!nome) { skipped++; continue; }
+    if (!nome) {
+      skipped++;
+      continue;
+    }
     const ativa = (row.cstatusgrife ?? "A") === "A";
     const found = byErp.get(erpId);
     if (found) {
@@ -85,18 +117,36 @@ export async function runSyncCollections(supabase: SB, userId: string) {
       if (!ativa && (found.status === "briefing" || found.status === "desenvolvimento")) {
         patch.status = "descontinuada";
       }
-      const { error } = await supabase.from("collections").update(patch).eq("id", found.id as string);
-      if (!error) updated++; else skipped++;
+      const { error } = await supabase
+        .from("collections")
+        .update(patch)
+        .eq("id", found.id as string);
+      if (!error) updated++;
+      else skipped++;
     } else {
       const newStatus: CollectionStatus = ativa ? "briefing" : "descontinuada";
       const { error } = await supabase.from("collections").insert({
-        owner_id: userId, name: nome, season: "ERP", year: new Date().getFullYear(),
-        status: newStatus, erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
+        owner_id: userId,
+        name: nome,
+        season: "ERP",
+        year: new Date().getFullYear(),
+        status: newStatus,
+        erp_source: ERP_SOURCE,
+        erp_id: erpId,
+        erp_synced_at: now,
       });
-      if (!error) inserted++; else skipped++;
+      if (!error) inserted++;
+      else skipped++;
     }
   }
-  const summary = { total_erp: erpRows.length, inserted, updated, skipped, started_at: startedAt, finished_at: new Date().toISOString() };
+  const summary = {
+    total_erp: erpRows.length,
+    inserted,
+    updated,
+    skipped,
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+  };
   await logOk(supabase, userId, "collections", "solgrife", inserted + updated, summary);
   return summary;
 }
@@ -105,9 +155,15 @@ export async function runSyncCollections(supabase: SB, userId: string) {
 export async function runSyncProducts(supabase: SB, userId: string) {
   const startedAt = new Date().toISOString();
   type ErpRow = {
-    nnumeroprodu: number | string; ccodigoprodu: string | null; ceanprodu: string | null;
-    cnomeprodu: string; cstatusprodu: string | null; ncustoprodu: number | string | null;
-    nprcvenprodu: number | string | null; nnumerogrife: number | string | null; cdsccplprodu: string | null;
+    nnumeroprodu: number | string;
+    ccodigoprodu: string | null;
+    ceanprodu: string | null;
+    cnomeprodu: string;
+    cstatusprodu: string | null;
+    ncustoprodu: number | string | null;
+    nprcvenprodu: number | string | null;
+    nnumerogrife: number | string | null;
+    cdsccplprodu: string | null;
   };
   let erpRows: ErpRow[] = [];
   try {
@@ -125,14 +181,23 @@ export async function runSyncProducts(supabase: SB, userId: string) {
     await logErr(supabase, userId, "products", "solprodu", msg);
     throw new Error(msg);
   }
-  const { data: erpCols } = await supabase.from("collections").select("id, erp_id")
-    .eq("owner_id", userId).eq("erp_source", ERP_SOURCE);
-  const colByErp = new Map((erpCols ?? []).filter((c) => c.erp_id).map((c) => [String(c.erp_id), c.id as string]));
-  const { data: existing } = await supabase.from("products")
+  const { data: erpCols } = await supabase
+    .from("collections")
+    .select("id, erp_id")
+    .eq("owner_id", userId)
+    .eq("erp_source", ERP_SOURCE);
+  const colByErp = new Map(
+    (erpCols ?? []).filter((c) => c.erp_id).map((c) => [String(c.erp_id), c.id as string]),
+  );
+  const { data: existing } = await supabase
+    .from("products")
     .select("id, erp_id, name, status, cost_price, sell_price, collection_id")
-    .eq("owner_id", userId).eq("erp_source", ERP_SOURCE);
+    .eq("owner_id", userId)
+    .eq("erp_source", ERP_SOURCE);
   const byErp = new Map((existing ?? []).map((p) => [String(p.erp_id), p]));
-  let inserted = 0, updated = 0, skipped = 0;
+  let inserted = 0,
+    updated = 0,
+    skipped = 0;
   const now = new Date().toISOString();
   const counts = await mapPool(erpRows, 25, async (row) => {
     const erpId = String(row.nnumeroprodu);
@@ -141,7 +206,7 @@ export async function runSyncProducts(supabase: SB, userId: string) {
     const sku = (row.ccodigoprodu ? String(row.ccodigoprodu).trim() : "") || `ERP-${erpId}`;
     const custo = row.ncustoprodu == null ? 0 : Number(row.ncustoprodu) || 0;
     const preco = row.nprcvenprodu == null ? 0 : Number(row.nprcvenprodu) || 0;
-    const collectionId = row.nnumerogrife ? colByErp.get(String(row.nnumerogrife)) ?? null : null;
+    const collectionId = row.nnumerogrife ? (colByErp.get(String(row.nnumerogrife)) ?? null) : null;
     const found = byErp.get(erpId);
     if (found) {
       const patch: ProductUpdate = { erp_synced_at: now };
@@ -149,14 +214,25 @@ export async function runSyncProducts(supabase: SB, userId: string) {
       if ((found.cost_price ?? 0) !== custo) patch.cost_price = custo;
       if ((found.sell_price ?? 0) !== preco) patch.sell_price = preco;
       if (collectionId && found.collection_id !== collectionId) patch.collection_id = collectionId;
-      const { error } = await supabase.from("products").update(patch).eq("id", found.id as string);
+      const { error } = await supabase
+        .from("products")
+        .update(patch)
+        .eq("id", found.id as string);
       return error ? ("skipped" as const) : ("updated" as const);
     }
     const newStatus: ProductStatus = "producao";
     const { error } = await supabase.from("products").insert({
-      owner_id: userId, name: nome, sku, status: newStatus, cost_price: custo, sell_price: preco,
-      collection_id: collectionId, description: row.cdsccplprodu ? String(row.cdsccplprodu) : null,
-      erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
+      owner_id: userId,
+      name: nome,
+      sku,
+      status: newStatus,
+      cost_price: custo,
+      sell_price: preco,
+      collection_id: collectionId,
+      description: row.cdsccplprodu ? String(row.cdsccplprodu) : null,
+      erp_source: ERP_SOURCE,
+      erp_id: erpId,
+      erp_synced_at: now,
     });
     return error ? ("skipped" as const) : ("inserted" as const);
   });
@@ -165,7 +241,14 @@ export async function runSyncProducts(supabase: SB, userId: string) {
     else if (c === "updated") updated++;
     else skipped++;
   }
-  const summary = { total_erp: erpRows.length, inserted, updated, skipped, started_at: startedAt, finished_at: new Date().toISOString() };
+  const summary = {
+    total_erp: erpRows.length,
+    inserted,
+    updated,
+    skipped,
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+  };
   await logOk(supabase, userId, "products", "solprodu", inserted + updated, summary);
   return summary;
 }
@@ -174,9 +257,15 @@ export async function runSyncProducts(supabase: SB, userId: string) {
 export async function runSyncCustomers(supabase: SB, userId: string) {
   const startedAt = new Date().toISOString();
   type ErpRow = {
-    nnumeroclien: number | string; cnomeclien: string; cnfantaclien: string | null;
-    ctipopeclien: string | null; ccnpjclien: string | null; ccpfclien: string | null;
-    cemailnfecli: string | null; cendwebclien: string | null; cfoneclien: string | null;
+    nnumeroclien: number | string;
+    cnomeclien: string;
+    cnfantaclien: string | null;
+    ctipopeclien: string | null;
+    ccnpjclien: string | null;
+    ccpfclien: string | null;
+    cemailnfecli: string | null;
+    cendwebclien: string | null;
+    cfoneclien: string | null;
   };
   let erpRows: ErpRow[] = [];
   try {
@@ -190,11 +279,15 @@ export async function runSyncCustomers(supabase: SB, userId: string) {
     await logErr(supabase, userId, "customers", "solclien", msg);
     throw new Error(msg);
   }
-  const { data: existing } = await supabase.from("customers")
+  const { data: existing } = await supabase
+    .from("customers")
     .select("id, erp_id, name, email, phone, document")
-    .eq("owner_id", userId).eq("erp_source", ERP_SOURCE);
+    .eq("owner_id", userId)
+    .eq("erp_source", ERP_SOURCE);
   const byErp = new Map((existing ?? []).map((c) => [String(c.erp_id), c]));
-  let inserted = 0, updated = 0, skipped = 0;
+  let inserted = 0,
+    updated = 0,
+    skipped = 0;
   const now = new Date().toISOString();
   const counts = await mapPool(erpRows, 25, async (row) => {
     const erpId = String(row.nnumeroclien);
@@ -210,17 +303,37 @@ export async function runSyncCustomers(supabase: SB, userId: string) {
       if ((found.document ?? null) !== doc) patch.document = doc;
       if ((found.email ?? null) !== email) patch.email = email;
       if ((found.phone ?? null) !== phone) patch.phone = phone;
-      const { error } = await supabase.from("customers").update(patch).eq("id", found.id as string);
+      const { error } = await supabase
+        .from("customers")
+        .update(patch)
+        .eq("id", found.id as string);
       return error ? ("skipped" as const) : ("updated" as const);
     }
     const { error } = await supabase.from("customers").insert({
-      owner_id: userId, name: nome, document: doc, email, phone,
-      erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
+      owner_id: userId,
+      name: nome,
+      document: doc,
+      email,
+      phone,
+      erp_source: ERP_SOURCE,
+      erp_id: erpId,
+      erp_synced_at: now,
     });
     return error ? ("skipped" as const) : ("inserted" as const);
   });
-  for (const c of counts) { if (c === "inserted") inserted++; else if (c === "updated") updated++; else skipped++; }
-  const summary = { total_erp: erpRows.length, inserted, updated, skipped, started_at: startedAt, finished_at: new Date().toISOString() };
+  for (const c of counts) {
+    if (c === "inserted") inserted++;
+    else if (c === "updated") updated++;
+    else skipped++;
+  }
+  const summary = {
+    total_erp: erpRows.length,
+    inserted,
+    updated,
+    skipped,
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+  };
   await logOk(supabase, userId, "customers", "solclien", inserted + updated, summary);
   return summary;
 }
@@ -229,9 +342,14 @@ export async function runSyncCustomers(supabase: SB, userId: string) {
 export async function runSyncSuppliers(supabase: SB, userId: string) {
   const startedAt = new Date().toISOString();
   type ErpRow = {
-    nnumeroforne: number | string; cnomeforne: string; cnfantaforne: string | null;
-    ctipopeforne: string | null; ccnpjforne: string | null; ccpfforne: string | null;
-    cemailforne: string | null; cfoneforne: string | null;
+    nnumeroforne: number | string;
+    cnomeforne: string;
+    cnfantaforne: string | null;
+    ctipopeforne: string | null;
+    ccnpjforne: string | null;
+    ccpfforne: string | null;
+    cemailforne: string | null;
+    cfoneforne: string | null;
   };
   let erpRows: ErpRow[] = [];
   try {
@@ -245,11 +363,15 @@ export async function runSyncSuppliers(supabase: SB, userId: string) {
     await logErr(supabase, userId, "suppliers", "solforne", msg);
     throw new Error(msg);
   }
-  const { data: existing } = await supabase.from("suppliers")
+  const { data: existing } = await supabase
+    .from("suppliers")
     .select("id, erp_id, name, email, phone, document")
-    .eq("owner_id", userId).eq("erp_source", ERP_SOURCE);
+    .eq("owner_id", userId)
+    .eq("erp_source", ERP_SOURCE);
   const byErp = new Map((existing ?? []).map((s) => [String(s.erp_id), s]));
-  let inserted = 0, updated = 0, skipped = 0;
+  let inserted = 0,
+    updated = 0,
+    skipped = 0;
   const now = new Date().toISOString();
   const counts = await mapPool(erpRows, 25, async (row) => {
     const erpId = String(row.nnumeroforne);
@@ -265,17 +387,38 @@ export async function runSyncSuppliers(supabase: SB, userId: string) {
       if ((found.document ?? null) !== doc) patch.document = doc;
       if ((found.email ?? null) !== email) patch.email = email;
       if ((found.phone ?? null) !== phone) patch.phone = phone;
-      const { error } = await supabase.from("suppliers").update(patch).eq("id", found.id as string);
+      const { error } = await supabase
+        .from("suppliers")
+        .update(patch)
+        .eq("id", found.id as string);
       return error ? ("skipped" as const) : ("updated" as const);
     }
     const { error } = await supabase.from("suppliers").insert({
-      owner_id: userId, name: nome, document: doc, email, phone, active: true,
-      erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
+      owner_id: userId,
+      name: nome,
+      document: doc,
+      email,
+      phone,
+      active: true,
+      erp_source: ERP_SOURCE,
+      erp_id: erpId,
+      erp_synced_at: now,
     });
     return error ? ("skipped" as const) : ("inserted" as const);
   });
-  for (const c of counts) { if (c === "inserted") inserted++; else if (c === "updated") updated++; else skipped++; }
-  const summary = { total_erp: erpRows.length, inserted, updated, skipped, started_at: startedAt, finished_at: new Date().toISOString() };
+  for (const c of counts) {
+    if (c === "inserted") inserted++;
+    else if (c === "updated") updated++;
+    else skipped++;
+  }
+  const summary = {
+    total_erp: erpRows.length,
+    inserted,
+    updated,
+    skipped,
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+  };
   await logOk(supabase, userId, "suppliers", "solforne", inserted + updated, summary);
   return summary;
 }
@@ -284,8 +427,11 @@ export async function runSyncSuppliers(supabase: SB, userId: string) {
 export async function runSyncInventory(supabase: SB, userId: string) {
   const startedAt = new Date().toISOString();
   type ErpRow = {
-    ccodigoprodu: string | null; nnumeroprodu: number | string;
-    saldo_total: number | string; ncustoprodu: number | string | null; nprcvenprodu: number | string | null;
+    ccodigoprodu: string | null;
+    nnumeroprodu: number | string;
+    saldo_total: number | string;
+    ncustoprodu: number | string | null;
+    nprcvenprodu: number | string | null;
   };
   let erpRows: ErpRow[] = [];
   try {
@@ -303,22 +449,33 @@ export async function runSyncInventory(supabase: SB, userId: string) {
   }
   await supabase.from("erp_inventory_mirror").delete().eq("owner_id", userId);
   const now = new Date().toISOString();
-  const batch = erpRows.filter((r) => r.ccodigoprodu || r.nnumeroprodu).map((r) => ({
-    owner_id: userId,
-    sku: String(r.ccodigoprodu || `ERP-${r.nnumeroprodu}`),
-    balance: Number(r.saldo_total) || 0,
-    location: null as string | null,
-    erp_updated_at: now,
-    synced_at: now,
-    raw: { erp_id: String(r.nnumeroprodu), cost: r.ncustoprodu == null ? null : Number(r.ncustoprodu), price: r.nprcvenprodu == null ? null : Number(r.nprcvenprodu) },
-  }));
+  const batch = erpRows
+    .filter((r) => r.ccodigoprodu || r.nnumeroprodu)
+    .map((r) => ({
+      owner_id: userId,
+      sku: String(r.ccodigoprodu || `ERP-${r.nnumeroprodu}`),
+      balance: Number(r.saldo_total) || 0,
+      location: null as string | null,
+      erp_updated_at: now,
+      synced_at: now,
+      raw: {
+        erp_id: String(r.nnumeroprodu),
+        cost: r.ncustoprodu == null ? null : Number(r.ncustoprodu),
+        price: r.nprcvenprodu == null ? null : Number(r.nprcvenprodu),
+      },
+    }));
   let inserted = 0;
   for (let i = 0; i < batch.length; i += 500) {
     const slice = batch.slice(i, i + 500);
     const { error } = await supabase.from("erp_inventory_mirror").insert(slice);
     if (!error) inserted += slice.length;
   }
-  const summary = { total_erp: erpRows.length, inserted, started_at: startedAt, finished_at: new Date().toISOString() };
+  const summary = {
+    total_erp: erpRows.length,
+    inserted,
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+  };
   await logOk(supabase, userId, "inventory", "estsaldo", inserted, summary);
   return summary;
 }
@@ -327,10 +484,16 @@ export async function runSyncInventory(supabase: SB, userId: string) {
 export async function runSyncSales(supabase: SB, userId: string, daysBack = 90) {
   const startedAt = new Date().toISOString();
   type ErpRow = {
-    nnumeropedid: number | string; ddatapedid: string | null; cliente_nome: string | null;
-    nnumeroprodu: number | string | null; ccodigoprodu: string | null; cnomeprodu: string | null;
-    nquatdeitped: number | string | null; nvltotitped: number | string | null;
-    tipo_nome: string | null; tipo_sigla: string | null;
+    nnumeropedid: number | string;
+    ddatapedid: string | null;
+    cliente_nome: string | null;
+    nnumeroprodu: number | string | null;
+    ccodigoprodu: string | null;
+    cnomeprodu: string | null;
+    nquatdeitped: number | string | null;
+    nvltotitped: number | string | null;
+    tipo_nome: string | null;
+    tipo_sigla: string | null;
   };
   let erpRows: ErpRow[] = [];
   try {
@@ -381,7 +544,13 @@ export async function runSyncSales(supabase: SB, userId: string, daysBack = 90) 
     const { error } = await supabase.from("erp_sales_mirror").insert(slice);
     if (!error) inserted += slice.length;
   }
-  const summary = { total_erp: erpRows.length, inserted, days_back: daysBack, started_at: startedAt, finished_at: new Date().toISOString() };
+  const summary = {
+    total_erp: erpRows.length,
+    inserted,
+    days_back: daysBack,
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+  };
   await logOk(supabase, userId, "sales", "solpedid", inserted, summary);
   return summary;
 }
@@ -390,8 +559,11 @@ export async function runSyncSales(supabase: SB, userId: string, daysBack = 90) 
 export async function runSyncPurchases(supabase: SB, userId: string, daysBack = 180) {
   const startedAt = new Date().toISOString();
   type ErpRow = {
-    nnumeropedcom: number | string; ddatapedcom: string | null; cnomeforne: string | null;
-    nvltotpedcom: number | string | null; cstatuspedcom: string | null;
+    nnumeropedcom: number | string;
+    ddatapedcom: string | null;
+    cnomeforne: string | null;
+    nvltotpedcom: number | string | null;
+    cstatuspedcom: string | null;
   };
   let erpRows: ErpRow[] = [];
   try {
@@ -425,7 +597,13 @@ export async function runSyncPurchases(supabase: SB, userId: string, daysBack = 
     const { error } = await supabase.from("erp_purchase_mirror").insert(slice);
     if (!error) inserted += slice.length;
   }
-  const summary = { total_erp: erpRows.length, inserted, days_back: daysBack, started_at: startedAt, finished_at: new Date().toISOString() };
+  const summary = {
+    total_erp: erpRows.length,
+    inserted,
+    days_back: daysBack,
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+  };
   await logOk(supabase, userId, "purchases", "solpedcom", inserted, summary);
   return summary;
 }
@@ -435,11 +613,7 @@ export async function runSyncPurchases(supabase: SB, userId: string, daysBack = 
  * Importa imagens de produtos do ERP (estfotpr.cfotobase64) para o bucket
  * `product-images` e atualiza products.image_url. Processa em lotes.
  */
-export async function runSyncProductImages(
-  supabase: SB,
-  userId: string,
-  limit = 100,
-) {
+export async function runSyncProductImages(supabase: SB, userId: string, limit = 100) {
   const startedAt = new Date().toISOString();
 
   const { data: pending, error: selErr } = await supabase
@@ -455,7 +629,13 @@ export async function runSyncProductImages(
     throw new Error(selErr.message);
   }
   if (!pending || pending.length === 0) {
-    const summary = { pending: 0, uploaded: 0, skipped: 0, started_at: startedAt, finished_at: new Date().toISOString() };
+    const summary = {
+      pending: 0,
+      uploaded: 0,
+      skipped: 0,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+    };
     await logOk(supabase, userId, "product_images", "estfotpr", 0, summary);
     return summary;
   }
@@ -481,13 +661,17 @@ export async function runSyncProductImages(
     throw new Error(msg);
   }
 
-  let uploaded = 0, skipped = 0;
+  let uploaded = 0,
+    skipped = 0;
   const errors: string[] = [];
 
   await mapPool(photos, 8, async (row) => {
     const erpId = String(row.nnumeroprodu);
     const productId = idByErp.get(erpId);
-    if (!productId) { skipped++; return; }
+    if (!productId) {
+      skipped++;
+      return;
+    }
     const raw = row.cfotobase64.includes(",") ? row.cfotobase64.split(",").pop()! : row.cfotobase64;
     let bytes: Uint8Array;
     try {
@@ -495,13 +679,25 @@ export async function runSyncProductImages(
       bytes = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     } catch {
-      skipped++; return;
+      skipped++;
+      return;
     }
-    if (bytes.length < 200) { skipped++; return; }
-    let ext = "jpg", mime = "image/jpeg";
-    if (bytes[0] === 0x89 && bytes[1] === 0x50) { ext = "png"; mime = "image/png"; }
-    else if (bytes[0] === 0x47 && bytes[1] === 0x49) { ext = "gif"; mime = "image/gif"; }
-    else if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[8] === 0x57) { ext = "webp"; mime = "image/webp"; }
+    if (bytes.length < 200) {
+      skipped++;
+      return;
+    }
+    let ext = "jpg",
+      mime = "image/jpeg";
+    if (bytes[0] === 0x89 && bytes[1] === 0x50) {
+      ext = "png";
+      mime = "image/png";
+    } else if (bytes[0] === 0x47 && bytes[1] === 0x49) {
+      ext = "gif";
+      mime = "image/gif";
+    } else if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[8] === 0x57) {
+      ext = "webp";
+      mime = "image/webp";
+    }
 
     const path = `${userId}/erp/${erpId}.${ext}`;
     const { error: upErr } = await supabase.storage
@@ -509,21 +705,30 @@ export async function runSyncProductImages(
       .upload(path, bytes, { contentType: mime, upsert: true, cacheControl: "31536000" });
     if (upErr) {
       errors.push(`${erpId}: ${upErr.message}`);
-      skipped++; return;
+      skipped++;
+      return;
     }
     const url = `/api/public/product-image/${userId}/erp/${erpId}.${ext}`;
     const { error: updErr } = await supabase
       .from("products")
       .update({ image_url: url })
       .eq("id", productId);
-    if (updErr) { errors.push(`${erpId}: ${updErr.message}`); skipped++; return; }
+    if (updErr) {
+      errors.push(`${erpId}: ${updErr.message}`);
+      skipped++;
+      return;
+    }
     uploaded++;
   });
 
   const summary = {
-    pending: pending.length, found_photos: photos.length,
-    uploaded, skipped, errors: errors.slice(0, 5),
-    started_at: startedAt, finished_at: new Date().toISOString(),
+    pending: pending.length,
+    found_photos: photos.length,
+    uploaded,
+    skipped,
+    errors: errors.slice(0, 5),
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
   };
   await logOk(supabase, userId, "product_images", "estfotpr", uploaded, summary);
   return summary;

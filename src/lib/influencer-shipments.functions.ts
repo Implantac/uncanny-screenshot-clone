@@ -39,9 +39,28 @@ export const suggestShipments = createServerFn({ method: "POST" })
     const supabase = context.supabase;
 
     type ProductRow = { id: string; name: string; sku: string | null; category: string | null };
-    type InfluencerRow = { id: string; nome: string; cidade: string | null; estado: string | null; segmento: string | null; seguidores: number | null; engajamento: number | string | null };
-    type SaleRow = { product_ref: string | null; region: string | null; quantity: number | null; total_value: number | string | null };
-    type HistoryRow = { influencer_id: string; product_id: string; sales_before: number | string | null; sales_after: number | string | null; region: string | null };
+    type InfluencerRow = {
+      id: string;
+      nome: string;
+      cidade: string | null;
+      estado: string | null;
+      segmento: string | null;
+      seguidores: number | null;
+      engajamento: number | string | null;
+    };
+    type SaleRow = {
+      product_ref: string | null;
+      region: string | null;
+      quantity: number | null;
+      total_value: number | string | null;
+    };
+    type HistoryRow = {
+      influencer_id: string;
+      product_id: string;
+      sales_before: number | string | null;
+      sales_after: number | string | null;
+      region: string | null;
+    };
 
     const [
       { data: collection },

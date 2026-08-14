@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
-import {
-  getDevelopmentFlowStats,
-  type DevFlowStepStat,
-} from "@/lib/development-flow.functions";
+import { getDevelopmentFlowStats, type DevFlowStepStat } from "@/lib/development-flow.functions";
 import { STEP_META, type WorkflowStep } from "@/lib/product-workflow.functions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -28,12 +25,20 @@ import {
 import { cn } from "@/lib/utils";
 
 const ICONS = {
-  Sparkles, PenTool, FileText, DollarSign, Scissors,
-  ShoppingBag, Crown, ShieldCheck, Factory,
+  Sparkles,
+  PenTool,
+  FileText,
+  DollarSign,
+  Scissors,
+  ShoppingBag,
+  Crown,
+  ShieldCheck,
+  Factory,
 } as const;
 
 function StepIcon({ name, className }: { name: string; className?: string }) {
-  const Comp = (ICONS as Record<string, React.ComponentType<{ className?: string }>>)[name] ?? Circle;
+  const Comp =
+    (ICONS as Record<string, React.ComponentType<{ className?: string }>>)[name] ?? Circle;
   return <Comp className={className} />;
 }
 
@@ -50,17 +55,38 @@ type FlowNode =
 
 const FLOW: FlowNode[] = [
   { kind: "start", id: "start", label: "Início" },
-  { kind: "process", id: "concepcao", step: "concepcao", sub: "Desenho, moodboard e proposta inicial" },
+  {
+    kind: "process",
+    id: "concepcao",
+    step: "concepcao",
+    sub: "Desenho, moodboard e proposta inicial",
+  },
   {
     kind: "meeting",
     id: "reuniao1",
     label: "1ª Reunião — Avaliação da proposta",
     who: "Desenvolvimento + Marketing + Gerência",
   },
-  { kind: "decision", id: "gate1", label: "Produto aprovado?", yes: "Segue para ficha técnica", no: "FIM · Reprovado" },
-  { kind: "process", id: "engenharia", step: "engenharia", sub: "Matéria-prima, aviamentos, costuras, bordados, silk, medidas, processos, custos" },
+  {
+    kind: "decision",
+    id: "gate1",
+    label: "Produto aprovado?",
+    yes: "Segue para ficha técnica",
+    no: "FIM · Reprovado",
+  },
+  {
+    kind: "process",
+    id: "engenharia",
+    step: "engenharia",
+    sub: "Matéria-prima, aviamentos, costuras, bordados, silk, medidas, processos, custos",
+  },
   { kind: "process", id: "modelagem", step: "modelagem", sub: "Modelagem e corte do piloto" },
-  { kind: "process", id: "piloto", step: "piloto", sub: "Desenvolver piloto conforme ficha (interno ou terceirizado)" },
+  {
+    kind: "process",
+    id: "piloto",
+    step: "piloto",
+    sub: "Desenvolver piloto conforme ficha (interno ou terceirizado)",
+  },
   {
     kind: "meeting",
     id: "reuniao2",
@@ -89,10 +115,30 @@ const FLOW: FlowNode[] = [
     yes: "Finalizar ficha técnica",
     no: "Reajustes funcionais → volta à ficha e ao piloto",
   },
-  { kind: "process", id: "custos", step: "custos", sub: "Etiquetas, composição, acabamentos, especificações finais, consumo de materiais" },
-  { kind: "process", id: "aprov_diretoria", step: "aprov_diretoria", sub: "Aprovação final da ficha técnica (Desenvolvimento + Gerência)" },
-  { kind: "process", id: "liberacao_pcp", step: "liberacao_pcp", sub: "Piloto + ficha definitiva + custos enviados ao PCP" },
-  { kind: "process", id: "producao", step: "producao", sub: "Planejamento, programação, liberação das OPs, produção em escala" },
+  {
+    kind: "process",
+    id: "custos",
+    step: "custos",
+    sub: "Etiquetas, composição, acabamentos, especificações finais, consumo de materiais",
+  },
+  {
+    kind: "process",
+    id: "aprov_diretoria",
+    step: "aprov_diretoria",
+    sub: "Aprovação final da ficha técnica (Desenvolvimento + Gerência)",
+  },
+  {
+    kind: "process",
+    id: "liberacao_pcp",
+    step: "liberacao_pcp",
+    sub: "Piloto + ficha definitiva + custos enviados ao PCP",
+  },
+  {
+    kind: "process",
+    id: "producao",
+    step: "producao",
+    sub: "Planejamento, programação, liberação das OPs, produção em escala",
+  },
   { kind: "end", id: "end", label: "FIM · Produção liberada", tone: "ok" },
 ];
 
@@ -147,7 +193,7 @@ function ProcessCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <div className="font-medium text-sm truncate">
-              {isMeeting ? (node as { label: string }).label : meta?.label ?? "Etapa"}
+              {isMeeting ? (node as { label: string }).label : (meta?.label ?? "Etapa")}
             </div>
             {stat && (
               <Badge variant="outline" className="h-5 text-[10px] tabular-nums">
@@ -186,11 +232,7 @@ function ProcessCard({
   return body;
 }
 
-function DecisionDiamond({
-  node,
-}: {
-  node: Extract<FlowNode, { kind: "decision" }>;
-}) {
+function DecisionDiamond({ node }: { node: Extract<FlowNode, { kind: "decision" }> }) {
   return (
     <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-3">
       <div className="flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-400">
@@ -275,7 +317,10 @@ export function DevelopmentFlowDiagram() {
         <LegendDot className="bg-muted border-border" label="Processo" />
         <LegendDot className="bg-primary/15 border-primary/40" label="Reunião" />
         <LegendDot className="bg-amber-500/15 border-amber-500/40" label="Decisão" />
-        <LegendDot className="bg-emerald-500/15 border-emerald-500/40" label="Início / Fim aprovado" />
+        <LegendDot
+          className="bg-emerald-500/15 border-emerald-500/40"
+          label="Início / Fim aprovado"
+        />
         <LegendDot className="bg-rose-500/15 border-rose-500/40" label="Bloqueado / Reprovado" />
         <span className="ml-auto inline-flex items-center gap-1">
           Clique em uma etapa <ArrowRight className="size-3" /> abre o Kanban filtrado.
@@ -329,9 +374,7 @@ function KpiCard({
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3">
-      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
       {loading ? (
         <Skeleton className="h-7 w-14 mt-1" />
       ) : (

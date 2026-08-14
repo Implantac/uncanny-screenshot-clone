@@ -13,9 +13,15 @@ export const Route = createFileRoute("/_authenticated/_app/trends")({
   head: () => ({
     meta: [
       { title: "Tendências · USE MODA PLM" },
-      { name: "description", content: "Radar de tendências, cores e temas para embasar novas coleções." },
+      {
+        name: "description",
+        content: "Radar de tendências, cores e temas para embasar novas coleções.",
+      },
       { property: "og:title", content: "Tendências · USE MODA PLM" },
-      { property: "og:description", content: "Radar de tendências, cores e temas para embasar novas coleções." },
+      {
+        property: "og:description",
+        content: "Radar de tendências, cores e temas para embasar novas coleções.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -91,7 +97,6 @@ function Trends() {
         title="Hub de Tendências"
         description="Moodboard, paleta e análise visual por IA."
       />
-
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2 rounded-xl border border-dashed border-border bg-card p-4 sm:p-6">

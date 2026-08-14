@@ -53,7 +53,10 @@ export function ImageLightbox({ images, openIndex, onClose }: Props) {
       className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center"
       onClick={onClose}
     >
-      <div className="absolute top-4 right-4 flex items-center gap-2 z-10" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="absolute top-4 right-4 flex items-center gap-2 z-10"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={() => setZoom((z) => Math.max(z - 0.25, 0.5))}
           className="p-2 rounded-md bg-white/10 hover:bg-white/20 text-white"
@@ -111,10 +114,7 @@ export function ImageLightbox({ images, openIndex, onClose }: Props) {
         </>
       )}
 
-      <div
-        className="max-w-[92vw] max-h-[85vh] overflow-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="max-w-[92vw] max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
         <img
           src={current}
           alt=""

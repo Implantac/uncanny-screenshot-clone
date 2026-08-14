@@ -76,7 +76,11 @@ export function ProductCostCockpit({ productId }: { productId: string }) {
           icon={<Target className="size-4" />}
           label="Meta"
           value={data.target.cost != null ? fmt(data.target.cost) : "—"}
-          hint={data.target.marginPct != null ? `margem-alvo ${data.target.marginPct.toFixed(1)}%` : "sem meta"}
+          hint={
+            data.target.marginPct != null
+              ? `margem-alvo ${data.target.marginPct.toFixed(1)}%`
+              : "sem meta"
+          }
         />
         <Card
           icon={<DollarSign className="size-4" />}
@@ -91,7 +95,13 @@ export function ProductCostCockpit({ productId }: { productId: string }) {
           hint={`${data.market.unitsSold90d} un · ${fmt(data.market.revenue90d)}`}
         />
         <Card
-          icon={data.gap.pctVsTarget != null && data.gap.pctVsTarget > 0 ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}
+          icon={
+            data.gap.pctVsTarget != null && data.gap.pctVsTarget > 0 ? (
+              <TrendingUp className="size-4" />
+            ) : (
+              <TrendingDown className="size-4" />
+            )
+          }
           label="Gap vs meta"
           value={
             data.gap.pctVsTarget != null
@@ -99,7 +109,9 @@ export function ProductCostCockpit({ productId }: { productId: string }) {
               : "—"
           }
           hint={
-            data.gap.marginPct != null ? `margem real ${data.gap.marginPct.toFixed(1)}%` : "sem venda"
+            data.gap.marginPct != null
+              ? `margem real ${data.gap.marginPct.toFixed(1)}%`
+              : "sem venda"
           }
           badge={
             <Badge variant="outline" className={`text-[10px] ${statusTone[data.gap.status]}`}>
@@ -152,7 +164,7 @@ export function ProductCostCockpit({ productId }: { productId: string }) {
             ))}
           </div>
           <div className="text-[11px] text-muted-foreground mt-3 inline-flex items-center gap-1">
-            <Sparkles className="size-3" /> Sensibilidade: reduzir 10% no driver #1 poupa {" "}
+            <Sparkles className="size-3" /> Sensibilidade: reduzir 10% no driver #1 poupa{" "}
             <span className="font-semibold text-foreground">
               {data.drivers[0] ? fmt(data.drivers[0].totalCost * 0.1) : "—"}
             </span>{" "}

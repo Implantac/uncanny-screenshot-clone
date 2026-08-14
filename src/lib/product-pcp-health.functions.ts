@@ -46,38 +46,32 @@ export const getProductPcpHealth = createServerFn({ method: "POST" })
     const { supabase } = context;
     const productId = data.productId;
 
-    const [
-      { data: stagesCfg },
-      { data: routing },
-      { data: orders },
-      { data: reservations },
-    ] = await Promise.all([
-      supabase
-        .from("pcp_stages")
-        .select("key, label, position")
-        .eq("active", true)
-        .order("position"),
-      supabase
-        .from("product_routing")
-        .select("stage_key, sla_days, sequence")
-        .eq("product_id", productId),
-      supabase
-        .from("production_orders")
-        .select(
-          "id, code, quantity, status, stage, stage_updated_at, due_date, created_at",
-        )
-        .eq("product_id", productId)
-        .order("created_at", { ascending: false })
-        .limit(500),
-      supabase
-        .from("material_reservations")
-        .select("id, status, qty_required, qty_reserved, qty_consumed, production_order_id")
-        .in(
-          "production_order_id",
-          // sub-select workaround: fetched via ops below
-          [] as string[],
-        ),
-    ]);
+    const [{ data: stagesCfg }, { data: routing }, { data: orders }, { data: reservations }] =
+      await Promise.all([
+        supabase
+          .from("pcp_stages")
+          .select("key, label, position")
+          .eq("active", true)
+          .order("position"),
+        supabase
+          .from("product_routing")
+          .select("stage_key, sla_days, sequence")
+          .eq("product_id", productId),
+        supabase
+          .from("production_orders")
+          .select("id, code, quantity, status, stage, stage_updated_at, due_date, created_at")
+          .eq("product_id", productId)
+          .order("created_at", { ascending: false })
+          .limit(500),
+        supabase
+          .from("material_reservations")
+          .select("id, status, qty_required, qty_reserved, qty_consumed, production_order_id")
+          .in(
+            "production_order_id",
+            // sub-select workaround: fetched via ops below
+            [] as string[],
+          ),
+      ]);
 
     const openStatuses = new Set(["aguardando", "em_producao", "em_andamento"]);
     const openOps = (orders ?? []).filter((o) => openStatuses.has(o.status as string));
@@ -166,8 +160,7 @@ export const getProductPcpHealth = createServerFn({ method: "POST" })
         .map((s) => ({
           s,
           score:
-            s.wip_orders * 2 +
-            (s.breach && s.sla_days ? (s.avg_dwell_days! - s.sla_days) * 3 : 0),
+            s.wip_orders * 2 + (s.breach && s.sla_days ? (s.avg_dwell_days! - s.sla_days) * 3 : 0),
         }))
         .sort((a, b) => b.score - a.score);
       const top = scored[0].s;

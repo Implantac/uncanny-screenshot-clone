@@ -35,7 +35,8 @@ type Body = { dryRun?: boolean; thresholdRecurrences?: number };
 function verifyAuth(request: Request): boolean {
   const apiKey = request.headers.get("apikey");
   const cronSecret = request.headers.get("x-cron-secret");
-  const expectedApi = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const expectedApi =
+    process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   const expectedCron = process.env.CRON_SECRET;
   if (expectedApi && apiKey === expectedApi) return true;
   if (expectedCron && cronSecret === expectedCron) return true;
@@ -124,7 +125,7 @@ export const Route = createFileRoute("/api/public/hooks/capa-effectiveness-check
 
         for (const capa of eligible) {
           const closedAt = capa.closed_at!;
-          const productId = capa.order_id ? orderProductMap.get(capa.order_id) ?? null : null;
+          const productId = capa.order_id ? (orderProductMap.get(capa.order_id) ?? null) : null;
 
           // Reincidence: inspections reprovado + occurrences negative
           // Scope: supplier_id OR product_id (via production_orders)

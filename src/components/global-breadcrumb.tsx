@@ -47,9 +47,7 @@ export function GlobalBreadcrumb() {
 
   if (!mod) return null;
 
-  const items: PlmBreadcrumbItem[] = [
-    { label: "Início", link: { to: "/" }, icon: Home },
-  ];
+  const items: PlmBreadcrumbItem[] = [{ label: "Início", link: { to: "/" }, icon: Home }];
 
   if (mod.group) {
     items.push({ label: mod.group });

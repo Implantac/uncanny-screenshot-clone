@@ -20,9 +20,7 @@ async function findVariants(page: Page) {
   await page.waitForLoadState("networkidle");
 
   const all = page.locator(TRIGGER);
-  await expect
-    .poll(async () => await all.count(), { timeout: 15_000 })
-    .toBeGreaterThan(0);
+  await expect.poll(async () => await all.count(), { timeout: 15_000 }).toBeGreaterThan(0);
 
   const count = await all.count();
   let ready: Locator | null = null;
@@ -46,8 +44,7 @@ async function describedTip(page: Page, trigger: Locator) {
 /** Descobre qual dos dois triggers vem depois na ordem do DOM. */
 async function pickLater(a: Locator, b: Locator): Promise<{ later: Locator; earlier: Locator }> {
   const aFirst = await a.evaluate(
-    (el, other) =>
-      !!(el.compareDocumentPosition(other as Node) & Node.DOCUMENT_POSITION_FOLLOWING),
+    (el, other) => !!(el.compareDocumentPosition(other as Node) & Node.DOCUMENT_POSITION_FOLLOWING),
     await b.elementHandle(),
   );
   return aFirst ? { earlier: a, later: b } : { earlier: b, later: a };
@@ -63,15 +60,10 @@ async function shiftTabUntilFocused(page: Page, target: Locator, maxSteps = 120)
 }
 
 test.describe("ProductReadinessBadge — Shift+Tab entre triggers (E2E)", () => {
-  test("Shift+Tab alterna aria-describedby e tooltip entre pronto e pendente", async ({
-    page,
-  }) => {
+  test("Shift+Tab alterna aria-describedby e tooltip entre pronto e pendente", async ({ page }) => {
     await login(page);
     const { ready, pending } = await findVariants(page);
-    test.skip(
-      !ready || !pending,
-      "Precisa de pelo menos 1 badge pronto e 1 pendente no dataset",
-    );
+    test.skip(!ready || !pending, "Precisa de pelo menos 1 badge pronto e 1 pendente no dataset");
 
     await ready!.scrollIntoViewIfNeeded();
     await pending!.scrollIntoViewIfNeeded();

@@ -92,8 +92,7 @@ export function MaterialPickerDialog({
             <Library className="size-4 text-primary" /> Adicionar material ao BOM
           </DialogTitle>
           <DialogDescription>
-            Escolha da Biblioteca Global — unidade, cor e custo de referência já vêm
-            preenchidos.
+            Escolha da Biblioteca Global — unidade, cor e custo de referência já vêm preenchidos.
           </DialogDescription>
         </DialogHeader>
 
@@ -184,11 +183,7 @@ export function MaterialPickerDialog({
             <Library className="size-3" /> Gerenciar biblioteca
           </Link>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setQuickOpen(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setQuickOpen(true)}>
               <Plus className="size-3.5 mr-1" /> Novo material
             </Button>
             {onCreateBlank && (

@@ -20,11 +20,7 @@ const Input = z.object({
   sla_hours: z.number().int().min(1).max(240).optional(),
 });
 
-const OUTSOURCED_STAGES = new Set([
-  "bordado_terc",
-  "silk_terc",
-  "costura_terc",
-]);
+const OUTSOURCED_STAGES = new Set(["bordado_terc", "silk_terc", "costura_terc"]);
 
 export const getAdaptiveProductionPriority = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -59,11 +55,7 @@ export const getAdaptiveProductionPriority = createServerFn({ method: "POST" })
 
     const [supRes, scoreRes, prodRes, resRes] = await Promise.all([
       supplierIds.length
-        ? supabase
-            .from("suppliers")
-            .select("id, name")
-            .in("id", supplierIds)
-            .eq("owner_id", userId)
+        ? supabase.from("suppliers").select("id, name").in("id", supplierIds).eq("owner_id", userId)
         : Promise.resolve({ data: [] as { id: string; name: string }[] }),
       supabase
         .from("supplier_scorecards")
@@ -77,16 +69,22 @@ export const getAdaptiveProductionPriority = createServerFn({ method: "POST" })
             .select("id, name, sku")
             .in("id", productIds)
             .eq("owner_id", userId)
-        : Promise.resolve({ data: [] as { id: string; name: string | null; sku: string | null }[] }),
+        : Promise.resolve({
+            data: [] as { id: string; name: string | null; sku: string | null }[],
+          }),
       supabase
         .from("material_reservations")
         .select("production_order_id, status")
         .in("production_order_id", opIds),
     ]);
 
-    const supById = new Map(((supRes.data ?? []) as { id: string; name: string }[]).map((s) => [s.id, s]));
+    const supById = new Map(
+      ((supRes.data ?? []) as { id: string; name: string }[]).map((s) => [s.id, s]),
+    );
     const prodById = new Map(
-      ((prodRes.data ?? []) as { id: string; name: string | null; sku: string | null }[]).map((p) => [p.id, p]),
+      ((prodRes.data ?? []) as { id: string; name: string | null; sku: string | null }[]).map(
+        (p) => [p.id, p],
+      ),
     );
 
     const latestScore = new Map<string, { score: number; delta: number | null }>();
@@ -131,7 +129,7 @@ export const getAdaptiveProductionPriority = createServerFn({ method: "POST" })
     const items: Item[] = rows.map((o) => {
       const prod = o.product_id ? prodById.get(o.product_id) : null;
       const supRow = o.supplier_id ? supById.get(o.supplier_id) : null;
-      const sc = o.supplier_id ? latestScore.get(o.supplier_id) ?? null : null;
+      const sc = o.supplier_id ? (latestScore.get(o.supplier_id) ?? null) : null;
       const dueMs = o.due_date ? new Date(o.due_date).getTime() : null;
       const daysToDue = dueMs != null ? Math.round((dueMs - now) / 86_400_000) : null;
       const stageChangedMs = o.stage_updated_at

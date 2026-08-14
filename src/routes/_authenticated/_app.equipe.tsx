@@ -59,7 +59,14 @@ function TeamPage() {
     onError: onErr,
   });
 
-  if (loading) return <div className="p-8 space-y-2">{Array.from({ length: 6 }).map((_, i) => (<Skeleton key={i} className="h-10 w-full" />))}</div>;
+  if (loading)
+    return (
+      <div className="p-8 space-y-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-10 w-full" />
+        ))}
+      </div>
+    );
   if (!isAdmin) {
     return (
       <div className="p-8 max-w-xl">
@@ -87,7 +94,6 @@ function TeamPage() {
         }
         description="Atribua papéis e setores aos usuários da plataforma."
       />
-
 
       <div className="glass rounded-2xl overflow-x-auto">
         <table className="w-full text-sm min-w-[900px]">
@@ -126,13 +132,14 @@ function TeamPage() {
             </tr>
           </thead>
           <tbody>
-            {isLoading && Array.from({ length: 4 }).map((_, i) => (
-              <tr key={i}>
-                <td colSpan={ROLES.length + APP_SECTORS.length + 1} className="px-4 py-2">
-                  <Skeleton className="h-8 w-full" />
-                </td>
-              </tr>
-            ))}
+            {isLoading &&
+              Array.from({ length: 4 }).map((_, i) => (
+                <tr key={i}>
+                  <td colSpan={ROLES.length + APP_SECTORS.length + 1} className="px-4 py-2">
+                    <Skeleton className="h-8 w-full" />
+                  </td>
+                </tr>
+              ))}
             {data?.map((u) => (
               <tr key={u.id} className="border-t border-border">
                 <td className="px-4 py-3">

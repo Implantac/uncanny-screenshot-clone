@@ -57,17 +57,18 @@ export function CellEfficiencyPanel() {
         ) : (
           <div className="space-y-3">
             {data.cells.map((c) => (
-              <div
-                key={c.supplierId}
-                className="rounded-lg border border-border p-3 space-y-2"
-              >
+              <div key={c.supplierId} className="rounded-lg border border-border p-3 space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <div className="font-medium text-sm truncate">{c.supplierName}</div>
                   {statusBadge(c.status)}
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground tabular-nums">
-                  <span>Real: <b className="text-foreground">{c.observedPerDay}/dia</b></span>
-                  <span>Capacidade: <b className="text-foreground">{c.declaredPerDay}/dia</b></span>
+                  <span>
+                    Real: <b className="text-foreground">{c.observedPerDay}/dia</b>
+                  </span>
+                  <span>
+                    Capacidade: <b className="text-foreground">{c.declaredPerDay}/dia</b>
+                  </span>
                   <span className="ml-auto">{c.totalProduced} pçs no período</span>
                 </div>
                 {c.declaredPerDay > 0 && (

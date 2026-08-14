@@ -8,14 +8,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
-import {
-  Activity,
-  AlertTriangle,
-  Boxes,
-  Clock,
-  Factory,
-  Radio,
-} from "lucide-react";
+import { Activity, AlertTriangle, Boxes, Clock, Factory, Radio } from "lucide-react";
 import { getProductDigitalTwin } from "@/lib/product-digital-twin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -121,9 +114,7 @@ export function ProductDigitalTwinPanel({ productId }: { productId: string }) {
                   {s.stage_label}
                 </div>
                 <div className="text-lg font-semibold">{s.wip_orders}</div>
-                <div className="text-[10px] text-muted-foreground">
-                  {s.wip_qty} pçs
-                </div>
+                <div className="text-[10px] text-muted-foreground">{s.wip_qty} pçs</div>
               </div>
             ))}
         </div>
@@ -194,11 +185,7 @@ function Kpi({
   tone?: "warn" | "danger";
 }) {
   const color =
-    tone === "danger"
-      ? "text-destructive"
-      : tone === "warn"
-      ? "text-amber-600"
-      : "text-foreground";
+    tone === "danger" ? "text-destructive" : tone === "warn" ? "text-amber-600" : "text-foreground";
   return (
     <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
       <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-muted-foreground">

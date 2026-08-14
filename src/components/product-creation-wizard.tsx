@@ -68,9 +68,22 @@ const WIZARD_STEPS = [
 ] as const;
 
 const CATEGORIES = [
-  "Vestido", "Blusa", "Camisa", "Calça", "Saia", "Short",
-  "Jaqueta", "Casaco", "Macacão", "Body", "Top", "Cropped",
-  "Bermuda", "Kimono", "Coletê", "Outro",
+  "Vestido",
+  "Blusa",
+  "Camisa",
+  "Calça",
+  "Saia",
+  "Short",
+  "Jaqueta",
+  "Casaco",
+  "Macacão",
+  "Body",
+  "Top",
+  "Cropped",
+  "Bermuda",
+  "Kimono",
+  "Coletê",
+  "Outro",
 ];
 
 const SILHOUETTES = [
@@ -85,19 +98,35 @@ const SILHOUETTES = [
 ];
 
 const OCCASIONS = [
-  "Casual Dia", "Casual Noite", "Trabalho Escritório", "Trabalho Operacional",
-  "Social Formal", "Social Festa", "Praia / Resort", "Esporte / Lazer",
-  "Íntimo / Dormir", "Plus Size", "Gestante", "Infantil",
+  "Casual Dia",
+  "Casual Noite",
+  "Trabalho Escritório",
+  "Trabalho Operacional",
+  "Social Formal",
+  "Social Festa",
+  "Praia / Resort",
+  "Esporte / Lazer",
+  "Íntimo / Dormir",
+  "Plus Size",
+  "Gestante",
+  "Infantil",
 ];
 
 const COLOR_OPTIONS = [
-  { value: "preto", label: "Preto" }, { value: "branco", label: "Branco" },
-  { value: "vermelho", label: "Vermelho" }, { value: "azul", label: "Azul" },
-  { value: "verde", label: "Verde" }, { value: "amarelo", label: "Amarelo" },
-  { value: "rosa", label: "Rosa" }, { value: "roxo", label: "Roxo" },
-  { value: "laranja", label: "Laranja" }, { value: "marrom", label: "Marrom" },
-  { value: "cinza", label: "Cinza" }, { value: "bege", label: "Bege" },
-  { value: "estampa", label: "Estampado" }, { value: "listrado", label: "Listrado" },
+  { value: "preto", label: "Preto" },
+  { value: "branco", label: "Branco" },
+  { value: "vermelho", label: "Vermelho" },
+  { value: "azul", label: "Azul" },
+  { value: "verde", label: "Verde" },
+  { value: "amarelo", label: "Amarelo" },
+  { value: "rosa", label: "Rosa" },
+  { value: "roxo", label: "Roxo" },
+  { value: "laranja", label: "Laranja" },
+  { value: "marrom", label: "Marrom" },
+  { value: "cinza", label: "Cinza" },
+  { value: "bege", label: "Bege" },
+  { value: "estampa", label: "Estampado" },
+  { value: "listrado", label: "Listrado" },
   { value: "poa", label: "Poá" },
 ];
 
@@ -158,39 +187,82 @@ const MaterialRow = memo(function MaterialRow({
   onUpdate: (idx: number, partial: Partial<MaterialInline>) => void;
   onDelete: (id: string) => void;
 }) {
-  const handleName = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { name: e.target.value }), [idx, onUpdate]);
-  const handleUnit = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { unit: e.target.value }), [idx, onUpdate]);
-  const handleConsumption = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { consumption: Number(e.target.value) || 0 }), [idx, onUpdate]);
-  const handleUnitCost = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { unit_cost: Number(e.target.value) || 0 }), [idx, onUpdate]);
-  const handleLoss = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { loss_pct: Number(e.target.value) || 0 }), [idx, onUpdate]);
+  const handleName = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { name: e.target.value }),
+    [idx, onUpdate],
+  );
+  const handleUnit = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { unit: e.target.value }),
+    [idx, onUpdate],
+  );
+  const handleConsumption = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onUpdate(idx, { consumption: Number(e.target.value) || 0 }),
+    [idx, onUpdate],
+  );
+  const handleUnitCost = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onUpdate(idx, { unit_cost: Number(e.target.value) || 0 }),
+    [idx, onUpdate],
+  );
+  const handleLoss = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onUpdate(idx, { loss_pct: Number(e.target.value) || 0 }),
+    [idx, onUpdate],
+  );
   const handleDelete = useCallback(() => onDelete(mat.id), [mat.id, onDelete]);
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap border border-border/60 rounded-lg p-1.5 bg-background">
-      <Input value={mat.name} onChange={handleName} placeholder="Nome do material" className="h-7 text-xs min-w-[120px] flex-1" />
+      <Input
+        value={mat.name}
+        onChange={handleName}
+        placeholder="Nome do material"
+        className="h-7 text-xs min-w-[120px] flex-1"
+      />
       <div className="flex items-center gap-1 text-xs">
         <span className="text-muted-foreground">Un</span>
         <Input value={mat.unit} onChange={handleUnit} className="h-7 text-xs w-12" />
       </div>
       <div className="flex items-center gap-1 text-xs">
         <span className="text-muted-foreground">Cons</span>
-        <input type="number" step="0.01" value={mat.consumption || ""} onChange={handleConsumption}
-          className="h-7 w-16 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums" />
+        <input
+          type="number"
+          step="0.01"
+          value={mat.consumption || ""}
+          onChange={handleConsumption}
+          className="h-7 w-16 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
+        />
       </div>
       <div className="flex items-center gap-1 text-xs">
         <span className="text-muted-foreground">R$/un</span>
-        <input type="number" step="0.01" value={mat.unit_cost || ""} onChange={handleUnitCost}
-          className="h-7 w-16 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums" />
+        <input
+          type="number"
+          step="0.01"
+          value={mat.unit_cost || ""}
+          onChange={handleUnitCost}
+          className="h-7 w-16 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
+        />
       </div>
       <div className="flex items-center gap-1 text-xs">
         <span className="text-muted-foreground">Perda%</span>
-        <input type="number" step="0.1" value={mat.loss_pct || ""} onChange={handleLoss}
-          className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums" />
+        <input
+          type="number"
+          step="0.1"
+          value={mat.loss_pct || ""}
+          onChange={handleLoss}
+          className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
+        />
       </div>
       <span className="text-xs font-medium tabular-nums shrink-0 w-20 text-right">
         {fmt(mat.consumption * mat.unit_cost * (1 + mat.loss_pct / 100))}
       </span>
-      <Button size="icon" variant="ghost" className="size-6 shrink-0 text-destructive" onClick={handleDelete}>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="size-6 shrink-0 text-destructive"
+        onClick={handleDelete}
+      >
         <Trash2 className="size-3" />
       </Button>
     </div>
@@ -209,18 +281,48 @@ const OperationRow = memo(function OperationRow({
   onUpdate: (idx: number, partial: Partial<OperationInline>) => void;
   onDelete: (id: string) => void;
 }) {
-  const handleName = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { name: e.target.value }), [idx, onUpdate]);
-  const handleMachine = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { machine: e.target.value }), [idx, onUpdate]);
-  const handleRole = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => onUpdate(idx, { role: e.target.value }), [idx, onUpdate]);
-  const handleSam = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { sam: Number(e.target.value) || 0 }), [idx, onUpdate]);
-  const handleRate = useCallback((e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { rate_per_min: Number(e.target.value) || 0 }), [idx, onUpdate]);
+  const handleName = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { name: e.target.value }),
+    [idx, onUpdate],
+  );
+  const handleMachine = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { machine: e.target.value }),
+    [idx, onUpdate],
+  );
+  const handleRole = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => onUpdate(idx, { role: e.target.value }),
+    [idx, onUpdate],
+  );
+  const handleSam = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onUpdate(idx, { sam: Number(e.target.value) || 0 }),
+    [idx, onUpdate],
+  );
+  const handleRate = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onUpdate(idx, { rate_per_min: Number(e.target.value) || 0 }),
+    [idx, onUpdate],
+  );
   const handleDelete = useCallback(() => onDelete(op.id), [op.id, onDelete]);
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap border border-border/60 rounded-lg p-1.5 bg-background">
-      <Input value={op.name} onChange={handleName} placeholder="Operação" className="h-7 text-xs min-w-[100px] flex-1" />
-      <Input value={op.machine} onChange={handleMachine} placeholder="Máquina" className="h-7 text-xs w-20" />
-      <select value={op.role} onChange={handleRole} className="h-7 text-xs border border-border rounded bg-background px-1">
+      <Input
+        value={op.name}
+        onChange={handleName}
+        placeholder="Operação"
+        className="h-7 text-xs min-w-[100px] flex-1"
+      />
+      <Input
+        value={op.machine}
+        onChange={handleMachine}
+        placeholder="Máquina"
+        className="h-7 text-xs w-20"
+      />
+      <select
+        value={op.role}
+        onChange={handleRole}
+        className="h-7 text-xs border border-border rounded bg-background px-1"
+      >
         <option value="">Resp.</option>
         <option value="Corte">Corte</option>
         <option value="Costura">Costura</option>
@@ -232,18 +334,33 @@ const OperationRow = memo(function OperationRow({
       </select>
       <div className="flex items-center gap-1 text-xs">
         <span className="text-muted-foreground">SAM</span>
-        <input type="number" step="0.01" value={op.sam || ""} onChange={handleSam}
-          className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums" />
+        <input
+          type="number"
+          step="0.01"
+          value={op.sam || ""}
+          onChange={handleSam}
+          className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
+        />
       </div>
       <div className="flex items-center gap-1 text-xs">
         <span className="text-muted-foreground">R$/min</span>
-        <input type="number" step="0.01" value={op.rate_per_min || ""} onChange={handleRate}
-          className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums" />
+        <input
+          type="number"
+          step="0.01"
+          value={op.rate_per_min || ""}
+          onChange={handleRate}
+          className="h-7 w-14 text-xs text-right border border-border rounded px-1 bg-transparent tabular-nums"
+        />
       </div>
       <span className="text-xs font-medium tabular-nums shrink-0 w-20 text-right">
         {fmt(op.sam * op.rate_per_min)}
       </span>
-      <Button size="icon" variant="ghost" className="size-6 shrink-0 text-destructive" onClick={handleDelete}>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="size-6 shrink-0 text-destructive"
+        onClick={handleDelete}
+      >
         <Trash2 className="size-3" />
       </Button>
     </div>
@@ -331,10 +448,7 @@ export function ProductCreationWizard({
     [operations],
   );
   const subtotal = useMemo(() => materialsCost + laborCost, [materialsCost, laborCost]);
-  const totalCost = useMemo(
-    () => subtotal * (1 + overheadPct / 100),
-    [subtotal, overheadPct],
-  );
+  const totalCost = useMemo(() => subtotal * (1 + overheadPct / 100), [subtotal, overheadPct]);
   const estimatedMargin = useMemo(() => {
     if (!sellPrice || sellPrice <= 0) return null;
     return ((sellPrice - totalCost) / sellPrice) * 100;
@@ -519,9 +633,7 @@ export function ProductCreationWizard({
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success(
-        `"${result.name}" criado${result.hasFicha ? " com ficha técnica!" : "!"}`,
-      );
+      toast.success(`"${result.name}" criado${result.hasFicha ? " com ficha técnica!" : "!"}`);
       onOpenChange(false);
       navigate({ to: "/produto/$id", params: { id: result.id } });
     },
@@ -728,7 +840,9 @@ export function ProductCreationWizard({
                       onClick={() => createCollectionMut.mutate()}
                     >
                       {createCollectionMut.isPending ? (
-                        <><Loader2 className="size-3.5 animate-spin mr-2" /> Criando…</>
+                        <>
+                          <Loader2 className="size-3.5 animate-spin mr-2" /> Criando…
+                        </>
                       ) : (
                         "Criar coleção e usar"
                       )}
@@ -757,7 +871,15 @@ export function ProductCreationWizard({
                     />
                   </div>
                   {!skuAuto && (
-                    <Button type="button" variant="outline" size="sm" onClick={() => { setSkuAuto(true); setSku(""); }}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSkuAuto(true);
+                        setSku("");
+                      }}
+                    >
                       Gerar auto
                     </Button>
                   )}
@@ -770,8 +892,8 @@ export function ProductCreationWizard({
               </div>
 
               <div className="rounded-lg bg-muted/30 p-3 text-xs text-muted-foreground">
-                <div className="font-medium text-foreground mb-1">📌 O que é SKU?</div>
-                É o código único que identifica este produto no sistema.
+                <div className="font-medium text-foreground mb-1">📌 O que é SKU?</div>É o código
+                único que identifica este produto no sistema.
               </div>
             </div>
           )}
@@ -785,14 +907,18 @@ export function ProductCreationWizard({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="w-cat">Categoria <span className="text-destructive">*</span></Label>
+                <Label htmlFor="w-cat">
+                  Categoria <span className="text-destructive">*</span>
+                </Label>
                 <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger id="w-cat">
                     <SelectValue placeholder="Selecione o tipo de peça" />
                   </SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
-                      <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>
+                      <SelectItem key={c} value={c.toLowerCase()}>
+                        {c}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -805,7 +931,13 @@ export function ProductCreationWizard({
                     <button
                       key={c.value}
                       type="button"
-                      onClick={() => setColors((prev) => prev.includes(c.value) ? prev.filter((v) => v !== c.value) : [...prev, c.value])}
+                      onClick={() =>
+                        setColors((prev) =>
+                          prev.includes(c.value)
+                            ? prev.filter((v) => v !== c.value)
+                            : [...prev, c.value],
+                        )
+                      }
                       className={cn(
                         "rounded-full px-3 py-1 text-[11px] border transition-colors",
                         colors.includes(c.value)
@@ -826,7 +958,11 @@ export function ProductCreationWizard({
                     <button
                       key={s}
                       type="button"
-                      onClick={() => setSizes((prev) => prev.includes(s) ? prev.filter((v) => v !== s) : [...prev, s])}
+                      onClick={() =>
+                        setSizes((prev) =>
+                          prev.includes(s) ? prev.filter((v) => v !== s) : [...prev, s],
+                        )
+                      }
                       className={cn(
                         "rounded px-2.5 py-1 text-[11px] border transition-colors",
                         sizes.includes(s)
@@ -849,7 +985,9 @@ export function ProductCreationWizard({
                     </SelectTrigger>
                     <SelectContent>
                       {SILHOUETTES.map((s) => (
-                        <SelectItem key={s.value} value={s.value}>{s.label} — {s.desc}</SelectItem>
+                        <SelectItem key={s.value} value={s.value}>
+                          {s.label} — {s.desc}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -862,7 +1000,9 @@ export function ProductCreationWizard({
                     </SelectTrigger>
                     <SelectContent>
                       {OCCASIONS.map((o) => (
-                        <SelectItem key={o} value={o}>{o}</SelectItem>
+                        <SelectItem key={o} value={o}>
+                          {o}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -871,12 +1011,23 @@ export function ProductCreationWizard({
 
               <div className="space-y-2">
                 <Label htmlFor="w-tecido">Tecido sugerido (opcional)</Label>
-                <Input id="w-tecido" value={tecidoSugerido} onChange={(e) => setTecidoSugerido(e.target.value)} placeholder="Ex.: Crepe Seda, Malha Algodão 30.1, Linho Viscose…" />
+                <Input
+                  id="w-tecido"
+                  value={tecidoSugerido}
+                  onChange={(e) => setTecidoSugerido(e.target.value)}
+                  placeholder="Ex.: Crepe Seda, Malha Algodão 30.1, Linho Viscose…"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="w-desc">Descrição (opcional)</Label>
-                <Textarea id="w-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Breve descrição do produto, inspiração, referências…" rows={2} />
+                <Textarea
+                  id="w-desc"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Breve descrição do produto, inspiração, referências…"
+                  rows={2}
+                />
               </div>
 
               <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-xs">
@@ -901,10 +1052,20 @@ export function ProductCreationWizard({
                     <Ruler className="size-4 text-primary" /> Materiais (BOM)
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => setMatPickerOpen(true)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1 h-7 text-xs"
+                      onClick={() => setMatPickerOpen(true)}
+                    >
                       <Library className="size-3" /> Biblioteca
                     </Button>
-                    <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => setMaterials((prev) => [...prev, newMat()])}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1 h-7 text-xs"
+                      onClick={() => setMaterials((prev) => [...prev, newMat()])}
+                    >
                       <Plus className="size-3" /> Em branco
                     </Button>
                   </div>
@@ -916,7 +1077,13 @@ export function ProductCreationWizard({
                 ) : (
                   <div className="space-y-1.5">
                     {materials.map((mat, idx) => (
-                      <MaterialRow key={mat.id} mat={mat} idx={idx} onUpdate={updateMaterial} onDelete={deleteMaterial} />
+                      <MaterialRow
+                        key={mat.id}
+                        mat={mat}
+                        idx={idx}
+                        onUpdate={updateMaterial}
+                        onDelete={deleteMaterial}
+                      />
                     ))}
                   </div>
                 )}
@@ -933,7 +1100,12 @@ export function ProductCreationWizard({
                   <div className="text-sm font-semibold flex items-center gap-2">
                     <FileText className="size-4 text-primary" /> Operações (BOP)
                   </div>
-                  <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => setOperations((prev) => [...prev, newOp()])}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1 h-7 text-xs"
+                    onClick={() => setOperations((prev) => [...prev, newOp()])}
+                  >
                     <Plus className="size-3" /> Operação
                   </Button>
                 </div>
@@ -944,7 +1116,13 @@ export function ProductCreationWizard({
                 ) : (
                   <div className="space-y-1.5">
                     {operations.map((op, idx) => (
-                      <OperationRow key={op.id} op={op} idx={idx} onUpdate={updateOperation} onDelete={deleteOperation} />
+                      <OperationRow
+                        key={op.id}
+                        op={op}
+                        idx={idx}
+                        onUpdate={updateOperation}
+                        onDelete={deleteOperation}
+                      />
                     ))}
                   </div>
                 )}
@@ -957,7 +1135,8 @@ export function ProductCreationWizard({
 
               <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs">
                 <div className="font-medium text-primary mb-1">Dica</div>
-                Preencha os materiais e operações agora, ou deixe para completar depois no Workspace do Produto.
+                Preencha os materiais e operações agora, ou deixe para completar depois no Workspace
+                do Produto.
               </div>
 
               {user && (
@@ -1026,25 +1205,35 @@ export function ProductCreationWizard({
                     <div className="text-base font-semibold tabular-nums">{fmt(laborCost)}</div>
                   </div>
                   <div className="rounded-lg bg-muted/30 p-2">
-                    <div className="text-[10px] text-muted-foreground uppercase">Overhead ({overheadPct}%)</div>
-                    <div className="text-base font-semibold tabular-nums">{fmt(subtotal * overheadPct / 100)}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase">
+                      Overhead ({overheadPct}%)
+                    </div>
+                    <div className="text-base font-semibold tabular-nums">
+                      {fmt((subtotal * overheadPct) / 100)}
+                    </div>
                   </div>
                   <div className="rounded-lg bg-primary/10 border border-primary/30 p-2">
-                    <div className="text-[10px] text-primary uppercase font-medium">Custo total</div>
-                    <div className="text-base font-semibold tabular-nums text-primary">{fmt(totalCost)}</div>
+                    <div className="text-[10px] text-primary uppercase font-medium">
+                      Custo total
+                    </div>
+                    <div className="text-base font-semibold tabular-nums text-primary">
+                      {fmt(totalCost)}
+                    </div>
                   </div>
                 </div>
 
                 {/* Indicador de margem */}
                 {sellPrice > 0 && estimatedMargin !== null && (
-                  <div className={cn(
-                    "rounded-lg p-3 flex items-center gap-3",
-                    estimatedMargin >= 50
-                      ? "bg-emerald-500/10 border border-emerald-500/30"
-                      : estimatedMargin >= 30
-                        ? "bg-amber-500/10 border border-amber-500/30"
-                        : "bg-rose-500/10 border border-rose-500/30",
-                  )}>
+                  <div
+                    className={cn(
+                      "rounded-lg p-3 flex items-center gap-3",
+                      estimatedMargin >= 50
+                        ? "bg-emerald-500/10 border border-emerald-500/30"
+                        : estimatedMargin >= 30
+                          ? "bg-amber-500/10 border border-amber-500/30"
+                          : "bg-rose-500/10 border border-rose-500/30",
+                    )}
+                  >
                     {estimatedMargin >= 50 ? (
                       <TrendingUp className="size-5 text-emerald-600" />
                     ) : estimatedMargin >= 30 ? (
@@ -1054,10 +1243,17 @@ export function ProductCreationWizard({
                     )}
                     <div>
                       <div className="text-xs font-semibold">
-                        Margem estimada: <span className={cn(
-                          "text-base",
-                          estimatedMargin >= 50 ? "text-emerald-600" : estimatedMargin >= 30 ? "text-amber-600" : "text-rose-600",
-                        )}>
+                        Margem estimada:{" "}
+                        <span
+                          className={cn(
+                            "text-base",
+                            estimatedMargin >= 50
+                              ? "text-emerald-600"
+                              : estimatedMargin >= 30
+                                ? "text-amber-600"
+                                : "text-rose-600",
+                          )}
+                        >
                           {estimatedMargin.toFixed(1)}%
                         </span>
                       </div>
@@ -1097,7 +1293,9 @@ export function ProductCreationWizard({
                 </div>
                 <div className="p-3 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Coleção</span>
-                  <span className="text-sm">{collections.find((c) => c.id === collectionId)?.name ?? "—"}</span>
+                  <span className="text-sm">
+                    {collections.find((c) => c.id === collectionId)?.name ?? "—"}
+                  </span>
                 </div>
                 <div className="p-3 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Categoria</span>
@@ -1106,7 +1304,11 @@ export function ProductCreationWizard({
                 <div className="p-3 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Cores</span>
                   <span className="text-sm">
-                    {colors.length ? colors.map((c) => COLOR_OPTIONS.find((o) => o.value === c)?.label ?? c).join(", ") : "—"}
+                    {colors.length
+                      ? colors
+                          .map((c) => COLOR_OPTIONS.find((o) => o.value === c)?.label ?? c)
+                          .join(", ")
+                      : "—"}
                   </span>
                 </div>
                 <div className="p-3 flex items-center justify-between">
@@ -1123,11 +1325,15 @@ export function ProductCreationWizard({
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex items-center justify-between p-1.5 rounded bg-muted/30">
                     <span className="text-muted-foreground">Materiais</span>
-                    <span className="font-medium tabular-nums">{materials.length} itens · {fmt(materialsCost)}</span>
+                    <span className="font-medium tabular-nums">
+                      {materials.length} itens · {fmt(materialsCost)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between p-1.5 rounded bg-muted/30">
                     <span className="text-muted-foreground">Operações</span>
-                    <span className="font-medium tabular-nums">{operations.length} itens · {fmt(laborCost)}</span>
+                    <span className="font-medium tabular-nums">
+                      {operations.length} itens · {fmt(laborCost)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1140,20 +1346,30 @@ export function ProductCreationWizard({
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
                     <div className="text-muted-foreground">Custo total</div>
-                    <div className="text-base font-bold tabular-nums text-primary">{fmt(totalCost)}</div>
+                    <div className="text-base font-bold tabular-nums text-primary">
+                      {fmt(totalCost)}
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">Preço venda</div>
-                    <div className="text-base font-bold tabular-nums">{sellPrice > 0 ? fmt(sellPrice) : "—"}</div>
+                    <div className="text-base font-bold tabular-nums">
+                      {sellPrice > 0 ? fmt(sellPrice) : "—"}
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">Margem</div>
-                    <div className={cn(
-                      "text-base font-bold tabular-nums",
-                      estimatedMargin !== null && estimatedMargin >= 50 ? "text-emerald-600" :
-                      estimatedMargin !== null && estimatedMargin >= 30 ? "text-amber-600" :
-                      estimatedMargin !== null ? "text-rose-600" : ""
-                    )}>
+                    <div
+                      className={cn(
+                        "text-base font-bold tabular-nums",
+                        estimatedMargin !== null && estimatedMargin >= 50
+                          ? "text-emerald-600"
+                          : estimatedMargin !== null && estimatedMargin >= 30
+                            ? "text-amber-600"
+                            : estimatedMargin !== null
+                              ? "text-rose-600"
+                              : "",
+                      )}
+                    >
                       {estimatedMargin !== null ? `${estimatedMargin.toFixed(1)}%` : "—"}
                     </div>
                   </div>
@@ -1165,15 +1381,21 @@ export function ProductCreationWizard({
                 <div className="text-xs font-medium mb-2">📋 O que acontece depois da criação?</div>
                 <ol className="space-y-2 text-xs text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <span className="size-5 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 text-[10px] font-medium">1</span>
+                    <span className="size-5 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 text-[10px] font-medium">
+                      1
+                    </span>
                     Você será levado ao <strong>Workspace do Produto</strong>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="size-5 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 text-[10px] font-medium">2</span>
+                    <span className="size-5 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 text-[10px] font-medium">
+                      2
+                    </span>
                     O <strong>Ciclo de Vida</strong> mostrará as etapas do produto
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="size-5 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 text-[10px] font-medium">3</span>
+                    <span className="size-5 rounded-full bg-primary/10 text-primary grid place-items-center shrink-0 text-[10px] font-medium">
+                      3
+                    </span>
                     Complete a <strong>Ficha Técnica</strong> e solicite <strong>Protótipo</strong>
                   </li>
                 </ol>
@@ -1194,7 +1416,11 @@ export function ProductCreationWizard({
 
           <div className="flex gap-2">
             {!isLastStep ? (
-              <Button type="button" onClick={() => setStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1))} disabled={!canAdvance}>
+              <Button
+                type="button"
+                onClick={() => setStep((s) => Math.min(s + 1, WIZARD_STEPS.length - 1))}
+                disabled={!canAdvance}
+              >
                 {step === WIZARD_STEPS.length - 2 ? "Revisar" : "Continuar"}
                 <ArrowRight className="size-4 ml-1" />
               </Button>
@@ -1209,9 +1435,13 @@ export function ProductCreationWizard({
                   disabled={createMut.isPending || !name.trim() || collectionId === "none"}
                 >
                   {createMut.isPending ? (
-                    <><Loader2 className="size-4 animate-spin mr-2" /> Criando…</>
+                    <>
+                      <Loader2 className="size-4 animate-spin mr-2" /> Criando…
+                    </>
                   ) : (
-                    <><Sparkles className="size-4 mr-1.5" /> Criar Produto</>
+                    <>
+                      <Sparkles className="size-4 mr-1.5" /> Criar Produto
+                    </>
                   )}
                 </Button>
               </>
@@ -1222,4 +1452,3 @@ export function ProductCreationWizard({
     </Dialog>
   );
 }
-

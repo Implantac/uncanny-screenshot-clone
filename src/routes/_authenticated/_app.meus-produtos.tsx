@@ -24,7 +24,6 @@ import {
 import { ApprovalSlaBadge } from "@/components/approval-sla-badge";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
-
 export const Route = createFileRoute("/_authenticated/_app/meus-produtos")({
   head: () => ({
     meta: [
@@ -62,7 +61,6 @@ type PendingApproval = {
   owner_id: string;
   products: { sku: string; name: string } | null;
 };
-
 
 type RecentComment = {
   id: string;
@@ -112,16 +110,13 @@ function MyProductsFeed() {
     },
   });
 
-
   const comments = useQuery({
     enabled: !!uid && watchedIds.length > 0,
     queryKey: ["my-products-comments", uid, watchedIds.join(",")],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("product_timeline_comments")
-        .select(
-          "id, product_id, body, created_at, author_id, products:product_id(sku, name)",
-        )
+        .select("id, product_id, body, created_at, author_id, products:product_id(sku, name)")
         .in("product_id", watchedIds)
         .neq("author_id", uid!)
         .order("created_at", { ascending: false })
@@ -188,7 +183,13 @@ function MyProductsFeed() {
   });
 
   const decideOne = useMutation({
-    mutationFn: async ({ item, decision }: { item: PendingApproval; decision: "aprovado" | "rejeitado" }) => {
+    mutationFn: async ({
+      item,
+      decision,
+    }: {
+      item: PendingApproval;
+      decision: "aprovado" | "rejeitado";
+    }) => {
       const { error } = await supabase.from("product_approvals").insert({
         product_id: item.product_id,
         owner_id: item.owner_id,
@@ -263,7 +264,6 @@ function MyProductsFeed() {
         }
       />
 
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Watched products */}
         <section className="rounded-xl border border-border bg-card p-4 space-y-3 lg:col-span-2">
@@ -302,11 +302,7 @@ function MyProductsFeed() {
                     >
                       <div className="size-10 rounded overflow-hidden bg-muted/40 shrink-0">
                         {p.image_url ? (
-                          <img
-                            src={p.image_url}
-                            alt=""
-                            className="size-full object-cover"
-                          />
+                          <img src={p.image_url} alt="" className="size-full object-cover" />
                         ) : (
                           <div className="size-full grid place-items-center text-muted-foreground">
                             <Package className="size-4" />
@@ -315,9 +311,7 @@ function MyProductsFeed() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">{p.name}</div>
-                        <div className="text-[11px] text-muted-foreground font-mono">
-                          {p.sku}
-                        </div>
+                        <div className="text-[11px] text-muted-foreground font-mono">{p.sku}</div>
                       </div>
                       <ProductReadinessBadge productId={p.id} />
                       <Badge variant="outline" className="text-[10px] capitalize">
@@ -382,7 +376,9 @@ function MyProductsFeed() {
                       <X className="size-3" />
                     )}
                     Reprovar
-                    <kbd className="ml-1 hidden md:inline text-[9px] px-1 rounded bg-muted border border-border">R</kbd>
+                    <kbd className="ml-1 hidden md:inline text-[9px] px-1 rounded bg-muted border border-border">
+                      R
+                    </kbd>
                   </Button>
                   <Button
                     size="sm"
@@ -397,12 +393,18 @@ function MyProductsFeed() {
                       <Check className="size-3" />
                     )}
                     Aprovar
-                    <kbd className="ml-1 hidden md:inline text-[9px] px-1 rounded bg-muted border border-border">A</kbd>
+                    <kbd className="ml-1 hidden md:inline text-[9px] px-1 rounded bg-muted border border-border">
+                      A
+                    </kbd>
                   </Button>
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground px-1">
-                Atalhos: <kbd className="px-1 rounded bg-muted border border-border">X</kbd> selecionar tudo · <kbd className="px-1 rounded bg-muted border border-border">A</kbd> aprovar · <kbd className="px-1 rounded bg-muted border border-border">R</kbd> reprovar · <kbd className="px-1 rounded bg-muted border border-border">Esc</kbd> limpar
+                Atalhos: <kbd className="px-1 rounded bg-muted border border-border">X</kbd>{" "}
+                selecionar tudo ·{" "}
+                <kbd className="px-1 rounded bg-muted border border-border">A</kbd> aprovar ·{" "}
+                <kbd className="px-1 rounded bg-muted border border-border">R</kbd> reprovar ·{" "}
+                <kbd className="px-1 rounded bg-muted border border-border">Esc</kbd> limpar
               </p>
               <ul className="space-y-1.5">
                 {(approvals.data ?? []).map((a) => {
@@ -412,9 +414,7 @@ function MyProductsFeed() {
                     <li key={a.id}>
                       <div
                         className={`flex items-start gap-2 border rounded-lg px-2 py-2 transition relative ${
-                          checked
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:bg-muted"
+                          checked ? "border-primary bg-primary/5" : "border-border hover:bg-muted"
                         }`}
                       >
                         {fresh && (
@@ -461,7 +461,9 @@ function MyProductsFeed() {
                               decideOne.mutate({ item: a, decision: "rejeitado" });
                             }}
                           >
-                            {decideOne.isPending && decideOne.variables?.item.id === a.id && decideOne.variables?.decision === "rejeitado" ? (
+                            {decideOne.isPending &&
+                            decideOne.variables?.item.id === a.id &&
+                            decideOne.variables?.decision === "rejeitado" ? (
                               <Loader2 className="size-3.5 animate-spin" />
                             ) : (
                               <X className="size-3.5" />
@@ -479,7 +481,9 @@ function MyProductsFeed() {
                               decideOne.mutate({ item: a, decision: "aprovado" });
                             }}
                           >
-                            {decideOne.isPending && decideOne.variables?.item.id === a.id && decideOne.variables?.decision === "aprovado" ? (
+                            {decideOne.isPending &&
+                            decideOne.variables?.item.id === a.id &&
+                            decideOne.variables?.decision === "aprovado" ? (
                               <Loader2 className="size-3.5 animate-spin" />
                             ) : (
                               <Check className="size-3.5" />
@@ -494,9 +498,7 @@ function MyProductsFeed() {
             </>
           )}
         </section>
-
       </div>
-
 
       {/* Recent comments feed */}
       <section className="rounded-xl border border-border bg-card p-4 space-y-3">
@@ -531,39 +533,38 @@ function MyProductsFeed() {
             {(comments.data ?? []).map((c) => {
               const fresh = isNew(c.created_at);
               return (
-              <li key={c.id}>
-                <Link
-                  to="/produto/$id"
-                  params={{ id: c.product_id }}
-                  className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition relative"
-                >
-                  {fresh && (
-                    <span
-                      aria-label="Nova"
-                      className="absolute left-1 top-3 size-1.5 rounded-full bg-primary"
-                    />
-                  )}
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="text-xs font-medium truncate">
-                      {c.products?.name ?? "Produto"}
-                      <span className="ml-2 text-[10px] text-muted-foreground font-mono">
-                        {c.products?.sku}
-                      </span>
+                <li key={c.id}>
+                  <Link
+                    to="/produto/$id"
+                    params={{ id: c.product_id }}
+                    className="block border border-border rounded-lg px-3 py-2 hover:bg-muted transition relative"
+                  >
+                    {fresh && (
+                      <span
+                        aria-label="Nova"
+                        className="absolute left-1 top-3 size-1.5 rounded-full bg-primary"
+                      />
+                    )}
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="text-xs font-medium truncate">
+                        {c.products?.name ?? "Produto"}
+                        <span className="ml-2 text-[10px] text-muted-foreground font-mono">
+                          {c.products?.sku}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {new Date(c.created_at).toLocaleString("pt-BR")}
+                      </div>
                     </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {new Date(c.created_at).toLocaleString("pt-BR")}
+                    <div className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">
+                      {c.body}
                     </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">
-                    {c.body}
-                  </div>
-                </Link>
-              </li>
+                  </Link>
+                </li>
               );
             })}
           </ul>
         )}
-
       </section>
     </div>
   );

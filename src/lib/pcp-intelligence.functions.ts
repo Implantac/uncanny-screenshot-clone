@@ -90,7 +90,7 @@ export const getPcpIntelligence = createServerFn({ method: "GET" })
     const bySupplier = new Map<string, SupplierLoad>();
     const today = new Date();
 
-    (orders as OrderRow[] | null ?? []).forEach((o) => {
+    ((orders as OrderRow[] | null) ?? []).forEach((o) => {
       const sid = o.supplier_id ?? "_none";
       const sname = o.suppliers?.name ?? "Sem fornecedor";
       const cap = capMap.get(sid);
@@ -118,14 +118,15 @@ export const getPcpIntelligence = createServerFn({ method: "GET" })
     });
 
     // Forecast por OP (FIFO em fila já ordenada por prioridade/due)
-    (orders as OrderRow[] | null ?? []).forEach((o) => {
+    ((orders as OrderRow[] | null) ?? []).forEach((o) => {
       const sid = o.supplier_id ?? "_none";
       const load = bySupplier.get(sid)!;
       const remaining = Math.max(0, Math.round(o.quantity * (1 - (o.progress || 0) / 100)));
       const ppd = load.pieces_per_day;
       const cumulative = load.next_orders.reduce((s, x) => s + x.quantity_remaining, 0) + remaining;
       const daysNeeded = ppd > 0 ? cumulative / ppd : Number.POSITIVE_INFINITY;
-      const forecast = ppd > 0 ? addBusinessDays(today, daysNeeded, load.working_days_per_week) : null;
+      const forecast =
+        ppd > 0 ? addBusinessDays(today, daysNeeded, load.working_days_per_week) : null;
       const due = o.due_date ? new Date(o.due_date) : null;
       let risk: "ontime" | "tight" | "late" = "ontime";
       if (forecast && due) {
@@ -162,7 +163,9 @@ export const getPcpIntelligence = createServerFn({ method: "GET" })
 
     // Sugestões IA: realocar de fornecedor estourado para um com folga
     const list = Array.from(bySupplier.values()).filter((s) => s.supplier_id !== "_none");
-    const overloaded = list.filter((s) => s.occupancy_pct > 100).sort((a, b) => b.occupancy_pct - a.occupancy_pct);
+    const overloaded = list
+      .filter((s) => s.occupancy_pct > 100)
+      .sort((a, b) => b.occupancy_pct - a.occupancy_pct);
     const free = list
       .filter((s) => s.pieces_per_day > 0 && s.occupancy_pct < 70)
       .sort((a, b) => a.occupancy_pct - b.occupancy_pct);
@@ -205,7 +208,9 @@ export const getPcpIntelligence = createServerFn({ method: "GET" })
     const totalWip = list.reduce((s, x) => s + x.wip_pieces, 0);
     const totalCap = list.reduce((s, x) => s + x.pieces_per_day * x.working_days_per_week * 4, 0);
     const avgOccupancy = totalCap > 0 ? Math.round((totalWip / totalCap) * 100) : 0;
-    const lateForecasts = list.flatMap((s) => s.next_orders).filter((o) => o.risk === "late").length;
+    const lateForecasts = list
+      .flatMap((s) => s.next_orders)
+      .filter((o) => o.risk === "late").length;
 
     return {
       kpis: {
@@ -231,17 +236,15 @@ export const upsertSupplierCapacity = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => UpsertCap.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { error } = await supabase
-      .from("supplier_capacity")
-      .upsert(
-        {
-          owner_id: userId,
-          supplier_id: data.supplier_id,
-          pieces_per_day: data.pieces_per_day,
-          working_days_per_week: data.working_days_per_week,
-        },
-        { onConflict: "owner_id,supplier_id" },
-      );
+    const { error } = await supabase.from("supplier_capacity").upsert(
+      {
+        owner_id: userId,
+        supplier_id: data.supplier_id,
+        pieces_per_day: data.pieces_per_day,
+        working_days_per_week: data.working_days_per_week,
+      },
+      { onConflict: "owner_id,supplier_id" },
+    );
     if (error) throw new Error(error.message);
     return { ok: true };
   });

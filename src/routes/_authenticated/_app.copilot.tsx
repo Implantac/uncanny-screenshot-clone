@@ -11,7 +11,10 @@ export const Route = createFileRoute("/_authenticated/_app/copilot")({
   head: () => ({
     meta: [
       { title: "Copiloto PCP · USE MODA OS" },
-      { name: "description", content: "Copiloto IA com acesso direto aos dados de produção, suprimentos e qualidade." },
+      {
+        name: "description",
+        content: "Copiloto IA com acesso direto aos dados de produção, suprimentos e qualidade.",
+      },
     ],
   }),
   component: CopilotPage,
@@ -55,7 +58,9 @@ function ToolCallCard({ part }: { part: ToolPart }) {
           {part.input !== undefined && (
             <div>
               <div className="text-[10px] uppercase text-muted-foreground mb-0.5">input</div>
-              <pre className="text-[11px] whitespace-pre-wrap break-words">{JSON.stringify(part.input, null, 2)}</pre>
+              <pre className="text-[11px] whitespace-pre-wrap break-words">
+                {JSON.stringify(part.input, null, 2)}
+              </pre>
             </div>
           )}
           {part.output !== undefined && (
@@ -140,8 +145,9 @@ function CopilotPage() {
                 <Sparkles className="size-4 text-primary-foreground" />
               </div>
               <div className="glass rounded-2xl px-4 py-2.5 max-w-[80%] text-sm leading-relaxed">
-                Sou o <strong>Copiloto PCP</strong>. Posso responder sobre OPs atrasadas, OPs em risco,
-                faltas de insumo, ocorrências críticas e fornecedores problemáticos consultando seus dados reais.
+                Sou o <strong>Copiloto PCP</strong>. Posso responder sobre OPs atrasadas, OPs em
+                risco, faltas de insumo, ocorrências críticas e fornecedores problemáticos
+                consultando seus dados reais.
               </div>
             </div>
           )}
@@ -153,7 +159,10 @@ function CopilotPage() {
               .join("");
             const toolParts = m.parts.filter((p: any) => p.type?.startsWith("tool-")) as ToolPart[];
             return (
-              <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
+              <div
+                key={m.id}
+                className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}
+              >
                 <div
                   className={`size-8 rounded-full grid place-items-center shrink-0 ${
                     m.role === "user"

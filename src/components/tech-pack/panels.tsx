@@ -1,18 +1,27 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, Layers3, Scissors, Ruler, Wallet, ArrowUp, ArrowDown, Link2, X, Search, Library, FileDown } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Layers3,
+  Scissors,
+  Ruler,
+  Wallet,
+  ArrowUp,
+  ArrowDown,
+  Link2,
+  X,
+  Search,
+  Library,
+  FileDown,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MaterialPickerDialog, type LibraryMaterial } from "@/components/material-picker-dialog";
 import {
   Table,
@@ -61,7 +70,6 @@ const MATERIAL_TYPES = [
   "Serviço de estamparia",
   "Serviço de bordado",
 ];
-
 
 type Operation = {
   id: string;
@@ -154,7 +162,7 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
         tech_sheet_id: sheetId,
         material_id: m.id,
         name: m.name,
-        type: MATERIAL_TYPES.includes(m.kind) ? m.kind : (m.kind as string) ?? null,
+        type: MATERIAL_TYPES.includes(m.kind) ? m.kind : ((m.kind as string) ?? null),
         code: m.code ?? null,
         description: null,
         supplier: null,
@@ -319,7 +327,9 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                         {canEdit ? (
                           <select
                             value={m.type ?? ""}
-                            onChange={(e) => upd.mutate({ id: m.id, patch: { type: e.target.value || null } })}
+                            onChange={(e) =>
+                              upd.mutate({ id: m.id, patch: { type: e.target.value || null } })
+                            }
                             className="w-full h-7 rounded-md border border-transparent bg-transparent px-1.5 text-xs hover:border-border focus:border-border"
                           >
                             <option value="">—</option>
@@ -366,7 +376,9 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                           ownerId={ownerId}
                           value={m.inventory_item_id}
                           disabled={!canEdit}
-                          onChange={(id) => upd.mutate({ id: m.id, patch: { inventory_item_id: id } })}
+                          onChange={(id) =>
+                            upd.mutate({ id: m.id, patch: { inventory_item_id: id } })
+                          }
                         />
                       </TableCell>
                       <TableCell>
@@ -436,7 +448,8 @@ export function MaterialsPanel({ sheetId, ownerId, canEdit }: Props) {
                 Custo Total de Matéria-Prima
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                {data.length} {data.length === 1 ? "item" : "itens"} no BOM · atualiza automaticamente com consumo, perda e custo unitário.
+                {data.length} {data.length === 1 ? "item" : "itens"} no BOM · atualiza
+                automaticamente com consumo, perda e custo unitário.
               </div>
             </div>
             <div className="text-3xl font-bold tabular-nums text-primary">{fmt(total)}</div>
@@ -518,11 +531,11 @@ function exportBomPdf(
 }
 
 function escapeHtml(s: string) {
-  return String(s).replace(/[&<>"']/g, (c) => (
-    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string
-  ));
+  return String(s).replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string,
+  );
 }
-
 
 /* ------------------------------- Operations ------------------------------- */
 export function OperationsPanel({ sheetId, ownerId, canEdit }: Props) {
@@ -1126,17 +1139,25 @@ function InventoryLinkCell({
 
   return (
     <div className="flex items-center gap-1">
-      <Popover open={open} onOpenChange={(o) => disabled ? null : setOpen(o)}>
+      <Popover open={open} onOpenChange={(o) => (disabled ? null : setOpen(o))}>
         <PopoverTrigger asChild>
           <button
             type="button"
             disabled={disabled}
             className="flex-1 min-w-0 text-left text-xs px-2 py-1 rounded border border-transparent hover:border-border disabled:cursor-default flex items-center gap-1"
-            title={current ? `${current.sku ?? ""} · ${current.name}` : "Vincular item do almoxarifado"}
+            title={
+              current ? `${current.sku ?? ""} · ${current.name}` : "Vincular item do almoxarifado"
+            }
           >
-            <Link2 className={`size-3 shrink-0 ${current ? "text-primary" : "text-muted-foreground"}`} />
+            <Link2
+              className={`size-3 shrink-0 ${current ? "text-primary" : "text-muted-foreground"}`}
+            />
             <span className="truncate">
-              {current ? (current.sku ?? current.name) : <span className="text-muted-foreground">Vincular…</span>}
+              {current ? (
+                (current.sku ?? current.name)
+              ) : (
+                <span className="text-muted-foreground">Vincular…</span>
+              )}
             </span>
           </button>
         </PopoverTrigger>
@@ -1167,7 +1188,9 @@ function InventoryLinkCell({
                   }}
                 >
                   <span className="truncate">
-                    <span className="font-mono text-[10px] text-muted-foreground">{it.sku ?? "—"}</span>{" "}
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {it.sku ?? "—"}
+                    </span>{" "}
                     {it.name}
                   </span>
                   {it.unit && (
@@ -1317,9 +1340,10 @@ function GradeRulePopover({
   const handleOpen = (o: boolean) => {
     setOpen(o);
     if (o) {
-      const b = current && Object.keys(current).length > 0
-        ? (sizes.find((s) => s === "M") ?? sizes[Math.floor(sizes.length / 2)] ?? sizes[0] ?? "")
-        : pickDefaultBase();
+      const b =
+        current && Object.keys(current).length > 0
+          ? (sizes.find((s) => s === "M") ?? sizes[Math.floor(sizes.length / 2)] ?? sizes[0] ?? "")
+          : pickDefaultBase();
       setBase(b);
       setBaseValue(String(current[b] ?? 0));
       setDeltas((prev) => {
@@ -1381,8 +1405,8 @@ function GradeRulePopover({
         <div>
           <div className="text-xs font-semibold">Regra de salto</div>
           <p className="text-[11px] text-muted-foreground">
-            Defina o tamanho base e o incremento entre cada faixa. Os demais tamanhos
-            são preenchidos automaticamente.
+            Defina o tamanho base e o incremento entre cada faixa. Os demais tamanhos são
+            preenchidos automaticamente.
           </p>
         </div>
 
@@ -1395,7 +1419,9 @@ function GradeRulePopover({
               className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
             >
               {sizes.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
           </div>
@@ -1434,10 +1460,15 @@ function GradeRulePopover({
         </div>
 
         <div className="rounded-md border border-border/60 bg-muted/30 p-2">
-          <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Prévia</div>
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+            Prévia
+          </div>
           <div className="grid grid-cols-4 gap-1 text-[11px] tabular-nums">
             {sizes.map((s) => (
-              <div key={s} className={`rounded px-1.5 py-0.5 text-center ${s === base ? "bg-primary/15 text-primary font-semibold" : "bg-background"}`}>
+              <div
+                key={s}
+                className={`rounded px-1.5 py-0.5 text-center ${s === base ? "bg-primary/15 text-primary font-semibold" : "bg-background"}`}
+              >
                 <div className="text-[9px] text-muted-foreground">{s}</div>
                 <div>{(preview[s] ?? 0).toFixed(2)}</div>
               </div>
@@ -1446,7 +1477,9 @@ function GradeRulePopover({
         </div>
 
         <div className="flex justify-end gap-1">
-          <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
+            Cancelar
+          </Button>
           <Button
             size="sm"
             onClick={() => {
@@ -1461,4 +1494,3 @@ function GradeRulePopover({
     </Popover>
   );
 }
-

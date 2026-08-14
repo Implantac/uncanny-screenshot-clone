@@ -3,24 +3,26 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { Search, Library, Sparkles, ImageOff } from "lucide-react";
-import {
-  listReferenceLibrary,
-  type RefItem,
-} from "@/lib/reference-library.functions";
+import { listReferenceLibrary, type RefItem } from "@/lib/reference-library.functions";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export const Route = createFileRoute("/_authenticated/_app/biblioteca")({
   head: () => ({
     meta: [
       { title: "Biblioteca de Referências · USE MODA PLM" },
-      { name: "description", content: "Repositório de referências, imagens, moodboards e materiais reutilizáveis por coleção." },
+      {
+        name: "description",
+        content:
+          "Repositório de referências, imagens, moodboards e materiais reutilizáveis por coleção.",
+      },
       { property: "og:title", content: "Biblioteca de Referências · USE MODA PLM" },
-      { property: "og:description", content: "Repositório de referências, imagens, moodboards e materiais reutilizáveis por coleção." },
+      {
+        property: "og:description",
+        content:
+          "Repositório de referências, imagens, moodboards e materiais reutilizáveis por coleção.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -63,7 +65,8 @@ function BibliotecaPage() {
             <Library className="size-6" /> Biblioteca de Referências
           </h1>
           <p className="text-sm text-muted-foreground">
-            Catálogo global de produtos e protótipos de todas as coleções. Use como base para novas referências.
+            Catálogo global de produtos e protótipos de todas as coleções. Use como base para novas
+            referências.
           </p>
         </div>
         <div className="text-xs text-muted-foreground flex gap-4">
@@ -79,7 +82,8 @@ function BibliotecaPage() {
       {heroes.length > 0 && (
         <section className="rounded-xl border border-primary/30 bg-primary/5 p-4">
           <div className="flex items-center gap-2 text-sm font-medium mb-3">
-            <Sparkles className="size-4 text-primary" /> Heróis comerciais (180d) — candidatos a carry-over
+            <Sparkles className="size-4 text-primary" /> Heróis comerciais (180d) — candidatos a
+            carry-over
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {heroes.map((h) => (
@@ -146,9 +150,15 @@ function BibliotecaPage() {
 
         <main className="col-span-12 md:col-span-9">
           {isLoading && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" aria-label="Carregando biblioteca">
+            <div
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"
+              aria-label="Carregando biblioteca"
+            >
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="rounded-xl overflow-hidden border border-border/40 animate-pulse">
+                <div
+                  key={i}
+                  className="rounded-xl overflow-hidden border border-border/40 animate-pulse"
+                >
                   <div className="aspect-square bg-muted/40" />
                   <div className="p-2 space-y-2">
                     <div className="h-3 w-3/4 bg-muted/40 rounded" />
@@ -189,9 +199,7 @@ function FacetGroup({
   return (
     <div className="rounded-lg border border-border bg-card p-3">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-xs uppercase tracking-wider text-muted-foreground">
-          {title}
-        </div>
+        <div className="text-xs uppercase tracking-wider text-muted-foreground">{title}</div>
         {value && (
           <button
             onClick={() => onChange(null)}
@@ -218,8 +226,7 @@ function FacetGroup({
 }
 
 function RefCard({ item, highlight = false }: { item: RefItem; highlight?: boolean }) {
-  const href =
-    item.source === "product" ? `/produto/${item.id}` : `/dev-kanban`;
+  const href = item.source === "product" ? `/produto/${item.id}` : `/dev-kanban`;
   return (
     <Link
       to={href}

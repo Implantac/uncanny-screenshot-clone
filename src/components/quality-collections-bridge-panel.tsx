@@ -8,7 +8,11 @@ function fmtPct(n: number) {
   return `${n.toFixed(0)}%`;
 }
 function fmtMoney(n: number) {
-  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  return n.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  });
 }
 
 const RISK_STYLE: Record<string, string> = {
@@ -34,9 +38,7 @@ export function QualityCollectionsBridgePanel() {
   }
   if (!data) return null;
 
-  const visible = data.rows.filter(
-    (r) => r.ordersTotal + r.inspectionsTotal + r.occurrences > 0,
-  );
+  const visible = data.rows.filter((r) => r.ordersTotal + r.inspectionsTotal + r.occurrences > 0);
 
   return (
     <div className="glass rounded-2xl overflow-hidden">

@@ -15,9 +15,17 @@ export const Route = createFileRoute("/_authenticated/_app/dev-kanban")({
   head: () => ({
     meta: [
       { title: "Kanban do Desenvolvimento · USE MODA PLM" },
-      { name: "description", content: "Acompanhamento de peças piloto, aprovações e handoff entre design, modelagem e engenharia." },
+      {
+        name: "description",
+        content:
+          "Acompanhamento de peças piloto, aprovações e handoff entre design, modelagem e engenharia.",
+      },
       { property: "og:title", content: "Kanban do Desenvolvimento · USE MODA PLM" },
-      { property: "og:description", content: "Acompanhamento de peças piloto, aprovações e handoff entre design, modelagem e engenharia." },
+      {
+        property: "og:description",
+        content:
+          "Acompanhamento de peças piloto, aprovações e handoff entre design, modelagem e engenharia.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -269,7 +277,9 @@ function DevKanban() {
                         <div className="flex items-center gap-1 shrink-0">
                           <ProductReadinessBadge productId={p.id} />
                           {p.sell_price ? (
-                            <span className="tabular-nums">R$ {Number(p.sell_price).toFixed(0)}</span>
+                            <span className="tabular-nums">
+                              R$ {Number(p.sell_price).toFixed(0)}
+                            </span>
                           ) : null}
                         </div>
                       </div>

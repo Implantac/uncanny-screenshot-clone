@@ -119,9 +119,7 @@ async function buildContext(supabase: DB, persona: Persona): Promise<string> {
     const pilotosPendentes = protosT.filter(
       (p) => p.stage !== "aprovado" && p.stage !== "reprovado",
     );
-    const aprovadosRecentes = protosT.filter(
-      (p) => p.stage === "aprovado" && p.updated_at > iso30,
-    );
+    const aprovadosRecentes = protosT.filter((p) => p.stage === "aprovado" && p.updated_at > iso30);
     return `# Contexto · Desenvolvimento (atualizado ${todayISO})
 - Total de protótipos: ${protosT.length}
 - Pilotos pendentes (não aprovados/reprovados): ${pilotosPendentes.length}
@@ -132,9 +130,7 @@ async function buildContext(supabase: DB, persona: Persona): Promise<string> {
 ${
   pilotosPendentes
     .slice(0, 10)
-    .map(
-      (p) => `- \`${p.code}\` · ${p.name ?? "—"} · ${p.stage} · ${p.updated_at?.slice(0, 10)}`,
-    )
+    .map((p) => `- \`${p.code}\` · ${p.name ?? "—"} · ${p.stage} · ${p.updated_at?.slice(0, 10)}`)
     .join("\n") || "- nenhum"
 }
 
@@ -157,7 +153,13 @@ ${
       stage_updated_at: string | null;
       products: { name: string | null; sku: string | null } | null;
     };
-    type Batch = { code: string; status: string; planned_quantity: number | null; produced_quantity: number | null; updated_at: string };
+    type Batch = {
+      code: string;
+      status: string;
+      planned_quantity: number | null;
+      produced_quantity: number | null;
+      updated_at: string;
+    };
     const [{ data: orders }, { data: batches }] = await Promise.all([
       supabase
         .from("production_orders")
@@ -177,7 +179,9 @@ ${
     );
     const paradas = ordersT.filter(
       (o) =>
-        o.stage !== "entregue" && o.stage_updated_at != null && now - new Date(o.stage_updated_at).getTime() > 5 * 86400000,
+        o.stage !== "entregue" &&
+        o.stage_updated_at != null &&
+        now - new Date(o.stage_updated_at).getTime() > 5 * 86400000,
     );
     const stageMap = new Map<string, number>();
     ordersT
@@ -229,7 +233,12 @@ ${
     campaign_code: string | null;
     sold_at: string;
   };
-  type Sale7 = { sku: string | null; quantity: number | null; total_value: number | string | null; channel: string | null };
+  type Sale7 = {
+    sku: string | null;
+    quantity: number | null;
+    total_value: number | string | null;
+    channel: string | null;
+  };
   const [{ data: sales30Raw }, { data: sales7Raw }] = await Promise.all([
     supabase
       .from("erp_sales_mirror")
@@ -346,7 +355,9 @@ export const askInsight = createServerFn({ method: "POST" })
       });
       return { text: res.text, persona: persona.label };
     } catch (err: unknown) {
-      const e = err as { message?: unknown; statusCode?: number; lastError?: { statusCode?: number } } | undefined;
+      const e = err as
+        | { message?: unknown; statusCode?: number; lastError?: { statusCode?: number } }
+        | undefined;
       const msg = String(e?.message ?? err);
       const status = e?.statusCode ?? e?.lastError?.statusCode;
       if (status === 429 || /Too Many Requests/i.test(msg)) {

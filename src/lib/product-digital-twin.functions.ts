@@ -61,15 +61,10 @@ export const getProductDigitalTwin = createServerFn({ method: "POST" })
         .select("key, label, position")
         .eq("active", true)
         .order("position"),
-      supabase
-        .from("product_routing")
-        .select("stage_key, sla_days")
-        .eq("product_id", productId),
+      supabase.from("product_routing").select("stage_key, sla_days").eq("product_id", productId),
       supabase
         .from("production_orders")
-        .select(
-          "id, code, quantity, status, stage, stage_updated_at, due_date, created_at",
-        )
+        .select("id, code, quantity, status, stage, stage_updated_at, due_date, created_at")
         .eq("product_id", productId)
         .in("status", ["aguardando", "em_producao"])
         .order("stage_updated_at", { ascending: true })
@@ -85,9 +80,7 @@ export const getProductDigitalTwin = createServerFn({ method: "POST" })
     );
     const stagesSorted = (stagesCfg ?? []).map((s) => s.key as string);
     const routingSla = new Map<string, number>();
-    (routing ?? []).forEach((r) =>
-      routingSla.set(r.stage_key as string, r.sla_days as number),
-    );
+    (routing ?? []).forEach((r) => routingSla.set(r.stage_key as string, r.sla_days as number));
 
     const openIds = (orders ?? []).map((o) => o.id);
 
@@ -108,11 +101,13 @@ export const getProductDigitalTwin = createServerFn({ method: "POST" })
     ]);
 
     const resByOp = new Map<string, { req: number; res: number; shortage: number }>();
-    ((resRows.data ?? []) as Array<{
-      production_order_id: string;
-      qty_required: number | null;
-      qty_reserved: number | null;
-    }>).forEach((r) => {
+    (
+      (resRows.data ?? []) as Array<{
+        production_order_id: string;
+        qty_required: number | null;
+        qty_reserved: number | null;
+      }>
+    ).forEach((r) => {
       const e = resByOp.get(r.production_order_id) ?? { req: 0, res: 0, shortage: 0 };
       const req = Number(r.qty_required ?? 0);
       const res = Number(r.qty_reserved ?? 0);
@@ -134,7 +129,7 @@ export const getProductDigitalTwin = createServerFn({ method: "POST" })
       const meta = stageOrder.get(stageKey);
       const idx = stagesSorted.indexOf(stageKey);
       const nextKey = idx >= 0 && idx < stagesSorted.length - 1 ? stagesSorted[idx + 1] : null;
-      const nextLabel = nextKey ? stageOrder.get(nextKey)?.label ?? null : null;
+      const nextLabel = nextKey ? (stageOrder.get(nextKey)?.label ?? null) : null;
       const ref = o.stage_updated_at ?? o.created_at;
       const dwell = ref ? (now - new Date(ref).getTime()) / 86400000 : null;
       const sla = routingSla.get(stageKey) ?? null;

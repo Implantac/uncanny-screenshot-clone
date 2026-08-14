@@ -34,7 +34,6 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-
 export function InventorySmartPanel() {
   const qc = useQueryClient();
   const ropFn = useServerFn(getDynamicReorderSuggestions);
@@ -55,8 +54,7 @@ export function InventorySmartPanel() {
   });
 
   const apply = useMutation({
-    mutationFn: (v: { itemId: string; minimum: number; maximum: number }) =>
-      applyFn({ data: v }),
+    mutationFn: (v: { itemId: string; minimum: number; maximum: number }) => applyFn({ data: v }),
     onSuccess: () => {
       toast.success("Mínimo/máximo atualizados");
       qc.invalidateQueries({ queryKey: ["inv-smart"] });
@@ -100,14 +98,22 @@ export function InventorySmartPanel() {
     return null;
   };
 
-  const errZ = validateRange(formZ, REORDER_LIMITS.service_factor_z, REORDER_DEFAULTS.service_factor_z);
+  const errZ = validateRange(
+    formZ,
+    REORDER_LIMITS.service_factor_z,
+    REORDER_DEFAULTS.service_factor_z,
+  );
   const errS = validateRange(formS, REORDER_LIMITS.cost_per_order, REORDER_DEFAULTS.cost_per_order);
   const errH = validateRange(
     formH,
     REORDER_LIMITS.holding_cost_annual,
     REORDER_DEFAULTS.holding_cost_annual,
   );
-  const errSafety = validateRange(formSafetyDays, REORDER_LIMITS.safety_days, REORDER_DEFAULTS.safety_days);
+  const errSafety = validateRange(
+    formSafetyDays,
+    REORDER_LIMITS.safety_days,
+    REORDER_DEFAULTS.safety_days,
+  );
   const hasErrors = !!(errZ || errS || errH || errSafety);
 
   const saveParams = useMutation({
@@ -131,8 +137,6 @@ export function InventorySmartPanel() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-
-
 
   const [countTarget, setCountTarget] = useState<{
     itemId: string;
@@ -290,8 +294,8 @@ export function InventorySmartPanel() {
                     <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-1.5 text-[11px] flex items-center gap-2">
                       <Sparkles className="size-3 text-amber-600 shrink-0" />
                       <span>
-                        Defina <b>custo do pedido (S)</b> e <b>custo anual de armazenagem (H)</b>{" "}
-                        em <i>params</i> para calcular o LEC.
+                        Defina <b>custo do pedido (S)</b> e <b>custo anual de armazenagem (H)</b> em{" "}
+                        <i>params</i> para calcular o LEC.
                       </span>
                     </div>
                   ) : null}
@@ -343,9 +347,7 @@ export function InventorySmartPanel() {
                     </div>
                     <div className="text-[11px] text-muted-foreground">
                       Saldo {it.balance} {it.unit} · cadência {it.cadenceDays}d ·{" "}
-                      {it.lastCountedAt
-                        ? `última há ${it.daysSinceLastCount}d`
-                        : "nunca contado"}
+                      {it.lastCountedAt ? `última há ${it.daysSinceLastCount}d` : "nunca contado"}
                       {it.lastVariance != null
                         ? ` · variância anterior ${it.lastVariance.toFixed(1)}`
                         : ""}
@@ -411,10 +413,7 @@ export function InventorySmartPanel() {
             <Button variant="outline" onClick={() => setCountTarget(null)}>
               Cancelar
             </Button>
-            <Button
-              onClick={() => register.mutate()}
-              disabled={register.isPending || !countValue}
-            >
+            <Button onClick={() => register.mutate()} disabled={register.isPending || !countValue}>
               {register.isPending ? <Loader2 className="size-3 animate-spin" /> : null}
               Registrar
             </Button>
@@ -434,8 +433,8 @@ export function InventorySmartPanel() {
             <div className="space-y-3 text-sm">
               <div className="rounded-md bg-muted/40 p-2.5 text-[11px] space-y-0.5">
                 <div>
-                  Consumo médio: <b>{paramsTarget.dailyConsumption}</b> {paramsTarget.unit}/dia ·
-                  σ <b>{paramsTarget.sigmaDaily}</b>
+                  Consumo médio: <b>{paramsTarget.dailyConsumption}</b> {paramsTarget.unit}/dia · σ{" "}
+                  <b>{paramsTarget.sigmaDaily}</b>
                 </div>
                 <div>
                   Lead time fornecedor: <b>{paramsTarget.leadTimeDays}d</b> · Demanda anual estim.:{" "}
@@ -527,13 +526,16 @@ export function InventorySmartPanel() {
                   {errH ? (
                     <div className="text-[10px] text-destructive mt-0.5">{errH}</div>
                   ) : (
-                    <div className="text-[10px] text-muted-foreground mt-0.5">R$ por unidade/ano</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      R$ por unidade/ano
+                    </div>
                   )}
                 </div>
               </div>
               {hasErrors ? (
                 <div className="rounded-md border border-destructive/40 bg-destructive/5 px-2.5 py-1.5 text-[11px] text-destructive">
-                  Corrija os campos destacados antes de salvar. Valores fora das faixas realistas distorcem ROP e LEC.
+                  Corrija os campos destacados antes de salvar. Valores fora das faixas realistas
+                  distorcem ROP e LEC.
                 </div>
               ) : null}
             </div>

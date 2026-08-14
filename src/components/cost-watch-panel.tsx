@@ -90,7 +90,8 @@ export function CostWatchPanel() {
                     {statusBadge(i.status)}
                   </div>
                   <div className="text-xs text-muted-foreground tabular-nums">
-                    {i.sku} · meta R$ {i.targetCost.toFixed(2)} · aprovado R$ {i.approvedCost.toFixed(2)}
+                    {i.sku} · meta R$ {i.targetCost.toFixed(2)} · aprovado R${" "}
+                    {i.approvedCost.toFixed(2)}
                   </div>
                   <div className="text-xs mt-0.5">{i.hint}</div>
                 </div>

@@ -100,7 +100,9 @@ async function loadAll() {
       .limit(100),
     supabase
       .from("influencer_shipments")
-      .select("id, status, posted_at, sales_before, sales_after, influencers(nome, seguidores, engajamento)")
+      .select(
+        "id, status, posted_at, sales_before, sales_after, influencers(nome, seguidores, engajamento)",
+      )
       .gte("created_at", since30)
       .limit(200),
     supabase
@@ -114,9 +116,35 @@ async function loadAll() {
     batches: (batches.data ?? []) as unknown as Batch[],
     products: (products.data ?? []) as unknown as Product[],
     suppliers: (suppliers.data ?? []) as unknown as Supplier[],
-    campaigns: (campaigns.data ?? []) as Array<{ id: string; name: string | null; channel: string | null; status: string | null; investment: number | null; revenue: number | null; roas: number | null; start_date: string | null; end_date: string | null }>,
-    shipments: (shipments.data ?? []) as Array<{ posted_at: string | null; sales_before: number | null; sales_after: number | null; influencers: { nome: string | null; seguidores: number | null; engajamento: number | null } | null }>,
-    briefs: (briefs.data ?? []) as Array<{ id: string; title: string | null; status: string | null; kpi_target: string | null; budget: number | null; updated_at: string | null }>,
+    campaigns: (campaigns.data ?? []) as Array<{
+      id: string;
+      name: string | null;
+      channel: string | null;
+      status: string | null;
+      investment: number | null;
+      revenue: number | null;
+      roas: number | null;
+      start_date: string | null;
+      end_date: string | null;
+    }>,
+    shipments: (shipments.data ?? []) as Array<{
+      posted_at: string | null;
+      sales_before: number | null;
+      sales_after: number | null;
+      influencers: {
+        nome: string | null;
+        seguidores: number | null;
+        engajamento: number | null;
+      } | null;
+    }>,
+    briefs: (briefs.data ?? []) as Array<{
+      id: string;
+      title: string | null;
+      status: string | null;
+      kpi_target: string | null;
+      budget: number | null;
+      updated_at: string | null;
+    }>,
     today,
   };
 }
@@ -214,10 +242,16 @@ function IntelHub() {
       .sort((a, b) => b.delta - a.delta)
       .slice(0, 4);
 
-    const draftBriefs = briefs.filter((b) => b.status === "rascunho" || b.status === "draft").length;
+    const draftBriefs = briefs.filter(
+      (b) => b.status === "rascunho" || b.status === "draft",
+    ).length;
 
     // insights acionáveis
-    const insights: Array<{ tone: "ok" | "warn" | "info" | "danger"; title: string; reason: string }> = [];
+    const insights: Array<{
+      tone: "ok" | "warn" | "info" | "danger";
+      title: string;
+      reason: string;
+    }> = [];
     if (blendedRoas >= 3) {
       insights.push({
         tone: "ok",
@@ -535,20 +569,34 @@ function IntelHub() {
             </span>
           </div>
           <div className="flex gap-2">
-            <Link to="/campaigns" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted">
+            <Link
+              to="/campaigns"
+              className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted"
+            >
               Campanhas
             </Link>
-            <Link to="/influencer-roi" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted">
+            <Link
+              to="/influencer-roi"
+              className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted"
+            >
               ROI Influenciadores
             </Link>
-            <Link to="/attribution" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted">
+            <Link
+              to="/attribution"
+              className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted"
+            >
               Attribution
             </Link>
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <MiniKpi label="Campanhas ativas" value={marketing.activeCampaigns} icon={<Megaphone className="size-3.5" />} tone="primary" />
+          <MiniKpi
+            label="Campanhas ativas"
+            value={marketing.activeCampaigns}
+            icon={<Megaphone className="size-3.5" />}
+            tone="primary"
+          />
           <MiniKpi
             label="Investimento"
             value={`R$ ${(marketing.totalInvest / 1000).toFixed(1)}k`}
@@ -564,8 +612,16 @@ function IntelHub() {
           <MiniKpi
             label="ROAS blended"
             value={`${marketing.blendedRoas.toFixed(2)}x`}
-            icon={marketing.blendedRoas >= 2 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-            tone={marketing.blendedRoas >= 2 ? "green" : marketing.blendedRoas >= 1.5 ? "yellow" : "red"}
+            icon={
+              marketing.blendedRoas >= 2 ? (
+                <TrendingUp className="size-3.5" />
+              ) : (
+                <TrendingDown className="size-3.5" />
+              )
+            }
+            tone={
+              marketing.blendedRoas >= 2 ? "green" : marketing.blendedRoas >= 1.5 ? "yellow" : "red"
+            }
           />
         </div>
 
@@ -578,7 +634,9 @@ function IntelHub() {
             {isLoading ? (
               <div className="text-xs text-muted-foreground">Carregando…</div>
             ) : marketing.insights.length === 0 ? (
-              <div className="text-xs text-muted-foreground">Sem dados de campanhas suficientes para gerar insights.</div>
+              <div className="text-xs text-muted-foreground">
+                Sem dados de campanhas suficientes para gerar insights.
+              </div>
             ) : (
               <ul className="space-y-2">
                 {marketing.insights.map((ins, i) => {
@@ -605,7 +663,9 @@ function IntelHub() {
               <Users className="size-3.5" /> Top influenciadores (Δ vendas)
             </div>
             {marketing.infRoi.length === 0 ? (
-              <div className="text-xs text-muted-foreground">Sem envios com retorno medido nos últimos 30 dias.</div>
+              <div className="text-xs text-muted-foreground">
+                Sem envios com retorno medido nos últimos 30 dias.
+              </div>
             ) : (
               <ul className="space-y-1.5">
                 {marketing.infRoi.map((r, i) => (
@@ -616,7 +676,9 @@ function IntelHub() {
                         {(r.seguidores / 1000).toFixed(0)}k seguidores
                       </div>
                     </div>
-                    <span className="font-semibold tabular-nums text-emerald-600">+{r.delta.toLocaleString("pt-BR")}</span>
+                    <span className="font-semibold tabular-nums text-emerald-600">
+                      +{r.delta.toLocaleString("pt-BR")}
+                    </span>
                   </li>
                 ))}
               </ul>

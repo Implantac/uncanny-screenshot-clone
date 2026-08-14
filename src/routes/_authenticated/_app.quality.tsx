@@ -150,7 +150,6 @@ function Quality() {
         }
       />
 
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -188,28 +187,18 @@ function Quality() {
 
       <SupplierDefectRcaPanel />
 
-
       <QualityDevBridgePanel />
 
       <QualityCollectionsBridgePanel />
 
       <MaterialSourcingRiskPanel />
 
-
       <QualityMarketingBridgePanel />
-
-
-
-
-
-
-
 
       <PersonaInsightsPanel persona="qualidade" />
       <QualityIntelligencePanel />
 
       <CellEfficiencyPanel />
-
 
       <Tabs defaultValue="suppliers">
         <TabsList>

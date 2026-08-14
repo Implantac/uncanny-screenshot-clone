@@ -26,13 +26,7 @@ export type ModuleKey =
   | "costs" // custos / overhead
   | "approve"; // aprovar ficha
 
-export const USER_ROLES: UserRole[] = [
-  "admin",
-  "gerente",
-  "designer",
-  "comprador",
-  "vendedor",
-];
+export const USER_ROLES: UserRole[] = ["admin", "gerente", "designer", "comprador", "vendedor"];
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Administrador",
@@ -52,9 +46,7 @@ const CAN_EDIT: Record<UserRole, ReadonlySet<ModuleKey>> = {
 };
 
 function isUserRole(value: unknown): value is UserRole {
-  return (
-    typeof value === "string" && (USER_ROLES as readonly string[]).includes(value)
-  );
+  return typeof value === "string" && (USER_ROLES as readonly string[]).includes(value);
 }
 
 /** Normaliza roles vindas do banco (filtra valores inválidos e duplicados). */

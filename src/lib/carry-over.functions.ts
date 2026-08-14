@@ -72,11 +72,29 @@ export const getCarryOverContext = createServerFn({ method: "GET" })
         sb.from("collection_products").select("product_id, collection_id"),
       ]);
 
-      type CpRow = { id: string; product_id: string; role: CollectionRosterRow["role"]; source_collection_id: string | null; intro_season: string | null; display_order: number; collection_id: string };
+      type CpRow = {
+        id: string;
+        product_id: string;
+        role: CollectionRosterRow["role"];
+        source_collection_id: string | null;
+        intro_season: string | null;
+        display_order: number;
+        collection_id: string;
+      };
       type CpAllRow = { product_id: string; collection_id: string };
-      type LifecycleRow = { product_id: string; collection_id: string; state: CollectionRosterRow["state"] };
+      type LifecycleRow = {
+        product_id: string;
+        collection_id: string;
+        state: CollectionRosterRow["state"];
+      };
       type CollectionRow = { id: string; name: string; launch_date: string | null };
-      type ProductRow = { id: string; sku: string; name: string; image_url: string | null; collection_id: string | null };
+      type ProductRow = {
+        id: string;
+        sku: string;
+        name: string;
+        image_url: string | null;
+        collection_id: string | null;
+      };
       type SaleRow = { sku: string | null; quantity: number | null; total_value: number | null };
 
       const productMap = new Map(((products ?? []) as ProductRow[]).map((p) => [p.id, p]));
@@ -125,7 +143,10 @@ export const getCarryOverContext = createServerFn({ method: "GET" })
           const src = p.collection_id ? collectionMap.get(p.collection_id) : null;
           let suggestedRole: CarryOverCandidate["suggestedRole"] = "carry_over";
           let reason = buildAiReason({
-            signals: [`${lifetime} coleção${lifetime > 1 ? "s" : ""}`, s.units > 0 ? `${s.units} un em 90d` : null],
+            signals: [
+              `${lifetime} coleção${lifetime > 1 ? "s" : ""}`,
+              s.units > 0 ? `${s.units} un em 90d` : null,
+            ],
             recommendation: "manter para continuidade entre coleções",
           });
           if (lifetime >= 3 && s.units >= 60) {
@@ -137,7 +158,10 @@ export const getCarryOverContext = createServerFn({ method: "GET" })
           } else if (s.revenue > 0 && s.units >= 30) {
             suggestedRole = "hero";
             reason = buildAiReason({
-              signals: [`${s.units} un`, `R$ ${Math.round(s.revenue).toLocaleString("pt-BR")} em 90d`],
+              signals: [
+                `${s.units} un`,
+                `R$ ${Math.round(s.revenue).toLocaleString("pt-BR")} em 90d`,
+              ],
               recommendation: "destacar como hero da próxima coleção",
             });
           }
@@ -169,56 +193,53 @@ const RoleEnum = z.enum(["hero", "carry_over", "nos", "capsule", "regular"]);
 
 export const addProductToCollection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: {
-    productId: string;
-    targetCollectionId: string;
-    role: z.infer<typeof RoleEnum>;
-    sourceCollectionId?: string | null;
-    introSeason?: string | null;
-  }) =>
-    z
-      .object({
-        productId: z.string().uuid(),
-        targetCollectionId: z.string().uuid(),
-        role: RoleEnum,
-        sourceCollectionId: z.string().uuid().nullable().optional(),
-        introSeason: z.string().max(40).nullable().optional(),
-      })
-      .parse(d),
+  .inputValidator(
+    (d: {
+      productId: string;
+      targetCollectionId: string;
+      role: z.infer<typeof RoleEnum>;
+      sourceCollectionId?: string | null;
+      introSeason?: string | null;
+    }) =>
+      z
+        .object({
+          productId: z.string().uuid(),
+          targetCollectionId: z.string().uuid(),
+          role: RoleEnum,
+          sourceCollectionId: z.string().uuid().nullable().optional(),
+          introSeason: z.string().max(40).nullable().optional(),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
     const ownerId = context.userId;
 
-    const { error: cpErr } = await sb
-      .from("collection_products")
-      .upsert(
-        {
-          owner_id: ownerId,
-          collection_id: data.targetCollectionId,
-          product_id: data.productId,
-          role: data.role,
-          source_collection_id: data.sourceCollectionId ?? null,
-          intro_season: data.introSeason ?? null,
-        },
-        { onConflict: "collection_id,product_id" },
-      );
+    const { error: cpErr } = await sb.from("collection_products").upsert(
+      {
+        owner_id: ownerId,
+        collection_id: data.targetCollectionId,
+        product_id: data.productId,
+        role: data.role,
+        source_collection_id: data.sourceCollectionId ?? null,
+        intro_season: data.introSeason ?? null,
+      },
+      { onConflict: "collection_id,product_id" },
+    );
     if (cpErr) throw new Error(cpErr.message);
 
     const initialState =
       data.role === "nos" ? "nos_permanent" : data.role === "hero" ? "active" : "planned";
 
-    const { error: lcErr } = await sb
-      .from("product_lifecycle")
-      .upsert(
-        {
-          owner_id: ownerId,
-          product_id: data.productId,
-          collection_id: data.targetCollectionId,
-          state: initialState,
-        },
-        { onConflict: "product_id,collection_id" },
-      );
+    const { error: lcErr } = await sb.from("product_lifecycle").upsert(
+      {
+        owner_id: ownerId,
+        product_id: data.productId,
+        collection_id: data.targetCollectionId,
+        state: initialState,
+      },
+      { onConflict: "product_id,collection_id" },
+    );
     if (lcErr) throw new Error(lcErr.message);
 
     return { ok: true as const };
@@ -227,9 +248,7 @@ export const addProductToCollection = createServerFn({ method: "POST" })
 export const removeProductFromCollection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { productId: string; collectionId: string }) =>
-    z
-      .object({ productId: z.string().uuid(), collectionId: z.string().uuid() })
-      .parse(d),
+    z.object({ productId: z.string().uuid(), collectionId: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
@@ -244,18 +263,15 @@ export const removeProductFromCollection = createServerFn({ method: "POST" })
 
 export const setProductRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: {
-    productId: string;
-    collectionId: string;
-    role: z.infer<typeof RoleEnum>;
-  }) =>
-    z
-      .object({
-        productId: z.string().uuid(),
-        collectionId: z.string().uuid(),
-        role: RoleEnum,
-      })
-      .parse(d),
+  .inputValidator(
+    (d: { productId: string; collectionId: string; role: z.infer<typeof RoleEnum> }) =>
+      z
+        .object({
+          productId: z.string().uuid(),
+          collectionId: z.string().uuid(),
+          role: RoleEnum,
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const sb = context.supabase;

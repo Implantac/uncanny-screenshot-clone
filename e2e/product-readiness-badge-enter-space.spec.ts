@@ -20,9 +20,7 @@ async function findVariants(page: Page) {
   await page.waitForLoadState("networkidle");
 
   const all = page.locator(TRIGGER);
-  await expect
-    .poll(async () => await all.count(), { timeout: 15_000 })
-    .toBeGreaterThan(0);
+  await expect.poll(async () => await all.count(), { timeout: 15_000 }).toBeGreaterThan(0);
 
   const count = await all.count();
   let ready: Locator | null = null;

@@ -32,7 +32,12 @@ function MiniSpark({ points }: { points: CostHistoryPoint[] }) {
   const up = last >= first;
   return (
     <svg width={w} height={h} className="overflow-visible">
-      <path d={path} fill="none" strokeWidth={2} className={up ? "stroke-destructive" : "stroke-success"} />
+      <path
+        d={path}
+        fill="none"
+        strokeWidth={2}
+        className={up ? "stroke-destructive" : "stroke-success"}
+      />
     </svg>
   );
 }
@@ -57,12 +62,9 @@ export function ProductCostEnginePanel({ productId }: { productId: string }) {
   const pts = history.data ?? [];
   const latest = pts[0];
   const previous = pts[1];
-  const delta =
-    latest && previous ? latest.totalCost - previous.totalCost : 0;
+  const delta = latest && previous ? latest.totalCost - previous.totalCost : 0;
   const deltaPct =
-    latest && previous && previous.totalCost > 0
-      ? (delta / previous.totalCost) * 100
-      : 0;
+    latest && previous && previous.totalCost > 0 ? (delta / previous.totalCost) * 100 : 0;
 
   const s = suggest.data;
   const gap = s?.gapPct ?? null;
@@ -82,7 +84,9 @@ export function ProductCostEnginePanel({ productId }: { productId: string }) {
           <Sparkles className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-semibold">Cost Engine reativo</h3>
         </div>
-        <Badge variant="outline" className="text-[10px]">Onda 19</Badge>
+        <Badge variant="outline" className="text-[10px]">
+          Onda 19
+        </Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -90,15 +94,27 @@ export function ProductCostEnginePanel({ productId }: { productId: string }) {
           <div className="text-[11px] text-muted-foreground uppercase tracking-wide">
             Custo atual
           </div>
-          <div className="text-xl font-semibold mt-1">{brl(s?.currentCost ?? latest?.totalCost ?? null)}</div>
+          <div className="text-xl font-semibold mt-1">
+            {brl(s?.currentCost ?? latest?.totalCost ?? null)}
+          </div>
           {latest && previous && (
             <div
               className={`flex items-center gap-1 text-xs mt-1 ${
-                delta > 0 ? "text-destructive" : delta < 0 ? "text-success" : "text-muted-foreground"
+                delta > 0
+                  ? "text-destructive"
+                  : delta < 0
+                    ? "text-success"
+                    : "text-muted-foreground"
               }`}
             >
-              {delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-              {delta === 0 ? "sem mudança" : `${delta > 0 ? "+" : ""}${brl(delta)} (${deltaPct.toFixed(1)}%)`}
+              {delta > 0 ? (
+                <TrendingUp className="h-3 w-3" />
+              ) : (
+                <TrendingDown className="h-3 w-3" />
+              )}
+              {delta === 0
+                ? "sem mudança"
+                : `${delta > 0 ? "+" : ""}${brl(delta)} (${deltaPct.toFixed(1)}%)`}
             </div>
           )}
         </div>
@@ -136,9 +152,7 @@ export function ProductCostEnginePanel({ productId }: { productId: string }) {
         <div className="flex items-center gap-2 mb-2">
           <History className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-medium">Evolução do custo</span>
-          <span className="text-[11px] text-muted-foreground">
-            {pts.length} snapshot(s)
-          </span>
+          <span className="text-[11px] text-muted-foreground">{pts.length} snapshot(s)</span>
         </div>
         {history.isLoading ? (
           <div className="h-12 bg-muted/40 rounded animate-pulse" />

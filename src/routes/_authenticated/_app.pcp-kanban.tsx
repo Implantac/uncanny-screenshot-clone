@@ -41,15 +41,19 @@ import { ErpSectorSyncPanel } from "@/components/erp-sector-sync-panel";
 import { PageHeader } from "@/components/ui/page-header";
 import { ProductReadinessBadge } from "@/components/product-readiness-badge";
 
-
-
 export const Route = createFileRoute("/_authenticated/_app/pcp-kanban")({
   head: () => ({
     meta: [
       { title: "Kanban do PCP · USE MODA PLM" },
-      { name: "description", content: "Fluxo de ordens de produção por estágio produtivo com SLA e prioridade." },
+      {
+        name: "description",
+        content: "Fluxo de ordens de produção por estágio produtivo com SLA e prioridade.",
+      },
       { property: "og:title", content: "Kanban do PCP · USE MODA PLM" },
-      { property: "og:description", content: "Fluxo de ordens de produção por estágio produtivo com SLA e prioridade." },
+      {
+        property: "og:description",
+        content: "Fluxo de ordens de produção por estágio produtivo com SLA e prioridade.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -186,7 +190,6 @@ function PcpKanban() {
     refetchInterval: 60_000,
   });
 
-
   // Roteiros (product_routing) por produto, com fallback família → default
   const fetchRoutings = useServerFn(getRoutingsForProducts);
   const productIds = useMemo(
@@ -210,7 +213,6 @@ function PcpKanban() {
   };
   const routingSourceFor = (productId: string | null) =>
     (productId && routings?.map[productId]?.source) || null;
-
 
   const [dragging, setDragging] = useState<string | null>(null);
   const [over, setOver] = useState<Stage | null>(null);
@@ -246,7 +248,6 @@ function PcpKanban() {
     (filterIdle !== "all" ? 1 : 0) +
     (filterSearch.trim() ? 1 : 0) +
     (filterCapa ? 1 : 0);
-
 
   const update = useMutation({
     mutationFn: async (
@@ -302,7 +303,8 @@ function PcpKanban() {
         if (h < idleMinH) return false;
       }
       if (term) {
-        const hay = `${o.code} ${o.product ?? ""} ${o.batch_code ?? ""} ${o.supplier ?? ""}`.toLowerCase();
+        const hay =
+          `${o.code} ${o.product ?? ""} ${o.batch_code ?? ""} ${o.supplier ?? ""}`.toLowerCase();
         if (!hay.includes(term)) return false;
       }
       return true;
@@ -319,7 +321,6 @@ function PcpKanban() {
     openCapaOrderIds,
   ]);
 
-
   const grouped = useMemo(() => {
     const m = new Map<Stage, Order[]>();
     STAGES.forEach((s) => m.set(s.key, []));
@@ -328,9 +329,7 @@ function PcpKanban() {
   }, [filtered]);
 
   const summary = useMemo(() => {
-    const wip = orders
-      .filter((o) => o.stage !== "entregue")
-      .reduce((s, o) => s + o.quantity, 0);
+    const wip = orders.filter((o) => o.stage !== "entregue").reduce((s, o) => s + o.quantity, 0);
     const late = orders.filter((o) => {
       const d = daysTo(o.due_date);
       return o.stage !== "entregue" && d !== null && d < 0;
@@ -402,7 +401,6 @@ function PcpKanban() {
     update.mutate({ id, stage });
     toast.success(`${o.code} → ${STAGES.find((s) => s.key === stage)?.label}`);
   };
-
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -500,9 +498,7 @@ function PcpKanban() {
             onClick={() => {
               const urgent = new Set<number>([1, 2]);
               const same =
-                filterPriorities.size === 2 &&
-                filterPriorities.has(1) &&
-                filterPriorities.has(2);
+                filterPriorities.size === 2 && filterPriorities.has(1) && filterPriorities.has(2);
               setFilterPriorities(same ? new Set() : urgent);
             }}
             className={`text-[11px] px-2 py-1 rounded border ${filterPriorities.has(1) && filterPriorities.has(2) ? "bg-orange-500/15 text-orange-500 border-orange-500/40" : "border-border hover:bg-muted"}`}
@@ -636,7 +632,6 @@ function PcpKanban() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-
         <KPI label="Ordens" value={summary.total} icon={<Factory className="size-4" />} />
         <KPI
           label="WIP (peças)"
@@ -666,13 +661,11 @@ function PcpKanban() {
       <PcpApsPanel />
       <PcpApsGantt />
 
-
       <DelayPredictionPanel />
 
       <SamEfficiencyPanel />
 
       <PcpCapacityTocPanel />
-
 
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-center gap-2 text-sm font-medium">
@@ -865,9 +858,7 @@ function PcpKanban() {
                                 <AlertTriangle className="size-2.5" /> CAPA
                               </span>
                             )}
-                            {o.product_id && (
-                              <ProductReadinessBadge productId={o.product_id} />
-                            )}
+                            {o.product_id && <ProductReadinessBadge productId={o.product_id} />}
                           </span>
                           <div className="flex items-center gap-1">
                             {o.product_id && (
@@ -926,7 +917,10 @@ function PcpKanban() {
                                       aria-label={`Rota ${routeSource === "product" ? "do produto" : "da família"} — próximo setor ${nextStage?.label ?? "fim do roteiro"}`}
                                       className="shrink-0 inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium leading-none text-primary cursor-help focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                     >
-                                      <span className="size-1 rounded-full bg-primary" aria-hidden />
+                                      <span
+                                        className="size-1 rounded-full bg-primary"
+                                        aria-hidden
+                                      />
                                       rota {routeSource === "product" ? "produto" : "família"}
                                     </button>
                                   </TooltipTrigger>
@@ -938,7 +932,9 @@ function PcpKanban() {
                                     className="max-w-[240px] bg-popover text-popover-foreground border border-border shadow-md px-3 py-2"
                                   >
                                     <div className="text-[11px] uppercase tracking-wide opacity-60">
-                                      {routeSource === "product" ? "Roteiro do produto" : "Roteiro da família"}
+                                      {routeSource === "product"
+                                        ? "Roteiro do produto"
+                                        : "Roteiro da família"}
                                     </div>
                                     <div className="mt-1 flex items-baseline gap-1.5">
                                       <span className="text-xs opacity-70">Próximo:</span>
@@ -974,7 +970,6 @@ function PcpKanban() {
                               ))}
                             </div>
                           )}
-
 
                         <div className="flex items-center justify-between text-muted-foreground tabular-nums">
                           <span>{o.quantity} pç</span>

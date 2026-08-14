@@ -35,7 +35,6 @@ import { StorageUploader } from "@/components/storage-uploader";
 import { QuickSupplierDialog } from "@/components/quick-supplier-dialog";
 import { MaterialCostCascadePanel } from "@/components/material-cost-cascade-panel";
 
-
 export const Route = createFileRoute("/_authenticated/_app/materiais")({
   head: () => ({
     meta: [
@@ -226,9 +225,15 @@ function Page() {
                   />
                 </div>
                 <Select value={form.kind} onValueChange={(v) => setForm({ ...form, kind: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {KINDS.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+                    {KINDS.map((k) => (
+                      <SelectItem key={k} value={k}>
+                        {k}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <div className="flex items-center gap-2">
@@ -238,11 +243,15 @@ function Page() {
                       setForm({ ...form, preferred_supplier_id: v === "none" ? null : v })
                     }
                   >
-                    <SelectTrigger><SelectValue placeholder="Fornecedor" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Fornecedor" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Sem fornecedor</SelectItem>
                       {suppliers.data?.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -296,7 +305,9 @@ function Page() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="ghost" onClick={() => setDialogOpen(false)}>Cancelar</Button>
+                <Button variant="ghost" onClick={() => setDialogOpen(false)}>
+                  Cancelar
+                </Button>
                 <Button
                   onClick={() => add.mutate()}
                   disabled={!form.code || !form.name || add.isPending}
@@ -423,9 +434,7 @@ function MaterialCard({
       <div
         className="aspect-square w-full relative overflow-hidden"
         style={{
-          background: item.image_url
-            ? undefined
-            : item.color_hex || "hsl(var(--muted))",
+          background: item.image_url ? undefined : item.color_hex || "hsl(var(--muted))",
         }}
       >
         {item.image_url ? (
@@ -561,7 +570,13 @@ function MaterialDetailSheet({
               style={{ background: d.image_url ? undefined : d.color_hex || "hsl(var(--muted))" }}
             >
               {d.image_url ? (
-                <img src={d.image_url} alt={d.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                <img
+                  src={d.image_url}
+                  alt={d.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover"
+                />
               ) : !d.color_hex ? (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   <ImageOff className="size-12" />
@@ -577,9 +592,15 @@ function MaterialDetailSheet({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Categoria">
                 <Select value={d.kind} onValueChange={(v) => set("kind", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {KINDS.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+                    {KINDS.map((k) => (
+                      <SelectItem key={k} value={k}>
+                        {k}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </Field>
@@ -589,11 +610,15 @@ function MaterialDetailSheet({
                     value={d.preferred_supplier_id ?? "none"}
                     onValueChange={(v) => set("preferred_supplier_id", v === "none" ? null : v)}
                   >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Sem fornecedor</SelectItem>
                       {suppliers.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -671,8 +696,6 @@ function MaterialDetailSheet({
           )}
 
           {!editing && d.id && <MaterialCostCascadePanel materialId={d.id} />}
-
-
 
           <div className="flex items-center gap-2 pt-2 border-t border-border">
             {editing ? (

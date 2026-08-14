@@ -105,10 +105,7 @@ export const getCrossKPIs = createServerFn({ method: "GET" })
           .select("sku, quantity, total_value, sold_at")
           .eq("owner_id", userId)
           .gte("sold_at", since),
-        supabase
-          .from("products")
-          .select("id, sku")
-          .eq("owner_id", userId),
+        supabase.from("products").select("id, sku").eq("owner_id", userId),
       ]);
 
     const cpRows = cps.data ?? [];
@@ -218,8 +215,7 @@ export const getCrossKPIs = createServerFn({ method: "GET" })
           if (l.markdown_pct != null) mks.push(num(l.markdown_pct));
         }
       });
-      const markdown =
-        productsCount > 0 ? (mkCount / productsCount) * 100 : null;
+      const markdown = productsCount > 0 ? (mkCount / productsCount) * 100 : null;
 
       // Sell-through % (qty vendida vs OP planejada da coleção)
       let plannedQty = 0;
@@ -235,8 +231,7 @@ export const getCrossKPIs = createServerFn({ method: "GET" })
       pids.forEach((pid) => {
         plannedQty += (orderByPid.get(pid)?.length ?? 0) * 50;
       });
-      const sellThrough =
-        plannedQty > 0 ? Math.min(200, (soldQty / plannedQty) * 100) : null;
+      const sellThrough = plannedQty > 0 ? Math.min(200, (soldQty / plannedQty) * 100) : null;
 
       const fpyCell = cell(fpy, { good: 90, bad: 75, higherIsBetter: true });
       const costCell = cell(costGap, { good: 0, bad: 10, higherIsBetter: false });
@@ -266,19 +261,19 @@ export const getCrossKPIs = createServerFn({ method: "GET" })
     });
 
     const red = [...rows]
-      .filter((r) =>
-        [r.fpy, r.costGap, r.otd, r.markdown, r.sellThrough].filter(
-          (c) => c.status === "red",
-        ).length >= 2,
+      .filter(
+        (r) =>
+          [r.fpy, r.costGap, r.otd, r.markdown, r.sellThrough].filter((c) => c.status === "red")
+            .length >= 2,
       )
       .sort((a, b) => a.score - b.score)
       .slice(0, 5);
 
     const star = [...rows]
-      .filter((r) =>
-        [r.fpy, r.costGap, r.otd, r.markdown, r.sellThrough].filter(
-          (c) => c.status === "green",
-        ).length >= 3,
+      .filter(
+        (r) =>
+          [r.fpy, r.costGap, r.otd, r.markdown, r.sellThrough].filter((c) => c.status === "green")
+            .length >= 3,
       )
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
@@ -343,7 +338,7 @@ export const getVitalFewInsight = createServerFn({ method: "POST" })
             {
               role: "system",
               content:
-                "Você é um diretor executivo de uma marca de moda. Responda em JSON estrito {\"summary\": string (3 frases, pt-BR, foco nos vital few do mês, citando coleções por nome e KPI que move), \"movers\": string[] (máx 3 bullets curtos com a ação executiva concreta)}. Sem markdown, sem comentários.",
+                'Você é um diretor executivo de uma marca de moda. Responda em JSON estrito {"summary": string (3 frases, pt-BR, foco nos vital few do mês, citando coleções por nome e KPI que move), "movers": string[] (máx 3 bullets curtos com a ação executiva concreta)}. Sem markdown, sem comentários.',
             },
             { role: "user", content: JSON.stringify(ctx) },
           ],
@@ -351,8 +346,10 @@ export const getVitalFewInsight = createServerFn({ method: "POST" })
         }),
       });
       if (!resp.ok) {
-        if (resp.status === 429) return { summary: "Agente USE ocupado — atualizando em instantes.", movers: [] };
-        if (resp.status === 402) return { summary: "Agente USE em pausa — retomando automaticamente.", movers: [] };
+        if (resp.status === 429)
+          return { summary: "Agente USE ocupado — atualizando em instantes.", movers: [] };
+        if (resp.status === 402)
+          return { summary: "Agente USE em pausa — retomando automaticamente.", movers: [] };
         return { summary: "Agente USE temporariamente indisponível.", movers: [] };
       }
       const json = await resp.json();

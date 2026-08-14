@@ -56,9 +56,7 @@ function pickNonNeg(v: unknown, fallback: number): number {
 }
 
 /** Normaliza overrides — protege contra jsonb corrompido, strings ou NaN; clampa para faixa realista. */
-export function resolveReorderParams(
-  overrides: unknown,
-): { Z: number; S: number; H: number } {
+export function resolveReorderParams(overrides: unknown): { Z: number; S: number; H: number } {
   const ov = (overrides && typeof overrides === "object" ? overrides : {}) as ReorderOverrides;
   const Z = pickPositive(ov.service_factor_z, REORDER_DEFAULTS.service_factor_z);
   const S = pickNonNeg(ov.cost_per_order, REORDER_DEFAULTS.cost_per_order);
@@ -76,7 +74,6 @@ export function resolveReorderParams(
   };
 }
 
-
 export const updateReorderParams = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -87,46 +84,46 @@ export const updateReorderParams = createServerFn({ method: "POST" })
       holdingCostAnnual?: number | null;
       safetyDays?: number | null;
     }) =>
-        z
-          .object({
-            itemId: z.string().uuid(),
-            serviceFactorZ: z
-              .number()
-              .min(REORDER_LIMITS.service_factor_z.min, {
-                message: `Z deve ser ≥ ${REORDER_LIMITS.service_factor_z.min}`,
-              })
-              .max(REORDER_LIMITS.service_factor_z.max, {
-                message: `Z deve ser ≤ ${REORDER_LIMITS.service_factor_z.max} (acima disso superestima estoque)`,
-              })
-              .nullable()
-              .optional(),
-            costPerOrder: z
-              .number()
-              .min(REORDER_LIMITS.cost_per_order.min)
-              .max(REORDER_LIMITS.cost_per_order.max, {
-                message: `Custo do pedido deve ser ≤ R$ ${REORDER_LIMITS.cost_per_order.max.toLocaleString("pt-BR")}`,
-              })
-              .nullable()
-              .optional(),
-            holdingCostAnnual: z
-              .number()
-              .min(REORDER_LIMITS.holding_cost_annual.min)
-              .max(REORDER_LIMITS.holding_cost_annual.max, {
-                message: `Custo anual de armazenagem deve ser ≤ R$ ${REORDER_LIMITS.holding_cost_annual.max.toLocaleString("pt-BR")}/un`,
-              })
-              .nullable()
-              .optional(),
-            safetyDays: z
-              .number()
-              .int()
-              .min(REORDER_LIMITS.safety_days.min)
-              .max(REORDER_LIMITS.safety_days.max, {
-                message: `Dias de segurança deve ser ≤ ${REORDER_LIMITS.safety_days.max}`,
-              })
-              .nullable()
-              .optional(),
-          })
-          .parse(i),
+      z
+        .object({
+          itemId: z.string().uuid(),
+          serviceFactorZ: z
+            .number()
+            .min(REORDER_LIMITS.service_factor_z.min, {
+              message: `Z deve ser ≥ ${REORDER_LIMITS.service_factor_z.min}`,
+            })
+            .max(REORDER_LIMITS.service_factor_z.max, {
+              message: `Z deve ser ≤ ${REORDER_LIMITS.service_factor_z.max} (acima disso superestima estoque)`,
+            })
+            .nullable()
+            .optional(),
+          costPerOrder: z
+            .number()
+            .min(REORDER_LIMITS.cost_per_order.min)
+            .max(REORDER_LIMITS.cost_per_order.max, {
+              message: `Custo do pedido deve ser ≤ R$ ${REORDER_LIMITS.cost_per_order.max.toLocaleString("pt-BR")}`,
+            })
+            .nullable()
+            .optional(),
+          holdingCostAnnual: z
+            .number()
+            .min(REORDER_LIMITS.holding_cost_annual.min)
+            .max(REORDER_LIMITS.holding_cost_annual.max, {
+              message: `Custo anual de armazenagem deve ser ≤ R$ ${REORDER_LIMITS.holding_cost_annual.max.toLocaleString("pt-BR")}/un`,
+            })
+            .nullable()
+            .optional(),
+          safetyDays: z
+            .number()
+            .int()
+            .min(REORDER_LIMITS.safety_days.min)
+            .max(REORDER_LIMITS.safety_days.max, {
+              message: `Dias de segurança deve ser ≤ ${REORDER_LIMITS.safety_days.max}`,
+            })
+            .nullable()
+            .optional(),
+        })
+        .parse(i),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -248,10 +245,7 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
           `Dias de segurança (${safetyDaysRaw}) fora de 0–${REORDER_LIMITS.safety_days.max}; usando ${REORDER_DEFAULTS.safety_days}.`,
         );
       }
-      if (
-        dailyAvg >
-        REORDER_LIMITS.daily_avg_sales.max
-      ) {
+      if (dailyAvg > REORDER_LIMITS.daily_avg_sales.max) {
         warnings.push(
           `Consumo médio (${dailyAvg.toFixed(0)}/dia) acima de ${REORDER_LIMITS.daily_avg_sales.max}; revise movimentos de saída.`,
         );
@@ -265,8 +259,7 @@ export const getDynamicReorderSuggestions = createServerFn({ method: "POST" })
       const rop = Math.ceil(dailyAvg * leadTime + safetyStock);
 
       const annualDemand = dailyAvg * 365;
-      const eoq =
-        S > 0 && H > 0 && annualDemand > 0 ? Math.sqrt((2 * annualDemand * S) / H) : 0;
+      const eoq = S > 0 && H > 0 && annualDemand > 0 ? Math.sqrt((2 * annualDemand * S) / H) : 0;
       const eoqCeil = eoq > 0 ? Math.ceil(eoq) : 0;
       const target = eoqCeil > 0 ? rop + eoqCeil : Math.ceil(rop + dailyAvg * 30);
 
@@ -459,9 +452,7 @@ export const getCycleCountPlan = createServerFn({ method: "POST" })
     const plan = ranked.map((r) => {
       const last = lastById.get(r.id);
       const lastAt = last?.at ?? null;
-      const daysSince = lastAt
-        ? Math.floor((now - new Date(lastAt).getTime()) / 86400_000)
-        : null;
+      const daysSince = lastAt ? Math.floor((now - new Date(lastAt).getTime()) / 86400_000) : null;
       const overdue = daysSince == null || daysSince >= r.cadenceDays;
       return {
         id: r.id,

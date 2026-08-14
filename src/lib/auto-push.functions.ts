@@ -84,9 +84,7 @@ export const autoPushCriticalBottlenecks = createServerFn({ method: "POST" })
       }
     }
 
-    const { error } = await supabase
-      .from("push_notifications")
-      .insert(rows as never);
+    const { error } = await supabase.from("push_notifications").insert(rows as never);
     if (error) throw new Error(error.message);
 
     return {

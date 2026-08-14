@@ -11,9 +11,17 @@ export const Route = createFileRoute("/_authenticated/_app/compras")({
   head: () => ({
     meta: [
       { title: "Compras · USE MODA PLM" },
-      { name: "description", content: "Ordens de compra, cotações, follow-up de fornecedores e recebimento de materiais." },
+      {
+        name: "description",
+        content:
+          "Ordens de compra, cotações, follow-up de fornecedores e recebimento de materiais.",
+      },
       { property: "og:title", content: "Compras · USE MODA PLM" },
-      { property: "og:description", content: "Ordens de compra, cotações, follow-up de fornecedores e recebimento de materiais." },
+      {
+        property: "og:description",
+        content:
+          "Ordens de compra, cotações, follow-up de fornecedores e recebimento de materiais.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -97,7 +105,6 @@ function Compras() {
         description="Necessidades de reposição, cotações e comparativo de fornecedores."
       />
 
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <KPI
           label="Itens p/ comprar"
@@ -175,9 +182,7 @@ function NeedsTable({ needs, loading }: { needs: Need[]; loading: boolean }) {
       align: "right",
       value: (r) => Number(r.minimum),
       cell: (r) => (
-        <span className="tabular-nums text-muted-foreground">
-          {Number(r.minimum).toFixed(0)}
-        </span>
+        <span className="tabular-nums text-muted-foreground">{Number(r.minimum).toFixed(0)}</span>
       ),
     },
     {

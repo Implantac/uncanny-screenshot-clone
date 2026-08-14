@@ -61,8 +61,8 @@ export function CapacityRebalancePanel() {
             Auto-rebalanceamento de capacidade
           </h2>
           <p className="text-xs text-muted-foreground">
-            OPs terceirizadas em risco alto — sugestões de transferência para fornecedores da
-            mesma categoria com melhor scorecard e folga de capacidade.
+            OPs terceirizadas em risco alto — sugestões de transferência para fornecedores da mesma
+            categoria com melhor scorecard e folga de capacidade.
           </p>
         </div>
         <Badge variant="outline" className="gap-1">
@@ -86,10 +86,7 @@ export function CapacityRebalancePanel() {
             const top = s.alternatives[0];
             const key = s.op_id;
             return (
-              <li
-                key={key}
-                className="rounded-lg border border-border/60 bg-muted/10 p-3 text-sm"
-              >
+              <li key={key} className="rounded-lg border border-border/60 bg-muted/10 p-3 text-sm">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -118,9 +115,7 @@ export function CapacityRebalancePanel() {
                         <Truck className="size-3" />
                         {s.current_supplier_name ?? "Sem fornecedor"}
                         {s.current_score != null && (
-                          <span className="ml-1">
-                            · score {Math.round(s.current_score)}
-                          </span>
+                          <span className="ml-1">· score {Math.round(s.current_score)}</span>
                         )}
                       </span>
                       <span className={occTone(s.current_occupancy_pct)}>
@@ -133,9 +128,7 @@ export function CapacityRebalancePanel() {
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <div className="text-2xl font-semibold text-rose-400">
-                      {s.risk_score}
-                    </div>
+                    <div className="text-2xl font-semibold text-rose-400">{s.risk_score}</div>
                     <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
                       risco
                     </div>
@@ -154,18 +147,12 @@ export function CapacityRebalancePanel() {
                         <ArrowRight className="size-3 text-primary" />
                         <span className="font-medium truncate">{a.supplier_name}</span>
                         {a.score != null && (
-                          <span className="text-muted-foreground">
-                            score {Math.round(a.score)}
-                          </span>
+                          <span className="text-muted-foreground">score {Math.round(a.score)}</span>
                         )}
                         <span className={occTone(a.occupancy_pct)}>
-                          {a.occupancy_pct != null
-                            ? `${a.occupancy_pct}% ocup.`
-                            : "sem dados"}
+                          {a.occupancy_pct != null ? `${a.occupancy_pct}% ocup.` : "sem dados"}
                         </span>
-                        <span className="text-muted-foreground">
-                          · {a.pieces_per_day} pçs/dia
-                        </span>
+                        <span className="text-muted-foreground">· {a.pieces_per_day} pçs/dia</span>
                       </div>
                       <Button
                         size="sm"

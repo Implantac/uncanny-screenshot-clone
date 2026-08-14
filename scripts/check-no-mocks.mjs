@@ -36,13 +36,15 @@ const FORBIDDEN_PATTERNS = [
   { re: /from\s+["'][^"']*\/__mocks__\/[^"']*["']/, msg: 'import de "/__mocks__/"' },
   { re: /from\s+["'][^"']*\/fixtures?\/[^"']*["']/, msg: 'import de "/fixture(s)/"' },
   { re: /from\s+["']@faker-js\/faker["']/, msg: "import de @faker-js/faker" },
-  { re: /\bfaker\.(name|internet|lorem|datatype|company|address|finance|commerce)\b/, msg: "uso de faker.*" },
+  {
+    re: /\bfaker\.(name|internet|lorem|datatype|company|address|finance|commerce)\b/,
+    msg: "uso de faker.*",
+  },
   { re: /\bLorem ipsum\b/i, msg: 'texto "Lorem ipsum"' },
   { re: /\bvia\.placeholder\.com\b/, msg: "URL via.placeholder.com" },
   { re: /\bplacehold\.co\b/, msg: "URL placehold.co" },
   { re: /\bpicsum\.photos\b/, msg: "URL picsum.photos (imagens fake)" },
 ];
-
 
 const violations = [];
 

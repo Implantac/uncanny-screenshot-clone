@@ -1,11 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, XCircle, ShieldAlert, Loader2 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 
 type GateRow = {
@@ -72,14 +68,8 @@ export function StageGateBadge({ productId }: { productId: string }) {
           : `${missing.length} de ${gates.length} requisitos pendentes`
       }
     >
-      {ready ? (
-        <CheckCircle2 className="size-3.5" />
-      ) : (
-        <ShieldAlert className="size-3.5" />
-      )}
-      {ready
-        ? "Pronto para produção"
-        : `${gates.length - missing.length}/${gates.length} gates`}
+      {ready ? <CheckCircle2 className="size-3.5" /> : <ShieldAlert className="size-3.5" />}
+      {ready ? "Pronto para produção" : `${gates.length - missing.length}/${gates.length} gates`}
     </button>
   );
 
@@ -89,9 +79,7 @@ export function StageGateBadge({ productId }: { productId: string }) {
       <PopoverContent className="w-80 p-0" align="end">
         <div className="border-b p-3">
           <div className="text-sm font-semibold">Stage Gates</div>
-          <div className="text-xs text-muted-foreground">
-            Requisitos para liberar produção
-          </div>
+          <div className="text-xs text-muted-foreground">Requisitos para liberar produção</div>
         </div>
         <ul className="divide-y">
           {gates.map((g) => (
@@ -103,19 +91,15 @@ export function StageGateBadge({ productId }: { productId: string }) {
               )}
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium">{g.requirement}</div>
-                {g.detail && (
-                  <div className="text-xs text-muted-foreground">
-                    {g.detail}
-                  </div>
-                )}
+                {g.detail && <div className="text-xs text-muted-foreground">{g.detail}</div>}
               </div>
             </li>
           ))}
         </ul>
         {!ready && (
           <div className="border-t bg-muted/30 p-3 text-xs text-muted-foreground">
-            Complete os itens acima antes de mover o produto para{" "}
-            <strong>active</strong> no ciclo de vida.
+            Complete os itens acima antes de mover o produto para <strong>active</strong> no ciclo
+            de vida.
           </div>
         )}
       </PopoverContent>

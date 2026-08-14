@@ -13,10 +13,7 @@ const STEP_ORDER = [
   "Protótipo aprovado",
 ] as const;
 
-const STEP_META: Record<
-  string,
-  { anchor: string; cta: string; why: string }
-> = {
+const STEP_META: Record<string, { anchor: string; cta: string; why: string }> = {
   "BOM (materiais)": {
     anchor: "bom",
     cta: "Montar BOM",
@@ -58,9 +55,7 @@ export function ProductNextStepBanner({ productId }: { productId: string }) {
 
   if (q.isLoading || !q.data) return null;
 
-  const failing = new Set(
-    q.data.filter((r) => !r.ok).map((r) => r.requirement),
-  );
+  const failing = new Set(q.data.filter((r) => !r.ok).map((r) => r.requirement));
 
   if (failing.size === 0) {
     return (
@@ -99,9 +94,7 @@ export function ProductNextStepBanner({ productId }: { productId: string }) {
             </span>
           </div>
           <div className="text-sm font-semibold truncate">{next}</div>
-          <div className="text-xs text-muted-foreground truncate">
-            {meta.why}
-          </div>
+          <div className="text-xs text-muted-foreground truncate">{meta.why}</div>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-xs font-medium shrink-0 group-hover:translate-x-0.5 transition">
           {meta.cta}

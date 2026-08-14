@@ -90,8 +90,7 @@ export function ViewPresetsDropdown({
   });
 
   const favMut = useMutation({
-    mutationFn: (v: { id: string; is_favorite: boolean }) =>
-      toggleFavoriteViewPreset({ data: v }),
+    mutationFn: (v: { id: string; is_favorite: boolean }) => toggleFavoriteViewPreset({ data: v }),
     onSuccess: invalidate,
   });
 
@@ -133,10 +132,7 @@ export function ViewPresetsDropdown({
             </div>
           )}
           {presets.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-muted"
-            >
+            <div key={p.id} className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-muted">
               <button
                 className="flex-1 text-left text-sm px-2 py-1.5"
                 onClick={() => {

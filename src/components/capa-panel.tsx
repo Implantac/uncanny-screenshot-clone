@@ -357,7 +357,9 @@ function CapaDialog({
               onChange={(e) => setForm({ ...form, effectiveness_check: e.target.value })}
             />
           )}
-          {capa && <ReinspectionLoop capaId={capa.id} capaStatus={capa.status} onChanged={onSaved} />}
+          {capa && (
+            <ReinspectionLoop capaId={capa.id} capaStatus={capa.status} onChanged={onSaved} />
+          )}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>
@@ -472,7 +474,10 @@ function ReinspectionLoop({
                       Fechar CAPA
                     </Button>
                   )}
-                  <Link to="/inspecoes" className="text-primary hover:underline inline-flex items-center">
+                  <Link
+                    to="/inspecoes"
+                    className="text-primary hover:underline inline-flex items-center"
+                  >
                     abrir <ArrowRight className="size-3 ml-0.5" />
                   </Link>
                 </div>

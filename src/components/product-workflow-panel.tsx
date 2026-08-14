@@ -29,23 +29,44 @@ import {
 import { toast } from "sonner";
 
 const ICONS = {
-  Sparkles, PenTool, FileText, DollarSign, Scissors,
-  ShoppingBag, Crown, ShieldCheck, Factory,
+  Sparkles,
+  PenTool,
+  FileText,
+  DollarSign,
+  Scissors,
+  ShoppingBag,
+  Crown,
+  ShieldCheck,
+  Factory,
 } as const;
 
 function Icon({ name, className }: { name: string; className?: string }) {
-  const Comp = (ICONS as Record<string, React.ComponentType<{ className?: string }>>)[name] ?? Circle;
+  const Comp =
+    (ICONS as Record<string, React.ComponentType<{ className?: string }>>)[name] ?? Circle;
   return <Comp className={className} />;
 }
 
-const STATUS_STYLE: Record<
-  WorkflowRow["status"],
-  { dot: string; badge: string; label: string }
-> = {
-  pendente:      { dot: "bg-muted-foreground/40",  badge: "bg-muted text-muted-foreground",                 label: "Pendente" },
-  em_andamento:  { dot: "bg-blue-500",             badge: "bg-blue-500/15 text-blue-600 border-blue-500/30", label: "Em andamento" },
-  concluido:     { dot: "bg-emerald-500",          badge: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30", label: "Concluído" },
-  bloqueado:     { dot: "bg-rose-500",             badge: "bg-rose-500/15 text-rose-600 border-rose-500/30", label: "Bloqueado" },
+const STATUS_STYLE: Record<WorkflowRow["status"], { dot: string; badge: string; label: string }> = {
+  pendente: {
+    dot: "bg-muted-foreground/40",
+    badge: "bg-muted text-muted-foreground",
+    label: "Pendente",
+  },
+  em_andamento: {
+    dot: "bg-blue-500",
+    badge: "bg-blue-500/15 text-blue-600 border-blue-500/30",
+    label: "Em andamento",
+  },
+  concluido: {
+    dot: "bg-emerald-500",
+    badge: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
+    label: "Concluído",
+  },
+  bloqueado: {
+    dot: "bg-rose-500",
+    badge: "bg-rose-500/15 text-rose-600 border-rose-500/30",
+    label: "Bloqueado",
+  },
 };
 
 export function ProductWorkflowPanel({ productId }: { productId: string }) {
@@ -69,7 +90,9 @@ export function ProductWorkflowPanel({ productId }: { productId: string }) {
           description: r.blockers?.[0] ?? "Requisitos incompletos",
         });
       } else if (r.to_step) {
-        toast.success(`Etapa concluída → ${STEP_META[r.to_step as WorkflowStep]?.label ?? r.to_step}`);
+        toast.success(
+          `Etapa concluída → ${STEP_META[r.to_step as WorkflowStep]?.label ?? r.to_step}`,
+        );
       } else {
         toast.success("Workflow finalizado 🎉");
       }
@@ -112,7 +135,8 @@ export function ProductWorkflowPanel({ productId }: { productId: string }) {
             </Badge>
           </div>
           <div className="text-xs text-muted-foreground">
-            Fluxo transversal Design → Modelagem → Engenharia → Custos → Piloto → Aprovações → PCP → Produção
+            Fluxo transversal Design → Modelagem → Engenharia → Custos → Piloto → Aprovações → PCP →
+            Produção
           </div>
         </div>
         {current ? (
@@ -120,7 +144,9 @@ export function ProductWorkflowPanel({ productId }: { productId: string }) {
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
               Etapa atual
             </div>
-            <div className={`inline-flex items-center gap-1.5 text-sm font-medium ${blocked ? "text-rose-600" : "text-blue-600"}`}>
+            <div
+              className={`inline-flex items-center gap-1.5 text-sm font-medium ${blocked ? "text-rose-600" : "text-blue-600"}`}
+            >
               <Icon name={STEP_META[current.step].icon} className="size-4" />
               {STEP_META[current.step].label}
             </div>
@@ -173,8 +199,12 @@ export function ProductWorkflowPanel({ productId }: { productId: string }) {
                 </div>
                 <div className="text-[11px] text-muted-foreground">
                   {meta.role}
-                  {r.completed_at ? ` · concluído ${new Date(r.completed_at).toLocaleDateString("pt-BR")}` : ""}
-                  {r.started_at && !r.completed_at ? ` · iniciado ${new Date(r.started_at).toLocaleDateString("pt-BR")}` : ""}
+                  {r.completed_at
+                    ? ` · concluído ${new Date(r.completed_at).toLocaleDateString("pt-BR")}`
+                    : ""}
+                  {r.started_at && !r.completed_at
+                    ? ` · iniciado ${new Date(r.started_at).toLocaleDateString("pt-BR")}`
+                    : ""}
                 </div>
               </div>
               {r.status === "concluido" ? (

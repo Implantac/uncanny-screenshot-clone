@@ -13,8 +13,6 @@ type SupplierUpdate = Database["public"]["Tables"]["suppliers"]["Update"];
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-
-
 const ERP_SOURCE = "usesoft";
 
 export const syncErpCollections = createServerFn({ method: "POST" })
@@ -23,9 +21,7 @@ export const syncErpCollections = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const startedAt = new Date().toISOString();
 
-    const { usesoftQuery } = await import(
-      "@/integrations/usesoft/client.server"
-    );
+    const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
 
     // 1) LEITURA do ERP (read-only)
     let erpRows: Array<{
@@ -96,16 +92,10 @@ export const syncErpCollections = createServerFn({ method: "POST" })
         if (found.name !== nome) patch.name = nome;
         // Se o ERP desativou e o PLM ainda está em briefing/desenvolvimento,
         // marcamos como descontinuada. Nunca rebaixa um lançamento ativo.
-        if (
-          !ativa &&
-          (found.status === "briefing" || found.status === "desenvolvimento")
-        ) {
+        if (!ativa && (found.status === "briefing" || found.status === "desenvolvimento")) {
           patch.status = "descontinuada";
         }
-        const { error } = await supabase
-          .from("collections")
-          .update(patch)
-          .eq("id", found.id);
+        const { error } = await supabase.from("collections").update(patch).eq("id", found.id);
         if (!error) updated++;
         else skipped++;
       } else {
@@ -184,9 +174,7 @@ export const syncErpProducts = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const startedAt = new Date().toISOString();
 
-    const { usesoftQuery } = await import(
-      "@/integrations/usesoft/client.server"
-    );
+    const { usesoftQuery } = await import("@/integrations/usesoft/client.server");
 
     // 1) LEITURA do ERP (somente produtos ativos, com vínculo opcional à grife)
     type ErpRow = {
@@ -235,9 +223,7 @@ export const syncErpProducts = createServerFn({ method: "POST" })
       .eq("owner_id", userId)
       .eq("erp_source", ERP_SOURCE);
     const collectionByErpId = new Map<string, string>(
-      (erpCollections ?? [])
-        .filter((c) => c.erp_id)
-        .map((c) => [String(c.erp_id), c.id as string]),
+      (erpCollections ?? []).filter((c) => c.erp_id).map((c) => [String(c.erp_id), c.id as string]),
     );
 
     // 3) Produtos já vinculados ao ERP
@@ -282,13 +268,11 @@ export const syncErpProducts = createServerFn({ method: "POST" })
         skipped++;
         continue;
       }
-      const sku =
-        (row.ccodigoprodu ? String(row.ccodigoprodu).trim() : "") ||
-        `ERP-${erpId}`;
+      const sku = (row.ccodigoprodu ? String(row.ccodigoprodu).trim() : "") || `ERP-${erpId}`;
       const custo = row.ncustoprodu == null ? 0 : Number(row.ncustoprodu) || 0;
       const preco = row.nprcvenprodu == null ? 0 : Number(row.nprcvenprodu) || 0;
       const collectionId = row.nnumerogrife
-        ? collectionByErpId.get(String(row.nnumerogrife)) ?? null
+        ? (collectionByErpId.get(String(row.nnumerogrife)) ?? null)
         : null;
 
       const found = existingByErpId.get(erpId);
@@ -302,10 +286,7 @@ export const syncErpProducts = createServerFn({ method: "POST" })
         if (collectionId && found.collection_id !== collectionId) {
           patch.collection_id = collectionId;
         }
-        const { error } = await supabase
-          .from("products")
-          .update(patch)
-          .eq("id", found.id);
+        const { error } = await supabase.from("products").update(patch).eq("id", found.id);
         if (!error) updated++;
         else skipped++;
       } else {
@@ -412,27 +393,37 @@ export const syncErpCustomers = createServerFn({ method: "POST" })
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Falha ao ler ERP";
       await supabase.from("erp_sync_log").insert({
-        owner_id: userId, direction: "in", event_type: "sync",
-        entity_type: "customers", entity_ref: "solclien",
-        status: "error", records_affected: 0, error_message: msg,
+        owner_id: userId,
+        direction: "in",
+        event_type: "sync",
+        entity_type: "customers",
+        entity_ref: "solclien",
+        status: "error",
+        records_affected: 0,
+        error_message: msg,
       });
       throw new Error(msg);
     }
 
     const { data: existing } = await supabase
-      .from("customers").select("id, erp_id, name, email, phone, document")
-      .eq("owner_id", userId).eq("erp_source", ERP_SOURCE);
-    const existingByErpId = new Map(
-      (existing ?? []).map((c) => [String(c.erp_id), c]),
-    );
+      .from("customers")
+      .select("id, erp_id, name, email, phone, document")
+      .eq("owner_id", userId)
+      .eq("erp_source", ERP_SOURCE);
+    const existingByErpId = new Map((existing ?? []).map((c) => [String(c.erp_id), c]));
 
-    let inserted = 0, updated = 0, skipped = 0;
+    let inserted = 0,
+      updated = 0,
+      skipped = 0;
     const now = new Date().toISOString();
 
     for (const row of erpRows) {
       const erpId = String(row.nnumeroclien);
       const nome = String(row.cnomeclien ?? "").trim();
-      if (!nome) { skipped++; continue; }
+      if (!nome) {
+        skipped++;
+        continue;
+      }
       const doc = (row.ctipopeclien === "J" ? row.ccnpjclien : row.ccpfclien) || null;
       const email = row.cemailnfecli || row.cendwebclien || null;
       const phone = row.cfoneclien || null;
@@ -444,23 +435,45 @@ export const syncErpCustomers = createServerFn({ method: "POST" })
         if ((found.document ?? null) !== doc) patch.document = doc;
         if ((found.email ?? null) !== email) patch.email = email;
         if ((found.phone ?? null) !== phone) patch.phone = phone;
-        const { error } = await supabase.from("customers").update(patch).eq("id", found.id as string);
-        if (!error) updated++; else skipped++;
+        const { error } = await supabase
+          .from("customers")
+          .update(patch)
+          .eq("id", found.id as string);
+        if (!error) updated++;
+        else skipped++;
       } else {
         const { error } = await supabase.from("customers").insert({
-          owner_id: userId, name: nome, document: doc, email, phone,
-          erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
+          owner_id: userId,
+          name: nome,
+          document: doc,
+          email,
+          phone,
+          erp_source: ERP_SOURCE,
+          erp_id: erpId,
+          erp_synced_at: now,
         });
-        if (!error) inserted++; else skipped++;
+        if (!error) inserted++;
+        else skipped++;
       }
     }
 
-    const summary = { total_erp: erpRows.length, inserted, updated, skipped,
-      started_at: startedAt, finished_at: new Date().toISOString() };
+    const summary = {
+      total_erp: erpRows.length,
+      inserted,
+      updated,
+      skipped,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+    };
     await supabase.from("erp_sync_log").insert({
-      owner_id: userId, direction: "in", event_type: "sync",
-      entity_type: "customers", entity_ref: "solclien",
-      status: "success", records_affected: inserted + updated, payload: summary,
+      owner_id: userId,
+      direction: "in",
+      event_type: "sync",
+      entity_type: "customers",
+      entity_ref: "solclien",
+      status: "success",
+      records_affected: inserted + updated,
+      payload: summary,
     });
     return summary;
   });
@@ -500,27 +513,37 @@ export const syncErpSuppliers = createServerFn({ method: "POST" })
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Falha ao ler ERP";
       await supabase.from("erp_sync_log").insert({
-        owner_id: userId, direction: "in", event_type: "sync",
-        entity_type: "suppliers", entity_ref: "solforne",
-        status: "error", records_affected: 0, error_message: msg,
+        owner_id: userId,
+        direction: "in",
+        event_type: "sync",
+        entity_type: "suppliers",
+        entity_ref: "solforne",
+        status: "error",
+        records_affected: 0,
+        error_message: msg,
       });
       throw new Error(msg);
     }
 
     const { data: existing } = await supabase
-      .from("suppliers").select("id, erp_id, name, email, phone, document")
-      .eq("owner_id", userId).eq("erp_source", ERP_SOURCE);
-    const existingByErpId = new Map(
-      (existing ?? []).map((s) => [String(s.erp_id), s]),
-    );
+      .from("suppliers")
+      .select("id, erp_id, name, email, phone, document")
+      .eq("owner_id", userId)
+      .eq("erp_source", ERP_SOURCE);
+    const existingByErpId = new Map((existing ?? []).map((s) => [String(s.erp_id), s]));
 
-    let inserted = 0, updated = 0, skipped = 0;
+    let inserted = 0,
+      updated = 0,
+      skipped = 0;
     const now = new Date().toISOString();
 
     for (const row of erpRows) {
       const erpId = String(row.nnumeroforne);
       const nome = String(row.cnomeforne ?? "").trim();
-      if (!nome) { skipped++; continue; }
+      if (!nome) {
+        skipped++;
+        continue;
+      }
       const doc = (row.ctipopeforne === "J" ? row.ccnpjforne : row.ccpfforne) || null;
       const email = row.cemailforne || null;
       const phone = row.cfoneforne || null;
@@ -532,23 +555,46 @@ export const syncErpSuppliers = createServerFn({ method: "POST" })
         if ((found.document ?? null) !== doc) patch.document = doc;
         if ((found.email ?? null) !== email) patch.email = email;
         if ((found.phone ?? null) !== phone) patch.phone = phone;
-        const { error } = await supabase.from("suppliers").update(patch).eq("id", found.id as string);
-        if (!error) updated++; else skipped++;
+        const { error } = await supabase
+          .from("suppliers")
+          .update(patch)
+          .eq("id", found.id as string);
+        if (!error) updated++;
+        else skipped++;
       } else {
         const { error } = await supabase.from("suppliers").insert({
-          owner_id: userId, name: nome, document: doc, email, phone, active: true,
-          erp_source: ERP_SOURCE, erp_id: erpId, erp_synced_at: now,
+          owner_id: userId,
+          name: nome,
+          document: doc,
+          email,
+          phone,
+          active: true,
+          erp_source: ERP_SOURCE,
+          erp_id: erpId,
+          erp_synced_at: now,
         });
-        if (!error) inserted++; else skipped++;
+        if (!error) inserted++;
+        else skipped++;
       }
     }
 
-    const summary = { total_erp: erpRows.length, inserted, updated, skipped,
-      started_at: startedAt, finished_at: new Date().toISOString() };
+    const summary = {
+      total_erp: erpRows.length,
+      inserted,
+      updated,
+      skipped,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+    };
     await supabase.from("erp_sync_log").insert({
-      owner_id: userId, direction: "in", event_type: "sync",
-      entity_type: "suppliers", entity_ref: "solforne",
-      status: "success", records_affected: inserted + updated, payload: summary,
+      owner_id: userId,
+      direction: "in",
+      event_type: "sync",
+      entity_type: "suppliers",
+      entity_ref: "solforne",
+      status: "success",
+      records_affected: inserted + updated,
+      payload: summary,
     });
     return summary;
   });
@@ -590,9 +636,14 @@ export const syncErpInventory = createServerFn({ method: "POST" })
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Falha ao ler ERP";
       await supabase.from("erp_sync_log").insert({
-        owner_id: userId, direction: "in", event_type: "sync",
-        entity_type: "inventory", entity_ref: "estsaldo",
-        status: "error", records_affected: 0, error_message: msg,
+        owner_id: userId,
+        direction: "in",
+        event_type: "sync",
+        entity_type: "inventory",
+        entity_ref: "estsaldo",
+        status: "error",
+        records_affected: 0,
+        error_message: msg,
       });
       throw new Error(msg);
     }
@@ -625,12 +676,21 @@ export const syncErpInventory = createServerFn({ method: "POST" })
       if (!error) inserted += slice.length;
     }
 
-    const summary = { total_erp: erpRows.length, inserted, started_at: startedAt,
-      finished_at: new Date().toISOString() };
+    const summary = {
+      total_erp: erpRows.length,
+      inserted,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+    };
     await supabase.from("erp_sync_log").insert({
-      owner_id: userId, direction: "in", event_type: "sync",
-      entity_type: "inventory", entity_ref: "estsaldo",
-      status: "success", records_affected: inserted, payload: summary,
+      owner_id: userId,
+      direction: "in",
+      event_type: "sync",
+      entity_type: "inventory",
+      entity_ref: "estsaldo",
+      status: "success",
+      records_affected: inserted,
+      payload: summary,
     });
     return summary;
   });
@@ -691,9 +751,14 @@ export const syncErpSales = createServerFn({ method: "POST" })
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Falha ao ler ERP";
       await supabase.from("erp_sync_log").insert({
-        owner_id: userId, direction: "in", event_type: "sync",
-        entity_type: "sales", entity_ref: "solpedid",
-        status: "error", records_affected: 0, error_message: msg,
+        owner_id: userId,
+        direction: "in",
+        event_type: "sync",
+        entity_type: "sales",
+        entity_ref: "solpedid",
+        status: "error",
+        records_affected: 0,
+        error_message: msg,
       });
       throw new Error(msg);
     }
@@ -724,12 +789,22 @@ export const syncErpSales = createServerFn({ method: "POST" })
       if (!error) inserted += slice.length;
     }
 
-    const summary = { total_erp: erpRows.length, inserted, days_back: data.daysBack,
-      started_at: startedAt, finished_at: new Date().toISOString() };
+    const summary = {
+      total_erp: erpRows.length,
+      inserted,
+      days_back: data.daysBack,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+    };
     await supabase.from("erp_sync_log").insert({
-      owner_id: userId, direction: "in", event_type: "sync",
-      entity_type: "sales", entity_ref: "solpedid",
-      status: "success", records_affected: inserted, payload: summary,
+      owner_id: userId,
+      direction: "in",
+      event_type: "sync",
+      entity_type: "sales",
+      entity_ref: "solpedid",
+      status: "success",
+      records_affected: inserted,
+      payload: summary,
     });
     return summary;
   });
@@ -771,9 +846,14 @@ export const syncErpPurchases = createServerFn({ method: "POST" })
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Falha ao ler ERP";
       await supabase.from("erp_sync_log").insert({
-        owner_id: userId, direction: "in", event_type: "sync",
-        entity_type: "purchases", entity_ref: "solpedcom",
-        status: "error", records_affected: 0, error_message: msg,
+        owner_id: userId,
+        direction: "in",
+        event_type: "sync",
+        entity_type: "purchases",
+        entity_ref: "solpedcom",
+        status: "error",
+        records_affected: 0,
+        error_message: msg,
       });
       throw new Error(msg);
     }
@@ -798,12 +878,22 @@ export const syncErpPurchases = createServerFn({ method: "POST" })
       if (!error) inserted += slice.length;
     }
 
-    const summary = { total_erp: erpRows.length, inserted, days_back: data.daysBack,
-      started_at: startedAt, finished_at: new Date().toISOString() };
+    const summary = {
+      total_erp: erpRows.length,
+      inserted,
+      days_back: data.daysBack,
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+    };
     await supabase.from("erp_sync_log").insert({
-      owner_id: userId, direction: "in", event_type: "sync",
-      entity_type: "purchases", entity_ref: "solpedcom",
-      status: "success", records_affected: inserted, payload: summary,
+      owner_id: userId,
+      direction: "in",
+      event_type: "sync",
+      entity_type: "purchases",
+      entity_ref: "solpedcom",
+      status: "success",
+      records_affected: inserted,
+      payload: summary,
     });
     return summary;
   });
@@ -818,21 +908,34 @@ async function statusFor(
   table: string,
   entity: string,
 ) {
-  type Q = { select: (s: string, o?: unknown) => Q; eq: (a: string, b: string) => Q;
-    order?: (a: string, b: unknown) => Q; limit?: (n: number) => Q; maybeSingle?: () => Promise<unknown>;
-    then?: unknown; };
+  type Q = {
+    select: (s: string, o?: unknown) => Q;
+    eq: (a: string, b: string) => Q;
+    order?: (a: string, b: unknown) => Q;
+    limit?: (n: number) => Q;
+    maybeSingle?: () => Promise<unknown>;
+    then?: unknown;
+  };
   const sb = supabase as { from: (t: string) => Q };
   const tableHasErpLink = table === "customers" || table === "suppliers";
   const linkedQ = tableHasErpLink
     ? (sb.from(table).select("id", { count: "exact", head: true }) as unknown as Q)
-        .eq("owner_id", userId).eq("erp_source", ERP_SOURCE)
-    : (sb.from(table).select("id", { count: "exact", head: true }) as unknown as Q)
-        .eq("owner_id", userId);
+        .eq("owner_id", userId)
+        .eq("erp_source", ERP_SOURCE)
+    : (sb.from(table).select("id", { count: "exact", head: true }) as unknown as Q).eq(
+        "owner_id",
+        userId,
+      );
   const [linkedRes, logRes] = await Promise.all([
     linkedQ as unknown as Promise<{ count: number | null }>,
-    (sb.from("erp_sync_log").select("created_at, status, records_affected, payload, error_message") as unknown as Q)
-      .eq("owner_id", userId).eq("entity_type", entity)
-      .order!("created_at", { ascending: false }).limit!(1).maybeSingle!() as Promise<{ data: unknown }>,
+    (
+      sb
+        .from("erp_sync_log")
+        .select("created_at, status, records_affected, payload, error_message") as unknown as Q
+    )
+      .eq("owner_id", userId)
+      .eq("entity_type", entity).order!("created_at", { ascending: false }).limit!(1)
+      .maybeSingle!() as Promise<{ data: unknown }>,
   ]);
   return {
     linked: linkedRes.count ?? 0,
@@ -843,27 +946,32 @@ async function statusFor(
 export const getErpCustomerSyncStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) =>
-    statusFor(context.supabase as never, context.userId, "customers", "customers"));
+    statusFor(context.supabase as never, context.userId, "customers", "customers"),
+  );
 
 export const getErpSupplierSyncStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) =>
-    statusFor(context.supabase as never, context.userId, "suppliers", "suppliers"));
+    statusFor(context.supabase as never, context.userId, "suppliers", "suppliers"),
+  );
 
 export const getErpInventorySyncStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) =>
-    statusFor(context.supabase as never, context.userId, "erp_inventory_mirror", "inventory"));
+    statusFor(context.supabase as never, context.userId, "erp_inventory_mirror", "inventory"),
+  );
 
 export const getErpSalesSyncStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) =>
-    statusFor(context.supabase as never, context.userId, "erp_sales_mirror", "sales"));
+    statusFor(context.supabase as never, context.userId, "erp_sales_mirror", "sales"),
+  );
 
 export const getErpPurchaseSyncStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) =>
-    statusFor(context.supabase as never, context.userId, "erp_purchase_mirror", "purchases"));
+    statusFor(context.supabase as never, context.userId, "erp_purchase_mirror", "purchases"),
+  );
 
 export const syncErpProductImages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -873,5 +981,3 @@ export const syncErpProductImages = createServerFn({ method: "POST" })
     const limit = Math.min(Math.max(Number(data?.limit) || 100, 1), 500);
     return runSyncProductImages(context.supabase as never, context.userId, limit);
   });
-
-

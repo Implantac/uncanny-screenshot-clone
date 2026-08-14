@@ -99,7 +99,6 @@ function ExecutivoPage() {
         }
       />
 
-
       <WarRoomPanel />
 
       <ExecutiveKpisPanel />
@@ -117,9 +116,7 @@ function ExecutivoPage() {
         {isLoading || !data ? (
           <div className="h-40 animate-pulse rounded bg-muted/30" />
         ) : data.rows.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            Sem coleções no período.
-          </p>
+          <p className="py-6 text-center text-sm text-muted-foreground">Sem coleções no período.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -158,10 +155,7 @@ function ExecutivoPage() {
                   key={r.collectionId}
                   className="flex items-center justify-between rounded border border-red-500/30 bg-red-500/5 p-2 text-sm"
                 >
-                  <Link
-                    to="/colecoes"
-                    className="font-medium hover:underline"
-                  >
+                  <Link to="/colecoes" className="font-medium hover:underline">
                     {r.name}
                   </Link>
                   <Badge variant="outline" className="border-red-500/40 text-red-300">
@@ -187,10 +181,7 @@ function ExecutivoPage() {
                   key={r.collectionId}
                   className="flex items-center justify-between rounded border border-emerald-500/30 bg-emerald-500/5 p-2 text-sm"
                 >
-                  <Link
-                    to="/colecoes"
-                    className="font-medium hover:underline"
-                  >
+                  <Link to="/colecoes" className="font-medium hover:underline">
                     {r.name}
                   </Link>
                   <Badge variant="outline" className="border-emerald-500/40 text-emerald-300">

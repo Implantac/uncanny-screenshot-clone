@@ -47,10 +47,8 @@ export const analyzeTrendImage = createServerFn({ method: "POST" })
     });
     if (!res.ok) {
       const err = await res.text();
-      if (res.status === 429)
-        throw new Error("Agente USE ocupado — tente novamente em instantes.");
-      if (res.status === 402)
-        throw new Error("Agente USE em pausa — retomando automaticamente.");
+      if (res.status === 429) throw new Error("Agente USE ocupado — tente novamente em instantes.");
+      if (res.status === 402) throw new Error("Agente USE em pausa — retomando automaticamente.");
       throw new Error(`AI Gateway: ${res.status} ${err.slice(0, 200)}`);
     }
     const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };

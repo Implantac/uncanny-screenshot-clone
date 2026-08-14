@@ -59,9 +59,7 @@ export function AdaptiveProductionPriorityPanel() {
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] font-mono text-muted-foreground">
-                      #{idx + 1}
-                    </span>
+                    <span className="text-[10px] font-mono text-muted-foreground">#{idx + 1}</span>
                     <Link
                       to="/lote/$id"
                       params={{ id: it.op_id }}

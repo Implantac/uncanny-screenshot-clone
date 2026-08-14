@@ -188,12 +188,10 @@ export const getCapacityRebalanceSuggestions = createServerFn({ method: "POST" }
       const daysToDue = op.due_date
         ? Math.round((new Date(op.due_date).getTime() - now) / 86_400_000)
         : null;
-      const stageChanged = op.stage_updated_at
-        ? new Date(op.stage_updated_at).getTime()
-        : now;
+      const stageChanged = op.stage_updated_at ? new Date(op.stage_updated_at).getTime() : now;
       const dwellH = Math.max(0, (now - stageChanged) / 3_600_000);
       const priority = Number(op.priority ?? 3);
-      const curScore = op.supplier_id ? scoreBySup.get(op.supplier_id)?.score ?? null : null;
+      const curScore = op.supplier_id ? (scoreBySup.get(op.supplier_id)?.score ?? null) : null;
       const curOcc = op.supplier_id ? occupancyPct(op.supplier_id) : null;
 
       let risk = 20;
@@ -249,7 +247,9 @@ export const getCapacityRebalanceSuggestions = createServerFn({ method: "POST" }
 
       const reason = buildAiReason({
         signals: [
-          curScore != null ? `atual ${supById.get(op.supplier_id ?? "")?.name ?? "fornecedor"} score ${Math.round(curScore)}` : "sem scorecard atual",
+          curScore != null
+            ? `atual ${supById.get(op.supplier_id ?? "")?.name ?? "fornecedor"} score ${Math.round(curScore)}`
+            : "sem scorecard atual",
           curOcc != null ? `ocupação ${curOcc}%` : "capacidade não declarada",
           daysToDue != null && daysToDue < 3 ? `vence em ${daysToDue}d` : `risco ${risk}`,
         ],
@@ -262,11 +262,11 @@ export const getCapacityRebalanceSuggestions = createServerFn({ method: "POST" }
         stage,
         category,
         product_id: op.product_id,
-        product_name: op.product_id ? prodById.get(op.product_id)?.name ?? null : null,
+        product_name: op.product_id ? (prodById.get(op.product_id)?.name ?? null) : null,
         quantity_remaining: remaining,
         due_date: op.due_date,
         current_supplier_id: op.supplier_id,
-        current_supplier_name: op.supplier_id ? supById.get(op.supplier_id)?.name ?? null : null,
+        current_supplier_name: op.supplier_id ? (supById.get(op.supplier_id)?.name ?? null) : null,
         current_score: curScore,
         current_occupancy_pct: curOcc,
         risk_score: risk,

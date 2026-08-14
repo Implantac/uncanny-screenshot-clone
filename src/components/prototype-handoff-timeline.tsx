@@ -3,10 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowRight, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
-import {
-  getHandoffTimeline,
-  registerHandoff,
-} from "@/lib/prototype-gates.functions";
+import { getHandoffTimeline, registerHandoff } from "@/lib/prototype-gates.functions";
 import { SECTORS } from "@/components/prototype-adjustments";
 import { Button } from "@/components/ui/button";
 import {
@@ -124,10 +121,7 @@ export function PrototypeHandoffTimeline({
               <Button variant="ghost" onClick={() => setOpen(false)}>
                 Cancelar
               </Button>
-              <Button
-                disabled={!toSector || register.isPending}
-                onClick={() => register.mutate()}
-              >
+              <Button disabled={!toSector || register.isPending} onClick={() => register.mutate()}>
                 {register.isPending && <Loader2 className="size-3 mr-1 animate-spin" />}
                 Registrar
               </Button>

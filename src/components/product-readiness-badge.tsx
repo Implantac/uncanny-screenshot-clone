@@ -2,12 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ShieldCheck, ShieldAlert, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type GateRow = { requirement: string; ok: boolean; detail: string | null };
 
@@ -93,7 +88,6 @@ export function ProductReadinessBadge({
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" role="tooltip" className="max-w-xs p-0 overflow-hidden">
-
           <div className="px-3 py-2 border-b border-border/50 bg-muted/40">
             <div className="text-[11px] font-semibold">
               {ready ? "Pronto para produção" : "Gates críticos pendentes"}
@@ -114,9 +108,7 @@ export function ProductReadinessBadge({
                 )}
                 <span className="sr-only">{g.ok ? "Aprovado:" : "Pendente:"}</span>
                 <div className="min-w-0">
-                  <div className="text-[11px] font-medium leading-tight">
-                    {g.requirement}
-                  </div>
+                  <div className="text-[11px] font-medium leading-tight">{g.requirement}</div>
                   <div className="text-[10px] text-muted-foreground leading-snug">
                     {g.detail ?? EXPLAIN[g.requirement] ?? ""}
                   </div>
@@ -129,4 +121,3 @@ export function ProductReadinessBadge({
     </TooltipProvider>
   );
 }
-

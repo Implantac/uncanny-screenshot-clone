@@ -4,15 +4,20 @@ import { useServerFn } from "@tanstack/react-start";
 import { Boxes, AlertTriangle, CheckCircle2, RefreshCw, Package } from "lucide-react";
 import { computeMaterialNeeds } from "@/lib/pcp-mrp.functions";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function PcpMrpPanel() {
   const [horizon, setHorizon] = useState<string>("all");
   const compute = useServerFn(computeMaterialNeeds);
   const { data, isFetching, refetch } = useQuery({
     queryKey: ["pcp-mrp", horizon],
-    queryFn: () =>
-      compute({ data: horizon === "all" ? {} : { horizonDays: Number(horizon) } }),
+    queryFn: () => compute({ data: horizon === "all" ? {} : { horizonDays: Number(horizon) } }),
     staleTime: 60_000,
   });
 
@@ -54,9 +59,23 @@ export function PcpMrpPanel() {
       </header>
 
       <div className="grid grid-cols-3 gap-2">
-        <Stat icon={<Package className="size-3.5" />} label="OPs analisadas" value={data?.totalOps ?? 0} />
-        <Stat icon={<AlertTriangle className="size-3.5 text-amber-500" />} label="Em falta" value={critical.length} accent="amber" />
-        <Stat icon={<CheckCircle2 className="size-3.5 text-emerald-500" />} label="Coberto" value={ok} accent="emerald" />
+        <Stat
+          icon={<Package className="size-3.5" />}
+          label="OPs analisadas"
+          value={data?.totalOps ?? 0}
+        />
+        <Stat
+          icon={<AlertTriangle className="size-3.5 text-amber-500" />}
+          label="Em falta"
+          value={critical.length}
+          accent="amber"
+        />
+        <Stat
+          icon={<CheckCircle2 className="size-3.5 text-emerald-500" />}
+          label="Coberto"
+          value={ok}
+          accent="emerald"
+        />
       </div>
 
       {items.length === 0 ? (
@@ -119,13 +138,17 @@ export function PcpMrpPanel() {
                     <td className="px-2 py-2 text-right tabular-nums">{it.required}</td>
                     <td className="px-2 py-2 text-right tabular-nums">{it.balance}</td>
                     <td className="px-2 py-2 text-right tabular-nums">{it.onOrder}</td>
-                    <td className={`px-2 py-2 text-right tabular-nums font-semibold ${it.deficit > 0 ? "text-destructive" : "text-emerald-500"}`}>
+                    <td
+                      className={`px-2 py-2 text-right tabular-nums font-semibold ${it.deficit > 0 ? "text-destructive" : "text-emerald-500"}`}
+                    >
                       {it.deficit > 0 ? it.deficit : "—"}
                     </td>
                     <td className="px-2 py-2">
                       {it.deficit > 0 ? (
                         <div className="space-y-0.5">
-                          <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded border ${urgTone}`}>
+                          <span
+                            className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded border ${urgTone}`}
+                          >
                             {urgLabel}
                           </span>
                           {latest && (

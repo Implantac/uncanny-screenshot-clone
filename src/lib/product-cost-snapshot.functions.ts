@@ -61,9 +61,7 @@ export const getProductCostSnapshot = createServerFn({ method: "POST" })
       sb.from("products").select("id, sku, name").eq("id", productId).maybeSingle(),
       sb
         .from("tech_sheets")
-        .select(
-          "id, status, materials_cost, labor_cost, cost_price, overhead_pct, updated_at",
-        )
+        .select("id, status, materials_cost, labor_cost, cost_price, overhead_pct, updated_at")
         .eq("product_id", productId)
         .order("status", { ascending: false })
         .order("updated_at", { ascending: false })
@@ -87,12 +85,12 @@ export const getProductCostSnapshot = createServerFn({ method: "POST" })
         .from("tech_sheet_materials")
         .select("id, name, total_cost, inventory_item_id")
         .eq("tech_sheet_id", sheet.id);
-      const list = ((mats ?? []) as Array<{
+      const list = (mats ?? []) as Array<{
         id: string;
         name: string | null;
         total_cost: number | null;
         inventory_item_id: string | null;
-      }>);
+      }>;
       const totalMat = list.reduce((a, m) => a + Number(m.total_cost ?? 0), 0) || 1;
       drivers = list
         .map((m) => ({
@@ -118,7 +116,7 @@ export const getProductCostSnapshot = createServerFn({ method: "POST" })
         .or(`sku.eq.${product.sku},product_ref.eq.${product.sku}`)
         .gte("sold_at", since)
         .limit(1000);
-      const rows = ((sales ?? []) as Array<{ quantity: number | null; total_value: number | null }>);
+      const rows = (sales ?? []) as Array<{ quantity: number | null; total_value: number | null }>;
       units = rows.reduce((a, r) => a + Number(r.quantity ?? 0), 0);
       revenue = rows.reduce((a, r) => a + Number(r.total_value ?? 0), 0);
       if (units > 0) avgSalePrice = revenue / units;

@@ -24,9 +24,15 @@ export const Route = createFileRoute("/_authenticated/_app/control-tower")({
   head: () => ({
     meta: [
       { title: "Torre de Controle · USE MODA PLM" },
-      { name: "description", content: "Visão unificada de ordens, gargalos, riscos e ações críticas do dia." },
+      {
+        name: "description",
+        content: "Visão unificada de ordens, gargalos, riscos e ações críticas do dia.",
+      },
       { property: "og:title", content: "Torre de Controle · USE MODA PLM" },
-      { property: "og:description", content: "Visão unificada de ordens, gargalos, riscos e ações críticas do dia." },
+      {
+        property: "og:description",
+        content: "Visão unificada de ordens, gargalos, riscos e ações críticas do dia.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -135,10 +141,25 @@ type StageStat = {
   throughput7d: number;
 };
 
-type LateOrder = { id: string; code: string; stage: string | null; due_date: string | null; products: { name: string } | null };
-type RecentLog = { created_at: string; from_stage: string | null; to_stage: string; quantity: number | null };
+type LateOrder = {
+  id: string;
+  code: string;
+  stage: string | null;
+  due_date: string | null;
+  products: { name: string } | null;
+};
+type RecentLog = {
+  created_at: string;
+  from_stage: string | null;
+  to_stage: string;
+  quantity: number | null;
+};
 
-async function loadLive(): Promise<{ stages: StageStat[]; lateOrders: LateOrder[]; recent: RecentLog[] }> {
+async function loadLive(): Promise<{
+  stages: StageStat[];
+  lateOrders: LateOrder[];
+  recent: RecentLog[];
+}> {
   const since = new Date(Date.now() - 7 * 86400000).toISOString();
   const [{ data: orders }, { data: log }] = await Promise.all([
     supabase
@@ -213,7 +234,6 @@ function ControlTower() {
         }
       />
 
-
       <div className="flex justify-end">
         <AutoPushSentinel />
       </div>
@@ -259,11 +279,7 @@ async function loadExec() {
         .gte("sent_at", since24h)
         .order("sent_at", { ascending: false })
         .limit(20),
-      supabase
-        .from("quality_capa")
-        .select("id, severity, status")
-        .eq("status", "aberta")
-        .limit(50),
+      supabase.from("quality_capa").select("id, severity, status").eq("status", "aberta").limit(50),
     ]);
 
   // SLA por setor
@@ -285,14 +301,16 @@ async function loadExec() {
   const slaGlobal = slaArr.length
     ? Math.round(slaArr.reduce((s, v) => s + v.pct, 0) / slaArr.length)
     : 100;
-  const opsCriticas = (orders ?? []).filter(
-    (o) => o.due_date && o.due_date < today,
-  ).length;
+  const opsCriticas = (orders ?? []).filter((o) => o.due_date && o.due_date < today).length;
   const launchesWeek = (collections ?? []).filter(
     (c) => c.status === "lancamento" && (c.status_changed_at ?? "").slice(0, 10) <= weekAhead,
   );
-  const critCapas = (capas ?? []).filter((c) => c.severity === "critica" || c.severity === "alta").length;
-  const pushCrit = (pushes ?? []).filter((p) => p.severity === "critical" || p.severity === "high").length;
+  const critCapas = (capas ?? []).filter(
+    (c) => c.severity === "critica" || c.severity === "alta",
+  ).length;
+  const pushCrit = (pushes ?? []).filter(
+    (p) => p.severity === "critical" || p.severity === "high",
+  ).length;
 
   return {
     slaArr: slaArr.sort((a, b) => a.pct - b.pct),
@@ -306,7 +324,11 @@ async function loadExec() {
 }
 
 function ExecStrip() {
-  const { data } = useQuery({ queryKey: ["exec-strip"], queryFn: loadExec, refetchInterval: 60_000 });
+  const { data } = useQuery({
+    queryKey: ["exec-strip"],
+    queryFn: loadExec,
+    refetchInterval: 60_000,
+  });
   if (!data) return null;
   const tone = data.slaGlobal >= 85 ? "ok" : data.slaGlobal >= 60 ? "warn" : "danger";
   const toneRing: Record<string, string> = {
@@ -315,7 +337,9 @@ function ExecStrip() {
     danger: "border-red-500/40",
   };
   return (
-    <section className={`rounded-xl border-2 ${toneRing[tone]} bg-gradient-to-br from-card to-muted/30 p-4 space-y-3`}>
+    <section
+      className={`rounded-xl border-2 ${toneRing[tone]} bg-gradient-to-br from-card to-muted/30 p-4 space-y-3`}
+    >
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Gauge className="size-5 text-primary" />
@@ -385,13 +409,22 @@ function ExecStrip() {
       )}
 
       <div className="flex flex-wrap gap-2 pt-1">
-        <Link to="/acompanhamento-producao" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted inline-flex items-center gap-1">
+        <Link
+          to="/acompanhamento-producao"
+          className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted inline-flex items-center gap-1"
+        >
           <Factory className="size-3" /> Acompanhar produção
         </Link>
-        <Link to="/intel-hub" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted inline-flex items-center gap-1">
+        <Link
+          to="/intel-hub"
+          className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted inline-flex items-center gap-1"
+        >
           <Brain className="size-3" /> Intelligence
         </Link>
-        <Link to="/war-room-producao" className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted">
+        <Link
+          to="/war-room-producao"
+          className="text-[11px] px-2.5 py-1 rounded border border-border hover:bg-muted"
+        >
           War Room produção
         </Link>
       </div>
@@ -485,9 +518,10 @@ function LiveTab() {
           )}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {isLoading && Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full rounded-xl" />
-          ))}
+          {isLoading &&
+            Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-xl" />
+            ))}
           {!isLoading && stages.length === 0 && (
             <div className="col-span-full text-sm text-muted-foreground">Sem OPs ativas.</div>
           )}
@@ -672,9 +706,14 @@ function DemandTab() {
               </tr>
             </thead>
             <tbody>
-              {isLoading && Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i}><td colSpan={16} className="p-2"><Skeleton className="h-8 w-full" /></td></tr>
-              ))}
+              {isLoading &&
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={16} className="p-2">
+                      <Skeleton className="h-8 w-full" />
+                    </td>
+                  </tr>
+                ))}
               {!isLoading && rows.length === 0 && (
                 <tr>
                   <td colSpan={16} className="p-8 text-center text-muted-foreground">

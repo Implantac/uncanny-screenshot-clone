@@ -196,9 +196,7 @@ function ScanPage() {
                     className="w-full text-left px-3 py-2 hover:bg-muted focus:bg-muted focus:outline-none"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="text-sm font-medium truncate">
-                        {s.batch_code || s.code}
-                      </div>
+                      <div className="text-sm font-medium truncate">{s.batch_code || s.code}</div>
                       {s.stage && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-wider">
                           {s.stage}

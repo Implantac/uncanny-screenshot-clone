@@ -29,12 +29,16 @@ export type PriceSuggestion = {
 export const getProductCostHistory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
-    z.object({ productId: z.string().uuid(), limit: z.number().int().min(1).max(200).default(50) }).parse(d),
+    z
+      .object({ productId: z.string().uuid(), limit: z.number().int().min(1).max(200).default(50) })
+      .parse(d),
   )
   .handler(async ({ data, context }): Promise<CostHistoryPoint[]> => {
     const { data: rows, error } = await context.supabase
       .from("product_cost_history")
-      .select("id, created_at, materials_cost, labor_cost, overhead_pct, total_cost, target_cost, status, reason")
+      .select(
+        "id, created_at, materials_cost, labor_cost, overhead_pct, total_cost, target_cost, status, reason",
+      )
       .eq("product_id", data.productId)
       .order("created_at", { ascending: false })
       .limit(data.limit);

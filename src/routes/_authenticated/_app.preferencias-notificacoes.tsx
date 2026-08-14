@@ -12,7 +12,10 @@ export const Route = createFileRoute("/_authenticated/_app/preferencias-notifica
   head: () => ({
     meta: [
       { title: "Preferências de notificação · USE MODA PLM" },
-      { name: "description", content: "Configure quais notificações você deseja receber por push, e-mail ou silenciar." },
+      {
+        name: "description",
+        content: "Configure quais notificações você deseja receber por push, e-mail ou silenciar.",
+      },
     ],
   }),
   component: NotificationPreferencesPage,
@@ -26,11 +29,36 @@ type Category = {
 };
 
 const CATEGORIES: Category[] = [
-  { key: "mention", label: "Menções (@)", description: "Quando alguém marca você em um comentário do produto.", icon: AtSign },
-  { key: "approval", label: "Aprovações pendentes", description: "Quando um gate ou ficha aguarda sua decisão.", icon: ClipboardCheck },
-  { key: "digest", label: "Resumo diário", description: "Consolidação diária de aprovações e menções não vistas.", icon: Sparkles },
-  { key: "production", label: "Produção e PCP", description: "Alertas de atraso, passagem de setor e ocorrências.", icon: Factory },
-  { key: "quality", label: "Qualidade e CAPA", description: "Reprovações, não-conformidades e ações corretivas.", icon: ShieldCheck },
+  {
+    key: "mention",
+    label: "Menções (@)",
+    description: "Quando alguém marca você em um comentário do produto.",
+    icon: AtSign,
+  },
+  {
+    key: "approval",
+    label: "Aprovações pendentes",
+    description: "Quando um gate ou ficha aguarda sua decisão.",
+    icon: ClipboardCheck,
+  },
+  {
+    key: "digest",
+    label: "Resumo diário",
+    description: "Consolidação diária de aprovações e menções não vistas.",
+    icon: Sparkles,
+  },
+  {
+    key: "production",
+    label: "Produção e PCP",
+    description: "Alertas de atraso, passagem de setor e ocorrências.",
+    icon: Factory,
+  },
+  {
+    key: "quality",
+    label: "Qualidade e CAPA",
+    description: "Reprovações, não-conformidades e ações corretivas.",
+    icon: ShieldCheck,
+  },
 ];
 
 type PrefRow = { category: string; muted: boolean; push_enabled: boolean; email_enabled: boolean };
@@ -58,7 +86,12 @@ function NotificationPreferencesPage() {
     const next: Record<string, PrefRow> = {};
     for (const c of CATEGORIES) {
       const existing = prefs.find((p) => p.category === c.key);
-      next[c.key] = existing ?? { category: c.key, muted: false, push_enabled: true, email_enabled: false };
+      next[c.key] = existing ?? {
+        category: c.key,
+        muted: false,
+        push_enabled: true,
+        email_enabled: false,
+      };
     }
     setLocal(next);
   }, [prefs]);
@@ -66,12 +99,16 @@ function NotificationPreferencesPage() {
   const save = useMutation({
     mutationFn: async (row: PrefRow) => {
       if (!user) throw new Error("no user");
-      const { error } = await supabase
-        .from("notification_preferences")
-        .upsert(
-          { user_id: user.id, category: row.category, muted: row.muted, push_enabled: row.push_enabled, email_enabled: row.email_enabled },
-          { onConflict: "user_id,category" },
-        );
+      const { error } = await supabase.from("notification_preferences").upsert(
+        {
+          user_id: user.id,
+          category: row.category,
+          muted: row.muted,
+          push_enabled: row.push_enabled,
+          email_enabled: row.email_enabled,
+        },
+        { onConflict: "user_id,category" },
+      );
       if (error) throw error;
     },
     onSuccess: () => {
@@ -143,7 +180,8 @@ function NotificationPreferencesPage() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        As preferências são aplicadas em tempo real ao gatilho de menções e ao resumo diário. O envio por e-mail depende da integração de e-mail configurada.
+        As preferências são aplicadas em tempo real ao gatilho de menções e ao resumo diário. O
+        envio por e-mail depende da integração de e-mail configurada.
       </p>
     </div>
   );

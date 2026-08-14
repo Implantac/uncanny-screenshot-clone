@@ -50,9 +50,7 @@ export const getGates = createServerFn({ method: "POST" })
       .select("*")
       .eq("prototype_id", data.prototypeId);
     if (error) throw new Error(error.message);
-    const byKey = new Map<GateKey, Gate>(
-      ((rows ?? []) as Gate[]).map((g) => [g.gate, g]),
-    );
+    const byKey = new Map<GateKey, Gate>(((rows ?? []) as Gate[]).map((g) => [g.gate, g]));
     // garante 5 gates virtuais na ordem
     return GATES.map(
       (k, i) =>
@@ -73,16 +71,15 @@ export const getGates = createServerFn({ method: "POST" })
 
 export const decideGate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (d: { prototypeId: string; gate: GateKey; status: GateStatus; notes?: string }) =>
-      z
-        .object({
-          prototypeId: z.string().uuid(),
-          gate: z.enum(GATES),
-          status: z.enum(["pendente", "aprovado", "reprovado"]),
-          notes: z.string().optional(),
-        })
-        .parse(d),
+  .inputValidator((d: { prototypeId: string; gate: GateKey; status: GateStatus; notes?: string }) =>
+    z
+      .object({
+        prototypeId: z.string().uuid(),
+        gate: z.enum(GATES),
+        status: z.enum(["pendente", "aprovado", "reprovado"]),
+        notes: z.string().optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

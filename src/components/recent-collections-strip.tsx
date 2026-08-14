@@ -27,8 +27,7 @@ export function RecentCollectionsStrip() {
   const pinnedIds = new Set(pinned.map((p) => p.id));
   const recentOnly = recent.filter((r) => !pinnedIds.has(r.id));
 
-  const subtitle = (c: RecentCollection) =>
-    [c.season, c.year].filter(Boolean).join(" · ");
+  const subtitle = (c: RecentCollection) => [c.season, c.year].filter(Boolean).join(" · ");
 
   return (
     <div className="space-y-3">
@@ -46,7 +45,9 @@ export function RecentCollectionsStrip() {
                 params={{ id: c.id }}
                 className="shrink-0 min-w-[180px] max-w-[220px] rounded-md border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors px-3 py-2"
               >
-                <div className="text-[10px] text-muted-foreground truncate">{subtitle(c) || "Coleção"}</div>
+                <div className="text-[10px] text-muted-foreground truncate">
+                  {subtitle(c) || "Coleção"}
+                </div>
                 <div className="text-sm font-medium truncate">{c.name}</div>
               </Link>
             ))}
@@ -68,7 +69,9 @@ export function RecentCollectionsStrip() {
                 params={{ id: c.id }}
                 className="shrink-0 min-w-[180px] max-w-[220px] rounded-md border border-border bg-background hover:bg-muted/40 transition-colors px-3 py-2"
               >
-                <div className="text-[10px] text-muted-foreground truncate">{subtitle(c) || "Coleção"}</div>
+                <div className="text-[10px] text-muted-foreground truncate">
+                  {subtitle(c) || "Coleção"}
+                </div>
                 <div className="text-sm font-medium truncate">{c.name}</div>
               </Link>
             ))}

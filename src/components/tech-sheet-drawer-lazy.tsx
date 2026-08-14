@@ -5,7 +5,9 @@ const InnerDrawer = lazy(() =>
   import("./tech-sheet-drawer").then((m) => ({ default: m.TechSheetDrawer })),
 );
 
-type TriggerProps = React.ComponentProps<typeof import("./tech-sheet-drawer").TechSheetDrawerTrigger>;
+type TriggerProps = React.ComponentProps<
+  typeof import("./tech-sheet-drawer").TechSheetDrawerTrigger
+>;
 
 export function TechSheetDrawerTrigger(props: TriggerProps) {
   const [open, setOpen] = useState(false);

@@ -41,7 +41,11 @@ const STAGE_BY_SECTOR: Record<string, Stage> = {
 };
 
 const normalize = (s: string) =>
-  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
 
 type ErpItem = {
   nnumeropcpip: number;
@@ -79,7 +83,10 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
           .maybeSingle();
         const ownerId = ownerRow?.owner_id;
         if (!ownerId) {
-          return Response.json({ error: "Sem owner_id base — crie ao menos uma OP." }, { status: 400 });
+          return Response.json(
+            { error: "Sem owner_id base — crie ao menos uma OP." },
+            { status: 400 },
+          );
         }
 
         // 1) Todos os itens ativos do ERP (setor atual = última sequência não finalizada com entrada).
@@ -219,7 +226,10 @@ export const Route = createFileRoute("/api/public/erp-sync-sectors")({
             });
             if (insErr) {
               return Response.json(
-                { error: `Falha ao inserir ${code}: ${insErr.message}`, partial: { inserted, updated } },
+                {
+                  error: `Falha ao inserir ${code}: ${insErr.message}`,
+                  partial: { inserted, updated },
+                },
                 { status: 500 },
               );
             }

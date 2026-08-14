@@ -17,26 +17,24 @@ import {
 } from "@/lib/ai-persona-insights.functions";
 import { Badge } from "@/components/ui/badge";
 
-const SEV: Record<
-  PersonaInsight["severity"],
-  { tone: string; Icon: typeof Info; label: string }
-> = {
-  info: {
-    tone: "bg-blue-500/10 text-blue-700 border-blue-500/30",
-    Icon: Info,
-    label: "Info",
-  },
-  warn: {
-    tone: "bg-amber-500/10 text-amber-700 border-amber-500/30",
-    Icon: AlertTriangle,
-    label: "Atenção",
-  },
-  critical: {
-    tone: "bg-red-500/10 text-red-700 border-red-500/30",
-    Icon: AlertCircle,
-    label: "Crítico",
-  },
-};
+const SEV: Record<PersonaInsight["severity"], { tone: string; Icon: typeof Info; label: string }> =
+  {
+    info: {
+      tone: "bg-blue-500/10 text-blue-700 border-blue-500/30",
+      Icon: Info,
+      label: "Info",
+    },
+    warn: {
+      tone: "bg-amber-500/10 text-amber-700 border-amber-500/30",
+      Icon: AlertTriangle,
+      label: "Atenção",
+    },
+    critical: {
+      tone: "bg-red-500/10 text-red-700 border-red-500/30",
+      Icon: AlertCircle,
+      label: "Crítico",
+    },
+  };
 
 const TITLE: Record<PersonaKey, string> = {
   "coord-dev": "IA · Coordenador de Desenvolvimento",
@@ -63,9 +61,7 @@ export function PersonaInsightsPanel({ persona }: { persona: PersonaKey }) {
           sinais cruzados — explica o porquê
         </span>
         <button
-          onClick={() =>
-            qc.invalidateQueries({ queryKey: ["persona-insights", persona] })
-          }
+          onClick={() => qc.invalidateQueries({ queryKey: ["persona-insights", persona] })}
           disabled={isFetching}
           className="ml-auto text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
           title="Atualizar"
@@ -103,10 +99,7 @@ export function PersonaInsightsPanel({ persona }: { persona: PersonaKey }) {
           {data.items.map((it, i) => {
             const s = SEV[it.severity];
             return (
-              <li
-                key={i}
-                className={`rounded-lg border p-3 ${s.tone}`}
-              >
+              <li key={i} className={`rounded-lg border p-3 ${s.tone}`}>
                 <div className="flex items-center gap-2 mb-1">
                   <s.Icon className="size-3.5" />
                   <div className="text-sm font-semibold">{it.signal}</div>
@@ -114,9 +107,7 @@ export function PersonaInsightsPanel({ persona }: { persona: PersonaKey }) {
                     {s.label}
                   </Badge>
                 </div>
-                <div className="text-[11px] font-mono opacity-80 mb-1">
-                  {it.evidence}
-                </div>
+                <div className="text-[11px] font-mono opacity-80 mb-1">{it.evidence}</div>
                 <div className="text-xs mb-2 opacity-90">{it.why}</div>
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-medium">→ {it.nextAction}</span>

@@ -7,11 +7,7 @@ import { Ruler, ChevronDown, ChevronUp, WandSparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -55,14 +51,10 @@ export function ProductSizeGridCard({ productId, category }: Props) {
 
   const matchedGrid = useMemo(() => {
     if (!grids) return null;
-    const productGrid = grids.find(
-      (g: any) => g.scope === "product" && g.product_id === productId,
-    );
+    const productGrid = grids.find((g: any) => g.scope === "product" && g.product_id === productId);
     if (productGrid) return productGrid;
     if (category) {
-      const catGrid = grids.find(
-        (g: any) => g.scope === "category" && g.scope_value === category,
-      );
+      const catGrid = grids.find((g: any) => g.scope === "category" && g.scope_value === category);
       if (catGrid) return catGrid;
     }
     return null;
@@ -70,14 +62,14 @@ export function ProductSizeGridCard({ productId, category }: Props) {
 
   const sizes = product?.sizes ?? [];
   const distribution = matchedGrid?.distribution as Record<string, number> | undefined;
-  const totalPct = distribution
-    ? Object.values(distribution).reduce((a, b) => a + b, 0)
-    : 0;
+  const totalPct = distribution ? Object.values(distribution).reduce((a, b) => a + b, 0) : 0;
 
   if (!sizes.length && !matchedGrid) return null;
 
   return (
-    <SizesContext.Provider value={sizes.length > 0 ? sizes : distribution ? Object.keys(distribution) : []}>
+    <SizesContext.Provider
+      value={sizes.length > 0 ? sizes : distribution ? Object.keys(distribution) : []}
+    >
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <button
           type="button"
@@ -109,28 +101,21 @@ export function ProductSizeGridCard({ productId, category }: Props) {
           <div className="px-3 pb-3 space-y-2">
             {/* Chips de tamanho + botão de regra de salto */}
             <div className="flex flex-wrap gap-1.5 items-center">
-              {(sizes.length > 0
-                ? sizes
-                : distribution
-                  ? Object.keys(distribution)
-                  : []
-              ).map((size) => {
-                const pct = distribution?.[size];
-                return (
-                  <Badge
-                    key={size}
-                    variant="outline"
-                    className="text-[10px] gap-1 px-2 py-0.5"
-                  >
-                    {size}
-                    {pct != null && (
-                      <span className="text-muted-foreground font-mono">
-                        {(pct * 100).toFixed(0)}%
-                      </span>
-                    )}
-                  </Badge>
-                );
-              })}
+              {(sizes.length > 0 ? sizes : distribution ? Object.keys(distribution) : []).map(
+                (size) => {
+                  const pct = distribution?.[size];
+                  return (
+                    <Badge key={size} variant="outline" className="text-[10px] gap-1 px-2 py-0.5">
+                      {size}
+                      {pct != null && (
+                        <span className="text-muted-foreground font-mono">
+                          {(pct * 100).toFixed(0)}%
+                        </span>
+                      )}
+                    </Badge>
+                  );
+                },
+              )}
               {sizes.length >= 2 && (
                 <InlineGradeRulePopover
                   sizes={sizes}
@@ -155,9 +140,7 @@ export function ProductSizeGridCard({ productId, category }: Props) {
 
             {/* Grade name */}
             {matchedGrid?.notes && (
-              <div className="text-[10px] text-muted-foreground italic">
-                {matchedGrid.notes}
-              </div>
+              <div className="text-[10px] text-muted-foreground italic">{matchedGrid.notes}</div>
             )}
           </div>
         )}
@@ -193,7 +176,8 @@ function InlineGradeRulePopover({
   const handleOpen = (o: boolean) => {
     setOpen(o);
     if (o) {
-      const b = sizes.find((s) => s === "M") ?? sizes[Math.floor(sizes.length / 2)] ?? sizes[0] ?? "";
+      const b =
+        sizes.find((s) => s === "M") ?? sizes[Math.floor(sizes.length / 2)] ?? sizes[0] ?? "";
       setBase(b);
       setBaseValue(String(current[b] ?? 0));
       setDeltas((prev) => {
@@ -253,7 +237,9 @@ function InlineGradeRulePopover({
               className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
             >
               {sizes.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s}
+                </option>
               ))}
             </select>
           </div>
@@ -290,7 +276,9 @@ function InlineGradeRulePopover({
         </div>
 
         <div className="rounded-md border border-border/60 bg-muted/30 p-2">
-          <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Prévia</div>
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+            Prévia
+          </div>
           <div className="grid grid-cols-4 gap-1 text-[11px] tabular-nums">
             {sizes.map((s) => (
               <div
@@ -305,11 +293,16 @@ function InlineGradeRulePopover({
         </div>
 
         <div className="flex justify-end gap-1">
-          <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button size="sm" onClick={() => {
-            toast.success("Regra de salto calculada! Use os valores na ficha técnica.");
-            setOpen(false);
-          }}>
+          <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
+            Cancelar
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              toast.success("Regra de salto calculada! Use os valores na ficha técnica.");
+              setOpen(false);
+            }}
+          >
             Aplicar salto
           </Button>
         </div>
@@ -317,4 +310,3 @@ function InlineGradeRulePopover({
     </Popover>
   );
 }
-

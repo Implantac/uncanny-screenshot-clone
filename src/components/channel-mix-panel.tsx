@@ -74,8 +74,7 @@ export function ChannelMixPanel({
     setDragging(null);
     const product = products.find((p) => p.productId === productId);
     if (!product) return;
-    const newChannels: ChannelKey[] =
-      ch === "all" ? [...CHANNELS_LIST] : [ch];
+    const newChannels: ChannelKey[] = ch === "all" ? [...CHANNELS_LIST] : [ch];
     mut.mutate({ productId, channels: newChannels });
   };
 
@@ -178,7 +177,13 @@ function ChannelColumn({
             }`}
           >
             {p.imageUrl ? (
-              <img src={p.imageUrl} alt="" loading="lazy" decoding="async" className="size-5 rounded object-cover" />
+              <img
+                src={p.imageUrl}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="size-5 rounded object-cover"
+              />
             ) : (
               <div className="size-5 rounded bg-muted" />
             )}
