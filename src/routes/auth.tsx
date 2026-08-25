@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { lovable } from "@/integrations/lovable/index";
 import { mapSignInError, mapSignUpError } from "@/lib/auth-errors";
@@ -14,8 +15,40 @@ import logoAsset from "@/assets/logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Login · USE MODA PLM" },
+      {
+        name: "description",
+        content: "Acesse com segurança o USE MODA PLM para gerir produtos, fichas, lotes e produção.",
+      },
+      { property: "og:title", content: "Login · USE MODA PLM" },
+      {
+        property: "og:description",
+        content: "Acesso seguro ao PLM de moda da USE MODA.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AuthPage,
 });
+
+function getAuthFailureMessage(error: unknown, fallback: string) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  if (/failed to fetch|network|fetch|name_not_resolved|load failed/i.test(message)) {
+    return "Não foi possível conectar ao backend de autenticação. Verifique se o Lovable Cloud está ativo e tente novamente.";
+  }
+  return message || fallback;
+}
+
+async function clearLocalAuthSession() {
+  try {
+    await supabase.auth.signOut({ scope: "local" });
+  } catch {
+    /* mantém a tela utilizável mesmo se a limpeza local falhar */
+  }
+}
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -24,12 +57,38 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
     setMounted(true);
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
-    });
+
+    async function checkExistingSession() {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!active) return;
+        if (data.user && !error) {
+          navigate({ to: "/", replace: true });
+          return;
+        }
+        if (error) await clearLocalAuthSession();
+      } catch (error) {
+        if (!active) return;
+        await clearLocalAuthSession();
+        setAuthError(
+          getAuthFailureMessage(
+            error,
+            "Não foi possível verificar sua sessão. Tente entrar novamente.",
+          ),
+        );
+      }
+    }
+
+    void checkExistingSession();
+
+    return () => {
+      active = false;
+    };
   }, [navigate]);
 
   async function handleSignIn(e: React.FormEvent) {
@@ -39,16 +98,27 @@ function AuthPage() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-    setLoading(false);
-    if (error) {
-      toast.error(mapSignInError(error as { message?: string; code?: string; status?: number }));
-      return;
+    setAuthError(null);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error) {
+        const message = mapSignInError(error as { message?: string; code?: string; status?: number });
+        setAuthError(message);
+        toast.error(message);
+        return;
+      }
+      navigate({ to: "/", replace: true });
+    } catch (error) {
+      const message = getAuthFailureMessage(error, "Erro ao entrar");
+      setAuthError(message);
+      toast.error(message);
+      await clearLocalAuthSession();
+    } finally {
+      setLoading(false);
     }
-    navigate({ to: "/" });
   }
 
   async function handleSignUp(e: React.FormEvent) {
@@ -62,39 +132,61 @@ function AuthPage() {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-        data: { full_name: fullName.trim() },
-      },
-    });
-    setLoading(false);
-    if (error) {
-      toast.error(mapSignUpError(error as { message?: string; code?: string; status?: number }));
-      return;
-    }
-    if (data.session) {
-      toast.success("Conta criada com sucesso!");
-      navigate({ to: "/" });
-    } else {
-      toast.success("Conta criada! Verifique seu email para confirmar.");
+    setAuthError(null);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { full_name: fullName.trim() },
+        },
+      });
+      if (error) {
+        const message = mapSignUpError(error as { message?: string; code?: string; status?: number });
+        setAuthError(message);
+        toast.error(message);
+        return;
+      }
+      if (data.session) {
+        toast.success("Conta criada com sucesso!");
+        navigate({ to: "/", replace: true });
+      } else {
+        toast.success("Conta criada! Verifique seu email para confirmar.");
+      }
+    } catch (error) {
+      const message = getAuthFailureMessage(error, "Erro ao criar conta");
+      setAuthError(message);
+      toast.error(message);
+      await clearLocalAuthSession();
+    } finally {
+      setLoading(false);
     }
   }
 
   async function handleGoogle() {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
+    setAuthError(null);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        const message = getAuthFailureMessage(result.error, "Falha ao entrar com Google");
+        setAuthError(message);
+        toast.error(message);
+        return;
+      }
+      if (result.redirected) return;
+      navigate({ to: "/", replace: true });
+    } catch (error) {
+      const message = getAuthFailureMessage(error, "Falha ao entrar com Google");
+      setAuthError(message);
+      toast.error(message);
+      await clearLocalAuthSession();
+    } finally {
       setLoading(false);
-      toast.error("Falha ao entrar com Google");
-      return;
     }
-    if (result.redirected) return;
-    navigate({ to: "/" });
   }
 
   if (!mounted) return null;
@@ -145,6 +237,11 @@ function AuthPage() {
                 ou com email
               </span>
             </div>
+            {authError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
             <Tabs defaultValue="signin">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Entrar</TabsTrigger>
