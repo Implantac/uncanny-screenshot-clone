@@ -15,11 +15,17 @@ export function useAuth() {
       setUser(s?.user ?? null);
     });
 
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session: s } }) => {
+        setSession(s);
+        setUser(s?.user ?? null);
+      })
+      .catch(() => {
+        setSession(null);
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
 
     return () => subscription.unsubscribe();
   }, []);
