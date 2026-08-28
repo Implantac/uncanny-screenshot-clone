@@ -12,6 +12,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { getExecutiveKpis } from "@/lib/executive-kpis.functions";
+import { useAuth } from "@/hooks/use-auth";
+
 
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
