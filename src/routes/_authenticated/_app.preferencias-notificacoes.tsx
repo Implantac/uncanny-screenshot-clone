@@ -80,9 +80,12 @@ function NotificationPreferencesPage() {
     },
   });
 
-  const [local, setLocal] = useState<Record<string, PrefRow>>({});
+  // Overrides locais (otimistas). O estado exibido é derivado das prefs do
+  // servidor — nada de setState dentro de useEffect (causava loop infinito,
+  // pois `prefs` recebe uma nova referência a cada render).
+  const [overrides, setOverrides] = useState<Record<string, PrefRow>>({});
 
-  useEffect(() => {
+  const serverRows = useMemo(() => {
     const next: Record<string, PrefRow> = {};
     for (const c of CATEGORIES) {
       const existing = prefs.find((p) => p.category === c.key);
@@ -93,8 +96,11 @@ function NotificationPreferencesPage() {
         email_enabled: false,
       };
     }
-    setLocal(next);
+    return next;
   }, [prefs]);
+
+  const local = useMemo(() => ({ ...serverRows, ...overrides }), [serverRows, overrides]);
+
 
   const save = useMutation({
     mutationFn: async (row: PrefRow) => {
