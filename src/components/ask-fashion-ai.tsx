@@ -19,6 +19,7 @@ import { askInsight } from "@/lib/ai-insights.functions";
 import { executeAICommand } from "@/lib/ai-commands.functions";
 import { lookupCommandRefs } from "@/lib/ai-commands-lookup.functions";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
 
 type Persona = "development" | "pcp" | "marketing" | "command";
 
@@ -111,6 +112,7 @@ const ACTION_LABEL: Record<AIAction["kind"], string> = {
 export function AskFashionAI() {
   const [persona, setPersona] = useState<Persona>("development");
   const [question, setQuestion] = useState("");
+  const { user, loading: authLoading } = useAuth();
   const fn = useServerFn(askInsight);
   const execFn = useServerFn(executeAICommand);
   const m = useMutation({
@@ -125,7 +127,7 @@ export function AskFashionAI() {
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Falha ao executar"),
   });
-  const active = PERSONAS.find((p) => p.id === persona)!;
+  const active = PERSONAS.find((p) => p.id === persona) ?? PERSONAS[0];
 
   const parsed = useMemo(
     () => (m.data?.text ? parseAction(m.data.text) : { action: null, cleaned: "" }),
@@ -133,10 +135,12 @@ export function AskFashionAI() {
   );
 
   function ask(q: string) {
-    if (!q.trim() || m.isPending) return;
+    if (!q.trim() || m.isPending || !user) return;
     setQuestion(q);
     m.mutate(q);
   }
+
+  if (!active) return null;
 
   return (
     <section className="rounded-xl border border-border bg-card">
@@ -164,12 +168,20 @@ export function AskFashionAI() {
       </div>
 
       <div className="p-4 space-y-3">
+        {!authLoading && !user && (
+          <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            <Link to="/auth" className="font-medium text-primary hover:underline">
+              Entre na sua conta
+            </Link>{" "}
+            para consultar o Agente USE com os dados da empresa.
+          </div>
+        )}
         <div className="flex flex-wrap gap-1.5">
           {active.suggestions.map((s) => (
             <button
               key={s}
               onClick={() => ask(s)}
-              disabled={m.isPending}
+              disabled={m.isPending || authLoading || !user}
               className="text-[11px] px-2 py-1 rounded-full border border-border bg-muted/30 hover:bg-muted disabled:opacity-50"
             >
               {s}
@@ -192,7 +204,7 @@ export function AskFashionAI() {
           />
           <button
             type="submit"
-            disabled={m.isPending || !question.trim()}
+            disabled={m.isPending || authLoading || !user || !question.trim()}
             className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-50"
           >
             {m.isPending ? (

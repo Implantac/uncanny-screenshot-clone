@@ -5,6 +5,9 @@ import { useEffect } from "react";
 import { askInsight } from "@/lib/ai-insights.functions";
 import { Markdown } from "@/components/markdown";
 import { InlineChart } from "@/components/inline-chart";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import { Link } from "@tanstack/react-router";
 
 type Persona = "development" | "pcp" | "marketing";
 
@@ -32,15 +35,16 @@ export function AICoordinatorPanel({
   title?: string;
   autoLoad?: boolean;
 }) {
+  const { user, loading: authLoading } = useAuth();
   const ask = useServerFn(askInsight);
   const mutation = useMutation({
     mutationFn: () => ask({ data: { persona, question: question ?? DEFAULT_QUESTION[persona] } }),
   });
 
   useEffect(() => {
-    if (autoLoad) mutation.mutate();
+    if (autoLoad && user) mutation.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persona, question]);
+  }, [autoLoad, persona, question, user?.id]);
 
   return (
     <div className="glass rounded-xl p-5 flex flex-col min-h-[260px]">
@@ -54,11 +58,13 @@ export function AICoordinatorPanel({
             </div>
           </div>
         </div>
-        <button
+        <Button
           type="button"
           onClick={() => mutation.mutate()}
-          disabled={mutation.isPending}
-          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 min-h-8 min-w-8 justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          disabled={mutation.isPending || authLoading || !user}
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground"
           aria-label={mutation.isPending ? "Atualizando insights" : "Atualizar insights"}
           title="Atualizar"
         >
@@ -67,11 +73,20 @@ export function AICoordinatorPanel({
           ) : (
             <RefreshCw className="size-3" aria-hidden="true" />
           )}
-        </button>
+        </Button>
       </div>
 
       <div className="flex-1 text-sm">
-        {mutation.isPending && !mutation.data ? (
+        {authLoading ? (
+          <div className="h-5 w-40 animate-pulse rounded bg-muted/40" />
+        ) : !user ? (
+          <div className="text-xs text-muted-foreground">
+            <Link to="/auth" className="font-medium text-primary hover:underline">
+              Entre na sua conta
+            </Link>{" "}
+            para consultar o Agente USE com os dados da empresa.
+          </div>
+        ) : mutation.isPending && !mutation.data ? (
           <div className="text-xs text-muted-foreground inline-flex items-center gap-2">
             <Loader2 className="size-3 animate-spin" /> Analisando dados…
           </div>
