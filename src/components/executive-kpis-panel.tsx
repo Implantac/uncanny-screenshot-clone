@@ -12,21 +12,35 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { getExecutiveKpis } from "@/lib/executive-kpis.functions";
+import { useAuth } from "@/hooks/use-auth";
+
 
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 export function ExecutiveKpisPanel() {
+  const { session, loading: authLoading } = useAuth();
   const fn = useServerFn(getExecutiveKpis);
   const { data, isLoading } = useQuery({
     queryKey: ["executive-kpis"],
     queryFn: () => fn(),
     refetchInterval: 60_000,
+    enabled: !!session,
+    retry: false,
   });
 
-  if (isLoading || !data) {
+  if (!authLoading && !session) {
+    return (
+      <Card className="p-4 text-sm text-muted-foreground">
+        Entre na sua conta para ver os indicadores executivos.
+      </Card>
+    );
+  }
+
+  if (authLoading || isLoading || !data) {
     return <Card className="p-4 animate-pulse h-32 bg-muted/30" />;
   }
+
 
   const blocks = [
     {
