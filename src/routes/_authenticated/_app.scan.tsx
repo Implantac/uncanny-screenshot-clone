@@ -126,9 +126,20 @@ function ScanPage() {
       .catch((e) => setError(e?.message ?? "Não foi possível abrir a câmera"));
 
     return () => {
-      scanner.stop().catch(() => {});
-      scanner.clear();
+      // stop()/clear() lançam se a câmera nunca chegou a iniciar (permissão
+      // negada, ambiente sem câmera). Nunca deve derrubar a tela.
+      void Promise.resolve()
+        .then(() => scanner.stop())
+        .catch(() => {})
+        .finally(() => {
+          try {
+            scanner.clear();
+          } catch {
+            /* scanner nunca iniciou */
+          }
+        });
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
