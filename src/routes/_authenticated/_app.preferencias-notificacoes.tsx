@@ -126,7 +126,8 @@ function NotificationPreferencesPage() {
 
   const update = (key: string, patch: Partial<PrefRow>) => {
     const merged = { ...local[key], ...patch };
-    setLocal((s) => ({ ...s, [key]: merged }));
+    setOverrides((s) => ({ ...s, [key]: merged }));
+
     save.mutate(merged);
   };
 
