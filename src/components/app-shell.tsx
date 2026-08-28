@@ -420,22 +420,35 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-2 pl-2 sm:pl-3 sm:ml-1 sm:border-l border-border">
             <div className="size-8 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-xs font-semibold text-primary-foreground">
-              {initials || "U"}
+              {user ? initials || "U" : "?"}
             </div>
             <div className="text-xs leading-tight hidden md:block">
               <div className="font-medium truncate max-w-[120px]">
-                {user?.user_metadata?.full_name || user?.email}
+                {user?.user_metadata?.full_name || user?.email || "Visitante"}
               </div>
-              <div className="text-muted-foreground">{ROLE_LABEL[primary] ?? "Designer"}</div>
+              <div className="text-muted-foreground">
+                {user ? (ROLE_LABEL[primary] ?? "Designer") : "Sem login"}
+              </div>
             </div>
-            <button
-              onClick={handleSignOut}
-              title="Sair"
-              className="size-9 grid place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <LogOut className="size-4" />
-            </button>
+            {user ? (
+              <button
+                onClick={handleSignOut}
+                title="Sair"
+                className="size-9 grid place-items-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <LogOut className="size-4" />
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                title="Entrar"
+                className="h-9 px-3 grid place-items-center rounded-md text-xs font-medium border border-border hover:bg-muted transition-colors"
+              >
+                Entrar
+              </Link>
+            )}
           </div>
+
         </header>
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
