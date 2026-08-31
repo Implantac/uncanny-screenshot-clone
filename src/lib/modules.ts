@@ -1092,6 +1092,15 @@ export const MODULES: ModuleDef[] = [
     group: "Plataforma",
   },
   {
+    slug: "admin",
+    path: "/admin",
+    title: "Administração",
+    short: "Usuários, categorias e produtos",
+    description: "Gerencie usuários, categorias e produtos diretamente (admin).",
+    icon: Shield,
+    group: "Plataforma",
+  },
+  {
     slug: "onboarding",
     path: "/onboarding",
     title: "Onboarding — Importar dados",
