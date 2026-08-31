@@ -247,7 +247,7 @@
     }
   }
   ::selection {
-    background-color: oklch(0.7 0.18 50 / 0.35);
+    background-color: oklch(0.65 0.17 250 / 0.35);
   }
 
   @media (prefers-reduced-motion: reduce) {
