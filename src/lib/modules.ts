@@ -15,6 +15,7 @@ import {
   Bot,
   Cpu,
   ShieldCheck,
+  Shield,
   MonitorPlay,
   Smartphone,
   Users,
