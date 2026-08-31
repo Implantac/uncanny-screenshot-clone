@@ -15,6 +15,7 @@ import {
   Bot,
   Cpu,
   ShieldCheck,
+  Shield,
   MonitorPlay,
   Smartphone,
   Users,
@@ -1089,6 +1090,15 @@ export const MODULES: ModuleDef[] = [
     short: "Usuários e papéis",
     description: "Gerencie usuários e atribua papéis (admin).",
     icon: Users,
+    group: "Plataforma",
+  },
+  {
+    slug: "admin",
+    path: "/admin",
+    title: "Administração",
+    short: "Usuários, categorias e produtos",
+    description: "Gerencie usuários, categorias e produtos diretamente (admin).",
+    icon: Shield,
     group: "Plataforma",
   },
   {

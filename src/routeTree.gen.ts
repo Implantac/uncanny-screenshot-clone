@@ -19,6 +19,7 @@ import { Route as DppIdRouteImport } from './routes/dpp.$id'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/_app.index'
 import { Route as AuthenticatedAppAbcColecaoRouteImport } from './routes/_authenticated/_app.abc-colecao'
 import { Route as AuthenticatedAppAcompanhamentoProducaoRouteImport } from './routes/_authenticated/_app.acompanhamento-producao'
+import { Route as AuthenticatedAppAdminRouteImport } from './routes/_authenticated/_app.admin'
 import { Route as AuthenticatedAppAlertasRouteImport } from './routes/_authenticated/_app.alertas'
 import { Route as AuthenticatedAppAlmoxarifadoRouteImport } from './routes/_authenticated/_app.almoxarifado'
 import { Route as AuthenticatedAppApprovalsRouteImport } from './routes/_authenticated/_app.approvals'
@@ -195,6 +196,11 @@ const AuthenticatedAppAcompanhamentoProducaoRoute =
     path: '/acompanhamento-producao',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppAdminRoute = AuthenticatedAppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppAlertasRoute = AuthenticatedAppAlertasRouteImport.update({
   id: '/alertas',
   path: '/alertas',
@@ -930,6 +936,7 @@ export interface FileRoutesByFullPath {
   '/dpp/$id': typeof DppIdRoute
   '/abc-colecao': typeof AuthenticatedAppAbcColecaoRoute
   '/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
+  '/admin': typeof AuthenticatedAppAdminRoute
   '/alertas': typeof AuthenticatedAppAlertasRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/approvals': typeof AuthenticatedAppApprovalsRoute
@@ -1065,6 +1072,7 @@ export interface FileRoutesByTo {
   '/dpp/$id': typeof DppIdRoute
   '/abc-colecao': typeof AuthenticatedAppAbcColecaoRoute
   '/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
+  '/admin': typeof AuthenticatedAppAdminRoute
   '/alertas': typeof AuthenticatedAppAlertasRoute
   '/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/approvals': typeof AuthenticatedAppApprovalsRoute
@@ -1202,6 +1210,7 @@ export interface FileRoutesById {
   '/dpp/$id': typeof DppIdRoute
   '/_authenticated/_app/abc-colecao': typeof AuthenticatedAppAbcColecaoRoute
   '/_authenticated/_app/acompanhamento-producao': typeof AuthenticatedAppAcompanhamentoProducaoRoute
+  '/_authenticated/_app/admin': typeof AuthenticatedAppAdminRoute
   '/_authenticated/_app/alertas': typeof AuthenticatedAppAlertasRoute
   '/_authenticated/_app/almoxarifado': typeof AuthenticatedAppAlmoxarifadoRoute
   '/_authenticated/_app/approvals': typeof AuthenticatedAppApprovalsRoute
@@ -1340,6 +1349,7 @@ export interface FileRouteTypes {
     | '/dpp/$id'
     | '/abc-colecao'
     | '/acompanhamento-producao'
+    | '/admin'
     | '/alertas'
     | '/almoxarifado'
     | '/approvals'
@@ -1475,6 +1485,7 @@ export interface FileRouteTypes {
     | '/dpp/$id'
     | '/abc-colecao'
     | '/acompanhamento-producao'
+    | '/admin'
     | '/alertas'
     | '/almoxarifado'
     | '/approvals'
@@ -1611,6 +1622,7 @@ export interface FileRouteTypes {
     | '/dpp/$id'
     | '/_authenticated/_app/abc-colecao'
     | '/_authenticated/_app/acompanhamento-producao'
+    | '/_authenticated/_app/admin'
     | '/_authenticated/_app/alertas'
     | '/_authenticated/_app/almoxarifado'
     | '/_authenticated/_app/approvals'
@@ -1833,6 +1845,13 @@ declare module '@tanstack/react-router' {
       path: '/acompanhamento-producao'
       fullPath: '/acompanhamento-producao'
       preLoaderRoute: typeof AuthenticatedAppAcompanhamentoProducaoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/_app/admin': {
+      id: '/_authenticated/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAppAdminRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/_app/alertas': {
@@ -2745,6 +2764,7 @@ const AuthenticatedAppQualityRouteWithChildren =
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAbcColecaoRoute: typeof AuthenticatedAppAbcColecaoRoute
   AuthenticatedAppAcompanhamentoProducaoRoute: typeof AuthenticatedAppAcompanhamentoProducaoRoute
+  AuthenticatedAppAdminRoute: typeof AuthenticatedAppAdminRoute
   AuthenticatedAppAlertasRoute: typeof AuthenticatedAppAlertasRoute
   AuthenticatedAppAlmoxarifadoRoute: typeof AuthenticatedAppAlmoxarifadoRoute
   AuthenticatedAppApprovalsRoute: typeof AuthenticatedAppApprovalsRoute
@@ -2859,6 +2879,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAbcColecaoRoute: AuthenticatedAppAbcColecaoRoute,
   AuthenticatedAppAcompanhamentoProducaoRoute:
     AuthenticatedAppAcompanhamentoProducaoRoute,
+  AuthenticatedAppAdminRoute: AuthenticatedAppAdminRoute,
   AuthenticatedAppAlertasRoute: AuthenticatedAppAlertasRoute,
   AuthenticatedAppAlmoxarifadoRoute: AuthenticatedAppAlmoxarifadoRoute,
   AuthenticatedAppApprovalsRoute: AuthenticatedAppApprovalsRoute,
