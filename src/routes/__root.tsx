@@ -100,6 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Plataforma completa de gestão para indústria da moda: PLM, ERP Fashion, PCP, BI, IA e mais.",
       },
       { name: "theme-color", content: "#0b0b0f" },
+      { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "USE MODA" },
