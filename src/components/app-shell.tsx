@@ -62,7 +62,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { primary, isAdmin: isAdminRole } = useRoles();
   const { sectors, isAdmin } = useSectors();
-  const canSeeAll = isAdmin || isAdminRole || primary === "gerente";
+  // Visitante sem login enxerga o menu completo (leitura); RLS limita os dados.
+  const canSeeAll = isAdmin || isAdminRole || primary === "gerente" || !user;
   const [showAll, setShowAll] = useState(false);
   const visibleModules = MODULES.filter(
     (m) =>

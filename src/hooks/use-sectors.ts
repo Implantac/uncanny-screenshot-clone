@@ -6,8 +6,11 @@ import type { AppSector } from "@/lib/modules";
 import { APP_SECTORS } from "@/lib/modules";
 
 export function useSectors() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: rolesLoading } = useRoles();
+  // Visitante (sem login): navegação liberada em todos os setores.
+  // O que ele consegue ler continua limitado pelas políticas do banco.
+  const isGuest = !authLoading && !user;
 
   const q = useQuery({
     queryKey: ["user-sectors", user?.id],
@@ -22,11 +25,11 @@ export function useSectors() {
     },
   });
 
-  const sectors: AppSector[] = isAdmin ? APP_SECTORS : (q.data ?? []);
+  const sectors: AppSector[] = isAdmin || isGuest ? APP_SECTORS : (q.data ?? []);
   return {
     sectors,
     isAdmin,
-    loading: rolesLoading || q.isLoading,
-    has: (s: AppSector) => isAdmin || sectors.includes(s),
+    loading: authLoading || rolesLoading || q.isLoading,
+    has: (s: AppSector) => isAdmin || isGuest || sectors.includes(s),
   };
 }
