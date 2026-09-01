@@ -4,13 +4,16 @@ import { AlertOctagon, ShieldAlert, Calendar, TrendingDown } from "lucide-react"
 import { getCollectionCapaRisks } from "@/lib/collection-capa-risk.functions";
 import { Markdown } from "@/components/markdown";
 import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
 
 export function CollectionCapaRiskPanel() {
   const fn = useServerFn(getCollectionCapaRisks);
+  const { session } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ["collection-capa-risks"],
     queryFn: () => fn({}),
     staleTime: 60_000,
+    enabled: !!session,
   });
 
   if (isLoading || !data) return null;
