@@ -6,8 +6,11 @@ import type { AppSector } from "@/lib/modules";
 import { APP_SECTORS } from "@/lib/modules";
 
 export function useSectors() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: rolesLoading } = useRoles();
+  // Visitante (sem login): navegação liberada em todos os setores.
+  // O que ele consegue ler continua limitado pelas políticas do banco.
+  const isGuest = !authLoading && !user;
 
   const q = useQuery({
     queryKey: ["user-sectors", user?.id],
