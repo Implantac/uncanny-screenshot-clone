@@ -57,6 +57,9 @@ import { PrototypeApprovalGate } from "@/components/prototype-approval-gate";
 import { ProductGallery } from "@/components/product-gallery";
 import { SkuPerformancePanel } from "@/components/sku-performance-panel";
 import { StageGatePanel } from "@/components/stage-gate-panel";
+import { ProductPilotControl } from "@/components/product-pilot-control";
+import { ProductStatusControl } from "@/components/product-status-control";
+
 import { ProductPcpHealthPanel } from "@/components/product-pcp-health";
 import { ProductDigitalTwinPanel } from "@/components/product-digital-twin-panel";
 import { ProductCostCockpit } from "@/components/product-cost-cockpit";
