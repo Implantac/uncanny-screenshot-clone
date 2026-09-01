@@ -57,6 +57,9 @@ import { PrototypeApprovalGate } from "@/components/prototype-approval-gate";
 import { ProductGallery } from "@/components/product-gallery";
 import { SkuPerformancePanel } from "@/components/sku-performance-panel";
 import { StageGatePanel } from "@/components/stage-gate-panel";
+import { ProductPilotControl } from "@/components/product-pilot-control";
+import { ProductStatusControl } from "@/components/product-status-control";
+
 import { ProductPcpHealthPanel } from "@/components/product-pcp-health";
 import { ProductDigitalTwinPanel } from "@/components/product-digital-twin-panel";
 import { ProductCostCockpit } from "@/components/product-cost-cockpit";
@@ -576,7 +579,10 @@ function ProductWorkspace() {
         }
       />
 
+      <ProductStatusControl productId={product.id} status={product.status} />
+
       {/* Header card com identidade do produto */}
+
       <div className="rounded-xl border border-border bg-card p-4 flex gap-4">
         <div className="size-24 rounded-lg overflow-hidden bg-muted/40 shrink-0">
           {product.image_url ? (
@@ -883,38 +889,14 @@ function ProductWorkspace() {
           )}
         </TabsContent>
 
-        <TabsContent value="prototipos">
-          {prototypes.length === 0 ? (
-            <div className="rounded-xl border border-border bg-card p-4">
-              <EmptyState
-                icon={Scissors}
-                title="Nenhum protótipo solicitado"
-                description="Solicite um piloto para iniciar o ciclo de prototipagem. O protótipo passará por: Corte/Pilotagem → Prova/Piloto → Ajustes (se necessário) → Aprovação final."
-                action={
-                  <div className="flex flex-wrap gap-2 justify-center mt-1">
-                    <Button
-                      size="sm"
-                      className="gap-1"
-                      onClick={() => {
-                        const dialog = document.getElementById(
-                          "request-prototype-dialog",
-                        ) as HTMLDialogElement | null;
-                        dialog?.showModal();
-                      }}
-                    >
-                      <Scissors className="size-3.5" /> Solicitar protótipo
-                    </Button>
-                    <Link
-                      to="/prototipos"
-                      className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1"
-                    >
-                      Ver todos os protótipos <ExternalLink className="size-2.5" />
-                    </Link>
-                  </div>
-                }
-              />
-            </div>
-          ) : (
+        <TabsContent value="prototipos" className="space-y-3">
+          <ProductPilotControl
+            productId={product.id}
+            productSku={product.sku}
+            productStatus={product.status}
+          />
+          {prototypes.length === 0 ? null : (
+
             <div className="space-y-3">
               {/* Visual Approval Flow */}
               <div className="rounded-xl border border-border bg-card p-4">
