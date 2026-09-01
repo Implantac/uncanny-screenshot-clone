@@ -25,11 +25,11 @@ export function useSectors() {
     },
   });
 
-  const sectors: AppSector[] = isAdmin ? APP_SECTORS : (q.data ?? []);
+  const sectors: AppSector[] = isAdmin || isGuest ? APP_SECTORS : (q.data ?? []);
   return {
     sectors,
     isAdmin,
-    loading: rolesLoading || q.isLoading,
-    has: (s: AppSector) => isAdmin || sectors.includes(s),
+    loading: authLoading || rolesLoading || q.isLoading,
+    has: (s: AppSector) => isAdmin || isGuest || sectors.includes(s),
   };
 }
