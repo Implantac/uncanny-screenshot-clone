@@ -96,13 +96,16 @@ export function ProductPilotControl({
       stage: Stage;
       rejectReason?: string;
     }) => {
-      const patch: Record<string, unknown> = { stage };
-      if (stage === "reprovado") {
-        patch['needs_adjustment'] = true;
-        patch['adjustment_reason'] = rejectReason ?? null;
-        patch['adjustment_requested_at'] = new Date().toISOString();
-        if (user) patch['adjustment_requested_by'] = user.id;
-      }
+      const patch =
+        stage === "reprovado"
+          ? {
+              stage,
+              needs_adjustment: true,
+              adjustment_reason: rejectReason ?? null,
+              adjustment_requested_at: new Date().toISOString(),
+              adjustment_requested_by: user?.id ?? null,
+            }
+          : { stage };
       const { error } = await supabase.from("prototypes").update(patch).eq("id", id);
       if (error) throw error;
     },
