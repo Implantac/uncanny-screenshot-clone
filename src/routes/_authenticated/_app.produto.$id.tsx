@@ -579,7 +579,10 @@ function ProductWorkspace() {
         }
       />
 
+      <ProductStatusControl productId={product.id} status={product.status} />
+
       {/* Header card com identidade do produto */}
+
       <div className="rounded-xl border border-border bg-card p-4 flex gap-4">
         <div className="size-24 rounded-lg overflow-hidden bg-muted/40 shrink-0">
           {product.image_url ? (
