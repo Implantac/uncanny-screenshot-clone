@@ -3,15 +3,18 @@ import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, TrendingUp, AlertTriangle, Calendar } from "lucide-react";
 import { getCollectionIntelligence } from "@/lib/collection-intelligence.functions";
 import { Markdown } from "@/components/markdown";
+import { useAuth } from "@/hooks/use-auth";
 
 const fmt = (n: number) => `R$ ${Math.round(n).toLocaleString("pt-BR")}`;
 
 export function CollectionIntelligencePanel() {
   const fn = useServerFn(getCollectionIntelligence);
+  const { session } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ["collection-intelligence"],
     queryFn: () => fn({}),
     staleTime: 60_000,
+    enabled: !!session,
   });
 
   if (isLoading) return null;
