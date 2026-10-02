@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/_app/war-room-colecao/$id"
   }),
   component: WarRoomColecao,
   errorComponent: ({ error }) => (
-    <div className="p-8 text-sm text-destructive">Falha ao carregar coleção: {error.message}</div>
+    <div className="p-8 text-sm text-destructive">Falha ao carregar coleção: {(error as Error).message}</div>
   ),
   notFoundComponent: () => <div className="p-8 text-sm">Coleção não encontrada</div>,
 });
