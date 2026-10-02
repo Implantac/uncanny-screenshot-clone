@@ -22,7 +22,7 @@ export function DefaultNotFound() {
   );
 }
 
-export function DefaultError({ error, reset }: { error: Error; reset: () => void }) {
+export function DefaultError({ error, reset }: { error: unknown; reset: () => void }) {
   const router = useRouter();
   useEffect(() => {
     console.error(error);
