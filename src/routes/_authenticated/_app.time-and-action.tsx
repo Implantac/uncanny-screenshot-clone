@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/_app/time-and-action")({
   }),
   component: TimeActionPage,
   errorComponent: ({ error }) => (
-    <div className="p-6 text-sm text-destructive">{error.message}</div>
+    <div className="p-6 text-sm text-destructive">{(error as Error).message}</div>
   ),
   notFoundComponent: () => <div className="p-6 text-sm">Não encontrado</div>,
 });

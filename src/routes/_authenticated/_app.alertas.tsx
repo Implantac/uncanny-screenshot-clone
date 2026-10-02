@@ -57,7 +57,7 @@ export const Route = createFileRoute("/_authenticated/_app/alertas")({
   component: AlertsCenterPage,
   errorComponent: ({ error, reset }) => (
     <div className="p-6 text-sm text-destructive">
-      Erro ao carregar alertas: {error.message}
+      Erro ao carregar alertas: {(error as Error).message}
       <button onClick={() => reset()} className="ml-2 underline">
         tentar novamente
       </button>
