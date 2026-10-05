@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "node scripts/check-no-mocks.mjs && vite build",
-    "build:dev": "node scripts/check-no-mocks.mjs && vite build --mode development",
+    "build": "node scripts/check-no-mocks.mjs && NODE_OPTIONS=--max-old-space-size=8192 vite build",
+    "build:dev": "node scripts/check-no-mocks.mjs && NODE_OPTIONS=--max-old-space-size=8192 vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
     "check:no-mocks": "node scripts/check-no-mocks.mjs",
